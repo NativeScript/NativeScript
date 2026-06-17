@@ -49,6 +49,25 @@ export class TextField extends TextFieldBase {
 	public initNativeView(): void {
 		super.initNativeView(); // wires TextChanged/PasswordChanged from editable-text-base
 		this._attachReturnKeyListener();
+		this._neutralizeStateBackgrounds();
+	}
+
+	// WinUI TextBox/PasswordBox swap their background to light theme brushes
+	// (TextControlBackgroundPointerOver/Focused) in those visual states, overriding the control's
+	// Background — so an app-set (or transparent) background flashes white on hover/focus. Insert
+	// transparent brushes for those keys into the instance ResourceDictionary so the control keeps the
+	// app background across every state and blends with its container, matching iOS/Android.
+	private _neutralizeStateBackgrounds(): void {
+		const nv = this.nativeViewProtected as any;
+		if (!nv?.Resources) {
+			return;
+		}
+		try {
+			const transparent = new Microsoft.UI.Xaml.Media.SolidColorBrush({ A: 0, R: 0, G: 0, B: 0 } as unknown as Windows.UI.Color);
+			for (const key of ['TextControlBackgroundPointerOver', 'TextControlBackgroundFocused', 'TextControlBackgroundDisabled']) {
+				try { nv.Resources.Insert(key, transparent); } catch (_e) {}
+			}
+		} catch (_e) {}
 	}
 
 	public _attachReturnKeyListener(): void {

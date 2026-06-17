@@ -101,10 +101,12 @@ export class SegmentedBar extends SegmentedBarBase {
 		selectedIndexProperty.coerce(this);
 	}
 
+	//@ts-ignore
 	[selectedBackgroundColorProperty.setNative](_value: Color) {
 		this._applySelection(this.selectedIndex);
 	}
 
+	//@ts-ignore
 	[selectedTextColorProperty.setNative](_value: Color) {
 		this._applySelection(this.selectedIndex);
 	}

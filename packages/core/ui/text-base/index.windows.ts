@@ -25,7 +25,7 @@ function makeThickness(options: { Left?: number; Top?: number; Right?: number; B
 }
 
 // Microsoft.UI.Text.FontWeights resolves in WinUI3; guarded so a future projection gap degrades gracefully.
-function toFontWeight(value: FontWeightType): Microsoft.UI.Text.FontWeight | null {
+function toFontWeight(value: FontWeightType): any {
 	try {
 		switch (value) {
 			case '700':
@@ -49,7 +49,7 @@ function toFontWeight(value: FontWeightType): Microsoft.UI.Text.FontWeight | nul
 	}
 }
 
-function fromFontWeight(value: Microsoft.UI.Text.FontWeight): FontWeightType {
+function fromFontWeight(value: any): FontWeightType {
 	switch (value) {
 		case Microsoft.UI.Text.FontWeights.Bold:
 			return '700';
@@ -199,7 +199,7 @@ const _fgBrushCache = new Map<number, any>(); // argb → SolidColorBrush
 const _FG_BRUSH_MAX = 32;
 
 export class TextBase extends TextBaseCommon {
-	nativeViewProtected: Microsoft.UI.Xaml.Controls.TextBox | Microsoft.UI.Xaml.Controls.TextBlock | Microsoft.UI.Xaml.Controls.PasswordBox | Microsoft.UI.Xaml.Controls.Button;
+	nativeViewProtected!: Microsoft.UI.Xaml.Controls.TextBox | Microsoft.UI.Xaml.Controls.TextBlock | Microsoft.UI.Xaml.Controls.PasswordBox | Microsoft.UI.Xaml.Controls.Button;
 
 	[textProperty.getDefault](): symbol {
 		return resetSymbol;
@@ -230,7 +230,7 @@ export class TextBase extends TextBaseCommon {
 			}
 			this._textBoxShadow = value;
 			const argb = ((value.color as Color & { argb: number }).argb) >>> 0;
-			NativeScript.Widgets.TextShadowHelper.Apply(nv, argb, toDip(value.blurRadius, 0), toDip(value.offsetX, 0), toDip(value.offsetY, 0));
+			NativeScript.Widgets.TextShadowHelper.Apply(nv, argb, toDip(value.blurRadius ?? 0, 0), toDip(value.offsetX ?? 0, 0), toDip(value.offsetY ?? 0, 0));
 		} catch (_e) { }
 	}
 
@@ -290,8 +290,8 @@ export class TextBase extends TextBaseCommon {
 			const drop = compositor.CreateDropShadow();
 			drop.Mask = tv.GetAlphaMask();
 			drop.Color = (value.color as Color & { windows: Windows.UI.Color }).windows;
-			drop.BlurRadius = toDip(value.blurRadius, 0);
-			drop.Offset = new Windows.Foundation.Numerics.Vector3(toDip(value.offsetX, 0), toDip(value.offsetY, 0), 0);
+			drop.BlurRadius = toDip(value.blurRadius ?? 0, 0);
+			drop.Offset = new Windows.Foundation.Numerics.Vector3(toDip(value.offsetX ?? 0, 0), toDip(value.offsetY ?? 0, 0), 0);
 			// Sprite has no fill brush, so only the shadow paints (the crisp text still renders
 			// from the TextBlock itself).
 			sprite.Shadow = drop;
@@ -318,7 +318,7 @@ export class TextBase extends TextBaseCommon {
 					if (!brush) {
 						brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
 						if (_fgBrushCache.size >= _FG_BRUSH_MAX) {
-							_fgBrushCache.delete(_fgBrushCache.keys().next().value);
+							_fgBrushCache.delete(_fgBrushCache.keys().next().value as number);
 						}
 						_fgBrushCache.set(argb, brush);
 					}
@@ -440,6 +440,7 @@ export class TextBase extends TextBaseCommon {
 	[textTransformProperty.setNative](_value: CoreTypes.TextTransformType): void {
 		if (this.formattedText) {
 			// Rebuild the spans so the new transform applies to each span's text.
+			// @ts-ignore
 			this[formattedTextProperty.setNative](this.formattedText);
 			return;
 		}
@@ -449,6 +450,7 @@ export class TextBase extends TextBaseCommon {
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingTop, unit: 'px' };
 	}
+	//@ts-ignore
 	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
 		if (!padding) return;
@@ -460,6 +462,7 @@ export class TextBase extends TextBaseCommon {
 	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingRight, unit: 'px' };
 	}
+	//@ts-ignore
 	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
 		if (!padding) return;
@@ -471,6 +474,7 @@ export class TextBase extends TextBaseCommon {
 	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
+	//@ts-ignore
 	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
 		if (!padding) return;
@@ -482,6 +486,7 @@ export class TextBase extends TextBaseCommon {
 	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
+	//@ts-ignore
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
 		if (!padding) return;

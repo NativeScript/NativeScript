@@ -22,7 +22,7 @@ export class TextView extends TextViewBase {
 		const textBox = new Microsoft.UI.Xaml.Controls.TextBox();
 		textBox.AcceptsReturn = true;
 		textBox.TextWrapping = 2 as never; // Wrap=2
-		textBox.VerticalScrollBarVisibility = 1 as never; // Auto
+		(textBox as any).VerticalScrollBarVisibility = 1; // Auto
 		return textBox;
 	}
 

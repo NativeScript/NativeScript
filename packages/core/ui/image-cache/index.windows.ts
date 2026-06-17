@@ -12,7 +12,7 @@ export class Cache extends common.Cache {
 	}
 
 	public _downloadCore(request: common.DownloadRequest) {
-		httpRequest({ url: request.url, method: 'GET', responseType: 'arraybuffer' }).then(
+		httpRequest({ url: request.url, method: 'GET' }).then(
 			(response) => {
 				try {
 					const raw = response.content?.raw;

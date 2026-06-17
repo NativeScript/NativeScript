@@ -16,13 +16,10 @@ interface WinTransitionContext {
 	durationMs?: number;
 }
 
-// Duration as an ArrayBuffer: the nested TimeSpan field zeros out if passed as a plain object.
-function durationBuffer(ms: number): ArrayBuffer {
-	const buf = new ArrayBuffer(16);
-	const dv = new DataView(buf);
-	dv.setBigInt64(0, BigInt(Math.max(1, Math.round(ms)) * 10000), true);
-	dv.setInt32(8, 1, true);
-	return buf;
+// Duration { TimeSpan; Type } as a plain value-struct object (Type 1 = DurationType.TimeSpan).
+// ms → 100ns ticks; the runtime marshals the nested TimeSpan from the BigInt Duration field.
+function durationStruct(ms: number): never {
+	return { TimeSpan: { Duration: BigInt(Math.max(1, Math.round(ms)) * 10000) }, Type: 1 } as never;
 }
 
 // GC guard: hold running storyboards until Completed fires.
@@ -64,7 +61,7 @@ export class SharedTransitionHelper {
 				const da = new A.DoubleAnimation();
 				da.From = from;
 				da.To = to;
-				da.Duration = durationBuffer(dur) as never;
+				da.Duration = durationStruct(dur);
 				const ease = new A.CubicEase();
 				ease.EasingMode = A.EasingMode.EaseInOut;
 				da.EasingFunction = ease;
@@ -102,7 +99,7 @@ export class SharedTransitionHelper {
 				toNative.RenderTransform = tg;
 
 				const z = pair.tag && pageEndTags[pair.tag] && isNumber(pageEndTags[pair.tag].zIndex) ? pageEndTags[pair.tag].zIndex : null;
-				if (z != null) { try { Microsoft.UI.Xaml.Controls.Panel.SetZIndex(toNative, z); } catch (_e) { } }
+				if (z != null) { Microsoft.UI.Xaml.Controls.Canvas.SetZIndex(toNative, z); }
 
 				addDouble(tt, 'X', tx, 0);
 				addDouble(tt, 'Y', ty, 0);

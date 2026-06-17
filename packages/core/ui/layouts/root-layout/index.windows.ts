@@ -30,14 +30,14 @@ export class RootLayout extends RootLayoutBase {
 			for (let i = 0; i < children.Size; i++) {
 				try {
 					const child = children.GetAt(i);
-					const z = Microsoft.UI.Xaml.Controls.Panel.GetZIndex(child) || 0;
+					const z = (Microsoft.UI.Xaml.Controls.Panel as any).GetZIndex(child) || 0;
 					if (z > maxZ) maxZ = z;
 				} catch (_e) { }
 			}
 
 			const newZ = (maxZ === Number.MIN_SAFE_INTEGER) ? 0 : (maxZ + 1);
 			try {
-				Microsoft.UI.Xaml.Controls.Panel.SetZIndex(native, newZ);
+				(Microsoft.UI.Xaml.Controls.Panel as any).SetZIndex(native, newZ);
 			} catch (_e) { }
 		} catch (_e) { }
 	}
@@ -95,7 +95,7 @@ export class RootLayout extends RootLayoutBase {
 					view.backgroundImage = undefined;
 				}
 				if (options.color) {
-					view.backgroundColor = (options.color instanceof Color) ? (options.color as Color) : new Color(options.color as any);
+					view.backgroundColor = ((options.color as any) instanceof Color) ? (options.color as unknown as Color) : new Color(options.color as any);
 				}
 			} catch (_e) { }
 		}
@@ -106,7 +106,7 @@ export class RootLayout extends RootLayoutBase {
 		const targetOpacity = typeof options.opacity === 'number' ? options.opacity : 0.5;
 		const enterFrom = options.animation && options.animation.enterFrom ? options.animation.enterFrom : defaultShadeCoverOptions.animation.enterFrom;
 		try { view.opacity = targetOpacity; } catch (_e) { }
-		return this.getEnterAnimation(view as View, enterFrom).play().then(() => {
+		return (this as any).getEnterAnimation(view as View, enterFrom).play().then(() => {
 			try { view.opacity = targetOpacity; } catch (_e) { }
 		});
 	}
@@ -116,19 +116,20 @@ export class RootLayout extends RootLayoutBase {
 			...defaultShadeCoverOptions.animation.exitTo,
 			...(shadeOptions && shadeOptions.animation && shadeOptions.animation.exitTo ? shadeOptions.animation.exitTo : {}),
 		} as TransitionAnimation;
-		return this.getExitAnimation(view as View, exitState).play();
+		return (this as any).getExitAnimation(view as View, exitState).play();
 	}
 
 	protected _cleanupPlatformShadeCover(): void {
 		try {
-			if (!this._shadeCover) return;
-			const native = (this._shadeCover as any).nativeViewProtected as any;
+			const shadeCover = (this as any)._shadeCover;
+			if (!shadeCover) return;
+			const native = (shadeCover as any).nativeViewProtected as any;
 			if (native) {
 				try { native.RenderTransform = null; } catch (_e) { }
 				try { native.Opacity = 1; } catch (_e) { }
 			}
-			try { this._shadeCover.backgroundImage = undefined; } catch (_e) { }
-			try { this._shadeCover.backgroundColor = undefined as any; } catch (_e) { }
+			try { shadeCover.backgroundImage = undefined; } catch (_e) { }
+			try { shadeCover.backgroundColor = undefined as any; } catch (_e) { }
 		} catch (_e) { }
 	}
 }

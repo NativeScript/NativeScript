@@ -8,7 +8,8 @@ export function _resolveAnimationCurve(curve: any): any {
 
 import { AnimationBase, Properties } from './animation-common';
 import type { View } from '../core/view';
-import { _ensureNativeTransforms } from '../core/view';
+//@ts-ignore
+import { _ensureNativeTransforms } from '../core/view/index';
 
 function _applyFinalValue(target: any, property: string, to: any): void {
 	try {
@@ -472,7 +473,7 @@ export class Animation extends AnimationBase {
 		});
 	}
 
-	_createiOSAnimationFunction(_animation: Properties, _delay?: number): any {
+	_createiOSAnimationFunction(_animation: any, _delay?: number): any {
 		return null;
 	}
 

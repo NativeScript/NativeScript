@@ -32,7 +32,7 @@ export class Button extends ButtonBase {
 	nativeViewProtected: Microsoft.UI.Xaml.Controls.Button;
 	private _delegate: any = null;
 	private _windows: Microsoft.UI.Xaml.Controls.Button;
-	private _defaultOpacity?: number;
+	_defaultOpacity?: number;
 
 	public createNativeView() {
 		this._windows = new Microsoft.UI.Xaml.Controls.Button();

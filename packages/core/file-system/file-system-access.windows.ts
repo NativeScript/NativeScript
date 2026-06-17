@@ -106,18 +106,47 @@ export class FileSystemAccess {
 	}
 
 	public fileExists(path: string): boolean {
-		try {
-			Windows.Storage.StorageFile.GetFileFromPathAsync(path);
-			return true;
-		} catch {
-			return false;
-		}
+		return this._itemExists(path, 'file');
 	}
 
 	public folderExists(path: string): boolean {
+		return this._itemExists(path, 'folder');
+	}
+
+	// Synchronously test existence WITHOUT triggering a rejected WinRT async operation.
+	// GetFileFromPathAsync / GetFolderFromPathAsync REJECT for a missing path, and forcing a rejected
+	// async op to complete synchronously (via .done()) aborts the process with a native panic that
+	// bypasses JS try/catch rather than throwing. So instead resolve the parent folder and call
+	// TryGetItemAsync, which RESOLVES with null for a missing child rather than rejecting.
+	private _itemExists(path: string, kind: 'file' | 'folder'): boolean {
 		try {
-			Windows.Storage.StorageFolder.GetFolderFromPathAsync(path);
-			return true;
+			if (!path) {
+				return false;
+			}
+			const parent = this.getParent(path)?.path;
+			const name = getFileName(path);
+			if (!parent || !name || parent === path) {
+				return false;
+			}
+			let result = false;
+			(Windows.Storage.StorageFolder.GetFolderFromPathAsync(parent) as any).done((folder: any) => {
+				if (!folder || typeof folder.TryGetItemAsync !== 'function') {
+					return;
+				}
+				(folder.TryGetItemAsync(name) as any).done((item: any) => {
+					if (!item) {
+						return;
+					}
+					try {
+						const types = Windows.Storage.StorageItemTypes;
+						result = kind === 'file' ? item.IsOfType(types.File) : item.IsOfType(types.Folder);
+					} catch {
+						// If the item type can't be determined, treat its presence as a match.
+						result = true;
+					}
+				});
+			});
+			return result;
 		} catch {
 			return false;
 		}

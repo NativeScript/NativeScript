@@ -11,7 +11,7 @@ class DeviceRef {
 	get manufacturer(): string {
 		if (!this._manufacturer) {
 			try {
-				this._manufacturer = Windows.System.Profile.SystemManufacturerInfo.SmbiosInfo.SystemManufacturer || 'Microsoft';
+				this._manufacturer = Windows.System.Profile.SystemManufacturers.SystemSupportInfo.LocalDeviceInfo.SystemManufacturer || 'Microsoft';
 			} catch {
 				this._manufacturer = 'Microsoft';
 			}
@@ -46,7 +46,7 @@ class DeviceRef {
 	get model(): string {
 		if (!this._model) {
 			try {
-				this._model = Windows.System.Profile.SystemManufacturerInfo.SmbiosInfo.SystemProductName || 'Windows PC';
+				this._model = Windows.System.Profile.SystemManufacturers.SystemSupportInfo.LocalDeviceInfo.SystemProductName || 'Windows PC';
 			} catch {
 				this._model = 'Windows PC';
 			}
@@ -70,7 +70,7 @@ class DeviceRef {
 				const buffer = systemId.Id;
 				const reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer);
 				const bytes = new Uint8Array(buffer.Length);
-				reader.ReadBytes(bytes);
+				reader.ReadBytes(bytes as never);
 				this._uuid = Array.from(bytes)
 					.map((b) => b.toString(16).padStart(2, '0'))
 					.join('');

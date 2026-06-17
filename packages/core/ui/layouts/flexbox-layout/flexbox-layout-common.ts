@@ -166,7 +166,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 		return this.style.justifyContent;
 	}
 	set justifyContent(value: JustifyContent) {
-		this.style.justifyContent = value;
+		this.style.justifyContent = value as any;
 	}
 
 	get alignItems(): AlignItems {
@@ -180,7 +180,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 		return this.style.alignContent;
 	}
 	set alignContent(value: AlignContent) {
-		this.style.alignContent = value;
+		this.style.alignContent = value as any;
 	}
 
 	get columnGap(): number {

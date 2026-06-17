@@ -48,9 +48,9 @@ export class TabView extends TabViewBase {
 		this._outerGrid = new Microsoft.UI.Xaml.Controls.Grid();
 
 		const r0 = new Microsoft.UI.Xaml.Controls.RowDefinition();
-		r0.Height = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Auto);
+		r0.Height = { Value: 1, GridUnitType: Microsoft.UI.Xaml.GridUnitType.Auto } as never;
 		const r1 = new Microsoft.UI.Xaml.Controls.RowDefinition();
-		r1.Height = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star);
+		r1.Height = { Value: 1, GridUnitType: Microsoft.UI.Xaml.GridUnitType.Star } as never;
 		this._outerGrid.RowDefinitions.Append(r0);
 		this._outerGrid.RowDefinitions.Append(r1);
 

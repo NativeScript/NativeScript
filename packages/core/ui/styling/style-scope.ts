@@ -208,6 +208,14 @@ class CSSSource {
 
 	@profile
 	private load(): void {
+		// The resolved CSS path may not exist on disk — e.g. on Windows app.css is bundled into the
+		// JS (applied via addTaggedAdditionalCSS) and never deployed as a standalone file, so
+		// resolveFileNameFromUrl falls back to a non-existent candidate path. Calling readTextSync()
+		// on a missing file aborts the runtime (a native panic that bypasses JS try/catch) rather than
+		// throwing a catchable error, so guard with File.exists() before reading.
+		if (!this._file || !File.exists(this._file)) {
+			return;
+		}
 		const file = File.fromPath(this._file);
 		this._source = file.readTextSync();
 	}

@@ -75,7 +75,9 @@ function getLegacyCurrentWindow(): WindowLike | null {
 	}
 }
 
-let _ownedWindow: WindowLike | null = null;
+// Persist _ownedWindow in globalThis so HMR module replacement doesn't release the COM
+// object before the Win32 message loop can process the pending Activate() call.
+let _ownedWindow: WindowLike | null = (globalThis as any).__nsOwnedWindow ?? null;
 
 export function getCurrentWindow(): WindowLike | null {
 	const found = getApplicationWindow() || getLegacyCurrentWindow();
@@ -88,6 +90,7 @@ export function getCurrentWindow(): WindowLike | null {
 	if (!_ownedWindow) {
 		try {
 			_ownedWindow = new Microsoft.UI.Xaml.Window() as unknown as WindowLike;
+			(globalThis as any).__nsOwnedWindow = _ownedWindow;
 		} catch (_e) {
 			_ownedWindow = null;
 		}
@@ -96,7 +99,9 @@ export function getCurrentWindow(): WindowLike | null {
 }
 
 export function getCurrentWindowContent<T = Microsoft.UI.Xaml.UIElement>(): T | null {
-	const window = getCurrentWindow();
+	// Avoid getCurrentWindow() here — it creates _ownedWindow as a side effect.
+	// Read from an existing window only, consistent with getCurrentWindowBounds() and getCurrentWindowScale().
+	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
 	return (window?.Content as T) ?? null;
 }
 
@@ -142,13 +147,19 @@ export function setCurrentWindowTitle(title: string): boolean {
 
 // Per-window DPI scale from XamlRoot (WinUI3 desktop has no DisplayInformation.GetForCurrentView()).
 export function getCurrentWindowScale(preferredElement?: FrameworkElementLike | null): number {
-	const content = (getCurrentWindowContent<FrameworkElementLike>() ?? preferredElement) as FrameworkElementLike | null;
+	// Avoid getCurrentWindowContent() here — it calls getCurrentWindow() which may create _ownedWindow.
+	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
+	const content = ((window?.Content as FrameworkElementLike | null | undefined) ?? preferredElement) as FrameworkElementLike | null;
 	const scale = content?.XamlRoot?.RasterizationScale;
 	return typeof scale === 'number' && Number.isFinite(scale) && scale > 0 ? scale : 1;
 }
 
 export function getCurrentWindowBounds(preferredElement?: FrameworkElementLike | null): { Width: number; Height: number } | null {
-	const window = getCurrentWindow();
+	// Read from an existing window only — never call getCurrentWindow() here because that
+	// creates _ownedWindow (new WinUI3 Window) as a side effect. Window creation during early
+	// startup (e.g. from Screen.mainScreen.widthDIPs inside resolveModuleName) triggers
+	// re-entrant JS bundle execution; a second Window creation mid-reentry causes a native crash.
+	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
 	const windowBounds = getBoundsFromSize(window?.Bounds);
 	if (windowBounds) {
 		return windowBounds;
@@ -157,7 +168,7 @@ export function getCurrentWindowBounds(preferredElement?: FrameworkElementLike |
 	// XamlRoot.Size is the authoritative WinUI3 window client size (DIPs) and is valid as soon as
 	// the window is shown — before content layout completes. Read it from the window's own content
 	// first (Screen.mainScreen calls this with no preferredElement), then any preferredElement.
-	const content = (getCurrentWindowContent<FrameworkElementLike>() ?? preferredElement) as FrameworkElementLike | null;
+	const content = ((window?.Content as FrameworkElementLike | null | undefined) ?? preferredElement) as FrameworkElementLike | null;
 	const contentXamlRootBounds = getBoundsFromSize(content?.XamlRoot?.Size);
 	if (contentXamlRootBounds) {
 		return contentXamlRootBounds;

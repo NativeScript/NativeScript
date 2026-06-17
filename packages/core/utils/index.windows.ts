@@ -63,7 +63,7 @@ export function openUrl(location: string): boolean {
 export function openUrlAsync(location: string): Promise<boolean> {
 	return new Promise<boolean>((resolve) => {
 		try {
-			Windows.System.Launcher.LaunchUriAsync(new Windows.Foundation.Uri(location.trim())).then((result: boolean) => resolve(result));
+			NSWinRT.toPromise(Windows.System.Launcher.LaunchUriAsync(new Windows.Foundation.Uri(location.trim()))).then((result: boolean) => resolve(result));
 		} catch (e) {
 			Trace.write(`Failed to open URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
 			resolve(false);
@@ -73,7 +73,7 @@ export function openUrlAsync(location: string): Promise<boolean> {
 
 export function openFile(filePath: string, _title: string = 'Open File...'): boolean {
 	try {
-		Windows.System.StorageFile.GetFileFromPathAsync(filePath).then((file: any) => {
+		NSWinRT.toPromise(Windows.Storage.StorageFile.GetFileFromPathAsync(filePath)).then((file: any) => {
 			Windows.System.Launcher.LaunchFileAsync(file);
 		});
 		return true;

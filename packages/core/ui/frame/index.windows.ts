@@ -6,6 +6,7 @@ import { SharedTransition } from '../transition/shared-transition';
 import { SharedTransitionHelper } from '../transition/shared-transition-helper';
 import { ImageSource } from '../../image-source';
 import { isFontIconURI } from '../../utils';
+// @ts-ignore
 import { getFontFamilyCached } from '../styling/font';
 
 export * from './frame-common';

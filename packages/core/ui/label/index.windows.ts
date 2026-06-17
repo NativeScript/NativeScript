@@ -23,6 +23,7 @@ export class Label extends TextBase {
 		return this._border;
 	}
 
+	//@ts-ignore
 	get nativeTextViewProtected(): Microsoft.UI.Xaml.Controls.TextBlock {
 		return this._textBlock;
 	}

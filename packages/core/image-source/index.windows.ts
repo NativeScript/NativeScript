@@ -33,8 +33,8 @@ function bitmapFromUriAsync(uriStr: string): Promise<Microsoft.UI.Xaml.Media.Ima
 			const onFailed = (s: any, e: any) => {
 				reject(e || new Error('Image load failed'));
 			};
-			bmp.ImageOpened = onOpened;
-			bmp.ImageFailed = onFailed;
+			bmp.ImageOpened = onOpened as never;
+			bmp.ImageFailed = onFailed as never;
 			bmp.UriSource = new Windows.Foundation.Uri(uriStr);
 		} catch (err) { reject(err); }
 	});
@@ -60,6 +60,20 @@ function bytesToStream(bytes: Uint8Array): Promise<any> {
 			const writer = new Windows.Storage.Streams.DataWriter();
 			writer.WriteBytes(bytes as never);
 			const buffer = writer.DetachBuffer();
+			const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(
+				() => { try { (stream as any).Seek(0); resolve(stream); } catch (e) { reject(e); } },
+				reject
+			);
+		} catch (e) { reject(e); }
+	});
+}
+
+// IBuffer → seekable stream. Used by the base64 path: CryptographicBuffer.DecodeFromBase64String
+// hands back an IBuffer that the in-memory stream can consume directly, skipping the JS byte copy.
+function bufferToStream(buffer: any): Promise<any> {
+	return new Promise((resolve, reject) => {
+		try {
 			const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
 			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(
 				() => { try { (stream as any).Seek(0); resolve(stream); } catch (e) { reject(e); } },
@@ -271,18 +285,18 @@ export class ImageSource implements ImageSourceDefinition {
 		try {
 			const bmp = makeBitmapImage();
 			const src = new ImageSource();
-			bmp.ImageOpened = () => {
+			bmp.ImageOpened = (() => {
 				src._width = bmp.PixelWidth ?? 0;
 				src._height = bmp.PixelHeight ?? 0;
 				//@ts-ignore
 				bmp.ImageOpened = null;
-			};
-			bmp.ImageFailed = () => {
+			}) as never;
+			bmp.ImageFailed = (() => {
 				//@ts-ignore
 				bmp.ImageOpened = null;
 				//@ts-ignore
 				bmp.ImageFailed = null;
-			}
+			}) as never;
 			bmp.UriSource = new Windows.Foundation.Uri(appContentUri(filePath));
 			src.windows = bmp;
 			return src;
@@ -351,8 +365,15 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromBase64(source: string): Promise<ImageSource> {
 		try {
-			const bytes = Uint8Array.from(atob(source), (c) => c.charCodeAt(0));
-			return ImageSource.fromData(bytes);
+			const buffer = Windows.Security.Cryptography.CryptographicBuffer.DecodeFromBase64String(source);
+			return bufferToStream(buffer)
+				.then((stream) => bitmapFromStream(stream))
+				.then((bmp) => {
+					const src = new ImageSource(bmp);
+					src._width = bmp.PixelWidth ?? 0;
+					src._height = bmp.PixelHeight ?? 0;
+					return src;
+				});
 		} catch (e) {
 			return Promise.reject(e);
 		}
