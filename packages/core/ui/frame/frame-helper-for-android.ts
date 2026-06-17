@@ -115,9 +115,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			// Recoverable race: a stale fragment is being driven to onCreateView by the
 			// FragmentManager after its entry was cleared.
 			// Using Trace.error (routes to an error handler, which throws) would be fatal as the error handler rethrows across the JNI boundary.
-			if (Trace.isEnabled()) {
-				Trace.write(`${fragment}.onCreateView: entry is null or undefined`, Trace.categories.NativeLifecycle, Trace.messageType.warn);
-			}
+			Trace.write(`${fragment}.onCreateView: entry is null or undefined`, Trace.categories.NativeLifecycle, Trace.messageType.error);
 
 			return null;
 		}
@@ -125,9 +123,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		const page = entry.resolvedPage;
 		if (!page) {
 			// Logging via Trace.error (routes to an error handler, which throws) here is fatal because the registered error handler rethrows across the JNI boundary.
-			if (Trace.isEnabled()) {
-				Trace.write(`${fragment}.onCreateView: entry has no resolvedPage`, Trace.categories.NativeLifecycle, Trace.messageType.warn);
-			}
+			Trace.write(`${fragment}.onCreateView: entry has no resolvedPage`, Trace.categories.NativeLifecycle, Trace.messageType.error);
 
 			return null;
 		}
@@ -136,9 +132,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		if (!frame) {
 			// Recoverable race: the owning frame was already torn down. Returning null discards
 			// this fragment; using Trace.error (routes to an error handler, which throws) would be fatal as the error handler rethrows across the JNI boundary.
-			if (Trace.isEnabled()) {
-				Trace.write(`${fragment}.onCreateView: this.frame is null or undefined`, Trace.categories.NativeLifecycle, Trace.messageType.warn);
-			}
+			Trace.write(`${fragment}.onCreateView: this.frame is null or undefined`, Trace.categories.NativeLifecycle, Trace.messageType.error);
 
 			return null;
 		}
