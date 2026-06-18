@@ -95,24 +95,31 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	}
 
 	if (name === 'none') {
-		const noTransition = new NoTransition(0, null);
+		newEntry.isNestedDefaultTransition = isNestedDefaultTransition;
 
-		// Setup empty/immediate animator when transitioning to nested frame for first time.
-		// Also setup empty/immediate transition to be executed when navigating back to this page.
+		// Setup empty/immediate animator when transitioning to nested frame for the first time.
+		// This is a one-off per nested frame (not per navigation) so it does not accumulate.
 		// TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
 		if (isNestedDefaultTransition) {
+			const noTransition = new NoTransition(0, null);
 			fragmentTransaction.setCustomAnimations(animFadeIn, animFadeOut);
 			setupAllAnimation(newEntry, noTransition);
 			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
-		} else {
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+
+			if (currentFragmentNeedsDifferentAnimation) {
+				setupCurrentFragmentCustomTransition({ duration: 0, curve: null }, currentEntry, noTransition);
+			}
 		}
 
-		newEntry.isNestedDefaultTransition = isNestedDefaultTransition;
-
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentCustomTransition({ duration: 0, curve: null }, currentEntry, noTransition);
-		}
+		// For regular (non-nested) non-animated navigation we intentionally set up NO
+		// fragment transitions. Previously a zero-duration NoTransition/CustomTransition was
+		// created on every navigation solely to receive a transition-end callback that drives
+		// navigation completion. That graph leaked: androidx attaches end listeners to the
+		// (shared) AnimatorSet which are not removed for a zero-duration run, so each navigation
+		// left a stale listener retaining the previous fragment and page (the whole nav history).
+		// Completion for this case is instead driven by
+		// FragmentCallbacksImplementation.onResume -> frame.setCurrent (which already runs when
+		// no transition/animation is in progress).
 	} else if (name === 'custom') {
 		setupNewFragmentCustomTransition(
 			{
