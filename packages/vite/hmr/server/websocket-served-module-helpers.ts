@@ -8,6 +8,7 @@ import { isDeepCoreSubpath } from './core-sanitize.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { extractDirectExportedNames, parseExportSpecList } from './websocket-core-bridge.js';
+import { resolveCandidateFilePath } from './websocket-module-specifiers.js';
 
 let cachedWorkspaceCoreRoot: string | null | undefined;
 
@@ -420,7 +421,7 @@ async function collectStarTargetExportNames(vitePath: string, transformer: (url:
 	return names;
 }
 
-export async function expandStarExports(code: string, server: { transformRequest(path: string): Promise<{ code?: string } | null | undefined> }, _projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>, importerId?: string): Promise<string> {
+export async function expandStarExports(code: string, server: { transformRequest(path: string): Promise<{ code?: string } | null | undefined> }, projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>, importerId?: string): Promise<string> {
 	const STAR_RE = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["'];?(?=[ \t]*(?:\/\/[^\n]*)?$)/gm;
 	let match: RegExpExecArray | null;
 	const replacements: Array<{ full: string; url: string }> = [];
@@ -440,7 +441,32 @@ export async function expandStarExports(code: string, server: { transformRequest
 
 	// Resolve each star-export target in parallel through the shared runner
 	// (when provided) so they share the /ns/m TTL cache and concurrency gate.
-	const transformer = sharedTransformer ?? ((url: string) => server.transformRequest(url));
+	const baseTransformer = sharedTransformer ?? ((url: string) => server.transformRequest(url));
+	// A bare `/node_modules/<pkg>/...` URL is NOT transformable on its own:
+	// Vite's bare-specifier resolver is gated by the package's
+	// `package.json#exports` and refuses internal sub-paths even when the file
+	// is on disk (e.g. `css-tree/lib/version.js`, `css-what/dist/esm/types.js`),
+	// and in a monorepo the package is hoisted ABOVE the app's `root` so the
+	// path doesn't exist relative to it at all. Either way the transform
+	// returns nothing and the star target is mis-reported as "unresolvable",
+	// silently dropping its names from the importer's export surface. Mirror the
+	// main /ns/m route (`filterExistingNodeModulesTransformCandidates`): resolve
+	// the path to a concrete file under the project or workspace root and feed
+	// the `/@fs/<abs>` form to Vite, which bypasses the `exports` gate. Falls
+	// back to the raw URL for anything that doesn't resolve to a real file.
+	const workspaceRoot = projectRoot ? getMonorepoWorkspaceRoot(projectRoot) : null;
+	const transformer = (url: string) => {
+		if (projectRoot && url.includes('/node_modules/')) {
+			const abs = resolveCandidateFilePath(url, projectRoot, workspaceRoot);
+			if (abs) {
+				// Posix-normalize and guarantee a leading slash so Windows drive
+				// letters produce the `/@fs/C:/...` form Vite expects.
+				const absPosix = abs.replace(/\\/g, '/');
+				return baseTransformer(`/@fs${absPosix.startsWith('/') ? '' : '/'}${absPosix}`);
+			}
+		}
+		return baseTransformer(url);
+	};
 	const resolved = await Promise.all(
 		replacements.map(async (rep) => {
 			const diagnostics: string[] = [];

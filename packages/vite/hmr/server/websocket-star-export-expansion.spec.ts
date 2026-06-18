@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { expandStarExports } from './websocket-served-module-helpers.js';
 
 // The /ns/m star-export expansion replaces `export * from "url"` with an
@@ -180,5 +183,51 @@ describe('expandStarExports — transitive star re-export chains', () => {
 		const out = await expandStarExports(importer, server, '/', false, transformer);
 		expect(out).toBe(importer);
 		expect(calls).toEqual([]);
+	});
+
+	it('resolves an exports-gated node_modules sub-path via /@fs instead of mis-reporting it unresolvable', async () => {
+		// Vite refuses to transform a bare `/node_modules/<pkg>/<internal>.js`
+		// URL when the package's `exports` map doesn't expose that sub-path,
+		// even though the file is on disk — and in a monorepo the package is
+		// hoisted above the app root so the bare path doesn't resolve at all.
+		// This was the css-what/css-tree/rxjs `[ns/m][export*] ... unresolvable
+		// star-export target` regression. The expansion must resolve the target
+		// to a concrete `/@fs/<abs>` path (mirroring the main /ns/m route) or it
+		// silently drops the target's runtime names. Model the gate by serving
+		// ONLY the `/@fs` form from a real on-disk fixture.
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-star-fs-'));
+		try {
+			const pkgDir = path.join(root, 'node_modules', 'fakepkg', 'dist', 'esm');
+			fs.mkdirSync(pkgDir, { recursive: true });
+			const typesAbs = path.join(pkgDir, 'types.js');
+			fs.writeFileSync(typesAbs, 'export const SelectorType = {};\nexport const AttributeAction = {};\n');
+
+			const bareUrl = '/node_modules/fakepkg/dist/esm/types.js';
+			const typesAbsPosix = typesAbs.replace(/\\/g, '/');
+			const fsUrl = `/@fs${typesAbsPosix.startsWith('/') ? '' : '/'}${typesAbsPosix}`;
+
+			const calls: string[] = [];
+			const transformer = async (url: string) => {
+				calls.push(url);
+				// Bare exports-gated sub-path: refused (Vite returns nothing).
+				if (url === bareUrl) return null;
+				// Resolved absolute path: served.
+				if (url === fsUrl) return { code: fs.readFileSync(typesAbs, 'utf-8') };
+				return null;
+			};
+			const server = { transformRequest: transformer };
+
+			const importer = `export * from "/ns/m${bareUrl}";`;
+			const out = await expandStarExports(importer, server, root, false, transformer, 'index.js');
+			const names = exportedList(out, `/ns/m${bareUrl}`);
+
+			expect(names).toContain('SelectorType');
+			expect(names).toContain('AttributeAction');
+			// Proves the /@fs resolution actually fired.
+			expect(calls).toContain(fsUrl);
+			expect(warnSpy).not.toHaveBeenCalled();
+		} finally {
+			fs.rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
