@@ -58,24 +58,32 @@ public class CustomTransition extends Visibility {
 	}
 
 	private Animator setAnimatorsTarget(AnimatorSet animatorSet, final View view) {
-		ArrayList<Animator> animatorsList = animatorSet.getChildAnimations();
-		boolean resetOnTransitionEnd = this.resetOnTransitionEnd;
+		// IMPORTANT: run on a per-invocation clone instead of the shared this.animatorSet.
+		// androidx clones the transition for every run but shares this animatorSet field,
+		// and the framework adds its own end listeners (Visibility$OverlayListener, etc.) to
+		// the AnimatorSet we return. On a zero-duration ("none") transition those listeners
+		// are not always removed, so reusing a single shared AnimatorSet across navigations
+		// accumulates stale listeners - each one retaining the previous fragment and page,
+		// which leaks the whole navigation history. Cloning keeps the shared template clean
+		// and lets the throwaway run set (and its listeners) be collected after the transition.
+		AnimatorSet runSet = animatorSet.clone();
 
+		ArrayList<Animator> animatorsList = runSet.getChildAnimations();
 		for (int i = 0; i < animatorsList.size(); i++) {
 			animatorsList.get(i).setTarget(view);
 		}
 
 		// Reset animation to its initial state to prevent mirrorered effect
 		if (this.resetOnTransitionEnd) {
-			this.immediateAnimatorSet = this.animatorSet.clone();
+			this.immediateAnimatorSet = runSet.clone();
 		}
 
 		// Switching to hardware layer during transition to improve animation performance
 		CustomAnimatorListener listener = new CustomAnimatorListener(view);
-		animatorSet.addListener(listener);
+		runSet.addListener(listener);
 		this.addListener(new CustomTransitionListenerAdapter(this));
 
-		return this.animatorSet;
+		return runSet;
 	}
 
 	private class ReverseInterpolator implements Interpolator {
@@ -109,7 +117,7 @@ public class CustomTransition extends Visibility {
 
 	private static class CustomAnimatorListener extends AnimatorListenerAdapter {
 
-		private final View mView;
+		private View mView;
 		private boolean mLayerTypeChanged = false;
 
 		CustomAnimatorListener(View view) {
@@ -118,7 +126,8 @@ public class CustomTransition extends Visibility {
 
 		@Override
 		public void onAnimationStart(Animator animation) {
-			if (ViewCompat.hasOverlappingRendering(mView)
+			if (mView != null
+				&& ViewCompat.hasOverlappingRendering(mView)
 				&& mView.getLayerType() == View.LAYER_TYPE_NONE) {
 				mLayerTypeChanged = true;
 				mView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -127,9 +136,17 @@ public class CustomTransition extends Visibility {
 
 		@Override
 		public void onAnimationEnd(Animator animation) {
-			if (mLayerTypeChanged) {
+			if (mLayerTypeChanged && mView != null) {
 				mView.setLayerType(View.LAYER_TYPE_NONE, null);
 			}
+
+			// Release the strong reference to the animated view so the page/fragment
+			// can be garbage collected once navigation is done. The AnimatorSet (and in
+			// turn this listener) may be retained by the platform animation handler after
+			// the transition completes; without clearing mView that keeps the page's
+			// native view - and its linked JS object - alive forever.
+			animation.removeListener(this);
+			mView = null;
 		}
 	}
 }
