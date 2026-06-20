@@ -1216,16 +1216,29 @@ async function processQueue(): Promise<void> {
 							}
 							return null;
 						};
-						// Evict the boundary set so re-importing each .tsx
-						// component actually picks up the new transitive
-						// dependency code; without this V8 returns the
-						// cached boundary module unchanged.
+						// A changed route file is itself a boundary to re-import + patch — Pass 2
+						// only adds OTHER route files that import a changed module, never the
+						// changed route file itself. Without this, editing `about.tsx` while on
+						// /about never refreshes the About component.
+						for (const id of drained) {
+							if (ROUTE_FILE_RE.test(id)) boundaries.add(id);
+						}
+						// Evict ONLY the boundary set (changed component + route files) — NOT the
+						// router / route-tree / app chain. Keeping those cached preserves the live
+						// router instance and the user's current route across the re-mount; fresh
+						// route components reach the screen via the in-place `route.options.component`
+						// patch below, not a router rebuild (which would reset to the initial route).
 						const boundaryIds = Array.from(boundaries);
 						const solidEvictUrls = buildEvictionUrls(boundaryIds);
 						const solidEvicted = invalidateModulesByUrls(solidEvictUrls);
 						if (VERBOSE) console.log(`[hmr][solid] eviction count=${solidEvictUrls.length} ok=${solidEvicted}`);
 						for (const id of boundaries) {
 							if (seen.has(id)) continue;
+							// Skip the root layout (`__root`): it commonly imports a global
+							// stylesheet (`./styles.css?url`) with no ESM `default` export on
+							// device, so re-importing it throws and aborts the cycle. The root
+							// layout rarely needs a component hot-swap anyway.
+							if (/\/routes\/__root\.(?:tsx|jsx|ts|js)$/i.test(id)) continue;
 							try {
 								const spec = normalizeSpec(id);
 								const url = await requestModuleFromServer(spec);
