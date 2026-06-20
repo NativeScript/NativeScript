@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "8.0.0-alpha.45",
+	"version": "8.0.0-alpha.46",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
@@ -33,6 +33,11 @@
 			"types": "./configuration/solid.d.ts",
 			"import": "./configuration/solid.js",
 			"default": "./configuration/solid.js"
+		},
+		"./solid-bootstrap": {
+			"types": "./hmr/frameworks/solid/client/app-runtime.d.ts",
+			"import": "./hmr/frameworks/solid/client/app-runtime.js",
+			"default": "./hmr/frameworks/solid/client/app-runtime.js"
 		},
 		"./vue": {
 			"types": "./configuration/vue.d.ts",
