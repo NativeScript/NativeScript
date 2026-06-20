@@ -54,6 +54,7 @@ declare global {
     fromWinRTDateTimeTicks(value: any): Date;
     pointerKey(value: any): string | null;
     pointerFromBuffer(value: ArrayBuffer | ArrayBufferView | null): any | null;
+    arrayBufferFromBuffer(buffer: any | null): ArrayBuffer | null;
     trackBufferSource(value: ArrayBuffer | ArrayBufferView | null): any | null;
     resolveTrackedBuffer(pointerLike: any): ArrayBuffer | ArrayBufferView | undefined;
     byteLengthOf(value: ArrayBuffer | ArrayBufferView | null): number;
