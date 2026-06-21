@@ -44,8 +44,18 @@ const buildSolidPlugins = (prod: boolean) => [
 	solid({
 		// Configure for development
 		dev: !prod,
-		// Enable HMR for development
-		hot: !prod,
+		// solid-refresh's `import.meta.hot`-based component HMR is intentionally
+		// left OFF. NativeScript drives HMR through its own dev-server runtime,
+		// and solid-refresh additionally rewrites `export function Foo()` into a
+		// non-hoisted `export const Foo = _$$component(...)`. That breaks the
+		// canonical TanStack Router file-route pattern —
+		// `export const Route = createFileRoute('/')({ component: App })`
+		// declared above `function App() {}` — which then throws
+		// "Cannot access 'App' before initialization" (a TDZ error) during module
+		// evaluation and aborts the dev session. Solid dev mode (`dev`) stays on
+		// for reactivity warnings; module-level HMR still works via the
+		// NativeScript runtime.
+		hot: false,
 		// Configure solid compiler options for NativeScript
 		solid: {
 			// Use universal instead of dom for NativeScript compatibility
@@ -84,7 +94,13 @@ export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): Us
 			// css-tree → createRequire → HMR rewrite chain that necessitates
 			// this. Vite's `mergeConfig` concatenates `exclude` arrays, so
 			// duplicating these here is harmless.
-			exclude: ['module', 'node:module', ...solidJsxPackages],
+			//
+			// Also exclude our own Solid HMR runtime helper. If the depscanner
+			// pre-bundles `@nativescript/vite/solid-bootstrap`, the device's /ns/m
+			// loader serves the bare specifier (which the package `exports`
+			// subpath map doesn't resolve there) and 404s. Excluding it routes
+			// the import through normal resolution → the real file is served.
+			exclude: ['module', 'node:module', '@nativescript/vite/solid-bootstrap', ...solidJsxPackages],
 		},
 	});
 };

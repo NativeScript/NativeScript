@@ -491,7 +491,37 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			// for existing vendor-routing paths to handle).
 			const bareNpmRe = /^(?:@[A-Za-z0-9][\w.-]*\/)?[A-Za-z0-9][\w.-]*(?:\/[\w.\-/]+)?$/;
 			if (bareNpmRe.test(spec)) {
-				const httpSpec = `/ns/m/node_modules/${spec}`;
+				// `solid-js` is a hard singleton for the Solid flavor: it is kept
+				// OUT of the vendor bundle (manifest-collect.ts) and pinned by the
+				// framework strategy's import map to the canonical DEV build URL
+				// `/ns/m/node_modules/solid-js/dist/dev.js` (see
+				// frameworks/solid/server/strategy.ts → importMapEntries). App code
+				// (resolve.alias in configuration/solid.ts) and vendor code
+				// (externalized `import 'solid-js'` → import map) both converge on
+				// that one URL, so V8 keeps a SINGLE reactive graph.
+				//
+				// Pre-built packages reached through the Solid JSX-runtime shim
+				// (e.g. @tanstack/solid-router's `dist/source/*.jsx`,
+				// @nativescript/tanstack-router/solid, and shims/solid-jsx-runtime
+				// itself) import the bare root `solid-js`. Without this guard that
+				// falls through to the generic `/ns/m/node_modules/solid-js`
+				// package-ROOT URL, which is wrong twice over:
+				//   1. It is a DIFFERENT URL string than the canonical
+				//      `…/solid-js/dist/dev.js` every other importer uses. V8 keys
+				//      ESM module records by URL, so the reactive core evaluates a
+				//      SECOND time → "You appear to have multiple instances of
+				//      Solid" + a dead second reactive graph.
+				//   2. The package root resolves via solid-js's `module`/`node`
+				//      export condition to `dist/server.js` (the SSR build), whose
+				//      `createComponent` is an inert server stub. JSX created
+				//      through the shim then never mounts → white screen.
+				// Pin the exact root to the canonical dev URL so every importer
+				// shares one module record. Subpaths (solid-js/web, /store,
+				// /universal, /jsx-runtime) keep their own URLs and import the bare
+				// root internally, which also lands here. Reached only after the
+				// bare-vendor-routing block above, so a non-Solid project that
+				// genuinely vendors solid-js is already handled and never gets here.
+				const httpSpec = spec === 'solid-js' ? `/ns/m/node_modules/solid-js/dist/dev.js` : `/ns/m/node_modules/${spec}`;
 				if (httpOriginSafe) {
 					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
 				}

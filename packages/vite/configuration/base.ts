@@ -255,6 +255,21 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	// some flavor-specific adjustments for optimizing deps
 	switch (flavor) {
 		case 'angular':
+		// Solid joins Angular in disabling Vite's dep optimizer under HMR.
+		// Under HMR the device fetches every module through the `/ns/m/`
+		// transform pipeline, NEVER through Vite's `.vite/deps` prebundle — so
+		// discovery buys nothing on-device and actively HURTS: Vite discovers
+		// `solid-js` (+ `solid-js/web`, `solid-js/jsx-runtime`) mid-boot, emits
+		// `optimized dependencies changed. reloading`, and that full reload
+		// re-evaluates the solid-js reactive core while `globalThis.Solid$$`
+		// from the first evaluation still persists. The result is the
+		// "You appear to have multiple instances of Solid" warning, a split
+		// reactive graph, and a flaky white screen on cold boot (the renderer
+		// and the app's signals end up in different Owner realms). `noDiscovery`
+		// keeps `solid-js` resolving through the stable resolve.alias →
+		// `dist/dev.js` URL for the whole session, so there is a single core and
+		// no mid-boot reload. Mirrors Angular, which has run this way reliably.
+		case 'solid':
 			disableOptimizeDeps = hmrActive || process.env.NS_DISABLE_OPTIMIZEDEPS === '1' || process.env.NS_DISABLE_OPTIMIZEDEPS === 'true';
 			break;
 	}
