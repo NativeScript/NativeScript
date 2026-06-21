@@ -13,7 +13,7 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { getCliFlags, resolvePlatform } from '../../helpers/cli-flags.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
-import { buildDefineShimStatements, buildGuardedDefineSeedStatement, getRuntimeDefineValues } from '../../helpers/global-defines.js';
+import { buildDefineShimStatements, buildGuardedDefineSeedStatement, buildUserDefineShimStatements, getRuntimeDefineValues } from '../../helpers/global-defines.js';
 import { linkAngularPartialsIfNeeded } from '../frameworks/angular/server/linker.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
@@ -220,6 +220,9 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// Per-module shim consts with canonical fallbacks — generated from the
 		// same getRuntimeDefineValues source as the seed and Vite's `define`.
 		...buildDefineShimStatements(__runtimeDefines.values),
+		// App-configured `__FOO__` defines (e.g. __NS_NATIVE_OVERRIDES__). Excludes
+		// the builtin keys just shimmed above so we never emit a duplicate `const`.
+		...buildUserDefineShimStatements(Object.keys(__runtimeDefines.values)),
 	];
 	result = allGlobals.join('\n') + '\n' + result;
 	const nodeModuleProvenancePrelude = buildNodeModuleProvenancePrelude(sourceId);

@@ -345,6 +345,21 @@ function shouldSkipDependency(name: string): boolean {
 	if (name === '@nativescript/angular' || name === 'nativescript-angular' || name.startsWith('@angular/')) {
 		return true;
 	}
+	// masonkit is the de-facto NativeScript flexbox/grid layout engine. Like the
+	// frameworks above it MUST resolve to a single module instance: it registers
+	// global CSS layout properties on core's `Style` (`paddingProperty.register(Style)`,
+	// flexbox handlers, etc.) AND tags views with module-level Symbols
+	// (`isMasonView_`/`isMasonChild_`). If it lands in the vendor bundle while an app
+	// also imports a subpath that escapes to HTTP (e.g. `@triniwiz/nativescript-masonkit/web`,
+	// which has no manifest alias and is served via /ns/m), the two copies load
+	// `./symbols` separately → divergent Symbols → a view tagged by one copy isn't
+	// recognized by the other's CSS handlers → layout props never reach the native
+	// mason node (collapsed spacing, square corners) while core color/background still
+	// apply. HTTP-only makes every importer converge on one dev-server URL (V8 dedupes
+	// by URL) = single instance. (Dev/HMR only; production is a single bundle.)
+	if (name === '@triniwiz/nativescript-masonkit') {
+		return true;
+	}
 	// All Babel packages are build tools — never bundle into device runtime.
 	// They require Node built-ins (fs, path, url) that don't exist on device.
 	if (name.startsWith('@babel/') || name.startsWith('babel-')) {

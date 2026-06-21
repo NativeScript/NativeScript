@@ -5,6 +5,7 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 import { resolveDeviceReachableHost } from '../../helpers/dev-host.js';
+import { setUserDefineEntries } from '../../helpers/global-defines.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 const require = createRequire(import.meta.url);
 
@@ -458,6 +459,11 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 		name: 'ns-hmr-client',
 		configResolved(c) {
 			config = c;
+			// Capture app-configured `__FOO__` defines so HMR-served modules get a
+			// const shim for them (Vite's text-substitution doesn't reach raw-served
+			// modules; without a shim a free `__FOO__` is mis-bound to /ns/rt → wrong
+			// value under HMR vs the production bundle). See setUserDefineEntries.
+			setUserDefineEntries(c.define as Record<string, unknown> | undefined);
 		},
 		resolveId(id) {
 			if (id === VIRTUAL_ID) return RESOLVED_ID;

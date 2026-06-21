@@ -182,6 +182,47 @@ export function buildDefineShimStatements(values: RuntimeDefineValues): string[]
 	return Object.entries(values).map(([key, value]) => `const ${key} = globalThis.${key} !== undefined ? globalThis.${key} : ${JSON.stringify(value)};`);
 }
 
+// ── User-configured `__FOO__` defines ─────────────────────────────────────────
+// An app may add its own `__FOO__`-style entries to Vite `config.define`
+// (e.g. `__NS_NATIVE_OVERRIDES__`). In a production bundle Vite text-substitutes
+// them, but NS's HMR pipeline serves raw modules where that substitution never
+// runs — and the AST normalizer then mis-reads the free `__FOO__` identifier as
+// an `/ns/rt` helper and binds it from the runtime bridge (which doesn't export
+// it) → `undefined` under HMR while the bundle had the real value. Emitting a
+// per-module const shim (exactly like the builtin defines above) gives the
+// identifier a binding the normalizer leaves alone AND the correct value, so HMR
+// matches the bundle. Captured from the resolved config in `configResolved`.
+const USER_DEFINE_IDENTIFIER_RE = /^__[A-Za-z0-9_]+__$/;
+let userDefineEntries: Array<[string, string]> = [];
+
+/**
+ * Record the app's `__FOO__`-style `define` entries from the resolved Vite
+ * config. Non-identifier keys (`process.env.X`, `global.isIOS`, `import.meta.*`)
+ * are ignored — only bare `__FOO__` identifiers can appear free in app code and
+ * get mis-bound. Vite `define` VALUES are JS-expression strings (e.g. `"true"`),
+ * so they pass through verbatim; a non-string value is JSON-encoded defensively.
+ */
+export function setUserDefineEntries(define: Record<string, unknown> | undefined): void {
+	const entries: Array<[string, string]> = [];
+	if (define) {
+		for (const [key, value] of Object.entries(define)) {
+			if (!USER_DEFINE_IDENTIFIER_RE.test(key)) continue;
+			entries.push([key, typeof value === 'string' ? value : JSON.stringify(value)]);
+		}
+	}
+	userDefineEntries = entries;
+}
+
+/**
+ * Per-module const shims for the captured user defines. `excludeKeys` are the
+ * builtin defines already shimmed by {@link buildDefineShimStatements} — skipped
+ * here so we never emit a duplicate `const` (a syntax error).
+ */
+export function buildUserDefineShimStatements(excludeKeys: Iterable<string> = []): string[] {
+	const exclude = new Set(excludeKeys);
+	return userDefineEntries.filter(([key]) => !exclude.has(key)).map(([key, expr]) => `const ${key} = globalThis.${key} !== undefined ? globalThis.${key} : (${expr});`);
+}
+
 export function getGlobalDefines(opts: { platform: string; targetMode: string; verbose: boolean; flavor: string; isCI?: boolean }) {
 	const values = getRuntimeDefineValues({ platform: opts.platform, isDevMode: opts.targetMode === 'development', verbose: opts.verbose });
 	return {
