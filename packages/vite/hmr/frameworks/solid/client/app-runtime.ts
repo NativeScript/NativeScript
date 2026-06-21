@@ -3,17 +3,16 @@
  *
  * Solid runs with `hot: false` (solid-refresh is off — it rewrites `export
  * function` into a non-hoisted const and breaks TanStack file-route modules), so
- * there is no fine-grained component HMR. Instead, on every Solid HMR cycle this
- * helper re-renders the app's Solid tree against the latest code, driven by the NS
- * HMR client's `__ns_solid_hmr_subscribe` completion event.
+ * there is no fine-grained component HMR.
  *
- * Two things make an edit show up while keeping the user where they are:
- *   1. The live TanStack router instance is REUSED (never rebuilt), so the user's
- *      current route is preserved — no bounce back to the initial route.
- *   2. For an edited route file we re-import it fresh and patch the matching
- *      route's `options.component` on that live router, then re-render. For
- *      everything else (shared components, the app shell) a fresh re-import of the
- *      app entry picks up the new code.
+ * Division of labour on each Solid HMR cycle (`__ns_solid_hmr_subscribe`):
+ *   • ROUTE files — handled by @nativescript/tanstack-router's per-page remount
+ *     (`subscribeSolidHmrRemount` → `page.__ns_remount`), which swaps the route
+ *     component in place WITHOUT re-navigating, so the user stays on their route.
+ *     This helper does nothing for route-only edits.
+ *   • Everything else (app shell / shared components / app entry) — this helper
+ *     re-imports the app entry and re-renders the whole Solid tree. The router is
+ *     REUSED (its chain is never evicted), so the current route is preserved.
  *
  * Renderer bindings (`Application`, `render`, `document`) are passed in rather than
  * imported here so the helper uses the app's exact solid-js / dominative instances.
@@ -38,8 +37,10 @@ export interface StartSolidAppOptions {
 
 const SCRIPT_EXT = /\.(?:tsx|jsx|ts|js|mjs|mts|cjs|cts)$/i;
 const ROUTE_FILE_RE = /\/routes\/.+\.(?:tsx|jsx)$/i;
-const ROOT_ROUTE_RE = /\/routes\/__root\.(?:tsx|jsx|ts|js)$/i;
 const isSource = (id: string) => SCRIPT_EXT.test(id) && !/\.d\.ts$/i.test(id);
+// A "shell" change is any source file that is NOT a route file — route files are
+// hot-swapped per-page by the router, shell files need an app re-render.
+const isShell = (id: string) => isSource(id) && !ROUTE_FILE_RE.test(id);
 
 /** Resolve the dev-server HTTP origin used to fetch app modules over the wire. */
 function resolveOrigin(): string {
@@ -71,56 +72,6 @@ function evictionUrls(origin: string, specs: string[]): string[] {
 		for (const ext of ['.tsx', '.ts', '.jsx', '.js']) urls.add(origin + '/ns/m' + canonical + ext);
 	}
 	return Array.from(urls);
-}
-
-/** Translate a route file id to its TanStack `fullPath` (e.g. `/src/routes/posts.$id.tsx` → `/posts/$id`). */
-function routeFileToFullPath(id: string): string | null {
-	const m = id.match(/\/src\/routes\/(.+)\.(?:tsx|jsx|ts|js)$/i);
-	if (!m) return null;
-	let p = m[1].replace(/\./g, '/');
-	if (p === 'index') return '/';
-	if (p.endsWith('/index')) p = p.slice(0, -6);
-	p = p.replace(/(^|\/)-([\w])/g, '$1$2');
-	return '/' + p;
-}
-
-function findRouteByFullPath(router: any, fullPath: string): any | null {
-	const byId = router?.routesById;
-	if (!byId) return null;
-	for (const rid of Object.keys(byId)) {
-		if (byId[rid]?.fullPath === fullPath) return byId[rid];
-	}
-	return null;
-}
-
-/**
- * For each edited route file, re-import it fresh and patch the matching route's
- * `options.component` (and `loader`) on the live router, so the subsequent
- * re-render shows the new code without rebuilding the router (which would reset
- * the current route). The changed files were just evicted by the caller, so these
- * imports resolve to fresh code. No-ops when the app isn't using
- * @nativescript/tanstack-router (`globalThis.__ns_router`).
- */
-async function patchChangedRoutes(origin: string, changed: string[], nonce: string): Promise<void> {
-	const router = (globalThis as any).__ns_router;
-	if (!router || !router.routesById) return;
-	for (const id of changed) {
-		if (!ROUTE_FILE_RE.test(id) || ROOT_ROUTE_RE.test(id)) continue;
-		const fullPath = routeFileToFullPath(id);
-		if (!fullPath) continue;
-		try {
-			const mod: any = await import(/* @vite-ignore */ origin + '/ns/m' + id.replace(/\.(?:tsx|jsx)$/i, '') + '?t=' + nonce);
-			const fresh = mod && mod.Route && mod.Route.options;
-			if (!fresh) continue;
-			const route = findRouteByFullPath(router, fullPath);
-			if (route && route.options) {
-				if (fresh.component) route.options.component = fresh.component;
-				if (fresh.loader) route.options.loader = fresh.loader;
-			}
-		} catch (err) {
-			console.log('[ns-solid-hmr] route patch failed for', id, (err as any)?.message ?? err);
-		}
-	}
 }
 
 /**
@@ -184,10 +135,9 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 		}
 		busy = true;
 		try {
-			// Evict the app entry + changed files so their re-imports below resolve to
-			// fresh code. We deliberately do NOT evict the router / route-tree modules:
-			// keeping them cached preserves the live router (and the user's current
-			// route) across the re-mount.
+			// Evict the app entry + changed files so their re-imports resolve to fresh
+			// code. We deliberately do NOT evict the router / route-tree chain: keeping
+			// it cached preserves the live router (and the user's current route).
 			const invalidate = (globalThis as any).__nsInvalidateModules;
 			if (typeof invalidate === 'function') {
 				try {
@@ -197,17 +147,10 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 				}
 			}
 			const t = `${Date.now()}_${++nonce}`;
-
-			// Patch edited route components onto the live router (fresh import) before
-			// re-rendering, so route edits show up on the current page without a router
-			// rebuild. No-op for apps that don't use @nativescript/tanstack-router.
-			await patchChangedRoutes(origin, changed, t);
-
-			// Re-import the app entry (fresh shell + shared components) and re-render.
-			// Plain canonical URL first (fresh after eviction, avoids the "module
-			// invalidated during dev reload" race); entry-tagged URL is the fallback
-			// for runtimes where eviction is a no-op.
-			const candidates = [origin + '/ns/m' + rootModule + '?t=' + t, origin + '/ns/m/__ns_hmr__/entry-' + t + rootModule + '?t=' + t];
+			// Entry-tagged URL first: the `__ns_hmr__/entry-<n>/` segment makes the dev
+			// server serve a freshly-transformed module instead of a cached (one-edit-
+			// behind) transform. Plain canonical URL is the fallback.
+			const candidates = [origin + '/ns/m/__ns_hmr__/entry-' + t + rootModule + '?t=' + t, origin + '/ns/m' + rootModule + '?t=' + t];
 			for (const url of candidates) {
 				try {
 					const mod: any = await import(/* @vite-ignore */ url);
@@ -252,7 +195,12 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 			g.__ns_solid_hmr_subscribe((ev: any) => {
 				const changed = ev && Array.isArray(ev.changedFiles) ? ev.changedFiles : [];
 				const boundaries = ev && Array.isArray(ev.boundaries) ? ev.boundaries : [];
-				schedule([...changed, ...boundaries].filter(isSource));
+				const ids = [...changed, ...boundaries].filter(isSource);
+				// Route-only edits are hot-swapped in place by the router's per-page
+				// remount — don't re-render the whole app (which would fight it). Only
+				// re-render for shell / shared-component / app-entry edits.
+				if (!ids.some(isShell)) return;
+				schedule(ids);
 			});
 			subscribed = true;
 			return;

@@ -1207,14 +1207,25 @@ async function processQueue(): Promise<void> {
 							p = p.replace(/(^|\/)-([\w])/g, '$1$2');
 							return '/' + p;
 						};
-						// Find existing route by fullPath (since new Route has no id yet)
+						// Find existing route by fullPath (since new Route has no id yet).
+						// The root route (`__root__`) shares fullPath '/' with the index
+						// route, so prefer the non-root (leaf) match — otherwise editing
+						// `index.tsx` would clobber the root layout's component instead of
+						// the page's. @nativescript/tanstack-router's remount uses the same
+						// preference so patch + read target the same route.
 						const findRouteByFullPath = (router: any, fp: string): any => {
 							if (!router?.routesById) return null;
+							let rootMatch: any = null;
 							for (const rid of Object.keys(router.routesById)) {
 								const r = router.routesById[rid];
-								if (r?.fullPath === fp) return r;
+								if (r?.fullPath !== fp) continue;
+								if (rid === '__root__') {
+									rootMatch = rootMatch || r;
+									continue;
+								}
+								return r;
 							}
-							return null;
+							return rootMatch;
 						};
 						// A changed route file is itself a boundary to re-import + patch — Pass 2
 						// only adds OTHER route files that import a changed module, never the
@@ -1233,7 +1244,13 @@ async function processQueue(): Promise<void> {
 						const solidEvicted = invalidateModulesByUrls(solidEvictUrls);
 						if (VERBOSE) console.log(`[hmr][solid] eviction count=${solidEvictUrls.length} ok=${solidEvicted}`);
 						for (const id of boundaries) {
-							if (seen.has(id)) continue;
+							// Skip already-drained modules — EXCEPT route files. The main
+							// drain loop above re-imports drained modules but does NOT patch
+							// `route.options.component`; a changed ROUTE file (which is in
+							// `drained`/`seen`) must still flow through this loop so its route
+							// gets patched with the fresh component, otherwise the router's
+							// per-page HMR remount re-renders the stale (one-edit-behind) one.
+							if (seen.has(id) && !/\/src\/routes\/.+\.(?:tsx|jsx)$/i.test(id)) continue;
 							// Skip the root layout (`__root`): it commonly imports a global
 							// stylesheet (`./styles.css?url`) with no ESM `default` export on
 							// device, so re-importing it throws and aborts the cycle. The root
@@ -1241,7 +1258,16 @@ async function processQueue(): Promise<void> {
 							if (/\/routes\/__root\.(?:tsx|jsx|ts|js)$/i.test(id)) continue;
 							try {
 								const spec = normalizeSpec(id);
-								const url = await requestModuleFromServer(spec);
+								// Re-import via an entry-tagged URL so the dev server serves a
+								// freshly-transformed module rather than a cached (one-edit-behind)
+								// transform. This is what `route.options.component` is patched
+								// from below, and what @nativescript/tanstack-router's per-page
+								// HMR remount reads — it MUST be the just-saved code, not the
+								// previous save. `requestModuleFromServer` (used elsewhere) can
+								// return the prior transform within the cache window.
+								const ftOrigin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+								const ftNonce = `${getGraphVersion()}_${Date.now()}`;
+								const url = ftOrigin ? ftOrigin + '/ns/m/__ns_hmr__/entry-' + ftNonce + (spec.startsWith('/') ? spec : '/' + spec) + '?t=' + ftNonce : await requestModuleFromServer(spec);
 								if (!url) continue;
 								if (VERBOSE) console.log('[hmr][solid] propagated to boundary', { id, url });
 								const mod: any = await import(/* @vite-ignore */ url);
