@@ -1691,12 +1691,52 @@ function createOverlayApi(): HmrOverlayApi {
 	};
 }
 
+// The NS_VITE_PROGRESS_OVERLAY opt-out. Read the build-time define (const-substituted
+// into served modules) first, then fall back to the globalThis seed, defaulting to
+// enabled — mirrors the gate used by the per-framework update overlays.
+function isHmrProgressOverlayEnabled(): boolean {
+	try {
+		if (typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean') return __NS_HMR_PROGRESS_OVERLAY_ENABLED__;
+	} catch {}
+	try {
+		const seeded = (getGlobalScope() as any).__NS_HMR_PROGRESS_OVERLAY_ENABLED__;
+		if (typeof seeded === 'boolean') return seeded;
+	} catch {}
+	return true;
+}
+
+// When the overlay is opted out, every surface (boot / connection / update / pending)
+// becomes a no-op so nothing is ever drawn. The boot placeholder root and the
+// `__NS_HMR_BOOT_COMPLETE__` signal are owned by `root-placeholder.ts` and are
+// unaffected, so boot + HMR keep working — the user just sees no progress UI.
+function createNoopOverlayApi(): HmrOverlayApi {
+	const snapshot = () => getRuntimeState().snapshot;
+	return {
+		ensureBootPage() {
+			return null;
+		},
+		setBootStage() {
+			return snapshot();
+		},
+		setConnectionStage() {
+			return snapshot();
+		},
+		setUpdateStage() {
+			return snapshot();
+		},
+		hide() {},
+		getSnapshot() {
+			return snapshot();
+		},
+	};
+}
+
 export function ensureHmrDevOverlayRuntimeInstalled(verbose?: boolean): HmrOverlayApi {
 	const g = getOverlayGlobal();
 	const state = getRuntimeState();
 	state.verbose = state.verbose || !!verbose;
 	if (!g.__NS_HMR_DEV_OVERLAY__) {
-		g.__NS_HMR_DEV_OVERLAY__ = createOverlayApi();
+		g.__NS_HMR_DEV_OVERLAY__ = isHmrProgressOverlayEnabled() ? createOverlayApi() : createNoopOverlayApi();
 	}
 	return g.__NS_HMR_DEV_OVERLAY__ as HmrOverlayApi;
 }
