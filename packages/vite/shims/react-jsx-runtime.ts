@@ -19,13 +19,33 @@ import { createElement, Fragment as ReactFragment } from 'react';
 export const Fragment = ReactFragment;
 
 // The automatic runtime passes `key` separately from `config` (which carries the
-// remaining props, including `children`). createElement reads `key` off the config
-// object, so fold it back in when present; otherwise pass config straight through.
+// remaining props, including `children`). We bridge to `React.createElement`, which
+// expects `key` IN the props object and `children` as TRAILING POSITIONAL ARGS.
+//
+// Children must be spread positionally — NOT left as a single `config.children`
+// array — otherwise React treats a multi-child element (what `jsxs` produces for
+// static markup like `<view><a/><b/></view>`) as a DYNAMIC list and emits a spurious
+// "Each child in a list should have a unique key" warning for ordinary static JSX.
+// Spreading them as args is the classic-createElement shape React exempts from key
+// checks, while genuinely keyed `.map()` lists keep their keys on each element.
 function jsxImpl(type: any, config: any, maybeKey?: any) {
-	if (maybeKey !== undefined) {
-		return createElement(type, { ...(config || {}), key: maybeKey });
+	const props: any = {};
+	let children: any;
+	let hasChildren = false;
+	if (config) {
+		for (const k in config) {
+			if (k === 'children') {
+				children = config.children;
+				hasChildren = true;
+			} else {
+				props[k] = config[k];
+			}
+		}
 	}
-	return createElement(type, config);
+	if (maybeKey !== undefined) props.key = maybeKey;
+	if (!hasChildren) return createElement(type, props);
+	if (Array.isArray(children)) return createElement(type, props, ...children);
+	return createElement(type, props, children);
 }
 
 export function jsx(type: any, config: any, maybeKey?: any) {

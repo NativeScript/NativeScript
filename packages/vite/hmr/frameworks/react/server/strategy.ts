@@ -3,6 +3,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import * as path from 'node:path';
 import type { FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import { typescriptServerStrategy } from '../../typescript/server/strategy.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
+import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 
 // React server strategy for NativeScript HMR.
 //
@@ -147,5 +149,73 @@ export const reactServerStrategy: FrameworkServerStrategy = {
 			return REACT_JSX_RUNTIME_SHIM;
 		}
 		return buildCondRequireReexport(code, moduleId || '') ?? code;
+	},
+	// Like Solid (and unlike plain TypeScript, which recovers via a full
+	// `resetRootView`), React HMR applies an edit by having the CLIENT re-fetch +
+	// re-evaluate the just-changed route module and read its fresh
+	// `Route.options.component`. So the server MUST purge its transform caches
+	// BEFORE the client re-imports — otherwise the client races the server and the
+	// `/ns/m` re-fetch returns the PREVIOUS save's transform → V8 evaluates stale
+	// code → the visible page is "one save behind". The default TS strategy
+	// broadcasts the delta immediately (no purge), which is why React edits never
+	// applied. We mirror Solid's contract: defer the prologue's delta broadcast,
+	// purge the shared + Vite transform caches for the file AND its transitive
+	// importers (the route tree statically imports the route), re-transform fresh,
+	// then broadcast the delta.
+	deferDeltaBroadcast: true,
+	async handleHotUpdate(ctx, deps) {
+		const state = await runHotUpdatePrologue(ctx, deps);
+		if (!state) return;
+		const { root, metrics, emitSummary } = state;
+		const { moduleGraph, verbose, sharedTransformRequest } = deps;
+		const { file, server } = ctx;
+		const isAppScriptFile = /\.(tsx?|jsx?)$/i.test(file);
+		if (!isAppScriptFile) {
+			emitSummary();
+			return;
+		}
+		metrics.tAfterFramework = Date.now();
+		try {
+			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+			const normalizedId = moduleGraph.normalizeGraphId(rel);
+			if (!moduleGraph.get(normalizedId)) {
+				moduleGraph.upsert(rel, `/* react-hmr ${Date.now()} */`, [], { emitDeltaOnInsert: true });
+			}
+			// Purge BOTH the shared transform-request cache and Vite's moduleGraph
+			// transformResult for the changed file + its bounded transitive importers
+			// (route tree → route file), so the client's re-import evaluates fresh code.
+			purgeTransformCachesForHotUpdate({ file, server, sharedTransformRequest, verbose, label: 'react' });
+			// Re-transform AFTER invalidation so the broadcast hash matches fresh
+			// content (the prologue's upsert ran before Vite's auto-invalidate fired).
+			try {
+				const ext = file.match(/\.(?:[mc]?[jt]sx?)$/i)?.[0] || '';
+				const baseSpec = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+				const baseNoExt = ext ? baseSpec.replace(/\.(?:[mc]?[jt]sx?)$/i, '') : baseSpec;
+				const candidates = Array.from(new Set([baseSpec, baseNoExt, baseNoExt + '.ts', baseNoExt + '.tsx', baseNoExt + '.js', baseNoExt + '.jsx', baseNoExt + '.mjs', file]));
+				let freshCode = '';
+				for (const cand of candidates) {
+					try {
+						const fresh = await sharedTransformRequest(cand, 30000);
+						if (fresh?.code && !freshCode) freshCode = fresh.code;
+					} catch {}
+				}
+				if (freshCode) {
+					const existingGm = moduleGraph.get(normalizedId);
+					moduleGraph.upsert(normalizedId, freshCode, (existingGm?.deps || []) as string[], { broadcastDelta: false });
+				}
+			} catch (e) {
+				if (verbose) console.warn('[hmr-ws][react] post-invalidation re-transform failed', e);
+			}
+			// Broadcast the now-fresh delta, AFTER cache invalidation.
+			try {
+				const gm = moduleGraph.get(normalizedId);
+				if (gm) moduleGraph.emitDelta([gm], []);
+			} catch (e) {
+				if (verbose) console.warn('[hmr-ws][react] post-invalidation broadcast failed', e);
+			}
+		} catch (e) {
+			if (verbose) console.warn('[hmr-ws][react] failed to handle hot update for', file, e);
+		}
+		emitSummary();
 	},
 };
