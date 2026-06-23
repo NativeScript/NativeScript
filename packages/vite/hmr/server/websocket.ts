@@ -13,6 +13,7 @@ import { vueServerStrategy, processSfcCode } from '../frameworks/vue/server/stra
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
+import { reactServerStrategy } from '../frameworks/react/server/strategy.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
@@ -111,6 +112,7 @@ const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['vue', vueServerStrategy],
 	['angular', angularServerStrategy],
 	['solid', solidServerStrategy],
+	['react', reactServerStrategy],
 	['typescript', typescriptServerStrategy],
 ]);
 

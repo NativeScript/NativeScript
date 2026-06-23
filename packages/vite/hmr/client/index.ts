@@ -39,6 +39,14 @@ function resolveTargetFlavor(): string | undefined {
 
 const TARGET_FLAVOR = resolveTargetFlavor();
 
+// React reuses the generic TypeScript HMR path on BOTH server and client: it has
+// no Fast Refresh, so a module edit drives a plain module reload / root reset
+// (the React tree re-renders), exactly like the `typescript` flavor. The server
+// strategy is `{ ...typescriptServerStrategy, flavor: 'react' }`; this mirrors that
+// on the client so the `typescript`-gated update branches also run for React
+// (otherwise a React edit is received but never applied — the overlay sticks).
+const TS_LIKE_FLAVOR = TARGET_FLAVOR === 'typescript' || TARGET_FLAVOR === 'react';
+
 try {
 	if (TARGET_FLAVOR && !globalThis.__NS_TARGET_FLAVOR__) {
 		globalThis.__NS_TARGET_FLAVOR__ = TARGET_FLAVOR;
@@ -372,7 +380,7 @@ function applyFullGraph(payload: any) {
 	try {
 		const g: any = getGlobalScope();
 		const bootDone = !!g.__NS_HMR_BOOT_COMPLETE__;
-		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__ && TARGET_FLAVOR !== 'typescript') {
+		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__ && !TS_LIKE_FLAVOR) {
 			// simple snapshot helpers
 			const getTopmost = () => {
 				try {
@@ -428,7 +436,7 @@ function applyFullGraph(payload: any) {
 					if (!placeholderActive) return;
 					if (VERBOSE) console.log('[hmr][init] placeholder persists after delay; evaluating rescue policy');
 					// Flavor-specific rescue handling
-					if (TARGET_FLAVOR === 'typescript') {
+					if (TS_LIKE_FLAVOR) {
 						// For TS apps, perform a one-time resetRootView to the conventional
 						// app root module. This mimics what Application.run would do and
 						// replaces the placeholder with the real UI without trying to
@@ -504,7 +512,7 @@ function applyFullGraph(payload: any) {
 		// Only allow initial mount when explicitly enabled. Rely on the app's own main entry start() for the first mount
 		// to avoid double-mount races that can cause duplicate navigation logs.
 		if (ALLOW_INITIAL_MOUNT && !initialMounted && !bootDone && !bootInProgress && !getCurrentApp() && !getRootFrame()) {
-			if (TARGET_FLAVOR === 'typescript') {
+			if (TS_LIKE_FLAVOR) {
 				// For TS flavor, do not perform client-driven initial mount; rely on Application.run.
 				return;
 			}
@@ -547,7 +555,7 @@ function applyFullGraph(payload: any) {
 							}
 						} catch {}
 						let comp: any = null;
-						if (TARGET_FLAVOR === 'typescript') {
+						if (TS_LIKE_FLAVOR) {
 							try {
 								const url = await requestModuleFromServer(candidate!);
 								const mod: any = await import(/* @vite-ignore */ url);
@@ -1052,7 +1060,7 @@ async function processQueue(): Promise<void> {
 					// resolves the NEW code-behind (tap handlers, page events) instead
 					// of the stale module captured in the boot bundle. Without this,
 					// XML re-renders pick up new markup but keep old behavior.
-					if (TARGET_FLAVOR === 'typescript' && mod && /\.(ts|js)$/i.test(id)) {
+					if (TS_LIKE_FLAVOR && mod && /\.(ts|js)$/i.test(id)) {
 						try {
 							const g: any = getGlobalScope();
 							const moduleName = toAppModuleName(id);
@@ -1085,6 +1093,21 @@ async function processQueue(): Promise<void> {
 					// and remount it (see `propagateDepChangeToSfcBoundary`).
 					await CLIENT_STRATEGY?.refreshAfterBatch?.(drained, { setUpdateOverlayStage, startedAt: tQueueStart, graph, performResetRoot, getOverlay: getHmrOverlayApi });
 					break;
+				case 'react': {
+					// React has no Fast Refresh, and (like Solid) mounts a dominative
+					// document root via `startReactApp` rather than an `app-root`
+					// module — so the TypeScript `resetRootView({moduleName:'app-root'})`
+					// path doesn't apply. The changed modules were already re-imported
+					// into the device cache above; the per-page remount is driven by the
+					// app's `__NS_HMR_ON_UPDATE__` hook (see
+					// `@nativescript/tanstack-router/react`'s `subscribeReactHmrRemount`),
+					// which fires right after this queue drains. Here we only mark the
+					// overlay complete so it doesn't stick at 'received' (5%).
+					setUpdateOverlayStage('complete', {
+						detail: `Total ${Math.max(0, Date.now() - tQueueStart)}ms`,
+					});
+					break;
+				}
 				case 'solid': {
 					// Boundaries discovered in this HMR cycle (tsx files reachable
 					// via the reverse import graph from any changed file, plus route
@@ -2134,7 +2157,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 				try {
 					if (CLIENT_STRATEGY?.createRoot) {
 						cachedRoot = CLIENT_STRATEGY.createRoot(newComponent, state);
-					} else if (TARGET_FLAVOR === 'typescript') {
+					} else if (TS_LIKE_FLAVOR) {
 						// For TS flavor, treat the component as a factory or direct NS view.
 						let root: any = null;
 						try {
@@ -2419,7 +2442,7 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 	// Installed at init (not first-update time) because the wrap can only
 	// observe showModal calls made AFTER it lands. Retried briefly because
 	// getCore('View') may not resolve until the vendor realm finishes booting.
-	if (TARGET_FLAVOR === 'typescript') {
+	if (TS_LIKE_FLAVOR) {
 		const tryInstallModalTracking = (attempts: number) => {
 			ensureModalTracking();
 			if (!modalTrackingInstalled && attempts > 0) {

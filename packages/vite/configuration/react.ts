@@ -8,86 +8,50 @@ import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/ty
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const plugins = [
-	{
-		...alias({
-			entries: {
-				// Essential aliases for React NativeScript compatibility
-				// Only alias react-dom related imports, NOT React itself
-				'react-dom': 'react-nativescript',
-				'react-dom/client': 'react-nativescript',
-				'react-dom/server': 'react-nativescript',
+// NativeScript-safe automatic-JSX runtime shim (see shims/react-jsx-runtime.ts).
+// react/jsx-runtime + react/jsx-dev-runtime are CJS modules whose named exports
+// the dev server's raw `/ns/m` serving can't statically detect, so the device
+// fails with "does not provide an export named 'jsx'". The shim reimplements the
+// runtime on React.createElement and exposes explicit named exports.
+const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'react-jsx-runtime.js');
 
-				// Handle react-reconciler exports issue
-				// This addresses the "DefaultEventPriority" and "LegacyRoot" not exported errors
-				'react-reconciler/constants': resolve(__dirname, '../shims/react-reconciler-constants.js'),
-
-				// Additional React ecosystem compatibility
-				'react-reconciler/src/ReactFiberHostConfig': 'react-nativescript/dist/client/HostConfig',
-
-				// Fix React reconciler namespace issue
-				'react-reconciler': resolve(__dirname, '../shims/react-reconciler.js'),
-
-				// Additional shims
-				'set-value': resolve(__dirname, '../shims/set-value.js'),
-			},
-		}),
-		enforce: 'pre',
-	},
-	{
-		name: 'react-nativescript-resolver',
-		resolveId(id) {
-			// Ensure React core exports are properly resolved
-			if (id === 'react') {
-				return { id: 'react', external: false };
-			}
-		},
-		load(id) {
-			// Handle React module loading to ensure all exports are available
-			if (id === 'react') {
-				return `
-// Re-export all React exports to ensure they're available
-import * as React from 'react/index.js';
-
-// Explicitly export the commonly used React APIs
-export const {
-  Component,
-  PureComponent,
-  Fragment,
-  createElement,
-  createRef,
-  forwardRef,
-  useState,
-  useEffect,
-  useContext,
-  useReducer,
-  useCallback,
-  useMemo,
-  useRef,
-  useImperativeHandle,
-  useLayoutEffect,
-  useDebugValue,
-  createContext,
-  Children,
-  cloneElement,
-  isValidElement,
-  version,
-  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED
-} = React;
-
-// Export everything else
-export * from 'react/index.js';
-
-// Default export
-export default React;
-`;
-			}
-		},
-	},
-];
-
+// React for NativeScript renders through DOMiNATIVE via the
+// `@nativescript-community/react` renderer (a react-reconciler host config that
+// drives dominative's DOM — the React analog of `@nativescript-community/solid-js`).
+// So, unlike the native-element `react-nativescript` path, there is NO
+// `react-dom -> react-nativescript` aliasing here: the web markup renders as-is
+// through dominative + masonkit, exactly like the Solid flavor.
+//
+// `react` must resolve as a single instance (see the `case 'react'` note in
+// base.ts → `disableOptimizeDeps`): two copies would split the hooks dispatcher
+// and silently break hooks/context.
 export const reactConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	return mergeConfig(baseConfig({ mode, flavor: 'react' }), {
-		plugins: [...getTypeCheckPlugins('react', options.typeCheck), ...plugins],
+		plugins: [
+			...getTypeCheckPlugins('react', options.typeCheck),
+			{
+				...alias({
+					entries: {
+						// Automatic JSX runtime → NS-safe shim (must come before any
+						// broad `react` entry so it isn't prefix-matched away).
+						'react/jsx-runtime': jsxRuntimeShimPath,
+						'react/jsx-dev-runtime': jsxRuntimeShimPath,
+					},
+				}),
+				enforce: 'pre' as const,
+			},
+		],
+		esbuild: {
+			jsx: 'automatic',
+			jsxImportSource: 'react',
+		},
+		optimizeDeps: {
+			// `module` / `node:module` are aliased to local polyfills (see base.ts);
+			// keep them out of the depscanner. Also exclude the renderer entry so the
+			// device's `/ns/m` loader resolves it through normal resolution rather
+			// than a pre-bundle URL that the package `exports` map can't serve there
+			// (mirrors Solid excluding `@nativescript/vite/solid-bootstrap`).
+			exclude: ['module', 'node:module', '@nativescript-community/react'],
+		},
 	});
 };
