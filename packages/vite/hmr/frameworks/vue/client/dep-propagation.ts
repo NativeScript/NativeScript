@@ -104,3 +104,48 @@ export function findNearestSfcBoundaries(changedIds: readonly string[], graph: R
 
 	return boundaries;
 }
+
+/**
+ * Reverse-walk from a changed `.vue` file to its `.vue` importers (ancestors),
+ * nearest-first. Unlike {@link findNearestSfcBoundaries} this STARTS from a
+ * `.vue` and does not stop at the first boundary — it returns the full ancestor
+ * chain so the caller can remount the nearest one that's safely mountable as a
+ * root (a child SFC with required props is not). The changed file is excluded.
+ */
+export function findSfcAncestors(changedVuePath: string, graph: ReadonlyMap<string, DepGraphModuleLike>, maxAncestors = 16): string[] {
+	const startKey = normalizeDepGraphKey(changedVuePath);
+	if (!startKey || !graph?.size) return [];
+
+	const reverseIndex = new Map<string, string[]>();
+	for (const [id, mod] of graph) {
+		const deps = Array.isArray(mod?.deps) ? mod.deps : [];
+		for (const dep of deps) {
+			const key = normalizeDepGraphKey(dep);
+			if (!key) continue;
+			let importers = reverseIndex.get(key);
+			if (!importers) {
+				importers = [];
+				reverseIndex.set(key, importers);
+			}
+			importers.push(id);
+		}
+	}
+
+	const ancestors: string[] = [];
+	const seen = new Set<string>([startKey]);
+	const queue: string[] = [startKey];
+	while (queue.length && ancestors.length < maxAncestors) {
+		const key = queue.shift()!;
+		const importers = reverseIndex.get(key);
+		if (!importers) continue;
+		for (const importer of importers) {
+			const importerKey = normalizeDepGraphKey(importer);
+			if (!importerKey || seen.has(importerKey)) continue;
+			seen.add(importerKey);
+			queue.push(importerKey);
+			const importerBase = importer.split('?')[0];
+			if (VUE_SFC_ID_RE.test(importerBase)) ancestors.push(importerBase);
+		}
+	}
+	return ancestors;
+}

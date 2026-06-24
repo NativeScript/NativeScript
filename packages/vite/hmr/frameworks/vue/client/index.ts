@@ -1,5 +1,6 @@
-import { deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
+import { deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, graph, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
+import { findSfcAncestors } from './dep-propagation.js';
 
 const APP_VIRTUAL_WITH_SLASH = (() => {
 	// Define substitution does not reach this raw-served file; prefer the
@@ -580,6 +581,23 @@ export function handleVueSfcRegistry(msg: any) {
 	}
 }
 
+/**
+ * A component that declares required props can't be mounted as a standalone HMR
+ * root — nothing supplies them, so its render throws (white screen). Detects the
+ * object-form `props` Vue itself reads for the "Missing required prop" warning.
+ */
+function hmrComponentHasRequiredProps(comp: any): boolean {
+	try {
+		const props = comp && comp.props;
+		if (!props || typeof props !== 'object' || Array.isArray(props)) return false;
+		for (const key of Object.keys(props)) {
+			const def = props[key];
+			if (def && typeof def === 'object' && def.required === true) return true;
+		}
+	} catch {}
+	return false;
+}
+
 export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number) {
 	try {
 		if (typeof msg.path === 'string' && /\.vue$/i.test(msg.path)) {
@@ -603,11 +621,24 @@ export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number)
 			try {
 				ensureVueGlobals();
 				const changedPath = String(msg.path);
-				// Prefer remounting the SFC that actually changed so you immediately see it
-				// (e.g., editing Details.vue should remount Details.vue even if Home.vue is currently displayed).
-				// This keeps existing behavior intact when the changed file is already the root.
-				const targetPath = changedPath;
-				const comp = await loadSfcComponent(targetPath, 'sfc_update');
+				// Default: remount the SFC that changed, so editing a page reflects
+				// immediately even if a different page is displayed.
+				let comp = await loadSfcComponent(changedPath, 'sfc_update');
+				// A child SFC with required props cannot be a standalone root — mounting
+				// it bare crashes (missing props → white screen). Walk up to the nearest
+				// mountable ancestor (its hosting page) and remount that; its versioned
+				// child import pulls in the edited code and the child re-renders with props.
+				if (comp && hmrComponentHasRequiredProps(comp)) {
+					const ancestors = findSfcAncestors(changedPath, graph);
+					for (const ancestor of ancestors) {
+						const ancestorComp = await loadSfcComponent(ancestor, 'sfc_update_ancestor');
+						if (ancestorComp && !hmrComponentHasRequiredProps(ancestorComp)) {
+							if (__NS_ENV_VERBOSE__) console.log('[hmr][vue] child SFC needs props; remounting nearest mountable ancestor', { changed: changedPath, ancestor });
+							comp = ancestorComp;
+							break;
+						}
+					}
+				}
 				return comp;
 			} catch (e) {
 				console.warn('[hmr-client] update path failed for', msg.path, e);
