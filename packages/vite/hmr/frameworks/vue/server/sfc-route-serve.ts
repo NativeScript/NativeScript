@@ -17,6 +17,7 @@ import { ensureDestructureCoreImports, ensureVariableDynamicImportHelper, ensure
 import { cleanCode, processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
+import { resolveProjectTsAliasRelative } from '../../../../helpers/ts-config-paths.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { babelTraverse, compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
@@ -65,6 +66,13 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 				return;
 			}
 			if (fullSpec.startsWith('@/')) fullSpec = options.appVirtualWithSlash + fullSpec.slice(2);
+			else if (!fullSpec.startsWith('/') && !fullSpec.startsWith('.')) {
+				// Resolve tsconfig path aliases (@present/..., @app, …) so the served
+				// SFC/variant can be located on disk — Vite's resolver isn't in this path.
+				const q = fullSpec.match(/[?#].*$/)?.[0] || '';
+				const aliasRel = resolveProjectTsAliasRelative(fullSpec.slice(0, fullSpec.length - q.length), server.config?.root || process.cwd());
+				if (aliasRel) fullSpec = aliasRel + q;
+			}
 			if (!fullSpec.startsWith('/')) fullSpec = '/' + fullSpec;
 
 			const isVariant = /[?&]vue&type=/.test(fullSpec);
@@ -328,6 +336,11 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 									// Handle '@/'
 									if (spec.startsWith('@@/')) spec = '/' + spec.slice(2);
 									if (spec.startsWith('@/')) spec = options.appVirtualWithSlash + spec.slice(2);
+									// tsconfig path aliases (@present/..., @app, @domain, …)
+									if (!spec.startsWith('/')) {
+										const aliasRel = resolveProjectTsAliasRelative(spec.replace(/[?#].*$/, ''), server.config?.root || process.cwd());
+										if (aliasRel) spec = aliasRel;
+									}
 								}
 								// Strip query for plain .vue (keep variant imports intact)
 								if (!/\bvue&type=/.test(src)) {

@@ -173,8 +173,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		// A few packages have react-native specifiers which work well for NS as well
 		mainFields: ['module', 'react-native', 'main'],
 		conditions: ['module', 'react-native', 'import', 'browser', 'default'],
-		// use this with merge config instead or could list common dedupes in base here altogether
-		dedupe: ['@nativescript/core', 'nativescript-vue', 'vue'],
+		// use this with merge config if need
+		// we list common dedupes here
+		dedupe: ['@nativescript/core', 'nativescript-vue', 'vue', '@tanstack/solid-router', '@tanstack/react-router', '@tanstack/router-core', '@tanstack/history'],
 		// Alias "@" and "~" to your src directory for cleaner imports
 		alias: [
 			// Hard dedupe for @nativescript/core across monorepos / linked workspaces

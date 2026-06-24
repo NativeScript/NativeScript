@@ -14,6 +14,7 @@ import { ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVar
 import { processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
+import { resolveProjectTsAliasRelative } from '../../../../helpers/ts-config-paths.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
@@ -65,6 +66,14 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 				return;
 			}
 			if (spec.startsWith('@/')) spec = options.appVirtualWithSlash + spec.slice(2);
+			else if (!spec.startsWith('/') && !spec.startsWith('.')) {
+				// Resolve tsconfig path aliases (e.g. @present/..., @app) that the
+				// assembler reaches via its own import rewriting — Vite's resolver
+				// never touched these, so without this the on-disk read below fails
+				// (file not found) → template extraction fails → HTTP 500.
+				const aliasRel = resolveProjectTsAliasRelative(spec.replace(/[?#].*$/, ''), server.config?.root || process.cwd());
+				if (aliasRel) spec = aliasRel;
+			}
 			if (!spec.startsWith('/')) spec = '/' + spec;
 			const base = spec.replace(/[?#].*$/, '');
 			if (diag) {
@@ -257,6 +266,12 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 									if (!absImp.startsWith('/')) absImp = '/' + absImp;
 								} else if (!spec.startsWith('/')) {
 									if (absImp.startsWith('@/')) absImp = options.appVirtualWithSlash + absImp.slice(2);
+									else {
+										// tsconfig path aliases (@present/..., @app, @domain, …) →
+										// project-root-relative path so the child /ns/asm fetch resolves.
+										const aliasRel = resolveProjectTsAliasRelative(spec, projectRoot);
+										if (aliasRel) absImp = aliasRel;
+									}
 								}
 								const asmUrl = `/ns/asm/${ver}?path=${encodeURIComponent(absImp)}&mode=inline`;
 								return `${pfx}import ${clause} from ${JSON.stringify(asmUrl)};`;
