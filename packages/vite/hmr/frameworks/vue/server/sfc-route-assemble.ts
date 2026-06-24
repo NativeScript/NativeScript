@@ -277,6 +277,33 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 								return `${pfx}import ${clause} from ${JSON.stringify(asmUrl)};`;
 							});
 						} catch {}
+						// Resolve NON-.vue tsconfig path aliases (e.g. @app, @app/constants/layout,
+						// @domain/i18n, @infra/platform, @/foo) in the SFC <script>. The .vue alias
+						// imports are handled above (wrapped into /ns/asm). These barrel/.ts aliases
+						// bypass Vite's resolver in this disk-read assembler path, so the downstream
+						// `processCodeForDevice` rewriter would otherwise mis-classify them as bare
+						// node_modules packages (→ /ns/m/node_modules/@app/...). Map each recognized
+						// alias to its `/ns/m` project path so the child fetch resolves. Guarded by
+						// `resolveProjectTsAliasRelative` returning non-null, so relative, node_modules,
+						// and framework (`vue`) specifiers are left untouched — no cross-framework impact.
+						try {
+							const resolveBareAlias = (spec: string): string | null => {
+								const clean = spec.replace(/[?#].*$/, '');
+								if (clean.endsWith('.vue')) return null; // handled by the .vue pass above
+								const rel = resolveProjectTsAliasRelative(clean, projectRoot);
+								return rel ? '/ns/m' + rel + spec.slice(clean.length) : null;
+							};
+							const rewriteFromClause = (m: string, pfx: string, q: string, spec: string): string => {
+								const r = resolveBareAlias(spec);
+								return r ? `${pfx}${q}${r}${q}` : m;
+							};
+							// import ... from '<spec>'  /  export ... from '<spec>'  (newline-tolerant)
+							scriptBody = scriptBody.replace(/((?:^|\n)[ \t]*(?:import|export)\b[^;"']*?\bfrom[ \t]*)(["'])([^"'\n]+)\2/g, rewriteFromClause);
+							// side-effect import '<spec>'
+							scriptBody = scriptBody.replace(/((?:^|\n)[ \t]*import[ \t]*)(["'])([^"'\n]+)\2/g, rewriteFromClause);
+							// dynamic import('<spec>')
+							scriptBody = scriptBody.replace(/(\bimport[ \t]*\([ \t]*)(["'])([^"'\n]+)\2/g, rewriteFromClause);
+						} catch {}
 					}
 					// 4) Extract render from compiled template and prepare a full inline template block
 					let helperBindings = '';
