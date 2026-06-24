@@ -110,6 +110,13 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// Compiled SFC <style> registration snippet, shared by the canonical and
 			// fallback emit paths below. Populated once the descriptor is parsed.
 			let sfcCssSnippet = '';
+			// Stamps a stable, path-based `__hmrId` on the component so Vue's
+			// registerHMR auto-creates a record at mount — enabling in-place
+			// `__VUE_HMR_RUNTIME__.reload` on edit (preserves the App.vue shell /
+			// route / scroll) instead of a full resetRootView. Bracket-notation +
+			// no explicit createRecord so the Vue-HMR `postClean` strip can't catch it.
+			const sfcHmrId = createHash('md5').update(base).digest('hex').slice(0, 8);
+			const sfcHmrSnippet = `\n;try{ if (typeof __ns_sfc__ !== 'undefined' && __ns_sfc__) __ns_sfc__["__hmrId"] = ${JSON.stringify(sfcHmrId)}; }catch(__e){}\n`;
 			// INLINE-FIRST assembler: compile SFC source into a self-contained ESM module (enhanced diagnostics)
 			try {
 				const root = server.config?.root || process.cwd();
@@ -661,6 +668,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 						if (!/export\s+default\s+__ns_sfc__/.test(inlineCode2) && /__ns_sfc__/.test(inlineCode2)) inlineCode2 += '\nexport default __ns_sfc__';
 						// Apply the component's compiled <style> CSS at module eval.
 						if (sfcCssSnippet) inlineCode2 += sfcCssSnippet;
+						if (sfcHmrSnippet) inlineCode2 += sfcHmrSnippet;
 						if (asmCacheKey) setAsmCache(asmCacheKey, inlineCode2);
 						res.statusCode = 200;
 						res.end(inlineCode2);
@@ -752,6 +760,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
 			// Apply the component's compiled <style> CSS at module eval.
 			if (sfcCssSnippet) code += sfcCssSnippet;
+			if (sfcHmrSnippet) code += sfcHmrSnippet;
 			if (asmCacheKey) setAsmCache(asmCacheKey, code);
 			res.statusCode = 200;
 			res.end(code);

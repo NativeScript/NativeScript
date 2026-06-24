@@ -598,6 +598,30 @@ function hmrComponentHasRequiredProps(comp: any): boolean {
 	return false;
 }
 
+/**
+ * In-place Vue HMR. The assembled SFC stamps a stable `comp.__hmrId`, so Vue's
+ * registerHMR has a record for every mounted instance. Calling the real
+ * `__VUE_HMR_RUNTIME__.reload(id, newComp)` re-renders just those instances in
+ * place — preserving the App.vue shell (drawer, nav, router), current route, and
+ * scroll — instead of a whole-tree resetRootView. Returns false (→ resetRoot
+ * fallback) when the real runtime is absent (stub/prod build), the component has
+ * no id, or reload throws. A reload that matches no live instances is a no-op
+ * (component not currently displayed); the caller treats that as handled.
+ */
+function tryInPlaceVueReload(comp: any): boolean {
+	try {
+		const rt: any = (getGlobalScope() as any).__VUE_HMR_RUNTIME__;
+		const id = comp && comp.__hmrId;
+		if (!rt || typeof rt.reload !== 'function' || !id) return false;
+		rt.reload(id, comp);
+		if (__NS_ENV_VERBOSE__) console.log('[hmr][vue] in-place reload', id);
+		return true;
+	} catch (e) {
+		if (__NS_ENV_VERBOSE__) console.warn('[hmr][vue] in-place reload failed; resetRoot fallback', e);
+		return false;
+	}
+}
+
 export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number) {
 	try {
 		if (typeof msg.path === 'string' && /\.vue$/i.test(msg.path)) {
@@ -624,10 +648,17 @@ export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number)
 				// Default: remount the SFC that changed, so editing a page reflects
 				// immediately even if a different page is displayed.
 				let comp = await loadSfcComponent(changedPath, 'sfc_update');
-				// A child SFC with required props cannot be a standalone root — mounting
-				// it bare crashes (missing props → white screen). Walk up to the nearest
-				// mountable ancestor (its hosting page) and remount that; its versioned
-				// child import pulls in the edited code and the child re-renders with props.
+				// Preferred path: patch the changed component's mounted instances in
+				// place (App.vue shell, route, scroll all survive). Returning null tells
+				// the overlay no resetRootView is needed.
+				if (tryInPlaceVueReload(comp)) {
+					return null;
+				}
+				// Fallback (real Vue HMR runtime unavailable): a child SFC with required
+				// props cannot be a standalone root — mounting it bare crashes (missing
+				// props → white screen). Walk up to the nearest mountable ancestor (its
+				// hosting page) and remount that; its versioned child import pulls in the
+				// edited code and the child re-renders with props.
 				if (comp && hmrComponentHasRequiredProps(comp)) {
 					const ancestors = findSfcAncestors(changedPath, graph);
 					for (const ancestor of ancestors) {
