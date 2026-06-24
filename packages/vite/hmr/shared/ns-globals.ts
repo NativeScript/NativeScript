@@ -75,6 +75,11 @@ declare global {
 	var __NS_HMR_APPLY_CSS__: ((cssText: string, refreshRoot?: boolean) => void) | undefined;
 	var __NS_HMR_APP_CSS__: string | undefined;
 	var __NS_HMR_APP_CSS_AST__: any;
+	// Device CSS bridge: CSS-bearing modules register under a per-source tag via the following:
+	// - (installed at client boot), or queue in
+	var __NS_REGISTER_CSS__: ((tag: string, cssText: string) => void) | undefined;
+	// - (keyed by tag) until it's installed, then drained.
+	var __NS_PENDING_CSS__: Record<string, string> | null | undefined;
 
 	// ── Function hooks (typed where the signature is stable; `any` otherwise) ──
 	var __NS_DISPATCH_HOT_EVENT__: ((event: string, payload?: unknown) => void) | undefined;

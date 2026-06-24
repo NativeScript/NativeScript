@@ -54,6 +54,16 @@ const RESOLVED = '\0' + VIRTUAL_ID;
 const APP_CSS_VIRTUAL_ID = 'virtual:ns-app-css';
 const APP_CSS_RESOLVED = '\0' + APP_CSS_VIRTUAL_ID;
 
+// Build-only applier for SFC `<style>` + JS/TS-imported `.css`/`.scss` that Vite
+// extracts into a CSS asset. NativeScript has no DOM to `<link>` it, so the
+// `--no-hmr` build would otherwise drop those styles (HMR applies them at
+// runtime). `load` emits the apply with a sentinel; `generateBundle` rewrites it
+// to the collected rework-CSS AST (the form `app.css` uses). Replaces the per-app
+// `nsSfcStylesPlugin` workaround — apps no longer need their own.
+const BUNDLE_CSS_VIRTUAL_ID = 'virtual:ns-bundle-css';
+const BUNDLE_CSS_RESOLVED = '\0' + BUNDLE_CSS_VIRTUAL_ID;
+const BUNDLE_CSS_AST_SENTINEL = '__NS_BUNDLE_CSS_AST__';
+
 // Virtual module that installs the XHR polyfill from @nativescript/core/xhr.
 // Rolldown tree-shakes the polyfill-xhr.ts side-effect import from @nativescript/core/globals,
 // so XMLHttpRequest never gets registered as a global. This dedicated module ensures the XHR
@@ -104,6 +114,41 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 		name: 'main-entry',
 		configResolved(config: ResolvedConfig) {
 			resolvedConfig = config;
+		},
+		// Fill the `virtual:ns-bundle-css` sentinel with the extracted CSS and drop
+		// the orphan asset (non-HMR builds only; HMR delivers this CSS at runtime).
+		generateBundle(_outputOptions: unknown, bundle: Record<string, any>) {
+			if (opts.hmrActive) return;
+			try {
+				const cssAssets = Object.values(bundle).filter((f: any) => f && f.type === 'asset' && typeof f.fileName === 'string' && f.fileName.endsWith('.css'));
+				let cssText = '';
+				for (const a of cssAssets) {
+					const src = (a as any).source;
+					cssText += (typeof src === 'string' ? src : new TextDecoder().decode(src as Uint8Array)) + '\n';
+				}
+				// Rework AST, position-stripped (the form app.css uses; ~halves size).
+				const ast = parseCssToAst(cssText, { silent: true });
+				const astJson = JSON.stringify(ast, (key, value) => (key === 'position' ? undefined : value));
+				// Rewrite the sentinel in whichever chunk carries the applier.
+				const sentinelRe = new RegExp(`(['"])${BUNDLE_CSS_AST_SENTINEL}\\1`);
+				let replaced = false;
+				for (const file of Object.values(bundle)) {
+					if (file && (file as any).type === 'chunk' && typeof (file as any).code === 'string' && sentinelRe.test((file as any).code)) {
+						(file as any).code = (file as any).code.replace(sentinelRe, () => astJson);
+						replaced = true;
+						break;
+					}
+				}
+				// Drop the orphan asset only after its rules are applied above.
+				if (replaced) {
+					for (const a of cssAssets) delete bundle[(a as any).fileName];
+				}
+				if (opts.verbose) {
+					console.info(`[ns-entry] bundle CSS: ${cssAssets.length} asset(s), ${cssText.length} bytes, applied=${replaced}`);
+				}
+			} catch (e: any) {
+				if (opts.verbose) console.warn('[ns-entry] bundle CSS injection failed:', e?.message || e);
+			}
 		},
 		// Warm chokidar with `app.css`'s @import dependency tree at
 		// server startup. Without this, the FIRST save to a workspace
@@ -197,6 +242,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 		resolveId(id: string) {
 			if (id === VIRTUAL_ID) return RESOLVED;
 			if (id === APP_CSS_VIRTUAL_ID) return APP_CSS_RESOLVED;
+			if (id === BUNDLE_CSS_VIRTUAL_ID) return BUNDLE_CSS_RESOLVED;
 			if (id === XHR_POLYFILL_VIRTUAL_ID) return XHR_POLYFILL_RESOLVED;
 			if (id === DEFINES_SEED_VIRTUAL_ID) return DEFINES_SEED_RESOLVED;
 			return null;
@@ -312,6 +358,18 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				lines.push(`export default ${JSON.stringify(result.code)};`);
 				return {
 					code: lines.join('\n'),
+					moduleType: 'js',
+				};
+			}
+			// Emit the bundle-CSS apply with a sentinel that generateBundle fills in
+			// (the CSS isn't known until then). No-op under HMR (dev server applies
+			// it at runtime, and the entry skips this import in HMR mode).
+			if (id === BUNDLE_CSS_RESOLVED) {
+				if (opts.hmrActive) {
+					return { code: 'export default "";', moduleType: 'js' };
+				}
+				return {
+					code: [`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `try { addTaggedAdditionalCSS(${JSON.stringify(BUNDLE_CSS_AST_SENTINEL)}, 'ns-bundle-css'); } catch (e) {}`, `export default "";`].join('\n'),
 					moduleType: 'js',
 				};
 			}
@@ -655,6 +713,12 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (needsAndroidActivityDefer) {
 					imports += `import { Application } from ${JSON.stringify(coreSpec())};\n`;
 				}
+			}
+
+			// SFC/imported CSS (non-HMR build). After app.css so component rules win
+			// specificity ties. generateBundle fills it in; HMR applies at runtime.
+			if (!opts.hmrActive) {
+				imports += `import '${BUNDLE_CSS_VIRTUAL_ID}';\n`;
 			}
 
 			// ---- Deferred Android activity import (non-HMR only) ----

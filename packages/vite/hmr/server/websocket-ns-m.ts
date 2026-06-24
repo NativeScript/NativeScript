@@ -10,6 +10,7 @@ import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-shims.js';
 import { getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
@@ -238,6 +239,36 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				return;
 			}
 			if (!spec.startsWith('/')) spec = '/' + spec;
+
+			// A JS/TS `import './x.css'` reaches the device as a module request;
+			// Vite's default CSS module needs a DOM, so it's a no-op on NativeScript.
+			// Compile via `?inline` (full postcss/sass/@import, no DOM side effect),
+			// register the result under the file's root-relative tag (matches the
+			// `.css` live-edit tag so edits replace, not stack), and re-export the
+			// string for `import css from './x.css'`. `app.css` has its own path.
+			if (CSS_MODULE_RE.test(spec)) {
+				try {
+					const inlineRes = await sharedTransformRequest(`${spec}?inline`);
+					const inlineCode = inlineRes?.code || '';
+					// `?inline` output is `export default "<compiled css>"`.
+					const m = inlineCode.match(/export\s+default\s+("(?:[^"\\]|\\.)*")\s*;?/s);
+					if (m) {
+						let css = '';
+						try {
+							css = JSON.parse(m[1]);
+						} catch {}
+						css = normalizeCssForDevice(css);
+						const out = `// [ns:m][css] ${spec}\n` + `const __ns_css_text__ = ${JSON.stringify(css)};\n` + buildCssRegisterSnippetFromVar(spec, '__ns_css_text__') + `export default __ns_css_text__;\n`;
+						res.statusCode = 200;
+						res.end(out);
+						return;
+					}
+					if (verbose) console.warn('[ns:m][css] unexpected ?inline output shape for', spec);
+				} catch (cssErr) {
+					if (verbose) console.warn('[ns:m][css] inline compile failed', spec, (cssErr as any)?.message);
+				}
+				// Fall through to default handling if inline compile produced nothing.
+			}
 			const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 			const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
 			const candidates = [...(hasExt ? [spec] : []), baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs'];

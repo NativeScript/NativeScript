@@ -7,7 +7,7 @@
  */
 
 import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, hasExplicitEviction, invalidateModulesByUrls, buildEvictionUrls, emitHmrModeBannerOnce, ENV_VERBOSE } from './utils.js';
-import { handleCssUpdates } from './css-handler.js';
+import { applyCssText, handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
@@ -89,6 +89,39 @@ function ensureCoreAliasesOnGlobalThis() {
 }
 // Apply once on module evaluation
 ensureCoreAliasesOnGlobalThis();
+
+// Install the device CSS applier. CSS-bearing modules (a Vue SFC `<style>` via
+// `/ns/asm`, an imported `.css` via `/ns/m`) call `__NS_REGISTER_CSS__(tag, css)`,
+// or queue in `__NS_PENDING_CSS__` if they ran first; the drain below covers that.
+// Routes through the shared `applyCssText` (tagged remove+add + root restyle),
+// the same path app.css and live `.css` edits use.
+function installCssRegister(): void {
+	const g: any = getGlobalScope();
+	if (typeof g.__NS_REGISTER_CSS__ === 'function') {
+		return;
+	}
+	const apply = (tag: string, cssText: string) => {
+		if (typeof cssText !== 'string' || !cssText.length) {
+			return;
+		}
+		try {
+			applyCssText(cssText, tag);
+		} catch (cssErr: any) {
+			if (VERBOSE) console.warn('[ns-hmr] CSS register/apply failed for', tag, cssErr?.message || cssErr);
+		}
+	};
+	g.__NS_REGISTER_CSS__ = apply;
+	try {
+		const pending = g.__NS_PENDING_CSS__;
+		if (pending && typeof pending === 'object') {
+			for (const tag of Object.keys(pending)) {
+				apply(tag, pending[tag]);
+			}
+			g.__NS_PENDING_CSS__ = null;
+		}
+	} catch {}
+}
+installCssRegister();
 
 type HmrConnectionOverlayStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline';
 

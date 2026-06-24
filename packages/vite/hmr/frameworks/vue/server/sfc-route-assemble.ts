@@ -16,7 +16,8 @@ import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
 import { resolveProjectTsAliasRelative } from '../../../../helpers/ts-config-paths.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
-import { compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
+import { compileScript, compileSfcStylesToCss, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
+import { buildCssRegisterSnippet } from '../../../server/css-device-module.js';
 
 // Cache assembled SFC modules keyed on `base | version | source-content-hash`.
 // The source hash in the key means a changed SFC always produces a new key —
@@ -106,6 +107,9 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
 			const templateCode = templateR?.code || '';
 
+			// Compiled SFC <style> registration snippet, shared by the canonical and
+			// fallback emit paths below. Populated once the descriptor is parsed.
+			let sfcCssSnippet = '';
 			// INLINE-FIRST assembler: compile SFC source into a self-contained ESM module (enhanced diagnostics)
 			try {
 				const root = server.config?.root || process.cwd();
@@ -125,6 +129,17 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 						return;
 					}
 					const { descriptor } = parse(sfcSrc, { filename: abs });
+					// Compile the SFC's <style> blocks and build the CSS-register snippet
+					// appended below (HMR otherwise drops <style scoped> — only app.css
+					// would apply).
+					try {
+						const sfcCss = await compileSfcStylesToCss(descriptor, abs, projectRoot, !!options.verbose);
+						sfcCssSnippet = buildCssRegisterSnippet('sfc:' + base, sfcCss);
+					} catch (eCss) {
+						if (options.verbose) {
+							console.warn('[sfc-asm][style] failed', base, (eCss as any)?.message);
+						}
+					}
 					const id = createHash('md5').update(abs).digest('hex').slice(0, 8);
 					// 1) Compile script (prefer inlineTemplate for a complete module)
 					let compiledScript = '' as string;
@@ -644,6 +659,8 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 							inlineCode2 = inlineCode2.replace(/(^|[\n;])\s*var\s+__ns_sfc__\s*;?/g, '$1var __ns_sfc__ = {};');
 						} catch {}
 						if (!/export\s+default\s+__ns_sfc__/.test(inlineCode2) && /__ns_sfc__/.test(inlineCode2)) inlineCode2 += '\nexport default __ns_sfc__';
+						// Apply the component's compiled <style> CSS at module eval.
+						if (sfcCssSnippet) inlineCode2 += sfcCssSnippet;
 						if (asmCacheKey) setAsmCache(asmCacheKey, inlineCode2);
 						res.statusCode = 200;
 						res.end(inlineCode2);
@@ -733,6 +750,8 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 				code = ensureVersionedNsMAppImports(code, Number(ver));
 			} catch {}
 			// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
+			// Apply the component's compiled <style> CSS at module eval.
+			if (sfcCssSnippet) code += sfcCssSnippet;
 			if (asmCacheKey) setAsmCache(asmCacheKey, code);
 			res.statusCode = 200;
 			res.end(code);

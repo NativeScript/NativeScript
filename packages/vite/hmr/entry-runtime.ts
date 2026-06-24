@@ -178,6 +178,47 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 
 		g.__NS_HMR_APPLY_CSS__ = applyCss;
 
+		// Device CSS applier for the fallback HTTP-bootloader path (the native
+		// dev-session path installs the same one from `hmr/client`). Per-tag
+		// remove+add keeps each source independently replaceable on hot-update.
+		const registerCss = (tag: string, cssText: string) => {
+			if (typeof cssText !== 'string' || !cssText.length) {
+				return;
+			}
+			try {
+				if (taggedCss.add && taggedCss.remove) {
+					taggedCss.remove(tag);
+					taggedCss.add(cssText, tag);
+				} else if (Application.addCss) {
+					Application.addCss(cssText);
+				}
+			} catch (cssErr: any) {
+				if (verbose) console.warn('[ns-entry] CSS register/apply failed for', tag, cssErr?.message || cssErr);
+				return;
+			}
+			// Live edit (boot complete): refresh the root so mounted views pick up
+			// the replaced selectors. Cold boot needs no refresh (views not built yet).
+			if (g.__NS_HMR_BOOT_COMPLETE__) {
+				try {
+					const rootView = Application.getRootView?.();
+					if (rootView && typeof rootView._onCssStateChange === 'function') {
+						rootView._onCssStateChange();
+					}
+				} catch {}
+			}
+		};
+		g.__NS_REGISTER_CSS__ = registerCss;
+		// Drain any CSS registered before this applier was installed.
+		try {
+			const pending = g.__NS_PENDING_CSS__;
+			if (pending && typeof pending === 'object') {
+				for (const pendingTag of Object.keys(pending)) {
+					registerCss(pendingTag, pending[pendingTag]);
+				}
+				g.__NS_PENDING_CSS__ = null;
+			}
+		} catch {}
+
 		if (!g.__NS_HMR_HTTP_APP_CSS_APPLIED__) {
 			// Cold boot: prefer the pre-parsed rework AST stashed by
 			// `helpers/main-entry.ts` so the HTTP-core realm follows the
