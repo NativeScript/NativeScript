@@ -33,7 +33,7 @@
 		"@nstudio/nps-i": "~2.0.0",
 		"@nx/devkit": "22.0.2",
 		"@nx/eslint-plugin": "22.0.2",
-		"@nx/jest": "22.0.2",
+		"@nx/jest": "22.7.6",
 		"@nx/js": "22.0.2",
 		"@nx/node": "22.0.2",
 		"@nx/plugin": "22.0.2",
