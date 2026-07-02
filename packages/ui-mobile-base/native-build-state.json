@@ -1,0 +1,11 @@
+{
+	"version": 1,
+	"ios": {
+		"sourceHash": "sha256:0b7d264bcc52f255911962b3ea8b26aacf171a489a02c9f499aee92e64a9dad3",
+		"artifactHash": "sha256:71ac91f0e4290e8a38d253649a73cdeef87e5bfa10e013ead5f61eecd57aff70"
+	},
+	"android": {
+		"sourceHash": "sha256:f9c3ab1e307acc94e267a7b05c9b50f4ea8d606936cb9363d3c98ee1c1080f42",
+		"artifactHash": "sha256:a07a9d2a9bae05459c75666d5fccba26694d24b602b445db3d88603abd5efc74"
+	}
+}
