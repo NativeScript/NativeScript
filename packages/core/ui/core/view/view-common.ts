@@ -72,6 +72,23 @@ type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; option
 // TODO: remove once we fully switch to the new event system
 const warnedEvent = new Set<string>();
 
+// Resolves a max-width/max-height style value to an effective device-pixel constraint.
+// 'auto' (the default) or an unresolvable percent (parent size unknown) means "no maximum",
+// represented as Infinity so that Math.min(measured, effectiveMax) becomes a no-op.
+function resolveEffectiveMax(value: CoreTypes.PercentLengthType, availableSize: number): number {
+	if (value == null || value === 'auto') {
+		return Number.POSITIVE_INFINITY;
+	}
+	// A percent cannot be resolved when the parent size is unspecified (availableSize < 0);
+	// treat it as unconstrained rather than collapsing the view to ~0.
+	if (typeof value === 'object' && (value as CoreTypes.LengthPercentUnit).unit === '%' && availableSize < 0) {
+		return Number.POSITIVE_INFINITY;
+	}
+	const resolved = PercentLength.toDevicePixels(value, Number.POSITIVE_INFINITY, availableSize);
+	// Safety net for any other unresolved/bogus negative result.
+	return resolved < 0 ? Number.POSITIVE_INFINITY : resolved;
+}
+
 export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
@@ -765,6 +782,20 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.minHeight = value;
 	}
 
+	get maxWidth(): CoreTypes.PercentLengthType {
+		return this.style.maxWidth;
+	}
+	set maxWidth(value: CoreTypes.PercentLengthType) {
+		this.style.maxWidth = value;
+	}
+
+	get maxHeight(): CoreTypes.PercentLengthType {
+		return this.style.maxHeight;
+	}
+	set maxHeight(value: CoreTypes.PercentLengthType) {
+		this.style.maxHeight = value;
+	}
+
 	get width(): CoreTypes.PercentLengthType {
 		return this.style.width;
 	}
@@ -1225,12 +1256,14 @@ export abstract class ViewCommon extends ViewBase {
 		const availableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
 
 		this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, availableWidth);
+		this.effectiveMaxWidth = resolveEffectiveMax(style.maxWidth, availableWidth);
 		this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, availableWidth);
 		this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, availableWidth);
 
 		const availableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
 
 		this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, availableHeight);
+		this.effectiveMaxHeight = resolveEffectiveMax(style.maxHeight, availableHeight);
 		this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, availableHeight);
 		this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, availableHeight);
 	}

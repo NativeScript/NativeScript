@@ -40,6 +40,10 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
 		measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
 		measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
+		// Check against our maximum sizes (Infinity when unconstrained)
+		measureWidth = Math.min(measureWidth, this.effectiveMaxWidth);
+		measureHeight = Math.min(measureHeight, this.effectiveMaxHeight);
+
 		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
 		const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 

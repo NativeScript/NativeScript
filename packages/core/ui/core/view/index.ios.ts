@@ -189,8 +189,13 @@ export class View extends ViewCommon {
 			nativeHeight = nativeSize.height;
 		}
 
-		const measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
-		const measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+		let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+		let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+
+		// Clamp to max-width/max-height (effectiveMax* is Infinity when unconstrained).
+		// Applied after min so that max wins when min > max, matching CSS.
+		measureWidth = Math.min(measureWidth, this.effectiveMaxWidth);
+		measureHeight = Math.min(measureHeight, this.effectiveMaxHeight);
 
 		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
 		const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

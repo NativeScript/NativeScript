@@ -846,7 +846,7 @@ public class FlexboxLayout extends LayoutBase {
 		if (view.getMeasuredWidth() < lp.minWidth) {
 			needsMeasure = true;
 			childWidth = lp.minWidth;
-		} else if (view.getMeasuredWidth() > lp.maxWidth) {
+		} else if (lp.maxWidth >= 0 && view.getMeasuredWidth() > lp.maxWidth) {
 			needsMeasure = true;
 			childWidth = lp.maxWidth;
 		}
@@ -854,7 +854,7 @@ public class FlexboxLayout extends LayoutBase {
 		if (childHeight < lp.minHeight) {
 			needsMeasure = true;
 			childHeight = lp.minHeight;
-		} else if (childHeight > lp.maxHeight) {
+		} else if (lp.maxHeight >= 0 && childHeight > lp.maxHeight) {
 			needsMeasure = true;
 			childHeight = lp.maxHeight;
 		}
@@ -984,7 +984,7 @@ public class FlexboxLayout extends LayoutBase {
 				if (!mChildrenFrozen[childIndex]) {
 					float rawCalculatedWidth = child.getMeasuredWidth() + unitSpace * lp.flexGrow + accumulatedRoundError;
 					int roundedCalculatedWidth = Math.round(rawCalculatedWidth);
-					if (roundedCalculatedWidth > lp.maxWidth) {
+					if (lp.maxWidth >= 0 && roundedCalculatedWidth > lp.maxWidth) {
 						// This means the child can't expand beyond the value of the maxWidth attribute.
 						// To adjust the flex line length to the size of maxMainSize, remaining
 						// positive free space needs to be re-distributed to other flex items
@@ -1008,7 +1008,7 @@ public class FlexboxLayout extends LayoutBase {
 				if (!mChildrenFrozen[childIndex]) {
 					float rawCalculatedHeight = child.getMeasuredHeight() + unitSpace * lp.flexGrow;
 					int roundedCalculatedHeight = Math.round(rawCalculatedHeight);
-					if (roundedCalculatedHeight > lp.maxHeight) {
+					if (lp.maxHeight >= 0 && roundedCalculatedHeight > lp.maxHeight) {
 						// This means the child can't expand beyond the value of the maxHeight
 						// attribute.
 						// To adjust the flex line length to the size of maxMainSize, remaining
@@ -2623,8 +2623,6 @@ public class FlexboxLayout extends LayoutBase {
 
 		public static final int ALIGN_SELF_STRETCH = ALIGN_ITEMS_STRETCH;
 
-		private static final int MAX_SIZE = Integer.MAX_VALUE & View.MEASURED_SIZE_MASK;
-
 		/**
 		 * This attribute can change the ordering of the children views are laid out.
 		 * By default, children are displayed and laid out in the same order as they appear in the
@@ -2680,15 +2678,9 @@ public class FlexboxLayout extends LayoutBase {
 		 */
 		public int minHeight;
 
-		/**
-		 * This attribute determines the maximum width the child can expand to.
-		 */
-		public int maxWidth = MAX_SIZE;
-
-		/**
-		 * This attribute determines the maximum height the child can expand to.
-		 */
-		public int maxHeight = MAX_SIZE;
+		// maxWidth / maxHeight are inherited from CommonLayoutParams (-1 means unconstrained),
+		// so that the max-width / max-height style properties, including percent values resolved
+		// in CommonLayoutParams.adjustChildrenLayoutParams, are honored inside flexbox as well.
 
 		/**
 		 * This attribute forces a flex line wrapping. i.e. if this is set to {@code true} for a

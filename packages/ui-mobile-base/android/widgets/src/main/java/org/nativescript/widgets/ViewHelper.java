@@ -42,6 +42,84 @@ public class ViewHelper {
 		view.setMinimumHeight(value);
 	}
 
+	public static int getMaxWidth(android.view.View view) {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		if (params instanceof CommonLayoutParams) {
+			return ((CommonLayoutParams) params).maxWidth;
+		}
+
+		return -1;
+	}
+
+	// value < 0 (e.g. the JS "auto" sentinel of -1) means unconstrained.
+	public static void setMaxWidth(android.view.View view, int value) {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		if (params == null) {
+			params = new CommonLayoutParams();
+		}
+
+		if (params instanceof CommonLayoutParams) {
+			CommonLayoutParams lp = (CommonLayoutParams) params;
+			lp.maxWidth = value;
+			lp.maxWidthPercent = 0;
+			view.setLayoutParams(params);
+		}
+	}
+
+	public static void setMaxWidthPercent(android.view.View view, float value) {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		if (params == null) {
+			params = new CommonLayoutParams();
+		}
+
+		if (params instanceof CommonLayoutParams) {
+			CommonLayoutParams lp = (CommonLayoutParams) params;
+			lp.maxWidthPercent = value;
+			// Baseline is unconstrained; the percent is resolved against the parent at measure time.
+			lp.maxWidth = -1;
+			view.setLayoutParams(params);
+		}
+	}
+
+	public static int getMaxHeight(android.view.View view) {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		if (params instanceof CommonLayoutParams) {
+			return ((CommonLayoutParams) params).maxHeight;
+		}
+
+		return -1;
+	}
+
+	// value < 0 (e.g. the JS "auto" sentinel of -1) means unconstrained.
+	public static void setMaxHeight(android.view.View view, int value) {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		if (params == null) {
+			params = new CommonLayoutParams();
+		}
+
+		if (params instanceof CommonLayoutParams) {
+			CommonLayoutParams lp = (CommonLayoutParams) params;
+			lp.maxHeight = value;
+			lp.maxHeightPercent = 0;
+			view.setLayoutParams(params);
+		}
+	}
+
+	public static void setMaxHeightPercent(android.view.View view, float value) {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		if (params == null) {
+			params = new CommonLayoutParams();
+		}
+
+		if (params instanceof CommonLayoutParams) {
+			CommonLayoutParams lp = (CommonLayoutParams) params;
+			lp.maxHeightPercent = value;
+			// Baseline is unconstrained; the percent is resolved against the parent at measure time.
+			lp.maxHeight = -1;
+			view.setLayoutParams(params);
+		}
+	}
+
 	public static int getWidth(android.view.View view) {
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		if (params != null) {

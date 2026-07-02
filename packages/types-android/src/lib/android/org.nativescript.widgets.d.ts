@@ -181,6 +181,11 @@
                 public widthPercent: number;
                 public heightPercent: number;
 
+                public maxWidth: number;
+                public maxHeight: number;
+                public maxWidthPercent: number;
+                public maxHeightPercent: number;
+
                 public topMarginPercent: number;
                 public leftMarginPercent: number;
                 public bottomMarginPercent: number;
@@ -600,6 +605,14 @@
 
                 public static getMinHeight(view: android.view.View): number;
                 public static setMinHeight(view: android.view.View, value: number): void;
+
+                public static getMaxWidth(view: android.view.View): number;
+                public static setMaxWidth(view: android.view.View, value: number): void;
+                public static setMaxWidthPercent(view: android.view.View, value: number): void;
+
+                public static getMaxHeight(view: android.view.View): number;
+                public static setMaxHeight(view: android.view.View, value: number): void;
+                public static setMaxHeightPercent(view: android.view.View, value: number): void;
 
                 public static getWidth(view: android.view.View): number;
                 public static setWidth(view: android.view.View, value: number): void;

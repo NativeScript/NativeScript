@@ -9,7 +9,7 @@ import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
-import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, maxWidthProperty, maxHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
 
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
@@ -1998,5 +1998,27 @@ createNativePercentLengthProperty({
 	setter: '_setMinHeightNative',
 	get setPixels() {
 		return org.nativescript.widgets.ViewHelper.setMinHeight;
+	},
+});
+
+createNativePercentLengthProperty({
+	setter: maxWidthProperty.setNative,
+	auto: -1, // -1 means unconstrained (no maximum).
+	get setPixels() {
+		return org.nativescript.widgets.ViewHelper.setMaxWidth;
+	},
+	get setPercent() {
+		return org.nativescript.widgets.ViewHelper.setMaxWidthPercent;
+	},
+});
+
+createNativePercentLengthProperty({
+	setter: maxHeightProperty.setNative,
+	auto: -1, // -1 means unconstrained (no maximum).
+	get setPixels() {
+		return org.nativescript.widgets.ViewHelper.setMaxHeight;
+	},
+	get setPercent() {
+		return org.nativescript.widgets.ViewHelper.setMaxHeightPercent;
 	},
 });
