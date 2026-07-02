@@ -36,11 +36,19 @@ fi
 rm -rf dist/package/platforms/android || true
 mkdir -p dist/package/platforms/android
 
-echo "Build android"
-cd android
-./gradlew --quiet assembleRelease
-cd ..
-cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
+# Opt-in fast path: only when SKIP_NATIVE_IF_UNCHANGED is set do we reuse the
+# committed artifact instead of building. Running this script normally always builds.
+if [ -n "$SKIP_NATIVE_IF_UNCHANGED" ] && node tools/native-state.mjs is-current android
+then
+  echo "Android native sources unchanged since last build — reusing committed artifact"
+  cp ../core/platforms/android/widgets-release.aar dist/package/platforms/android/widgets-release.aar
+else
+  echo "Build android"
+  cd android
+  ./gradlew --quiet assembleRelease
+  cd ..
+  cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
+fi
 
 if [ "$1" ]
 then

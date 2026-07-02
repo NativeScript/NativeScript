@@ -1,0 +1,25 @@
+# Verifies that the committed native artifacts (packages/core/platforms) are in
+# sync with their sources in packages/ui-mobile-base. Native builds are expensive
+# and not rebuilt in CI, so this guards against changing native sources without
+# rebuilding + committing the artifacts. Pure content hashing — no Xcode/Android
+# toolchain required.
+name: 'Native artifacts check'
+on:
+  pull_request:
+    paths:
+      - 'packages/ui-mobile-base/**'
+      - 'packages/core/platforms/**'
+
+permissions:
+  contents: read
+
+jobs:
+  native-artifacts-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: 23.5.0
+      - name: 'Verify native build state'
+        run: node packages/ui-mobile-base/tools/native-state.mjs check

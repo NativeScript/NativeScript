@@ -8,9 +8,24 @@
 		"build": {
 			"executor": "nx:run-commands",
 			"options": {
-				"commands": ["./build.sh", "cp -R dist/package/platforms/* ../../packages/core/platforms"],
+				"commands": ["./build.sh", "cp -R dist/package/platforms/* ../../packages/core/platforms", "node tools/native-state.mjs write"],
 				"cwd": "packages/ui-mobile-base",
 				"parallel": false
+			}
+		},
+		"ensure-native": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": ["SKIP_NATIVE_IF_UNCHANGED=1 ./build.sh", "cp -R dist/package/platforms/* ../../packages/core/platforms", "node tools/native-state.mjs write"],
+				"cwd": "packages/ui-mobile-base",
+				"parallel": false
+			}
+		},
+		"verify-native": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "node tools/native-state.mjs check",
+				"cwd": "packages/ui-mobile-base"
 			}
 		}
 	}
