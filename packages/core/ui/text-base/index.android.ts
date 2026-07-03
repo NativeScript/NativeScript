@@ -572,24 +572,20 @@ export class TextBase extends TextBaseCommon {
 	}
 }
 
-function getCapitalizedString(str: string): string {
-	let newString = str.toLowerCase();
-	newString = newString.replace(/(?:^|\s'*|[-"([{])+\S/g, (c) => c.toUpperCase());
-	return newString;
-}
-
 export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {
 	if (!text || !isString(text)) {
 		return '';
 	}
 
+	// Use the java string methods to get localized transformations.
+	// This will respect the locale set by native apis or the localize plugins.
 	switch (textTransform) {
 		case 'uppercase':
-			return text.toUpperCase();
+			return org.nativescript.widgets.Utils.stringToUpperCase(text);
 		case 'lowercase':
-			return text.toLowerCase();
+			return org.nativescript.widgets.Utils.stringToLowerCase(text);
 		case 'capitalize':
-			return getCapitalizedString(text);
+			return org.nativescript.widgets.Utils.capitalizeString(text);
 		case 'none':
 		default:
 			return text;

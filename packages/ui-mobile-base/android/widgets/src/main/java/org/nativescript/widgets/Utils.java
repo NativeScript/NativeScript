@@ -727,6 +727,36 @@ public class Utils {
 		});
 	}
 
+	public static String stringToUpperCase(final String value) {
+		return value.toUpperCase();
+	}
+
+	public static String stringToLowerCase(final String value) {
+		return value.toLowerCase();
+	}
+
+	public static String capitalizeString(final String value) {
+		if (value == null || value.isEmpty()) {
+			return value;
+		}
+
+		final char[] buffer = value.toLowerCase().toCharArray();
+		boolean capitalizeNext = true;
+
+		for (int i = 0; i < buffer.length; i++) {
+			final char ch = buffer[i];
+
+			// Check these delimiters to match the iOS implementation
+			if (Character.isWhitespace(ch) || ch == '-' || ch == '\'' || ch == '"' || ch == '(' || ch == '[' || ch == '{') {
+				capitalizeNext = true;
+			} else if (capitalizeNext) {
+				buffer[i] = Character.toTitleCase(ch);
+				capitalizeNext = false;
+			}
+		}
+		return new String(buffer);
+	}
+
 	/**
 	 * Return true if child is a descendant of parent, (or equal to the parent).
 	 */
