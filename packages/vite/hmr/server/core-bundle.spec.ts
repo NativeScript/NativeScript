@@ -138,6 +138,14 @@ describe('shim codegen', () => {
 		expect(code).toContain('export default __ns_core_sub_ns__;');
 		expect(code).not.toContain('export const');
 	});
+
+	it('sub shim with an own default export forwards the registry default (not the namespace)', () => {
+		// utils/lazy.js declares `export default function lazy(...)` — consumers
+		// do `import lazy from '@nativescript/core/utils/lazy'` and call it.
+		const code = buildCoreSubShimCode('utils/lazy', [], true);
+		expect(code).toContain('export default __ns_core_sub_ns__.default;');
+		expect(code).not.toContain('export default __ns_core_sub_ns__;');
+	});
 });
 
 describe('createCoreBundleService', () => {

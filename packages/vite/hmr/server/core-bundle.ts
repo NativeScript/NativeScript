@@ -469,7 +469,7 @@ export function buildCoreMainShimCode(): string {
  */
 const RESERVED_EXPORT_NAMES = new Set(['default', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'false', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'null', 'return', 'super', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with', 'let', 'static', 'yield', 'await', 'eval', 'arguments', '__ns_core_sub_ns__']);
 
-export function buildCoreSubShimCode(sub: string, exportNames: readonly string[]): string {
+export function buildCoreSubShimCode(sub: string, exportNames: readonly string[], hasOwnDefaultExport = false): string {
 	const canonical = normalizeCoreSub(sub);
 	const registryKey = `@nativescript/core/${canonical}`;
 	const names = Array.from(new Set(exportNames)).filter((n) => /^[A-Za-z_$][\w$]*$/.test(n) && !RESERVED_EXPORT_NAMES.has(n));
@@ -481,7 +481,18 @@ export function buildCoreSubShimCode(sub: string, exportNames: readonly string[]
 	for (const name of names) {
 		lines.push(`export const ${name} = __ns_core_sub_ns__.${name};`);
 	}
-	lines.push(`export default __ns_core_sub_ns__;`);
+	// Deep-subpath contract (see isDeepCoreSubpath / per-module bridge): a sub
+	// that declares its own `export default` (e.g. utils/lazy.js's
+	// `export default function lazy`) must expose THAT value as the shim's
+	// default — consumers like the vendor bundle do
+	// `import lazy from '@nativescript/core/utils/lazy'` and call it directly.
+	// Subs without an own default keep the self-namespace default so the
+	// "default import + destructure" consumer rewrite still works.
+	if (hasOwnDefaultExport) {
+		lines.push(`export default __ns_core_sub_ns__.default;`);
+	} else {
+		lines.push(`export default __ns_core_sub_ns__;`);
+	}
 	lines.push('');
 	return lines.join('\n');
 }

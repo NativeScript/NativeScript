@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs';
+
 import type { TransformResult, ViteDevServer } from 'vite';
 
 import { isDirectoryIndexFilename, rewriteSpecifiersForDevice, type RelativeBase } from './core-sanitize.js';
-import { buildDefaultExportFooter, buildShapeInstallHeader, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
+import { buildDefaultExportFooter, buildShapeInstallHeader, hasExistingDefaultExport, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath, collectStaticExportNamesFromFile } from './websocket-core-bridge.js';
@@ -74,27 +76,39 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 		});
 	}
 
-	// Per-sub named-export discovery for bundle-mode shims, memoized for the
+	// Per-sub export discovery for bundle-mode shims, memoized for the
 	// session (same disk walker the per-module bridge uses for its own
 	// export-name guarantees; see collectStaticExportOriginsFromFile).
-	const subExportNamesCache = new Map<string, Promise<string[]>>();
+	// `hasDefault` mirrors the per-module bridge's default-export handling
+	// (buildDefaultExportFooter skips modules with an existing default), so
+	// bundle-mode shims expose a sub's own `export default` value instead of
+	// masking it with the self namespace.
+	interface SubShimExportInfo {
+		names: string[];
+		hasDefault: boolean;
+	}
+	const subExportInfoCache = new Map<string, Promise<SubShimExportInfo>>();
 	const resolveModuleIdViaVite = async (moduleId: string): Promise<string | null> => {
 		const resolved = await server.pluginContainer?.resolveId?.(moduleId, undefined);
 		return typeof resolved === 'string' ? resolved : resolved?.id || null;
 	};
-	const getSubShimExportNames = (canonicalSub: string): Promise<string[]> => {
-		let pending = subExportNamesCache.get(canonicalSub);
+	const getSubShimExportInfo = (canonicalSub: string): Promise<SubShimExportInfo> => {
+		let pending = subExportInfoCache.get(canonicalSub);
 		if (!pending) {
 			pending = (async () => {
 				try {
 					const modulePath = await resolveRuntimeCoreModulePath(canonicalSub, resolveModuleIdViaVite);
-					if (!modulePath) return [];
-					return collectStaticExportNamesFromFile(modulePath);
+					if (!modulePath) return { names: [], hasDefault: false };
+					let hasDefault = false;
+					try {
+						hasDefault = hasExistingDefaultExport(readFileSync(modulePath.replace(/[?#].*$/, ''), 'utf8'));
+					} catch {}
+					return { names: collectStaticExportNamesFromFile(modulePath), hasDefault };
 				} catch {
-					return [];
+					return { names: [], hasDefault: false };
 				}
 			})();
-			subExportNamesCache.set(canonicalSub, pending);
+			subExportInfoCache.set(canonicalSub, pending);
 		}
 		return pending;
 	};
@@ -184,9 +198,9 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 						return;
 					}
 					if (bundleState.subs.has(canonicalSubForShim)) {
-						const exportNames = await getSubShimExportNames(canonicalSubForShim);
+						const exportInfo = await getSubShimExportInfo(canonicalSubForShim);
 						res.statusCode = 200;
-						res.end(buildCoreSubShimCode(canonicalSubForShim, exportNames));
+						res.end(buildCoreSubShimCode(canonicalSubForShim, exportInfo.names, exportInfo.hasDefault));
 						return;
 					}
 					if (!warnedFallbackSubs.has(canonicalSubForShim)) {
