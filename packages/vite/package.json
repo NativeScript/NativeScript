@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "8.0.0-alpha.57",
+	"version": "8.0.0-alpha.58",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
@@ -60,11 +60,15 @@
 			"default": "./configuration/base.js"
 		},
 		"./hmr/client/index.js": "./hmr/client/index.js",
+		"./hmr/client/hot-context": "./hmr/client/hot-context.js",
+		"./hmr/client/hot-context.js": "./hmr/client/hot-context.js",
 		"./hmr/entry-runtime.js": "./hmr/entry-runtime.js",
 		"./hmr/shared/runtime/vendor-bootstrap": "./hmr/shared/runtime/vendor-bootstrap.js",
 		"./hmr/shared/runtime/vendor-bootstrap.js": "./hmr/shared/runtime/vendor-bootstrap.js",
 		"./hmr/shared/runtime/root-placeholder": "./hmr/shared/runtime/root-placeholder.js",
 		"./hmr/shared/runtime/root-placeholder.js": "./hmr/shared/runtime/root-placeholder.js",
+		"./hmr/shared/runtime/boot-complete": "./hmr/shared/runtime/boot-complete.js",
+		"./hmr/shared/runtime/boot-complete.js": "./hmr/shared/runtime/boot-complete.js",
 		"./hmr/shared/runtime/boot-session": "./hmr/shared/runtime/boot-session.js",
 		"./hmr/shared/runtime/boot-session.js": "./hmr/shared/runtime/boot-session.js",
 		"./hmr/shared/runtime/dev-overlay": "./hmr/shared/runtime/dev-overlay.js",
