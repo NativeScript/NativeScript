@@ -19,7 +19,6 @@ export interface RegisterSfcHandlersOptions {
 	appVirtualWithSlash: string;
 	sfcFileMap: Map<string, string>;
 	depFileMap: Map<string, string>;
-	getGraphVersion(): number;
 	getStrategy(): FrameworkServerStrategy;
 }
 
@@ -96,34 +95,31 @@ export const pluginTransformTypescript: any = (() => {
 })();
 
 /**
- * Version app-source `/ns/m/` imports inside a served Vue SFC artifact
- * (assembler module or `/ns/sfc` variant) to `/ns/m/__ns_hmr__/v<ver>/...`.
+ * Canonicalize app-source `/ns/m/` imports inside a served Vue SFC artifact
+ * (assembler module or `/ns/sfc` variant): strip any `__ns_hmr__/<tag>/`
+ * segment (stale cached device code) so every import lands on the STABLE
+ * `/ns/m/<app-path>` URL.
  *
- * Why: SFC artifacts are re-fetched per graph version (`/ns/asm/<ver>`,
- * `/ns/sfc/<ver>/...`), but their non-`.vue` dep imports were rewritten to
- * STABLE `/ns/m/<app-path>` URLs. On runtimes without `__nsInvalidateModules`
- * (or URL canonicalization), V8's HTTP module cache keys on the exact URL, so
- * a remounted SFC linked against the dep instance cached by the PREVIOUS save
- * — the on-screen value stayed one save behind. Versioning the import makes
- * each artifact pull the current dep content: legacy runtimes see a brand-new
- * URL (fresh fetch), modern runtimes canonicalize the tag away and hit the
- * explicitly-evicted (refreshed) canonical key. The server already collapses
- * any `__ns_hmr__/<tag>/` segment when serving (`rewriteNsMImportPathForHmr`).
+ * Why canonical (not versioned): module identity IS the URL. Freshness for
+ * changed deps comes from explicit eviction — `__NS_DEV__.invalidateModules` drops
+ * the canonical key from V8's registry AND arms the runtime's bust-next-fetch
+ * nonce, so the artifact's re-import re-fetches current content. Emitting a
+ * versioned URL would mint a NEW module identity per save (the runtime no
+ * longer collapses tags), splitting module state.
  *
- * Vendor (`node_modules`) and boot-tagged paths are left untouched — their
- * module identity must stay stable across versions.
+ * Vendor (`node_modules`) paths pass through untouched (they're already
+ * stable and never tagged).
  */
-export function ensureVersionedNsMAppImports(code: string, ver: number): string {
-	if (!code || !Number.isFinite(ver)) return code;
-	const versionSpec = (match: string, prefix: string, origin: string, rest: string, suffix: string): string => {
-		if (rest.startsWith('node_modules/') || rest.startsWith('__ns_boot__/')) return match;
-		return `${prefix}${origin}/ns/m/__ns_hmr__/v${ver}/${rest}${suffix}`;
+export function canonicalizeNsMAppImports(code: string): string {
+	if (!code) return code;
+	const canonicalSpec = (_match: string, prefix: string, origin: string, rest: string, suffix: string): string => {
+		return `${prefix}${origin}/ns/m/${rest}${suffix}`;
 	};
-	// `from "/ns/m/..."` (covers import/export-from), normalizing any existing tag
-	code = code.replace(/(from\s+["'])((?:https?:\/\/[^"']+)?)\/ns\/m\/(?:__ns_hmr__\/[^/"']+\/)?([^"']*)(["'])/g, versionSpec);
+	// `from "/ns/m/..."` (covers import/export-from), stripping any existing tag
+	code = code.replace(/(from\s+["'])((?:https?:\/\/[^"']+)?)\/ns\/m\/(?:__ns_hmr__\/[^/"']+\/)?([^"']*)(["'])/g, canonicalSpec);
 	// side-effect `import "/ns/m/..."`
-	code = code.replace(/(import\s+["'])((?:https?:\/\/[^"']+)?)\/ns\/m\/(?:__ns_hmr__\/[^/"']+\/)?([^"']*)(["'])/g, versionSpec);
+	code = code.replace(/(import\s+["'])((?:https?:\/\/[^"']+)?)\/ns\/m\/(?:__ns_hmr__\/[^/"']+\/)?([^"']*)(["'])/g, canonicalSpec);
 	// dynamic `import("/ns/m/...")`
-	code = code.replace(/(import\(\s*["'])((?:https?:\/\/[^"']+)?)\/ns\/m\/(?:__ns_hmr__\/[^/"']+\/)?([^"']*)(["']\s*\))/g, versionSpec);
+	code = code.replace(/(import\(\s*["'])((?:https?:\/\/[^"']+)?)\/ns\/m\/(?:__ns_hmr__\/[^/"']+\/)?([^"']*)(["']\s*\))/g, canonicalSpec);
 	return code;
 }

@@ -1,4 +1,6 @@
 import { getGlobalScope } from './shared/runtime/global-scope.js';
+import { markDevBootComplete } from './shared/runtime/boot-complete.js';
+import { readNsRuntimeDevHostApi } from './shared/runtime/browser-runtime-contract.js';
 // Entry runtime executed on device via HTTP ESM.
 
 type EntryOpts = {
@@ -138,6 +140,35 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			return null;
 		}
 
+		// Re-trigger styling on every reachable root view. The core bridge's
+		// Application realm is not always the realm whose Application.run()
+		// committed the root (monorepo per-module serving loads core through
+		// /ns/m/packages/... while the bridge re-exports @fs-spelled modules),
+		// so also consult the seeded global and the Application singletons the
+		// root-placeholder run-wrapper records in __NS_DEV_KNOWN_APPLICATIONS__.
+		const refreshRootViews = () => {
+			const candidates: any[] = [Application, g.Application];
+			try {
+				const known = (g as any).__NS_DEV_KNOWN_APPLICATIONS__;
+				if (Array.isArray(known)) candidates.push(...known);
+			} catch {}
+			const seenRoots = new Set<any>();
+			for (const candidate of candidates) {
+				try {
+					const rootView = candidate?.getRootView?.();
+					if (!rootView || seenRoots.has(rootView)) continue;
+					seenRoots.add(rootView);
+					if (typeof rootView._onCssStateChange === 'function') {
+						rootView._onCssStateChange();
+					} else {
+						const cls = rootView.className || '';
+						rootView.className = cls + ' ';
+						rootView.className = cls;
+					}
+				} catch {}
+			}
+		};
+
 		// Replace selectors via remove + add tagged pair so deleted
 		// rules disappear (the additive `Application.addCss` cannot
 		// undo previously installed selectors).
@@ -163,17 +194,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			if (!refreshRoot) {
 				return;
 			}
-
-			try {
-				const rootView = Application.getRootView?.();
-				if (rootView && typeof rootView._onCssStateChange === 'function') {
-					rootView._onCssStateChange();
-				} else if (rootView) {
-					const cls = rootView.className || '';
-					rootView.className = cls + ' ';
-					rootView.className = cls;
-				}
-			} catch {}
+			refreshRootViews();
 		};
 
 		g.__NS_HMR_APPLY_CSS__ = applyCss;
@@ -199,12 +220,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			// Live edit (boot complete): refresh the root so mounted views pick up
 			// the replaced selectors. Cold boot needs no refresh (views not built yet).
 			if (g.__NS_HMR_BOOT_COMPLETE__) {
-				try {
-					const rootView = Application.getRootView?.();
-					if (rootView && typeof rootView._onCssStateChange === 'function') {
-						rootView._onCssStateChange();
-					}
-				} catch {}
+				refreshRootViews();
 			}
 		};
 		g.__NS_REGISTER_CSS__ = registerCss;
@@ -251,6 +267,13 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 
 			if (cssApplied) {
 				g.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
+				// On the http-bootloader path this install runs BEFORE the app
+				// mounts, so no refresh is needed. On the dev-session path the
+				// bootstrap installs this lazily AFTER boot completes — views
+				// are already mounted with stale (empty) styling, so re-style.
+				if (g.__NS_HMR_BOOT_COMPLETE__) {
+					refreshRootViews();
+				}
 			}
 		}
 
@@ -347,12 +370,12 @@ export default async function startEntry(opts: EntryOpts) {
 		// imports (plus the style-scope preload) are independent HTTP GETs. We
 		// fire them in parallel so the boot path is bounded by the slowest
 		// payload rather than the sum.
-		const configureRuntime = globalThis.__nsConfigureRuntime;
+		const configureRuntime = readNsRuntimeDevHostApi(globalThis).configureRuntime;
 		const g = globalThis;
 		const importMapPromise: Promise<void> = (async () => {
 			if (typeof configureRuntime !== 'function') {
 				if (VERBOSE) {
-					console.info('[ns-entry] __nsConfigureRuntime not available (older runtime); skipping import map');
+					console.info('[ns-entry] runtime configure hook not available; skipping import map');
 				}
 				return;
 			}
@@ -391,17 +414,20 @@ export default async function startEntry(opts: EntryOpts) {
 		// Start the runtime bridge preload as soon as the import map is ready.
 		// Any bare-specifier resolution inside /ns/rt depends on the import map,
 		// so we chain it after importMapPromise — but otherwise let it race.
+		// Canonical (unversioned) URL: one module record per bridge, matching
+		// every served-module import of `/ns/rt`.
 		const t_rt = Date.now();
+		const RT_URL = ORIGIN + '/ns/rt';
 		const rtPromise: Promise<any> = importMapPromise.then(async () => {
 			await updateBootOverlayAndYield('loading-runtime-bridge', {
-				detail: ORIGIN + '/ns/rt/' + VER,
+				detail: RT_URL,
 			});
 			try {
-				const mod = await importHttp(ORIGIN + '/ns/rt/' + VER);
-				TRACE.preload.rt = { ok: true, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER };
+				const mod = await importHttp(RT_URL);
+				TRACE.preload.rt = { ok: true, ms: Date.now() - t_rt, url: RT_URL };
 				return mod;
 			} catch (e_rt: any) {
-				TRACE.preload.rt = { ok: false, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER, err: String(e_rt && (e_rt.message || e_rt)) };
+				TRACE.preload.rt = { ok: false, ms: Date.now() - t_rt, url: RT_URL, err: String(e_rt && (e_rt.message || e_rt)) };
 				console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
 				return null;
 			}
@@ -415,11 +441,11 @@ export default async function startEntry(opts: EntryOpts) {
 		// identity realm) with vendor `require('@nativescript/core')` lookups
 		// resolved through the runtime import map, the `/ns/rt` bridge's
 		// dynamic core import, and every served-module import. Threading a
-		// `/<version>` segment here previously created two separate module
-		// records for byte-identical content, splitting `Frame`/`Page`/`View`
-		// class identity across the boundary and leaving the dev placeholder
-		// root visible after `Application.resetRootView(realFrame)` no-ops via
-		// a failed `instanceof Frame` check.
+		// `/<version>` segment here would create two separate module records
+		// for byte-identical content, splitting `Frame`/`Page`/`View` class
+		// identity across the boundary and leaving the dev placeholder root
+		// visible after `Application.resetRootView(realFrame)` no-ops via a
+		// failed `instanceof Frame` check.
 		const t_core = Date.now();
 		const CORE_URL = ORIGIN + '/ns/core';
 		const corePromise: Promise<any> = importMapPromise.then(async () => {
@@ -455,8 +481,14 @@ export default async function startEntry(opts: EntryOpts) {
 			installHttpCoreCssSupport(coreBridge, VERBOSE);
 		}
 
+		// Canonical entry URL — no `__ns_boot__` path decoration. The
+		// boot-progress snippet is injected self-gating by the /ns/m module
+		// server (it no-ops once `__NS_HMR_BOOT_COMPLETE__` flips), so the
+		// entry URL matches the steady-state HMR form and shares one module
+		// identity. `?v=` is a dev-endpoint query the runtime canonicalizer
+		// strips from the cache key.
 		const MAIN_URL = ORIGIN + '/ns/m' + MAIN + '?v=' + VER;
-		const MAIN_IMPORT_URL = ORIGIN + '/ns/m/__ns_boot__/b1' + MAIN + '?v=' + VER;
+		const MAIN_IMPORT_URL = MAIN_URL;
 		if (VERBOSE) console.log(D, 'importing main module:', MAIN_URL);
 		globalThis.__NS_ENTRY_LAST_TARGET__ = MAIN_IMPORT_URL; // used by fetchCodeframe sanitized-vs-raw tag
 		const t_main = Date.now();
@@ -497,7 +529,10 @@ export default async function startEntry(opts: EntryOpts) {
 			detail: 'HTTP HMR boot is ready. The app root should take over now.',
 		});
 		if (VERBOSE) console.log(D, '__NS_HMR_BOOT_COMPLETE__ = true');
-		globalThis.__NS_HMR_BOOT_COMPLETE__ = true;
+		// Flips the JS global AND the native cold-boot gate
+		// (`__NS_DEV__.setDevBootComplete`) so the runtime stops pumping the
+		// JS-thread runloop between synchronous fetches.
+		markDevBootComplete();
 
 		// Belt-and-suspenders: kick off the placeholder finalize poll now. The
 		// `Application.resetRootView` wrapper (installed by `installRootPlaceholder`
@@ -514,13 +549,10 @@ export default async function startEntry(opts: EntryOpts) {
 		try {
 			const g: any = getGlobalScope();
 			const restorePlaceholder = g.__NS_DEV_RESTORE_PLACEHOLDER__;
-			// Verbose-gated. Previously this was unconditional with a
-			// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out — left wide open
-			// while we were chasing the Android "Waiting for the app
-			// root view" stall. Now that the stall is resolved the
-			// warning belongs behind `verbose`; if a new stall surfaces
-			// the user can flip `verbose: true` in their HMR config to
-			// see this + the matching `[ns-placeholder][diag]` chain.
+			// Verbose-gated: if an app-root stall surfaces (e.g. Android
+			// hanging at "Waiting for the app root view"), flip
+			// `verbose: true` in the HMR config to see this plus the
+			// matching `[ns-placeholder][diag]` chain.
 			try {
 				if (VERBOSE) {
 					console.warn('[ns-entry][diag] main import done; kicking placeholder finalize', {

@@ -2,6 +2,7 @@
  * No circulars - don't import from other hmr/client/* modules here.
  */
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { readNsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 
 // Build-time verbose flag, read defensively so unit tests (where the
@@ -216,28 +217,20 @@ export function deriveHttpOrigin(wsUrl: string | undefined) {
 	}
 }
 
-// Detect runtime support for `__nsInvalidateModules`.
+// Detect runtime support for explicit module eviction.
 //
-// Modern runtimes ship a global JS function `__nsInvalidateModules(urls)`
-// that removes the canonical key for each URL from V8's module registry
-// (`g_moduleRegistry`). Combined with the HMR URL canonicalizer in the
-// runtime — which strips `__ns_hmr__/<tag>/` and `__ns_boot__/b1/`
-// prefixes before keying — explicit eviction lets the client keep
-// import URLs STABLE across saves while still busting V8's cache for
-// exactly the modules that need to re-evaluate.
-//
-// Without explicit eviction, a modern runtime would silently drop the
-// legacy `/ns/m/__ns_hmr__/v<N>/...` cache-buster (because the
-// canonicalizer collapses it back to the stable key) and any HMR
-// re-import would resolve to the cached old module. So when the
-// runtime exposes `__nsInvalidateModules`, the client emits stable
-// URLs and the caller is responsible for invalidating before
-// re-importing. When the runtime does NOT expose it, the client falls
-// back to legacy URL versioning so cache busting works even on older
-// devices.
+// The runtime's `__NS_DEV__.invalidateModules(urls)` removes the canonical
+// key for each URL from V8's module registry (`g_moduleRegistry`) AND marks
+// the same keys "bust next fetch", so the runtime's next HTTP fetch for
+// those URLs appends a one-shot `__ns_dev_nonce` query param that
+// defeats CFNetwork/NSURLCache staleness. That pairing is what lets the
+// client keep import URLs STABLE across saves — eviction (not URL
+// mutation) is the freshness mechanism. The runtime contract requires
+// this function; `hasExplicitEviction()` remains as a cheap assertion
+// point (and for the mode banner).
 export function hasExplicitEviction(): boolean {
 	try {
-		return typeof globalThis.__nsInvalidateModules === 'function';
+		return typeof readNsRuntimeDevHostApi(getGlobalScope()).invalidateModules === 'function';
 	} catch {
 		return false;
 	}
@@ -252,7 +245,7 @@ export function emitHmrModeBannerOnce(force = false): void {
 	if (!ENV_VERBOSE) return;
 	try {
 		const supported = hasExplicitEviction();
-		const mode = supported ? 'explicit-eviction (stable URLs)' : 'legacy-url-versioning (no __nsInvalidateModules)';
+		const mode = supported ? 'explicit-eviction (stable URLs)' : 'DEGRADED (__NS_DEV__.invalidateModules missing — stale modules will not be re-fetched)';
 		console.info(`[hmr-client] module reload mode: ${mode}`);
 	} catch {}
 }
@@ -267,21 +260,21 @@ export function _resetHmrModeBannerForTests(): void {
 //
 // Hands a list of canonical module URLs (or `/ns/m/...` paths) to the
 // runtime so V8's module registry drops them. Returns true iff the
-// runtime accepted the eviction. Falls through silently (returning
-// `false`) on older runtimes so the caller can switch to the legacy
-// URL-versioning path. Empty inputs are no-ops.
+// runtime accepted the eviction; returns `false` (without throwing) when
+// `__NS_DEV__.invalidateModules` is absent, which callers log as a
+// degraded eviction rather than attempting any URL mutation. Empty
+// inputs are no-ops.
 export function invalidateModulesByUrls(urls: readonly string[]): boolean {
 	emitHmrModeBannerOnce();
 	if (!urls || !urls.length) return false;
-	const g: any = getGlobalScope();
-	const fn = g.__nsInvalidateModules;
+	const fn = readNsRuntimeDevHostApi(getGlobalScope()).invalidateModules;
 	if (typeof fn !== 'function') return false;
 	try {
-		fn.call(null, urls);
+		fn.call(null, urls.slice());
 		return true;
 	} catch (error) {
 		try {
-			if (ENV_VERBOSE) console.warn('[hmr-client] __nsInvalidateModules threw', (error as any)?.message || error);
+			if (ENV_VERBOSE) console.warn('[hmr-client] __NS_DEV__.invalidateModules threw', (error as any)?.message || error);
 		} catch {}
 		return false;
 	}
@@ -385,39 +378,17 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 	if (!origin) return Promise.reject(new Error('no-http-origin'));
 	const rawPath = spec.startsWith('/') ? spec : '/' + spec;
 	const canonicalPath = stripScriptExtension(rawPath);
-	const basePath = '/ns/m' + canonicalPath;
-	const baseUrl = origin + basePath;
-	let url = baseUrl;
+	const url = origin + '/ns/m' + canonicalPath;
 
-	// Path-tag each HMR re-import (`/ns/m/__ns_hmr__/<tag>/...`) so the iOS
-	// HTTP loader's response cache (keyed by exact URL) re-fetches on every
-	// save. The runtime canonicalizer strips the tag before V8's module
-	// registry lookup, so V8 still shares one cache key per module. The tag
-	// (`<nonce>-<graphVersion>[-<hash>]`) changes each save; without it an
-	// HMR cycle stays "one save behind" on stale cached response bodies.
-	try {
-		const v = typeof graphVersion === 'number' ? graphVersion : 0;
-		const h = graph.get(spec)?.hash || '';
-		const g: any = getGlobalScope();
-		const n = typeof g?.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;
-		// Only add a tag when we have at least one signal — on the very
-		// first request before any HMR cycle the module is fresh and
-		// we want the canonical URL to populate V8's cache directly.
-		if (v || h || n) {
-			// Prefer nonce when present to guarantee changes apply even
-			// if server version/hash happen to be stable across saves.
-			const tag = n ? `${n}-${v}${h ? `-${h}` : ''}` : h ? `${v}-${h}` : String(v);
-			// /ns/m/__ns_hmr__/<tag>/<original-spec>
-			url = origin + '/ns/m/__ns_hmr__/' + encodeURIComponent(tag) + basePath.slice('/ns/m'.length);
-		}
-	} catch {}
-
+	// Canonical URL, always. Module identity IS the URL: freshness comes
+	// from explicit eviction (`__NS_DEV__.invalidateModules` marks the canonical
+	// key "bust next fetch", so the runtime's next fetch appends a
+	// one-shot `__ns_dev_nonce` query param that defeats OS-level HTTP
+	// caches). Never emit a path tag or version segment for freshness —
+	// the runtime treats the literal URL as module identity, so a tagged
+	// URL would create a SECOND module identity instead of busting the
+	// first one.
 	emitHmrModeBannerOnce();
-
-	const prev = moduleFetchCache.get(spec);
-	if (prev === url) {
-		return Promise.resolve(url);
-	}
 	moduleFetchCache.set(spec, url);
 	return Promise.resolve(url);
 }

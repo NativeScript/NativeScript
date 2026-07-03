@@ -49,7 +49,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		}
 		emitSummary();
 	},
-	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
+	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
 	// identity: plain TS apps rely on the generic pipeline (vendor bridge, /ns/entry-rt).
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure that any TS app module requested by the HTTP realm is transformed once,

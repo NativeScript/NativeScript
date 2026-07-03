@@ -1,4 +1,6 @@
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
+import { getNsHotRegistry } from '../../../client/hot-context.js';
+import { readNsRuntimeDevHostApi } from '../../../shared/runtime/browser-runtime-contract.js';
 type GetCoreFn = (name: string) => any;
 
 // HMR-applying progress overlay.
@@ -112,7 +114,7 @@ interface AngularUpdateOptions {
 // A back-to-back save (e.g., the user holds Cmd+S, or `runOnSave`
 // saves a file twice during one tick) could overlap two HMR cycles:
 // the first cycle's `import(entry)` would still be resolving when the
-// second cycle's `__nsInvalidateModules` ran, leaving the registry in
+// second cycle's `__NS_DEV__.invalidateModules` ran, leaving the registry in
 // a half-evicted state and producing flaky "module already evaluated"
 // errors.
 //
@@ -127,68 +129,61 @@ let inFlightHmrCycle: Promise<void> | null = null;
 
 // Explicit module eviction.
 //
-// `__nsInvalidateModules` is a runtime-installed global that takes an
-// array of canonical /ns/m/<rel> URLs and removes each one from V8's
-// module registry (`g_moduleRegistry`). The runtime canonicalizer
-// strips legacy `__ns_hmr__/<tag>/` and `__ns_boot__/b1/` segments
-// before lookup, so the same URL evicts every cache entry historically
-// created for that module — even if a stale tagged URL is still around.
+// `__NS_DEV__.invalidateModules` is a runtime-installed global that takes an
+// array of canonical /ns/m/<rel> URLs, removes each one from V8's
+// module registry (`g_moduleRegistry`) and the prefetch cache, and
+// marks the keys "bust next fetch" so the runtime's next HTTP fetch
+// for them defeats OS-level caches with a one-shot query nonce.
 //
-// Soft-fails on older runtimes that don't expose the function. In that
-// case we fall through to the legacy URL-versioning path and emit a
-// one-time warning so the user knows the eviction protocol is
-// unavailable.
-// Dispatch one of Vite's standard HMR lifecycle events through the iOS
-// runtime's `__NS_DISPATCH_HOT_EVENT__` global. The runtime owns the
-// listener registry that `import.meta.hot.on(event, cb)` populates; this
-// function is the producer side that lets the Angular HMR client emit the
-// canonical Vite events (`vite:beforeUpdate`, `vite:afterUpdate`,
-// `vite:beforeFullReload`, `vite:invalidate`, `vite:error`) at the right
-// moments. User code that does
+// Soft-fails (with a loud warning) if the runtime is missing the
+// function — the eviction protocol is a required part of the runtime
+// contract, so that indicates a runtime/vite version mismatch.
+// Dispatch one of Vite's standard HMR lifecycle events through the JS
+// hot registry (`hot-context.ts`). The registry owns the listener map
+// that `import.meta.hot.on(event, cb)` populates; this function is the
+// producer side that lets the Angular HMR client emit the canonical
+// Vite events (`vite:beforeUpdate`, `vite:afterUpdate`,
+// `vite:beforeFullReload`, `vite:invalidate`, `vite:error`) at the
+// right moments. User code that does
 // `import.meta.hot.on('vite:beforeUpdate', cb)` only fires when this is
 // called.
 //
-// Soft-fails on older runtimes that don't expose the dispatcher (the
-// global is undefined; we no-op). Per-listener failures are swallowed
-// inside the runtime, so a single bad listener can't break the HMR cycle.
-function dispatchHotEvent(g: any, event: string, payload?: unknown): void {
+// The registry is a `globalThis.__NS_HOT_REGISTRY__` singleton, so this
+// works even if this module and the served app modules were evaluated
+// from different URLs. Per-listener failures are swallowed inside the
+// registry, so a single bad listener can't break the HMR cycle.
+function dispatchHotEvent(_g: any, event: string, payload?: unknown): void {
 	try {
-		const fn = g && g.__NS_DISPATCH_HOT_EVENT__;
-		if (typeof fn === 'function') {
-			fn.call(g, event, payload);
-		}
+		getNsHotRegistry().dispatchHotEvent(event, payload);
 	} catch (err) {
-		// Defensive: if the dispatcher itself throws, we'd already have
-		// no listeners (per-callback failures swallowed inside the
-		// runtime), so this is purely a safety net for runtime
-		// regressions. Log only under verbose to avoid noisy dev logs.
+		// Defensive safety net for registry regressions. Log only under
+		// verbose to avoid noisy dev logs.
 		if (envVerbose) {
-			console.warn(`[ns-hmr][client] __NS_DISPATCH_HOT_EVENT__('${event}') threw:`, (err as any)?.message ?? err);
+			console.warn(`[ns-hmr][client] dispatchHotEvent('${event}') threw:`, (err as any)?.message ?? err);
 		}
 	}
 }
 
-// Trigger a full app reload via the runtime's `__nsReloadDevApp` global,
-// dispatching `vite:beforeFullReload` first so user-code listeners can
-// react. Returns `true` if the reload was triggered, `false` if the
-// runtime doesn't expose the API. Used both by `import.meta.hot.invalidate()`
-// (handled directly inside the runtime) AND by the declined-module check
-// below (where the JS layer makes the decision and asks for the reload).
-function triggerFullReload(g: any, message: string): boolean {
-	const fn = g && g.__nsReloadDevApp;
-	if (typeof fn !== 'function') {
-		return false;
-	}
-	dispatchHotEvent(g, 'vite:beforeFullReload', { message });
+// Trigger a JS-driven full app reload, dispatching `vite:beforeFullReload`
+// first so user-code listeners can react. The registry's full-reload path
+// evicts every loaded app module (`__NS_DEV__.getLoadedModuleUrls` →
+// `__NS_DEV__.invalidateModules`) and re-imports the dev entry; the
+// `Application.run` patch in root-placeholder converts re-entry into
+// `resetRootView`. Returns `true` if the reload was triggered. Used both
+// by `import.meta.hot.invalidate()` (handled inside the registry) AND by
+// the declined-module check below (where the JS layer makes the decision
+// and asks for the reload).
+function triggerFullReload(_g: any, message: string): boolean {
+	dispatchHotEvent(_g, 'vite:beforeFullReload', { message });
 	try {
-		// Fire-and-forget — `__nsReloadDevApp` returns a Promise, but we
-		// don't await it here because the JS realm is about to be torn
-		// down. The HMR cycle's caller treats this as terminal and
-		// short-circuits the rest of the cycle.
-		fn.call(g);
+		// Fire-and-forget — the reload path is async, but we don't await
+		// it here because the module graph is about to be torn down. The
+		// HMR cycle's caller treats this as terminal and short-circuits
+		// the rest of the cycle.
+		getNsHotRegistry().requestFullReload(message);
 	} catch (err) {
 		if (envVerbose) {
-			console.warn('[ns-hmr][client] __nsReloadDevApp threw:', (err as any)?.message ?? err);
+			console.warn('[ns-hmr][client] requestFullReload threw:', (err as any)?.message ?? err);
 		}
 		return false;
 	}
@@ -200,27 +195,20 @@ function triggerFullReload(g: any, message: string): boolean {
 // reload instead of a hot-update — declining means "I refuse to be
 // hot-updated". Returns `true` if a full reload was triggered (caller
 // should short-circuit the rest of the cycle).
-//
-// Older runtimes without `__nsHasDeclinedModule` skip the check entirely
-// (legacy behaviour: HMR proceeds with the reboot, which is the same
-// behaviour they had before this fix).
 function checkDeclinedAndReload(g: any, msg: any, options: { verbose?: boolean }): boolean {
-	const checker = g && g.__nsHasDeclinedModule;
-	if (typeof checker !== 'function') return false;
-
 	// `evictPaths` is the eviction set the dev server computed for this
 	// HMR cycle — every module that needs to be re-evaluated. If ANY of
 	// those modules declined HMR, the whole cycle has to convert to a
-	// full reload. Pass them through verbatim; the runtime canonicalizes
-	// internally when matching against `g_hotDeclined`.
+	// full reload. Pass them through verbatim; the registry canonicalizes
+	// internally when matching against its declined set.
 	const evictPaths: string[] = Array.isArray(msg?.evictPaths) ? msg.evictPaths : [];
 
 	let declined = false;
 	try {
-		declined = !!checker.call(g, evictPaths);
+		declined = getNsHotRegistry().hasDeclined(evictPaths);
 	} catch (err) {
 		if (options.verbose && envVerbose) {
-			console.warn('[ns-hmr][client] __nsHasDeclinedModule threw:', (err as any)?.message ?? err);
+			console.warn('[ns-hmr][client] hasDeclined threw:', (err as any)?.message ?? err);
 		}
 		return false;
 	}
@@ -232,64 +220,32 @@ function checkDeclinedAndReload(g: any, msg: any, options: { verbose?: boolean }
 	console.info(`[ns-hmr][decline] ${message} — falling back to full reload`);
 	const reloaded = triggerFullReload(g, message);
 	if (!reloaded && options.verbose && envVerbose) {
-		console.warn('[ns-hmr][client] declined module detected but __nsReloadDevApp unavailable; HMR will proceed (older runtime)');
+		console.warn('[ns-hmr][client] declined module detected but full reload unavailable; HMR will proceed');
 	}
 	return reloaded;
 }
 
-// Drain `import.meta.hot.dispose(cb)` callbacks via the iOS runtime's
-// `globalThis.__nsRunHmrDispose()` global before Angular's reboot.
+// Drain `import.meta.hot.dispose(cb)` callbacks via the JS hot
+// registry before Angular's reboot.
 //
-// The runtime owns the dispose registry (`g_hotDispose` in
-// `HMRSupport.mm`) — every call to `import.meta.hot.dispose(cb)` from
-// user code lands there. This client just asks the runtime to drain.
-// We pass NO key argument so the runtime drains every registered
-// callback across every module, which matches the wholesale-reboot
-// semantics of `__reboot_ng_modules__`: when Angular tears down its
-// component tree and re-bootstraps, every module's accumulated side
-// effects are conceptually being thrown away. (A future per-module
-// HMR client could pass an explicit key list to limit the drain.)
-//
-// Older runtimes (before this hook shipped) silently no-op via the
-// optional chain; in that case, dispose callbacks register but never
-// fire, and the worker-specific safety net in `terminateTrackedWorkers`
-// below still catches the worker pile-up case.
-function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
-	let runner: ((keys?: string[]) => unknown) | undefined;
-	try {
-		const candidate = g && g.__nsRunHmrDispose;
-		if (typeof candidate === 'function') {
-			runner = candidate;
-		}
-	} catch {
-		// `globalThis` access defensiveness — Proxy-wrapped globals can
-		// throw on property reads.
-	}
-
-	if (!runner) {
-		// Older runtime: the dispose callback registry exists in the
-		// native runtime but no JS-callable drain entrypoint is
-		// available. Silently no-op (worker terminator below still
-		// runs). The diagnostic message is gated to verbose so we
-		// don't nag users on every cycle of every project that hasn't
-		// adopted the new runtime yet.
-		if (options.verbose && envVerbose) {
-			console.info('[ns-hmr][client] runtime missing __nsRunHmrDispose; skipping import.meta.hot.dispose drain (upgrade @nativescript/ios for support)');
-		}
-		return;
-	}
-
+// The registry (`hot-context.ts`) owns the dispose map — every call to
+// `import.meta.hot.dispose(cb)` from user code lands there. We pass NO
+// key argument so the registry drains every registered callback across
+// every module, which matches the wholesale-reboot semantics of
+// `__reboot_ng_modules__`: when Angular tears down its component tree
+// and re-bootstraps, every module's accumulated side effects are
+// conceptually being thrown away. (A future per-module HMR client could
+// pass an explicit key list to limit the drain.)
+function runHmrDisposeCallbacks(_g: any, options: { verbose?: boolean }): void {
 	let executed: number | null = null;
 	try {
-		const result = runner.call(g);
+		const result = getNsHotRegistry().runDispose();
 		executed = typeof result === 'number' ? result : 0;
 	} catch (err) {
-		// One bad disposer should already be swallowed inside the
-		// runtime per-callback try/catch. If the runtime itself throws
-		// (out-of-memory, isolate teardown race, etc.) we MUST NOT
-		// take down the HMR cycle.
+		// Per-callback failures are swallowed inside the registry. If
+		// the registry itself throws we MUST NOT take down the HMR cycle.
 		if (options.verbose && envVerbose) {
-			console.warn('[ns-hmr][client] __nsRunHmrDispose threw:', (err as any)?.message ?? err);
+			console.warn('[ns-hmr][client] runDispose threw:', (err as any)?.message ?? err);
 		}
 		return;
 	}
@@ -303,7 +259,7 @@ function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
 
 // Terminate every live worker before Angular's reboot. Two-tier strategy:
 //
-//   1. PREFERRED — `globalThis.__nsTerminateAllWorkers()` (NS iOS runtime
+//   1. PREFERRED — `globalThis.__NS_DEV__.terminateAllWorkers()` (NS iOS runtime
 //      ≥ the version that ships `Worker::TerminateAllWorkersCallback`).
 //      Native code iterates `Caches::Workers` (the runtime's authoritative
 //      worker registry) and calls `WorkerWrapper::Terminate()` on each
@@ -315,8 +271,8 @@ function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
 //      by `__nsHmrTrackWorker`, the helper that `workerHmrUrlPlugin`
 //      injects at the top of every dev module containing a
 //      `new Worker(new URL(...))` call). This keeps HMR worker cleanup
-//      working on older runtimes that don't yet expose
-//      `__nsTerminateAllWorkers`. It only catches workers spawned via
+//      working on runtimes that don't expose
+//      `__NS_DEV__.terminateAllWorkers`. It only catches workers spawned via
 //      the Vite-rewritten path, so the runtime API is strictly better
 //      coverage.
 //
@@ -335,7 +291,7 @@ function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
 function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
 	let nativeApi: ((this: any) => unknown) | undefined;
 	try {
-		const candidate = g && g.__nsTerminateAllWorkers;
+		const candidate = g && readNsRuntimeDevHostApi(g).terminateAllWorkers;
 		if (typeof candidate === 'function') {
 			nativeApi = candidate;
 		}
@@ -348,13 +304,12 @@ function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
 	if (nativeApi) {
 		try {
 			const result = nativeApi.call(g);
-			// Native API returns the count of workers terminated as a
-			// number. Older betas may return undefined; treat any
-			// non-number as "ran successfully, count unknown".
+			// The native API returns the count of workers terminated;
+			// treat any non-number as "ran successfully, count unknown".
 			nativeTerminated = typeof result === 'number' ? result : 0;
 		} catch (err) {
 			if (options.verbose && envVerbose) {
-				console.warn('[ns-hmr][client] __nsTerminateAllWorkers threw; falling back to JS-tracked Set:', (err as any)?.message ?? err);
+				console.warn('[ns-hmr][client] __NS_DEV__.terminateAllWorkers threw; falling back to JS-tracked Set:', (err as any)?.message ?? err);
 			}
 			nativeApi = undefined; // force fallback below
 		}
@@ -363,8 +318,8 @@ function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
 	// Always touch the JS-tracked Set so producer-side bookkeeping
 	// doesn't outlive its workers across HMR cycles. If the native API
 	// already terminated everything, this is just a `.clear()`. If the
-	// native API isn't available (older runtime), this is the actual
-	// cleanup path.
+	// runtime doesn't expose the primitive, this is the actual cleanup
+	// path.
 	let workers: Set<any> | undefined;
 	try {
 		workers = g && g.__NS_HMR_WORKERS__;
@@ -404,9 +359,9 @@ function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
 	// stay quiet on no-worker apps and on cycles where neither tier
 	// found anything.
 	if (nativeApi && (nativeTerminated ?? 0) > 0) {
-		console.info(`[ns-hmr][workers] terminated ${nativeTerminated} via runtime __nsTerminateAllWorkers before reboot`);
+		console.info(`[ns-hmr][workers] terminated ${nativeTerminated} via runtime __NS_DEV__.terminateAllWorkers before reboot`);
 	} else if (!nativeApi && fallbackTerminated > 0) {
-		console.info(`[ns-hmr][workers] terminated ${fallbackTerminated}/${fallbackTotal} via JS-tracked Set fallback before reboot (older runtime; consider upgrading @nativescript/ios for native API)`);
+		console.info(`[ns-hmr][workers] terminated ${fallbackTerminated}/${fallbackTotal} via JS-tracked Set before reboot (__NS_DEV__.terminateAllWorkers not exposed by this runtime)`);
 	}
 }
 
@@ -417,17 +372,16 @@ const isHttpUrl = (u: unknown): u is string => typeof u === 'string' && /^https?
 
 function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	if (!urls || !urls.length) return false;
-	const g: any = globalThis;
-	const fn = g.__nsInvalidateModules;
+	const fn = readNsRuntimeDevHostApi(globalThis).invalidateModules;
 	if (typeof fn !== 'function') {
-		console.warn(`[ns-hmr][client] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
+		console.warn(`[ns-hmr][client] runtime missing __NS_DEV__.invalidateModules (runtime/vite version mismatch?); update cannot apply. evict=${urls.length}`);
 		return false;
 	}
 	try {
 		if (verbose && envVerbose) {
-			console.info(`[ns-hmr][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
+			console.info(`[ns-hmr][client] invalidateModules calling __NS_DEV__.invalidateModules urls=${urls.length}`);
 		}
-		fn.call(null, urls);
+		fn.call(null, urls.slice());
 		if (verbose && envVerbose) {
 			console.info(`[ns-hmr][client] invalidateModules OK urls=${urls.length}`);
 		}
@@ -435,14 +389,14 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	} catch (error) {
 		// Real exception path — the runtime hook itself threw. Always
 		// surfaced for the same reason as the missing-hook warn above.
-		console.warn('[ns-hmr][client] __nsInvalidateModules threw', (error as any)?.message || error);
+		console.warn('[ns-hmr][client] __NS_DEV__.invalidateModules threw', (error as any)?.message || error);
 		return false;
 	}
 }
 
 // Parallel module-source prefetch for the HMR re-import.
 //
-// Why this exists. After `__nsInvalidateModules(evictPaths)` the
+// Why this exists. After `__NS_DEV__.invalidateModules(evictPaths)` the
 // V8 cache (`g_moduleRegistry`) no longer holds the changed file
 // or any of its transitive importers. The next `import(entry)` will
 // walk the dep graph through V8's *synchronous*
@@ -455,7 +409,7 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 // V8 10.3.x does not expose an async resolve callback for static
 // imports, so we cannot parallelize the walk itself. What we *can*
 // do is pre-fill the loader's `g_prefetchCache` BEFORE V8 starts
-// walking. `__nsKickstartHmrPrefetch(urls)` does exactly that — it
+// walking. `__NS_DEV__.kickstartPrefetch(urls)` does exactly that — it
 // runs an N-way parallel HTTP wave (default 16-way), blocks the
 // JS thread until the wave drains, and stores every body in the
 // cache. When V8 then walks, every `HttpFetchText` is a memory
@@ -471,10 +425,8 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 // one wave, and skips the recursion.
 //
 // Soft-fail behavior:
-// - Older runtime (no `__nsKickstartHmrPrefetch`)  → no-op, V8 falls
+// - `__NS_DEV__.kickstartPrefetch` not exposed     → no-op, V8 falls
 //   back to per-module `HttpFetchText`.
-// - Older runtime (string-only `__nsKickstartHmrPrefetch`)  → array
-//   arg is rejected by the runtime; we still log no-op and proceed.
 // - Kickstart timeout                              → partial
 //   pre-fill; V8 fetches the rest synchronously.
 // - Synchronous throw                              → guarded; cycle
@@ -541,11 +493,10 @@ export function shouldRunKickstart(urlCount: number, maxUrls: number = kickstart
 
 function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): KickstartResult | null {
 	if (!urls || !urls.length) return null;
-	const g = globalThis;
-	const fn = g.__nsKickstartHmrPrefetch;
+	const fn = readNsRuntimeDevHostApi(globalThis).kickstartPrefetch;
 	if (typeof fn !== 'function') {
 		if (verbose && envVerbose) {
-			console.info(`[hmr-angular] runtime missing __nsKickstartHmrPrefetch; serial fetches will be used. urls=${urls.length}`);
+			console.info(`[hmr-angular] runtime missing __NS_DEV__.kickstartPrefetch; serial fetches will be used. urls=${urls.length}`);
 		}
 		return null;
 	}
@@ -564,7 +515,7 @@ function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): Kickst
 		return null;
 	} catch (error) {
 		if (verbose && envVerbose) {
-			console.warn('[hmr-angular] __nsKickstartHmrPrefetch threw', (error as any)?.message || error);
+			console.warn('[hmr-angular] __NS_DEV__.kickstartPrefetch threw', (error as any)?.message || error);
 		}
 		return null;
 	}
@@ -669,12 +620,9 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// destructively but the prior non-evicted modules sit in V8's
 	// `g_moduleRegistry`, not the prefetch cache).
 	//
-	// We only kickstart when the eviction succeeded, because the
-	// fallback path (legacy URL-versioning, see `useStableUrls = evicted`
-	// below) doesn't go through canonical /ns/m URLs and the runtime
-	// would not match its prefetch cache lookups against the version-
-	// prefixed forms V8 will end up requesting. Better to skip the
-	// optimization than risk a confusing partial cache hit.
+	// We only kickstart when the eviction succeeded — eviction is what
+	// arms the bust-next-fetch nonce, so a kickstart without it would
+	// just re-cache the stale bodies the OS cache is still serving.
 	//
 	// `shouldRunKickstart` gates large eviction sets out of the
 	// parallel wave. A `.ts` file with deep inverse-dep fan-in
@@ -698,22 +646,14 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 		}
 	}
 
-	// URL strategy:
-	//
-	// * `evicted=true`  → modern runtime accepted the eviction; we
-	//   re-import the entry under its STABLE canonical URL. V8's
-	//   registry no longer holds the evicted modules so the import
-	//   triggers fresh fetches for them; the rest of the graph is a
-	//   cache hit.
-	// * `evicted=false` → either we have no eviction set (older server)
-	//   or the runtime lacks `__nsInvalidateModules` (older runtime).
-	//   Fall back to the legacy `__ns_hmr__/v<version>/` URL pattern so
-	//   V8 sees a fresh URL and re-fetches the entry. The runtime
-	//   canonicalizer collapses the path back to the stable key, which
-	//   keeps cache identity consistent across saves.
-	const versionRaw = typeof msg?.version === 'number' ? msg.version : 0;
-	const useStableUrls = evicted;
-
+	// URL strategy: always the STABLE canonical URL. The eviction removed
+	// the changed modules from V8's registry (and armed the runtime's
+	// bust-next-fetch nonce), so re-importing the entry under its
+	// canonical URL triggers fresh fetches for exactly the evicted
+	// modules; the rest of the graph is a cache hit. Never version or
+	// tag the URL — the runtime treats the literal URL as module
+	// identity, so a tagged re-import would mint a second module
+	// identity instead of refreshing the first.
 	let lastError: unknown;
 
 	// 'reimporting' is the entry point for the long tail of an HMR
@@ -726,7 +666,7 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	});
 
 	for (const entry of getAngularBootstrapEntryCandidates(msg)) {
-		const url = useStableUrls ? `${origin}/ns/m${entry}` : versionRaw ? `${origin}/ns/m/__ns_hmr__/v${versionRaw}${entry}` : `${origin}/ns/m${entry}`;
+		const url = `${origin}/ns/m${entry}`;
 		try {
 			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = true;
 			await importAngularBootstrapEntry(url);
@@ -862,14 +802,11 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			//
 			// Step 1 — `import.meta.hot.dispose(cb)` callbacks
 			// ────────────────────────────────────────────────
-			// The NS iOS runtime exposes
-			// `globalThis.__nsRunHmrDispose()` (registered in
-			// `Worker.mm`'s sibling `HMRSupport.mm`). It walks
-			// `g_hotDispose` — the per-module callback registry that
-			// `import.meta.hot.dispose(cb)` populates — and invokes
-			// every callback with that module's `hot.data` object,
-			// matching the Vite spec. Soft-fails on older runtimes
-			// without the API (call is optional-chained).
+			// The JS hot registry (`hot-context.ts`) walks its
+			// per-module dispose map — populated by
+			// `import.meta.hot.dispose(cb)` — and invokes every
+			// callback with that module's `hot.data` object, matching
+			// the Vite spec.
 			//
 			// This is the standards-compliant cleanup hook every Vite
 			// user already knows. Apps register their intervals,
@@ -887,10 +824,11 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			// `login.component.html` changes — `app.component.ts`
 			// isn't being replaced, so its disposers don't run per
 			// Vite spec. The runtime API
-			// `__nsTerminateAllWorkers()` doesn't care about module
+			// `__NS_DEV__.terminateAllWorkers()` doesn't care about module
 			// boundaries; it just kills every live worker in
 			// `Caches::Workers`. Falls back to the
-			// `__NS_HMR_WORKERS__` JS Set on older runtimes.
+			// `__NS_HMR_WORKERS__` JS Set when the runtime doesn't
+			// expose the primitive.
 			terminateTrackedWorkers(g, options);
 			// 'rebooting' marks the long tail of the cycle: NgZone
 			// teardown, module re-instantiation, and resetRootView.

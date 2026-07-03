@@ -4,7 +4,8 @@ import { rewriteVendorVueSpec } from './vendor-rewrite';
 describe('rewriteVendorVueSpec', () => {
 	const origin = 'http://localhost:5173';
 	const ver = 123;
-	const rt = `${origin}/ns/rt/${ver}`;
+	// Canonical (unversioned) bridge URL — module identity is the URL.
+	const rt = `${origin}/ns/rt`;
 
 	it('rewrites from "vue" and from "nativescript-vue"', () => {
 		const input = `

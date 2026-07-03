@@ -79,19 +79,16 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 	const wsProtocol = options.secure ? 'wss' : 'ws';
 	const origin = `${protocol}://${options.requestHost}`;
 	const entryPathname = options.mainEntryPathname || resolveProjectMainEntryPath(options.projectRoot);
+	// Canonical (untagged) entry URL. Boot-progress instrumentation is
+	// injected self-gating by the /ns/m module server (the snippet no-ops
+	// once `__NS_HMR_BOOT_COMPLETE__` flips), so the entry URL needs no
+	// `__ns_boot__` decoration — module identity IS the URL.
 	const canonicalEntryPathname = entryPathname.startsWith('/ns/m/') ? entryPathname : `/ns/m${entryPathname.startsWith('/') ? entryPathname : `/${entryPathname}`}`;
-	// Wrap the entry pathname in the `__ns_boot__/b1` boot tag so the
-	// dev server injects the boot-progress snippet (see
-	// `buildBootProgressSnippet`). The runtime's `CanonicalizeHttpUrlKey`
-	// strips the tag before keying the V8 module registry, so it's a
-	// pure request-time hint — boot and steady-state HMR URLs share
-	// cache identity.
-	const bootTaggedEntryPathname = `/ns/m/__ns_boot__/b1${canonicalEntryPathname.slice('/ns/m'.length)}`;
 
 	return {
 		sessionId: options.sessionId,
 		origin,
-		entryUrl: `${origin}${bootTaggedEntryPathname}`,
+		entryUrl: `${origin}${canonicalEntryPathname}`,
 		clientUrl: `${origin}/__ns_dev__/client`,
 		wsUrl: `${wsProtocol}://${options.requestHost}/ns-hmr`,
 		platform: options.platform,
@@ -119,15 +116,31 @@ function resolveBootstrapImportUrl(origin: string, clientImport: string): string
 	}
 }
 
-export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; verbose?: boolean }) {
+export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; hotContextImport?: string; verbose?: boolean }) {
 	const normalizedOrigin = options.origin.replace(/\/$/, '');
 	const resolvedClientImport = resolveBootstrapImportUrl(normalizedOrigin, options.clientImport);
 	const vendorBundleUrl = `${normalizedOrigin}/@nativescript/vendor.mjs`;
 	const vendorBootstrapUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
+	const resolvedHotContextImport = resolveBootstrapImportUrl(normalizedOrigin, options.hotContextImport || '/ns/m/node_modules/@nativescript/vite/hmr/client/hot-context.js');
+	const entryRuntimeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js`;
+	// Canonical, unversioned core-bridge URL (see helpers/ns-core-url.ts) — the
+	// app graph already loaded this exact URL during boot, so importing it here
+	// resolves to the SAME module record/realm instead of minting a new one.
+	const coreBridgeUrl = `${normalizedOrigin}/ns/core`;
 
 	return `
 import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from ${JSON.stringify(vendorBootstrapUrl)};
 import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from ${JSON.stringify(vendorBundleUrl)};
+import { installNsHotRegistry as __nsBrowserRuntimeInstallHotRegistry } from ${JSON.stringify(resolvedHotContextImport)};
+
+// Install the JS hot registry FIRST: every served app module's injected
+// prelude reads globalThis.__NS_HOT_REGISTRY__ at evaluation time, and this
+// bootstrap is imported before the entry graph (see session-bootstrap.ts).
+try {
+	__nsBrowserRuntimeInstallHotRegistry();
+} catch (hotErr) {
+	console.warn('[ns-browser-runtime-client] failed to install hot registry', hotErr);
+}
 
 const __NS_BROWSER_RUNTIME_WS_URL__ = ${JSON.stringify(options.wsUrl)};
 const __NS_BROWSER_RUNTIME_ORIGIN__ = ${JSON.stringify(options.origin)};
@@ -162,24 +175,95 @@ function __nsBrowserRuntimeEnsureVendorBootstrap() {
 	}
 }
 
+// Pure-JS CSS apply for the bootstrap fallback client. Prefers the HTTP
+// core realm applier installed by the entry runtime
+// (__NS_HMR_APPLY_CSS__), then falls back to Application.addCss through
+// the vendor realm. No native CSS hook exists anymore.
+function __nsBrowserRuntimeApplyCss(cssText) {
+	if (typeof cssText !== 'string' || !cssText.length) {
+		return false;
+	}
+	try {
+		const applyInCoreRealm = globalThis.__NS_HMR_APPLY_CSS__;
+		if (typeof applyInCoreRealm === 'function') {
+			applyInCoreRealm(cssText, true);
+			return true;
+		}
+	} catch (cssErr) {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] __NS_HMR_APPLY_CSS__ threw', cssErr);
+		}
+	}
+	try {
+		const registry = globalThis.__nsVendorRegistry;
+		const coreMod = registry && typeof registry.get === 'function' ? registry.get('@nativescript/core') : null;
+		const core = (coreMod && (coreMod.default || coreMod)) || coreMod;
+		const Application = core && core.Application;
+		if (Application && typeof Application.addCss === 'function') {
+			Application.addCss(cssText);
+			try {
+				const rootView = typeof Application.getRootView === 'function' ? Application.getRootView() : null;
+				if (rootView && typeof rootView._onCssStateChange === 'function') {
+					rootView._onCssStateChange();
+				}
+			} catch {}
+			return true;
+		}
+	} catch (cssErr) {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] Application.addCss fallback threw', cssErr);
+		}
+	}
+	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+		console.warn('[ns-browser-runtime-client] no CSS applier available; skipping CSS update');
+	}
+	return false;
+}
+
+async function __nsBrowserRuntimeInstallHttpCoreCssApplier() {
+	// Monorepo / per-module core dev boots ship a minimal vendor bundle with NO
+	// @nativescript/core, so neither quick applier above exists. Install the
+	// same HTTP-core-realm applier the http-bootloader fallback path uses
+	// (entry-runtime's installHttpCoreCssSupport): it prefers the pre-parsed
+	// app.css AST (globalThis.__NS_HMR_APP_CSS_AST__), applies the seeded CSS,
+	// flips __NS_HMR_HTTP_APP_CSS_APPLIED__, and installs __NS_HMR_APPLY_CSS__
+	// so later live CSS edits land in the core realm the app actually uses.
+	try {
+		const entryRuntime = await import(${JSON.stringify(entryRuntimeUrl)});
+		const installHttpCoreCssSupport = entryRuntime && entryRuntime.installHttpCoreCssSupport;
+		if (typeof installHttpCoreCssSupport !== 'function') {
+			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+				console.warn('[ns-browser-runtime-client] entry runtime is missing installHttpCoreCssSupport; skipping CSS install');
+			}
+			return false;
+		}
+		const coreBridge = await import(${JSON.stringify(coreBridgeUrl)});
+		const applier = installHttpCoreCssSupport(coreBridge, __NS_BROWSER_RUNTIME_VERBOSE__);
+		if (applier && __NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.info('[ns-entry] app.css applied in HTTP core realm');
+		}
+		return !!applier;
+	} catch (cssErr) {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] HTTP core realm CSS install failed', cssErr);
+		}
+		return false;
+	}
+}
+
 async function __nsBrowserRuntimeReplaySeededCss() {
 	const cssText = globalThis.__NS_HMR_APP_CSS__;
 	if (typeof cssText !== 'string' || !cssText.length || globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__) {
 		return;
 	}
-	const apply = globalThis.__nsApplyStyleUpdate;
-	if (typeof apply !== 'function') {
+	if (__nsBrowserRuntimeApplyCss(cssText)) {
+		globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
 		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] __nsApplyStyleUpdate is unavailable; skipping seeded app.css replay');
+			console.info('[ns-entry] app.css applied in HTTP core realm');
 		}
 		return;
 	}
-	const cssUrl = __NS_BROWSER_RUNTIME_ORIGIN__ + '/src/app.css?direct=1&t=' + String(Date.now());
-	apply({ url: cssUrl, cssText });
-	globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
-	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-		console.info('[ns-entry] app.css applied in HTTP core realm');
-	}
+	await __nsBrowserRuntimeInstallHttpCoreCssApplier();
 }
 
 async function __nsBrowserRuntimeFetchText(url) {
@@ -202,8 +286,7 @@ async function __nsBrowserRuntimeFetchText(url) {
 
 async function __nsBrowserRuntimeHandleCssUpdates(msg) {
 	const updates = Array.isArray(msg?.updates) ? msg.updates : [];
-	const apply = globalThis.__nsApplyStyleUpdate;
-	if (!updates.length || typeof apply !== 'function') {
+	if (!updates.length) {
 		return;
 	}
 	for (const update of updates) {
@@ -216,7 +299,7 @@ async function __nsBrowserRuntimeHandleCssUpdates(msg) {
 		const url = __NS_BROWSER_RUNTIME_ORIGIN__ + cssPath + sep + 'direct=1&t=' + String(timestamp);
 		const cssText = await __nsBrowserRuntimeFetchText(url);
 		if (typeof cssText === 'string' && cssText.length) {
-			apply({ url, cssText });
+			__nsBrowserRuntimeApplyCss(cssText);
 		}
 	}
 }
@@ -481,10 +564,16 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
 						const projectRoot = config?.root || process.cwd();
 						const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
+						let hotContextImport: string | undefined;
+						try {
+							const hotContextFsPath = require.resolve('@nativescript/vite/hmr/client/hot-context.js');
+							hotContextImport = computeClientImportSpecifier({ projectRoot, clientFsPath: hotContextFsPath });
+						} catch {}
 						const code = createNsDevClientBootstrapCode({
 							origin,
 							wsUrl,
 							clientImport,
+							hotContextImport,
 							verbose: opts.verbose,
 						});
 

@@ -11,7 +11,10 @@ export function buildTxnModuleCode(version: number, ids: string[]): string {
 	for (const id of ids) {
 		const isVue = /\.vue$/i.test(id);
 		const safeId = id.startsWith('/') ? id : `/${id}`;
-		const importPath = isVue ? `/ns/asm/${version}?path=${encodeURIComponent(safeId)}` : `/ns/m${safeId}`;
+		// Canonical URLs for both module kinds: the txn batch only re-imports;
+		// the client evicted the changed set (app modules + SFC artifacts)
+		// before importing the batch, so each import fetches fresh.
+		const importPath = isVue ? `/ns/asm?path=${encodeURIComponent(safeId)}` : `/ns/m${safeId}`;
 		lines.push(`await import(${JSON.stringify(importPath)});`);
 	}
 	lines.push('export default true;');

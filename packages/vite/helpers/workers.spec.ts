@@ -366,17 +366,16 @@ describe('workerHmrUrlPlugin (HMR auto-terminate via global registry)', () => {
 		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
 		expect(result).not.toBeNull();
 
-		// Path 1 (legacy global Set, kept for backward compat with
-		// runtimes that don't expose `__nsTerminateAllWorkers` /
-		// `__nsRunHmrDispose`).
+		// Path 1 (global tracking Set, drained when the runtime doesn't
+		// expose `__NS_DEV__.terminateAllWorkers`).
 		expect(result.code).toContain('__NS_HMR_WORKERS__');
 		expect(result.code).toMatch(/__nsG\.__NS_HMR_WORKERS__\.add\(w\)/);
 
 		// Path 2 (standards-compliant Vite primitive). We MUST register
 		// a dispose so any plugin / framework that drains
-		// `import.meta.hot.dispose` callbacks (incl. our own
-		// `__nsRunHmrDispose` in the runtime) catches this worker
-		// without needing NS-specific globals.
+		// `import.meta.hot.dispose` callbacks (incl. our own hot
+		// registry's `runDispose`) catches this worker without needing
+		// NS-specific globals.
 		expect(result.code).toContain('import.meta.hot.dispose');
 		// Per-module Set + module-level guard so a single dispose
 		// registration covers every worker in the module.

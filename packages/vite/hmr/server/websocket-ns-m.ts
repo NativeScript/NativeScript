@@ -8,11 +8,11 @@ import { sanitizeStrayCoreReferences } from './core-sanitize.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-shims.js';
-import { getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
+import { canonicalizeNsMImportPath } from './websocket-ns-m-paths.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
+import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
@@ -144,17 +144,14 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// first response. `handleHotUpdate` awaits the same promise so
 			// the first HMR event still sees a fully populated graph.
 			ensureInitialGraphPopulationStarted(server);
-			// Cold-boot counter is now hooked via the leading boot-trace
-			// middleware (see `configureServer` — it records the request
-			// and tracks finish() via res.on('close'/'finish')). This
-			// handler used to record here but that missed the
-			// round-trip timing and didn't track per-route breakdowns.
+			// Cold-boot counting lives in the leading boot-trace middleware
+			// (see `configureServer` — it records the request and tracks
+			// finish() via res.on('close'/'finish')), not here: recording in
+			// this handler would miss the round-trip timing and per-route
+			// breakdowns.
 			setDeviceModuleHeaders(res);
 			// Support both query (?path=/abs) and path-style (/ns/m/abs)
 			let spec = urlObj.searchParams.get('path') || '';
-			// Optional graph version pin for deterministic boot
-			let forcedVer = urlObj.searchParams.get('v');
-			let bootTaggedRequest = false;
 			if (!spec) {
 				const base = '/ns/m';
 				const rest = urlObj.pathname.slice(base.length);
@@ -174,17 +171,11 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			const serverRoot = (server.config?.root || process.cwd()) as string;
 			const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(serverRoot);
 			spec = spec.replace(/[?#].*$/, '');
-			// Accept path-based boot/HMR prefixes:
-			//   /ns/m/__ns_boot__/b1/<real-spec>
-			//   /ns/m/__ns_hmr__/<tag>/<real-spec>
-			//   /ns/m/__ns_boot__/b1/__ns_hmr__/<tag>/<real-spec>
-			// The iOS HTTP ESM loader canonicalizes cache keys by stripping query params,
-			// so we must carry the cache-buster in the path.
+			// Tolerate LEGACY path-based boot/HMR prefixes from stale cached
+			// device code (`/ns/m/__ns_boot__/b1/…`, `/ns/m/__ns_hmr__/<tag>/…`).
+			// Current servers never emit them — freshness is eviction-driven.
 			try {
-				const decorated = stripDecoratedServePrefixes(spec);
-				spec = decorated.cleanedSpec;
-				bootTaggedRequest = decorated.bootTaggedRequest;
-				forcedVer ||= decorated.forcedVer;
+				spec = stripDecoratedServePrefixes(spec).cleanedSpec;
 			} catch {}
 			// Normalize absolute filesystem paths back to project-relative ids (e.g. /src/app.ts)
 			try {
@@ -464,11 +455,10 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// point — see classifyServedModule for the full case list.
 			const isNodeMod = classifyServedModule(resolvedCandidate || spec) === 'library';
 			code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec);
-			// Solid HMR: The NativeScript iOS/Android runtime provides import.meta.hot
-			// natively (via InitializeImportMetaHot in HMRSupport.mm) with C++-backed
-			// persistent hot.data that survives across module re-evaluations.
-			// cleanCode() strips Vite's __vite__createHotContext assignment, which is
-			// correct — the runtime's native hot context is better.
+			// import.meta.hot is JS-owned: cleanCode() strips Vite's browser
+			// __vite__createHotContext assignment and processCodeForDevice
+			// injects the NS hot-context prelude (globalThis.__NS_HOT_REGISTRY__,
+			// installed by the /__ns_dev__/client bootstrap) for app modules.
 			const projectRoot = server.config?.root || process.cwd();
 			const serverOrigin = getServerOrigin(server);
 			// Served-module import rewrite, routed through the active framework
@@ -555,59 +545,28 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				}
 			} catch {}
 
-			// `/ns/rt` and `/ns/core` URL versioning.
+			// Every emitted endpoint URL is CANONICAL (unversioned).
 			//
-			// Older versions of the server emitted `/ns/rt/<ver>` and
-			// `/ns/core/<ver>` so V8's HTTP module cache would see a
-			// fresh URL on every save. The runtime canonicalizer
-			// (`CanonicalizeHttpUrlKey` in HMRSupport.mm) collapses
-			// these version segments to the bare `/ns/rt` and
-			// `/ns/core` keys before lookup, so V8 actually saw a
-			// single cache entry — but the server was doing extra
-			// work to inject a version segment that the runtime then
-			// immediately stripped. Now that the runtime supports
-			// explicit eviction (and these bridge endpoints don't
-			// change at HMR time anyway), the version segment is
-			// purely vestigial.
-			//
-			// Rather than rip the helpers out (which would touch
-			// every ensureVersionedImports caller and risk bumping
-			// older runtimes), we keep them but pass `verNum=0`. The
-			// helpers still normalize URL shape (strip the absolute
-			// origin prefix when present) but emit a stable
-			// `/ns/rt/0` / `/ns/core/0` URL — which collapses to
-			// `/ns/rt` / `/ns/core` in the runtime.
+			// Module identity is literally the URL — a versioned
+			// `/ns/rt/<ver>` / `/ns/core/<ver>` / `/ns/sfc/<ver>` would
+			// create a second module realm. `canonicalizeRtImports` and the
+			// strategy's `canonicalizeFrameworkImports` collapse any
+			// versioned form (stale cached device code) back to the single
+			// canonical URL.
 			try {
-				const verNum = 0;
-				code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-				code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
+				code = canonicalizeRtImports(code, getServerOrigin(server));
+				code = strategy.canonicalizeFrameworkImports?.(code, getServerOrigin(server)) ?? code;
 			} catch {}
 			// `/ns/m` URL finalize step.
 			//
-			// `rewriteNsMImportPathForHmr` is a canonicalizer: it
-			// strips legacy `__ns_hmr__/<tag>/` segments and adds
-			// `__ns_boot__/b1/` only for boot-tagged requests. The
-			// `ver` parameter is preserved on the signature for API
-			// compatibility but is ignored for app modules (cache
-			// busting is driven by `__nsInvalidateModules`, not URL
-			// versioning). We pass `'v0'` as a stable placeholder —
-			// the canonicalizer emits the same URL regardless of
-			// this value, but a constant placeholder makes the
-			// contract explicit.
-			//
-			// SFC URLs (line below, `/ns/sfc/${verTag}/...`) still
-			// embed a version because the Vue SFC pathway does not
-			// yet have an eviction protocol. The runtime
-			// canonicalizer does NOT strip `/ns/sfc/<ver>/`, so Vue
-			// users still see per-save SFC re-fetches — that's a
-			// known follow-up.
+			// `canonicalizeNsMImportPath` strips any `__ns_hmr__/<tag>/`
+			// and `__ns_boot__/b1/` segments so every emitted URL is the
+			// canonical stable form (cache busting is driven by
+			// `__NS_DEV__.invalidateModules` + the runtime's eviction nonce, not
+			// URL decoration).
 			try {
-				const verTag = (() => {
-					const numeric = getNumericServeVersionTag(forcedVer, Number(options.getGraphVersion() || 0));
-					return numeric > 0 ? `v${numeric}` : 'v0';
-				})();
 				const origin = getServerOrigin(server);
-				const rewritePath = (p: string) => rewriteNsMImportPathForHmr(p, 'v0', bootTaggedRequest);
+				const rewritePath = (p: string) => canonicalizeNsMImportPath(p);
 				// /ns/m URL forms — all collapse to canonical stable
 				// URLs via the `rewriteNsMImportPathForHmr` rewriter.
 				// 1) Static imports: import ... from "/ns/m/..."
@@ -624,9 +583,10 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				try {
 					code = code.replace(/new\s+URL\(\s*["'](\/ns\/m\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}${rewritePath(p1)}`)}`);
 				} catch {}
-				// 7) SFC URLs (Vue) — still versioned. See header comment.
+				// 7) SFC URLs (Vue) — canonical, like everything else. Freshness
+				// is driven by the Vue client evicting the SFC artifact URL set.
 				try {
-					code = code.replace(/new\s+URL\(\s*["']\/ns\/sfc(\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}/ns/sfc/${verTag}${p1}`)}`);
+					code = code.replace(/new\s+URL\(\s*["']\/ns\/sfc(\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}/ns/sfc${p1}`)}`);
 				} catch {}
 			} catch {}
 			// Final guard: eliminate any lingering named imports from /ns/core to avoid
@@ -635,11 +595,15 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				code = ensureDestructureCoreImports(code);
 			} catch {}
 
-			// Boot-time module graph progress: while the app is still replacing the
-			// placeholder, emit lightweight progress updates as /ns/m modules begin
-			// evaluating. This keeps the overlay moving during large initial graphs.
+			// Boot-time module graph progress: while the app is still replacing
+			// the placeholder, emit lightweight progress updates as /ns/m app
+			// modules begin evaluating. The snippet is SELF-GATING (it no-ops
+			// once `__NS_HMR_BOOT_COMPLETE__` flips) so it is injected
+			// unconditionally — no boot-tagged URL needed. node_modules are
+			// deliberately skipped (the heartbeat's wall-clock axis covers
+			// vendor stretches; see startBootImportHeartbeat).
 			try {
-				if (bootTaggedRequest) {
+				if (!isNodeMod) {
 					const bootModuleLabel = String(spec || '').replace(/\\/g, '/');
 					const bootProgressSnippet = buildBootProgressSnippet(bootModuleLabel);
 					code = bootProgressSnippet + code;

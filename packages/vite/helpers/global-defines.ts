@@ -21,7 +21,7 @@ export function isHmrProgressOverlayEnabled(env: NodeJS.ProcessEnv = process.env
 
 /**
  * Kickstart-eligibility threshold for the parallel HMR prefetch
- * (`__nsKickstartHmrPrefetch`).
+ * (`__NS_DEV__.kickstartPrefetch`).
  *
  * Why a threshold exists. The kickstart fetches the SERVER-computed
  * inverse-dep closure (`evictPaths`) in parallel before V8 starts

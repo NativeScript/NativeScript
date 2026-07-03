@@ -1622,7 +1622,7 @@ function createOverlayApi(): HmrOverlayApi {
 			state.updateCycleStartedAt = 0;
 			const next = createBootOverlaySnapshot(stage, info);
 			// Monotonic boot-progress ratchet: boot stages can fire out of
-			// order across boot paths (native `__nsStartDevSession` vs the
+			// order across boot paths (JS session bootstrap vs the
 			// http-bootloader fallback) and individual bases were tuned
 			// independently, so clamp boot→boot transitions to never go
 			// backwards. Non-boot snapshots (error/ready) bypass — they

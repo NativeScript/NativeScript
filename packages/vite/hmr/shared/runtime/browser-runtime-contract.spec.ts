@@ -32,42 +32,41 @@ describe('browser runtime contract', () => {
 		).toThrow('Invalid dev session hostModules');
 	});
 
-	it('exposes the runtime host api from global hooks', () => {
+	it('exposes the runtime host api from the __NS_DEV__ namespace', () => {
 		const configureRuntime = () => undefined;
-		const startDevSession = async () => undefined;
 		const invalidateModules = () => undefined;
-		const reloadDevApp = async () => undefined;
-		const applyStyleUpdate = () => undefined;
 		const getLoadedModuleUrls = () => ['http://localhost:5173/src/main.ts'];
+		const kickstartPrefetch = () => null;
+		const setDevBootComplete = () => undefined;
+		const terminateAllWorkers = () => 0;
 
 		const api = readNsRuntimeDevHostApi({
-			__nsConfigureDevRuntime: configureRuntime,
-			__nsSupportsRuntimeConfigUrl: true,
-			__nsStartDevSession: startDevSession,
-			__nsInvalidateModules: invalidateModules,
-			__nsReloadDevApp: reloadDevApp,
-			__nsApplyStyleUpdate: applyStyleUpdate,
-			__nsGetLoadedModuleUrls: getLoadedModuleUrls,
+			__NS_DEV__: {
+				configureRuntime,
+				invalidateModules,
+				getLoadedModuleUrls,
+				kickstartPrefetch,
+				setDevBootComplete,
+				terminateAllWorkers,
+			},
 		} as Partial<typeof globalThis>);
 
 		expect(api.configureRuntime).toBe(configureRuntime);
-		expect(api.supportsRuntimeConfigUrl).toBe(true);
-		expect(api.startDevSession).toBe(startDevSession);
 		expect(api.invalidateModules).toBe(invalidateModules);
-		expect(api.reloadDevApp).toBe(reloadDevApp);
-		expect(api.applyStyleUpdate).toBe(applyStyleUpdate);
 		expect(api.getLoadedModuleUrls).toBe(getLoadedModuleUrls);
+		expect(api.kickstartPrefetch).toBe(kickstartPrefetch);
+		expect(api.setDevBootComplete).toBe(setDevBootComplete);
+		expect(api.terminateAllWorkers).toBe(terminateAllWorkers);
 	});
 
-	it('falls back to the legacy runtime configure hook', () => {
-		const configureRuntime = () => undefined;
+	it('yields an empty api when __NS_DEV__ is not installed (non-dev environments)', () => {
+		const api = readNsRuntimeDevHostApi({} as Partial<typeof globalThis>);
 
-		const api = readNsRuntimeDevHostApi({
-			__nsConfigureRuntime: configureRuntime,
-			__nsStartDevSession: async () => undefined,
-		} as Partial<typeof globalThis>);
-
-		expect(api.configureRuntime).toBe(configureRuntime);
-		expect(api.supportsRuntimeConfigUrl).toBe(false);
+		expect(api.configureRuntime).toBeUndefined();
+		expect(api.invalidateModules).toBeUndefined();
+		expect(api.getLoadedModuleUrls).toBeUndefined();
+		expect(api.kickstartPrefetch).toBeUndefined();
+		expect(api.setDevBootComplete).toBeUndefined();
+		expect(api.terminateAllWorkers).toBeUndefined();
 	});
 });

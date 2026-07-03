@@ -25,6 +25,7 @@ import { registerNsRtBridgeRoute } from './ns-rt-route.js';
 import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';
 import { registerTxnHandler } from './websocket-txn.js';
 import { registerNsModuleServerRoute } from './websocket-ns-m.js';
+import { registerBootClosureRoute } from './boot-closure-route.js';
 import { registerNsCoreRoute } from './websocket-ns-core.js';
 import { registerNsEntryRoutes } from './websocket-ns-entry.js';
 import { registerImportMapRoute } from './websocket-import-map-route.js';
@@ -313,7 +314,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				// listeners never fire. We mirror the payload onto our
 				// `/ns-hmr` clients here so the existing custom-event
 				// dispatcher in `hmr/client/index.ts` (which forwards to
-				// `__NS_DISPATCH_HOT_EVENT__`) actually runs.
+				// the JS hot registry's `dispatchHotEvent`) actually runs.
 				const bridgeToNsHmrClients = (payload: any, args: any[]): void => {
 					try {
 						let normalized: any;
@@ -597,6 +598,13 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 
 			// Import map endpoint: GET /ns/import-map.json — see websocket-import-map-route.ts
 			registerImportMapRoute(server, { getStrategy: () => strategy });
+
+			// Cold-boot module closure for the device kickstart prefetch:
+			// GET /__ns_dev__/boot-closure — see boot-closure-route.ts
+			registerBootClosureRoute(server, {
+				getGraphModuleIds: () => Array.from(moduleGraph.modules.keys()),
+				ensureInitialGraphPopulationStarted: (s) => ensureInitialGraphPopulationStarted(s),
+			});
 
 			// Dev-only HTTP ESM loader endpoint for device clients
 			// ESM module server for application/source modules: GET /ns/m/* — see websocket-ns-m.ts

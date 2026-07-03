@@ -438,7 +438,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			//      sends only the modules that actually need to be
 			//      re-evaluated (typically O(1) for component edits,
 			//      or the changed file + entry for narrowed edits).
-			//   3. The client calls `__nsInvalidateModules(evictPaths)`
+			//   3. The client calls `__NS_DEV__.invalidateModules(evictPaths)`
 			//      and re-imports `importerEntry`, which causes V8 to
 			//      refetch ONLY those modules. Everything else stays
 			//      hot in the registry.
@@ -515,7 +515,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		}
 		return;
 	},
-	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
+	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
 	// identity: Angular runtime imports go through the vendor bridge and there are
 	// no Angular-specific HTTP endpoints to version.
 	//
@@ -525,10 +525,8 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	rewriteServedModule(code: string, ctx: FrameworkServedModuleContext): string {
 		return prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true);
 	},
-	// ── Angular template/style asset URLs are volatile ───────────────────
-	volatilePatterns() {
-		return ['/@ns/asm/'];
-	},
+	// No volatilePatterns: Angular freshness is eviction-driven (the client
+	// evicts changed component/module URLs before re-import).
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure any Angular code the HMR server assembles for HTTP consumption is fully linked.
 		const { filePath, server, verbose } = ctx;

@@ -2,7 +2,7 @@
  * Import Map Generator for NativeScript HMR
  *
  * Generates an import map that the iOS/Android runtime consumes via
- * __nsConfigureRuntime(). This is the single source of truth for module
+ * __NS_DEV__.configureRuntime(). This is the single source of truth for module
  * resolution on the device.
  *
  * Resolution strategy:
@@ -69,7 +69,7 @@ export interface ImportMapOptions {
 	 * `volatilePatterns()` hooks supply the framework-specific pieces of the
 	 * import map and volatile-pattern list.
 	 * Optional: when omitted, the map/patterns carry only the shared
-	 * vendor/core/HTTP entries (equivalent to the old `typescript` arm).
+	 * vendor/core/HTTP entries.
 	 */
 	strategy?: FrameworkServerStrategy;
 	/** Additional entries to add to the import map */
@@ -192,8 +192,8 @@ export function getVolatilePatterns(strategy?: FrameworkServerStrategy): string[
 	patterns.push('?v=');
 	patterns.push('&v=');
 
-	// Framework-specific volatile patterns (owned by the active strategy —
-	// Vue → /@ns/sfc/ + /@ns/asm/, Angular → /@ns/asm/).
+	// Framework-specific volatile patterns (owned by the active strategy;
+	// none of the built-in strategies supply any).
 	const frameworkPatterns = strategy?.volatilePatterns?.();
 	if (frameworkPatterns) {
 		patterns.push(...frameworkPatterns);
@@ -204,7 +204,7 @@ export function getVolatilePatterns(strategy?: FrameworkServerStrategy): string[
 
 /**
  * Serialize the import map + volatile patterns into the config object
- * that __nsConfigureRuntime() expects.
+ * that __NS_DEV__.configureRuntime() expects.
  */
 export function buildRuntimeConfig(options: ImportMapOptions): {
 	importMap: string;

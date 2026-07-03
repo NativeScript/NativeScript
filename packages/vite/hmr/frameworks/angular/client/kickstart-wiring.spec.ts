@@ -6,7 +6,7 @@ import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 // Parallel module-source prefetch wiring.
 //
 // These tests pin the contract between the Angular HMR client and the
-// iOS runtime's `__nsKickstartHmrPrefetch` global:
+// runtime's `__NS_DEV__.kickstartPrefetch` primitive:
 //
 //   1. On a successful eviction, the client MUST hand the eviction
 //      array directly to the runtime BEFORE the entry re-import. This
@@ -14,25 +14,22 @@ import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 //      `g_prefetchCache` so V8's synchronous `ResolveModuleCallback`
 //      walk hits memory instead of the network on each module.
 //
-//   2. The kickstart MUST run AFTER `__nsInvalidateModules` and BEFORE
+//   2. The kickstart MUST run AFTER module invalidation and BEFORE
 //      `import(entry)`. Anything else risks a prefetch race against
 //      the eviction (skipping URLs we WILL re-fetch) or a missed
 //      cache (V8 starts walking before bodies land).
 //
-//   3. Older runtimes that lack `__nsKickstartHmrPrefetch` MUST NOT
-//      cause the cycle to fail. The client falls back to the
-//      sequential walk.
+//   3. Runtimes that lack the kickstart primitive MUST NOT cause the
+//      cycle to fail. The client falls back to the sequential walk.
 //
-//   4. Eviction-fallback path (legacy URL-versioning when
-//      `__nsInvalidateModules` is absent or threw) MUST skip the
-//      kickstart — the URLs the runtime would receive (canonical
-//      /ns/m/<rel>) wouldn't match the URLs V8 then asks for
-//      (versioned /ns/m/__ns_hmr__/v<N>/<rel>), defeating the
-//      cache lookup and wasting bandwidth.
+//   4. When eviction is absent or threw, the kickstart MUST be
+//      skipped — without eviction the bust-next-fetch nonce never
+//      armed, so a prefetch would just re-cache the stale bodies the
+//      OS cache is still serving.
 //
-// We install a fake `__nsKickstartHmrPrefetch` global so the client's
-// runtime probe resolves to a spy without pulling the real native
-// runtime (which would require a NativeScript host).
+// We install fakes as members of the `__NS_DEV__` namespace object so
+// the client's runtime probe resolves to a spy without pulling the real
+// native runtime (which would require a NativeScript host).
 
 describe('Angular HMR client — kickstart wiring', () => {
 	beforeEach(() => {
@@ -64,8 +61,7 @@ describe('Angular HMR client — kickstart wiring', () => {
 			reboot: g.__reboot_ng_modules__,
 			importer: g.__NS_HMR_IMPORT__,
 			updater: g.__NS_UPDATE_ANGULAR_APP_OPTIONS__,
-			invalidator: g.__nsInvalidateModules,
-			kickstart: g.__nsKickstartHmrPrefetch,
+			nsDev: g.__NS_DEV__,
 			registerOnly: g.__NS_ANGULAR_HMR_REGISTER_ONLY__,
 		};
 
@@ -78,16 +74,10 @@ describe('Angular HMR client — kickstart wiring', () => {
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		if (invalidator) {
-			g.__nsInvalidateModules = invalidator;
-		} else {
-			delete g.__nsInvalidateModules;
-		}
-		if (kickstart) {
-			g.__nsKickstartHmrPrefetch = kickstart;
-		} else {
-			delete g.__nsKickstartHmrPrefetch;
-		}
+		g.__NS_DEV__ = {
+			...(invalidator ? { invalidateModules: invalidator } : {}),
+			...(kickstart ? { kickstartPrefetch: kickstart } : {}),
+		};
 
 		return {
 			g,
@@ -100,22 +90,17 @@ describe('Angular HMR client — kickstart wiring', () => {
 				g.__reboot_ng_modules__ = previous.reboot;
 				g.__NS_HMR_IMPORT__ = previous.importer;
 				g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previous.updater;
-				if (previous.invalidator === undefined) {
-					delete g.__nsInvalidateModules;
+				if (previous.nsDev === undefined) {
+					delete g.__NS_DEV__;
 				} else {
-					g.__nsInvalidateModules = previous.invalidator;
-				}
-				if (previous.kickstart === undefined) {
-					delete g.__nsKickstartHmrPrefetch;
-				} else {
-					g.__nsKickstartHmrPrefetch = previous.kickstart;
+					g.__NS_DEV__ = previous.nsDev;
 				}
 				g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = previous.registerOnly;
 			},
 		};
 	}
 
-	it('hands the eviction array to __nsKickstartHmrPrefetch after invalidation', async () => {
+	it('hands the eviction array to the kickstart primitive after invalidation', async () => {
 		const ctx = setup();
 		const evictPaths = ['http://localhost:5173/ns/m/src/app/foo.component.ts', 'http://localhost:5173/ns/m/src/app/foo.component', 'http://localhost:5173/ns/m/src/main.ts'];
 
@@ -154,7 +139,7 @@ describe('Angular HMR client — kickstart wiring', () => {
 		}
 	});
 
-	it('skips the kickstart when the runtime lacks __nsKickstartHmrPrefetch (older runtime)', async () => {
+	it('skips the kickstart when the runtime lacks the kickstart primitive', async () => {
 		const ctx = setup({ kickstart: null });
 		const evictPaths = ['http://localhost:5173/ns/m/src/main.ts'];
 
@@ -162,8 +147,9 @@ describe('Angular HMR client — kickstart wiring', () => {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', version: 1, origin: 'http://localhost:5173', evictPaths, importerEntry: '/src/main.ts' }, { getCore: () => undefined, verbose: false });
 
 			expect(handled).toBe(true);
-			// Older runtimes still go through the eviction + import flow
-			// — kickstart is a pure performance hint.
+			// Runtimes without the kickstart primitive still go through
+			// the eviction + import flow — kickstart is a pure
+			// performance hint.
 			expect(ctx.invalidator).toHaveBeenCalledTimes(1);
 			expect(ctx.importer).toHaveBeenCalledTimes(1);
 		} finally {
@@ -171,7 +157,7 @@ describe('Angular HMR client — kickstart wiring', () => {
 		}
 	});
 
-	it('skips the kickstart when eviction failed (legacy URL-versioning fallback path)', async () => {
+	it('skips the kickstart when eviction failed (no bust-next-fetch nonce was armed)', async () => {
 		const throwingInvalidator = vi.fn(() => {
 			throw new Error('runtime threw');
 		});
@@ -181,11 +167,12 @@ describe('Angular HMR client — kickstart wiring', () => {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', version: 7, origin: 'http://localhost:5173', evictPaths: ['http://localhost:5173/ns/m/src/main.ts'], importerEntry: '/src/main.ts' }, { getCore: () => undefined, verbose: false });
 
 			expect(handled).toBe(true);
-			// Eviction threw → URL strategy falls back to versioned form.
-			// We MUST NOT have asked the runtime to prefetch canonical
-			// URLs that V8 will not subsequently request.
+			// Eviction threw → kickstarting would just re-cache stale
+			// bodies (the bust-next-fetch nonce never armed), so skip it.
+			// The re-import still uses the STABLE canonical URL — there
+			// is no URL-versioning fallback anymore.
 			expect(ctx.kickstart).not.toHaveBeenCalled();
-			expect(ctx.importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/__ns_hmr__/v7/src/main.ts');
+			expect(ctx.importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/src/main.ts');
 		} finally {
 			ctx.teardown();
 		}
@@ -202,7 +189,7 @@ describe('Angular HMR client — kickstart wiring', () => {
 		}
 	});
 
-	it('survives __nsKickstartHmrPrefetch throwing without breaking the cycle', async () => {
+	it('survives the kickstart primitive throwing without breaking the cycle', async () => {
 		const throwingKickstart = vi.fn(() => {
 			throw new Error('native bridge boom');
 		});
@@ -219,7 +206,7 @@ describe('Angular HMR client — kickstart wiring', () => {
 		}
 	});
 
-	it('survives __nsKickstartHmrPrefetch returning a non-object (defensive parsing)', async () => {
+	it('survives the kickstart primitive returning a non-object (defensive parsing)', async () => {
 		// Older or buggy native bridges might return primitives. The
 		// client should treat anything that isn't a `{ ok, fetched, ms }`
 		// shape as no-op and proceed.

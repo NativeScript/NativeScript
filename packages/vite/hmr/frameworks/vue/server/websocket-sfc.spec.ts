@@ -43,11 +43,7 @@ function mount(overrides: Partial<RegisterSfcHandlersOptions> = {}) {
 		appVirtualWithSlash: '/app/',
 		sfcFileMap: new Map(),
 		depFileMap: new Map(),
-		getGraphVersion: () => 0,
 		getStrategy: () => ({}) as any,
-		cleanCode: (code) => code,
-		processCodeForDevice: (code) => code,
-		rewriteImports: (code) => code,
 		...overrides,
 	};
 	registerSfcHandlers(server, options);
@@ -79,15 +75,17 @@ describe('registerSfcHandlers', () => {
 			expect(res.body).toBe('export {}\n');
 		});
 
-		it('delegates a full SFC to the /ns/asm assembler', async () => {
+		it('delegates a full SFC to the canonical (unversioned) /ns/asm assembler URL', async () => {
 			const { sfc, transformRequest } = mount();
 			transformRequest.mockResolvedValue({ code: 'export default {}' });
 			const res = makeRes();
 			await sfc({ url: '/ns/sfc?path=/src/App.vue' }, res, vi.fn());
 			expect(res.statusCode).toBe(200);
 			expect(res.body).toContain('kind=full (delegated to assembler) path=/src/App.vue');
-			expect(res.body).toContain('export * from "/ns/asm/0?path=%2Fsrc%2FApp.vue";');
-			expect(res.body).toContain('export { default } from "/ns/asm/0?path=%2Fsrc%2FApp.vue";');
+			// The delegation body is stable across saves; freshness comes from
+			// the client evicting the assembler URL, not from a version segment.
+			expect(res.body).toContain('export * from "/ns/asm?path=%2Fsrc%2FApp.vue";');
+			expect(res.body).toContain('export { default } from "/ns/asm?path=%2Fsrc%2FApp.vue";');
 		});
 
 		it('returns an empty module for style variants', async () => {

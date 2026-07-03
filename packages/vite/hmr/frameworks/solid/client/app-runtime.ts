@@ -118,8 +118,6 @@ export function startSolidApp(options: StartSolidAppOptions): void {
 
 function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 	const origin = resolveOrigin();
-	let nonce = 0;
-
 	let busy = false;
 	let rerun = false;
 	const remount = async (changed: string[]): Promise<void> => {
@@ -138,7 +136,10 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 			// Evict the app entry + changed files so their re-imports resolve to fresh
 			// code. We deliberately do NOT evict the router / route-tree chain: keeping
 			// it cached preserves the live router (and the user's current route).
-			const invalidate = (globalThis as any).__nsInvalidateModules;
+			// Inline `__NS_DEV__` read — this module is served to the device
+			// standalone, so it stays import-free.
+			const g: any = globalThis;
+			const invalidate = g.__NS_DEV__?.invalidateModules;
 			if (typeof invalidate === 'function') {
 				try {
 					invalidate(evictionUrls(origin, [rootModule, ...changed]));
@@ -146,11 +147,11 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 					console.log('[ns-solid-hmr] invalidate threw', err);
 				}
 			}
-			const t = `${Date.now()}_${++nonce}`;
-			// Entry-tagged URL first: the `__ns_hmr__/entry-<n>/` segment makes the dev
-			// server serve a freshly-transformed module instead of a cached (one-edit-
-			// behind) transform. Plain canonical URL is the fallback.
-			const candidates = [origin + '/ns/m/__ns_hmr__/entry-' + t + rootModule + '?t=' + t, origin + '/ns/m' + rootModule + '?t=' + t];
+			// Canonical URL only. The eviction above armed the runtime's
+			// bust-next-fetch nonce, so this import re-fetches the freshly
+			// transformed module — a path tag would mint a second module
+			// identity instead (module identity IS the URL).
+			const candidates = [origin + '/ns/m' + rootModule];
 			for (const url of candidates) {
 				try {
 					const mod: any = await import(/* @vite-ignore */ url);

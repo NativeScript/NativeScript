@@ -72,14 +72,18 @@ export default {};
 		expect(post).not.toMatch(/__hmrId/);
 	});
 
-	it('ensures SFC imports are versioned', () => {
+	it('canonicalizes SFC imports (strips versioned segments, keeps URLs stable)', () => {
 		const code = `
 import View from "/ns/sfc/components/View.vue";
-const lazy = import("/ns/sfc/components/View.vue");
+const lazy = import("http://localhost:5173/ns/sfc/42/components/Other.vue");
 `;
-		const versioned = vueServerStrategy.ensureVersionedImports(code, 'http://localhost:5173', 42);
-		expect(versioned).toContain('/ns/sfc/42/components/View.vue');
-		expect(versioned.match(/\/ns\/sfc\/42/g)?.length).toBe(2);
+		const canonical = vueServerStrategy.canonicalizeFrameworkImports!(code, 'http://localhost:5173');
+		// Already-canonical imports pass through unchanged; versioned
+		// forms collapse — SFC module identity IS the URL, and freshness is
+		// eviction-driven (a versioned URL would mint a second module realm).
+		expect(canonical).toContain('from "/ns/sfc/components/View.vue"');
+		expect(canonical).toContain('import("/ns/sfc/components/Other.vue")');
+		expect(canonical).not.toMatch(/\/ns\/sfc\/\d+\//);
 	});
 
 	it('delegates vendor rewrite to helper', () => {
@@ -235,8 +239,8 @@ const lazy = import("/ns/sfc/components/View.vue");
 		expect(Object.keys(entries)).toEqual(['nativescript-vue', 'vue']);
 	});
 
-	it('volatilePatterns marks the SFC + assembler endpoints volatile', () => {
-		expect(vueServerStrategy.volatilePatterns!()).toEqual(['/@ns/sfc/', '/@ns/asm/']);
+	it('supplies no volatilePatterns — SFC freshness is eviction-driven', () => {
+		expect(vueServerStrategy.volatilePatterns).toBeUndefined();
 	});
 });
 

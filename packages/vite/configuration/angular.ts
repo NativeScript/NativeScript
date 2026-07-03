@@ -487,9 +487,9 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			//     `/ns/m/` prefix in the path.
 			//   - The NS HMR client (`packages/vite/hmr/client/index.ts`)
 			//     forwards Vite's standard `{ type: 'custom', event, data }`
-			//     payloads to `import.meta.hot.on` listeners via
-			//     `__NS_DISPATCH_HOT_EVENT__`, and short-circuits before the
-			//     reboot path for `angular:component-update`.
+			//     payloads to `import.meta.hot.on` listeners via the JS hot
+			//     registry (`hmr/client/hot-context.ts`), and short-circuits
+			//     before the reboot path for `angular:component-update`.
 			//   - The NS server-side hot-update handler in
 			//     `packages/vite/hmr/server/websocket.ts` skips its own
 			//     `ns:angular-update` broadcast for `.html` / component-style

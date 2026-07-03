@@ -10,20 +10,20 @@ import { astExtractImportsAndStripTypes } from '../../../helpers/ast-extract.js'
 import { astNormalizeModuleImportsAndHelpers, astVerifyAndAnnotateDuplicates } from '../../../helpers/ast-normalizer.js';
 import { buildInlineTemplateBlock, extractTemplateRender } from './sfc-transforms.js';
 import { NS_NATIVE_TAGS } from '../../../server/compiler.js';
-import { ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from '../../../server/websocket-served-module-helpers.js';
+import { canonicalizeRtImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper } from '../../../server/websocket-served-module-helpers.js';
 import { processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
 import { resolveProjectTsAliasRelative } from '../../../../helpers/ts-config-paths.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
-import { compileScript, compileSfcStylesToCss, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
+import { canonicalizeNsMAppImports, compileScript, compileSfcStylesToCss, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 import { buildCssRegisterSnippet } from '../../../server/css-device-module.js';
 
-// Cache assembled SFC modules keyed on `base | version | source-content-hash`.
+// Cache assembled SFC modules keyed on `base | source-content-hash`.
 // The source hash in the key means a changed SFC always produces a new key —
-// stale output can never be served — and a new graph version (HMR) also rotates
-// the key. This skips the full compile (compileScript ×N + multiple Babel
-// passes) on repeat requests for unchanged content. Bounded with FIFO eviction.
+// stale output can never be served. This skips the full compile
+// (compileScript ×N + multiple Babel passes) on repeat requests for unchanged
+// content. Bounded with FIFO eviction.
 const sfcAsmCache = new Map<string, string>();
 const SFC_ASM_CACHE_MAX = 128;
 function setAsmCache(key: string, value: string): void {
@@ -49,16 +49,9 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			const urlObj = new URL(req.url || '', 'http://localhost');
 			if (!urlObj.pathname.startsWith('/ns/asm')) return next();
 			setDeviceModuleHeaders(res);
-			// Optional version segment as first path component after /ns/asm
-			const asmBase = '/ns/asm';
-			const asmRemainder = urlObj.pathname.slice(asmBase.length) || '';
-			let verFromPath: string | null = null;
-			if (asmRemainder && asmRemainder.startsWith('/')) {
-				const p = asmRemainder.split('/');
-				if (p.length > 1 && /^[0-9]+$/.test(p[1] || '')) {
-					verFromPath = p[1];
-				}
-			}
+			// Canonical URL is `/ns/asm?path=…`. A versioned `/ns/asm/<ver>`
+			// segment (stale cached code on a device) is accepted and ignored —
+			// SFC freshness is eviction-driven, not URL-driven.
 			let spec = urlObj.searchParams.get('path') || '';
 			const diag = urlObj.searchParams.get('diag') === '1';
 			if (!spec) {
@@ -98,13 +91,10 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// assembler reads the SFC from disk and compiles it inline below).
 			await safeTransform(base + '?vue');
 			const origin = getServerOrigin(server);
-			// Preserve graph version 0 (a valid, falsy version): `||` would fall
-			// through to a non-deterministic Date.now() timestamp, giving the same
-			// SFC a different URL on every fetch (defeats the device module cache
-			// and disagrees with the client, which sends ver='0').
-			const graphVer = options.getGraphVersion();
-			const ver = String(verFromPath ?? (graphVer != null ? graphVer : Date.now()));
-			const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
+			// All URLs minted into the assembled module are CANONICAL
+			// (unversioned): module identity is the URL. Freshness comes from
+			// the client evicting the SFC artifact URL set before re-import.
+			const scriptUrl = `${origin}/ns/sfc${base}?vue&type=script`;
 			const templateCode = templateR?.code || '';
 
 			// Compiled SFC <style> registration snippet, shared by the canonical and
@@ -126,9 +116,12 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 					sfcSrc = readFileSync(abs, 'utf-8');
 				} catch {}
 				if (sfcSrc) {
-					// Content+version keyed cache: serve a prior assembly of identical
-					// source for this base/version without recompiling.
-					asmCacheKey = `${base}|${ver}|${createHash('md5').update(sfcSrc).digest('hex')}`;
+					// Content-keyed cache: serve a prior assembly of identical source
+					// for this base without recompiling. The source hash rotates on
+					// every edit, so stale output can never be served; the emitted
+					// body is deterministic for a given base+source (all embedded
+					// URLs are canonical).
+					asmCacheKey = `${base}|${createHash('md5').update(sfcSrc).digest('hex')}`;
 					const cachedAsm = sfcAsmCache.get(asmCacheKey);
 					if (cachedAsm !== undefined) {
 						res.statusCode = 200;
@@ -295,7 +288,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 										if (aliasRel) absImp = aliasRel;
 									}
 								}
-								const asmUrl = `/ns/asm/${ver}?path=${encodeURIComponent(absImp)}&mode=inline`;
+								const asmUrl = `/ns/asm?path=${encodeURIComponent(absImp)}&mode=inline`;
 								return `${pfx}import ${clause} from ${JSON.stringify(asmUrl)};`;
 							});
 						} catch {}
@@ -354,7 +347,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 					// Final guard: if no inline render extracted, attempt to import template variant or synthesize a no-op render
 					if (!renderOk && !inlineBlock) {
 						try {
-							const templateUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=template`;
+							const templateUrl = `${origin}/ns/sfc${base}?vue&type=template`;
 							const importLine = `import * as __template from ${JSON.stringify(templateUrl)};`;
 							// Attach only if scriptTransformed produces __ns_sfc__ later
 							helperBindings += `\n${importLine}`;
@@ -400,7 +393,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 					try {
 						inlineCode = ensureDestructureCoreImports(inlineCode);
 					} catch {}
-					// Replace legacy mutation pipeline with canonical assembler for reliability
+					// Assemble the artifact with the canonical assembler
 					{
 						// First: strip TypeScript robustly using Babel transform
 						try {
@@ -639,15 +632,15 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 						try {
 							inlineCode2 = inlineCode2.replace(/(\/\/ \[sfc-asm\]\[canonical\])(?!\n)/, '$1\n');
 						} catch {}
-						// Bust device cache for runtime bridge so helpers are always current for this graph version
+						// Canonical bridge + framework endpoint URLs (all unversioned).
 						try {
 							const origin = getServerOrigin(server);
-							inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(ver));
-							inlineCode2 = strategy.ensureVersionedImports?.(inlineCode2, origin, Number(ver)) ?? inlineCode2;
-							// App-source deps too: the artifact must link against the
-							// CURRENT dep content even when V8 still caches the stable
-							// `/ns/m/<app-path>` key from a previous save.
-							inlineCode2 = ensureVersionedNsMAppImports(inlineCode2, Number(ver));
+							inlineCode2 = canonicalizeRtImports(inlineCode2, origin);
+							inlineCode2 = strategy.canonicalizeFrameworkImports?.(inlineCode2, origin) ?? inlineCode2;
+							// App-source deps stay on their canonical /ns/m URLs;
+							// freshness comes from explicit eviction + the runtime's
+							// bust-next-fetch nonce, not URL versioning.
+							inlineCode2 = canonicalizeNsMAppImports(inlineCode2);
 						} catch {}
 						// Normalize imports/helpers via AST to ensure _defineComponent and other helpers are bound once
 						try {
@@ -753,9 +746,9 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			code = ensureGuardPlainDynamicImports(code);
 			try {
 				const origin = getServerOrigin(server);
-				code = ensureVersionedRtImports(code, origin, Number(ver));
-				code = strategy.ensureVersionedImports?.(code, origin, Number(ver)) ?? code;
-				code = ensureVersionedNsMAppImports(code, Number(ver));
+				code = canonicalizeRtImports(code, origin);
+				code = strategy.canonicalizeFrameworkImports?.(code, origin) ?? code;
+				code = canonicalizeNsMAppImports(code);
 			} catch {}
 			// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
 			// Apply the component's compiled <style> CSS at module eval.

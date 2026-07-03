@@ -30,13 +30,14 @@ export interface HmrModuleGraphDeps {
 }
 
 // The HMR module graph: spec -> { deps, hash } plus a monotonically increasing
-// version used to tag served module URLs. Owns delta/full-graph broadcasts to
-// connected clients and the per-version transactional batch ordering.
+// version that sequences graph broadcasts and transactional HMR batches.
+// Owns delta/full-graph broadcasts to connected clients and the per-version
+// txn batch ordering. The version never appears in served module URLs —
+// module identity is the canonical URL (see CLAUDE.md invariant 4).
 //
-// version starts at 1 so the very first /ns/m response uses a stable `v1` URL
-// tag; it stays stable during cold boot (bulk warm-ups pass bumpVersion:false)
-// and only advances on live edits, which prevents double-loads as the graph
-// fills in lazily.
+// version starts at 1 and stays stable during cold boot (bulk warm-ups pass
+// bumpVersion:false); it only advances on live edits, so the graph filling in
+// lazily never churns the version.
 export class HmrModuleGraph {
 	readonly modules = new Map<string, GraphModule>();
 	// Transactional HMR batches: version -> ordered list of changed ids for that version.

@@ -10,6 +10,8 @@ import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHt
 import { applyCssText, handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { markDevBootComplete } from '../shared/runtime/boot-complete.js';
+import { getNsHotRegistry } from './hot-context.js';
 
 const VERBOSE = ENV_VERBOSE;
 
@@ -452,9 +454,7 @@ function applyFullGraph(payload: any) {
 				try {
 					if (g.__NS_HMR_BOOT_COMPLETE__) return; // app already mounted
 					if (hasRealRoot()) {
-						try {
-							g.__NS_HMR_BOOT_COMPLETE__ = true;
-						} catch {}
+						markDevBootComplete();
 						if (VERBOSE) console.log('[hmr][init] detected real root after delay; skipping client initial mount');
 						// Detach placeholder handler if still present
 						try {
@@ -484,9 +484,7 @@ function applyFullGraph(payload: any) {
 								} catch {}
 								App.resetRootView({ moduleName: 'app-root' } as any);
 								initialMounted = true;
-								try {
-									g.__NS_HMR_BOOT_COMPLETE__ = true;
-								} catch {}
+								markDevBootComplete();
 								if (VERBOSE) console.log('[hmr][init] TS rescue resetRootView complete');
 							} else if (VERBOSE) {
 								console.warn('[hmr][init] TS flavor: Application.resetRootView unavailable; cannot perform rescue');
@@ -518,9 +516,7 @@ function applyFullGraph(payload: any) {
 							const ok = await performResetRoot(comp);
 							if (ok) {
 								initialMounted = true;
-								try {
-									g.__NS_HMR_BOOT_COMPLETE__ = true;
-								} catch {}
+								markDevBootComplete();
 								if (VERBOSE) console.log('[hmr][init] initial mount (rescue) complete');
 							}
 						} catch (e) {
@@ -603,9 +599,7 @@ function applyFullGraph(payload: any) {
 							const ok = await performResetRoot(comp);
 							if (ok) {
 								initialMounted = true;
-								try {
-									globalThis.__NS_HMR_BOOT_COMPLETE__ = true;
-								} catch {}
+								markDevBootComplete();
 								if (VERBOSE) console.log('[hmr][init] initial mount complete');
 							} else if (VERBOSE) {
 								console.warn('[hmr][init] initial mount did not verify; will rely on subsequent retries');
@@ -1052,19 +1046,15 @@ async function processQueue(): Promise<void> {
 
 			// Explicit eviction step.
 			//
-			// On modern runtimes the URL canonicalizer collapses any
-			// `__ns_hmr__/<tag>/` segment back to a stable cache key, so
-			// without explicit eviction the upcoming `import(url)` would
+			// Without explicit eviction the upcoming `import(url)` would
 			// resolve via V8's `g_moduleRegistry` and return the cached
 			// stale module — making the queue drain a silent no-op for
-			// every save after the first.
-			//
-			// We hand the canonical eviction URLs to the runtime first;
-			// `invalidateModulesByUrls` is a no-op on older runtimes and
-			// `requestModuleFromServer` automatically falls back to the
-			// legacy `/ns/m/__ns_hmr__/v<N>/` URL versioning path in that
-			// case. node_modules and virtual specs are filtered out by
-			// `buildEvictionUrls` so vendor modules stay hot.
+			// every save after the first. Eviction also arms the runtime's
+			// bust-next-fetch nonce so the re-fetch defeats OS-level HTTP
+			// caches; the re-import below then uses the STABLE canonical
+			// URL (module identity IS the URL). node_modules and virtual
+			// specs are filtered out by `buildEvictionUrls` so vendor
+			// modules stay hot.
 			if (driveSolidOverlay) {
 				setUpdateOverlayStage('evicting', {
 					detail: drained.length === 1 ? `Invalidating ${drained[0]}` : `Invalidating ${drained.length} modules`,
@@ -1314,16 +1304,13 @@ async function processQueue(): Promise<void> {
 							if (/\/routes\/__root\.(?:tsx|jsx|ts|js)$/i.test(id)) continue;
 							try {
 								const spec = normalizeSpec(id);
-								// Re-import via an entry-tagged URL so the dev server serves a
-								// freshly-transformed module rather than a cached (one-edit-behind)
-								// transform. This is what `route.options.component` is patched
-								// from below, and what @nativescript/tanstack-router's per-page
-								// HMR remount reads — it MUST be the just-saved code, not the
-								// previous save. `requestModuleFromServer` (used elsewhere) can
-								// return the prior transform within the cache window.
-								const ftOrigin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
-								const ftNonce = `${getGraphVersion()}_${Date.now()}`;
-								const url = ftOrigin ? ftOrigin + '/ns/m/__ns_hmr__/entry-' + ftNonce + (spec.startsWith('/') ? spec : '/' + spec) + '?t=' + ftNonce : await requestModuleFromServer(spec);
+								// Re-import the canonical URL. The boundary was evicted above
+								// (`invalidateModulesByUrls(solidEvictUrls)`), which also armed
+								// the runtime's bust-next-fetch nonce, so this import re-fetches
+								// the just-saved transform rather than a cached one. This is what
+								// `route.options.component` is patched from below, and what
+								// @nativescript/tanstack-router's per-page HMR remount reads.
+								const url = await requestModuleFromServer(spec);
 								if (!url) continue;
 								if (VERBOSE) console.log('[hmr][solid] propagated to boundary', { id, url });
 								const mod: any = await import(/* @vite-ignore */ url);
@@ -1727,6 +1714,18 @@ function connectHmr() {
 				try {
 					globalThis.__NS_HMR_CLIENT_SOCKET_READY__ = true;
 				} catch {}
+				// Wire the JS hot registry's server channel to this socket so
+				// `import.meta.hot.send(event, data)` reaches Vite plugins as
+				// `{ type: 'custom', event, data }` (Vite wire protocol).
+				try {
+					getNsHotRegistry().setSendToServer((event: string, data?: unknown) => {
+						try {
+							if (sock.readyState === WebSocket.OPEN) {
+								sock.send(JSON.stringify({ type: 'custom', event, data }));
+							}
+						} catch {}
+					});
+				} catch {}
 				if (connectionOverlayVisible) {
 					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
 				}
@@ -1946,12 +1945,13 @@ async function handleHmrMessage(ev: any) {
 			// on the wire as `{ type: 'custom', event: 'event-name', data: payload }`.
 			// On the web, Vite's stock client owns a `customListenersMap` that
 			// fires every `import.meta.hot.on('event-name', cb)` callback. We
-			// don't run Vite's stock client on device — the iOS runtime owns
-			// the listener registry via `__NS_DISPATCH_HOT_EVENT__` (the
-			// counterpart to `import.meta.hot.on` populated by user code +
-			// compiled Angular components). Forwarding `type: 'custom'` here
-			// is the only thing standing between server-emitted events and
-			// the listeners they were meant for.
+			// don't run Vite's stock client on device — the JS hot registry
+			// (`hot-context.ts`, installed by the bootstrap before the entry
+			// graph) owns the listener registry populated by user code +
+			// compiled Angular components via `import.meta.hot.on`.
+			// Forwarding `type: 'custom'` here is the only thing standing
+			// between server-emitted events and the listeners they were
+			// meant for.
 			//
 			// `angular:component-update` is the canonical example. Analog's
 			// plugin sends it on `.html` / component-style edits; the
@@ -1971,26 +1971,18 @@ async function handleHmrMessage(ev: any) {
 			// for `ns:angular-update` (the legacy/`.ts`-edit broadcast) and
 			// for any framework not yet using the in-place replacement path.
 			if (msg.type === 'custom' && typeof msg.event === 'string') {
-				// Dispatch every Vite "custom" event through the runtime's
-				// `__NS_DISPATCH_HOT_EVENT__` bridge so `import.meta.hot.on(event, cb)`
-				// callbacks fire on the device. Critical contract: this is the
-				// ONLY route by which Analog's `angular:component-update` reaches
-				// the compiled component's `(d) => d.id === id && Component_HmrLoad(...)`
+				// Dispatch every Vite "custom" event through the JS hot
+				// registry so `import.meta.hot.on(event, cb)` callbacks fire
+				// on the device. Critical contract: this is the ONLY route by
+				// which Analog's `angular:component-update` reaches the
+				// compiled component's `(d) => d.id === id && Component_HmrLoad(...)`
 				// listener — without it, server-side broadcasts log green
 				// (`(client) hmr update`) while the device sees nothing happen.
 				//
-				// Diagnostic policy: log "no dispatcher" loud (boot-time rt-bridge
-				// failure), and listener exceptions loud (compiled HmrLoad
-				// fetch/parse error). Successful dispatches are silent — the
-				// runtime's `[import.meta.hot] dispatch summary` line carries
-				// the per-event match-count diagnostic.
+				// Diagnostic policy: listener exceptions log loud (compiled
+				// HmrLoad fetch/parse error). Successful dispatches are silent.
 				try {
-					const dispatch = globalThis.__NS_DISPATCH_HOT_EVENT__;
-					if (typeof dispatch === 'function') {
-						dispatch(msg.event, msg.data);
-					} else {
-						console.warn(`[hmr-client][custom] no __NS_DISPATCH_HOT_EVENT__ available for '${msg.event}'`);
-					}
+					getNsHotRegistry().dispatchHotEvent(msg.event, msg.data);
 				} catch (err) {
 					console.warn('[hmr-client][custom] dispatch threw for', msg.event, err);
 				}

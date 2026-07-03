@@ -2,6 +2,32 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleAngularHotUpdateMessage } from './index.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
+import type { NsHotRegistry } from '../../../client/hot-context.js';
+
+// Specs in this file fake the runtime primitives as members of the
+// `__NS_DEV__` namespace object; seed it once so member-level
+// save/restore never dereferences `undefined`.
+getGlobalScope().__NS_DEV__ ??= {};
+
+// Minimal fake for the JS hot registry (`globalThis.__NS_HOT_REGISTRY__`).
+// The angular client reads it through `getNsHotRegistry()`, which returns
+// any pre-installed object with a `createHotContext` function — so specs
+// can stub exactly the members a test drives and leave the rest inert.
+function makeFakeHotRegistry(overrides: Partial<NsHotRegistry> = {}): NsHotRegistry {
+	return {
+		createHotContext: () => ({ data: {}, accept() {}, acceptExports() {}, dispose() {}, prune() {}, decline() {}, invalidate() {}, on() {}, off() {}, send() {} }),
+		canonicalHotKey: (id: string) => id,
+		runDispose: () => 0,
+		runPrune: () => 0,
+		hasDeclined: () => false,
+		dispatchHotEvent: () => 0,
+		listHotEventListeners: () => ({}),
+		setSendToServer: () => {},
+		setFullReloadHandler: () => {},
+		requestFullReload: () => {},
+		...overrides,
+	};
+}
 
 describe('handleAngularHotUpdateMessage', () => {
 	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
@@ -43,14 +69,12 @@ describe('handleAngularHotUpdateMessage', () => {
 
 	// Stable URL + Explicit Invalidation.
 	//
-	// When the server emits an `evictPaths` array AND the runtime
-	// exposes `__nsInvalidateModules`, the client must:
+	// When the server emits an `evictPaths` array, the client must:
 	//   1. Hand the eviction set to the runtime BEFORE the entry import.
 	//   2. Re-import the entry under its STABLE canonical URL (no
-	//      `__ns_hmr__/v<N>/` segment).
-	// The runtime canonicalizer (in `HMRSupport.mm`) then collapses
-	// any historical tagged URL still hanging around to the same key,
-	// so the only thing forcing a re-fetch is the explicit eviction.
+	//      `__ns_hmr__/v<N>/` segment — module identity IS the URL).
+	// The eviction is the only thing forcing a re-fetch: it drops V8's
+	// registry entry and arms the runtime's bust-next-fetch nonce.
 	it('hands the eviction set to the runtime and imports the stable entry URL', async () => {
 		const reboot = vi.fn();
 		const importer = vi.fn(async () => ({}));
@@ -60,13 +84,13 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 		const previousRegisterOnly = g.__NS_ANGULAR_HMR_REGISTER_ONLY__;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			const evictPaths = ['http://localhost:5173/ns/m/src/app/foo.component.ts', 'http://localhost:5173/ns/m/src/main.ts'];
@@ -95,12 +119,12 @@ describe('handleAngularHotUpdateMessage', () => {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = previousRegisterOnly;
 		}
 	});
 
-	it('falls back to versioned URL when the runtime lacks __nsInvalidateModules', async () => {
+	it('still imports the stable canonical URL when the runtime lacks __NS_DEV__.invalidateModules', async () => {
 		const reboot = vi.fn();
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
@@ -108,13 +132,13 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 		const previousRegisterOnly = g.__NS_ANGULAR_HMR_REGISTER_ONLY__;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		delete g.__nsInvalidateModules;
+		delete g.__NS_DEV__.invalidateModules;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage(
@@ -129,19 +153,21 @@ describe('handleAngularHotUpdateMessage', () => {
 			);
 
 			expect(handled).toBe(true);
-			// Legacy URL: __ns_hmr__/v12 segment retained.
-			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/__ns_hmr__/v12/src/main.ts');
+			// Canonical URL even without eviction — there is no
+			// URL-versioning fallback anymore (a tagged URL would mint a
+			// second module identity on the runtime).
+			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/src/main.ts');
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = previousRegisterOnly;
 		}
 	});
 
-	it('survives __nsInvalidateModules throwing without breaking the import flow', async () => {
+	it('survives __NS_DEV__.invalidateModules throwing without breaking the import flow', async () => {
 		const reboot = vi.fn();
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
@@ -152,12 +178,12 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage(
@@ -173,14 +199,14 @@ describe('handleAngularHotUpdateMessage', () => {
 
 			expect(handled).toBe(true);
 			expect(invalidator).toHaveBeenCalled();
-			// Eviction failed → fall back to versioned URL.
-			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/__ns_hmr__/v9/src/main.ts');
+			// Eviction failed → still the stable canonical URL.
+			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/src/main.ts');
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 		}
 	});
 
@@ -208,12 +234,12 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			const cycle1 = handleAngularHotUpdateMessage(
@@ -271,7 +297,7 @@ describe('handleAngularHotUpdateMessage', () => {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 		}
 	});
 
@@ -284,12 +310,12 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			await handleAngularHotUpdateMessage(
@@ -307,7 +333,7 @@ describe('handleAngularHotUpdateMessage', () => {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 		}
 	});
 
@@ -400,14 +426,14 @@ describe('handleAngularHotUpdateMessage', () => {
 //
 // The fix is a two-tier strategy IN `terminateTrackedWorkers`:
 //
-//   1. PREFERRED: call `globalThis.__nsTerminateAllWorkers()` (NS iOS
+//   1. PREFERRED: call `globalThis.__NS_DEV__.terminateAllWorkers()` (NS iOS
 //      runtime's authoritative `Caches::Workers` registry → terminate
 //      everything in one native call). Catches every worker regardless
 //      of how it was created.
 //
 //   2. FALLBACK: drain `globalThis.__NS_HMR_WORKERS__` (a Set populated
 //      by `__nsHmrTrackWorker`, the helper `workerHmrUrlPlugin`
-//      injects). Older runtimes that don't ship `__nsTerminateAllWorkers`
+//      injects). Runtimes that don't expose `__NS_DEV__.terminateAllWorkers`
 //      degrade cleanly to this path.
 //
 // These tests pin the BEHAVIOUR of that strategy so a runtime that
@@ -422,18 +448,18 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 	function snapshotWorkerGlobals(): SnapshotCleanup {
 		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
-		const previousNative = g.__nsTerminateAllWorkers;
+		const previousNative = g.__NS_DEV__.terminateAllWorkers;
 		const previousSet = g.__NS_HMR_WORKERS__;
-		const previousDispose = g.__nsRunHmrDispose;
+		const previousRegistry = g.__NS_HOT_REGISTRY__;
 		return () => {
 			g.__reboot_ng_modules__ = previousReboot;
-			g.__nsTerminateAllWorkers = previousNative;
+			g.__NS_DEV__.terminateAllWorkers = previousNative;
 			g.__NS_HMR_WORKERS__ = previousSet;
-			g.__nsRunHmrDispose = previousDispose;
+			g.__NS_HOT_REGISTRY__ = previousRegistry;
 		};
 	}
 
-	it('prefers globalThis.__nsTerminateAllWorkers() when the native API is present', async () => {
+	it('prefers globalThis.__NS_DEV__.terminateAllWorkers() when the native API is present', async () => {
 		const restore = snapshotWorkerGlobals();
 		const reboot = vi.fn();
 		const nativeTerminate = vi.fn(() => 3); // pretend 3 workers were terminated
@@ -441,7 +467,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsTerminateAllWorkers = nativeTerminate;
+		g.__NS_DEV__.terminateAllWorkers = nativeTerminate;
 		// Producer-side Set still has an entry — when the native path
 		// runs we must NOT also call .terminate() on this directly
 		// (the runtime already did it). The Set should be cleared
@@ -477,7 +503,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 
 		g.__reboot_ng_modules__ = reboot;
 		// Explicitly delete so the older-runtime case is unambiguous.
-		delete g.__nsTerminateAllWorkers;
+		delete g.__NS_DEV__.terminateAllWorkers;
 		g.__NS_HMR_WORKERS__ = new Set([workerA, workerB]);
 
 		try {
@@ -506,7 +532,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		// JS-tracked Set so the user still gets the cleanup they expect
 		// (rather than silently stacking up workers because the runtime
 		// regressed).
-		g.__nsTerminateAllWorkers = vi.fn(() => {
+		g.__NS_DEV__.terminateAllWorkers = vi.fn(() => {
 			throw new Error('native terminate failed');
 		});
 		g.__NS_HMR_WORKERS__ = new Set([workerA]);
@@ -531,7 +557,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		delete g.__nsTerminateAllWorkers;
+		delete g.__NS_DEV__.terminateAllWorkers;
 		delete g.__NS_HMR_WORKERS__;
 
 		try {
@@ -556,7 +582,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		delete g.__nsTerminateAllWorkers; // force fallback path
+		delete g.__NS_DEV__.terminateAllWorkers; // force fallback path
 		// Set order is insertion order: bad first to confirm we don't
 		// short-circuit on the first failure.
 		g.__NS_HMR_WORKERS__ = new Set([badWorker, goodWorker]);
@@ -579,57 +605,58 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 
 // `import.meta.hot.dispose` callback drain before reboot.
 //
-// The NS iOS runtime exposes `globalThis.__nsRunHmrDispose([keys?])` so the
-// HMR client can drain the per-module dispose registry that
-// `import.meta.hot.dispose(cb)` populates (see `HMRSupport.mm`). Without this
-// drain, every HMR update silently leaks side effects: intervals keep
-// firing, sockets stay open, store subscriptions stay active, etc.
+// The JS hot registry (`hmr/client/hot-context.ts`, installed on
+// `globalThis.__NS_HOT_REGISTRY__`) owns the per-module dispose map that
+// `import.meta.hot.dispose(cb)` populates; the HMR client drains it via
+// `registry.runDispose()`. Without this drain, every HMR update silently
+// leaks side effects: intervals keep firing, sockets stay open, store
+// subscriptions stay active, etc.
 //
 // Contract pinned by these specs:
 //
-//   * The angular client MUST call `__nsRunHmrDispose()` (no arg → drain
-//     every module) before `__reboot_ng_modules__`. Order matters: dispose
+//   * The angular client MUST call `runDispose()` (no arg → drain every
+//     module) before `__reboot_ng_modules__`. Order matters: dispose
 //     runs FIRST so user-code disposers see a still-live runtime; the
 //     hard worker terminator runs SECOND.
 //
-//   * Older runtimes without `__nsRunHmrDispose` MUST degrade silently —
-//     no throw, reboot still fires, and the worker terminator fallback
-//     still cleans up workers.
+//   * With no pre-installed registry the lazy install kicks in — no
+//     throw, drain returns 0, reboot still fires, and the worker
+//     terminator fallback still cleans up workers.
 //
-//   * Per-callback failures inside the runtime are not the client's
-//     concern (the runtime swallows them per Vite spec). But if the
-//     ENTIRE drain throws (out-of-memory, runtime regression), we still
-//     don't take down the HMR cycle.
+//   * Per-callback failures inside the registry are not the client's
+//     concern (the registry swallows them per Vite spec). But if the
+//     ENTIRE drain throws (registry regression), we still don't take
+//     down the HMR cycle.
 describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before reboot', () => {
 	type SnapshotCleanup = () => void;
 	function snapshotGlobals(): SnapshotCleanup {
 		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
-		const previousDispose = g.__nsRunHmrDispose;
-		const previousNative = g.__nsTerminateAllWorkers;
+		const previousRegistry = g.__NS_HOT_REGISTRY__;
+		const previousNative = g.__NS_DEV__.terminateAllWorkers;
 		return () => {
 			g.__reboot_ng_modules__ = previousReboot;
-			g.__nsRunHmrDispose = previousDispose;
-			g.__nsTerminateAllWorkers = previousNative;
+			g.__NS_HOT_REGISTRY__ = previousRegistry;
+			g.__NS_DEV__.terminateAllWorkers = previousNative;
 		};
 	}
 
-	it('calls __nsRunHmrDispose() with no arg before reboot when the runtime API is present', async () => {
+	it('calls registry.runDispose() with no arg before reboot', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const runDispose = vi.fn(() => 7); // pretend 7 disposers ran
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsRunHmrDispose = runDispose;
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({ runDispose });
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
 
 			expect(handled).toBe(true);
 			expect(runDispose).toHaveBeenCalledTimes(1);
-			// Implementation calls runDispose with the global as
-			// `this` and no arguments → drain everything.
+			// Implementation calls runDispose with no arguments →
+			// drain everything.
 			expect(runDispose.mock.calls[0]).toEqual([]);
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
@@ -654,8 +681,8 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsRunHmrDispose = runDispose;
-		g.__nsTerminateAllWorkers = nativeTerminate;
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({ runDispose });
+		g.__NS_DEV__.terminateAllWorkers = nativeTerminate;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
@@ -671,20 +698,20 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 		}
 	});
 
-	it('degrades silently when the runtime does not expose __nsRunHmrDispose (older runtime)', async () => {
+	it('degrades silently when no registry is pre-installed (lazy install, empty drain)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		delete g.__nsRunHmrDispose;
+		delete g.__NS_HOT_REGISTRY__;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
 
-			// No throw, reboot still ran. The dispose drain is a
-			// best-effort enhancement; missing API must never break
-			// the existing reboot flow.
+			// No throw, reboot still ran. The lazily-installed real
+			// registry has no registered disposers, so the drain is a
+			// no-op that must never break the existing reboot flow.
 			expect(handled).toBe(true);
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
@@ -692,16 +719,18 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 		}
 	});
 
-	it('does not propagate exceptions when __nsRunHmrDispose itself throws (defensive)', async () => {
+	it('does not propagate exceptions when runDispose itself throws (defensive)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		// Runtime regression: the drain function throws (out of memory,
-		// isolate teardown race, etc.). The HMR cycle must NOT die.
-		g.__nsRunHmrDispose = vi.fn(() => {
-			throw new Error('runtime drain blew up');
+		// Registry regression: the drain function throws. The HMR cycle
+		// must NOT die.
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({
+			runDispose: vi.fn(() => {
+				throw new Error('registry drain blew up');
+			}),
 		});
 
 		try {
@@ -714,14 +743,14 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 		}
 	});
 
-	it('quietly no-ops when the runtime returns 0 (nothing to drain)', async () => {
+	it('quietly no-ops when the registry returns 0 (nothing to drain)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const runDispose = vi.fn(() => 0);
 		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsRunHmrDispose = runDispose;
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({ runDispose });
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
@@ -754,47 +783,47 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 //     for a successful cycle).
 //   * Errors fire `vite:error` instead of `vite:afterUpdate`.
 //   * Declined modules trigger `vite:beforeFullReload` (via the
-//     dispatchHotEvent path inside `triggerFullReload`) and call
-//     `__nsReloadDevApp` — the cycle short-circuits before the reboot.
-//   * Older runtimes without `__NS_DISPATCH_HOT_EVENT__` (no event
-//     dispatcher installed) silently no-op without crashing the
-//     cycle.
+//     dispatchHotEvent path inside `triggerFullReload`) and call the
+//     registry's `requestFullReload` — the cycle short-circuits before
+//     the reboot.
+//   * A registry whose members throw silently no-ops without crashing
+//     the cycle.
 //
-// Note: We can't directly assert the no-op case ("dispatcher missing")
-// from a spec because `dispatchHotEvent` is a private helper, but
-// every spec below works whether or not the global is installed —
-// none of them require any side effect from the dispatcher to pass.
+// The events flow through the JS hot registry's `dispatchHotEvent`
+// (`globalThis.__NS_HOT_REGISTRY__`), which specs stub via
+// `makeFakeHotRegistry`.
 describe('handleAngularHotUpdateMessage — standard Vite event dispatching', () => {
 	type SnapshotCleanup = () => void;
 	function snapshotGlobals(): SnapshotCleanup {
 		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
-		const previousDispatcher = g.__NS_DISPATCH_HOT_EVENT__;
-		const previousDispose = g.__nsRunHmrDispose;
-		const previousNative = g.__nsTerminateAllWorkers;
-		const previousDeclined = g.__nsHasDeclinedModule;
-		const previousReload = g.__nsReloadDevApp;
+		const previousRegistry = g.__NS_HOT_REGISTRY__;
+		const previousNative = g.__NS_DEV__.terminateAllWorkers;
 		return () => {
 			g.__reboot_ng_modules__ = previousReboot;
-			g.__NS_DISPATCH_HOT_EVENT__ = previousDispatcher;
-			g.__nsRunHmrDispose = previousDispose;
-			g.__nsTerminateAllWorkers = previousNative;
-			g.__nsHasDeclinedModule = previousDeclined;
-			g.__nsReloadDevApp = previousReload;
+			g.__NS_HOT_REGISTRY__ = previousRegistry;
+			g.__NS_DEV__.terminateAllWorkers = previousNative;
 		};
 	}
 
-	function installEventCapture(): { events: Array<{ event: string; payload: any }>; restore: SnapshotCleanup } {
+	// Install a fake registry whose `dispatchHotEvent` records every event.
+	// Additional registry member overrides (hasDeclined, requestFullReload)
+	// can be layered on top for the decline-path specs.
+	function installEventCapture(overrides: Partial<NsHotRegistry> = {}): { events: Array<{ event: string; payload: any }>; restore: SnapshotCleanup } {
 		const events: Array<{ event: string; payload: any }> = [];
 		const g = getGlobalScope();
-		const previousDispatcher = g.__NS_DISPATCH_HOT_EVENT__;
-		g.__NS_DISPATCH_HOT_EVENT__ = (event: string, payload: any) => {
-			events.push({ event, payload });
-		};
+		const previousRegistry = g.__NS_HOT_REGISTRY__;
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({
+			dispatchHotEvent: (event: string, payload?: unknown) => {
+				events.push({ event, payload });
+				return 0;
+			},
+			...overrides,
+		});
 		return {
 			events,
 			restore: () => {
-				g.__NS_DISPATCH_HOT_EVENT__ = previousDispatcher;
+				g.__NS_HOT_REGISTRY__ = previousRegistry;
 			},
 		};
 	}
@@ -876,14 +905,15 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 
 	it('dispatches vite:beforeFullReload and skips reboot when a module is declined', async () => {
 		const restore = snapshotGlobals();
-		const { events, restore: restoreDispatcher } = installEventCapture();
-		const reboot = vi.fn();
 		const reloadDevApp = vi.fn();
 		const hasDeclined = vi.fn(() => true); // ← module declined HMR
+		const { events, restore: restoreDispatcher } = installEventCapture({
+			hasDeclined,
+			requestFullReload: reloadDevApp,
+		});
+		const reboot = vi.fn();
 		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsReloadDevApp = reloadDevApp;
-		g.__nsHasDeclinedModule = hasDeclined;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage(
@@ -921,14 +951,15 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 
 	it('does not reload when no module is declined (decline check returns false)', async () => {
 		const restore = snapshotGlobals();
-		const { events, restore: restoreDispatcher } = installEventCapture();
-		const reboot = vi.fn();
 		const reloadDevApp = vi.fn();
 		const hasDeclined = vi.fn(() => false);
+		const { events, restore: restoreDispatcher } = installEventCapture({
+			hasDeclined,
+			requestFullReload: reloadDevApp,
+		});
+		const reboot = vi.fn();
 		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsReloadDevApp = reloadDevApp;
-		g.__nsHasDeclinedModule = hasDeclined;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', evictPaths: [] }, { getCore: () => undefined, verbose: false });
@@ -946,14 +977,14 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		}
 	});
 
-	it('proceeds with reboot when __nsHasDeclinedModule is missing (older runtime)', async () => {
+	it('proceeds with reboot when no registry is pre-installed (lazy install, nothing declined)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
-		// No __nsHasDeclinedModule — older runtime.
-		delete g.__nsHasDeclinedModule;
-		delete g.__nsReloadDevApp;
+		// No pre-installed registry — the lazily-installed real registry
+		// has no declined modules and no listeners.
+		delete g.__NS_HOT_REGISTRY__;
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
@@ -970,8 +1001,10 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		const reboot = vi.fn();
 		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsHasDeclinedModule = vi.fn(() => {
-			throw new Error('runtime decline check exploded');
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({
+			hasDeclined: vi.fn(() => {
+				throw new Error('registry decline check exploded');
+			}),
 		});
 
 		try {
@@ -984,22 +1017,25 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		}
 	});
 
-	it('proceeds with reboot when module is declined but __nsReloadDevApp is unavailable', async () => {
+	it('proceeds with reboot when module is declined but requestFullReload throws', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
-		g.__nsHasDeclinedModule = vi.fn(() => true);
-		// __nsReloadDevApp NOT installed — older runtime can't full-reload.
-		delete g.__nsReloadDevApp;
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({
+			hasDeclined: vi.fn(() => true),
+			requestFullReload: vi.fn(() => {
+				throw new Error('full reload path exploded');
+			}),
+		});
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
 
 			// We can't full-reload, so we proceed with the regular
 			// reboot path. Suboptimal (the decline isn't honored), but
-			// the only correct fallback for older runtimes — failing
-			// silently here would leave the user with a stale UI.
+			// the only correct fallback — failing silently here would
+			// leave the user with a stale UI.
 			expect(handled).toBe(true);
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
@@ -1007,14 +1043,18 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		}
 	});
 
-	it('does not throw when __NS_DISPATCH_HOT_EVENT__ is missing (older runtime)', async () => {
+	it('does not throw when the registry dispatcher throws (defensive)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
-		// No event dispatcher → all dispatchHotEvent calls become
+		// A throwing dispatcher → all dispatchHotEvent calls become
 		// no-ops. The HMR cycle must still complete normally.
-		delete g.__NS_DISPATCH_HOT_EVENT__;
+		g.__NS_HOT_REGISTRY__ = makeFakeHotRegistry({
+			dispatchHotEvent: vi.fn(() => {
+				throw new Error('dispatcher exploded');
+			}),
+		});
 
 		try {
 			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
@@ -1087,12 +1127,12 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			await handleAngularHotUpdateMessage(
@@ -1132,7 +1172,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 		}
 	});
 
@@ -1221,12 +1261,12 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			await handleAngularHotUpdateMessage(
@@ -1257,7 +1297,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 		}
 	});
 
@@ -1285,12 +1325,12 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = g.__nsInvalidateModules;
+		const previousInvalidator = g.__NS_DEV__.invalidateModules;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
 		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		g.__nsInvalidateModules = invalidator;
+		g.__NS_DEV__.invalidateModules = invalidator;
 
 		try {
 			const cycle1 = handleAngularHotUpdateMessage(
@@ -1345,7 +1385,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			g.__nsInvalidateModules = previousInvalidator;
+			g.__NS_DEV__.invalidateModules = previousInvalidator;
 		}
 	});
 });

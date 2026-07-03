@@ -1,4 +1,4 @@
-import { deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, graph, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
+import { deriveHttpOrigin, getCore, getCurrentApp, getHMRWsUrl, getHttpOriginForVite, graph, invalidateModulesByUrls, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { findSfcAncestors } from './dep-propagation.js';
 
@@ -657,8 +657,9 @@ export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number)
 				// Fallback (real Vue HMR runtime unavailable): a child SFC with required
 				// props cannot be a standalone root — mounting it bare crashes (missing
 				// props → white screen). Walk up to the nearest mountable ancestor (its
-				// hosting page) and remount that; its versioned child import pulls in the
-				// edited code and the child re-renders with props.
+				// hosting page) and remount that; the child's artifact set was evicted
+				// above, so the ancestor's re-assembly links the edited child and it
+				// re-renders with props.
 				if (comp && hmrComponentHasRequiredProps(comp)) {
 					const ancestors = findSfcAncestors(changedPath, graph);
 					for (const ancestor of ancestors) {
@@ -733,25 +734,24 @@ export function addSfcMapping(originalPath: string, fileName: string) {
 	} catch {}
 }
 
-// Build explicit SFC variant URL (script/template). Always preserves the variant query.
+// Build explicit SFC variant URL (script/template). Always preserves the
+// variant query. CANONICAL (unversioned): module identity is the URL;
+// freshness comes from the eviction in `evictSfcArtifacts` below.
 function resolveSfcVariantSpec(id: string, type: 'script' | 'template', cacheBustTag?: string): string {
 	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
 	const base = id.split('?')[0];
 	if (!origin) return base + `?vue&type=${type}`;
 	const safePath = base.startsWith('/') ? base : '/' + base;
-	const ver = typeof getGraphVersion() === 'number' && getGraphVersion() > 0 ? String(getGraphVersion()) : '0';
-	const url = origin + `/ns/sfc/${ver}` + safePath + `?vue&type=${type}`;
-	return url;
+	return origin + '/ns/sfc' + safePath + `?vue&type=${type}`;
 }
 
-// Resolve deterministic SFC assembler ESM module
+// Resolve deterministic SFC assembler ESM module (canonical, unversioned).
 function resolveSfcAssemblerSpec(id: string, cacheBustTag?: string): string {
 	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
 	const base = id.split('?')[0];
 	if (!origin) return base; // fallback: device will likely fail; origin should be available in dev
 	const safePath = base.startsWith('/') ? base : '/' + base;
-	const ver = typeof getGraphVersion() === 'number' && getGraphVersion() > 0 ? String(getGraphVersion()) : '0';
-	let url = origin + `/ns/asm/${ver}` + `?path=${encodeURIComponent(safePath)}`;
+	let url = origin + '/ns/asm' + `?path=${encodeURIComponent(safePath)}`;
 	try {
 		if (globalThis.__NS_HMR_ASM_DIAG__) {
 			url += '&diag=1';
@@ -760,12 +760,55 @@ function resolveSfcAssemblerSpec(id: string, cacheBustTag?: string): string {
 	return url;
 }
 
+// The full SFC artifact URL set for one `.vue` path — every URL shape the
+// device may hold a module record under for this component:
+//   - the assembler module (dynamic loads + full-SFC delegation target)
+//   - the assembler's `mode=inline` twin (static child imports inside a
+//     parent's assembled module)
+//   - the script/template variants (variant assembly + asm fallbacks)
+//   - the full `/ns/sfc<path>` delegation module (static `.vue` imports
+//     rewritten by the server inside `/ns/m` modules)
+export function buildSfcEvictionUrls(id: string): string[] {
+	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+	if (!origin) return [];
+	const base = id.split('?')[0];
+	const safePath = base.startsWith('/') ? base : '/' + base;
+	const asmUrl = origin + '/ns/asm' + `?path=${encodeURIComponent(safePath)}`;
+	return [asmUrl, asmUrl + '&mode=inline', origin + '/ns/sfc' + safePath + '?vue&type=script', origin + '/ns/sfc' + safePath + '?vue&type=template', origin + '/ns/sfc' + safePath];
+}
+
+// Evict every module record for this SFC's artifact set so the re-imports in
+// `loadSfcComponent` fetch fresh content. `__NS_DEV__.invalidateModules` drops the
+// V8 registry entries + the runtime's prewarm cache AND arms the
+// bust-next-fetch nonce that defeats the OS HTTP cache — the same freshness
+// protocol `/ns/m` modules use (URLs never vary; eviction drives updates).
+// Soft-fail: on runtimes without the eviction primitive we still re-import
+// (worst case the device serves the cached artifact — same as any other
+// module type on such a runtime).
+function evictSfcArtifacts(id: string): void {
+	try {
+		const urls = buildSfcEvictionUrls(id);
+		if (urls.length) invalidateModulesByUrls(urls);
+	} catch (e) {
+		try {
+			console.warn('[hmr][vue] SFC artifact eviction failed for', id, e);
+		} catch {}
+	}
+}
+
 // Safely load a component for a .vue SFC. Prefer deterministic assembler first to avoid
 // any variant-compile or TDZ flakiness; only fall back to variant assembly if needed.
 export async function loadSfcComponent(targetVuePath: string, tag: string): Promise<any | null> {
 	// Minimal mode removed: always go through deterministic assembler + device reset
 	// Ensure Vue globals exist BEFORE evaluating variant modules; their top-level aliasing reads globalThis.* once.
 	ensureVueGlobals();
+
+	// Evict this SFC's artifact URL set BEFORE any import below. Every load
+	// through here happens because fresh content is wanted (a `.vue` edit, an
+	// ancestor remount, or a dep-change boundary re-assembly), and the URLs
+	// are stable across saves — without the eviction, `import()` would return
+	// the cached (pre-edit) module records.
+	evictSfcArtifacts(targetVuePath);
 
 	// Prefer deterministic assembler first so AST normalization (including nav helpers) always applies.
 	try {

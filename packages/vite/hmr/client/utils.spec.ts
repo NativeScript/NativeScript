@@ -6,11 +6,14 @@ import { getGlobalScope } from '../shared/runtime/global-scope.js';
 const ORIGIN = 'http://127.0.0.1:5173';
 
 function clearGlobalEvictionFn() {
-	delete getGlobalScope().__nsInvalidateModules;
+	const g = getGlobalScope();
+	if (g.__NS_DEV__) delete g.__NS_DEV__.invalidateModules;
 }
 
 function setGlobalEvictionFn(fn: ((urls: readonly string[]) => void) | unknown) {
-	getGlobalScope().__nsInvalidateModules = fn;
+	const g = getGlobalScope();
+	g.__NS_DEV__ ??= {};
+	g.__NS_DEV__.invalidateModules = fn;
 }
 
 describe('setGraphVersion', () => {
@@ -44,12 +47,12 @@ describe('hasExplicitEviction', () => {
 		expect(hasExplicitEviction()).toBe(false);
 	});
 
-	it('returns true when __nsInvalidateModules is exposed as a function', () => {
+	it('returns true when the eviction primitive is exposed (flat fallback global)', () => {
 		setGlobalEvictionFn(() => {});
 		expect(hasExplicitEviction()).toBe(true);
 	});
 
-	it('returns false when __nsInvalidateModules is set to a non-function value', () => {
+	it('returns false when the eviction primitive is a non-function value', () => {
 		setGlobalEvictionFn('not a function');
 		expect(hasExplicitEviction()).toBe(false);
 	});
@@ -78,7 +81,7 @@ describe('invalidateModulesByUrls', () => {
 		expect(fn).not.toHaveBeenCalled();
 	});
 
-	it('hands the canonical URL list to __nsInvalidateModules and returns true', () => {
+	it('hands the canonical URL list to the runtime eviction primitive and returns true', () => {
 		const fn = vi.fn();
 		setGlobalEvictionFn(fn);
 		const urls = [`${ORIGIN}/ns/m/src/foo.ts`, `${ORIGIN}/ns/m/src/bar.ts`];
@@ -88,7 +91,7 @@ describe('invalidateModulesByUrls', () => {
 		expect(fn).toHaveBeenCalledWith(urls);
 	});
 
-	it('soft-fails when __nsInvalidateModules throws', () => {
+	it('soft-fails when the eviction primitive throws', () => {
 		setGlobalEvictionFn(() => {
 			throw new Error('boom');
 		});
@@ -196,7 +199,7 @@ describe('emitHmrModeBannerOnce', () => {
 		utils.emitHmrModeBannerOnce();
 		utils.emitHmrModeBannerOnce();
 		expect(info).toHaveBeenCalledTimes(1);
-		expect(info.mock.calls[0]?.[0]).toContain('legacy-url-versioning');
+		expect(info.mock.calls[0]?.[0]).toContain('DEGRADED');
 	});
 
 	it('reflects explicit eviction when force-emitted (verbose)', async () => {
@@ -226,7 +229,7 @@ describe('requestModuleFromServer', () => {
 		moduleFetchCache.clear();
 		clearGlobalEvictionFn();
 		_resetHmrModeBannerForTests();
-		// Reset import nonce so legacy URL paths don't mis-count tags.
+		// Reset the import nonce so counts start from a known baseline.
 		try {
 			getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
 		} catch {}
@@ -243,11 +246,7 @@ describe('requestModuleFromServer', () => {
 		} catch {}
 	});
 
-	it('returns the bare canonical URL on the very first request before any HMR cycle has run', async () => {
-		// Before any HMR cycle, both `__NS_HMR_IMPORT_NONCE__` and
-		// `graphVersion` are 0 and there's no hash signal — the
-		// canonical URL is sufficient (and lets the runtime populate
-		// V8's cache under the stable key on first load).
+	it('returns the bare canonical URL on the very first request', async () => {
 		setGlobalEvictionFn(() => {});
 		setGraphVersion(0);
 		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
@@ -256,43 +255,26 @@ describe('requestModuleFromServer', () => {
 		expect(url).not.toMatch(/__ns_hmr__/);
 	});
 
-	it('embeds a `__ns_hmr__/<tag>/` segment on every HMR re-import so the iOS HTTP loader treats each save as a fresh fetch', async () => {
-		// Path-tagging on every HMR cycle (even with explicit eviction)
-		// is required because the iOS HTTP loader's response cache
-		// keys by exact URL string and operates independently of V8's
-		// `g_moduleRegistry`. Without the tag, the loader hands V8 the
-		// previous save's body and HMR appears "one save behind" — see
-		// `requestModuleFromServer` in `utils.ts` for the full
-		// rationale. The runtime canonicalizer collapses the tag back
-		// to the stable key BEFORE V8's module-cache lookup, so V8
-		// still sees one logical module per URL.
+	it('returns the SAME canonical URL on HMR re-imports (no `__ns_hmr__` tag)', async () => {
+		// Module identity IS the URL: freshness across saves is driven by
+		// `__NS_DEV__.invalidateModules` + the runtime's bust-next-fetch nonce,
+		// not by URL decoration. Even with nonce/version/hash signals
+		// present the emitted URL stays canonical — a tagged URL would
+		// mint a second module identity on the runtime.
 		setGlobalEvictionFn(() => {});
 		setGraphVersion(7);
 		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 3;
 		const url = await requestModuleFromServer('/src/main.ts');
-		expect(url.startsWith(`${ORIGIN}/ns/m/__ns_hmr__/`)).toBe(true);
-		expect(url).toMatch(/__ns_hmr__\/3-7/);
-		// Path tail uses the canonical (no-extension) form, matching
-		// the server's static-import rewrite output.
-		expect(url.endsWith('/src/main')).toBe(true);
+		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
+		expect(url).not.toMatch(/__ns_hmr__/);
 	});
 
-	it('embeds a tag on legacy runtimes too so the URL changes between saves', async () => {
-		clearGlobalEvictionFn();
+	it('strips script extensions so the URL matches the server static-import rewrite output', async () => {
+		setGlobalEvictionFn(() => {});
 		setGraphVersion(5);
 		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 9;
 		const url = await requestModuleFromServer('/src/foo.ts');
-		expect(url.startsWith(`${ORIGIN}/ns/m/__ns_hmr__/`)).toBe(true);
-		expect(url.endsWith('/src/foo')).toBe(true);
-		expect(url).toMatch(/__ns_hmr__\/9-5/);
-	});
-
-	it('returns the bare canonical URL on legacy runtimes when no version, hash, or nonce signal is available', async () => {
-		clearGlobalEvictionFn();
-		setGraphVersion(0);
-		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
-		const url = await requestModuleFromServer('/src/main.ts');
-		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
+		expect(url).toBe(`${ORIGIN}/ns/m/src/foo`);
 	});
 
 	it('rejects virtual helper specs without producing a URL', async () => {

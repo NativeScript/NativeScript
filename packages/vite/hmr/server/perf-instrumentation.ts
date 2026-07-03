@@ -45,7 +45,7 @@ export function classifyBootRoute(pathname: string): BootRouteCategory {
 	if (pathname === '/@nativescript/vendor.mjs' || pathname.startsWith('/@nativescript/')) return 'ns/vendor';
 	if (pathname.startsWith('/ns/m/')) return 'ns/m';
 	if (pathname.startsWith('/ns/rt/')) return 'ns/rt';
-	if (pathname.startsWith('/ns/core/')) return 'ns/core';
+	if (pathname.startsWith('/ns/core/') || pathname === '/ns/core-bundle.mjs') return 'ns/core';
 	if (pathname.startsWith('/__ns_boot__/')) return 'ns/boot';
 	if (pathname.startsWith('/__ns_hmr__/')) return 'ns/hmr';
 	if (pathname.startsWith('/ns/')) return 'ns/other';

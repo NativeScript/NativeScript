@@ -4,10 +4,11 @@ import { isDirectoryIndexFilename, rewriteSpecifiersForDevice, type RelativeBase
 import { buildDefaultExportFooter, buildShapeInstallHeader, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
-import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath } from './websocket-core-bridge.js';
+import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath, collectStaticExportNamesFromFile } from './websocket-core-bridge.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { getServerOrigin } from './server-origin.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
+import { CORE_BUNDLE_PATH, buildCoreMainShimCode, buildCoreSubShimCode, getSharedCoreBundleService, isCorePerModuleServingEnabled, type CoreBundleService } from './core-bundle.js';
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 
@@ -20,17 +21,84 @@ type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<Tra
 export interface RegisterNsCoreRouteOptions {
 	getGraphVersion(): number;
 	sharedTransformRequest: SharedTransformRequestFn;
+	/**
+	 * Injectable core-bundle service (testability seam). When omitted, the
+	 * shared process-wide service is used — unless `NS_CORE_PER_MODULE=1`
+	 * disables bundle mode entirely.
+	 */
+	coreBundle?: CoreBundleService | null;
 }
 
 /**
  * Registers the `@nativescript/core` device bridge on the dev server:
  *   - a catch-all that rewrites stray `/node_modules/@nativescript/core/*`
- *     requests to the canonical `/ns/core[/<sub>]` URL, and
- *   - `GET /ns/core[/<sub>]` — the ONE place @nativescript/core is evaluated on
- *     device (single module realm, shared class identities, one-time `register()`).
+ *     requests to the canonical `/ns/core[/<sub>]` URL,
+ *   - `GET /ns/core-bundle.mjs` (bundle mode) — the single-eval core bundle, and
+ *   - `GET /ns/core[/<sub>]` — the canonical core URL space. In bundle mode
+ *     (default) these serve thin shims over the bundle; with
+ *     `NS_CORE_PER_MODULE=1` (core maintainers editing core source in the
+ *     monorepo) each core module is served/transformed individually so core
+ *     edits participate in HMR. Either way this URL family is the ONE place
+ *     @nativescript/core reaches the device (single module realm, shared class
+ *     identities, one-time `register()`).
  */
 export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCoreRouteOptions): void {
 	const verbose = resolveVerboseFlag();
+	const coreBundle: CoreBundleService | null = options.coreBundle !== undefined ? options.coreBundle : isCorePerModuleServingEnabled() ? null : getSharedCoreBundleService(server);
+
+	if (coreBundle) {
+		// Warm the bundle build in the background so the first device request
+		// doesn't pay the esbuild cost (parallels the vendor bundle warmup).
+		void coreBundle.ensureBuilt();
+
+		// GET /ns/core-bundle.mjs — the single-eval core payload.
+		server.middlewares.use(async (req, res, next) => {
+			try {
+				const urlObj = new URL(req.url || '', 'http://localhost');
+				if (urlObj.pathname !== CORE_BUNDLE_PATH) return next();
+				const state = await coreBundle.ensureBuilt();
+				if (!state) {
+					res.statusCode = 503;
+					res.setHeader('Access-Control-Allow-Origin', '*');
+					res.setHeader('Content-Type', 'application/json');
+					res.end(JSON.stringify({ error: 'core-bundle-build-failed' }));
+					return;
+				}
+				setDeviceModuleHeaders(res);
+				res.statusCode = 200;
+				res.end(state.code);
+			} catch (e) {
+				console.warn('[ns-core-bundle] serve failed:', (e as any)?.message);
+				next();
+			}
+		});
+	}
+
+	// Per-sub named-export discovery for bundle-mode shims, memoized for the
+	// session (same disk walker the per-module bridge uses for its own
+	// export-name guarantees; see collectStaticExportOriginsFromFile).
+	const subExportNamesCache = new Map<string, Promise<string[]>>();
+	const resolveModuleIdViaVite = async (moduleId: string): Promise<string | null> => {
+		const resolved = await server.pluginContainer?.resolveId?.(moduleId, undefined);
+		return typeof resolved === 'string' ? resolved : resolved?.id || null;
+	};
+	const getSubShimExportNames = (canonicalSub: string): Promise<string[]> => {
+		let pending = subExportNamesCache.get(canonicalSub);
+		if (!pending) {
+			pending = (async () => {
+				try {
+					const modulePath = await resolveRuntimeCoreModulePath(canonicalSub, resolveModuleIdViaVite);
+					if (!modulePath) return [];
+					return collectStaticExportNamesFromFile(modulePath);
+				} catch {
+					return [];
+				}
+			})();
+			subExportNamesCache.set(canonicalSub, pending);
+		}
+		return pending;
+	};
+	const warnedFallbackSubs = new Set<string>();
 	// Catch-all redirect for stray /node_modules/@nativescript/core/*
 	// requests — route them to the /ns/core bridge so they get the same
 	// __DEV__/__IOS__ preamble and specifier rewriting. Without this,
@@ -97,6 +165,36 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 			}
 			setDeviceModuleHeaders(res);
 			const { normalizedSub, sub } = coreRequest;
+
+			// BUNDLE MODE (default): serve thin shims over /ns/core-bundle.mjs.
+			// The canonical URL space is unchanged — only the response bodies
+			// differ. Fall through to the per-module pipeline below when the
+			// bundle build failed or when the requested subpath was excluded
+			// from bundle enumeration (e.g. debugger/ modules). That fallback
+			// is realm-safe: the per-module response's own core imports are
+			// rewritten to `/ns/core/<sub>` URLs, which resolve to shims that
+			// join the bundle realm.
+			if (coreBundle) {
+				const bundleState = await coreBundle.ensureBuilt();
+				if (bundleState) {
+					const canonicalSubForShim = normalizeCoreSubCanonical(normalizedSub || sub || '');
+					if (!canonicalSubForShim) {
+						res.statusCode = 200;
+						res.end(buildCoreMainShimCode());
+						return;
+					}
+					if (bundleState.subs.has(canonicalSubForShim)) {
+						const exportNames = await getSubShimExportNames(canonicalSubForShim);
+						res.statusCode = 200;
+						res.end(buildCoreSubShimCode(canonicalSubForShim, exportNames));
+						return;
+					}
+					if (!warnedFallbackSubs.has(canonicalSubForShim)) {
+						warnedFallbackSubs.add(canonicalSubForShim);
+						console.warn(`[ns-core-bundle] sub '${canonicalSubForShim}' not in bundle enumeration — serving per-module (realm-safe fallback)`);
+					}
+				}
+			}
 
 			const resolveModuleId = async (moduleId: string): Promise<string | null> => {
 				const resolved = await server.pluginContainer?.resolveId?.(moduleId, undefined);

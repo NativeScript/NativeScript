@@ -47,8 +47,8 @@ describe('applyHmrPendingFrame', () => {
 	});
 
 	it('returns false when the overlay shape is wrong (no setUpdateStage method)', () => {
-		// Defensive: a future overlay version (or a stub from an
-		// older runtime) may not expose setUpdateStage. Don't blow up.
+		// Defensive: a future overlay version (or a partial stub)
+		// may not expose setUpdateStage. Don't blow up.
 		const result = applyHmrPendingFrame('/src/foo.ts', {
 			getOverlay: () => ({}) as any,
 			overlayEnabled: true,

@@ -34,18 +34,6 @@ export interface NsDevSessionDescriptor {
 	features?: NsDevFeatureFlags;
 }
 
-export interface NsRuntimeDevSessionConfig extends NsDevSessionDescriptor {}
-
-export interface NsStyleUpdatePayload {
-	url: string;
-	cssText: string;
-}
-
-export interface NsHotUpdateInvalidatePayload {
-	urls: string[];
-	updatedAt?: number;
-}
-
 export interface NsRuntimeImportMap {
 	imports: Record<string, string>;
 }
@@ -55,14 +43,39 @@ export interface NsRuntimeConfigurePayload {
 	volatilePatterns?: string[];
 }
 
+export interface NsKickstartPrefetchOptions {
+	maxConcurrent?: number;
+	timeoutMs?: number;
+}
+
+export interface NsKickstartPrefetchResult {
+	ok: boolean;
+	fetched: number;
+	ms: number;
+}
+
+/**
+ * The native dev-host contract — mechanism only. The runtime exposes six
+ * primitives on the single `globalThis.__NS_DEV__` namespace object; every
+ * policy concern (boot orchestration, import.meta.hot, full reload, CSS
+ * apply, WebSocket protocol) lives in JS inside @nativescript/vite.
+ *
+ * Every member is optional: a non-dev environment (or a test) may expose
+ * none or only some of them, and callers degrade gracefully.
+ */
 export interface NsRuntimeDevHostApi {
+	/** `__NS_DEV__.configureRuntime` — import map + volatile URL patterns for the sync resolver. */
 	configureRuntime?: (config: NsRuntimeConfigurePayload) => void;
-	supportsRuntimeConfigUrl: boolean;
-	startDevSession: (config: NsRuntimeDevSessionConfig) => Promise<void>;
+	/** `__NS_DEV__.invalidateModules` — dual-cache eviction (V8 registry + prefetch cache + bust-next-fetch nonce). */
 	invalidateModules?: (urls: string[]) => void;
-	reloadDevApp?: () => Promise<void>;
-	applyStyleUpdate?: (payload: NsStyleUpdatePayload) => void;
+	/** `__NS_DEV__.getLoadedModuleUrls` — registry introspection for JS-driven full reload. */
 	getLoadedModuleUrls?: () => string[];
+	/** `__NS_DEV__.kickstartPrefetch(urls)` — parallel HTTP body prewarm for an explicit URL list. */
+	kickstartPrefetch?: (urls: string[], options?: NsKickstartPrefetchOptions) => NsKickstartPrefetchResult | null;
+	/** `__NS_DEV__.setDevBootComplete` — flips the native cold-boot gate + `__NS_HMR_BOOT_COMPLETE__`. */
+	setDevBootComplete?: (value?: boolean) => void;
+	/** `__NS_DEV__.terminateAllWorkers` — drains `Caches::Workers`; returns the count terminated (main isolate only). */
+	terminateAllWorkers?: () => number;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -106,27 +119,18 @@ export function assertNsDevSessionDescriptor(session: unknown): asserts session 
 	}
 }
 
+/**
+ * Resolve the dev host API from `globalThis.__NS_DEV__` — the one namespace
+ * object the runtime installs. Always read through this function rather than
+ * poking at the global so every consumer resolves the contract identically.
+ */
 export function readNsRuntimeDevHostApi(target: Partial<typeof globalThis> = globalThis): NsRuntimeDevHostApi {
-	return {
-		configureRuntime: target.__nsConfigureDevRuntime ?? target.__nsConfigureRuntime,
-		supportsRuntimeConfigUrl: target.__nsSupportsRuntimeConfigUrl === true,
-		startDevSession: target.__nsStartDevSession,
-		invalidateModules: target.__nsInvalidateModules,
-		reloadDevApp: target.__nsReloadDevApp,
-		applyStyleUpdate: target.__nsApplyStyleUpdate,
-		getLoadedModuleUrls: target.__nsGetLoadedModuleUrls,
-	};
+	return target.__NS_DEV__ ?? {};
 }
 
 declare global {
-	var __nsConfigureDevRuntime: ((config: NsRuntimeConfigurePayload) => void) | undefined;
-	var __nsConfigureRuntime: ((config: NsRuntimeConfigurePayload) => void) | undefined;
-	var __nsSupportsRuntimeConfigUrl: boolean | undefined;
-	var __nsStartDevSession: ((config: NsRuntimeDevSessionConfig) => Promise<void>) | undefined;
-	var __nsInvalidateModules: ((urls: string[]) => void) | undefined;
-	var __nsReloadDevApp: (() => Promise<void>) | undefined;
-	var __nsApplyStyleUpdate: ((payload: NsStyleUpdatePayload) => void) | undefined;
-	var __nsGetLoadedModuleUrls: (() => string[]) | undefined;
+	/** The dev host namespace object the runtime installs (see NsRuntimeDevHostApi). */
+	var __NS_DEV__: NsRuntimeDevHostApi | undefined;
 }
 
 export {};

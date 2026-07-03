@@ -76,8 +76,8 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(angularServerStrategy.importMapEntries).toBeUndefined();
 		expect(typescriptServerStrategy.importMapEntries).toBeUndefined();
 
-		expect(typeof vueServerStrategy.volatilePatterns).toBe('function');
-		expect(typeof angularServerStrategy.volatilePatterns).toBe('function');
+		expect(vueServerStrategy.volatilePatterns).toBeUndefined();
+		expect(angularServerStrategy.volatilePatterns).toBeUndefined();
 		expect(solidServerStrategy.volatilePatterns).toBeUndefined();
 		expect(typescriptServerStrategy.volatilePatterns).toBeUndefined();
 	});

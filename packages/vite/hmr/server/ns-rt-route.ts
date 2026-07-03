@@ -6,12 +6,16 @@ import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 
 export interface NsRtRouteOptions {
-	// Current HMR graph version, read lazily — the version advances on live
-	// edits and tags `/ns/rt/<ver>` so the device busts its module cache.
+	// Current HMR graph version, read lazily. Only used as a diagnostic tag
+	// inside the served body — the server always EMITS the canonical
+	// unversioned `/ns/rt` URL (module identity is the URL; freshness is
+	// eviction-driven). The route still ACCEPTS `/ns/rt/<ver>` requests
+	// from stale code cached on a device.
 	getGraphVersion(): number;
 }
 
-// ESM runtime bridge for NativeScript-Vue: `GET /ns/rt[/<ver>]`.
+// ESM runtime bridge for NativeScript-Vue: `GET /ns/rt` (canonical;
+// `/ns/rt/<ver>` from stale device caches still accepted inbound).
 //
 // Serves a single authoritative source of Vue helpers bound to the
 // NativeScript renderer. The bridge lazily resolves helpers from the vendor

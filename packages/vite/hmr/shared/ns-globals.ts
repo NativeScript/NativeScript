@@ -18,9 +18,8 @@
  *     payloads are intentionally `any` — typing them precisely would couple this
  *     shared file to device internals and risk breaking write sites elsewhere in
  *     the package.
- *   - The runtime-config API keys (`__nsConfigureRuntime`, `__nsInvalidateModules`,
- *     `__nsReloadDevApp`, …) are deliberately NOT declared here; they are owned by
- *     `hmr/shared/runtime/browser-runtime-contract.ts`.
+ *   - The runtime dev-host API (`__NS_DEV__`) is deliberately NOT declared
+ *     here; it is owned by `hmr/shared/runtime/browser-runtime-contract.ts`.
  *
  * This module emits no runtime code (ambient declaration only) and is picked up
  * project-wide via the package tsconfig include (all .ts files).
@@ -82,7 +81,6 @@ declare global {
 	var __NS_PENDING_CSS__: Record<string, string> | null | undefined;
 
 	// ── Function hooks (typed where the signature is stable; `any` otherwise) ──
-	var __NS_DISPATCH_HOT_EVENT__: ((event: string, payload?: unknown) => void) | undefined;
 	var __NS_HMR_IMPORT__: ((url: string) => Promise<unknown>) | undefined;
 	var __NS_HMR_ON_UPDATE__: ((payload: { type: 'full-graph' | 'delta'; version: number; changedIds: string[]; raw: any }) => void) | undefined;
 	var __NS_HMR_ON_NAVIGATE_BACK: (() => void) | undefined;
@@ -90,7 +88,6 @@ declare global {
 	var __nsAttemptBackRemount: (() => unknown) | undefined;
 	var __nsHmrRequestModule: ((spec: string) => Promise<string>) | undefined;
 	var __nsGetModuleExports: ((id: string) => any) | undefined;
-	var __nsKickstartHmrPrefetch: ((urls: string[], opts?: { maxConcurrent: number; timeoutMs: number }) => { ok: boolean; fetched: number; ms: number } | null) | undefined;
 	var __ns_solid_hmr_subscribe: ((fn: (ev: { kind: 'solid'; changedFiles: string[]; boundaries: string[] }) => void) => () => void) | undefined;
 
 	// ── Native / framework / registry objects (intentionally `any`) ──
@@ -111,9 +108,6 @@ declare global {
 	var __NS_HMR_WORKERS__: any;
 	var __NS_UPDATE_ANGULAR_APP_OPTIONS__: any;
 	var __nsNavigateUsingApp: any;
-	var __nsHasDeclinedModule: any;
-	var __nsRunHmrDispose: any;
-	var __nsTerminateAllWorkers: any;
 	var __nsRequire: any;
 	var __nsVendorRequire: any;
 	var __nsVendorRegistry: any;

@@ -34,10 +34,14 @@ function stripVueHmrTail(code: string): string {
 	return code.replace(/\n[^\n]*__hmrId\s*=\s*['"][^'"]+['"];[\s\S]*?(?=\n\s*export\s+default)/g, '\n').replace(/^[^\n]*typeof\s+__VUE_HMR_RUNTIME__[^\n]*$/gm, '');
 }
 
-function ensureVersionedSfcImports(code: string, origin: string, ver: number): string {
-	if (!code || !origin || !Number.isFinite(ver)) return code;
-	code = code.replace(/(from\s+["'])(?:https?:\/\/[^"']+)?(\/ns\/sfc)(?:\/[\d]+)?(\/[^"']*)(["'])/g, (_m, p1, _p2, p3, p4) => `${p1}/ns/sfc/${ver}${p3}${p4}`);
-	code = code.replace(/(import\(\s*["'])(?:https?:\/\/[^"']+)?(\/ns\/sfc)(?:\/[\d]+)?(\/[^"']*)(["']\s*\))/g, (_m, p1, _p2, p3, p4) => `${p1}/ns/sfc/${ver}${p3}${p4}`);
+// Collapse `/ns/sfc/<ver>/…` imports (any historical versioned form, absolute
+// or root-relative) to the canonical unversioned `/ns/sfc/…` URL. SFC module
+// identity IS the URL — freshness is driven by the client's explicit eviction
+// of the SFC artifact set (`__NS_DEV__.invalidateModules`), exactly like `/ns/m`.
+function canonicalizeSfcImports(code: string): string {
+	if (!code) return code;
+	code = code.replace(/(from\s+["'])(?:https?:\/\/[^"']+)?(\/ns\/sfc)(?:\/[\d]+)?(\/[^"']*)(["'])/g, (_m, p1, _p2, p3, p4) => `${p1}/ns/sfc${p3}${p4}`);
+	code = code.replace(/(import\(\s*["'])(?:https?:\/\/[^"']+)?(\/ns\/sfc)(?:\/[\d]+)?(\/[^"']*)(["']\s*\))/g, (_m, p1, _p2, p3, p4) => `${p1}/ns/sfc${p3}${p4}`);
 	return code;
 }
 
@@ -524,7 +528,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 
 			// HTTP-only mode: the device loads SFC artifacts and their dependencies via
 			// HTTP endpoints on demand, so the WS channel stays metadata-only (just the
-			// registry update above). No code-push, dependency harvest, or legacy dynamic
+			// registry update above). No code-push, dependency harvest, or dynamic
 			// module message is emitted here.
 		} catch (error) {
 			console.warn('[hmr-ws] HMR update failed:', error);
@@ -556,8 +560,8 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 		result = stripVueHmrTail(result);
 		return result;
 	},
-	ensureVersionedImports(code: string, origin: string, version: number) {
-		return ensureVersionedSfcImports(code, origin, version);
+	canonicalizeFrameworkImports(code: string, _origin: string) {
+		return canonicalizeSfcImports(code);
 	},
 	rewriteVendorSpec(code: string, origin: string, version: number) {
 		return rewriteVendorVueSpec(code, origin, version);
@@ -572,7 +576,6 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 			appVirtualWithSlash: ctx.appVirtualWithSlash,
 			sfcFileMap: ctx.sfcFileMap,
 			depFileMap: ctx.depFileMap,
-			getGraphVersion: ctx.getGraphVersion,
 			getStrategy: ctx.getStrategy,
 		});
 	},
@@ -585,10 +588,9 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 			vue: `ns-vendor://vue`,
 		};
 	},
-	volatilePatterns() {
-		// SFC + assembler endpoints change on every edit (order: sfc then asm).
-		return ['/@ns/sfc/', '/@ns/asm/'];
-	},
+	// No volatilePatterns: SFC freshness is driven by the client's explicit
+	// eviction of the SFC artifact URL set before re-import, not by
+	// volatile-URL bypass.
 	async processFile(ctx: FrameworkProcessFileContext) {
 		await processVueSfc(ctx);
 	},

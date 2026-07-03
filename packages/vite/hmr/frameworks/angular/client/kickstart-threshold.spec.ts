@@ -4,7 +4,7 @@ import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 /**
  * Kickstart-eligibility threshold tests.
  *
- * The Angular client's parallel HMR prefetch (`__nsKickstartHmrPrefetch`)
+ * The Angular client's parallel HMR prefetch (`__NS_DEV__.kickstartPrefetch`)
  * is a clean win for component-shaped eviction sets (5–30 modules)
  * and a net loss for deep-fan-in `.ts` edits (constants files,
  * design-system enums) where the inverse-dep closure can hit
@@ -49,8 +49,7 @@ function installGlobals(): Globals {
 	g.__reboot_ng_modules__ = reboot;
 	g.__NS_HMR_IMPORT__ = importer;
 	g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-	g.__nsInvalidateModules = invalidator;
-	g.__nsKickstartHmrPrefetch = kickstart;
+	g.__NS_DEV__ = { invalidateModules: invalidator, kickstartPrefetch: kickstart };
 
 	return { kickstart, invalidator, importer, reboot, updater };
 }
@@ -60,8 +59,7 @@ function clearGlobals() {
 	delete g.__reboot_ng_modules__;
 	delete g.__NS_HMR_IMPORT__;
 	delete g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-	delete g.__nsInvalidateModules;
-	delete g.__nsKickstartHmrPrefetch;
+	delete g.__NS_DEV__;
 	delete g.__NS_HMR_DEV_OVERLAY__;
 	delete g.__NS_HMR_KICKSTART_MAX_URLS__;
 	delete g.__NS_HMR_PROGRESS_OVERLAY_ENABLED__;

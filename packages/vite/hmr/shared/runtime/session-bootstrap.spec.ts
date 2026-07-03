@@ -3,6 +3,25 @@ import { ensureHmrDevOverlayRuntimeInstalled } from './dev-overlay.js';
 import { startBrowserRuntimeSession } from './session-bootstrap.js';
 import { getGlobalScope } from './global-scope.js';
 
+const SESSION_DESCRIPTOR = {
+	sessionId: 'session-1',
+	origin: 'http://localhost:5173',
+	clientUrl: 'http://localhost:5173/__ns_dev__/client',
+	// The dev-server descriptor emits the CANONICAL (untagged) entry
+	// URL — boot-progress instrumentation is injected self-gating on the
+	// server side, so no path decoration is involved.
+	entryUrl: 'http://localhost:5173/ns/m/src/main.ts',
+	wsUrl: 'ws://localhost:5173/ns-hmr',
+	platform: 'ios',
+} as const;
+
+function sessionResponse(overrides: Record<string, unknown> = {}) {
+	return {
+		ok: true,
+		json: async () => ({ ...SESSION_DESCRIPTOR, ...overrides }),
+	};
+}
+
 describe('browser runtime session bootstrap', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
@@ -13,11 +32,10 @@ describe('browser runtime session bootstrap', () => {
 		delete getGlobalScope().__NS_HTTP_ORIGIN__;
 		delete getGlobalScope().__NS_HMR_WS_URL__;
 		delete getGlobalScope().__NS_HMR_BOOT_COMPLETE__;
-		delete getGlobalScope().__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__;
-		delete getGlobalScope().__nsSupportsRuntimeConfigUrl;
-		delete getGlobalScope().__nsStartDevSession;
-		delete getGlobalScope().__nsConfigureDevRuntime;
-		delete getGlobalScope().__nsConfigureRuntime;
+		delete getGlobalScope().__NS_DEV_ENTRY_URL__;
+		delete getGlobalScope().__NS_DEV_SESSION__;
+		delete getGlobalScope().__NS_HMR_IMPORT__;
+		delete getGlobalScope().__NS_DEV__;
 		delete getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
 		// clear the shared dedup flag between tests so each case
 		// exercises the import-map fetch path independently.
@@ -35,46 +53,30 @@ describe('browser runtime session bootstrap', () => {
 		delete getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__;
 	});
 
-	it('waits for the real app root after __nsStartDevSession resolves', async () => {
-		const startDevSession = vi.fn().mockImplementation(async (session) => {
-			expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBeUndefined();
-			expect(getGlobalScope().__NS_HMR_WS_URL__).toBeUndefined();
-			expect(getGlobalScope().__NS_HMR_BOOT_COMPLETE__).toBeUndefined();
-			getGlobalScope().__NS_HTTP_ORIGIN__ = session.origin;
-			getGlobalScope().__NS_HMR_WS_URL__ = session.wsUrl;
-			getGlobalScope().__NS_HMR_BOOT_COMPLETE__ = false;
+	it('applies session globals, imports client then entry, and waits for the real app root', async () => {
+		const importedUrls: string[] = [];
+		const importMock = vi.fn().mockImplementation(async (url: string) => {
+			// Session globals must be visible to the imported client/entry.
+			expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBe(SESSION_DESCRIPTOR.origin);
+			expect(getGlobalScope().__NS_HMR_WS_URL__).toBe(SESSION_DESCRIPTOR.wsUrl);
+			expect(getGlobalScope().__NS_DEV_ENTRY_URL__).toBe(SESSION_DESCRIPTOR.entryUrl);
+			importedUrls.push(url);
+			return {};
 		});
 		const restorePlaceholder = vi.fn();
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__ = restorePlaceholder;
-		vi.stubGlobal(
-			'fetch',
-			vi.fn().mockResolvedValue({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-1',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/@ns/client',
-					// The dev-server descriptor wraps the main entry in
-					// `__ns_boot__/b1` so the boot-progress snippet propagates
-					// across the cold-boot module graph. The canonicalizer in
-					// the iOS runtime strips the wrapper before keying the
-					// module registry — see `rewriteNsMImportPathForHmr`.
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173',
-					platform: 'ios',
-				}),
-			}),
-		);
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse()));
 
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
 
-		expect(startDevSession).toHaveBeenCalledTimes(1);
+		// Boot orchestration order: dev client first, entry second.
+		expect(importedUrls).toEqual([SESSION_DESCRIPTOR.clientUrl, SESSION_DESCRIPTOR.entryUrl]);
 		expect(restorePlaceholder).toHaveBeenCalledWith('session-active');
 		expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBe('http://localhost:5173');
-		expect(getGlobalScope().__NS_HMR_WS_URL__).toBe('ws://localhost:5173');
-		expect(getGlobalScope().__NS_HMR_BOOT_COMPLETE__).toBe(false);
+		expect(getGlobalScope().__NS_HMR_WS_URL__).toBe('ws://localhost:5173/ns-hmr');
+		expect(getGlobalScope().__NS_DEV_SESSION__).toMatchObject({ sessionId: 'session-1' });
 		expect(api.getSnapshot()).toMatchObject({
 			visible: true,
 			mode: 'boot',
@@ -84,23 +86,34 @@ describe('browser runtime session bootstrap', () => {
 		expect(api.getSnapshot().detail).toContain('Waiting for the real app root');
 	});
 
-	it('configures the runtime import map before invoking __nsStartDevSession', async () => {
+	it('arms the cold-boot gate via __NS_DEV__.setDevBootComplete(false) before importing', async () => {
+		const calls: Array<{ kind: string; value?: unknown }> = [];
+		vi.stubGlobal('__NS_DEV__', {
+			setDevBootComplete: vi.fn().mockImplementation((value?: boolean) => {
+				calls.push({ kind: 'boot-complete', value });
+			}),
+		});
+		vi.stubGlobal(
+			'__NS_HMR_IMPORT__',
+			vi.fn().mockImplementation(async (url: string) => {
+				calls.push({ kind: 'import', value: url });
+				return {};
+			}),
+		);
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse()));
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+
+		expect(calls[0]).toEqual({ kind: 'boot-complete', value: false });
+		expect(calls.map((c) => c.kind)).toEqual(['boot-complete', 'import', 'import']);
+	});
+
+	it('configures the runtime import map before importing the client and entry', async () => {
 		const configureRuntime = vi.fn();
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-2',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-				}),
-			})
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-2', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({
@@ -113,8 +126,8 @@ describe('browser runtime session bootstrap', () => {
 				}),
 			});
 
-		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { configureRuntime });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
@@ -129,105 +142,76 @@ describe('browser runtime session bootstrap', () => {
 			},
 			volatilePatterns: ['?v='],
 		});
-		expect(configureRuntime.mock.invocationCallOrder[0]).toBeLessThan(startDevSession.mock.invocationCallOrder[0]);
+		expect(configureRuntime.mock.invocationCallOrder[0]).toBeLessThan(importMock.mock.invocationCallOrder[0]);
 	});
 
-	it('keeps JS runtime-config loading as the default even when the runtime advertises support', async () => {
-		const configureRuntime = vi.fn();
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
-		const fetchMock = vi
-			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-3',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-				}),
-			})
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					importMap: {
-						imports: {
-							stacktrace: 'ns-vendor://stacktrace-js',
-						},
-					},
-					volatilePatterns: ['?v='],
-				}),
-			});
-
-		vi.stubGlobal('__nsSupportsRuntimeConfigUrl', true);
-		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
-		vi.stubGlobal('fetch', fetchMock);
-
-		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
-
-		expect(fetchMock).toHaveBeenNthCalledWith(1, 'http://localhost:5173/__ns_dev__/session');
-		expect(fetchMock).toHaveBeenNthCalledWith(2, 'http://localhost:5173/ns/import-map.json');
-		expect(configureRuntime).toHaveBeenCalledTimes(1);
-		expect(startDevSession).toHaveBeenCalledWith(
-			expect.objectContaining({
-				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-			}),
-		);
-	});
-
-	it('delegates runtime config loading to the native session start only when explicitly enabled', async () => {
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
-		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				sessionId: 'session-3',
-				origin: 'http://localhost:5173',
-				clientUrl: 'http://localhost:5173/__ns_dev__/client',
-				entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-				wsUrl: 'ws://localhost:5173/ns-hmr',
-				platform: 'ios',
-				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-			}),
+	it('fetches the server boot closure and kickstarts the prefetch when the runtime exposes it', async () => {
+		const kickstart = vi.fn().mockReturnValue({ ok: true, fetched: 2, ms: 12 });
+		const importMock = vi.fn().mockResolvedValue({});
+		const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+			if (url.endsWith('/__ns_dev__/session')) return sessionResponse();
+			if (url.endsWith('/__ns_dev__/boot-closure')) {
+				return {
+					ok: true,
+					json: async () => ({ urls: ['http://localhost:5173/ns/m/src/main.ts', 'http://localhost:5173/ns/m/src/app/app.ts'] }),
+				};
+			}
+			return { ok: true, json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }) };
 		});
 
-		getGlobalScope().__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ = true;
-		vi.stubGlobal('__nsSupportsRuntimeConfigUrl', true);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { kickstartPrefetch: kickstart });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
 
-		expect(fetchMock).toHaveBeenCalledTimes(1);
-		expect(fetchMock).toHaveBeenCalledWith('http://localhost:5173/__ns_dev__/session');
-		expect(startDevSession).toHaveBeenCalledWith(
-			expect.objectContaining({
-				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-			}),
-		);
+		expect(fetchMock).toHaveBeenCalledWith('http://localhost:5173/__ns_dev__/boot-closure');
+		expect(kickstart).toHaveBeenCalledWith(['http://localhost:5173/ns/m/src/main.ts', 'http://localhost:5173/ns/m/src/app/app.ts'], { maxConcurrent: 16, timeoutMs: 30000 });
+		// Kickstart runs BEFORE the client/entry imports.
+		expect(kickstart.mock.invocationCallOrder[0]).toBeLessThan(importMock.mock.invocationCallOrder[0]);
+		const trace = getGlobalScope().__NS_BOOT_TRACE__;
+		expect(trace.kickstart).toMatchObject({ ok: true, meta: { fetched: 2 } });
+	});
+
+	it('skips the boot-closure fetch entirely on runtimes without __NS_DEV__.kickstartPrefetch', async () => {
+		const importMock = vi.fn().mockResolvedValue({});
+		const fetchMock = vi.fn().mockResolvedValue(sessionResponse());
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+
+		const closureCalls = fetchMock.mock.calls.filter((c) => String(c[0]).includes('boot-closure'));
+		expect(closureCalls).toEqual([]);
+		expect(importMock).toHaveBeenCalledTimes(2);
+	});
+
+	it('continues the boot when the boot-closure endpoint fails', async () => {
+		const kickstart = vi.fn();
+		const importMock = vi.fn().mockResolvedValue({});
+		const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+			if (url.endsWith('/__ns_dev__/session')) return sessionResponse();
+			if (url.endsWith('/__ns_dev__/boot-closure')) return { ok: false, status: 500, json: async () => ({}) };
+			return { ok: true, json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }) };
+		});
+		vi.stubGlobal('__NS_DEV__', { kickstartPrefetch: kickstart });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+
+		expect(kickstart).not.toHaveBeenCalled();
+		expect(importMock).toHaveBeenCalledTimes(2);
 	});
 
 	it('skips the import-map fetch when a prior boot stage has already configured the runtime', async () => {
 		const configureRuntime = vi.fn();
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
-		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				sessionId: 'session-4',
-				origin: 'http://localhost:5173',
-				clientUrl: 'http://localhost:5173/__ns_dev__/client',
-				entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-				wsUrl: 'ws://localhost:5173/ns-hmr',
-				platform: 'ios',
-				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-			}),
-		});
+		const importMock = vi.fn().mockResolvedValue({});
+		const fetchMock = vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-4', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }));
 
 		getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ = true;
-		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { configureRuntime });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
@@ -241,28 +225,17 @@ describe('browser runtime session bootstrap', () => {
 
 	it('instrumentation: emits a [ns-boot] timeline line on success when verbose is on', async () => {
 		const configureRuntime = vi.fn();
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-trace-ok',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-				}),
-			})
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-trace-ok', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }),
 			});
 
-		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { configureRuntime });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
@@ -271,7 +244,7 @@ describe('browser runtime session bootstrap', () => {
 		const lines = infoSpy.mock.calls.map((call) => String(call[0])).filter((line) => line.startsWith('[ns-boot]'));
 		expect(lines, 'expected exactly one boot timeline line').toHaveLength(1);
 		const line = lines[0];
-		expect(line).toMatch(/^\[ns-boot\] ok total=\d+ms session=\d+ms importMap=\d+ms native=\d+ms$/);
+		expect(line).toMatch(/^\[ns-boot\] ok total=\d+ms session=\d+ms importMap=\d+ms entry=\d+ms$/);
 
 		// And the trace should be available on globalThis for post-boot inspection.
 		const trace = getGlobalScope().__NS_BOOT_TRACE__;
@@ -280,33 +253,22 @@ describe('browser runtime session bootstrap', () => {
 		expect(typeof trace.t1).toBe('number');
 		expect(trace.session?.ok).toBe(true);
 		expect(trace.importMap?.ok).toBe(true);
-		expect(trace.native?.ok).toBe(true);
+		expect(trace.entry?.ok).toBe(true);
 	});
 
 	it('instrumentation: stays silent on success when verbose is off but still publishes the trace', async () => {
 		const configureRuntime = vi.fn();
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-trace-quiet',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-				}),
-			})
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-trace-quiet', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }),
 			});
 
-		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { configureRuntime });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
@@ -334,27 +296,16 @@ describe('browser runtime session bootstrap', () => {
 		expect(bootLine).toBeDefined();
 		expect(bootLine!).toMatch(/^\[ns-boot\] FAILED total=\d+ms.*: boom$/);
 		expect(bootLine!).not.toContain('session=');
-		expect(bootLine!).not.toContain('native=');
+		expect(bootLine!).not.toContain('entry=');
 	});
 
 	it('instrumentation: omits importMap segment when __NS_IMPORT_MAP_CONFIGURED__ short-circuits', async () => {
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
-		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				sessionId: 'session-dedup',
-				origin: 'http://localhost:5173',
-				clientUrl: 'http://localhost:5173/__ns_dev__/client',
-				entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-				wsUrl: 'ws://localhost:5173/ns-hmr',
-				platform: 'ios',
-				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-			}),
-		});
+		const importMock = vi.fn().mockResolvedValue({});
+		const fetchMock = vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-dedup', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }));
 
 		getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ = true;
-		vi.stubGlobal('__nsConfigureDevRuntime', vi.fn());
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { configureRuntime: vi.fn() });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
@@ -364,11 +315,11 @@ describe('browser runtime session bootstrap', () => {
 		expect(bootLine).toBeDefined();
 		expect(bootLine!).not.toContain('importMap=');
 		expect(bootLine!).toContain('session=');
-		expect(bootLine!).toContain('native=');
+		expect(bootLine!).toContain('entry=');
 	});
 
 	// The "fluid boot progress" guarantees: the placeholder must keep
-	// climbing during `__nsStartDevSession` even when the injected snippet
+	// climbing during the entry import even when the injected snippet
 	// hasn't ticked yet (early-window vendor download, long node_modules
 	// stretch, etc.). The heartbeat in `startBootImportHeartbeat` is what
 	// keeps the percentage moving — these tests pin the contract:
@@ -378,29 +329,19 @@ describe('browser runtime session bootstrap', () => {
 	//      forward through `applyMonotonicBootProgress`; and
 	//   3. the heartbeat picks the bar up after the snippet stalls and
 	//      drives it via the time axis.
-	it('boot heartbeat: stamps __NS_HMR_BOOT_IMPORT_STARTED_AT__ before invoking __nsStartDevSession so the snippet shares a clock', async () => {
-		const startedAtAtNativeCall: { value: number | undefined } = { value: undefined };
-		const startDevSession = vi.fn().mockImplementation(async () => {
-			startedAtAtNativeCall.value = getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__;
+	it('boot heartbeat: stamps __NS_HMR_BOOT_IMPORT_STARTED_AT__ before the imports so the snippet shares a clock', async () => {
+		const startedAtAtImport: { value: number | undefined } = { value: undefined };
+		const importMock = vi.fn().mockImplementation(async () => {
+			startedAtAtImport.value = getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__;
+			return {};
 		});
-		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				sessionId: 'session-heartbeat-stamp',
-				origin: 'http://localhost:5173',
-				clientUrl: 'http://localhost:5173/__ns_dev__/client',
-				entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-				wsUrl: 'ws://localhost:5173/ns-hmr',
-				platform: 'ios',
-			}),
-		});
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
-		vi.stubGlobal('fetch', fetchMock);
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-heartbeat-stamp' })));
 
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
 
-		expect(typeof startedAtAtNativeCall.value).toBe('number');
-		expect(startedAtAtNativeCall.value!).toBeGreaterThan(0);
+		expect(typeof startedAtAtImport.value).toBe('number');
+		expect(startedAtAtImport.value!).toBeGreaterThan(0);
 	});
 
 	it('boot heartbeat: clearBootProgressState wipes stale globals before each boot so a re-bootstrap starts fresh', async () => {
@@ -413,30 +354,20 @@ describe('browser runtime session bootstrap', () => {
 		getGlobalScope().__NS_HMR_BOOT_LAST_MODULE__ = '/src/stale.ts';
 		getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS__ = 92;
 		const observed: { count: any; lastModule: any; lastProgress: any } = { count: 'unset', lastModule: 'unset', lastProgress: 'unset' };
-		const startDevSession = vi.fn().mockImplementation(async () => {
+		const importMock = vi.fn().mockImplementation(async () => {
 			const g = getGlobalScope();
 			observed.count = g.__NS_HMR_BOOT_MODULE_COUNT__;
 			observed.lastModule = g.__NS_HMR_BOOT_LAST_MODULE__;
 			observed.lastProgress = g.__NS_HMR_BOOT_LAST_PROGRESS__;
+			return {};
 		});
-		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				sessionId: 'session-clear-stale',
-				origin: 'http://localhost:5173',
-				clientUrl: 'http://localhost:5173/__ns_dev__/client',
-				entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-				wsUrl: 'ws://localhost:5173/ns-hmr',
-				platform: 'ios',
-			}),
-		});
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
-		vi.stubGlobal('fetch', fetchMock);
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-clear-stale' })));
 
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
 
 		// All three boot-progress markers should have been wiped by
-		// `clearBootProgressState()` before native session start. The heartbeat
+		// `clearBootProgressState()` before the imports began. The heartbeat
 		// may have ticked once and re-set `__NS_HMR_BOOT_LAST_PROGRESS__` to
 		// the new floor (30), but it can never carry over the stale 92.
 		expect(observed.count).toBeUndefined();
@@ -450,40 +381,30 @@ describe('browser runtime session bootstrap', () => {
 		}
 	});
 
-	it('boot heartbeat: drives the placeholder forward via setHmrBootStage while __nsStartDevSession is awaiting', async () => {
+	it('boot heartbeat: drives the placeholder forward via setHmrBootStage while the entry import is awaiting', async () => {
 		// Use fake timers so we can advance time deterministically and
 		// observe the heartbeat ticks without flaky 250ms waits.
 		vi.useFakeTimers();
 		const overlayApi = ensureHmrDevOverlayRuntimeInstalled(false);
 		const setBootStageSpy = vi.spyOn(overlayApi, 'setBootStage');
 
-		// Resolve __nsStartDevSession only when explicitly told to so we
+		// Resolve the entry import only when explicitly told to so we
 		// can advance fake time inside the await window.
-		let resolveNative!: () => void;
-		const nativePromise = new Promise<void>((resolve) => {
-			resolveNative = resolve;
+		let resolveEntry!: () => void;
+		const entryPromise = new Promise<void>((resolve) => {
+			resolveEntry = resolve;
 		});
 		vi.stubGlobal(
-			'__nsStartDevSession',
-			vi.fn().mockImplementation(() => nativePromise),
-		);
-		vi.stubGlobal(
-			'fetch',
-			vi.fn().mockResolvedValue({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-heartbeat-tick',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-				}),
+			'__NS_HMR_IMPORT__',
+			vi.fn().mockImplementation((url: string) => {
+				if (url === SESSION_DESCRIPTOR.entryUrl) return entryPromise;
+				return Promise.resolve({});
 			}),
 		);
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-heartbeat-tick' })));
 
 		const sessionPromise = startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
-		// Let the session-fetch + import-map prep + native call kick off.
+		// Let the session-fetch + import-map prep + imports kick off.
 		await vi.runOnlyPendingTimersAsync();
 		// Wipe the spy history so we only see heartbeat-driven ticks (not
 		// the initial 'importing-main' assertion that runs synchronously
@@ -491,7 +412,8 @@ describe('browser runtime session bootstrap', () => {
 		setBootStageSpy.mockClear();
 
 		// Simulate the snippet bumping the module count + label, just like
-		// a `__ns_boot__/b1`-tagged module evaluating mid-boot.
+		// a served module's self-gating boot-progress prelude evaluating
+		// mid-boot.
 		getGlobalScope().__NS_HMR_BOOT_MODULE_COUNT__ = 5;
 		getGlobalScope().__NS_HMR_BOOT_LAST_MODULE__ = '/src/main.ts';
 
@@ -512,47 +434,37 @@ describe('browser runtime session bootstrap', () => {
 		// `boot-progress.spec.ts`.
 		expect(lastInfo?.progress).toBeGreaterThanOrEqual(30);
 
-		resolveNative();
+		resolveEntry();
 		await sessionPromise;
 	});
 
-	it('boot heartbeat: stops ticking once __nsStartDevSession resolves so it never collides with waiting-for-app', async () => {
+	it('boot heartbeat: stops ticking once the entry import resolves so it never collides with waiting-for-app', async () => {
 		vi.useFakeTimers();
 		const overlayApi = ensureHmrDevOverlayRuntimeInstalled(false);
 		const setBootStageSpy = vi.spyOn(overlayApi, 'setBootStage');
 
-		let resolveNative!: () => void;
-		const nativePromise = new Promise<void>((resolve) => {
-			resolveNative = resolve;
+		let resolveEntry!: () => void;
+		const entryPromise = new Promise<void>((resolve) => {
+			resolveEntry = resolve;
 		});
 		vi.stubGlobal(
-			'__nsStartDevSession',
-			vi.fn().mockImplementation(() => nativePromise),
-		);
-		vi.stubGlobal(
-			'fetch',
-			vi.fn().mockResolvedValue({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-heartbeat-stop',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-				}),
+			'__NS_HMR_IMPORT__',
+			vi.fn().mockImplementation((url: string) => {
+				if (url === SESSION_DESCRIPTOR.entryUrl) return entryPromise;
+				return Promise.resolve({});
 			}),
 		);
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-heartbeat-stop' })));
 
 		const sessionPromise = startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
 		await vi.runOnlyPendingTimersAsync();
 		// Let the heartbeat run for a bit so we can verify it stops cleanly.
 		await vi.advanceTimersByTimeAsync(800);
-		resolveNative();
+		resolveEntry();
 		await sessionPromise;
 		setBootStageSpy.mockClear();
 
-		// After the native call resolves, the heartbeat must be cleared —
+		// After the entry import resolves, the heartbeat must be cleared —
 		// further timer advances should NOT produce more 'importing-main'
 		// updates that would race the 'waiting-for-app' / 'app-root-committed'
 		// transitions.
@@ -563,21 +475,10 @@ describe('browser runtime session bootstrap', () => {
 
 	it('sets __NS_IMPORT_MAP_CONFIGURED__ after a successful first configure so re-entrant bootstraps de-dup', async () => {
 		const configureRuntime = vi.fn();
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					sessionId: 'session-5',
-					origin: 'http://localhost:5173',
-					clientUrl: 'http://localhost:5173/__ns_dev__/client',
-					entryUrl: 'http://localhost:5173/ns/m/__ns_boot__/b1/src/main.ts',
-					wsUrl: 'ws://localhost:5173/ns-hmr',
-					platform: 'ios',
-					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
-				}),
-			})
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-5', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({
@@ -586,8 +487,8 @@ describe('browser runtime session bootstrap', () => {
 				}),
 			});
 
-		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
-		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('__NS_DEV__', { configureRuntime });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		vi.stubGlobal('fetch', fetchMock);
 
 		expect(getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__).toBeUndefined();

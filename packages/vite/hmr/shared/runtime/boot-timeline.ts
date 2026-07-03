@@ -1,8 +1,8 @@
 import { getGlobalScope } from './global-scope.js';
 // Boot timeline instrumentation for the NativeScript dev session.
 //
-// `session-bootstrap.ts` is the real boot path on modern runtimes with
-// `__nsStartDevSession`. We record how long each segment takes and turn
+// `session-bootstrap.ts` is the real boot path on modern runtimes (JS
+// boot orchestration). We record how long each segment takes and turn
 // the result into a single-line, human-readable log that is always on
 // (not behind the verbose flag) so anyone chasing regressions can see
 // the shape of a cold boot without having to flip any switches.
@@ -23,11 +23,13 @@ export type BootTrace = {
 	session?: BootTraceSegment;
 	importMap?: BootTraceSegment;
 	// Optional: omitted when the runtime doesn't expose
-	// `__nsKickstartHmrPrefetch` or a thrown error degraded to V8's
+	// `__NS_DEV__.kickstartPrefetch` or a thrown error degraded to V8's
 	// normal sync walk (so the timeline reads "no kickstart" rather than
 	// "0 ms").
 	kickstart?: BootTraceSegment;
-	native?: BootTraceSegment;
+	// Client + entry dynamic-import walk (the `import(clientUrl)` +
+	// `import(entryUrl)` phase the session bootstrap drives).
+	entry?: BootTraceSegment;
 	error?: { message: string };
 };
 
@@ -35,7 +37,7 @@ export type BootTrace = {
 // touching `console.info` or `Date.now()`.
 //
 // Format:
-//   [ns-boot] ok total=1234ms session=45ms importMap=67ms native=1100ms
+//   [ns-boot] ok total=1234ms session=45ms importMap=67ms entry=1100ms
 //   [ns-boot] FAILED total=230ms session=45ms ...: <message>
 //
 // Segment entries are only included when a numeric `ms` was recorded —
@@ -60,18 +62,17 @@ export function formatBootTimeline(trace: BootTrace): string {
 	push('session', trace.session);
 	push('importMap', trace.importMap);
 	push('kickstart', trace.kickstart);
-	push('native', trace.native);
+	push('entry', trace.entry);
 
 	const suffix = trace.error?.message ? `: ${trace.error.message}` : '';
 
 	return `[ns-boot] ${status} ${parts.join(' ')}${suffix}`.replace(/\s+$/, '');
 }
 
-// Install the trace on `globalThis` so diagnostics can pick it up. We
-// use a distinct key from the legacy entry-runtime trace so existing
-// readers that expect `__NS_ENTRY_TRACE__` keep working. Exported for
-// tests; the runtime path calls this from the session-bootstrap finally
-// block.
+// Install the trace on `globalThis` so diagnostics can pick it up. The key
+// is distinct from the entry-runtime trace (`__NS_ENTRY_TRACE__`), which the
+// entry runtime writes for its own phases. Exported for tests; the runtime
+// path calls this from the session-bootstrap finally block.
 export function publishBootTrace(trace: BootTrace): void {
 	try {
 		getGlobalScope().__NS_BOOT_TRACE__ = trace;

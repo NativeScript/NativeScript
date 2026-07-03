@@ -13,13 +13,13 @@ import { astNormalizeModuleImportsAndHelpers } from '../../../helpers/ast-normal
 import { stripRtCoreSentinel, stripDanglingViteCjsImports } from '../../../helpers/sanitize.js';
 import { processTemplateVariantMinimal } from './sfc-transforms.js';
 import { NS_NATIVE_TAGS } from '../../../server/compiler.js';
-import { ensureDestructureCoreImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from '../../../server/websocket-served-module-helpers.js';
+import { canonicalizeRtImports, ensureDestructureCoreImports, ensureVariableDynamicImportHelper } from '../../../server/websocket-served-module-helpers.js';
 import { cleanCode, processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
 import { resolveProjectTsAliasRelative } from '../../../../helpers/ts-config-paths.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
-import { babelTraverse, compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
+import { babelTraverse, canonicalizeNsMAppImports, compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
 /**
  * Registers `GET /ns/sfc` — serves SFC modules. Full SFCs delegate to the `/ns/asm`
@@ -42,15 +42,16 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 			setDeviceModuleHeaders(res);
 
 			const base = '/ns/sfc';
-			// Determine request spec, preserving variant query when present and handling optional version in path
+			// Determine request spec, preserving variant query when present. The
+			// canonical URL carries no version; a versioned `/ns/sfc/<ver>/…` path
+			// segment (stale cached device code) is stripped and ignored — SFC
+			// freshness is eviction-driven, not URL-driven.
 			let pathParam = urlObj.searchParams.get('path') || ''; // may include its own query
 			const rawRemainder = urlObj.pathname.slice(base.length) || '';
-			let verFromPath: string | null = null;
 			let pathStyle = rawRemainder;
 			if (rawRemainder && rawRemainder.startsWith('/')) {
 				const parts = rawRemainder.split('/'); // ["", maybe "<ver>", ...]
 				if (parts.length > 2 && /^[0-9]+$/.test(parts[1] || '')) {
-					verFromPath = parts[1];
 					pathStyle = '/' + parts.slice(2).join('/');
 				}
 			}
@@ -150,8 +151,10 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 			// Full SFCs delegate to deterministic assembler module; variants (script/template) still go through processing
 			if (!isVariant) {
 				const importerPath = fullSpec.replace(/[?#].*$/, '');
-				const ver = verFromPath || '0';
-				const asmPath = `/ns/asm/${ver}?path=${encodeURIComponent(importerPath)}`;
+				// Canonical (unversioned) assembler URL: the delegation body is
+				// stable across saves; freshness comes from the client evicting
+				// the assembler URL before re-import.
+				const asmPath = `/ns/asm?path=${encodeURIComponent(importerPath)}`;
 				const delegated = `// [sfc] kind=full (delegated to assembler) path=${importerPath}\nexport * from ${JSON.stringify(asmPath)};\nexport { default } from ${JSON.stringify(asmPath)};\n`;
 				res.statusCode = 200;
 				res.end(delegated);
@@ -316,7 +319,6 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 				// Transform static .vue imports into static imports from the assembler (no TLA) via AST
 				try {
 					const importerPath = fullSpec.replace(/[?#].*$/, '');
-					const ver = verFromPath || '0';
 					const ast2 = babelParse(code, {
 						sourceType: 'module',
 						plugins: ['typescript'] as any,
@@ -345,7 +347,7 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 								// Strip query for plain .vue (keep variant imports intact)
 								if (!/\bvue&type=/.test(src)) {
 									spec = spec.replace(/[?#].*$/, '');
-									const asmUrl = `/ns/asm/${ver}?path=${encodeURIComponent(spec)}&mode=inline`;
+									const asmUrl = `/ns/asm?path=${encodeURIComponent(spec)}&mode=inline`;
 									p.node.source = t.stringLiteral(asmUrl);
 								}
 							}
@@ -384,19 +386,12 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 			code = rewriteImports(code, importerPath, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, getServerOrigin(server));
 			code = ensureVariableDynamicImportHelper(code);
 			try {
-				// For variant requests under /ns/sfc, prefer the version from the path segment when present
-				// so that any internal '/ns/rt' or '/ns/sfc' imports are aligned with the same version.
-				// `/ns/core` URLs are intentionally unversioned (realm-split history).
-				const verNum = Number(verFromPath || '0');
-				if (Number.isFinite(verNum) && verNum > 0) {
-					code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-					code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
-					code = ensureVersionedNsMAppImports(code, verNum);
-				} else {
-					code = ensureVersionedRtImports(code, getServerOrigin(server), options.getGraphVersion());
-					code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), options.getGraphVersion()) ?? code;
-					code = ensureVersionedNsMAppImports(code, options.getGraphVersion());
-				}
+				// Every emitted URL is canonical (unversioned): `/ns/rt`/`/ns/core`
+				// bridges, `/ns/sfc` artifacts, and `/ns/m` app deps alike.
+				// Freshness for all of them is eviction-driven.
+				code = canonicalizeRtImports(code, getServerOrigin(server));
+				code = strategy.canonicalizeFrameworkImports?.(code, getServerOrigin(server)) ?? code;
+				code = canonicalizeNsMAppImports(code);
 			} catch {}
 			// Final guard for SFC variant output as well
 			try {
@@ -413,12 +408,7 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 				code = stripRtCoreSentinel(code);
 			} catch {}
 			try {
-				const verNum = Number(verFromPath || '0');
-				if (Number.isFinite(verNum) && verNum > 0) {
-					code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-				} else {
-					code = ensureVersionedRtImports(code, getServerOrigin(server), options.getGraphVersion());
-				}
+				code = canonicalizeRtImports(code, getServerOrigin(server));
 			} catch {}
 			// Last-chance sanitizer for dangling Vite CJS import helper usages that may surface after late transforms
 			try {

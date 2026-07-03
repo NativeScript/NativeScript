@@ -12,42 +12,56 @@ function describeError(error: unknown) {
 	return String(error);
 }
 
-// Cold-boot kickstart prefetch — always-on.
+// Cold-boot kickstart prefetch — always-on, list mode.
 //
-// `__nsKickstartHmrPrefetch(seedUrl)` runs a 16-way parallel BFS over
-// the entry URL's static-import closure and pre-fills the iOS loader's
-// `g_prefetchCache` before V8's synchronous `ResolveModuleCallback`
-// walks the graph. With the cache primed, each `HttpFetchText` resolves
-// in microseconds instead of round-tripping HTTP, collapsing the walk
-// from sequential ~13 ms × ~2,000 fetches to a single parallel wave.
+// The dev server owns the module graph, so it computes the entry's
+// transitive closure (`/__ns_dev__/boot-closure`) and the bootstrap
+// hands the explicit URL list to `__NS_DEV__.kickstartPrefetch(urls)`. The
+// runtime fetches the whole list in one parallel wave (16-way) and
+// pre-fills the loader's body cache before V8's synchronous
+// `ResolveModuleCallback` walks the graph; each `HttpFetchText`
+// resolves in microseconds instead of round-tripping HTTP.
 //
-// The iOS runtime's `KickstartRunSync` pumps the JS-thread CFRunLoop in
-// 50 ms slices during the wait so the placeholder heartbeat keeps
-// ticking; the bar climbs smoothly across the kickstart instead of
-// freezing. Measured ~4 s wall-clock win on a ~2,200-module Angular
-// cold boot. Soft-fail when the runtime doesn't expose
-// `__nsKickstartHmrPrefetch` (V8 just falls back to sequential walk).
+// The iOS runtime pumps the JS-thread CFRunLoop in 50 ms slices during
+// the wave so the placeholder heartbeat keeps ticking. Both the
+// closure fetch and the kickstart are soft-fail — a missing endpoint or
+// a runtime without the primitive just falls back to V8's sequential walk.
 type KickstartResult = { ok: boolean; fetched: number; ms: number } | null;
 
-function runColdBootKickstart(entryUrl: string, verbose?: boolean): KickstartResult {
-	if (!entryUrl || typeof entryUrl !== 'string') return null;
-	const g: any = getGlobalScope();
-	const fn = g.__nsKickstartHmrPrefetch;
-	if (typeof fn !== 'function') {
+async function fetchBootClosureUrls(origin: string, verbose?: boolean): Promise<string[]> {
+	try {
+		const closureUrl = `${origin.replace(/\/$/, '')}/__ns_dev__/boot-closure`;
+		const response = await fetch(closureUrl);
+		if (!response.ok) {
+			if (verbose) console.info(`[ns-entry] boot-closure fetch failed (${response.status}); kickstart will be skipped`);
+			return [];
+		}
+		const payload = await response.json();
+		const urls = Array.isArray(payload?.urls) ? payload.urls : [];
+		return urls.filter((u: unknown): u is string => typeof u === 'string' && /^https?:\/\//.test(u));
+	} catch (error) {
+		if (verbose) console.info('[ns-entry] boot-closure fetch threw; kickstart will be skipped', error);
+		return [];
+	}
+}
+
+function runColdBootKickstart(urls: readonly string[], runtimeApi: NsRuntimeDevHostApi, verbose?: boolean): KickstartResult {
+	if (!urls.length) return null;
+	if (typeof runtimeApi.kickstartPrefetch !== 'function') {
 		if (verbose) {
-			console.info('[ns-entry] cold-boot kickstart unavailable (older runtime); falling back to sequential V8 walk');
+			console.info('[ns-entry] cold-boot kickstart unavailable (__NS_DEV__.kickstartPrefetch not exposed); falling back to sequential V8 walk');
 		}
 		return null;
 	}
 	try {
 		const t0 = Date.now();
-		const result = fn(entryUrl, { maxConcurrent: 16, timeoutMs: 30000 });
+		const result = runtimeApi.kickstartPrefetch(urls.slice(), { maxConcurrent: 16, timeoutMs: 30000 });
 		const elapsed = Date.now() - t0;
 		const fetched = Number(result?.fetched || 0);
 		const ms = Number(result?.ms || elapsed);
 		const ok = !!result?.ok;
 		if (verbose) {
-			console.info(`[ns-entry] cold-boot kickstart ${ok ? 'drained' : 'timed-out/partial'} fetched=${fetched} ms=${ms} (wall=${elapsed}ms)`);
+			console.info(`[ns-entry] cold-boot kickstart ${ok ? 'drained' : 'timed-out/partial'} urls=${urls.length} fetched=${fetched} ms=${ms} (wall=${elapsed}ms)`);
 		}
 		return { ok, fetched, ms };
 	} catch (kickErr) {
@@ -60,8 +74,8 @@ function runColdBootKickstart(entryUrl: string, verbose?: boolean): KickstartRes
 
 // Cold-boot module-load progress heartbeat.
 //
-// `__nsStartDevSession` synchronously walks the entry's module graph
-// over HTTP. The iOS runtime's `MaybePumpJSThreadDuringBoot`
+// The entry `import()` synchronously walks the module graph over HTTP.
+// The iOS runtime's `MaybePumpJSThreadDuringBoot`
 // (`HMRSupport.mm`) gives the JS-thread CFRunLoop a 1 ms slice between
 // fetches so this 250 ms `setInterval` can fire and repaint the bar.
 //
@@ -137,14 +151,6 @@ function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
 	return `${session.origin.replace(/\/$/, '')}/ns/import-map.json`;
 }
 
-function isNativeRuntimeConfigDelegationEnabled() {
-	try {
-		return getGlobalScope().__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ === true;
-	} catch {
-		return false;
-	}
-}
-
 async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
 	if (typeof runtimeApi.configureRuntime !== 'function') {
 		if (verbose) {
@@ -197,16 +203,37 @@ async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: N
 }
 
 async function prepareRuntimeForSession(session: NsDevSessionDescriptor, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
-	if (session.runtimeConfigUrl && runtimeApi.supportsRuntimeConfigUrl && isNativeRuntimeConfigDelegationEnabled()) {
-		if (verbose) {
-			console.info('[ns-entry] runtime config delegated to native session start', {
-				runtimeConfigUrl: session.runtimeConfigUrl,
-			});
-		}
-		return;
-	}
-
 	await configureRuntimeImportMap(getRuntimeConfigUrl(session), runtimeApi, verbose);
+}
+
+// Dynamic import with an overridable seam: hosts/tests can install
+// `__NS_HMR_IMPORT__` (also used by the HMR clients) to observe or stub
+// the module loads; otherwise this is a plain dynamic `import()` through
+// the runtime's HTTP ESM loader.
+function importModule(url: string): Promise<unknown> {
+	const g: any = getGlobalScope();
+	if (typeof g.__NS_HMR_IMPORT__ === 'function') {
+		return g.__NS_HMR_IMPORT__(url);
+	}
+	return import(/* @vite-ignore */ url);
+}
+
+// Session globals — plain JS policy; the native runtime writes none of
+// these.
+function applyDevSessionGlobals(session: NsDevSessionDescriptor) {
+	const g: any = getGlobalScope();
+	try {
+		g.__NS_HTTP_ORIGIN__ = session.origin;
+	} catch {}
+	try {
+		g.__NS_HMR_WS_URL__ = session.wsUrl;
+	} catch {}
+	try {
+		g.__NS_DEV_ENTRY_URL__ = session.entryUrl;
+	} catch {}
+	try {
+		g.__NS_DEV_SESSION__ = { sessionId: session.sessionId, origin: session.origin, entryUrl: session.entryUrl, clientUrl: session.clientUrl, wsUrl: session.wsUrl, platform: session.platform };
+	} catch {}
 }
 
 export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {
@@ -220,9 +247,9 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		console.info('[ns-entry] starting browser runtime session', { sessionUrl });
 	}
 
-	// Boot timeline for the native `__nsStartDevSession` path.
+	// Boot timeline for the JS-orchestrated dev-session boot.
 	// `entry-runtime.ts` carries its own log for the http-bootloader
-	// fallback used when the native API isn't available.
+	// fallback path.
 	const trace: BootTrace = { t0: Date.now() };
 
 	try {
@@ -247,9 +274,6 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		}
 
 		const runtimeApi = readNsRuntimeDevHostApi(globalThis);
-		if (typeof runtimeApi.startDevSession !== 'function') {
-			throw new Error('__nsStartDevSession is unavailable in the NativeScript runtime');
-		}
 
 		const tImap = Date.now();
 		const alreadyConfigured = getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ === true;
@@ -260,6 +284,14 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			trace.importMap = { ok: true, ms: Date.now() - tImap };
 		}
 
+		// Session globals + arm the cold-boot gate (runloop pump between
+		// synchronous fetches). `setDevBootComplete(false)` is a no-op on
+		// a fresh realm but matters for re-bootstrapped sessions.
+		applyDevSessionGlobals(session);
+		try {
+			runtimeApi.setDevBootComplete?.(false);
+		} catch {}
+
 		setHmrBootStage('loading-entry-runtime', {
 			detail: session.clientUrl,
 		});
@@ -267,41 +299,45 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		setHmrBootStage('importing-main', {
 			detail: session.entryUrl,
 		});
-		if (verbose) {
-			console.info('[ns-entry] invoking __nsStartDevSession', {
-				sessionId: session.sessionId,
-				clientUrl: session.clientUrl,
-				entryUrl: session.entryUrl,
-			});
-		}
 		// Reset boot-progress globals so a re-bootstrapped session
 		// (`__reboot_ng_modules__`, dev-server restart) starts a fresh
 		// ratchet, then stamp the time origin both the snippet and the
 		// heartbeat share for elapsed-ms math.
 		clearBootProgressState();
-		const tNative = Date.now();
+		const tBoot = Date.now();
 		try {
-			getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__ = tNative;
+			getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__ = tBoot;
 		} catch {}
-		const stopBootImportHeartbeat = startBootImportHeartbeat(tNative, verbose);
+		const stopBootImportHeartbeat = startBootImportHeartbeat(tBoot, verbose);
 		try {
+			// Server-computed boot closure → one parallel prewarm wave.
 			// Stamp the kickstart detail only when the runtime will
 			// actually run the prefetch, otherwise the placeholder would
-			// flash a misleading line on older runtimes.
-			if (typeof getGlobalScope().__nsKickstartHmrPrefetch === 'function') {
+			// flash a misleading line on runtimes without the primitive.
+			if (typeof runtimeApi.kickstartPrefetch === 'function') {
 				setHmrBootStage('importing-main', {
 					detail: `prefetching transitive imports for ${session.entryUrl}…`,
 				});
+				const closureUrls = await fetchBootClosureUrls(session.origin, verbose);
+				const kickstartResult = runColdBootKickstart(closureUrls, runtimeApi, verbose);
+				if (kickstartResult) {
+					trace.kickstart = { ok: kickstartResult.ok, ms: kickstartResult.ms, meta: { fetched: kickstartResult.fetched } };
+				}
 			}
-			const kickstartResult = runColdBootKickstart(session.entryUrl, verbose);
-			if (kickstartResult) {
-				trace.kickstart = { ok: kickstartResult.ok, ms: kickstartResult.ms, meta: { fetched: kickstartResult.fetched } };
+			// JS boot orchestration: dev client first (installs the hot
+			// registry + fallback socket), then the app entry graph.
+			if (verbose) {
+				console.info('[ns-entry] importing dev client + entry', {
+					clientUrl: session.clientUrl,
+					entryUrl: session.entryUrl,
+				});
 			}
-			await runtimeApi.startDevSession(session);
+			await importModule(session.clientUrl);
+			await importModule(session.entryUrl);
 		} finally {
 			stopBootImportHeartbeat();
 		}
-		trace.native = { ok: true, ms: Date.now() - tNative };
+		trace.entry = { ok: true, ms: Date.now() - tBoot };
 		setHmrBootStage('waiting-for-app', {
 			detail: 'The deterministic NativeScript dev session is active. Waiting for the real app root to replace the boot placeholder.',
 		});

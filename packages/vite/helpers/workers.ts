@@ -250,15 +250,15 @@ export function viteWorkerAssetPathToNsMUrl(assetPath: string, projectRoot: stri
 // TWO complementary mechanisms:
 //
 //   1. STANDARDS-COMPLIANT — `import.meta.hot.dispose(cb)` per Vite spec.
-//      The NS iOS runtime's `HMRSupport.mm` registers the callback in
-//      `g_hotDispose` (per-module). The Angular HMR client drains it
-//      via `globalThis.__nsRunHmrDispose()` before reboot. This is the
-//      same primitive every Vite plugin author already knows; users
-//      can register their own dispose callbacks the same way.
+//      The JS hot registry (`hmr/client/hot-context.ts`) records the
+//      callback per-module; the Angular HMR client drains the registry
+//      before reboot. This is the same primitive every Vite plugin
+//      author already knows; users can register their own dispose
+//      callbacks the same way.
 //
 //   2. RUNTIME-AUTHORITATIVE — `globalThis.__NS_HMR_WORKERS__` Set
 //      drained by the HMR client (or by the runtime's
-//      `__nsTerminateAllWorkers()`). This catches workers spawned in
+//      `__NS_DEV__.terminateAllWorkers()`). This catches workers spawned in
 //      modules that aren't being individually re-evaluated (e.g. the
 //      `app.component.ts` constructor that re-runs on every Angular
 //      reboot, even though `app.component.ts` itself isn't being
@@ -272,7 +272,7 @@ export function viteWorkerAssetPathToNsMUrl(assetPath: string, projectRoot: stri
 // dispose callback wouldn't fire on a `login.component.html` save,
 // even though Angular re-runs `AppComponent`'s constructor and spawns
 // a fresh worker. The runtime-authoritative path catches this:
-// `__nsTerminateAllWorkers()` walks `Caches::Workers` (the iOS
+// `__NS_DEV__.terminateAllWorkers()` walks `Caches::Workers` (the iOS
 // runtime's authoritative worker registry) and kills every live
 // worker regardless of which module spawned it.
 //
@@ -308,9 +308,9 @@ const HMR_WORKER_DISPOSE_HELPER = [
 	'\t\tif (!w) return w;',
 	// Path 1: register in the legacy global Set. Kept for backward
 	// compatibility with older NS runtimes that don't yet ship
-	// `__nsTerminateAllWorkers()` or `__nsRunHmrDispose()`. Once those
-	// runtime APIs are universally adopted this can be removed —
-	// everything else here is standards-compliant.
+	// `__NS_DEV__.terminateAllWorkers()`. Once that runtime API is universally
+	// adopted this can be removed — everything else here is
+	// standards-compliant.
 	'\t\ttry {',
 	'\t\t\tconst __nsG = typeof globalThis !== "undefined" ? globalThis : (typeof self !== "undefined" ? self : {});',
 	'\t\t\tif (!__nsG.__NS_HMR_WORKERS__) __nsG.__NS_HMR_WORKERS__ = new Set();',

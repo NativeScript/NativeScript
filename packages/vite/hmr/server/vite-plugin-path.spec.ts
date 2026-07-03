@@ -82,14 +82,10 @@ describe('createNsDevSessionDescriptor', () => {
 		expect(descriptor).toEqual({
 			sessionId: 'session-123',
 			origin: 'http://192.168.1.5:5173',
-			// The entry URL is wrapped in the `__ns_boot__/b1` boot tag so the
-			// dev server injects the boot-progress snippet on cold boot. The
-			// runtime canonicalizer strips the tag before keying the module
-			// registry, so the URL still shares cache identity with the
-			// steady-state HMR form `/ns/m/src/main.ts` — see the `Step 1`
-			// comment in `rewriteNsMImportPathForHmr` and the docstring on
-			// `createNsDevSessionDescriptor`.
-			entryUrl: 'http://192.168.1.5:5173/ns/m/__ns_boot__/b1/src/main.ts',
+			// Canonical (untagged) entry URL — module identity IS the URL.
+			// The boot-progress snippet is injected self-gating by the /ns/m
+			// module server, so no `__ns_boot__` decoration is needed.
+			entryUrl: 'http://192.168.1.5:5173/ns/m/src/main.ts',
 			clientUrl: 'http://192.168.1.5:5173/__ns_dev__/client',
 			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
 			platform: 'ios',
@@ -113,7 +109,7 @@ describe('createNsDevSessionDescriptor', () => {
 		});
 
 		expect(descriptor.origin).toBe('https://dev.example.com:8443');
-		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/__ns_boot__/b1/src/app.ts');
+		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/src/app.ts');
 		expect(descriptor.clientUrl).toBe('https://dev.example.com:8443/__ns_dev__/client');
 		expect(descriptor.wsUrl).toBe('wss://dev.example.com:8443/ns-hmr');
 		expect(descriptor.runtimeConfigUrl).toBe('https://dev.example.com:8443/ns/import-map.json');
@@ -134,7 +130,7 @@ describe('createNsDevSessionDescriptor', () => {
 			mainEntryPathname: '/ns/m/src/entrypoints/main.ts',
 		});
 
-		expect(descriptor.entryUrl).toBe('http://localhost:5173/ns/m/__ns_boot__/b1/src/entrypoints/main.ts');
+		expect(descriptor.entryUrl).toBe('http://localhost:5173/ns/m/src/entrypoints/main.ts');
 	});
 });
 
@@ -153,7 +149,20 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).toContain('import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
 		expect(code).toContain('import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
 		expect(code).toContain('globalThis.__NS_HMR_APP_CSS__');
-		expect(code).toContain('globalThis.__nsApplyStyleUpdate');
+		// CSS apply is pure JS now: prefer the HTTP core realm applier,
+		// fall back to Application.addCss via the vendor realm.
+		expect(code).toContain('globalThis.__NS_HMR_APPLY_CSS__');
+		expect(code).toContain('Application.addCss');
+		// Last-resort cold-boot CSS fallback for monorepo / per-module core
+		// boots where the vendor bundle has no @nativescript/core: install the
+		// entry-runtime's HTTP-core-realm applier against the canonical
+		// (unversioned) /ns/core bridge URL.
+		expect(code).toContain('import("http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js")');
+		expect(code).toContain('import("http://192.168.1.5:5173/ns/core")');
+		expect(code).toContain('installHttpCoreCssSupport');
+		expect(code).not.toContain('__nsApplyStyleUpdate');
+		// The JS hot registry installs before the entry graph evaluates.
+		expect(code).toContain('installNsHotRegistry');
 		expect(code).toContain("console.info('[ns-entry] app.css applied in HTTP core realm');");
 		expect(code).not.toContain('__nsBrowserRuntimeConfigureRuntime');
 		expect(code).not.toContain('/ns/import-map.json');

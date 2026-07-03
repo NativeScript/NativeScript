@@ -155,7 +155,7 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 		}
 		emitSummary();
 	},
-	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
+	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
 	// identity: Solid HMR runs through Vite's solid-refresh plugin + the generic
 	// vendor bridge, and has no dedicated HTTP endpoints to version.
 	//

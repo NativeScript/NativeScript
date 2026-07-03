@@ -14,10 +14,11 @@ describe('websocket vendor unifier', () => {
 		expect(shouldHandleVendorUnifierPath('/app/styles.css')).toBe(false);
 	});
 
-	it('rewrites Vue runtime imports to the /ns/rt bridge', () => {
+	it('rewrites Vue runtime imports to the canonical (unversioned) /ns/rt bridge', () => {
 		const input = 'import { createApp } from "vue";\nimport { h } from "nativescript-vue/runtime";\n';
 		const output = maybeRewriteVendorModule(input, vueServerStrategy, 'http://localhost:5173', 7);
-		expect(output).toContain('/ns/rt/7');
+		expect(output).toContain('from "http://localhost:5173/ns/rt"');
+		expect(output).not.toContain('/ns/rt/7');
 		expect(output).not.toContain('from "vue"');
 	});
 

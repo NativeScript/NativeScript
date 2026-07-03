@@ -253,7 +253,7 @@ export function ensureGuardPlainDynamicImports(code: string): string {
 //   * The runtime canonicalizes any URL shape (boot prefix, hmr prefix,
 //     stable) to a single key via `CanonicalizeHttpUrlKey`.
 //   * The Angular client receives an explicit eviction set in
-//     `ns:angular-update` and calls `__nsInvalidateModules` before
+//     `ns:angular-update` and calls `__NS_DEV__.invalidateModules` before
 //     re-importing the entry, so V8 only refetches modules that
 //     actually changed.
 //   * The dynamic-import helper no longer needs to busy-construct
@@ -522,10 +522,16 @@ export function repairImportEqualsAssignments(code: string): string {
 	return code;
 }
 
-export function ensureVersionedRtImports(code: string, origin: string, ver: number): string {
-	if (!code || !origin || !Number.isFinite(ver)) return code;
-	code = code.replace(/(from\s+["'])(?:https?:\/\/[^"']+)?\/(?:\@ns|ns)\/rt(?:\/[\d]+)?(["'])/g, (_m, p1, p3) => `${p1}/ns/rt/${ver}${p3}`);
-	code = code.replace(/(import\(\s*["'])(?:https?:\/\/[^"']+)?\/(?:\@ns|ns)\/rt(?:\/[\d]+)?(["']\s*\))/g, (_m, p1, p3) => `${p1}/ns/rt/${ver}${p3}`);
+// Canonicalize `/ns/rt` imports: collapse any versioned form
+// (`/ns/rt/<n>`, `/@ns/rt/<n>`) to the single unversioned `/ns/rt` URL.
+// One canonical URL per bridge module — the runtime treats the literal
+// URL as module identity, so emitting `/ns/rt/<ver>` would mint a new
+// module realm per graph version. (The GET route still ACCEPTS the
+// versioned form for stale in-flight code; see ns-rt-route.ts.)
+export function canonicalizeRtImports(code: string, origin: string): string {
+	if (!code || !origin) return code;
+	code = code.replace(/(from\s+["'])(?:https?:\/\/[^"']+)?\/(?:\@ns|ns)\/rt(?:\/[\d]+)?(["'])/g, (_m, p1, p3) => `${p1}/ns/rt${p3}`);
+	code = code.replace(/(import\(\s*["'])(?:https?:\/\/[^"']+)?\/(?:\@ns|ns)\/rt(?:\/[\d]+)?(["']\s*\))/g, (_m, p1, p3) => `${p1}/ns/rt${p3}`);
 	return code;
 }
 

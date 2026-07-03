@@ -225,7 +225,7 @@ export function collectAngularTransformCacheInvalidationUrls(options: { file: st
 //
 // The output URLs are origin-absolute (e.g.
 // `http://localhost:5173/ns/m/src/main.ts`) so the runtime can feed the
-// list directly into `__nsInvalidateModules` without any further
+// list directly into `__NS_DEV__.invalidateModules` without any further
 // resolution work. The runtime canonicalizer collapses any residual
 // `__ns_hmr__/<tag>/` or `__ns_boot__/b1/` segments, so the effective
 // registry key is `/ns/m/<rel>` regardless of any tag a stale V8 cache
@@ -304,7 +304,7 @@ export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoo
 		// extensionless form. Emit it alongside the `.ts` form so the
 		// explicit eviction matches whatever shape the runtime actually
 		// stored. This cannot false-positive: at most one of the two URLs
-		// maps to a real entry, and `__nsInvalidateModules` treats unknown
+		// maps to a real entry, and `__NS_DEV__.invalidateModules` treats unknown
 		// keys as no-ops.
 		const extMatch = rel.match(/\.(?:[mc]?[jt]sx?)$/i);
 		if (extMatch) {

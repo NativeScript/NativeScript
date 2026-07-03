@@ -75,9 +75,9 @@ describe('processCodeForDevice import safety', () => {
 	//
 	//   '  import ws from "ws"\n' +
 	//
-	// The "splitConcatenatedImports" pass on processCodeForDevice used to include
-	// `'`, `"`, and `` ` `` in its delimiter character class, which caused the
-	// regex to fire INSIDE that string literal — splitting it into two lines
+	// If the "splitConcatenatedImports" pass on processCodeForDevice included
+	// `'`, `"`, or `` ` `` in its delimiter character class, the regex would
+	// fire INSIDE that string literal — splitting it into two lines
 	// (`'\nimport ws from "..."`) and producing a SyntaxError on device. This
 	// test pins the safe behavior: example imports inside string literals must
 	// remain inside the same string-literal expression.
@@ -96,6 +96,33 @@ describe('processCodeForDevice import safety', () => {
 		// import declarations of the module.
 		const topLevelSources = collectTopLevelImportSources(out);
 		expect(topLevelSources).not.toContain('ws');
+	});
+
+	// Regression: @nativescript/core's profiling/index.ts and
+	// ui/styling/style-scope.ts do `import appConfig from '~/package.json'`,
+	// which Vite resolves to the nsvite:nsconfig-json virtual module and emits
+	// as `/@id/__x00__nsvite:nsconfig-json`. If the generic /@id/
+	// virtual-import strip deleted that import outright it would leave a bare
+	// `appConfig` reference — `ReferenceError: appConfig is not defined` at
+	// module eval when monorepo core source is served through /ns/m. The
+	// import must be replaced with an inlined `const appConfig = {...};`.
+	it('inlines the nsvite:nsconfig-json virtual import instead of stripping it', () => {
+		const input = [`import appConfig from "/@id/__x00__nsvite:nsconfig-json";`, `try { if (appConfig && appConfig.profiling) { enable(appConfig.profiling); } } catch (e) {}`, `export {};`].join('\n');
+
+		const out = processCodeForDevice(input, false, true, true);
+
+		expect(out).not.toContain('nsvite:nsconfig-json');
+		expect(out).toMatch(/const appConfig = \{/);
+		expect(collectTopLevelImportSources(out)).not.toContain('/@id/__x00__nsvite:nsconfig-json');
+	});
+
+	it('inlines a raw ~/package.json default import the same way', () => {
+		const input = [`import appConfig from '~/package.json';`, `export const parser = appConfig && appConfig.cssParser;`].join('\n');
+
+		const out = processCodeForDevice(input, false, true, true);
+
+		expect(out).not.toContain('~/package.json');
+		expect(out).toMatch(/const appConfig = \{/);
 	});
 
 	it('still recognizes genuinely concatenated imports after structural delimiters', () => {

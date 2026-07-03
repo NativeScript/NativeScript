@@ -48,7 +48,7 @@ function clearOverlayState() {
 	delete g.__NS_HMR_IMPORT_NONCE__;
 	delete g.__NS_HMR_IMPORT__;
 	delete g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-	delete g.__nsInvalidateModules;
+	delete g.__NS_DEV__;
 }
 
 describe('Angular HMR client overlay opt-out', () => {

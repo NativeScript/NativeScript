@@ -3,12 +3,13 @@ import { getGlobalScope } from './global-scope.js';
 //
 // Pipeline:
 //   * Server-side `buildBootProgressSnippet` is injected at the top of
-//     every `__ns_boot__/b1`-tagged module and bumps the count /
-//     last-module globals (FULLY SYNCHRONOUS — see the snippet doc for
-//     why top-level await must stay out of boot-tagged modules).
+//     every served app module and bumps the count / last-module globals
+//     while `__NS_HMR_BOOT_COMPLETE__` is falsy (self-gating — the
+//     snippet no-ops after boot; FULLY SYNCHRONOUS — see the snippet
+//     doc for why top-level await must stay out of served modules).
 //   * `startBrowserRuntimeSession` stamps the time origin
-//     (`__NS_HMR_BOOT_IMPORT_STARTED_AT__`) right before
-//     `__nsStartDevSession`.
+//     (`__NS_HMR_BOOT_IMPORT_STARTED_AT__`) right before the client +
+//     entry dynamic-import walk.
 //   * `startBootImportHeartbeat` reads both signals every 250 ms and
 //     re-asserts `'importing-main'` so the bar climbs even across long
 //     vendor stretches that don't tick the count axis. The iOS runtime's

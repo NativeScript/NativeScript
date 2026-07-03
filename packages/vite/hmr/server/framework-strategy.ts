@@ -96,8 +96,13 @@ export interface FrameworkServerStrategy {
 	rewriteFrameworkImports?(code: string): string;
 	/** Framework-specific post-clean phase (strip HMR helpers, etc.). */
 	postClean?(code: string): string;
-	/** Ensure framework-specific HTTP endpoints/imports are versioned for cache-busting. */
-	ensureVersionedImports?(code: string, origin: string, version: number): string;
+	/**
+	 * Collapse framework-specific HTTP endpoint imports to their canonical
+	 * (unversioned) URLs. Module identity is the URL; freshness is driven by
+	 * explicit eviction, never URL variation. Versioned inbound shapes from
+	 * stale cached device code (e.g. `/ns/sfc/<ver>/…`) are stripped here.
+	 */
+	canonicalizeFrameworkImports?(code: string, origin: string): string;
 	/** Optional vendor rewrite hook (e.g. map framework helper imports to vendor). */
 	rewriteVendorSpec?(code: string, origin: string, version: number): string;
 
@@ -180,9 +185,9 @@ export interface FrameworkServerStrategy {
 	importMapEntries?(origin: string): Record<string, string>;
 
 	/**
-	 * Extra volatile URL patterns the device runtime must always re-fetch (Vue →
-	 * `/@ns/sfc/`, `/@ns/asm/`; Angular → `/@ns/asm/`). Defaults to none.
-	 * Replaces the framework arm of `getVolatilePatterns`.
+	 * Extra volatile URL patterns the device runtime must always re-fetch.
+	 * Defaults to none — no built-in strategy needs any (freshness is
+	 * eviction-driven), but the hook stays for custom strategies.
 	 */
 	volatilePatterns?(): string[];
 

@@ -19,6 +19,7 @@ import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginM
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
 import { deduplicateLinkerImports, ensureDestructureRtImports, ensureVariableDynamicImportHelper, hoistTopLevelStaticImports, repairImportEqualsAssignments, stripCoreGlobalsImports, stripViteDynamicImportVirtual } from './websocket-served-module-helpers.js';
 import { buildNodeModuleProvenancePrelude, normalizeImportPath, removeNamedImports, rewriteVitePrebundleImportsForDevice, shouldRemapImport } from './device-transform-helpers.js';
+import { nsConfigToJson } from '../../helpers/utils.js';
 
 // Build a serialized process.env object from CLI --env.* flags.
 // This is injected into every HTTP-served module so app code referencing
@@ -59,6 +60,79 @@ const __platformSeed = __runtimeDefines.platform ? buildGuardedDefineSeedStateme
 
 interface ProcessCodeForDeviceOptions {
 	resolvedSpecifierOverrides?: Map<string, string>;
+}
+
+// Default-import forms of the app's nativescript.config-as-JSON module:
+// the Vite-resolved virtual id (`/@id/__x00__nsvite:nsconfig-json`, any query
+// suffix) and the raw `~/package.json` alias it originates from (see
+// helpers/config-as-json.ts).
+const NS_CONFIG_VIRTUAL_IMPORT_RE = /(^|\n)([\t ]*)import\s+([A-Za-z_$][\w$]*)\s+from\s*["'](?:\/@id\/(?:__x00__)?|\0)?nsvite:nsconfig-json[^"']*["'];?/g;
+const NS_CONFIG_TILDE_IMPORT_RE = /(^|\n)([\t ]*)import\s+([A-Za-z_$][\w$]*)\s+from\s*["']~\/package\.json(?:\?[^"']*)?["'];?/g;
+
+let cachedNsConfigJsonLiteral: string | null = null;
+function getNsConfigJsonLiteral(): string {
+	if (cachedNsConfigJsonLiteral === null) {
+		try {
+			cachedNsConfigJsonLiteral = JSON.stringify(nsConfigToJson());
+		} catch {
+			// No nativescript.config reachable (tests, bare fixtures) — the
+			// importers only read optional profiling/cssParser hints from it.
+			cachedNsConfigJsonLiteral = '{}';
+		}
+	}
+	return cachedNsConfigJsonLiteral;
+}
+
+/**
+ * Inline the app's nativescript.config JSON where a served module default-
+ * imports it. @nativescript/core's `profiling/index.ts` and
+ * `ui/styling/style-scope.ts` do `import appConfig from '~/package.json'`,
+ * which Vite resolves to the `nsvite:nsconfig-json` virtual module and emits
+ * as `/@id/__x00__nsvite:nsconfig-json`. The generic /@id/ virtual-import
+ * strip in processCodeForDevice would delete that import and leave a bare
+ * `appConfig` reference — a `ReferenceError: appConfig is not defined` at
+ * module eval (hit when monorepo core source is served through /ns/m).
+ * Replacing the import with `const <name> = <config-json>;` mirrors what the
+ * production build (config-as-json.ts) and the dev core bundle
+ * (core-bundle.ts's nsConfigPlugin) already provide.
+ */
+export function inlineNsConfigVirtualImports(code: string): string {
+	if (!code || (!code.includes('nsvite:nsconfig-json') && !code.includes('~/package.json'))) return code;
+	const replace = (_m: string, pfx: string, indent: string, name: string) => `${pfx}${indent}const ${name} = ${getNsConfigJsonLiteral()};`;
+	return code.replace(NS_CONFIG_VIRTUAL_IMPORT_RE, replace).replace(NS_CONFIG_TILDE_IMPORT_RE, replace);
+}
+
+// Canonical hot-context id for a served app module: project-relative,
+// extensionless, query-free. Must agree with `canonicalHotKey` in
+// `hmr/client/hot-context.ts` so cold-boot evaluation and HMR re-evaluation
+// resolve the same `hot.data` entry.
+export function computeHotContextId(sourceId: string | undefined, projectRoot: string | undefined): string | null {
+	if (!sourceId || typeof sourceId !== 'string') return null;
+	let id = sourceId.split('?')[0].split('#')[0].replace(/\\/g, '/');
+	if (!id) return null;
+	id = id.replace(/^\/@fs/, '');
+	if (projectRoot) {
+		const rootPosix = projectRoot.replace(/\\/g, '/').replace(/\/$/, '');
+		if (rootPosix && id.startsWith(rootPosix + '/')) {
+			id = id.slice(rootPosix.length);
+		}
+	}
+	if (id.startsWith('/ns/m/')) id = id.slice('/ns/m'.length);
+	id = id.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '');
+	if (!id.startsWith('/')) id = '/' + id;
+	return id;
+}
+
+// One-line `import.meta.hot` prelude. Single-statement, no internal `;` or
+// newline, so that if any later sanitize pass re-applies
+// `IMPORT_META_HOT_ASSIGNMENT` the whole statement strips cleanly (module
+// degrades to `import.meta.hot === undefined` instead of a SyntaxError).
+// The registry global is installed by the `/__ns_dev__/client` bootstrap
+// BEFORE the entry graph evaluates; outside dev it's absent and the
+// expression yields `undefined`, matching Vite's production semantics.
+export function buildHotContextPrelude(hotContextId: string): string {
+	const idJson = JSON.stringify(hotContextId);
+	return `import.meta.hot = globalThis.__NS_HOT_REGISTRY__ && globalThis.__NS_HOT_REGISTRY__.createHotContext ? globalThis.__NS_HOT_REGISTRY__.createHotContext(${idJson}) : undefined;\n`;
 }
 
 function collectImportDependencies(code: string, importerPath: string): Set<string> {
@@ -120,10 +194,12 @@ function cleanCode(code: string, strategy: FrameworkServerStrategy): string {
 	let result = code;
 
 	// Remove Vite client and hot module noise ('$1' keeps the preceding
-	// newline/semicolon boundary — see VITE_CLIENT_IMPORT in constants.ts)
+	// newline/semicolon boundary — see VITE_CLIENT_IMPORT in constants.ts).
+	// Vite's own `import.meta.hot = __vite__createHotContext(...)` targets the
+	// browser client; we strip it and processCodeForDevice injects the NS
+	// hot-context prelude instead (JS-owned import.meta.hot).
 	result = result.replace(PAT.VITE_CLIENT_IMPORT, '$1');
 	result = result.replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
-	// Keep import.meta.hot call sites; runtime now provides a stable import.meta.hot.
 
 	result = strategy.preClean?.(result) ?? result;
 	result = strategy.rewriteFrameworkImports?.(result) ?? result;
@@ -230,6 +306,15 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		result = nodeModuleProvenancePrelude + result;
 	}
 
+	// JS-owned `import.meta.hot`: app modules get a hot context bound to
+	// their canonical id (library code never registers hot boundaries).
+	if (!isNodeModule) {
+		const hotContextId = computeHotContextId(sourceId, getProjectRootPath());
+		if (hotContextId) {
+			result = buildHotContextPrelude(hotContextId) + result;
+		}
+	}
+
 	// AST normalization: inject /ns/rt helper aliases for underscore-prefixed identifiers.
 	// ONLY for app source files — library code in node_modules should be served as-is.
 	// Running the normalizer on libraries like tslib injects harmful destructures
@@ -318,6 +403,13 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 			const thrower = `throw new Error("[nsv-hmr] Duplicate top-level bindings detected: ${escaped}");`;
 			result = `${thrower}\n` + result;
 		}
+	} catch {}
+
+	// Inline the nativescript.config JSON import BEFORE the generic /@id/
+	// strip below, which would otherwise delete it and leave the consumer's
+	// binding (`appConfig` in core's profiling/style-scope) undefined.
+	try {
+		result = inlineNsConfigVirtualImports(result);
 	} catch {}
 
 	// Remove Vite internal imports (dynamic-import-helper, etc.)

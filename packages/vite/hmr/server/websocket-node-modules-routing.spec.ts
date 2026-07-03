@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getBlockedDeviceNodeModulesReason, stripDecoratedServePrefixes } from './websocket-module-specifiers.js';
 import { rewriteImports } from './websocket-device-transform.js';
-import { rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
+import { canonicalizeNsMImportPath } from './websocket-ns-m-paths.js';
 
 describe('node_modules HTTP import canonicalization', () => {
 	it('preserves resolved dependency filenames for relative node_modules imports', () => {
@@ -22,49 +22,29 @@ describe('node_modules HTTP import canonicalization', () => {
 	});
 
 	it('keeps node_modules imports on one canonical path during HMR path rewriting', () => {
-		expect(rewriteNsMImportPathForHmr('/ns/m/node_modules/css-tree/lib/tokenizer/index.js', 492, false)).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/v491/node_modules/css-tree/lib/tokenizer/index.js', 492, false)).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/node_modules/css-tree/lib/tokenizer/index.js', 492, true)).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
+		expect(canonicalizeNsMImportPath('/ns/m/node_modules/css-tree/lib/tokenizer/index.js')).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_hmr__/v491/node_modules/css-tree/lib/tokenizer/index.js')).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/node_modules/css-tree/lib/tokenizer/index.js')).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
 	});
 
 	// Stable URL + Explicit Invalidation.
 	//
-	// Older versions of the rewriter stamped `__ns_hmr__/v<N>/` into
-	// every app-module URL on every save. The version segment forced
-	// V8 to re-fetch the entire dependency closure even when only one
-	// file changed (the URL was the cache key). The current contract
-	// emits stable URLs and uses an explicit `__nsInvalidateModules`
-	// protocol for cache busting; the rewriter is now a canonicalizer
-	// that strips legacy tags rather than adding them.
+	// The contract emits ONE canonical URL per module and uses the explicit
+	// `__NS_DEV__.invalidateModules` protocol for cache busting; the rewriter is a
+	// pure canonicalizer that strips tagged inbound shapes (stale cached
+	// device code) without ever adding any.
 	it('emits stable canonical URLs for application module imports', () => {
-		// Bare app module → stable.
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
-		// Legacy tagged URL (an older client may still serve one) → tag stripped.
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/v491/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/live/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/n5/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
-		// `_ver` argument is ignored for app modules — stability is the rule now.
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'v999', false)).toBe('/ns/m/src/app/app.routes');
+		// Bare app module → stable / idempotent.
+		expect(canonicalizeNsMImportPath('/ns/m/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
+		// Tagged URLs (stale cached device code may still request one) → tag stripped.
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_hmr__/v491/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_hmr__/live/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_hmr__/n5/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
 	});
 
-	it('preserves the boot prefix for boot-tagged app module requests', () => {
-		// Bare app module + bootTagged → boot prefix added.
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
-		// Legacy boot+hmr → tag stripped, boot prefix retained.
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
-		// Already-canonical boot URL → idempotent.
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
-		// Boot-tagged request whose source had only an hmr tag (no boot prefix)
-		// → tag stripped, boot prefix added.
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/v491/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
-	});
-
-	it('drops legacy tags from non-boot requests even when the input was boot-tagged', () => {
-		// A path that was previously emitted under boot is collapsed when
-		// requested under HMR (e.g. an importer whose tag changed contexts).
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
+	it('strips boot prefixes (there is no boot tagging; the boot snippet self-gates)', () => {
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_boot__/b1/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
+		expect(canonicalizeNsMImportPath('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
 	});
 });
 
@@ -98,14 +78,11 @@ describe('stripDecoratedServePrefixes', () => {
 		});
 	});
 
-	it('keeps app module rewrites stable regardless of the supplied tag', () => {
-		// The `ver` argument is preserved on the function signature for
-		// API compatibility, but it is now ignored for app modules.
-		// Cache busting is driven by `__nsInvalidateModules`, not URL
-		// versioning.
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 'n1', false)).toBe('/ns/m/src/app/components/signup/signup.component');
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 0, false)).toBe('/ns/m/src/app/components/signup/signup.component');
+	it('keeps canonical app module paths stable (idempotent)', () => {
+		// Cache busting is driven by `__NS_DEV__.invalidateModules`, not URL
+		// versioning — canonical inputs pass through untouched.
+		expect(canonicalizeNsMImportPath('/ns/m/src/app/app.routes')).toBe('/ns/m/src/app/app.routes');
+		expect(canonicalizeNsMImportPath('/ns/m/src/app/components/signup/signup.component')).toBe('/ns/m/src/app/components/signup/signup.component');
 	});
 });
 

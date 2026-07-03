@@ -14,41 +14,41 @@ describe('boot-timeline', () => {
 				t1: 2345,
 				session: { ok: true, ms: 42 },
 				importMap: { ok: true, ms: 77 },
-				native: { ok: true, ms: 1200 },
+				entry: { ok: true, ms: 1200 },
 			};
 
 			const line = formatBootTimeline(trace);
 
-			expect(line).toBe('[ns-boot] ok total=1345ms session=42ms importMap=77ms native=1200ms');
+			expect(line).toBe('[ns-boot] ok total=1345ms session=42ms importMap=77ms entry=1200ms');
 		});
 
-		it('renders the kickstart segment between importMap and native when present', () => {
+		it('renders the kickstart segment between importMap and entry when present', () => {
 			const trace: BootTrace = {
 				t0: 1000,
 				t1: 8000,
 				session: { ok: true, ms: 42 },
 				importMap: { ok: true, ms: 77 },
 				kickstart: { ok: true, ms: 4500, meta: { fetched: 1850 } },
-				native: { ok: true, ms: 2200 },
+				entry: { ok: true, ms: 2200 },
 			};
 
 			const line = formatBootTimeline(trace);
 
-			expect(line).toBe('[ns-boot] ok total=7000ms session=42ms importMap=77ms kickstart=4500ms native=2200ms');
+			expect(line).toBe('[ns-boot] ok total=7000ms session=42ms importMap=77ms kickstart=4500ms entry=2200ms');
 		});
 
-		it('omits the kickstart segment when no kickstart ran (older runtime / soft-fail)', () => {
+		it('omits the kickstart segment when no kickstart ran (no kickstart primitive / soft-fail)', () => {
 			const trace: BootTrace = {
 				t0: 1000,
 				t1: 32000,
 				session: { ok: true, ms: 42 },
 				importMap: { ok: true, ms: 77 },
-				native: { ok: true, ms: 30000 },
+				entry: { ok: true, ms: 30000 },
 			};
 
 			const line = formatBootTimeline(trace);
 
-			expect(line).toBe('[ns-boot] ok total=31000ms session=42ms importMap=77ms native=30000ms');
+			expect(line).toBe('[ns-boot] ok total=31000ms session=42ms importMap=77ms entry=30000ms');
 			expect(line).not.toContain('kickstart=');
 		});
 
@@ -58,12 +58,12 @@ describe('boot-timeline', () => {
 				t1: 1100,
 				session: { ok: true, ms: 42 },
 				// No importMap — for example, dedup kicked in.
-				native: { ok: true, ms: 50 },
+				entry: { ok: true, ms: 50 },
 			};
 
 			const line = formatBootTimeline(trace);
 
-			expect(line).toBe('[ns-boot] ok total=100ms session=42ms native=50ms');
+			expect(line).toBe('[ns-boot] ok total=100ms session=42ms entry=50ms');
 			expect(line).not.toContain('importMap=');
 		});
 
@@ -72,14 +72,14 @@ describe('boot-timeline', () => {
 				t0: 1000,
 				t1: 1250,
 				session: { ok: true, ms: 45 },
-				error: { message: '__nsStartDevSession is unavailable in the NativeScript runtime' },
+				error: { message: 'entry import failed in the NativeScript runtime' },
 			};
 
 			const line = formatBootTimeline(trace);
 
 			expect(line.startsWith('[ns-boot] FAILED')).toBe(true);
 			expect(line).toContain('total=250ms session=45ms');
-			expect(line).toContain(': __nsStartDevSession is unavailable in the NativeScript runtime');
+			expect(line).toContain(': entry import failed in the NativeScript runtime');
 		});
 
 		it('skips total when t1 was never recorded', () => {
@@ -114,12 +114,12 @@ describe('boot-timeline', () => {
 				t1: 1100,
 				session: { ok: true, ms: Number.NaN },
 				importMap: { ok: true, ms: Number.POSITIVE_INFINITY },
-				native: { ok: true, ms: 10 },
+				entry: { ok: true, ms: 10 },
 			};
 
 			const line = formatBootTimeline(trace);
 
-			expect(line).toBe('[ns-boot] ok total=100ms native=10ms');
+			expect(line).toBe('[ns-boot] ok total=100ms entry=10ms');
 			expect(line).not.toContain('NaN');
 			expect(line).not.toContain('Infinity');
 		});

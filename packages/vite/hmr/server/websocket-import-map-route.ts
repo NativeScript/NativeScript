@@ -11,7 +11,7 @@ export interface RegisterImportMapRouteOptions {
 /**
  * Registers the device import-map endpoint: `GET /ns/import-map.json`.
  *
- * Returns the import map + runtime config consumed by `__nsConfigureRuntime()`
+ * Returns the import map + runtime config consumed by `__NS_DEV__.configureRuntime()`
  * on the device during cold boot. Extracted verbatim from
  * `createHmrWebSocketPlugin`; the only injected dependency is the active
  * framework strategy (for its `flavor`).

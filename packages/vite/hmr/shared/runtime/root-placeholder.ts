@@ -1,6 +1,7 @@
 import { setHmrBootStage } from './dev-overlay.js';
 import { buildPlaceholderPage } from './root-placeholder-view.js';
 import { getGlobalScope } from './global-scope.js';
+import { markDevBootComplete } from './boot-complete.js';
 
 function isPlaceholderView(view: any, placeholderRoot: any): boolean {
 	if (!view) {
@@ -178,9 +179,10 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 		detachedPlaceholder = true;
 	}
 
-	try {
-		g.__NS_HMR_BOOT_COMPLETE__ = true;
-	} catch {}
+	// Flips the JS global AND the native cold-boot gate
+	// (`__NS_DEV__.setDevBootComplete`): the real root is committed, so the
+	// runtime's boot-only runloop pump can disarm.
+	markDevBootComplete();
 
 	if (detachedPlaceholder) {
 		setHmrBootStage('app-root-committed', {

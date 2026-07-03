@@ -50,10 +50,8 @@ describe('angularServerStrategy', () => {
 		expect(angularServerStrategy.rewriteServedModule!(code, ctx)).toBe(prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true));
 	});
 
-	it('volatilePatterns marks Angular template/style asset URLs volatile', () => {
-		// asm only — Angular has no /@ns/sfc endpoints. Angular contributes no
-		// import-map entries.
-		expect(angularServerStrategy.volatilePatterns!()).toEqual(['/@ns/asm/']);
+	it('supplies no volatilePatterns and no import-map entries', () => {
+		expect(angularServerStrategy.volatilePatterns).toBeUndefined();
 		expect(angularServerStrategy.importMapEntries).toBeUndefined();
 	});
 
