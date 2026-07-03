@@ -530,6 +530,8 @@ export abstract class ViewBase extends Observable {
 
 	public effectiveMinWidth: number;
 	public effectiveMinHeight: number;
+	public effectiveMaxWidth: number;
+	public effectiveMaxHeight: number;
 	public effectiveWidth: number;
 	public effectiveHeight: number;
 	public effectiveMarginTop: number;
@@ -1550,6 +1552,9 @@ ViewBase.prototype._oldBottom = 0;
 
 ViewBase.prototype.effectiveMinWidth = 0;
 ViewBase.prototype.effectiveMinHeight = 0;
+// Infinity means unconstrained, so Math.min(measured, effectiveMaxWidth) is a no-op when unset.
+ViewBase.prototype.effectiveMaxWidth = Number.POSITIVE_INFINITY;
+ViewBase.prototype.effectiveMaxHeight = Number.POSITIVE_INFINITY;
 ViewBase.prototype.effectiveWidth = 0;
 ViewBase.prototype.effectiveHeight = 0;
 ViewBase.prototype.effectiveMarginTop = 0;

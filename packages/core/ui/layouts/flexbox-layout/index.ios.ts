@@ -9,7 +9,6 @@ import EXACTLY = layout.EXACTLY;
 import AT_MOST = layout.AT_MOST;
 import UNSPECIFIED = layout.UNSPECIFIED;
 
-import MEASURED_SIZE_MASK = layout.MEASURED_SIZE_MASK;
 import MEASURED_STATE_TOO_SMALL = layout.MEASURED_STATE_TOO_SMALL;
 
 function requestFlexboxLayout(this: View, value) {
@@ -28,9 +27,6 @@ const MATCH_PARENT = -1;
 const WRAP_CONTENT = -2;
 
 const View_sUseZeroUnspecifiedMeasureSpec = true; // NOTE: android version < M
-
-// Long ints may not be safe in JavaScript
-const MAX_SIZE = 0x00ffffff & MEASURED_SIZE_MASK;
 
 import makeMeasureSpec = layout.makeMeasureSpec;
 import getMeasureSpecMode = layout.getMeasureSpecMode;
@@ -433,9 +429,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		if (view.getMeasuredWidth() < minWidth) {
 			needsMeasure = true;
 			childWidth = minWidth;
-		} else if (view.getMeasuredWidth() > MAX_SIZE /*lp.maxWidth*/) {
+		} else if (view.getMeasuredWidth() > view.effectiveMaxWidth) {
 			needsMeasure = true;
-			childWidth = MAX_SIZE /*lp.maxWidth*/;
+			childWidth = view.effectiveMaxWidth;
 		}
 
 		const minHeight = view.effectiveMinHeight;
@@ -443,9 +439,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		if (childHeight < minHeight) {
 			needsMeasure = true;
 			childHeight = minHeight;
-		} else if (childHeight > MAX_SIZE /*lp.maxWidth*/) {
+		} else if (childHeight > view.effectiveMaxHeight) {
 			needsMeasure = true;
-			childHeight = MAX_SIZE /*lp.maxWidth*/;
+			childHeight = view.effectiveMaxHeight;
 		}
 		if (needsMeasure) {
 			view.measure(makeMeasureSpec(childWidth, EXACTLY), makeMeasureSpec(childHeight, EXACTLY));
@@ -535,10 +531,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					const flexGrow = FlexboxLayout.getFlexGrow(child);
 					const rawCalculatedWidth = child.getMeasuredWidth() + unitSpace * flexGrow + accumulatedRoundError;
 					let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
-					// TODO: MAX_SIZE is so big, this is always false:
-					if (roundedCalculatedWidth > MAX_SIZE /* lp.maxWidth */) {
+					// Freeze the child once flex-grow would push it past its max-width (Infinity when unconstrained).
+					if (roundedCalculatedWidth > child.effectiveMaxWidth) {
 						needsReexpand = true;
-						roundedCalculatedWidth = MAX_SIZE /* lp.maxWidth */;
+						roundedCalculatedWidth = child.effectiveMaxWidth;
 						this._childrenFrozen[childIndex] = true;
 						flexLine._totalFlexGrow -= flexGrow;
 					} else {
@@ -552,10 +548,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					const flexGrow = FlexboxLayout.getFlexGrow(child);
 					const rawCalculatedHeight = child.getMeasuredHeight() + unitSpace * flexGrow + accumulatedRoundError;
 					let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
-					// TODO: MAX_SIZE is so big this is always false:
-					if (roundedCalculatedHeight > MAX_SIZE /*lp.maxHeight*/) {
+					// Freeze the child once flex-grow would push it past its max-height (Infinity when unconstrained).
+					if (roundedCalculatedHeight > child.effectiveMaxHeight) {
 						needsReexpand = true;
-						roundedCalculatedHeight = MAX_SIZE /*lp.maxHeight*/;
+						roundedCalculatedHeight = child.effectiveMaxHeight;
 						this._childrenFrozen[childIndex] = true;
 						flexLine._totalFlexGrow -= flexGrow;
 					} else {

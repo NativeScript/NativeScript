@@ -183,6 +183,8 @@ export class Style extends Observable {
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;
+	public maxWidth: CoreTypes.PercentLengthType;
+	public maxHeight: CoreTypes.PercentLengthType;
 	public width: CoreTypes.PercentLengthType;
 	public height: CoreTypes.PercentLengthType;
 	public margin: string | CoreTypes.PercentLengthType;

@@ -417,6 +417,22 @@ export abstract class View extends ViewCommon {
 	minHeight: CoreTypes.LengthType;
 
 	/**
+	 * Gets or sets the maximum width the view may grow to. Accepts a fixed length
+	 * or a percentage of the available width. Defaults to 'auto' (no maximum).
+	 *
+	 * @nsProperty
+	 */
+	maxWidth: CoreTypes.PercentLengthType;
+
+	/**
+	 * Gets or sets the maximum height the view may grow to. Accepts a fixed length
+	 * or a percentage of the available height. Defaults to 'auto' (no maximum).
+	 *
+	 * @nsProperty
+	 */
+	maxHeight: CoreTypes.PercentLengthType;
+
+	/**
 	 * Gets or sets the desired width of the view.
 	 *
 	 * @nsProperty

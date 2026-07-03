@@ -48,6 +48,11 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		this.widthPercent = source.widthPercent;
 		this.heightPercent = source.heightPercent;
 
+		this.maxWidth = source.maxWidth;
+		this.maxHeight = source.maxHeight;
+		this.maxWidthPercent = source.maxWidthPercent;
+		this.maxHeightPercent = source.maxHeightPercent;
+
 		this.topMargin = source.topMargin;
 		this.leftMargin = source.leftMargin;
 		this.bottomMargin = source.bottomMargin;
@@ -64,6 +69,14 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 
 	public float widthPercent = 0;
 	public float heightPercent = 0;
+
+	// max-width / max-height. -1 means unconstrained (no maximum).
+	public int maxWidth = -1;
+	public int maxHeight = -1;
+	public float maxWidthPercent = 0;
+	public float maxHeightPercent = 0;
+	public int maxWidthOriginal = NOT_SET;
+	public int maxHeightOriginal = NOT_SET;
 
 	public float topMarginPercent = 0;
 	public float leftMarginPercent = 0;
@@ -296,6 +309,15 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 						lp.widthOriginal = NOT_SET;
 					}
 
+					if (lp.maxWidthPercent > 0) {
+						if (lp.maxWidthOriginal == NOT_SET) {
+							lp.maxWidthOriginal = lp.maxWidth;
+						}
+						lp.maxWidth = (int) (availableWidth * lp.maxWidthPercent);
+					} else {
+						lp.maxWidthOriginal = NOT_SET;
+					}
+
 					if (lp.leftMarginPercent > 0) {
 						if (lp.leftMarginOriginal == NOT_SET) {
 							lp.leftMarginOriginal = lp.leftMargin;
@@ -323,6 +345,15 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 						lp.height = (int) (availableHeight * lp.heightPercent);
 					} else {
 						lp.heightOriginal = NOT_SET;
+					}
+
+					if (lp.maxHeightPercent > 0) {
+						if (lp.maxHeightOriginal == NOT_SET) {
+							lp.maxHeightOriginal = lp.maxHeight;
+						}
+						lp.maxHeight = (int) (availableHeight * lp.maxHeightPercent);
+					} else {
+						lp.maxHeightOriginal = NOT_SET;
 					}
 
 					if (lp.topMarginPercent > 0) {
@@ -363,6 +394,12 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 				if (lp.heightPercent > 0) {
 					lp.height = lp.heightOriginal;
 				}
+				if (lp.maxWidthPercent > 0) {
+					lp.maxWidth = lp.maxWidthOriginal;
+				}
+				if (lp.maxHeightPercent > 0) {
+					lp.maxHeight = lp.maxHeightOriginal;
+				}
 				if (lp.leftMarginPercent > 0) {
 					lp.leftMargin = lp.leftMarginOriginal;
 				}
@@ -378,6 +415,8 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 
 				lp.widthOriginal = NOT_SET;
 				lp.heightOriginal = NOT_SET;
+				lp.maxWidthOriginal = NOT_SET;
+				lp.maxHeightOriginal = NOT_SET;
 				lp.leftMarginOriginal = NOT_SET;
 				lp.topMarginOriginal = NOT_SET;
 				lp.rightMarginOriginal = NOT_SET;
@@ -448,6 +487,23 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 					resultSize = 0;
 					resultMode = MeasureSpec.UNSPECIFIED;
 					break;
+			}
+		}
+
+		// Apply max-width / max-height: the child may not exceed max. When the parent is
+		// UNSPECIFIED, a max turns the spec into an AT_MOST cap so the child stays bounded;
+		// otherwise we shrink the resolved size (relaxing a stretched EXACTLY to AT_MOST so
+		// the child isn't forced past its max, while an explicit size stays EXACTLY at max).
+		int max = horizontal ? lp.maxWidth : lp.maxHeight;
+		if (max >= 0) {
+			if (resultMode == MeasureSpec.UNSPECIFIED) {
+				resultSize = max;
+				resultMode = MeasureSpec.AT_MOST;
+			} else if (resultSize > max) {
+				resultSize = max;
+				if (resultMode == MeasureSpec.EXACTLY && childLength < 0) {
+					resultMode = MeasureSpec.AT_MOST;
+				}
 			}
 		}
 

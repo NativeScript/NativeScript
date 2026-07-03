@@ -350,6 +350,32 @@ export const heightProperty = new CssAnimationProperty<Style, CoreTypes.PercentL
 });
 heightProperty.register(Style);
 
+export const maxWidthProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
+	name: 'maxWidth',
+	cssName: 'max-width',
+	// 'auto' means unconstrained (no maximum).
+	defaultValue: 'auto',
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	// The effective pixel value is resolved at measure time in
+	// View._updateEffectiveLayoutValues (percent needs the parent size), so we
+	// only need to trigger a relayout here. On iOS that is done via affectsLayout;
+	// on Android the native setNative handler applies it and re-measures.
+	valueConverter: PercentLength.parse,
+});
+maxWidthProperty.register(Style);
+
+export const maxHeightProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
+	name: 'maxHeight',
+	cssName: 'max-height',
+	// 'auto' means unconstrained (no maximum).
+	defaultValue: 'auto',
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	valueConverter: PercentLength.parse,
+});
+maxHeightProperty.register(Style);
+
 const marginProperty = new ShorthandProperty<Style, string | CoreTypes.PercentLengthType>({
 	name: 'margin',
 	cssName: 'margin',
