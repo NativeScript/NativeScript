@@ -746,8 +746,8 @@ public class Utils {
 		for (int i = 0; i < buffer.length; i++) {
 			final char ch = buffer[i];
 
-			// Check these delimiters to match the iOS implementation
-			if (Character.isWhitespace(ch) || ch == '-' || ch == '\'' || ch == '"' || ch == '(' || ch == '[' || ch == '{') {
+			// Capitalize characters when located after whitespace or punctuation marks but not apostrophe
+			if (!Character.isLetterOrDigit(ch) && ch != '\'') {
 				capitalizeNext = true;
 			} else if (capitalizeNext) {
 				buffer[i] = Character.toTitleCase(ch);
