@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { registerNsCoreRoute, type RegisterNsCoreRouteOptions } from './websocket-ns-core.js';
 import { CORE_BUNDLE_PATH, type CoreBundleService, type CoreBundleState } from './core-bundle.js';
+import { clearVerboseCache } from '../../helpers/logging.js';
 
 type FakeRes = {
 	statusCode: number;
@@ -213,6 +214,29 @@ describe('registerNsCoreRoute', () => {
 			expect(sharedTransformRequest).toHaveBeenCalled();
 			expect(res.statusCode).toBe(500);
 			expect(res.body).toContain('core-transform-failed');
+		});
+
+		it('stays quiet (non-verbose) for deliberately excluded subs but warns once for unexpected misses', async () => {
+			clearVerboseCache();
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			try {
+				const { bridge } = mountBundleMode(['ui/frame']);
+				// Deliberate exclusions (debugger/, inspector_modules, bundle-entry-points)
+				// hit the fallback on every boot by design — no warning by default.
+				for (const url of ['/ns/core/debugger/webinspector-network', '/ns/core/inspector_modules', '/ns/core/bundle-entry-points']) {
+					await bridge({ url }, makeRes(), vi.fn());
+				}
+				const enumerationWarns = () => warn.mock.calls.filter(([msg]) => String(msg).includes('not in bundle enumeration'));
+				expect(enumerationWarns()).toHaveLength(0);
+				// An unexpected miss (a sub that should have been enumerated) still
+				// warns once so enumeration regressions stay visible.
+				await bridge({ url: '/ns/core/ui/some-missing-module' }, makeRes(), vi.fn());
+				await bridge({ url: '/ns/core/ui/some-missing-module' }, makeRes(), vi.fn());
+				expect(enumerationWarns()).toHaveLength(1);
+			} finally {
+				warn.mockRestore();
+				clearVerboseCache();
+			}
 		});
 
 		it('falls back to per-module serving entirely when the bundle build failed', async () => {

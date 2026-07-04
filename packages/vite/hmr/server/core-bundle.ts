@@ -130,6 +130,20 @@ export function resolveCoreRootForBundle(projectRoot: string): string {
 const EXCLUDED_DIRS = new Set(['node_modules', 'platforms', 'cli-hooks', 'debugger', '.git', '__tests__', 'fixtures']);
 const EXCLUDED_TOP_LEVEL_MODULES = new Set(['inspector_modules', 'bundle-entry-points', 'references', 'global-types', 'vite.config', 'vitest.setup']);
 
+/**
+ * True when a canonical core subpath was DELIBERATELY excluded from bundle
+ * enumeration (debugger/, inspector_modules, bundle-entry-points, …). Requests
+ * for these at boot are normal — the runtime's inspector/debugger plumbing
+ * imports them in dev — and the per-module fallback that serves them is
+ * by-design and realm-safe. Callers use this to keep the fallback log
+ * verbose-only for expected subs while still surfacing unexpected
+ * enumeration misses.
+ */
+export function isExpectedCoreBundleExclusion(canonicalSub: string): boolean {
+	if (!canonicalSub) return false;
+	return canonicalSub.split('/').some((seg) => EXCLUDED_TOP_LEVEL_MODULES.has(seg) || EXCLUDED_DIRS.has(seg));
+}
+
 const MODULE_FILE_RE = /\.(?:ts|tsx|js|mjs)$/;
 const NON_MODULE_FILE_RE = /\.(?:d\.ts|spec\.(?:ts|js|tsx)|test\.(?:ts|js|tsx))$/;
 

@@ -10,7 +10,7 @@ import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath, collectStaticExpo
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { getServerOrigin } from './server-origin.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
-import { CORE_BUNDLE_PATH, buildCoreMainShimCode, buildCoreSubShimCode, getSharedCoreBundleService, isCorePerModuleServingEnabled, type CoreBundleService } from './core-bundle.js';
+import { CORE_BUNDLE_PATH, buildCoreMainShimCode, buildCoreSubShimCode, getSharedCoreBundleService, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, type CoreBundleService } from './core-bundle.js';
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 
@@ -203,9 +203,17 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 						res.end(buildCoreSubShimCode(canonicalSubForShim, exportInfo.names, exportInfo.hasDefault));
 						return;
 					}
+					// Deliberately excluded subs (debugger/, inspector_modules,
+					// bundle-entry-points, …) hit this fallback on every dev boot
+					// by design — that is expected and harmless, so the log is
+					// verbose-only for them. An UNEXPECTED miss (a sub that
+					// should have been enumerated) still warns once so
+					// enumeration regressions stay visible.
 					if (!warnedFallbackSubs.has(canonicalSubForShim)) {
 						warnedFallbackSubs.add(canonicalSubForShim);
-						console.warn(`[ns-core-bundle] sub '${canonicalSubForShim}' not in bundle enumeration — serving per-module (realm-safe fallback)`);
+						if (verbose || !isExpectedCoreBundleExclusion(canonicalSubForShim)) {
+							console.warn(`[ns-core-bundle] sub '${canonicalSubForShim}' not in bundle enumeration — serving per-module (realm-safe fallback)`);
+						}
 					}
 				}
 			}

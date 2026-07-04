@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { CORE_BUNDLE_PATH, buildCoreBundleEntryCode, buildCoreMainShimCode, buildCoreSubShimCode, createCoreBundleService, enumerateCoreModuleSubpaths, generateCoreBundle, isCorePerModuleServingEnabled, resolveCoreRootForBundle } from './core-bundle.js';
+import { CORE_BUNDLE_PATH, buildCoreBundleEntryCode, buildCoreMainShimCode, buildCoreSubShimCode, createCoreBundleService, enumerateCoreModuleSubpaths, generateCoreBundle, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, resolveCoreRootForBundle } from './core-bundle.js';
 
 describe('isCorePerModuleServingEnabled', () => {
 	const standalone = () => false;
@@ -87,6 +87,23 @@ describe('enumerateCoreModuleSubpaths', () => {
 		expect(subs).not.toContain('utils/native-helper');
 		// dirs with both platform variants stay
 		expect(subs).toContain('ui/frame');
+	});
+});
+
+describe('isExpectedCoreBundleExclusion', () => {
+	it('recognizes deliberately excluded subs (the boot-time inspector/debugger set)', () => {
+		expect(isExpectedCoreBundleExclusion('bundle-entry-points')).toBe(true);
+		expect(isExpectedCoreBundleExclusion('inspector_modules')).toBe(true);
+		expect(isExpectedCoreBundleExclusion('debugger')).toBe(true);
+		expect(isExpectedCoreBundleExclusion('debugger/webinspector-network')).toBe(true);
+		expect(isExpectedCoreBundleExclusion('debugger/devtools-elements.common')).toBe(true);
+	});
+
+	it('does not flag normal runtime subs or the package main', () => {
+		expect(isExpectedCoreBundleExclusion('')).toBe(false);
+		expect(isExpectedCoreBundleExclusion('ui/frame')).toBe(false);
+		expect(isExpectedCoreBundleExclusion('utils')).toBe(false);
+		expect(isExpectedCoreBundleExclusion('application')).toBe(false);
 	});
 });
 
