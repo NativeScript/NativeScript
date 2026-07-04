@@ -746,8 +746,8 @@ public class Utils {
 		for (int i = 0; i < buffer.length; i++) {
 			final char ch = buffer[i];
 
-			// Capitalize characters when located after whitespace or punctuation marks but not apostrophe
-			if (!Character.isLetterOrDigit(ch) && ch != '\'') {
+			// Capitalize characters when located after numbers, whitespace, and punctuation marks but not apostrophe
+			if (!Character.isLetter(ch) && ch != '\'') {
 				capitalizeNext = true;
 			} else if (capitalizeNext) {
 				buffer[i] = Character.toTitleCase(ch);
