@@ -35,14 +35,21 @@ export type ParsedCoreBridgeRequest = {
 	canonicalPath?: string;
 };
 
+/**
+ * Full JS identifier alphabet — Unicode-aware, NOT ASCII `\w`. Angular's
+ * runtime API surface is `ɵɵdefineInjectable`-style (U+0275 is ID_Start);
+ * an ASCII filter silently drops every such export from generated shims.
+ */
+export const JS_IDENTIFIER_RE = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
+
 export function extractDirectExportedNames(code: string): string[] {
 	const names = new Set<string>();
-	const declRe = /\bexport\s+(?:async\s+)?(?:function|class)\s+([A-Za-z_$][\w$]*)/g;
+	const declRe = /\bexport\s+(?:async\s+)?(?:function|class)\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)/gu;
 	let match: RegExpExecArray | null;
 	while ((match = declRe.exec(code)) !== null) {
 		names.add(match[1]);
 	}
-	const namespaceRe = /\bexport\s+namespace\s+([A-Za-z_$][\w$]*)/g;
+	const namespaceRe = /\bexport\s+namespace\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)/gu;
 	while ((match = namespaceRe.exec(code)) !== null) {
 		names.add(match[1]);
 	}
@@ -53,11 +60,11 @@ export function extractDirectExportedNames(code: string): string[] {
 			const inner = decl.replace(/^\{|\}$/g, '');
 			for (const part of inner.split(',')) {
 				const name = part.split(':')[0].trim();
-				if (/^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
+				if (JS_IDENTIFIER_RE.test(name)) names.add(name);
 			}
 		} else {
 			const name = decl.split(/[\s,=]/)[0].trim();
-			if (/^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
+			if (JS_IDENTIFIER_RE.test(name)) names.add(name);
 		}
 	}
 	const directBraceRe = /\bexport\s*\{([^}]+)\}(?!\s*from)/g;
@@ -66,7 +73,7 @@ export function extractDirectExportedNames(code: string): string[] {
 			const trimmed = part.trim();
 			const asMatch = trimmed.match(/(\S+)\s+as\s+(\S+)/);
 			const name = asMatch ? asMatch[2] : trimmed.split(/\s/)[0];
-			if (name && /^[A-Za-z_$][\w$]*$/.test(name) && name !== 'default') {
+			if (name && JS_IDENTIFIER_RE.test(name) && name !== 'default') {
 				names.add(name);
 			}
 		}
@@ -87,7 +94,7 @@ export function parseExportSpecList(specList: string): Array<{ importedName: str
 			const name = part.split(/\s/)[0]?.trim() || '';
 			return { importedName: name, exportedName: name };
 		})
-		.filter(({ exportedName, importedName }) => /^[A-Za-z_$][\w$]*$/.test(exportedName) && exportedName !== 'default' && /^[A-Za-z_$][\w$]*$/.test(importedName));
+		.filter(({ exportedName, importedName }) => JS_IDENTIFIER_RE.test(exportedName) && exportedName !== 'default' && JS_IDENTIFIER_RE.test(importedName));
 }
 
 function runtimeModuleIdForFile(modulePath: string, rootEntryPath: string): string | null {

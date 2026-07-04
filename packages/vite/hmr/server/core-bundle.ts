@@ -33,7 +33,7 @@
  */
 
 import { createRequire } from 'node:module';
-import { existsSync, readdirSync, statSync, type Dirent } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync, type Dirent } from 'node:fs';
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as esbuild from 'esbuild';
@@ -49,6 +49,7 @@ import { moduleRegistrationKeys, normalizeCoreSub } from '../../helpers/ns-core-
 import { buildShapeInstallHeader } from './ns-core-cjs-shape.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { nsConfigToJson } from '../../helpers/utils.js';
+import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { aliasCssTree } from '../../helpers/css-tree.js';
 import { getWorkspaceCoreSourceRoot } from './websocket-served-module-helpers.js';
 
@@ -244,6 +245,108 @@ export function buildCoreBundleEntryCode(subs: readonly string[]): string {
 	return lines.join('\n');
 }
 
+// ============================================================================
+// Disk cache — the esbuild core bundle takes ~5-10s to build and its inputs
+// rarely change between dev-server starts, so the built payload is persisted
+// under `node_modules/.ns-vite/` and reloaded when the cache key matches.
+// See computeCoreBundleCacheKey for the exact inputs (corePkgMtimeMs detects
+// reinstalls; the schema counter is bumped when the generation pipeline
+// changes). Opt out with `NS_CORE_BUNDLE_NO_DISK_CACHE=1` (e.g. when
+// hand-editing core inside node_modules).
+// ============================================================================
+
+const CORE_BUNDLE_DISK_CACHE_SCHEMA = 1;
+
+function isCoreBundleDiskCacheDisabled(env: NodeJS.ProcessEnv = process.env): boolean {
+	const v = env.NS_CORE_BUNDLE_NO_DISK_CACHE;
+	return v === '1' || v === 'true';
+}
+
+export function computeCoreBundleCacheKey(input: { coreRoot: string; coreVersion: string; corePkgMtimeMs: number; platform: string; mode: string; flavor: string; defines: Record<string, string>; nsConfigJson: string; subs: readonly string[]; vitePackageVersion: string }): string {
+	const payload = JSON.stringify({
+		schema: CORE_BUNDLE_DISK_CACHE_SCHEMA,
+		coreRoot: input.coreRoot.replace(/\\/g, '/'),
+		coreVersion: input.coreVersion,
+		corePkgMtimeMs: input.corePkgMtimeMs,
+		platform: input.platform,
+		mode: input.mode,
+		flavor: input.flavor,
+		defines: input.defines,
+		nsConfigJson: input.nsConfigJson,
+		subs: input.subs,
+		vitePackageVersion: input.vitePackageVersion,
+	});
+	return createHash('sha1').update(payload).digest('hex');
+}
+
+function getCoreBundleCacheDir(projectRoot: string): string {
+	return path.join(projectRoot, 'node_modules', '.ns-vite');
+}
+
+function coreBundleCacheFileBase(platform: string, key: string): string {
+	return `core-bundle-${platform}-${key.slice(0, 12)}`;
+}
+
+export function tryLoadCoreBundleFromDisk(projectRoot: string, platform: string, key: string): CoreBundleState | null {
+	try {
+		const dir = getCoreBundleCacheDir(projectRoot);
+		const base = coreBundleCacheFileBase(platform, key);
+		const metaPath = path.join(dir, `${base}.json`);
+		const codePath = path.join(dir, `${base}.mjs`);
+		if (!existsSync(metaPath) || !existsSync(codePath)) return null;
+		const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
+		if (!meta || meta.schema !== CORE_BUNDLE_DISK_CACHE_SCHEMA || meta.key !== key) return null;
+		if (!Array.isArray(meta.subs)) return null;
+		const code = readFileSync(codePath, 'utf-8');
+		// Integrity check guards against partial writes / manual edits.
+		const hash = createHash('sha1').update(code).digest('hex');
+		if (hash !== meta.hash) return null;
+		return {
+			code,
+			subs: new Set(meta.subs.filter((s: unknown): s is string => typeof s === 'string')),
+			hash,
+			builtAt: typeof meta.builtAt === 'number' ? meta.builtAt : Date.now(),
+			buildMs: typeof meta.buildMs === 'number' ? meta.buildMs : 0,
+		};
+	} catch {
+		return null;
+	}
+}
+
+export function saveCoreBundleToDisk(projectRoot: string, platform: string, key: string, state: CoreBundleState, verbose?: boolean): void {
+	try {
+		const dir = getCoreBundleCacheDir(projectRoot);
+		mkdirSync(dir, { recursive: true });
+		const base = coreBundleCacheFileBase(platform, key);
+		// Prune stale generations for this platform (other platforms keep theirs
+		// so dual-platform dev caches both). A failed prune must not abort the
+		// save — a leftover generation in a cache directory is harmless.
+		try {
+			for (const name of readdirSync(dir)) {
+				if (name.startsWith(`core-bundle-${platform}-`) && !name.startsWith(base)) {
+					unlinkSync(path.join(dir, name));
+				}
+			}
+		} catch {}
+		writeFileSync(path.join(dir, `${base}.mjs`), state.code);
+		writeFileSync(
+			path.join(dir, `${base}.json`),
+			JSON.stringify({
+				schema: CORE_BUNDLE_DISK_CACHE_SCHEMA,
+				key,
+				hash: state.hash,
+				builtAt: state.builtAt,
+				buildMs: state.buildMs,
+				subs: Array.from(state.subs),
+			}),
+		);
+	} catch (error: any) {
+		if (verbose) {
+			console.warn(`[ns-core-bundle] disk cache write failed (non-fatal): ${error?.message || error}`);
+		}
+	}
+}
+
 // Platform-first extension order, mirroring Vite's `platformExtensions` in
 // configuration/base.ts so the bundle resolves the same physical files the
 // per-module bridge would (platform variant preferred over the bare one).
@@ -350,6 +453,43 @@ export async function generateCoreBundle(options: GenerateCoreBundleOptions): Pr
 		return out;
 	})();
 
+	// Disk cache probe — everything above (enumeration, defines, config JSON)
+	// is cheap; the esbuild pass below is the ~5-10s cost the cache avoids.
+	const diskCacheDisabled = isCoreBundleDiskCacheDisabled();
+	let cacheKey: string | null = null;
+	if (!diskCacheDisabled) {
+		let coreVersion = 'unknown';
+		let corePkgMtimeMs = 0;
+		try {
+			const corePkgPath = path.join(coreRoot, 'package.json');
+			const corePkg = JSON.parse(readFileSync(corePkgPath, 'utf-8'));
+			if (typeof corePkg?.version === 'string') coreVersion = corePkg.version;
+			corePkgMtimeMs = statSync(corePkgPath).mtimeMs;
+		} catch {
+			// Unreadable core package.json degrades the key inputs, not the
+			// probe — a reinstall then changes the mtime back to a real value.
+		}
+		cacheKey = computeCoreBundleCacheKey({
+			coreRoot,
+			coreVersion,
+			corePkgMtimeMs,
+			platform: String(platform),
+			mode: String(mode),
+			flavor: flavor ?? '',
+			defines,
+			nsConfigJson,
+			subs,
+			vitePackageVersion: getVitePackageVersion(),
+		});
+		const cached = tryLoadCoreBundleFromDisk(projectRoot, String(platform), cacheKey);
+		if (cached) {
+			if (verbose) {
+				console.log(`[ns-core-bundle] loaded from disk cache: ${cached.subs.size} subpaths, ${(cached.code.length / 1024).toFixed(0)}kb in ${Date.now() - t0}ms (hash ${cached.hash.slice(0, 8)}, key ${cacheKey.slice(0, 12)})`);
+			}
+			return cached;
+		}
+	}
+
 	const buildResult = await esbuild.build({
 		stdin: {
 			contents: entryCode,
@@ -398,6 +538,9 @@ export async function generateCoreBundle(options: GenerateCoreBundleOptions): Pr
 	};
 	if (verbose) {
 		console.log(`[ns-core-bundle] built ${subs.length} subpaths, ${(code.length / 1024).toFixed(0)}kb in ${state.buildMs}ms (hash ${hash.slice(0, 8)})`);
+	}
+	if (!diskCacheDisabled && cacheKey) {
+		saveCoreBundleToDisk(projectRoot, String(platform), cacheKey, state, verbose);
 	}
 	return state;
 }

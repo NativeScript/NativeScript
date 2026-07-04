@@ -1,6 +1,7 @@
 import type { ViteDevServer } from 'vite';
 import { resolveProjectMainEntryPath } from './vite-plugin.js';
 import { CORE_BUNDLE_PATH, isCorePerModuleServingEnabled } from './core-bundle.js';
+import { DEPS_BUNDLE_PATH, getSharedDepsBundleService } from './deps-bundle.js';
 import { getServerOrigin } from './server-origin.js';
 
 // `/__ns_dev__/boot-closure` — the server-computed cold-boot module closure.
@@ -25,16 +26,33 @@ export interface BootClosureGraphSource {
 	getGraphModuleIds(): string[];
 	/** Kick off (or join) the background initial graph population. */
 	ensureInitialGraphPopulationStarted(server: ViteDevServer): Promise<void>;
+	/**
+	 * Prefetchable request paths recorded from the most recent completed boot
+	 * (or a persisted recording from a prior session). When present the
+	 * closure is built from this list instead of the src-tree graph walk —
+	 * the recording covers `/ns/m/node_modules/...` bodies the graph walk
+	 * cannot see, which are otherwise fetched serially inside V8's
+	 * synchronous module walk. See boot-recording.ts.
+	 */
+	getRecordedBootPaths?(): string[] | null;
 }
 
-// Pure helper (unit-testable): graph ids → ordered, deduped absolute URL list.
-// The entry goes first so the deepest chain starts fetching immediately; the
-// /ns/rt and /ns/core bridges ride along since every app module imports them.
-// In core-bundle mode the single-eval `/ns/core-bundle.mjs` payload is the
-// biggest body in the boot closure, so it goes right after the entry — the
-// kickstart prewarm then downloads it in parallel with everything else
+/**
+ * Where the closure body list comes from: a prior boot's recording (the exact
+ * request set of a real boot, in V8 walk order — covers node_modules bodies
+ * the graph walk cannot see and avoids over-fetching lazily-routed src
+ * modules), or the walked graph module ids.
+ */
+export type BootClosureSource = { kind: 'recorded'; paths: readonly string[] } | { kind: 'graph'; moduleIds: readonly string[] };
+
+// Pure helper (unit-testable): closure source → ordered, deduped absolute URL
+// list. The entry goes first so the deepest chain starts fetching immediately;
+// the /ns/rt and /ns/core bridges ride along since every app module imports
+// them. In core-bundle mode the single-eval `/ns/core-bundle.mjs` payload is
+// the biggest body in the boot closure, so it goes right after the entry —
+// the kickstart prewarm then downloads it in parallel with everything else
 // instead of V8 discovering it mid-walk through the /ns/core shim.
-export function buildBootClosureUrls(options: { origin: string; entryPathname: string; graphModuleIds: readonly string[]; includeCoreBundle?: boolean }): string[] {
+export function buildBootClosureUrls(options: { origin: string; entryPathname: string; source: BootClosureSource; includeCoreBundle?: boolean; includeDepsBundle?: boolean }): string[] {
 	const origin = options.origin.replace(/\/$/, '');
 	const urls: string[] = [];
 	const seen = new Set<string>();
@@ -49,16 +67,72 @@ export function buildBootClosureUrls(options: { origin: string; entryPathname: s
 	if (options.includeCoreBundle) {
 		add(`${origin}${CORE_BUNDLE_PATH}`);
 	}
+	if (options.includeDepsBundle) {
+		add(`${origin}${DEPS_BUNDLE_PATH}`);
+	}
 	add(`${origin}/ns/rt`);
 	add(`${origin}/ns/core`);
-	for (const id of options.graphModuleIds) {
-		if (typeof id !== 'string' || !id.startsWith('/')) continue;
-		// Vue SFCs and other non-script assets are served through their own
-		// routes with their own identity; the /ns/m closure is script-only.
-		if (!SCRIPT_EXT_RE.test(id)) continue;
-		add(`${origin}/ns/m${id.replace(SCRIPT_EXT_RE, '')}`);
+	const source = options.source;
+	switch (source.kind) {
+		case 'recorded':
+			for (const p of source.paths) {
+				if (typeof p !== 'string' || !p.startsWith('/')) continue;
+				add(`${origin}${p}`);
+			}
+			break;
+		case 'graph':
+			for (const id of source.moduleIds) {
+				if (typeof id !== 'string' || !id.startsWith('/')) continue;
+				// Vue SFCs and other non-script assets are served through their
+				// own routes with their own identity; the /ns/m closure is
+				// script-only.
+				if (!SCRIPT_EXT_RE.test(id)) continue;
+				add(`${origin}/ns/m${id.replace(SCRIPT_EXT_RE, '')}`);
+			}
+			break;
+		default: {
+			const exhaustive: never = source;
+			throw new Error(`Unhandled boot closure source: ${JSON.stringify(exhaustive)}`);
+		}
 	}
 	return urls;
+}
+
+/**
+ * Shared closure resolution for the boot-closure and boot-archive routes:
+ * prefer a recorded boot; otherwise wait (bounded) for the background graph
+ * walk and expand graph ids. Returns the absolute URL list plus which source
+ * produced it (surfaced in the JSON payload for diagnostics).
+ */
+export async function resolveBootClosureUrls(server: ViteDevServer, source: BootClosureGraphSource, maxWaitMs: number): Promise<{ urls: string[]; source: BootClosureSource['kind'] }> {
+	const recordedPaths = source.getRecordedBootPaths?.() ?? null;
+	let closureSource: BootClosureSource;
+	if (recordedPaths?.length) {
+		// A recorded closure needs no graph, so it skips the wait entirely
+		// (fast restarts).
+		closureSource = { kind: 'recorded', paths: recordedPaths };
+	} else {
+		// Wait for the background graph walk, but never past the budget —
+		// partial closures are acceptable by contract.
+		await Promise.race([source.ensureInitialGraphPopulationStarted(server), new Promise<void>((resolve) => setTimeout(resolve, maxWaitMs))]);
+		closureSource = { kind: 'graph', moduleIds: source.getGraphModuleIds() };
+	}
+	const origin = getServerOrigin(server);
+	const projectRoot = server.config?.root || process.cwd();
+	const urls = buildBootClosureUrls({
+		origin,
+		entryPathname: resolveProjectMainEntryPath(projectRoot),
+		source: closureSource,
+		// If the bundle build later fails, the kickstart prefetch of this
+		// URL just gets a 503 body — prewarm tolerates failures, and the
+		// /ns/core shims never reference the bundle in that case.
+		includeCoreBundle: !isCorePerModuleServingEnabled(),
+		// The deps bundle is only listed once BUILT (the build is awaited at
+		// server start), so every boot is all-shims or all-per-module — a
+		// mid-boot flip would evaluate bundled modules twice.
+		includeDepsBundle: !!getSharedDepsBundleService(server)?.getState(),
+	});
+	return { urls, source: closureSource.kind };
 }
 
 export function registerBootClosureRoute(server: ViteDevServer, source: BootClosureGraphSource, options?: { maxWaitMs?: number }): void {
@@ -76,27 +150,13 @@ export function registerBootClosureRoute(server: ViteDevServer, source: BootClos
 				return;
 			}
 
-			// Wait for the background graph walk, but never past the budget —
-			// partial closures are acceptable by contract.
-			await Promise.race([source.ensureInitialGraphPopulationStarted(server), new Promise<void>((resolve) => setTimeout(resolve, maxWaitMs))]);
-
-			// Use the single trusted origin resolver — never the client-supplied
-			// `Host` header (see the import-map route and CLAUDE.md invariant 6:
-			// every device-reachable URL must be byte-identical to the origin
-			// baked into bundle.mjs).
-			const origin = getServerOrigin(server);
-			const projectRoot = server.config?.root || process.cwd();
-			const payload = {
-				urls: buildBootClosureUrls({
-					origin,
-					entryPathname: resolveProjectMainEntryPath(projectRoot),
-					graphModuleIds: source.getGraphModuleIds(),
-					// If the bundle build later fails, the kickstart prefetch of this
-					// URL just gets a 503 body — prewarm tolerates failures, and the
-					// /ns/core shims never reference the bundle in that case.
-					includeCoreBundle: !isCorePerModuleServingEnabled(),
-				}),
-			};
+			// Origin comes from the single trusted resolver inside
+			// `resolveBootClosureUrls` — never the client-supplied `Host` header
+			// (see the import-map route and CLAUDE.md invariant 6: every
+			// device-reachable URL must be byte-identical to the origin baked
+			// into bundle.mjs).
+			const resolved = await resolveBootClosureUrls(server, source, maxWaitMs);
+			const payload = { urls: resolved.urls, source: resolved.source };
 
 			res.setHeader('Content-Type', 'application/json');
 			res.statusCode = 200;

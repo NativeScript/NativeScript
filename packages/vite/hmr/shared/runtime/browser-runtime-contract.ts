@@ -54,11 +54,24 @@ export interface NsKickstartPrefetchResult {
 	ms: number;
 }
 
+/** One `{url, body}` pair seeded into the native prewarm cache (boot archive). */
+export interface NsSeedModuleBodyEntry {
+	url: string;
+	body: string;
+}
+
+export interface NsSeedModuleBodiesResult {
+	ok: boolean;
+	seeded: number;
+	bytes: number;
+}
+
 /**
- * The native dev-host contract — mechanism only. The runtime exposes six
- * primitives on the single `globalThis.__NS_DEV__` namespace object; every
- * policy concern (boot orchestration, import.meta.hot, full reload, CSS
- * apply, WebSocket protocol) lives in JS inside @nativescript/vite.
+ * The native dev-host contract — mechanism only. The runtime exposes its
+ * mechanism primitives on the single `globalThis.__NS_DEV__` namespace
+ * object; every policy concern (boot orchestration, import.meta.hot, full
+ * reload, CSS apply, WebSocket protocol) lives in JS inside
+ * @nativescript/vite.
  *
  * Every member is optional: a non-dev environment (or a test) may expose
  * none or only some of them, and callers degrade gracefully.
@@ -72,6 +85,14 @@ export interface NsRuntimeDevHostApi {
 	getLoadedModuleUrls?: () => string[];
 	/** `__NS_DEV__.kickstartPrefetch(urls)` — parallel HTTP body prewarm for an explicit URL list. */
 	kickstartPrefetch?: (urls: string[], options?: NsKickstartPrefetchOptions) => NsKickstartPrefetchResult | null;
+	/**
+	 * `__NS_DEV__.seedModuleBodies(entries)` — batch prewarm-cache seeding: the
+	 * bootstrap downloads `/__ns_dev__/boot-archive` (NDJSON) and seeds every
+	 * `{url, body}` into the prewarm cache in one call, behind the same
+	 * http(s)/JS-shape/allowlist gates as a kickstart fetch. Callers fall back
+	 * to `kickstartPrefetch(urls)` when absent or nothing seeded.
+	 */
+	seedModuleBodies?: (entries: NsSeedModuleBodyEntry[]) => NsSeedModuleBodiesResult | null;
 	/** `__NS_DEV__.setDevBootComplete` — flips the native cold-boot gate + `__NS_HMR_BOOT_COMPLETE__`. */
 	setDevBootComplete?: (value?: boolean) => void;
 	/** `__NS_DEV__.terminateAllWorkers` — drains `Caches::Workers`; returns the count terminated (main isolate only). */

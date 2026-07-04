@@ -1,9 +1,10 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { CORE_BUNDLE_PATH, buildCoreBundleEntryCode, buildCoreMainShimCode, buildCoreSubShimCode, createCoreBundleService, enumerateCoreModuleSubpaths, generateCoreBundle, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, resolveCoreRootForBundle } from './core-bundle.js';
+import { CORE_BUNDLE_PATH, buildCoreBundleEntryCode, buildCoreMainShimCode, buildCoreSubShimCode, computeCoreBundleCacheKey, createCoreBundleService, enumerateCoreModuleSubpaths, generateCoreBundle, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, resolveCoreRootForBundle, saveCoreBundleToDisk, tryLoadCoreBundleFromDisk } from './core-bundle.js';
 
 describe('isCorePerModuleServingEnabled', () => {
 	const standalone = () => false;
@@ -162,6 +163,88 @@ describe('shim codegen', () => {
 		const code = buildCoreSubShimCode('utils/lazy', [], true);
 		expect(code).toContain('export default __ns_core_sub_ns__.default;');
 		expect(code).not.toContain('export default __ns_core_sub_ns__;');
+	});
+});
+
+describe('core bundle disk cache', () => {
+	let projectRoot: string;
+
+	beforeEach(() => {
+		projectRoot = mkdtempSync(path.join(tmpdir(), 'ns-core-cache-'));
+	});
+
+	afterEach(() => {
+		rmSync(projectRoot, { recursive: true, force: true });
+	});
+
+	const baseKeyInput = {
+		coreRoot: '/proj/node_modules/@nativescript/core',
+		coreVersion: '9.1.0-alpha.11',
+		corePkgMtimeMs: 12345,
+		platform: 'ios',
+		mode: 'development',
+		flavor: 'angular',
+		defines: { __DEV__: 'true' },
+		nsConfigJson: '{}',
+		subs: ['application', 'ui/frame'],
+		vitePackageVersion: '8.0.0',
+	};
+
+	const makeState = (code: string) => ({
+		code,
+		subs: new Set(['application', 'ui/frame']),
+		hash: createHash('sha1').update(code).digest('hex'),
+		builtAt: 111,
+		buildMs: 222,
+	});
+
+	it('cache key changes when any input changes', () => {
+		const key = computeCoreBundleCacheKey(baseKeyInput);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput })).toBe(key);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, coreVersion: '9.1.0-alpha.12' })).not.toBe(key);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, platform: 'android' })).not.toBe(key);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, defines: { __DEV__: 'false' } })).not.toBe(key);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, subs: ['application'] })).not.toBe(key);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, nsConfigJson: '{"profiling":"timeline"}' })).not.toBe(key);
+	});
+
+	it('round-trips a saved bundle and misses on key change', () => {
+		const key = computeCoreBundleCacheKey(baseKeyInput);
+		const state = makeState('export const core = 1;');
+		saveCoreBundleToDisk(projectRoot, 'ios', key, state);
+
+		const loaded = tryLoadCoreBundleFromDisk(projectRoot, 'ios', key);
+		expect(loaded).not.toBeNull();
+		expect(loaded!.code).toBe(state.code);
+		expect(loaded!.hash).toBe(state.hash);
+		expect(Array.from(loaded!.subs)).toEqual(['application', 'ui/frame']);
+		expect(loaded!.builtAt).toBe(111);
+		expect(loaded!.buildMs).toBe(222);
+
+		const otherKey = computeCoreBundleCacheKey({ ...baseKeyInput, coreVersion: 'x' });
+		expect(tryLoadCoreBundleFromDisk(projectRoot, 'ios', otherKey)).toBeNull();
+	});
+
+	it('rejects corrupted payloads via the integrity hash', () => {
+		const key = computeCoreBundleCacheKey(baseKeyInput);
+		saveCoreBundleToDisk(projectRoot, 'ios', key, makeState('export const core = 1;'));
+		const dir = path.join(projectRoot, 'node_modules', '.ns-vite');
+		const mjs = readdirSync(dir).find((f) => f.endsWith('.mjs'))!;
+		writeFileSync(path.join(dir, mjs), 'tampered');
+		expect(tryLoadCoreBundleFromDisk(projectRoot, 'ios', key)).toBeNull();
+	});
+
+	it('prunes stale generations for the same platform but keeps other platforms', () => {
+		const keyA = computeCoreBundleCacheKey(baseKeyInput);
+		const keyB = computeCoreBundleCacheKey({ ...baseKeyInput, coreVersion: 'next' });
+		const androidKey = computeCoreBundleCacheKey({ ...baseKeyInput, platform: 'android' });
+		saveCoreBundleToDisk(projectRoot, 'ios', keyA, makeState('export const a = 1;'));
+		saveCoreBundleToDisk(projectRoot, 'android', androidKey, makeState('export const droid = 1;'));
+		saveCoreBundleToDisk(projectRoot, 'ios', keyB, makeState('export const b = 1;'));
+
+		expect(tryLoadCoreBundleFromDisk(projectRoot, 'ios', keyA)).toBeNull();
+		expect(tryLoadCoreBundleFromDisk(projectRoot, 'ios', keyB)).not.toBeNull();
+		expect(tryLoadCoreBundleFromDisk(projectRoot, 'android', androidKey)).not.toBeNull();
 	});
 });
 

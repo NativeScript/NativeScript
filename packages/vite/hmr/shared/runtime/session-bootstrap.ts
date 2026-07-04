@@ -1,4 +1,5 @@
 import { assertNsDevSessionDescriptor, readNsRuntimeDevHostApi, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
+import { BOOT_ARCHIVE_PATH, parseBootArchiveText } from './boot-archive-format.js';
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
 import { formatBootTimeline, publishBootTrace, type BootTrace } from './boot-timeline.js';
 import { applyMonotonicBootProgress, clearBootProgressState, computeBootImportProgress, formatBootImportDetail } from './boot-progress.js';
@@ -42,6 +43,47 @@ async function fetchBootClosureUrls(origin: string, verbose?: boolean): Promise<
 	} catch (error) {
 		if (verbose) console.info('[ns-entry] boot-closure fetch threw; kickstart will be skipped', error);
 		return [];
+	}
+}
+
+// Boot-archive seeding: download `/__ns_dev__/boot-archive` (NDJSON of
+// `{url, body}` lines) and seed every body into the native prewarm cache in
+// one `seedModuleBodies` call. Soft-fail everywhere: a missing endpoint, an
+// empty archive, or a seed that stores nothing returns null and the caller
+// falls back to the kickstart wave.
+type ArchiveSeedResult = { ok: boolean; seeded: number; bytes: number; ms: number } | null;
+
+async function runBootArchiveSeed(origin: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean): Promise<ArchiveSeedResult> {
+	if (typeof runtimeApi.seedModuleBodies !== 'function') return null;
+	const t0 = Date.now();
+	try {
+		const archiveUrl = `${origin.replace(/\/$/, '')}${BOOT_ARCHIVE_PATH}`;
+		const response = await fetch(archiveUrl);
+		if (!response.ok) {
+			if (verbose) console.info(`[ns-entry] boot-archive fetch failed (${response.status}); falling back to kickstart`);
+			return null;
+		}
+		const text = await response.text();
+		const entries = parseBootArchiveText(text);
+		if (!entries.length) {
+			if (verbose) console.info('[ns-entry] boot-archive empty; falling back to kickstart');
+			return null;
+		}
+		const result = runtimeApi.seedModuleBodies(entries);
+		const seeded = Number(result?.seeded || 0);
+		const bytes = Number(result?.bytes || 0);
+		if (!result?.ok || !seeded) {
+			if (verbose) console.info('[ns-entry] boot-archive seed stored nothing; falling back to kickstart');
+			return null;
+		}
+		const ms = Date.now() - t0;
+		if (verbose) {
+			console.info(`[ns-entry] boot archive seeded ${seeded} bodies (${(bytes / 1024).toFixed(0)}kb) in ${ms}ms`);
+		}
+		return { ok: true, seeded, bytes, ms };
+	} catch (error) {
+		if (verbose) console.info('[ns-entry] boot-archive seed threw; falling back to kickstart', error);
+		return null;
 	}
 }
 
@@ -310,18 +352,25 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		} catch {}
 		const stopBootImportHeartbeat = startBootImportHeartbeat(tBoot, verbose);
 		try {
-			// Server-computed boot closure → one parallel prewarm wave.
-			// Stamp the kickstart detail only when the runtime will
-			// actually run the prefetch, otherwise the placeholder would
-			// flash a misleading line on runtimes without the primitive.
-			if (typeof runtimeApi.kickstartPrefetch === 'function') {
+			// Prewarm the native module-body cache before V8 walks the graph.
+			// Preferred: the batch boot archive (one streamed download seeded
+			// via `seedModuleBodies`). Fallback: the server-computed boot
+			// closure → one parallel kickstart wave. Stamp the stage detail
+			// only when the runtime will actually do prewarm work, otherwise
+			// the placeholder would flash a misleading line.
+			if (typeof runtimeApi.seedModuleBodies === 'function' || typeof runtimeApi.kickstartPrefetch === 'function') {
 				setHmrBootStage('importing-main', {
 					detail: `prefetching transitive imports for ${session.entryUrl}…`,
 				});
-				const closureUrls = await fetchBootClosureUrls(session.origin, verbose);
-				const kickstartResult = runColdBootKickstart(closureUrls, runtimeApi, verbose);
-				if (kickstartResult) {
-					trace.kickstart = { ok: kickstartResult.ok, ms: kickstartResult.ms, meta: { fetched: kickstartResult.fetched } };
+				const archiveResult = await runBootArchiveSeed(session.origin, runtimeApi, verbose);
+				if (archiveResult) {
+					trace.kickstart = { ok: archiveResult.ok, ms: archiveResult.ms, meta: { mode: 'archive', seeded: archiveResult.seeded, bytes: archiveResult.bytes } };
+				} else if (typeof runtimeApi.kickstartPrefetch === 'function') {
+					const closureUrls = await fetchBootClosureUrls(session.origin, verbose);
+					const kickstartResult = runColdBootKickstart(closureUrls, runtimeApi, verbose);
+					if (kickstartResult) {
+						trace.kickstart = { ok: kickstartResult.ok, ms: kickstartResult.ms, meta: { mode: 'kickstart', fetched: kickstartResult.fetched } };
+					}
 				}
 			}
 			// JS boot orchestration: dev client first (installs the hot

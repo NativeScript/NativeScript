@@ -16,6 +16,8 @@ import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImp
 import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
+import { createNsMResponseMemo } from './ns-m-response-memo.js';
+import { getSharedDepsBundleService, registerDepsBundleRoute, type DepsBundleService } from './deps-bundle.js';
 import type { FrameworkServedModuleContext, FrameworkServerStrategy } from './framework-strategy.js';
 
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
@@ -39,6 +41,12 @@ export interface RegisterNsModuleServerRouteOptions {
 	sharedTransformRequest: SharedTransformRequestFn;
 	ensureInitialGraphPopulationStarted(server: ViteDevServer): void;
 	upsertGraphModule: UpsertGraphModuleFn;
+	/**
+	 * Injectable deps-bundle service (testability seam). When omitted, the
+	 * shared process-wide service is used — null when `NS_DEPS_PER_MODULE=1`
+	 * forces per-module node_modules serving.
+	 */
+	depsBundle?: DepsBundleService | null;
 }
 
 /**
@@ -48,6 +56,19 @@ export interface RegisterNsModuleServerRouteOptions {
  * single hottest route in the HMR server.
  */
 export function registerNsModuleServerRoute(server: ViteDevServer, options: RegisterNsModuleServerRouteOptions): void {
+	// Final-response memo: repeat serves of an unchanged module (app restarts,
+	// the boot-archive build, kickstart waves) skip the whole post-processing
+	// pipeline. Keyed by a hash of Vite's transform output, so HMR edits
+	// invalidate implicitly. `NS_VITE_HMR_DISABLE_NSM_MEMO=1` opts out.
+	const memoDisabled = process.env.NS_VITE_HMR_DISABLE_NSM_MEMO === '1' || process.env.NS_VITE_HMR_DISABLE_NSM_MEMO === 'true';
+	const responseMemo = createNsMResponseMemo();
+	// Deps bundle (see deps-bundle.ts): once a boot recording exists, the
+	// recorded node_modules closure is served as ONE esbuild payload and the
+	// canonical /ns/m/node_modules/... URLs become thin registry shims.
+	const depsBundle: DepsBundleService | null = options.depsBundle !== undefined ? options.depsBundle : getSharedDepsBundleService(server);
+	if (depsBundle) {
+		registerDepsBundleRoute(server, depsBundle);
+	}
 	server.middlewares.use(async (req, res, next) => {
 		try {
 			const urlObj = new URL(req.url || '', 'http://localhost');
@@ -132,17 +153,12 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				};
 				return next();
 			}
-			// Previously we awaited `populateInitialGraph(server)` here so
-			// graphVersion would be non-zero for the first /ns/m request.
-			// That gave deterministic URL tags but blocked the cold boot on a
-			// full src/ tree walk (hundreds of transformRequest calls, 3-6s).
-			//
-			// graphVersion now starts at 1 and stays stable during cold boot
-			// (see `upsertGraphModule`'s bumpVersion option and the inline
-			// comment at the graphVersion declaration). We kick off the
-			// initial population in the background so it doesn't block the
-			// first response. `handleHotUpdate` awaits the same promise so
-			// the first HMR event still sees a fully populated graph.
+			// graphVersion starts at 1 and stays stable during cold boot (see
+			// `upsertGraphModule`'s bumpVersion option and the inline comment
+			// at the graphVersion declaration), so the initial population can
+			// run in the background without blocking the first response.
+			// `handleHotUpdate` awaits the same promise so the first HMR
+			// event still sees a fully populated graph.
 			ensureInitialGraphPopulationStarted(server);
 			// Cold-boot counting lives in the leading boot-trace middleware
 			// (see `configureServer` — it records the request and tracks
@@ -230,6 +246,19 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				return;
 			}
 			if (!spec.startsWith('/')) spec = '/' + spec;
+
+			// Deps-bundle shim short-circuit: a bundled node_modules module is
+			// served as a thin registry shim (see deps-bundle.ts) — the whole
+			// transform pipeline below is skipped. Non-bundled specs (no
+			// recording yet, CJS files, build failure) fall through unchanged.
+			if (depsBundle && spec.includes('/node_modules/')) {
+				const shim = depsBundle.getShimForSpec(spec);
+				if (shim) {
+					res.statusCode = 200;
+					res.end(shim);
+					return;
+				}
+			}
 
 			// A JS/TS `import './x.css'` reaches the device as a module request;
 			// Vite's default CSS module needs a DOM, so it's a no-op on NativeScript.
@@ -443,6 +472,22 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 						res.end('export {}\n');
 						return;
 					}
+				}
+			}
+			// Final-response memo (see ns-m-response-memo.ts): identical
+			// (spec, transform output, context) → identical served body, so repeat
+			// serves skip the post-processing pipeline. The graph version in the
+			// context conservatively invalidates on any live edit — star-export
+			// expansion and the link-check read other modules, so this module's
+			// own transform hash is not sufficient.
+			const memoContext = `${strategy?.flavor || ''}|${getServerOrigin(server)}|${options.getGraphVersion()}|${resolvedCandidate || ''}`;
+			const memoKey = memoDisabled ? null : responseMemo.buildKey(spec, transformed.code, memoContext);
+			if (memoKey) {
+				const memoized = responseMemo.get(memoKey);
+				if (memoized !== undefined) {
+					res.statusCode = 200;
+					res.end(memoized);
+					return;
 				}
 			}
 			let code = transformed.code;
@@ -708,6 +753,11 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				if (verbose) {
 					console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
 				}
+			}
+			// Only fully successful serves are memoized — every early-return
+			// above (link-check throw module, 404 stubs, 500s) stays uncached.
+			if (memoKey) {
+				responseMemo.set(memoKey, code);
 			}
 			res.statusCode = 200;
 			res.end(code);

@@ -204,6 +204,66 @@ describe('browser runtime session bootstrap', () => {
 		expect(importMock).toHaveBeenCalledTimes(2);
 	});
 
+	it('prefers the boot archive over the kickstart when the runtime exposes seedModuleBodies', async () => {
+		const seedModuleBodies = vi.fn().mockReturnValue({ ok: true, seeded: 2, bytes: 42 });
+		const kickstart = vi.fn();
+		const importMock = vi.fn().mockResolvedValue({});
+		const archiveText = ['{"kind":"meta","version":1,"source":"recorded","urls":2}', '{"kind":"mod","url":"http://localhost:5173/ns/m/src/main","body":"export {};"}', 'junk-line', '{"kind":"mod","url":"http://localhost:5173/ns/rt","body":"export const rt = 1;"}'].join('\n');
+		const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+			if (url.endsWith('/__ns_dev__/session')) return sessionResponse();
+			if (url.endsWith('/__ns_dev__/boot-archive')) {
+				return { ok: true, text: async () => archiveText };
+			}
+			return { ok: true, json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }) };
+		});
+
+		vi.stubGlobal('__NS_DEV__', { seedModuleBodies, kickstartPrefetch: kickstart });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
+
+		expect(fetchMock).toHaveBeenCalledWith('http://localhost:5173/__ns_dev__/boot-archive');
+		expect(seedModuleBodies).toHaveBeenCalledWith([
+			{ url: 'http://localhost:5173/ns/m/src/main', body: 'export {};' },
+			{ url: 'http://localhost:5173/ns/rt', body: 'export const rt = 1;' },
+		]);
+		// Archive path replaces the kickstart wave entirely.
+		expect(kickstart).not.toHaveBeenCalled();
+		expect(fetchMock.mock.calls.filter((c) => String(c[0]).includes('boot-closure'))).toEqual([]);
+		// Seeding runs BEFORE the client/entry imports.
+		expect(seedModuleBodies.mock.invocationCallOrder[0]).toBeLessThan(importMock.mock.invocationCallOrder[0]);
+		const trace = getGlobalScope().__NS_BOOT_TRACE__;
+		expect(trace.kickstart).toMatchObject({ ok: true, meta: { mode: 'archive', seeded: 2, bytes: 42 } });
+	});
+
+	it('falls back to the kickstart wave when the boot archive fails or seeds nothing', async () => {
+		const seedModuleBodies = vi.fn().mockReturnValue({ ok: false, seeded: 0, bytes: 0 });
+		const kickstart = vi.fn().mockReturnValue({ ok: true, fetched: 1, ms: 5 });
+		const importMock = vi.fn().mockResolvedValue({});
+		const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+			if (url.endsWith('/__ns_dev__/session')) return sessionResponse();
+			if (url.endsWith('/__ns_dev__/boot-archive')) {
+				return { ok: true, text: async () => '{"kind":"mod","url":"http://localhost:5173/ns/m/src/main","body":"export {};"}' };
+			}
+			if (url.endsWith('/__ns_dev__/boot-closure')) {
+				return { ok: true, json: async () => ({ urls: ['http://localhost:5173/ns/m/src/main'] }) };
+			}
+			return { ok: true, json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }) };
+		});
+
+		vi.stubGlobal('__NS_DEV__', { seedModuleBodies, kickstartPrefetch: kickstart });
+		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+
+		expect(seedModuleBodies).toHaveBeenCalledTimes(1);
+		expect(kickstart).toHaveBeenCalledWith(['http://localhost:5173/ns/m/src/main'], { maxConcurrent: 16, timeoutMs: 30000 });
+		const trace = getGlobalScope().__NS_BOOT_TRACE__;
+		expect(trace.kickstart).toMatchObject({ ok: true, meta: { mode: 'kickstart', fetched: 1 } });
+	});
+
 	it('skips the import-map fetch when a prior boot stage has already configured the runtime', async () => {
 		const configureRuntime = vi.fn();
 		const importMock = vi.fn().mockResolvedValue({});

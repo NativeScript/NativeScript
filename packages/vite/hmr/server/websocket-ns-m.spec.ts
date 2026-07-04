@@ -60,6 +60,8 @@ function mount(overrides: Partial<RegisterNsModuleServerRouteOptions> = {}) {
 		collectImportDependencies: () => new Set<string>(),
 		ensureInitialGraphPopulationStarted,
 		upsertGraphModule,
+		// Per-module node_modules serving: the deps-bundle suite covers shims.
+		depsBundle: null,
 		...overrides,
 	};
 	registerNsModuleServerRoute(server, options);

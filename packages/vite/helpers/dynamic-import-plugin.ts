@@ -20,7 +20,9 @@ export function dynamicImportPlugin() {
 
 					// 2. Replace __vitePreload with simple implementation
 					if (chunk.code.includes('__vitePreload')) {
-						const vitePreloadStart = chunk.code.indexOf('const __vitePreload = function preload');
+						// Vite emits `const` or `var` depending on the output target.
+						const declMatch = /(?:const|var)\s+__vitePreload\s*=\s*function preload/.exec(chunk.code);
+						const vitePreloadStart = declMatch ? declMatch.index : -1;
 						if (vitePreloadStart !== -1) {
 							// Find the matching closing brace by counting braces
 							let braceCount = 0;
