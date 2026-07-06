@@ -200,6 +200,16 @@ type NsSolidHmrEvent = {
 	kind: 'solid';
 	changedFiles: string[];
 	boundaries: string[];
+	/**
+	 * Every module reachable from a changed file via the REVERSE import graph
+	 * (its importers, their importers, … up to the app entry). App-level
+	 * integrations (`startSolidApp` in `@nativescript/vite/solid-bootstrap`)
+	 * must evict this whole chain before re-importing the app root — module
+	 * identity is the URL, so any cached intermediate (e.g. `home.tsx`
+	 * importing a changed `listen-now.tsx`) would otherwise keep serving the
+	 * stale child to the fresh root.
+	 */
+	ancestors: string[];
 };
 type NsSolidHmrListener = (ev: NsSolidHmrEvent) => void;
 
@@ -1139,6 +1149,12 @@ async function processQueue(): Promise<void> {
 					// complete set in the listener event — framework integrations
 					// use it to map route boundaries → fresh component references.
 					const boundaries = new Set<string>();
+					// FULL reverse-import chain from every changed file up to the app
+					// entry (all importers, transitively — not just tsx ones). Emitted
+					// as `ev.ancestors` so app-level remount helpers can evict the
+					// whole chain: re-importing only the root would resolve cached
+					// intermediates and hand the fresh root a stale subtree.
+					const ancestors = new Set<string>();
 					// Solid .tsx components are self-accepting via solid-refresh's inline
 					// patchRegistry — re-importing them is sufficient. For non-component
 					// .ts utility modules, we must propagate up the import graph to find
@@ -1155,6 +1171,22 @@ async function processQueue(): Promise<void> {
 									reverseIndex.set(dep, arr);
 								}
 								arr.push(id);
+							}
+						}
+						// Pass 0: collect the FULL importer chain of every changed file
+						// (BFS up the reverse graph, no filtering). This feeds
+						// `ev.ancestors` for app-level remount helpers.
+						for (const id of drained) {
+							const queue = [id];
+							while (queue.length) {
+								const cur = queue.shift()!;
+								const importers = reverseIndex.get(cur);
+								if (!importers) continue;
+								for (const imp of importers) {
+									if (ancestors.has(imp)) continue;
+									ancestors.add(imp);
+									queue.push(imp);
+								}
 							}
 						}
 						// Pass 1: BFS from each non-tsx changed module up to tsx/jsx
@@ -1354,7 +1386,7 @@ async function processQueue(): Promise<void> {
 						}
 						if (VERBOSE) {
 							if (boundaries.size) console.log('[hmr][solid] propagated non-component change to', boundaries.size, 'boundaries', Array.from(boundaries));
-							console.log('[hmr][queue] Solid: modules re-imported, solid-refresh handles reactive update', drained);
+							console.log('[hmr][queue] Solid: modules re-imported; UI refresh is driven by the framework subscriber (router per-page remount or startSolidApp re-render)', drained);
 						}
 					} catch (e) {
 						if (VERBOSE) console.warn('[hmr][solid] propagation failed', e);
@@ -1380,6 +1412,7 @@ async function processQueue(): Promise<void> {
 							kind: 'solid',
 							changedFiles: drained.slice(),
 							boundaries: allBoundaries,
+							ancestors: Array.from(ancestors),
 						});
 					} catch (err) {
 						if (VERBOSE) console.warn('[hmr][solid] emit failed', err);

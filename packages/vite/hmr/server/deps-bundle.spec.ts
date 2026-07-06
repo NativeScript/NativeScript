@@ -1,10 +1,9 @@
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
-import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording } from './deps-bundle.js';
-import { clearVendorManifest, registerVendorManifest } from '../shared/vendor/registry.js';
+import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection } from './deps-bundle.js';
 
 describe('isDepsPerModuleServingEnabled', () => {
 	it('is off by default and on for 1/true', () => {
@@ -72,7 +71,6 @@ describe('computeDepsBundleCacheKey', () => {
 		defines: { __DEV__: 'true' },
 		entryKeys: ['node_modules/pkg-a/index.js'],
 		lockfile: 'package-lock.json:1:100',
-		vendorManifestHash: 'abc',
 		vitePackageVersion: '1.0.0',
 	};
 
@@ -80,11 +78,10 @@ describe('computeDepsBundleCacheKey', () => {
 		expect(computeDepsBundleCacheKey(base)).toBe(computeDepsBundleCacheKey({ ...base }));
 	});
 
-	it('changes when the entry set, lockfile, or vendor manifest changes', () => {
+	it('changes when the entry set or lockfile changes', () => {
 		const key = computeDepsBundleCacheKey(base);
 		expect(computeDepsBundleCacheKey({ ...base, entryKeys: ['node_modules/pkg-b/index.js'] })).not.toBe(key);
 		expect(computeDepsBundleCacheKey({ ...base, lockfile: 'package-lock.json:2:100' })).not.toBe(key);
-		expect(computeDepsBundleCacheKey({ ...base, vendorManifestHash: 'def' })).not.toBe(key);
 	});
 });
 
@@ -210,24 +207,27 @@ function createFixtureProject(): string {
 	// Transpiled CJS with static exports.NAME assignments.
 	write('node_modules/pkg-e/package.json', JSON.stringify({ name: 'pkg-e', version: '1.0.0', main: 'index.js' }));
 	write('node_modules/pkg-e/index.js', `'use strict';\nObject.defineProperty(exports, '__esModule', { value: true });\nexports.eOne = 1;\nexports.eTwo = 2;\n`);
-	// NativeScript-plugin-shaped transitive dep NOT in any vendor manifest:
-	// `resolveVendorRouting` answers 'vendor' for its bare root import, but the
-	// bundle must internalize it (single-ownership rule) — an external bare
-	// would resolve on-device to this bundle's own shim and cycle.
+	// NativeScript-plugin shape with a platform-suffixed bare root import
+	// (esbuild's own resolver misses `index.ios.js` roots).
 	write('node_modules/nativescript-widgets/package.json', JSON.stringify({ name: 'nativescript-widgets', version: '1.0.0', main: 'index' }));
 	write('node_modules/nativescript-widgets/index.ios.js', `export const Widget = 'ios-widget';\n`);
 	write('node_modules/nativescript-widgets/index.android.js', `export const Widget = 'android-widget';\n`);
 	write('node_modules/pkg-f/package.json', JSON.stringify({ name: 'pkg-f', version: '1.0.0', module: 'index.js' }));
 	write('node_modules/pkg-f/index.js', `import { Widget } from 'nativescript-widgets';\nexport const F = Widget;\n`);
-	// Vendor-manifest member whose deep file is ALSO recorded (the @ngrx/store
-	// shape): bundle membership must win over vendor externalization.
+	// Deep-entry package imported bare by a sibling (the @ngrx/store shape):
+	// the bare import must internalize onto the same bundled file.
 	write('node_modules/pkg-g/package.json', JSON.stringify({ name: 'pkg-g', version: '1.0.0', module: 'fesm/pkg-g.mjs' }));
 	write('node_modules/pkg-g/fesm/pkg-g.mjs', `export const StoreToken = 'g-store';\n`);
-	// Vendor-manifest member NOT recorded: stays external bare (vendor realm).
 	write('node_modules/pkg-i/package.json', JSON.stringify({ name: 'pkg-i', version: '1.0.0', module: 'index.js' }));
 	write('node_modules/pkg-i/index.js', `export const I = 'i';\n`);
 	write('node_modules/pkg-h/package.json', JSON.stringify({ name: 'pkg-h', version: '1.0.0', module: 'index.js' }));
 	write('node_modules/pkg-h/index.js', `import { StoreToken } from 'pkg-g';\nimport { I } from 'pkg-i';\nexport const H = StoreToken + I;\n`);
+	// Package shipping a stray root `index.ts` SOURCE whose relative imports
+	// don't exist in the published package (solid-navigation shape) — the
+	// declared entry (`main`) must win over the index fan-out.
+	write('node_modules/pkg-j/package.json', JSON.stringify({ name: 'pkg-j', version: '1.0.0', main: 'dist/index.js' }));
+	write('node_modules/pkg-j/index.ts', `export * from './src/not-shipped';\n`);
+	write('node_modules/pkg-j/dist/index.js', `export const J = 'j-dist';\n`);
 	return projectRoot;
 }
 
@@ -260,6 +260,11 @@ describe('resolveDepsEntriesFromRecording', () => {
 	it('resolves platform-suffixed files per platform', () => {
 		const entries = resolveDepsEntriesFromRecording(['/ns/m/node_modules/pkg-d/impl'], projectRoot, null, 'android');
 		expect(entries.map((e) => e.key)).toEqual(['node_modules/pkg-d/impl.android.js']);
+	});
+
+	it('prefers the declared package entry over a stray root index source (solid-navigation shape)', () => {
+		const entries = resolveDepsEntriesFromRecording(['/ns/m/node_modules/pkg-j'], projectRoot, null, 'ios');
+		expect(entries.map((e) => e.key)).toEqual(['node_modules/pkg-j/dist/index.js']);
 	});
 });
 
@@ -299,7 +304,7 @@ describe('generateDepsBundle', () => {
 		expect(state).toBeNull();
 	});
 
-	it('internalizes plugin-shaped bare imports that are not in the vendor manifest (single-ownership rule)', async () => {
+	it('internalizes plugin-shaped bare imports with platform-suffixed roots', async () => {
 		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths: ['/ns/m/node_modules/pkg-f/index.js'] });
 		expect(state).not.toBeNull();
 		// The platform-suffixed dep resolves and registers inside the bundle...
@@ -310,36 +315,110 @@ describe('generateDepsBundle', () => {
 		expect(state!.code).toContain('ios-widget');
 	});
 
-	describe('with a vendor manifest registered', () => {
-		beforeEach(() => {
-			registerVendorManifest({
-				version: 1,
-				createdAt: new Date().toISOString(),
-				hash: 'test-hash',
-				modules: { 'pkg-g': { id: 'pkg-g', exports: { '*': true } }, 'pkg-i': { id: 'pkg-i', exports: { '*': true } } },
-				aliases: {},
-			} as any);
+	it('internalizes every resolvable bare import — the bundle is the only node_modules realm', async () => {
+		const state = await generateDepsBundle({
+			projectRoot,
+			platform: 'ios',
+			mode: 'development',
+			flavor: 'typescript',
+			recordedPaths: ['/ns/m/node_modules/pkg-h/index.js', '/ns/m/node_modules/pkg-g/fesm/pkg-g.mjs'],
 		});
-		afterEach(() => clearVendorManifest());
+		expect(state).not.toBeNull();
+		// pkg-g's recorded fesm is the same file pkg-h's bare import resolves
+		// to: one bundled instance, no bare external.
+		expect(state!.keys).toContain('node_modules/pkg-g/fesm/pkg-g.mjs');
+		expect(state!.code).not.toContain('from "pkg-g"');
+		expect(state!.code).toContain('g-store');
+		// pkg-i was not recorded but is resolvable — discovered and
+		// internalized the same way.
+		expect(state!.keys).toContain('node_modules/pkg-i/index.js');
+		expect(state!.code).not.toContain('from "pkg-i"');
+	});
 
-		it('bundle membership wins over vendor externalization; non-members stay vendor-external', async () => {
-			const state = await generateDepsBundle({
-				projectRoot,
-				platform: 'ios',
-				mode: 'development',
-				flavor: 'typescript',
-				recordedPaths: ['/ns/m/node_modules/pkg-h/index.js', '/ns/m/node_modules/pkg-g/fesm/pkg-g.mjs'],
-			});
-			expect(state).not.toBeNull();
-			// pkg-g's recorded fesm is a bundle member: its bare import from pkg-h
-			// internalizes (a vendor external would evaluate a second realm).
-			expect(state!.keys).toContain('node_modules/pkg-g/fesm/pkg-g.mjs');
-			expect(state!.code).not.toContain('from "pkg-g"');
-			expect(state!.code).toContain('g-store');
-			// pkg-i is vendored and NOT a bundle member: stays external bare.
-			expect(state!.keys).not.toContain('node_modules/pkg-i/index.js');
-			expect(state!.code).toContain('from "pkg-i"');
-		});
+	it('prepends platform polyfills to the payload', async () => {
+		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths });
+		expect(state!.code).toContain('platform polyfills');
+	});
+});
+
+// ============================================================================
+// Vendor consolidation — seeding entries from the vendor collection and the
+// deps-backed /@nativescript/vendor.mjs module
+// ============================================================================
+
+function createVendorSeedFixture(): string {
+	const projectRoot = mkdtempSync(path.join(realpathSync(tmpdir()), 'ns-deps-vendorseed-'));
+	const write = (rel: string, contents: string) => {
+		const abs = path.join(projectRoot, rel);
+		mkdirSync(path.dirname(abs), { recursive: true });
+		writeFileSync(abs, contents);
+	};
+	write('package.json', JSON.stringify({ name: 'fixture-app', version: '1.0.0', dependencies: { 'nativescript-widgets': '1.0.0', 'pkg-c': '1.0.0' } }));
+	write('node_modules/nativescript-widgets/package.json', JSON.stringify({ name: 'nativescript-widgets', version: '1.0.0', main: 'index' }));
+	write('node_modules/nativescript-widgets/index.ios.js', `export const Widget = 'ios-widget';\n`);
+	write('node_modules/nativescript-widgets/index.android.js', `export const Widget = 'android-widget';\n`);
+	write('node_modules/pkg-c/package.json', JSON.stringify({ name: 'pkg-c', version: '1.0.0', module: 'dist/entry.mjs' }));
+	write('node_modules/pkg-c/dist/entry.mjs', `export const C = 3;\n`);
+	return projectRoot;
+}
+
+describe('resolveDepsEntriesFromVendorCollection', () => {
+	const projectRoot = createVendorSeedFixture();
+	afterAll(() => rmSync(projectRoot, { recursive: true, force: true }));
+
+	it('seeds package-root entries from package.json dependencies with platform-aware resolution', () => {
+		const seed = resolveDepsEntriesFromVendorCollection(projectRoot, null, 'ios', 'typescript');
+		expect(seed.vendorSpecToKey.get('nativescript-widgets')).toBe('node_modules/nativescript-widgets/index.ios.js');
+		expect(seed.vendorSpecToKey.get('pkg-c')).toBe('node_modules/pkg-c/dist/entry.mjs');
+		const specs = seed.entries.map((e) => e.spec);
+		expect(specs).toContain('/node_modules/nativescript-widgets');
+		expect(specs).toContain('/node_modules/pkg-c');
+	});
+
+	it('returns an empty seed when the project has no collectable dependencies', () => {
+		const emptyRoot = mkdtempSync(path.join(realpathSync(tmpdir()), 'ns-deps-empty-'));
+		writeFileSync(path.join(emptyRoot, 'package.json'), JSON.stringify({ name: 'empty', version: '1.0.0' }));
+		const seed = resolveDepsEntriesFromVendorCollection(emptyRoot, null, 'ios', 'typescript');
+		expect(seed.entries).toEqual([]);
+		expect(seed.vendorSpecToKey.size).toBe(0);
+		rmSync(emptyRoot, { recursive: true, force: true });
+	});
+});
+
+describe('buildDepsVendorRuntimeModule', () => {
+	const vendorSpecToKey = new Map([
+		['pkg-c', 'node_modules/pkg-c/dist/entry.mjs'],
+		['pkg-d/index', 'node_modules/pkg-d/index.ios.js'],
+	]);
+
+	it('imports the deps bundle and maps vendor specifiers to registry namespaces', () => {
+		const code = buildDepsVendorRuntimeModule(vendorSpecToKey, { modules: {}, aliases: {} });
+		expect(code).toContain(`import "${DEPS_BUNDLE_PATH}";`);
+		expect(code).toContain('globalThis.__NS_DEPS_MODULES__');
+		expect(code).toContain(`"pkg-c": __nsDepsReg["node_modules/pkg-c/dist/entry.mjs"]`);
+		expect(code).toContain('export const __nsVendorModuleMap');
+		expect(code).toContain('export const vendorManifest');
+		expect(code).toContain('export default vendorManifest;');
+	});
+
+	it('adds manifest-canonical aliases so wrapper lookups hit either form', () => {
+		const code = buildDepsVendorRuntimeModule(vendorSpecToKey, { modules: {}, aliases: { 'pkg-d/index': 'pkg-d' } });
+		expect(code).toContain(`"pkg-d/index": __nsDepsReg["node_modules/pkg-d/index.ios.js"]`);
+		expect(code).toContain(`"pkg-d": __nsDepsReg["node_modules/pkg-d/index.ios.js"]`);
+	});
+
+	it('maps @nativescript/core through a bare import (the /ns/core bridge realm) when the manifest lists it', () => {
+		const withCore = buildDepsVendorRuntimeModule(vendorSpecToKey, { modules: { '@nativescript/core': { id: '@nativescript/core', exports: {} } }, aliases: {} });
+		expect(withCore).toContain(`import * as __ns_core__ from "@nativescript/core";`);
+		expect(withCore).toContain(`"@nativescript/core": __ns_core__,`);
+		const withoutCore = buildDepsVendorRuntimeModule(vendorSpecToKey, { modules: {}, aliases: {} });
+		expect(withoutCore).not.toContain('__ns_core__');
+	});
+
+	it('embeds the manifest payload for installVendorBootstrap', () => {
+		const manifest = { modules: {}, aliases: {}, hash: 'abc123' };
+		const code = buildDepsVendorRuntimeModule(vendorSpecToKey, manifest as any);
+		expect(code).toContain('"hash":"abc123"');
 	});
 });
 
@@ -393,11 +472,28 @@ describe('createDepsBundleService', () => {
 		expect(service.getShimForSpec('/src/app.ts')).toBeNull();
 	});
 
-	it('returns null from ensureBuilt when no recording exists', async () => {
+	it('returns null from ensureBuilt when there is no recording and nothing to vendor-seed', async () => {
 		const service = makeService(null);
 		expect(await service.ensureBuilt()).toBeNull();
 		expect(service.getState()).toBeNull();
 		expect(service.hasFailed()).toBe(false);
+	});
+
+	it('builds from the vendor collection alone when no recording exists (first boot)', async () => {
+		const seedRoot = createVendorSeedFixture();
+		const service = createDepsBundleService({
+			projectRoot: seedRoot,
+			platform: 'ios',
+			mode: 'development',
+			flavor: 'typescript',
+			getRecordedPaths: () => null,
+		});
+		const state = await service.ensureBuilt();
+		expect(state).not.toBeNull();
+		expect(state!.keys).toContain('node_modules/nativescript-widgets/index.ios.js');
+		expect(state!.vendorSpecToKey.get('nativescript-widgets')).toBe('node_modules/nativescript-widgets/index.ios.js');
+		expect(service.getShimForSpec('/node_modules/pkg-c')).toContain('export const C = ');
+		rmSync(seedRoot, { recursive: true, force: true });
 	});
 
 	it('stops handing out new shims after disableServingForSession but keeps the payload servable', async () => {

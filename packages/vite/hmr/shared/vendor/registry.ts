@@ -20,6 +20,23 @@ export function clearVendorManifest() {
 	registry.hash = null;
 }
 
+/**
+ * Dev-session vendor payload provider. When the deps bundle is active it
+ * registers a provider here that serves `/@nativescript/vendor.mjs` as a thin
+ * module backed by `/ns/deps-bundle.mjs` — ONE evaluated node_modules payload,
+ * with `__nsVendorRegistry` populated from the deps registry. A `null` return
+ * (not built / disabled) falls back to the standalone vendor bundle build.
+ */
+let vendorRuntimeModuleProvider: (() => string | null) | null = null;
+
+export function setVendorRuntimeModuleProvider(provider: (() => string | null) | null): void {
+	vendorRuntimeModuleProvider = provider;
+}
+
+export function getVendorRuntimeModule(): string | null {
+	return vendorRuntimeModuleProvider ? vendorRuntimeModuleProvider() : null;
+}
+
 export function getVendorManifest(): VendorManifest | null {
 	return registry.manifest;
 }

@@ -33,6 +33,18 @@ export interface StartSolidAppOptions {
 	 * `App` or default (e.g. `/src/native/app`). Re-imported fresh on each cycle.
 	 */
 	rootModule: string;
+	/**
+	 * Optional `@nativescript/core` `Frame` class. Pass it when the app uses a
+	 * topmost-frame router (e.g. solid-navigation's `StackRouter` with
+	 * `useTopMostFrame`): those routers re-run their initial navigation against
+	 * `Frame.topmost()` when the fresh tree mounts. During a remount that would
+	 * target a STALE frame from the old tree (often a nested tab frame) and push
+	 * a backstack entry per edit. With `Frame` provided, the remount render
+	 * redirects such navigations to the ROOT frame (`document.documentElement`)
+	 * with `clearHistory: true`, so each HMR apply swaps the whole tree in place
+	 * and disposes the old pages instead of stacking on top of them.
+	 */
+	Frame?: any;
 }
 
 const SCRIPT_EXT = /\.(?:tsx|jsx|ts|js|mjs|mts|cjs|cts)$/i;
@@ -79,19 +91,22 @@ function evictionUrls(origin: string, specs: string[]): string[] {
  * app entry, e.g.:
  *
  *   import './utils/dom';
- *   import { Application } from '@nativescript/core';
+ *   import { Application, Frame } from '@nativescript/core';
  *   import { render } from '@nativescript-community/solid-js';
  *   import { document } from 'dominative';
  *   import { startSolidApp } from '@nativescript/vite/solid-bootstrap';
  *   import { App } from './app';
  *
- *   startSolidApp({ Application, render, document, root: App, rootModule: '/src/native/app' });
+ *   // `Frame` is optional — pass it when using a topmost-frame router
+ *   // (solid-navigation) so HMR remounts replace the root page in place.
+ *   startSolidApp({ Application, render, document, Frame, root: App, rootModule: '/src/native/app' });
  */
 export function startSolidApp(options: StartSolidAppOptions): void {
-	const { Application, render, document, root, rootModule } = options;
+	const { Application, render, document, root, rootModule, Frame } = options;
 
 	let dispose: (() => void) | undefined;
 	const mount = (Component: any) => {
+		const isRemount = !!dispose;
 		if (dispose) {
 			try {
 				dispose();
@@ -108,12 +123,56 @@ export function startSolidApp(options: StartSolidAppOptions): void {
 				console.log('[ns-solid-hmr] body clear error', err);
 			}
 		}
-		dispose = render(Component, document.body);
+		// Solid flushes onMount effects synchronously inside render(), so a
+		// topmost-frame router's initial navigation happens within this window.
+		const closeNavWindow = isRemount ? openRemountNavRedirect(Frame, document) : undefined;
+		try {
+			dispose = render(Component, document.body);
+		} finally {
+			closeNavWindow?.();
+		}
 	};
 
 	Application.run({ create: () => (mount(root), document) });
 
 	installHmrRemount(rootModule, mount);
+}
+
+/**
+ * While the fresh tree renders during an HMR remount, rewrite page navigations
+ * (`frame.navigate({ create })`) to target the ROOT frame with
+ * `clearHistory: true`. Topmost-frame routers (solid-navigation) resolve
+ * `Frame.topmost()` at navigation time — mid-remount that is a stale frame from
+ * the OLD tree (e.g. a tab's nested frame), so without the redirect each HMR
+ * apply would nest the new app inside the old one and grow the backstack.
+ * Clearing history on the root frame also disposes the old page hierarchy,
+ * which runs the per-page Solid disposers registered by the router.
+ * Returns a close function that restores the original `navigate`.
+ */
+function openRemountNavRedirect(Frame: any, document: any): (() => void) | undefined {
+	const proto = Frame?.prototype;
+	const rootFrame = document?.documentElement;
+	if (!proto || typeof proto.navigate !== 'function' || !rootFrame) return undefined;
+	const original = proto.navigate;
+	let closed = false;
+	proto.navigate = function (entry: any) {
+		// Only redirect navigations that target a STALE frame — one that already
+		// shows a page from the old tree (the router's `Frame.topmost()` pick, or
+		// the root frame itself). Frames created by the fresh render (e.g. tab
+		// item frames receiving their first page via dominative's insert) have no
+		// `currentPage` yet and must navigate themselves, untouched.
+		if (entry && typeof entry === 'object' && typeof entry.create === 'function' && this.currentPage) {
+			console.log('[ns-solid-hmr] remount: redirecting navigation to root frame (clearHistory)');
+			return original.call(rootFrame, { ...entry, clearHistory: true, animated: false });
+		}
+		// eslint-disable-next-line prefer-rest-params -- forwards all args verbatim to the original
+		return original.apply(this, arguments as any);
+	};
+	return () => {
+		if (closed) return;
+		closed = true;
+		proto.navigate = original;
+	};
 }
 
 function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
@@ -133,10 +192,14 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 		}
 		busy = true;
 		try {
-			// Evict the app entry + changed files so their re-imports resolve to fresh
-			// code. We deliberately do NOT evict the router / route-tree chain: keeping
-			// it cached preserves the live router (and the user's current route).
-			// Inline `__NS_DEV__` read — this module is served to the device
+			// Evict the app entry + changed files + every module on the reverse-import
+			// chain between them (`ev.ancestors`). Module identity is the URL, so if an
+			// intermediate importer (e.g. `home.tsx` importing a changed
+			// `listen-now.tsx`) stayed cached, re-importing the root would splice the
+			// STALE subtree back into the fresh tree and the edit would never render.
+			// TanStack Router route files are excluded from the shell path by the
+			// subscriber below, so its live router chain is untouched for route-only
+			// edits. Inline `__NS_DEV__` read — this module is served to the device
 			// standalone, so it stays import-free.
 			const g: any = globalThis;
 			const invalidate = g.__NS_DEV__?.invalidateModules;
@@ -199,9 +262,16 @@ function installHmrRemount(rootModule: string, mount: (c: any) => void): void {
 				const ids = [...changed, ...boundaries].filter(isSource);
 				// Route-only edits are hot-swapped in place by the router's per-page
 				// remount — don't re-render the whole app (which would fight it). Only
-				// re-render for shell / shared-component / app-entry edits.
+				// re-render for shell / shared-component / app-entry edits. The
+				// shell/route decision is made from changed + boundaries ONLY;
+				// ancestors always reach up to the app entry, so including them here
+				// would misclassify every route edit as a shell edit.
 				if (!ids.some(isShell)) return;
-				schedule(ids);
+				// Evict the full importer chain (changed → … → entry) so the root
+				// re-import below rebuilds the whole tree from fresh modules instead
+				// of splicing cached stale intermediates back in.
+				const ancestors = ev && Array.isArray(ev.ancestors) ? ev.ancestors.filter(isSource) : [];
+				schedule([...ids, ...ancestors]);
 			});
 			subscribed = true;
 			return;

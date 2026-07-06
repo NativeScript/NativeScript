@@ -47,7 +47,24 @@ export interface RegisterNsModuleServerRouteOptions {
 	 * forces per-module node_modules serving.
 	 */
 	depsBundle?: DepsBundleService | null;
+	/**
+	 * Live-broadcast gate for AnalogJS `/@ng/component` metadata fetches.
+	 * When provided, only fetches whose `(c, t)` pair matches a recorded
+	 * `angular:component-update` broadcast are delegated to Analog's
+	 * middleware; everything else — most importantly the boot-time
+	 * `<Class>_HmrLoad(Date.now())` fetch every compiled component issues on
+	 * evaluation — is answered with the empty no-update stub. See the ledger
+	 * in `websocket-angular-hot-update.ts` for the full failure mode this
+	 * prevents (post-edit relaunch → boot-time `ɵɵreplaceMetadata` on the
+	 * root component → white screen).
+	 */
+	isLiveAngularComponentUpdateFetch?(componentId: string, timestamp: number): boolean;
 }
+
+// Minimal valid ESM body for "no component update available": the iOS HTTP
+// ESM loader (`LoadHttpModuleForUrl`) rejects empty bodies even on HTTP 200,
+// so an actual empty response would crash the component's `_HmrLoad` import.
+const NG_COMPONENT_NO_UPDATE_STUB = '// [ns:m] no Angular component update for this request — substituted with valid empty module to satisfy iOS HTTP loader (rejects empty bodies)\nexport {};\n';
 
 /**
  * Registers the `/ns/m/*` device module server: the HTTP endpoint every
@@ -121,6 +138,33 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// Non-empty bodies (real HMR update payloads after a save)
 			// pass through unchanged.
 			if (urlObj.pathname.includes('/@ng/component')) {
+				// Boot-fetch gate: every compiled component runs
+				// `<Class>_HmrLoad(Date.now())` on evaluation, so every cold
+				// boot hits this route for every component. Analog serves a
+				// REAL metadata-replacement payload whenever the component's
+				// module was invalidated at any point in the dev server's
+				// lifetime (Vite's `lastInvalidationTimestamp` never resets),
+				// and a boot-time `ɵɵreplaceMetadata` on the root component
+				// tears down the PageRouterOutlet frame — the "relaunch after
+				// an HMR edit → white screen" failure. Only fetches echoing a
+				// forwarded `angular:component-update` broadcast's exact
+				// `(id, t)` pair may reach Analog; a fresh boot already
+				// evaluates the latest transformed source and never needs a
+				// replacement payload.
+				const isLiveUpdateFetch = options.isLiveAngularComponentUpdateFetch;
+				if (isLiveUpdateFetch) {
+					const componentId = urlObj.searchParams.get('c') || '';
+					const timestampRaw = urlObj.searchParams.get('t');
+					// `Number(null)` is 0 — require an actual `t` param.
+					const timestamp = timestampRaw ? Number(timestampRaw) : NaN;
+					if (!componentId || !Number.isFinite(timestamp) || !isLiveUpdateFetch(componentId, timestamp)) {
+						res.statusCode = 200;
+						res.setHeader('Content-Type', 'text/javascript');
+						res.setHeader('Cache-Control', 'no-cache');
+						res.end(NG_COMPONENT_NO_UPDATE_STUB);
+						return;
+					}
+				}
 				const chunks: string[] = [];
 				const origEnd = res.end.bind(res);
 				let ended = false;
@@ -144,7 +188,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 					captureChunk(chunk);
 					let body = chunks.join('');
 					if (body.length === 0) {
-						body = '// [ns:m] empty Angular component metadata — substituted with valid empty module to satisfy iOS HTTP loader (rejects empty bodies)\nexport {};\n';
+						body = NG_COMPONENT_NO_UPDATE_STUB;
 					}
 					try {
 						res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'));

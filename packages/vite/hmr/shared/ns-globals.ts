@@ -88,7 +88,7 @@ declare global {
 	var __nsAttemptBackRemount: (() => unknown) | undefined;
 	var __nsHmrRequestModule: ((spec: string) => Promise<string>) | undefined;
 	var __nsGetModuleExports: ((id: string) => any) | undefined;
-	var __ns_solid_hmr_subscribe: ((fn: (ev: { kind: 'solid'; changedFiles: string[]; boundaries: string[] }) => void) => () => void) | undefined;
+	var __ns_solid_hmr_subscribe: ((fn: (ev: { kind: 'solid'; changedFiles: string[]; boundaries: string[]; ancestors?: string[] }) => void) => () => void) | undefined;
 
 	// ── Native / framework / registry objects (intentionally `any`) ──
 	var __NS_HMR_DEV_OVERLAY__: any;

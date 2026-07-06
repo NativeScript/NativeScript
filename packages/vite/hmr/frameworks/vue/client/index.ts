@@ -598,6 +598,61 @@ function hmrComponentHasRequiredProps(comp: any): boolean {
 	return false;
 }
 
+// ── HMR replace-navigation window ────────────────────────────────────────────
+// An in-place SFC reload (`__VUE_HMR_RUNTIME__.reload`) unmounts the old
+// component subtree and mounts the fresh one. When the component's root is a
+// `<Page>` hosted by a `<Frame>`, nativescript-vue's Frame nodeOps `insert`
+// calls `frame.navigate({ create })` — a forward navigation that PUSHES a new
+// backstack entry. Every HMR apply would grow the backstack and surface a Back
+// button in the ActionBar (tapping it walks back through stale pre-edit
+// renders). While a reload flush is in flight, convert those page navigations
+// into `replacePage` (core's replace-navigation, the same primitive LiveSync
+// uses) so the fresh Page takes the current entry's place and the user's real
+// backstack is preserved untouched.
+let hmrReplaceNavInstalled = false;
+let hmrReplaceNavWindowDepth = 0;
+
+function installHmrFrameReplaceNavigation(): boolean {
+	if (hmrReplaceNavInstalled) return true;
+	try {
+		const FrameCtor: any = getCore('Frame');
+		const proto = FrameCtor?.prototype;
+		if (!proto || typeof proto.navigate !== 'function' || typeof proto.replacePage !== 'function') return false;
+		const originalNavigate = proto.navigate;
+		proto.navigate = function (entry: any) {
+			// Only page-entry navigations on a frame that is already showing a
+			// page are rewritten — first mounts and user-driven navigations
+			// (outside the window) flow through untouched.
+			if (hmrReplaceNavWindowDepth > 0 && entry && typeof entry === 'object' && typeof entry.create === 'function' && this.currentPage) {
+				try {
+					if (__NS_ENV_VERBOSE__) console.log('[hmr][vue] reload window: replacePage instead of forward navigate');
+					this.replacePage({ create: entry.create, animated: false });
+					return;
+				} catch (e) {
+					console.warn('[hmr][vue] replacePage during reload failed; falling back to navigate', e);
+				}
+			}
+			// eslint-disable-next-line prefer-rest-params -- forwards all args verbatim to the patched original (arity-preserving)
+			return originalNavigate.apply(this, arguments as any);
+		};
+		hmrReplaceNavInstalled = true;
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function openHmrReplaceNavWindow(): () => void {
+	if (!installHmrFrameReplaceNavigation()) return () => {};
+	hmrReplaceNavWindowDepth++;
+	let closed = false;
+	return () => {
+		if (closed) return;
+		closed = true;
+		hmrReplaceNavWindowDepth = Math.max(0, hmrReplaceNavWindowDepth - 1);
+	};
+}
+
 /**
  * In-place Vue HMR. The assembled SFC stamps a stable `comp.__hmrId`, so Vue's
  * registerHMR has a record for every mounted instance. Calling the real
@@ -613,7 +668,25 @@ function tryInPlaceVueReload(comp: any): boolean {
 		const rt: any = (getGlobalScope() as any).__VUE_HMR_RUNTIME__;
 		const id = comp && comp.__hmrId;
 		if (!rt || typeof rt.reload !== 'function' || !id) return false;
-		rt.reload(id, comp);
+		// Vue queues the remount on its scheduler (microtask flush) — the
+		// Frame navigation happens inside that flush, not synchronously in
+		// reload(). Hold the replace-navigation window through the flush:
+		// nextTick resolves after the job queue drains; the timeout is a
+		// safety net when nextTick is unavailable.
+		const closeWindow = openHmrReplaceNavWindow();
+		try {
+			rt.reload(id, comp);
+		} catch (e) {
+			closeWindow();
+			throw e;
+		}
+		try {
+			const nextTick = (getGlobalScope() as any).nextTick;
+			if (typeof nextTick === 'function') {
+				nextTick(() => closeWindow());
+			}
+		} catch {}
+		setTimeout(closeWindow, 500);
 		if (__NS_ENV_VERBOSE__) console.log('[hmr][vue] in-place reload', id);
 		return true;
 	} catch (e) {

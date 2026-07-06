@@ -2,7 +2,7 @@ import type { Plugin, ViteDevServer } from 'vite';
 import * as esbuild from 'esbuild';
 import path from 'path';
 import { createHash } from 'crypto';
-import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
+import { registerVendorManifest, clearVendorManifest, getVendorManifest, getVendorRuntimeModule } from './registry.js';
 import { collectVendorModules } from './manifest-collect.js';
 import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
 import type { Platform } from '../../../helpers/platform-types.js';
@@ -106,15 +106,42 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 		clearVendorManifest();
 	};
 
+	// Manifest registration without the esbuild payload build. The dev serve
+	// process only needs the manifest (module ids + aliases) for the import
+	// map and vendor-routing decisions — the payload itself is deps-backed
+	// (see getVendorRuntimeModule). The full build stays lazy, reached only
+	// through the fallback serving path or the build-process virtual modules.
+	const ensureManifestRegistered = () => {
+		if (getVendorManifest()) return;
+		const collected = collectVendorModules(options.projectRoot, options.platform, options.flavor);
+		const hash = createHash('sha1').update(JSON.stringify(collected.entries)).digest('hex');
+		registerVendorManifest(buildManifest(collected.entries, hash));
+	};
+
 	const respondWithVendor = async (_server: ViteDevServer, req: any, res: any) => {
 		try {
-			const result = await ensureResult('server');
 			if (req.url === SERVER_VENDOR_PATH) {
+				// ONE node_modules payload: when the deps bundle is active, the
+				// vendor module is a thin view over /ns/deps-bundle.mjs.
+				const depsBacked = getVendorRuntimeModule();
+				if (depsBacked !== null) {
+					res.setHeader('Content-Type', 'application/javascript');
+					res.end(depsBacked);
+					return true;
+				}
+				const result = await ensureResult('server');
 				res.setHeader('Content-Type', 'application/javascript');
 				res.end(createVendorBundleRuntimeModule(result));
 				return true;
 			}
 			if (req.url === SERVER_MANIFEST_PATH) {
+				const registered = getVendorManifest();
+				if (registered) {
+					res.setHeader('Content-Type', 'application/json');
+					res.end(JSON.stringify(registered, null, 2));
+					return true;
+				}
+				const result = await ensureResult('server');
 				res.setHeader('Content-Type', 'application/json');
 				res.end(JSON.stringify(result.manifest, null, 2));
 				return true;
@@ -135,7 +162,11 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 		configResolved() {},
 
 		async configureServer(server) {
-			await ensureResult('server-start');
+			try {
+				ensureManifestRegistered();
+			} catch (error) {
+				console.error('[vendor] failed to register vendor manifest at server start', error);
+			}
 
 			server.middlewares.use(async (req, res, next) => {
 				if (req.url === SERVER_VENDOR_PATH || req.url === SERVER_MANIFEST_PATH) {
@@ -155,9 +186,11 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 					return;
 				}
 				resetCache();
-				ensureResult('package.json change').catch((error) => {
-					console.error('[vendor] failed to regenerate vendor bundle', error);
-				});
+				try {
+					ensureManifestRegistered();
+				} catch (error) {
+					console.error('[vendor] failed to regenerate vendor manifest', error);
+				}
 			});
 		},
 

@@ -337,6 +337,75 @@ export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoo
 	return Array.from(urls);
 }
 
+// ============================================================================
+// `/@ng/component` live-broadcast ledger
+// ============================================================================
+//
+// Every compiled component body (Analog `liveReload` mode) runs
+// `<Class>_HmrLoad(Date.now())` at module-evaluation time — meaning EVERY
+// cold boot fetches `/@ng/component?c=<id>&t=<now>` for every component.
+// Analog's middleware serves the real `_UpdateMetadata` payload whenever the
+// component's module carries a `lastInvalidationTimestamp` in Vite's module
+// graph — state that persists until the dev server restarts. After any TS
+// edit whose invalidation wave touches component modules, the NEXT app
+// relaunch therefore boot-fetches real metadata-replacement payloads, and
+// `ɵɵreplaceMetadata` runs after the root view commits. For the bootstrap
+// component that recreates the root LView and tears down the
+// `<page-router-outlet>` frame — the "relaunch to white screen" failure. The
+// websocket bridge's root-component guard only covers the *event* path;
+// boot-time fetches bypass it entirely.
+//
+// A fresh boot always evaluates the latest transformed source, so a boot-time
+// replacement is never needed on NativeScript. The only legitimate consumer
+// of a real payload is a live `angular:component-update` event — and the
+// device echoes the server's exact broadcast timestamp back as `t`. This
+// ledger records every broadcast the bridge forwards to `/ns-hmr` clients;
+// the `/ns/m` middleware only delegates `(c, t)` pairs that match a recorded
+// broadcast to Analog and answers everything else with the empty no-update
+// stub (see `registerNsModuleServerRoute`'s
+// `isLiveAngularComponentUpdateFetch`).
+
+/**
+ * Decode an Analog component id (`src%2Fapp%2F…%40Class`) to its canonical
+ * form (`src/app/….ts@Class`) — the shape `URLSearchParams` yields for the
+ * `c` query param on the device's metadata fetch.
+ */
+export function normalizeAngularComponentUpdateId(raw: unknown): string | null {
+	if (typeof raw !== 'string' || !raw) return null;
+	try {
+		return decodeURIComponent(raw);
+	} catch {
+		return raw;
+	}
+}
+
+const MAX_RECORDED_TIMESTAMPS_PER_COMPONENT = 16;
+
+export interface AngularComponentUpdateLedger {
+	/** Record a forwarded `angular:component-update` payload (`{ id, timestamp }`). */
+	record(data: unknown): void;
+	/** True when `(componentId, timestamp)` matches a recorded broadcast. */
+	isLive(componentId: string, timestamp: number): boolean;
+}
+
+export function createAngularComponentUpdateLedger(): AngularComponentUpdateLedger {
+	const broadcasts = new Map<string, number[]>();
+	return {
+		record(data) {
+			const id = normalizeAngularComponentUpdateId((data as { id?: unknown } | null | undefined)?.id);
+			const timestamp = (data as { timestamp?: unknown } | null | undefined)?.timestamp;
+			if (!id || typeof timestamp !== 'number' || !Number.isFinite(timestamp)) return;
+			const list = broadcasts.get(id) ?? [];
+			list.push(timestamp);
+			if (list.length > MAX_RECORDED_TIMESTAMPS_PER_COMPONENT) list.shift();
+			broadcasts.set(id, list);
+		},
+		isLive(componentId, timestamp) {
+			return (broadcasts.get(componentId) ?? []).includes(timestamp);
+		},
+	};
+}
+
 export function shouldSuppressDefaultViteHotUpdate(options: { flavor: string; file: string }): boolean {
 	if (options.flavor !== 'angular') {
 		return false;

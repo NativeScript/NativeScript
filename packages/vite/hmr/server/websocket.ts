@@ -19,7 +19,7 @@ import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
-import { normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
+import { createAngularComponentUpdateLedger, normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
 import { canonicalizeTransformRequestCacheKey } from './transform-cache-invalidation.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
@@ -152,6 +152,12 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	let wss: WebSocketServer | null = null;
 	let sharedTransformRequest!: SharedTransformRequestRunner;
 	const pendingAngularReloadSuppressions = new Map<string, PendingAngularReloadSuppressionEntry>();
+	// Records every `angular:component-update` broadcast actually forwarded to
+	// /ns-hmr clients so the /ns/m `/@ng/component` route can distinguish live
+	// update fetches (which echo the broadcast's exact `(id, t)`) from
+	// boot-time `_HmrLoad(Date.now())` fetches, which must get the no-update
+	// stub (see the ledger docs in websocket-angular-hot-update.ts).
+	const angularComponentUpdateLedger = createAngularComponentUpdateLedger();
 	const sfcFileMap = new Map<string, string>();
 	const depFileMap = new Map<string, string>();
 	let vendorBootstrapDone = false;
@@ -363,6 +369,13 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 								console.log('[hmr-ws][bridge] dropped angular:component-update for root component — reboot path owns the root view (PageRouterOutlet frame)');
 							}
 							return;
+						}
+						// Ledger for the /@ng/component boot-fetch gate: only
+						// broadcasts that actually reach devices are recorded,
+						// so root-component updates (dropped above) can never
+						// match a metadata fetch.
+						if (normalized.event === 'angular:component-update') {
+							angularComponentUpdateLedger.record(normalized.data);
 						}
 						const stringified = JSON.stringify(normalized);
 						let recipients = 0;
@@ -636,15 +649,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				upsertGraphModule: (id, code, deps, opts) => {
 					moduleGraph.upsert(id, code, deps, opts);
 				},
+				isLiveAngularComponentUpdateFetch: (componentId, timestamp) => angularComponentUpdateLedger.isLive(componentId, timestamp),
 			});
 
-			// Deps bundle (see deps-bundle.ts): built from the persisted boot
-			// recording and AWAITED here so the ready/not-ready decision is
-			// latched before the server accepts device requests — every boot is
-			// then all-shims or all-per-module, never a mid-boot mix (which
-			// would evaluate bundled modules twice). The vendor manifest is
-			// already registered (vendorManifestPlugin's configureServer runs
-			// first), so vendor-routing externalization decisions are final.
+			// Deps bundle (see deps-bundle.ts): the single node_modules payload,
+			// built from the vendor collection + the persisted boot recording
+			// and AWAITED here so the ready/not-ready decision is latched
+			// before the server accepts device requests — every boot is then
+			// all-shims or all-per-module, never a mid-boot mix (which would
+			// evaluate bundled modules twice). It also backs the dev-session
+			// /@nativescript/vendor.mjs module (see buildDepsVendorRuntimeModule).
 			const depsBundle = getSharedDepsBundleService(server);
 			if (depsBundle) {
 				const tDeps = Date.now();

@@ -134,5 +134,48 @@ describe('registerNsModuleServerRoute', () => {
 			expect(next).toHaveBeenCalledTimes(1);
 			expect(res.body).toBe(payload);
 		});
+
+		describe('live-broadcast gate (isLiveAngularComponentUpdateFetch)', () => {
+			it('answers a boot-time fetch (no matching broadcast) with the no-update stub without delegating', async () => {
+				const gate = vi.fn(() => false);
+				const { handler } = mount({ isLiveAngularComponentUpdateFetch: gate });
+				const res = makeRes();
+				const next = vi.fn();
+				await handler({ url: '/ns/m/src/app/@ng/component?c=src%2Fapp%2Fapp.component.ts%40AppComponent&t=1783270000000' }, res, next);
+				expect(next).not.toHaveBeenCalled();
+				// The gate sees the URLSearchParams-decoded id and numeric timestamp.
+				expect(gate).toHaveBeenCalledWith('src/app/app.component.ts@AppComponent', 1783270000000);
+				expect(res.statusCode).toBe(200);
+				expect(res.headers['Content-Type']).toBe('text/javascript');
+				expect(res.body).toContain('export {};');
+			});
+
+			it('delegates to downstream when the fetch matches a recorded broadcast', async () => {
+				const { handler } = mount({
+					isLiveAngularComponentUpdateFetch: (id, t) => id === 'src/app/foo.component.ts@FooComponent' && t === 42,
+				});
+				const res = makeRes();
+				const payload = 'export default function FooComponent_UpdateMetadata() {}';
+				const next = vi.fn(() => {
+					res.end(payload);
+				});
+				await handler({ url: '/ns/m/src/app/@ng/component?c=src%2Fapp%2Ffoo.component.ts%40FooComponent&t=42' }, res, next);
+				expect(next).toHaveBeenCalledTimes(1);
+				expect(res.body).toBe(payload);
+			});
+
+			it('answers fetches with a missing or non-numeric timestamp with the stub', async () => {
+				const gate = vi.fn(() => true);
+				const { handler } = mount({ isLiveAngularComponentUpdateFetch: gate });
+				for (const url of ['/ns/m/src/app/@ng/component?c=src%2Fapp%2Ffoo.component.ts%40FooComponent', '/ns/m/src/app/@ng/component?c=src%2Fapp%2Ffoo.component.ts%40FooComponent&t=abc', '/ns/m/src/app/@ng/component?t=42']) {
+					const res = makeRes();
+					const next = vi.fn();
+					await handler({ url }, res, next);
+					expect(next).not.toHaveBeenCalled();
+					expect(res.body).toContain('export {};');
+				}
+				expect(gate).not.toHaveBeenCalled();
+			});
+		});
 	});
 });

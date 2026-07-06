@@ -389,7 +389,11 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 					parts.push(`export function render(){ const f = (typeof __ns_getRender==='function' ? __ns_getRender() : (__ns_sfc__ && __ns_sfc__.render)); return typeof f==='function' ? f.apply(this, arguments) : undefined; }`);
 					parts.push(`export default __ns_sfc__`);
 					let inlineCode = parts.filter(Boolean).join('\n');
-					inlineCode = processCodeForDevice(inlineCode, false, true);
+					// Pass the SFC path as sourceId so the import.meta.hot prelude is
+					// injected — fallback template code can retain plugin-vue's
+					// `import.meta.hot.accept(...)` block, which must not evaluate
+					// against an undefined hot context.
+					inlineCode = processCodeForDevice(inlineCode, false, true, false, base);
 					try {
 						inlineCode = ensureDestructureCoreImports(inlineCode);
 					} catch {}
@@ -447,7 +451,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 						outParts.push('export function render(){ const f = (typeof __ns_getRender==="function" ? __ns_getRender() : (typeof __ns_render==="function" ? __ns_render : (__ns_sfc__ && __ns_sfc__.render))); return typeof f === "function" ? f.apply(this, arguments) : undefined; }');
 						outParts.push('export default __ns_sfc__');
 						let inlineCode2 = outParts.filter(Boolean).join('\n');
-						inlineCode2 = processCodeForDevice(inlineCode2, false, true);
+						inlineCode2 = processCodeForDevice(inlineCode2, false, true, false, base);
 						try {
 							inlineCode2 = ensureDestructureCoreImports(inlineCode2);
 						} catch {}
