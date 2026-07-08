@@ -48,9 +48,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// by App Transport Security. A `data:` URL inlined in the bundle
 	// sidesteps all three since DevTools handles it without any network
 	// request. Production builds keep their configured devtool unchanged.
+
+	let defaultSourceMap: Config.DevTool = 'inline-source-map';
+
 	function useSourceMapFiles() {
 		if (mode === 'development') {
-			env.sourceMap = 'inline-source-map';
+			defaultSourceMap = 'source-map';
 		}
 	}
 	// determine target output by @nativescript/* runtime version
@@ -160,8 +163,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
-		const defaultSourceMap = 'inline-source-map';
-
 		if (typeof map === 'undefined') {
 			// source-maps disabled in production by default
 			// enabled with --env.sourceMap=<type>
