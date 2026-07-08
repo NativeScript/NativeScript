@@ -1,3 +1,13 @@
+## 5.0.36 (2026-07-08)
+
+### 🩹 Fixes
+
+- **webpack:** restore source map files and always respect env.sourceMap ([#11303](https://github.com/NativeScript/NativeScript/pull/11303))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 5.0.35 (2026-04-29)
 
 ### 🩹 Fixes
