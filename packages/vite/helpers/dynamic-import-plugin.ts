@@ -39,10 +39,13 @@ export function dynamicImportPlugin() {
 										const before = chunk.code.substring(0, vitePreloadStart);
 										const after = chunk.code.substring(functionEnd);
 
-										// Simple implementation that just calls baseModule()
+										// Simple implementation that just calls baseModule().
+										// Log the stack when present — a bare Error stringifies to
+										// message-only, which hides WHICH module failed and turns
+										// dev-session triage into guesswork.
 										const replacement = `const __vitePreload = function preload(baseModule, deps, importerUrl) {
       return baseModule().catch(err => {
-        console.error("Dynamic import error:", err);
+        console.error("Dynamic import error:", err && err.stack ? err.stack : err);
         throw err;
       });
     }`;

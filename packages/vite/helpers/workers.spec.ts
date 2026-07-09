@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { angularWorkerUrlPreservePlugin, tsFallbackTransformPlugin, viteWorkerAssetPathToNsMUrl, workerHmrUrlPlugin } from './workers.js';
+import { angularWorkerUrlPreservePlugin, neutralizeWorkerImportMeta, tsFallbackTransformPlugin, viteWorkerAssetPathToNsMUrl, workerHmrUrlPlugin } from './workers.js';
 
 // --- viteWorkerAssetPathToNsMUrl ---------------------------------------
 //
@@ -863,5 +863,60 @@ describe('angularWorkerUrlPreservePlugin (no-Angular environment graceful degrad
 		const plugin = angularWorkerUrlPreservePlugin({ verbose: false });
 		expect(() => (plugin.config as any)()).not.toThrow();
 		expect(() => (plugin.configResolved as any)()).not.toThrow();
+	});
+});
+
+// --- neutralizeWorkerImportMeta -----------------------------------------
+//
+// Worker chunks are classic scripts; any code-level `import.meta` token is a
+// compile-time SyntaxError on device ("Cannot compile script"). The transform
+// must remove every member-access form while leaving string-literal
+// occurrences (acorn error messages etc.) untouched. The vm.Script assertions
+// mirror the exact compile gate the NS worker bootstrap applies.
+describe('neutralizeWorkerImportMeta', () => {
+	it('returns null for modules without import.meta (no-op fast path)', () => {
+		expect(neutralizeWorkerImportMeta('export const a = 1;')).toBeNull();
+	});
+
+	it('substitutes .url and .dirname with static worker-safe values', () => {
+		const out = neutralizeWorkerImportMeta('const u = import.meta.url; const d = import.meta.dirname;');
+		expect(out?.code).toBe('const u = "file:///app/"; const d = "";');
+	});
+
+	it('neutralizes bracket member access (the @nativescript/angular hmr view-cache pattern)', () => {
+		const input = ['function readImportMetaHot() { try { return import.meta["hot"]; } catch { return undefined; } }', "if (import.meta['webpackHot']) { import.meta['webpackHot'].decline(); }"].join('\n');
+		const out = neutralizeWorkerImportMeta(input);
+		expect(out?.code).not.toContain('import.meta');
+		expect(out?.code).toContain('return (undefined);');
+		expect(out?.code).toContain('if ((undefined))');
+	});
+
+	it('neutralizes dot member access beyond .url/.dirname (.hot, .env, ...)', () => {
+		const out = neutralizeWorkerImportMeta('const h = import.meta.hot; const e = import.meta.env;');
+		expect(out?.code).toBe('const h = (undefined); const e = (undefined);');
+	});
+
+	it('leaves bare import.meta inside string literals untouched', () => {
+		// acorn's parser error messages — rewriting these corrupts library data,
+		// and strings cannot break classic-script compilation.
+		const input = 'this.raise(pos, "Cannot use \'import.meta\' outside a module");';
+		const out = neutralizeWorkerImportMeta(input);
+		expect(out?.code).toBe(input);
+	});
+
+	it('never adds or removes lines (line-level source mappings stay valid)', () => {
+		const input = ['const a = import.meta.url;', 'const b = import.meta["hot"];', 'const c = import.meta.env;'].join('\n');
+		const out = neutralizeWorkerImportMeta(input);
+		expect(out?.code.split('\n')).toHaveLength(3);
+	});
+
+	it('produces classic-script-compilable output from a realistic hmr-helper module', async () => {
+		const vm = await import('node:vm');
+		const input = ['function readImportMetaHot() {', '	try {', '		return import.meta["hot"];', '	} catch {', '		return undefined;', '	}', '}', 'function hasImportMetaHot() {', '	try {', '		return !!import.meta["hot"];', '	} catch {', '		return false;', '	}', '}', 'if (import.meta["webpackHot"]) {', '	import.meta["webpackHot"].decline();', '}', 'const base = import.meta.url;'].join('\n');
+		// Before: compiling as a classic script must fail — this is the exact
+		// failure mode the transform exists to prevent.
+		expect(() => new vm.Script(input)).toThrow(/import\.meta/);
+		const out = neutralizeWorkerImportMeta(input);
+		expect(() => new vm.Script(out!.code)).not.toThrow();
 	});
 });

@@ -370,13 +370,19 @@ export default async function startEntry(opts: EntryOpts) {
 		// imports (plus the style-scope preload) are independent HTTP GETs. We
 		// fire them in parallel so the boot path is bounded by the slowest
 		// payload rather than the sum.
-		const configureRuntime = readNsRuntimeDevHostApi(globalThis).configureRuntime;
+		let configureRuntime = readNsRuntimeDevHostApi(globalThis).configureRuntime;
 		const g = globalThis;
 		const importMapPromise: Promise<void> = (async () => {
 			if (typeof configureRuntime !== 'function') {
-				if (VERBOSE) {
-					console.info('[ns-entry] runtime configure hook not available; skipping import map');
-				}
+				// Re-read fresh — an earlier snapshot may predate the runtime
+				// installing `__NS_DEV__` (observed on older runtimes).
+				configureRuntime = readNsRuntimeDevHostApi(globalThis).configureRuntime;
+			}
+			if (typeof configureRuntime !== 'function') {
+				// NOT verbose-gated: without the import map every bare specifier
+				// in served modules is unresolvable and the session degrades into
+				// an undebuggable stall. Surface the contract violation loudly.
+				console.error('[ns-entry] __NS_DEV__.configureRuntime is unavailable — the import map cannot be installed and bare-specifier imports WILL fail. Update @nativescript/ios to a runtime that installs the __NS_DEV__ dev host API at context creation.');
 				return;
 			}
 			if (g.__NS_IMPORT_MAP_CONFIGURED__ === true) {

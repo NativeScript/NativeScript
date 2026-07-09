@@ -1,6 +1,7 @@
 import * as esbuild from 'esbuild';
 import path from 'path';
 import { readFile } from 'fs/promises';
+import { createRequire } from 'node:module';
 import { getAngularLinkerFactory, runAngularLinker } from '../../frameworks/angular/build/shared-linker.js';
 import { vendorModuleShim } from './vendor-device-shim.js';
 
@@ -192,6 +193,108 @@ export function createSolidJsxEsbuildPlugin(projectRoot: string): esbuild.Plugin
  * contain `\p{` / `\P{` pay the parse/regenerate cost, and any failure falls
  * through to the untransformed source rather than aborting the build.
  */
+/**
+ * Resolve node-builtin specifiers to the project's installed npm polyfill
+ * package when one exists (`buffer`, `events`, `process`, `punycode`, ...).
+ *
+ * The deps/vendor builds externalize node builtins because the device runtime
+ * cannot resolve them — but several builtin names are ALSO real npm packages
+ * that browser-targeting dependencies install and import by name (e.g.
+ * feross/buffer: `import { Buffer } from 'buffer'`). Leaving those external
+ * emits a bare `from "buffer"` in the served ESM bundle, which the device
+ * cannot resolve either — instantiation of the ENTIRE dev-session graph then
+ * fails ("The requested module 'buffer' does not provide an export named
+ * 'Buffer'"). When the project has the package installed, bundle it like any
+ * other dependency; only truly unresolvable builtins stay external.
+ *
+ * Node's `require.resolve('buffer')` prefers the CORE module over an
+ * installed package of the same name, so the probe goes through
+ * `<name>/package.json` (which core modules don't have) and lets esbuild
+ * finish entry resolution from the package directory.
+ */
+// Builtin names that commonly exist as installed npm polyfill packages.
+// Mirrors the NODE_BUILTINS externalization lists in deps-bundle/core-bundle.
+export const NODE_BUILTIN_POLYFILL_CANDIDATES: readonly string[] = ['assert', 'buffer', 'console', 'constants', 'domain', 'events', 'http', 'https', 'os', 'path', 'process', 'punycode', 'querystring', 'stream', 'string_decoder', 'sys', 'timers', 'tty', 'url', 'util', 'vm', 'zlib'];
+
+export function createNodeBuiltinPolyfillEsbuildPlugin(projectRoot: string, builtins: readonly string[] = NODE_BUILTIN_POLYFILL_CANDIDATES): esbuild.Plugin {
+	const projectRequire = createRequire(path.join(projectRoot, 'package.json'));
+	// name → package dir, or null when no installed polyfill exists.
+	const pkgDirCache = new Map<string, string | null>();
+	const escaped = builtins.map((b) => b.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'));
+	const filter = new RegExp(`^(?:node:)?(?:${escaped.join('|')})$`);
+	return {
+		name: 'ns-node-builtin-polyfill',
+		setup(build) {
+			build.onResolve({ filter }, async (args) => {
+				if (args.pluginData?.nsBuiltinPolyfillProbe) return undefined;
+				const name = args.path.replace(/^node:/, '');
+				let pkgDir = pkgDirCache.get(name);
+				if (pkgDir === undefined) {
+					try {
+						pkgDir = path.dirname(projectRequire.resolve(`${name}/package.json`));
+					} catch {
+						pkgDir = null;
+					}
+					pkgDirCache.set(name, pkgDir);
+				}
+				if (!pkgDir) return undefined; // no installed polyfill → stay external
+				const probe = await build.resolve('./', {
+					resolveDir: pkgDir,
+					kind: args.kind,
+					importer: args.importer,
+					pluginData: { nsBuiltinPolyfillProbe: true },
+				});
+				if (probe.errors.length > 0 || !probe.path || probe.external) return undefined;
+				return { path: probe.path };
+			});
+		},
+	};
+}
+
+/**
+ * Stub webpack-loader-prefixed specifiers (`nativescript-worker-loader!./x`,
+ * `raw-loader!...`, chained `a!b!./x`) to an empty module.
+ *
+ * Legacy NS 6/7-era plugins still ship branches like
+ * `require("nativescript-worker-loader!./commercial-worker.js")` that are
+ * dead code at runtime behind `global.TNS_WEBPACK >= 5` checks. webpack
+ * tolerates the syntax; esbuild resolves `require()` specifiers eagerly, so a
+ * single loader-prefixed specifier anywhere in a dependency hard-fails the
+ * ENTIRE vendor/deps bundle with "Could not resolve" — even when the app
+ * never imports that package (the deps closure scans every app dependency).
+ *
+ * Loader syntax can never be valid outside webpack, so resolve such
+ * specifiers into a stub module that evaluates to `undefined` — exactly what
+ * the dead webpack-4 branch would observe on a webpack-5/vite runtime.
+ */
+export function createWebpackLoaderStubEsbuildPlugin(): esbuild.Plugin {
+	return {
+		name: 'ns-webpack-loader-stub',
+		setup(build) {
+			build.onResolve({ filter: /!/ }, (args) => {
+				const spec = args.path;
+				// Only treat it as webpack loader syntax when the request starts
+				// with a loader reference: optional `!`/`!!`/`-!` prefix followed
+				// by a bare (non-relative, non-absolute) name containing `!`.
+				// Relative/absolute paths that merely contain `!` are left to the
+				// normal resolver.
+				const withoutPrefix = spec.replace(/^-?!!?/, '');
+				const bang = withoutPrefix.indexOf('!');
+				if (bang <= 0) return undefined;
+				const loaderRef = withoutPrefix.slice(0, bang);
+				if (loaderRef.startsWith('.') || loaderRef.startsWith('/') || /^[A-Za-z]:[\\/]/.test(loaderRef)) {
+					return undefined;
+				}
+				return { path: spec, namespace: 'ns-webpack-loader-stub' };
+			});
+			build.onLoad({ filter: /.*/, namespace: 'ns-webpack-loader-stub' }, () => ({
+				contents: 'module.exports = undefined;',
+				loader: 'js',
+			}));
+		},
+	};
+}
+
 export function createUnicodeRegexEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 	// Lazy-load Babel and the transform so the cost is only paid when a vendored
 	// package actually ships property-escape regexes.

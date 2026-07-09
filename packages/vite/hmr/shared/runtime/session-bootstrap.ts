@@ -194,10 +194,24 @@ function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
 }
 
 async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
-	if (typeof runtimeApi.configureRuntime !== 'function') {
-		if (verbose) {
-			console.info('[ns-entry] runtime configure hook unavailable; skipping import map bootstrap');
-		}
+	let configureRuntime = runtimeApi.configureRuntime;
+	if (typeof configureRuntime !== 'function') {
+		// The caller may have captured `__NS_DEV__` before the runtime finished
+		// installing it (observed on older runtimes where the dev host API was
+		// not yet available at context creation). Re-read it fresh — a stale
+		// `{}` snapshot must not decide the fate of the whole dev session.
+		configureRuntime = readNsRuntimeDevHostApi(getGlobalScope()).configureRuntime;
+	}
+	if (typeof configureRuntime !== 'function') {
+		// NOT verbose-gated on purpose. Without the import map, every bare
+		// specifier in served modules (e.g. `@nativescript/core` inside the
+		// vendor view) is unresolvable and the dev session degrades into an
+		// undebuggable stall. Surface the contract violation loudly with the
+		// remediation, then continue so file-based flows still work.
+		console.error('[ns-entry] __NS_DEV__.configureRuntime is unavailable — the import map cannot be installed and bare-specifier imports WILL fail. Update @nativescript/ios to a runtime that installs the __NS_DEV__ dev host API at context creation.');
+		setHmrBootStage('configuring-import-map', {
+			detail: 'runtime configure hook unavailable — import map skipped (bare imports will fail)',
+		});
 		return;
 	}
 
@@ -228,7 +242,7 @@ async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: N
 		throw new Error('Invalid NativeScript import map payload');
 	}
 
-	runtimeApi.configureRuntime({
+	configureRuntime({
 		importMap: config.importMap,
 		volatilePatterns: Array.isArray(config.volatilePatterns) ? config.volatilePatterns : [],
 	});

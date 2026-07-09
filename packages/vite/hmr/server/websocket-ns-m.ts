@@ -348,8 +348,19 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// overwhelm Vite with concurrent work. Slow-transform warnings start only
 			// when the transform actually begins executing, and requests stay pending
 			// until Vite returns a real result.
-			const transformWithTimeout = (url: string, timeoutMs = 120000): Promise<TransformResult | null> => {
-				return sharedTransformRequest(url, timeoutMs);
+			const transformWithTimeout = async (url: string, timeoutMs = 120000): Promise<TransformResult | null> => {
+				const r = await sharedTransformRequest(url, timeoutMs);
+				// A type-only .ts module legitimately transforms to EMPTY code
+				// (e.g. a workspace lib's `interfaces.ts` holding only `export
+				// type ...`). Every candidate gate below tests `r?.code`
+				// truthiness, so '' would cascade through all fallbacks into a
+				// 404 "transform miss" — and one 404 in the entry graph fails
+				// the whole dev-session boot. Normalize to the canonical empty
+				// ESM module instead.
+				if (r && typeof r.code === 'string' && r.code.trim() === '') {
+					return { ...r, code: 'export {}\n' };
+				}
+				return r;
 			};
 			if (!transformed?.code) {
 				for (const cand of transformCandidates) {
@@ -388,7 +399,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 						const rid = await server.pluginContainer?.resolveId?.(bare, undefined);
 						const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
 						if (ridStr) {
-							const r = await sharedTransformRequest(ridStr);
+							const r = await transformWithTimeout(ridStr);
 							if (r?.code) {
 								transformed = r;
 								resolvedCandidate = ridStr;
@@ -495,7 +506,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 						const resolved = await server.pluginContainer?.resolveId?.(spec, undefined);
 						const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
 						if (resolvedId) {
-							const r = await server.transformRequest(resolvedId);
+							const r = await transformWithTimeout(resolvedId);
 							if (r?.code) {
 								transformed = r;
 								resolvedCandidate = resolvedId;

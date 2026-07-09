@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import ts from 'typescript';
-import { transformNativeClassSource } from '../helpers/nativeclass-transform.js';
+import { isNativeESClassesEnabled, transformNativeClassSource } from '../helpers/nativeclass-transform.js';
 import { postCleanupNativeClass } from '../helpers/nativeclass-transformer-plugin.js';
 
 const SAMPLE_TS = `
@@ -346,5 +346,39 @@ export class FooImpl extends NSObject {
 		const sf = ts.createSourceFile('/check.js', code, ts.ScriptTarget.ES2017, true, ts.ScriptKind.JS);
 		const hasTopLevelReturn = sf.statements.some((s) => s.kind === ts.SyntaxKind.ReturnStatement);
 		expect(hasTopLevelReturn).toBe(false);
+	});
+
+	describe('native ES class mode (NS_NATIVE_ES_CLASSES)', () => {
+		afterEach(() => {
+			delete process.env.NS_NATIVE_ES_CLASSES;
+		});
+
+		it('is disabled by default', () => {
+			expect(isNativeESClassesEnabled('ios')).toBe(false);
+		});
+
+		it('is enabled for Apple targets via the environment variable', () => {
+			process.env.NS_NATIVE_ES_CLASSES = '1';
+			expect(isNativeESClassesEnabled('ios')).toBe(true);
+			expect(isNativeESClassesEnabled('visionos')).toBe(true);
+		});
+
+		it('never applies to Android targets (SBG requires the ES5 downlevel)', () => {
+			process.env.NS_NATIVE_ES_CLASSES = '1';
+			expect(isNativeESClassesEnabled('android')).toBe(false);
+		});
+
+		it('can be force-disabled with 0/false', () => {
+			process.env.NS_NATIVE_ES_CLASSES = '0';
+			expect(isNativeESClassesEnabled('ios')).toBe(false);
+			process.env.NS_NATIVE_ES_CLASSES = 'false';
+			expect(isNativeESClassesEnabled('ios')).toBe(false);
+		});
+
+		it('leaves decorated sources untouched so the runtime handles them', () => {
+			process.env.NS_NATIVE_ES_CLASSES = '1';
+			const res = transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ts');
+			expect(res).toBeNull();
+		});
 	});
 });

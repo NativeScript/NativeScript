@@ -8,7 +8,7 @@ import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
 import type { Platform } from '../../../helpers/platform-types.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 import { getGlobalDefines } from '../../../helpers/global-defines.js';
-import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin } from './vendor-esbuild-plugins.js';
+import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createNodeBuiltinPolyfillEsbuildPlugin } from './vendor-esbuild-plugins.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -313,6 +313,13 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		// Mark @nativescript/core external BEFORE other plugins so esbuild never
 		// tries to read/transform core's source files. See comment above.
 		nsCoreExternalPlugin,
+		// Stub legacy webpack-loader-prefixed requires (dead NS 6/7 branches in
+		// plugins) BEFORE resolution — a single `loader!./x` specifier would
+		// otherwise hard-fail the whole bundle. See the plugin for details.
+		createWebpackLoaderStubEsbuildPlugin(),
+		// Bundle installed npm polyfills for node-builtin names (buffer, events,
+		// ...) instead of leaving bare externals the device cannot resolve.
+		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot),
 		// For the Solid flavor, externalize `solid-js` so vendor.mjs and the
 		// HTTP-served `@solid-refresh` / user code converge on one runtime
 		// realm. See `nsSolidJsExternalPlugin`'s definition for the full
@@ -408,6 +415,10 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 			// Belt-and-suspenders: keep the original NODE_ENV define explicit so
 			// future changes to `getGlobalDefines()` can't silently drop it.
 			out['process.env.NODE_ENV'] = JSON.stringify(mode);
+			// webpack-HMR idiom carried by ESM-published packages — a FREE
+			// `module.hot` reference is a ReferenceError in the ESM bundle the
+			// moment it evaluates (see the matching define in deps-bundle.ts).
+			out['module.hot'] = 'undefined';
 			return out;
 		})(),
 		plugins,

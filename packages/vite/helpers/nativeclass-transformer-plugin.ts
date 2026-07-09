@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite';
 import ts from 'typescript';
-import { transformNativeClassSource } from './nativeclass-transform.js';
+import { isNativeESClassesEnabled, transformNativeClassSource } from './nativeclass-transform.js';
+import { resolvePlatform } from './cli-flags.js';
 
 /**
  * Look for `NativeClass` either as a bare identifier or as a `NativeClass(...)` call expression
@@ -332,6 +333,9 @@ export function createNativeClassTransformerPlugin(): Plugin[] {
 			name: 'ns-nativeclass-post-cleanup',
 			enforce: 'post',
 			transform(code: string, id: string) {
+				// Native ES class mode (Apple targets only): the runtime handles ES classes and
+				// the NativeClass decorator directly, so no post-phase strip/downlevel either.
+				if (isNativeESClassesEnabled(resolvePlatform())) return null;
 				const bareId = id.split('?')[0];
 				if (!/\.(ts|tsx|js|mjs)$/.test(bareId)) return null;
 				return postCleanupNativeClass(code, bareId, verbose);

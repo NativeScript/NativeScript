@@ -44,6 +44,14 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	// `;\nimport`) but applied universally at the rewriter entry point so
 	// every caller benefits without having to opt in.
 	result = result.replace(/;\s*import\s+/g, ';\nimport ');
+	// Same hazard for re-exports: retainLines can glue `;export * from "x"` /
+	// `;export { a } from "x"` onto the previous statement, where the
+	// `(?:^|\n)`-anchored EXPORT_PATTERN can't see it. A missed re-export keeps
+	// Vite's raw `/@fs/<abs>` specifier while sibling imports of the same file
+	// get the canonical `/ns/m/...` URL — two URLs for one module splits its
+	// identity on device (observed as "conflicting star exports for name ..."
+	// from V8 when both instances reach one importer's star exports).
+	result = result.replace(/;[ \t]*export(\s+[*{])/g, ';\nexport$1');
 	const httpOriginSafe = httpOrigin;
 	const mixedRuntimePluginHttpRootPackages = collectMixedRuntimePluginHttpRootPackages(result, projectRoot);
 	const isDynamicImportPrefix = (prefix: string): boolean => /import\(\s*["']?$/.test(prefix.trimStart());

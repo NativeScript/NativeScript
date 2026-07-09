@@ -6,19 +6,49 @@ import { getCliFlags } from './cli-flags.js';
 import type { Platform } from './platform-types.js';
 
 /**
+ * Opt-in: skip the NativeClass ES5 downlevel entirely and let the iOS runtime handle plain
+ * ES `class X extends NativeBase {}` declarations natively (the runtime registers the
+ * Objective-C class lazily via new.target and also provides a global no-op `NativeClass`
+ * decorator, so decorated sources keep working without any build-time rewriting).
+ *
+ * Enabled via `--env.nativeESClasses` or the NS_NATIVE_ES_CLASSES environment variable
+ * (set NS_NATIVE_ES_CLASSES=0/false to force-disable). Android continues to require the
+ * ES5 downlevel (the Static Binding Generator relies on it), so this never applies to
+ * Android targets.
+ */
+export function isNativeESClassesEnabled(platform?: Platform): boolean {
+	if (platform === 'android') return false;
+	const envValue = process.env.NS_NATIVE_ES_CLASSES;
+	if (envValue !== undefined) {
+		return envValue !== '0' && envValue.toLowerCase() !== 'false';
+	}
+	try {
+		const flags = getCliFlags();
+		return !!flags.nativeESClasses;
+	} catch (e) {
+		return false;
+	}
+}
+
+/**
  * Apply the NativeClass transformer to a source string. Returns null if no change performed.
  */
 export function transformNativeClassSource(code: string, fileName: string) {
 	// Avoid transforming platform-specific sources for the non-target platform.
 	// Example: don't run Android-specific transforms on iOS builds and vice versa.
+	let platform: Platform | undefined;
 	try {
 		const flags = getCliFlags();
-		const platform: Platform | undefined = flags.android ? 'android' : 'ios';
+		platform = flags.android ? 'android' : 'ios';
 		if (fileName.includes('.android.') && platform !== 'android') return null;
 		if ((fileName.includes('.ios.') || fileName.includes('.visionos.')) && platform === 'android') return null;
 	} catch (e) {
 		// If cli flags cannot be read for any reason, fall back to original behavior.
 	}
+
+	// Native ES class mode (Apple targets only): leave sources untouched - the runtime
+	// understands ES classes extending native types and the NativeClass decorator itself.
+	if (isNativeESClassesEnabled(platform)) return null;
 
 	// If this is JS and we see a __decorate* call that references NativeClass, strip it safely.
 	const isJS = /\.(js|mjs|cjs)$/.test(fileName);

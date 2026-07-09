@@ -46,6 +46,44 @@ export function nativescriptWorkerLoaderStubPlugin(): Plugin {
 	};
 }
 
+/**
+ * Rewrite every code-level `import.meta` usage in a worker module so the
+ * emitted classic script can compile.
+ *
+ * Workers are emitted as classic scripts (the NS worker bootstrap `require()`s
+ * them), where ANY code-level `import.meta` token is a compile-time
+ * SyntaxError — the runtime reports "Cannot compile script" the moment the
+ * worker starts, so the failure looks arbitrary per-worker. Beyond the
+ * `.url`/`.dirname` static substitutions, HMR helpers pulled into worker
+ * graphs (e.g. @nativescript/angular's hmr view-cache) read `import.meta.hot`
+ * / `import.meta["hot"]` / `import.meta["webpackHot"]` defensively behind
+ * try/catch — every remaining member access is rewritten to `(undefined)`;
+ * workers never have HMR.
+ *
+ * Bare `import.meta` tokens (no member access) are left alone on purpose:
+ * every observed occurrence lives inside string literals (e.g. acorn's parser
+ * error messages when a JS parser is bundled into a worker), where they are
+ * harmless and rewriting would corrupt library data.
+ *
+ * Returns `null` when the module contains no `import.meta` at all. None of
+ * the replacements add or remove lines, so existing line-level mappings stay
+ * valid — the explicit `map: null` also keeps Rolldown from flagging
+ * SOURCEMAP_BROKEN on every worker chunk.
+ */
+export function neutralizeWorkerImportMeta(code: string): { code: string; map: null } | null {
+	if (!code.includes('import.meta')) {
+		return null;
+	}
+	const rewritten = code
+		.replace(/import\.meta\.dirname/g, '""')
+		.replace(/import\.meta\.url/g, '"file:///app/"')
+		// import.meta["hot"], import.meta['webpackHot'], ...
+		.replace(/import\.meta\s*\[\s*(['"])[^'"\]]*\1\s*\]/g, '(undefined)')
+		// import.meta.hot, import.meta.env, ...
+		.replace(/import\.meta\.\w+/g, '(undefined)');
+	return { code: rewritten, map: null };
+}
+
 // Worker bundles run as separate Rolldown builds and do NOT inherit `config.plugins`
 // at build time (see https://vite.dev/config/worker-options#worker-plugins). To match
 // the main bundle's module resolution behavior, mirror the bare-specifier resolvers
@@ -119,15 +157,7 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 		{
 			name: 'worker-import-meta-handler',
 			transform(code, id) {
-				// Replace import.meta.dirname with a static value for workers
-				if (code.includes('import.meta.dirname')) {
-					code = code.replace(/import\.meta\.dirname/g, '""');
-				}
-				// Replace import.meta.url with a static value for workers
-				if (code.includes('import.meta.url')) {
-					code = code.replace(/import\.meta\.url/g, '"file:///app/"');
-				}
-				return code;
+				return neutralizeWorkerImportMeta(code);
 			},
 		},
 	];

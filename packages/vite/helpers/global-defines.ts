@@ -128,8 +128,19 @@ export function getRuntimeDefineValues(opts: { platform?: string; isDevMode: boo
  * add it HERE, and read it with a `globalThis` fallback at the consumer.
  */
 export function getRuntimeSeedValues(opts: { platform?: string; isDevMode: boolean; verbose: boolean; flavor: string; isCI?: boolean }): Record<string, unknown> {
+	const values = getRuntimeDefineValues(opts);
 	return {
-		...getRuntimeDefineValues(opts),
+		...values,
+		// Legacy runtime globals (`global.isIOS` / `global.isAndroid`): the
+		// bundle build text-substitutes these member expressions via `define`
+		// (see getGlobalDefines), but raw-served HMR modules never get that
+		// substitution — app code branching on `global.isIOS` falls into its
+		// Android path on iOS. Seed the real globals so member-access reads
+		// behave identically under HMR. globalThis-only on purpose: these MUST
+		// NOT become per-module `const` shims (buildDefineShimStatements), or
+		// they'd collide with `import { isIOS } from '@nativescript/core'`.
+		isAndroid: values.__ANDROID__,
+		isIOS: values.__APPLE__,
 		// Runtime flavor for the raw-served HMR client's TARGET_FLAVOR resolution.
 		__NS_TARGET_FLAVOR__: opts.flavor,
 		// App-root virtual path — every served-id → moduleName mapping (frame
@@ -169,7 +180,12 @@ export function buildDefineSeedStatements(values: RuntimeDefineValues): string[]
  * the bundle seed see it already set and no-op.
  */
 export function buildGuardedDefineSeedStatement(values: RuntimeDefineValues): string {
-	return `if (globalThis.__IOS__ === undefined && globalThis.__ANDROID__ === undefined) { globalThis.__ANDROID__ = ${values.__ANDROID__}; globalThis.__IOS__ = ${values.__IOS__}; globalThis.__VISIONOS__ = ${values.__VISIONOS__}; globalThis.__APPLE__ = ${values.__APPLE__}; }\nif (globalThis.__DEV__ === undefined) { globalThis.__DEV__ = ${values.__DEV__}; }`;
+	// `isIOS`/`isAndroid` mirror the bundle build's `global.isIOS` /
+	// `global.isAndroid` defines (getGlobalDefines) — raw-served modules get no
+	// text substitution, so the real globals must exist for member-access reads.
+	// Guarded separately from `__IOS__` because a bundle seed may already have
+	// planted one set but not the other.
+	return `if (globalThis.__IOS__ === undefined && globalThis.__ANDROID__ === undefined) { globalThis.__ANDROID__ = ${values.__ANDROID__}; globalThis.__IOS__ = ${values.__IOS__}; globalThis.__VISIONOS__ = ${values.__VISIONOS__}; globalThis.__APPLE__ = ${values.__APPLE__}; }\nif (globalThis.isIOS === undefined && globalThis.isAndroid === undefined) { globalThis.isAndroid = ${values.__ANDROID__}; globalThis.isIOS = ${values.__APPLE__}; }\nif (globalThis.__DEV__ === undefined) { globalThis.__DEV__ = ${values.__DEV__}; }`;
 }
 
 /**

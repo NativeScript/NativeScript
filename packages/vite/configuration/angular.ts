@@ -12,6 +12,7 @@ import { synthesizeDecoratorCtorParameters } from '../hmr/frameworks/angular/bui
 import { containsRealNgDeclare, stripJsComments } from '../hmr/frameworks/angular/build/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { getMonorepoWorkspaceRoot } from '../helpers/project.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { resolveVerboseFlag } from '../helpers/logging.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
@@ -534,7 +535,20 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			// is the same hook Angular CLI uses for `fileReplacements` in
 			// `angular.json` build configurations.
 			fileReplacements: opts.fileReplacements ?? [],
-			workspaceRoot: opts.workspaceRoot ?? process.cwd(),
+			// Component-HMR id alignment. Angular's compiler embeds each
+			// component's HMR id relative to the TS compilation's base path —
+			// in an Nx monorepo that's the WORKSPACE root (tsconfig.base.json's
+			// baseUrl), not the app dir. Analog uses `workspaceRoot` both to
+			// build the `angular:component-update` broadcast id
+			// (`relative(workspaceRoot, file)`) and to resolve `/@ng/component?c=`
+			// fetches back to absolute paths (`resolve(workspaceRoot, id)`).
+			// Defaulting to `process.cwd()` (the app dir) makes the broadcast id
+			// `src/...` while every compiled listener guards on
+			// `apps/<app>/src/...` — `d.id === id` never matches, so template
+			// edits dispatch cleanly but visually apply nothing. Default to the
+			// monorepo root when one exists so all three id producers agree;
+			// standalone apps (no monorepo root) keep the cwd behavior.
+			workspaceRoot: opts.workspaceRoot ?? getMonorepoWorkspaceRoot(process.cwd()) ?? process.cwd(),
 		}),
 		// Post-phase linker to catch any declarations introduced after other transforms (including project code)
 		angularLinkerVitePluginPost(process.cwd()),

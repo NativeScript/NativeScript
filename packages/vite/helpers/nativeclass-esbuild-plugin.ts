@@ -1,5 +1,5 @@
 import type { Plugin as EsbuildPlugin } from 'esbuild';
-import { transformNativeClassSource } from './nativeclass-transform.js';
+import { isNativeESClassesEnabled, transformNativeClassSource } from './nativeclass-transform.js';
 import type { Platform } from './platform-types.js';
 
 /**
@@ -13,6 +13,11 @@ export function createNativeClassEsbuildPlugin(platform: Platform): EsbuildPlugi
 	return {
 		name: 'ns-nativeclass-esbuild',
 		setup(build) {
+			// Native ES class mode (Apple targets only): the runtime handles ES classes and
+			// the NativeClass decorator directly, so vendor bundles need no rewriting either.
+			if (isNativeESClassesEnabled(platform)) {
+				return;
+			}
 			// We need to use onLoad to transform the file contents
 			// Filter to only process .ts and .js files that might contain @NativeClass
 			build.onLoad({ filter: /\.(ts|tsx|js|mjs|cjs)$/ }, async (args) => {

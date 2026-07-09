@@ -65,7 +65,7 @@ import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuil
 import type { Platform } from '../../helpers/platform-types.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
-import { createSolidJsxEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createVendorEsbuildPlugin } from '../shared/vendor/vendor-esbuild-plugins.js';
+import { createNodeBuiltinPolyfillEsbuildPlugin, createSolidJsxEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createVendorEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin } from '../shared/vendor/vendor-esbuild-plugins.js';
 import { getVendorManifest, setVendorRuntimeModuleProvider } from '../shared/vendor/registry.js';
 import { collectVendorModules } from '../shared/vendor/manifest-collect.js';
 import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.js';
@@ -598,6 +598,13 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 			out[key] = typeof value === 'string' ? value : JSON.stringify(value);
 		}
 		out['process.env.NODE_ENV'] = JSON.stringify(mode === 'development' ? 'development' : 'production');
+		// webpack-HMR idiom carried by ESM-published packages (e.g.
+		// @nativescript/canvas-polyfill's `if (module.hot) ...` at module top
+		// level). In the single-eval ESM bundle a FREE `module` reference is a
+		// ReferenceError the moment the bundle evaluates. esbuild's define only
+		// substitutes free references, so CJS-wrapped code (where `module` is a
+		// bound variable) is untouched.
+		out['module.hot'] = 'undefined';
 		return out;
 	})();
 
@@ -622,7 +629,14 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 		}
 	}
 
-	const buildPlugins = (): esbuild.Plugin[] => [createNativeClassEsbuildPlugin(platform as Platform), createVendorEsbuildPlugin(projectRoot), createDepsImportRoutingPlugin(projectRoot, workspaceRoot, String(platform), flavor), ...(flavor === 'angular' ? [createDepsAngularLinkerPlugin(projectRoot)] : []), ...(flavor === 'solid' ? [createSolidJsxEsbuildPlugin(projectRoot)] : []), createUnicodeRegexEsbuildPlugin(projectRoot)];
+	// createWebpackLoaderStubEsbuildPlugin runs first: legacy `loader!./x`
+	// specifiers (dead NS 6/7 webpack branches in plugins) must be stubbed
+	// before any resolver sees them — one such specifier anywhere in the dep
+	// closure would otherwise hard-fail the whole bundle.
+	// createNodeBuiltinPolyfillEsbuildPlugin bundles installed npm polyfills
+	// (buffer, events, ...) that would otherwise leak as bare builtin externals
+	// the device cannot resolve.
+	const buildPlugins = (): esbuild.Plugin[] => [createWebpackLoaderStubEsbuildPlugin(), createNodeBuiltinPolyfillEsbuildPlugin(projectRoot, NODE_BUILTINS), createNativeClassEsbuildPlugin(platform as Platform), createVendorEsbuildPlugin(projectRoot), createDepsImportRoutingPlugin(projectRoot, workspaceRoot, String(platform), flavor), ...(flavor === 'angular' ? [createDepsAngularLinkerPlugin(projectRoot)] : []), ...(flavor === 'solid' ? [createSolidJsxEsbuildPlugin(projectRoot)] : []), createUnicodeRegexEsbuildPlugin(projectRoot)];
 	const sharedBuildOptions = {
 		platform: 'neutral' as const,
 		format: 'esm' as const,
