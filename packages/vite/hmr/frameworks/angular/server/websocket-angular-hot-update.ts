@@ -173,7 +173,7 @@ function isExtensionlessAngularAppTransformCandidate(id: string): boolean {
 	return id.startsWith(APP_VIRTUAL_WITH_SLASH) && /\.(?:[mc]?[jt]sx?)$/i.test(id);
 }
 
-function addAngularTransformCacheInvalidationUrl(targets: Set<string>, rawId: string | null | undefined, projectRoot?: string): void {
+function addAngularTransformCacheInvalidationUrl(targets: Set<string>, rawId: string | null | undefined, projectRoot?: string, workspaceRoot?: string | null): void {
 	const id = String(rawId || '');
 	if (!id) {
 		return;
@@ -181,6 +181,26 @@ function addAngularTransformCacheInvalidationUrl(targets: Set<string>, rawId: st
 
 	const cacheKey = projectRoot ? canonicalizeTransformRequestCacheKey(id, projectRoot) : id;
 	targets.add(cacheKey);
+
+	// Workspace-lib modules are served (and therefore cached) under keys
+	// project-root canonicalization can't produce: their workspace-relative
+	// form (`/libs/...` — see `rewriteFsAbsoluteToNsM`) and/or their Vite
+	// `/@fs/<abs>` form (how the /ns/m route addresses out-of-root files at
+	// transform time). Add both candidates; unknown purge keys are no-ops.
+	if (workspaceRoot) {
+		const workspaceKey = canonicalizeTransformRequestCacheKey(id, workspaceRoot);
+		if (workspaceKey !== cacheKey) {
+			targets.add(workspaceKey);
+			// The id is under the workspace root but outside the project root
+			// (project canonicalization left it alone) — that's exactly the
+			// class of file the /ns/m route transforms via its `/@fs/<abs>`
+			// form, so purge that spelling as well.
+			const idPath = id.split('?')[0].replace(/\\/g, '/');
+			if (idPath.startsWith('/') && !idPath.startsWith('/@fs/') && idPath === cacheKey.split('?')[0]) {
+				targets.add(`/@fs${idPath}`);
+			}
+		}
+	}
 
 	const normalizedId = cacheKey.replace(/\?.*$/, '');
 	if (!isExtensionlessAngularAppTransformCandidate(normalizedId)) {
@@ -190,19 +210,19 @@ function addAngularTransformCacheInvalidationUrl(targets: Set<string>, rawId: st
 	targets.add(normalizedId.replace(/\.(?:[mc]?[jt]sx?)$/i, ''));
 }
 
-export function collectAngularTransformCacheInvalidationUrls(options: { file: string; isTs: boolean; hotUpdateRoots: Iterable<{ id?: string | null }>; transitiveImporters?: Iterable<{ id?: string | null }>; projectRoot?: string }): string[] {
+export function collectAngularTransformCacheInvalidationUrls(options: { file: string; isTs: boolean; hotUpdateRoots: Iterable<{ id?: string | null }>; transitiveImporters?: Iterable<{ id?: string | null }>; projectRoot?: string; workspaceRoot?: string | null }): string[] {
 	const urls = new Set<string>();
 
 	if (options.isTs) {
-		addAngularTransformCacheInvalidationUrl(urls, options.file, options.projectRoot);
+		addAngularTransformCacheInvalidationUrl(urls, options.file, options.projectRoot, options.workspaceRoot);
 	}
 
 	for (const mod of options.hotUpdateRoots || []) {
-		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot);
+		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot, options.workspaceRoot);
 	}
 
 	for (const mod of options.transitiveImporters || []) {
-		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot);
+		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot, options.workspaceRoot);
 	}
 
 	return Array.from(urls);
@@ -260,17 +280,41 @@ export function collectAngularTransformCacheInvalidationUrls(options: { file: st
 // collapse multiple sources (changed file + roots + transitive
 // importers) without paying for an extra dedup pass.
 
-function normalizeAngularEvictRelativeId(rawId: string | null | undefined, projectRoot: string | undefined): string | null {
+function stripEvictRootPrefix(id: string, root: string | null | undefined): string | null {
+	if (!root) return null;
+	const normalizedRoot = String(root).replace(/\\/g, '/').replace(/\/$/, '');
+	if (!normalizedRoot) return null;
+	if (id.startsWith(`${normalizedRoot}/`)) {
+		return id.slice(normalizedRoot.length);
+	}
+	return null;
+}
+
+function normalizeAngularEvictRelativeId(rawId: string | null | undefined, projectRoot: string | undefined, workspaceRoot?: string | null): string | null {
 	if (!rawId) return null;
 	let id = String(rawId).split('?')[0].replace(/\\/g, '/');
 	if (!id) return null;
 	if (id.startsWith('file://')) {
 		id = id.slice('file://'.length);
 	}
-	const root = projectRoot ? projectRoot.replace(/\\/g, '/').replace(/\/$/, '') : '';
-	if (root && id.startsWith(root)) {
-		id = id.slice(root.length);
+	// Vite spells any resolved id outside the configured `root` as
+	// `/@fs/<abs-path>` — hoisted node_modules AND monorepo workspace libs.
+	// Recover the absolute path so the root-stripping below can anchor it;
+	// rejecting these outright (the old behavior) silently dropped every
+	// workspace-lib importer from the eviction set.
+	if (id.startsWith('/@fs/')) {
+		id = id.slice('/@fs'.length);
 	}
+	// Project root first — matches the `/ns/m/<projectRel>` URL shape the
+	// device uses for app-local modules. Then the monorepo workspace root:
+	// `rewriteFsAbsoluteToNsM` mints workspace-lib device URLs as
+	// `/ns/m/<workspaceRel>` (e.g. `/ns/m/libs/...`), so the eviction key for
+	// an out-of-root lib module MUST be derived the same way. Deriving it
+	// project-relative instead (the old behavior left the absolute path
+	// intact) produces `/ns/m/Users/...` URLs the runtime reports as
+	// `remove:miss` — the cached module survives and the reboot silently
+	// re-imports stale lib code.
+	id = stripEvictRootPrefix(id, projectRoot) ?? stripEvictRootPrefix(id, workspaceRoot) ?? id;
 	if (!id.startsWith('/')) {
 		id = '/' + id;
 	}
@@ -287,10 +331,11 @@ function normalizeAngularEvictRelativeId(rawId: string | null | undefined, proje
 	return id;
 }
 
-export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoots?: Iterable<{ id?: string | null; file?: string | null }>; transitiveImporters?: Iterable<{ id?: string | null; file?: string | null }>; projectRoot: string; origin: string; bootstrapEntry?: string | null }): string[] {
+export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoots?: Iterable<{ id?: string | null; file?: string | null }>; transitiveImporters?: Iterable<{ id?: string | null; file?: string | null }>; projectRoot: string; origin: string; bootstrapEntry?: string | null; workspaceRoot?: string | null }): string[] {
 	const urls = new Set<string>();
 	const origin = String(options.origin || '').replace(/\/$/, '');
 	const root = options.projectRoot;
+	const workspaceRoot = options.workspaceRoot ?? null;
 
 	const addRel = (rel: string | null) => {
 		if (!rel) return;
@@ -312,14 +357,14 @@ export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoo
 		}
 	};
 
-	addRel(normalizeAngularEvictRelativeId(options.file, root));
+	addRel(normalizeAngularEvictRelativeId(options.file, root, workspaceRoot));
 
 	for (const mod of options.hotUpdateRoots || []) {
-		addRel(normalizeAngularEvictRelativeId(mod?.id || mod?.file, root));
+		addRel(normalizeAngularEvictRelativeId(mod?.id || mod?.file, root, workspaceRoot));
 	}
 
 	for (const mod of options.transitiveImporters || []) {
-		addRel(normalizeAngularEvictRelativeId(mod?.id || mod?.file, root));
+		addRel(normalizeAngularEvictRelativeId(mod?.id || mod?.file, root, workspaceRoot));
 	}
 
 	// The bootstrap entry must always be evicted: V8's `import(entry)` is a
@@ -331,7 +376,7 @@ export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoo
 	// or a pristine app whose graph hasn't yet linked main into the
 	// importer set.
 	if (typeof options.bootstrapEntry === 'string' && options.bootstrapEntry) {
-		addRel(normalizeAngularEvictRelativeId(options.bootstrapEntry, root));
+		addRel(normalizeAngularEvictRelativeId(options.bootstrapEntry, root, workspaceRoot));
 	}
 
 	return Array.from(urls);

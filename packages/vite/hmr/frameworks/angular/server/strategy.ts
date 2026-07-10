@@ -77,6 +77,28 @@ const recentAngularInvalidateReboots = new Map<string, number>();
 const ANGULAR_INVALIDATE_REBOOT_DEDUPE_MS = 2000;
 
 /**
+ * Project-relative posix path for the `ns:angular-update` broadcast. Files
+ * outside the vite root (workspace libs) fall back to the monorepo
+ * workspace-relative form — the same shape `rewriteFsAbsoluteToNsM` mints for
+ * their device URLs — instead of a `/../../../libs/...` up-walk that matches
+ * nothing on the device.
+ */
+function angularUpdateRelPath(file: string, root: string, workspaceRoot: string | null): string {
+	const toPosixRel = (value: string) => '/' + path.posix.normalize(value.split(path.sep).join('/'));
+	const rel = path.relative(root, file);
+	if (!rel.startsWith('..')) {
+		return toPosixRel(rel);
+	}
+	if (workspaceRoot) {
+		const workspaceRel = path.relative(workspaceRoot, file);
+		if (!workspaceRel.startsWith('..')) {
+			return toPosixRel(workspaceRel);
+		}
+	}
+	return toPosixRel(rel);
+}
+
+/**
  * Broadcast the Angular reboot path (`ns:angular-update` → device module
  * eviction → entry re-import → `__reboot_ng_modules__` with route replay)
  * for `file`, outside a Vite `handleHotUpdate` cycle.
@@ -102,6 +124,7 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 	const { wss, moduleGraph, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, rememberAngularReloadSuppression, verbose } = deps;
 	if (!wss) return;
 	const root = server.config.root || process.cwd();
+	const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(root);
 
 	const hotUpdateRoots = collectAngularHotUpdateRoots({
 		file,
@@ -139,6 +162,7 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 				hotUpdateRoots,
 				transitiveImporters,
 				projectRoot: root,
+				workspaceRoot: monorepoWorkspaceRoot,
 			}),
 		);
 		if (transformCacheInvalidationUrls.size) {
@@ -149,7 +173,7 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 	}
 
 	try {
-		const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+		const rel = angularUpdateRelPath(file, root, monorepoWorkspaceRoot);
 		rememberAngularReloadSuppression(root, file);
 		const origin = getServerOrigin(server);
 		const bootstrapEntryRel = getBootstrapEntryRelPath();
@@ -162,6 +186,7 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 				projectRoot: root,
 				origin,
 				bootstrapEntry: bootstrapEntryRel,
+				workspaceRoot: monorepoWorkspaceRoot,
 			});
 		} catch (error) {
 			if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot eviction set computation failed', error);
@@ -561,6 +586,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 					hotUpdateRoots: angularHotUpdateRoots,
 					transitiveImporters: angularNeedsTransitive ? transitiveImporters : [],
 					projectRoot: server.config.root || process.cwd(),
+					workspaceRoot: getMonorepoWorkspaceRoot(server.config.root || process.cwd()),
 				}),
 			);
 			if (transformCacheInvalidationUrls.size) {
@@ -575,7 +601,8 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		updateMetrics.tAfterFramework = Date.now();
 		try {
 			const root = server.config.root || process.cwd();
-			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+			const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(root);
+			const rel = angularUpdateRelPath(file, root, monorepoWorkspaceRoot);
 			rememberAngularReloadSuppression(root, file);
 			const origin = getServerOrigin(server);
 			const bootstrapEntryRel = getBootstrapEntryRelPath();
@@ -621,6 +648,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 					projectRoot: root,
 					origin,
 					bootstrapEntry: bootstrapEntryRel,
+					workspaceRoot: monorepoWorkspaceRoot,
 				});
 			} catch (error) {
 				if (verbose) {

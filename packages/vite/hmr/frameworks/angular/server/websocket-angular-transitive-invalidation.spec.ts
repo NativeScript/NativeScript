@@ -761,3 +761,111 @@ describe('collectAngularEvictionUrls', () => {
 		});
 	});
 });
+
+describe('collectAngularEvictionUrls — monorepo workspace libs (out-of-root files)', () => {
+	const origin = 'http://localhost:5173';
+	// Nx-style layout: the vite root is the app project dir; shared libs live
+	// beside `apps/` under the workspace root. The device imports lib modules
+	// under their WORKSPACE-relative URL (`/ns/m/libs/...`) because
+	// `rewriteFsAbsoluteToNsM` anchors Vite's `/@fs/<abs>` spellings against
+	// the workspace root — so eviction keys must be derived the same way.
+	const workspaceRoot = '/Users/example/monorepo';
+	const projectRoot = `${workspaceRoot}/apps/safety/nativescript-safety`;
+	const libFile = `${workspaceRoot}/libs/xplat/features/src/lib/ui/base/header.base-component.ts`;
+
+	it('anchors a changed workspace-lib file against the workspace root (never the absolute path)', () => {
+		const urls = collectAngularEvictionUrls({
+			file: libFile,
+			projectRoot,
+			origin,
+			workspaceRoot,
+			bootstrapEntry: '/src/main.ts',
+		});
+
+		expect(urls).toContain(`${origin}/ns/m/libs/xplat/features/src/lib/ui/base/header.base-component.ts`);
+		expect(urls).toContain(`${origin}/ns/m/libs/xplat/features/src/lib/ui/base/header.base-component`);
+		// The pre-fix failure mode: the absolute path leaked into the URL,
+		// the runtime reported remove:miss, and the reboot silently re-imported
+		// the STALE lib module (class edits appeared to apply but didn't).
+		expect(urls.some((url) => url.includes('/ns/m/Users/'))).toBe(false);
+		// App-local entry keeps its project-relative shape.
+		expect(urls).toContain(`${origin}/ns/m/src/main.ts`);
+	});
+
+	it('resolves /@fs/<abs> importer ids instead of dropping them', () => {
+		// Vite's moduleGraph spells out-of-root importer ids as /@fs/<abs>.
+		// The old normalizer rejected these outright, so every workspace-lib
+		// importer silently vanished from the eviction set.
+		const urls = collectAngularEvictionUrls({
+			file: libFile,
+			projectRoot,
+			origin,
+			workspaceRoot,
+			transitiveImporters: [{ id: `/@fs${workspaceRoot}/libs/xplat/features/src/index.ts` }, { id: `${projectRoot}/src/main.ts` }],
+		});
+
+		expect(urls).toContain(`${origin}/ns/m/libs/xplat/features/src/index.ts`);
+		expect(urls).toContain(`${origin}/ns/m/src/main.ts`);
+	});
+
+	it('still rejects virtual ids after /@fs recovery', () => {
+		const urls = collectAngularEvictionUrls({
+			file: libFile,
+			projectRoot,
+			origin,
+			workspaceRoot,
+			transitiveImporters: [{ id: '\0virtual:ns-app-css' }, { id: '/@id/__x00__virtual:foo' }],
+		});
+
+		expect(urls.some((url) => url.includes('virtual'))).toBe(false);
+	});
+
+	it('prefers the project root when the file is under both roots', () => {
+		const urls = collectAngularEvictionUrls({
+			file: `${projectRoot}/src/app/home.component.ts`,
+			projectRoot,
+			origin,
+			workspaceRoot,
+		});
+
+		// App-local files keep their existing `/ns/m/src/...` shape — the
+		// workspace root must not rewrite them to `/ns/m/apps/...`.
+		expect(urls).toContain(`${origin}/ns/m/src/app/home.component.ts`);
+		expect(urls.some((url) => url.includes('/ns/m/apps/'))).toBe(false);
+	});
+});
+
+describe('collectAngularTransformCacheInvalidationUrls — monorepo workspace libs', () => {
+	const workspaceRoot = '/Users/example/monorepo';
+	const projectRoot = `${workspaceRoot}/apps/safety/nativescript-safety`;
+	const libFile = `${workspaceRoot}/libs/xplat/features/src/lib/ui/base/header.base-component.ts`;
+
+	it('adds workspace-relative and /@fs purge keys for out-of-root lib files', () => {
+		const urls = collectAngularTransformCacheInvalidationUrls({
+			file: libFile,
+			isTs: true,
+			hotUpdateRoots: [],
+			projectRoot,
+			workspaceRoot,
+		});
+
+		// The /ns/m route caches lib transforms under workspace-relative
+		// and/or /@fs spellings; purge both. Unknown keys are no-ops.
+		expect(urls).toContain('/libs/xplat/features/src/lib/ui/base/header.base-component.ts');
+		expect(urls).toContain(`/@fs${libFile}`);
+	});
+
+	it('keeps project-relative keys unchanged for app-local files', () => {
+		const appFile = `${projectRoot}/src/app/home.component.ts`;
+		const urls = collectAngularTransformCacheInvalidationUrls({
+			file: appFile,
+			isTs: true,
+			hotUpdateRoots: [],
+			projectRoot,
+			workspaceRoot,
+		});
+
+		expect(urls).toContain('/src/app/home.component.ts');
+		expect(urls.some((url) => url.startsWith('/@fs/'))).toBe(false);
+	});
+});
