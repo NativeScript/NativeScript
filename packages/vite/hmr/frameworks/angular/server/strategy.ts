@@ -1,6 +1,9 @@
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServedModuleContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import type { NsHotUpdateContext } from '../../../server/websocket-hot-update.js';
+import type { ViteDevServer } from 'vite';
 import * as path from 'path';
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
+import { getMonorepoWorkspaceRoot } from '../../../../helpers/project.js';
 import { linkAngularPartialsIfNeeded } from './linker.js';
 import { prepareAngularEntryForDevice } from '../../../server/rewrite-imports.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
@@ -66,6 +69,122 @@ function findAngularEntryFiles(root: string): string[] {
 	return results;
 }
 
+// One failed `ɵɵreplaceMetadata` apply can fan out to several
+// `angular:invalidate` sends for the same component (Angular sends one per
+// failing LView walk, and stale hot listeners from earlier module
+// evaluations can re-run the apply). Reboot once per component per window.
+const recentAngularInvalidateReboots = new Map<string, number>();
+const ANGULAR_INVALIDATE_REBOOT_DEDUPE_MS = 2000;
+
+/**
+ * Broadcast the Angular reboot path (`ns:angular-update` → device module
+ * eviction → entry re-import → `__reboot_ng_modules__` with route replay)
+ * for `file`, outside a Vite `handleHotUpdate` cycle.
+ *
+ * This is the recovery half of Angular's `angular:invalidate` contract:
+ * Angular core sends that event (via `import.meta.hot.send`) when applying an
+ * in-place `ɵɵreplaceMetadata` component update THROWS on the device — see
+ * `executeWithInvalidateFallback` in @angular/core — and expects the dev
+ * server to force a full reload, which is exactly what `@angular/build`'s
+ * Vite server does on web. Without this, a single bad template apply (or a
+ * template compiled against a newer class shape than the still-live instance)
+ * wedges the view permanently: every subsequent in-place update re-applies
+ * against the same stale runtime state and re-throws, so even "fixed" saves
+ * never render. The reboot re-imports fresh module bodies (fresh component
+ * class + template) and re-bootstraps, after which in-place updates apply
+ * cleanly again.
+ *
+ * Mirrors the `.ts` tail of `handleHotUpdate` below, taking the conservative
+ * always-transitive route: a failed apply means live runtime state is
+ * suspect, and over-evicting is safe while under-evicting re-wedges.
+ */
+async function broadcastAngularReboot(file: string, server: ViteDevServer, deps: NsHotUpdateContext): Promise<void> {
+	const { wss, moduleGraph, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, rememberAngularReloadSuppression, verbose } = deps;
+	if (!wss) return;
+	const root = server.config.root || process.cwd();
+
+	const hotUpdateRoots = collectAngularHotUpdateRoots({
+		file,
+		modules: [],
+		getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
+		getModulesByFile: (targetFile) => (server.moduleGraph as any).getModulesByFile?.(targetFile) as Iterable<HotUpdateGraphModuleLike> | undefined,
+	});
+	for (const mod of hotUpdateRoots) {
+		try {
+			server.moduleGraph.invalidateModule(mod as any);
+		} catch {}
+	}
+
+	let transitiveImporters: TransitiveImporterModuleLike[] = [];
+	try {
+		transitiveImporters = collectTransitiveImportersForInvalidation({
+			modules: hotUpdateRoots as unknown as Iterable<TransitiveImporterModuleLike>,
+			isExcluded: (id) => id.includes('/node_modules/'),
+			maxDepth: 16,
+		});
+		for (const mod of transitiveImporters) {
+			try {
+				server.moduleGraph.invalidateModule(mod as any);
+			} catch {}
+		}
+	} catch (error) {
+		if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot transitive importer collection failed', error);
+	}
+
+	try {
+		const transformCacheInvalidationUrls = new Set(
+			collectAngularTransformCacheInvalidationUrls({
+				file,
+				isTs: true,
+				hotUpdateRoots,
+				transitiveImporters,
+				projectRoot: root,
+			}),
+		);
+		if (transformCacheInvalidationUrls.size) {
+			sharedTransformRequest.invalidateMany(transformCacheInvalidationUrls);
+		}
+	} catch (error) {
+		if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot transform cache purge failed', error);
+	}
+
+	try {
+		const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+		rememberAngularReloadSuppression(root, file);
+		const origin = getServerOrigin(server);
+		const bootstrapEntryRel = getBootstrapEntryRelPath();
+		let evictPaths: string[] = [];
+		try {
+			evictPaths = collectAngularEvictionUrls({
+				file,
+				hotUpdateRoots,
+				transitiveImporters,
+				projectRoot: root,
+				origin,
+				bootstrapEntry: bootstrapEntryRel,
+			});
+		} catch (error) {
+			if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot eviction set computation failed', error);
+		}
+		const msg: AngularUpdateMessage = {
+			type: 'ns:angular-update',
+			origin,
+			path: rel,
+			version: moduleGraph.version,
+			timestamp: Date.now(),
+			evictPaths,
+			importerEntry: bootstrapEntryRel,
+		};
+		wss.clients.forEach((client) => {
+			if (isSocketClientOpen(client)) {
+				client.send(JSON.stringify(msg));
+			}
+		});
+	} catch (error) {
+		console.warn('[hmr-ws][angular] invalidate-reboot broadcast failed:', error);
+	}
+}
+
 export const angularServerStrategy: FrameworkServerStrategy = {
 	flavor: 'angular',
 	matchesFile(id: string) {
@@ -94,6 +213,48 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	// in-place pipeline is wired up (it only registers when `liveReload: true`).
 	ownsComponentStyleHmr(server) {
 		return ((server.config?.plugins as Array<{ name?: string }> | undefined) ?? []).some((plugin) => plugin?.name === 'analogjs-live-reload-plugin');
+	},
+	// Device-reported failed in-place component update → reboot recovery.
+	//
+	// Angular core sends `angular:invalidate` (over `import.meta.hot.send`,
+	// which the NS hot registry forwards to the `/ns-hmr` socket as
+	// `{ type: 'custom', event, data }`) whenever an in-place
+	// `ɵɵreplaceMetadata` apply throws — e.g. the swapped-in template
+	// references class members the still-live component instance doesn't have
+	// (metadata replacement reuses the instance by design, so class-body
+	// changes never reach it). On the web `@angular/build` answers this with a
+	// full page reload; the NS equivalent is the module-eviction reboot. The
+	// payload id is the compiler-embedded component HMR id:
+	// `encodeURIComponent('<workspace-relative-path>@<ClassName>')`, relative
+	// to the TS compilation base (the monorepo workspace root when one exists
+	// — see the `workspaceRoot` alignment note in configuration/angular.ts).
+	async handleClientCustomEvent({ event, data, server }, deps) {
+		if (event !== 'angular:invalidate') return;
+		const payload = (data ?? {}) as { id?: unknown; message?: unknown };
+		const rawId = typeof payload.id === 'string' ? payload.id : '';
+		if (!rawId) return;
+		let decoded = rawId;
+		try {
+			decoded = decodeURIComponent(rawId);
+		} catch {}
+		const rel = decoded.split('@')[0];
+		if (!rel) return;
+		const projectRoot = server.config.root || process.cwd();
+		const workspaceRoot = getMonorepoWorkspaceRoot(process.cwd()) ?? projectRoot;
+		const file = [path.resolve(workspaceRoot, rel), path.resolve(projectRoot, rel)].find((candidate) => existsSync(candidate));
+		if (!file) {
+			console.warn(`[hmr-ws][angular] angular:invalidate received for unresolvable component id ${decoded} — cannot trigger reboot recovery`);
+			return;
+		}
+		const now = Date.now();
+		const last = recentAngularInvalidateReboots.get(file) ?? 0;
+		if (now - last < ANGULAR_INVALIDATE_REBOOT_DEDUPE_MS) return;
+		recentAngularInvalidateReboots.set(file, now);
+		// Always-on: this is an error-recovery path the user needs to see —
+		// the device just failed to apply an in-place template swap.
+		const firstLine = typeof payload.message === 'string' ? payload.message.split('\n')[0] : '';
+		console.warn(`[hmr-ws][angular] device failed to apply in-place component update for ${rel}${firstLine ? ` (${firstLine})` : ''} — rebooting Angular with fresh modules to recover`);
+		await broadcastAngularReboot(file, server, deps);
 	},
 	// Full Angular hot-update handler: shared prologue, then the Angular tail
 	// (TS/HTML + root-component detection, hot-update-root + transitive-importer

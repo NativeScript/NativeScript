@@ -120,6 +120,18 @@ export interface FrameworkServerStrategy {
 	handleHotUpdate?(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HmrContext['modules'] | void>;
 
 	/**
+	 * Handle a Vite custom event sent FROM the device (`import.meta.hot.send`
+	 * arrives on the `/ns-hmr` socket as `{ type: 'custom', event, data }`).
+	 * Frameworks use this for runtime→server recovery signals the shared
+	 * message pump has no business interpreting. Angular implements it for
+	 * `angular:invalidate` — Angular core sends that when an in-place
+	 * `ɵɵreplaceMetadata` apply THROWS (see `executeWithInvalidateFallback`),
+	 * expecting the dev server to force a full reload the way
+	 * `@angular/build`'s Vite server does on web. Defaults to ignore.
+	 */
+	handleClientCustomEvent?(ctx: { event: string; data: unknown; server: ViteDevServer }, deps: NsHotUpdateContext): Promise<void> | void;
+
+	/**
 	 * When `true`, the per-module graph delta is NOT broadcast inline during a
 	 * hot update (the framework drives its own re-fetch/patch instead — Angular
 	 * & Solid). Defaults to `false` → delta is broadcast (today's TS/Vue path).

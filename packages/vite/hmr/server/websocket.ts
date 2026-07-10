@@ -38,6 +38,7 @@ import { cleanCode, collectImportDependencies, rewriteImports, shouldRemapImport
 import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
+import type { NsHotUpdateContext } from './websocket-hot-update.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
@@ -182,6 +183,29 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	// set so the next boot's closure/archive covers node_modules bodies the
 	// graph walk cannot see. Created in configureServer (needs the root).
 	let bootRecorder: BootRecorder | null = null;
+	// Single source for the strategy-hook dependency bag: `handleHotUpdate`
+	// (the Vite hook) and the device custom-event dispatch (`configureServer`'s
+	// ws message pump) must hand strategies the exact same context.
+	function buildStrategyDeps(): NsHotUpdateContext {
+		return {
+			wss,
+			moduleGraph,
+			strategy,
+			verbose,
+			sfcFileMap,
+			depFileMap,
+			sharedTransformRequest,
+			getHmrSourceRootsCached,
+			getBootstrapEntryRelPath,
+			isSocketClientOpen,
+			getHmrSocketRole,
+			shouldRemapImport,
+			rememberAngularReloadSuppression,
+			getRootComponentIdentity,
+			getGraphInitialPopulationPromise: () => graphInitialPopulationPromise,
+			appRootDir: APP_ROOT_DIR,
+		};
+	}
 	function rememberAngularReloadSuppression(root: string, file: string, ttlMs = 3000) {
 		const absPath = normalizeHotReloadMatchPath(file);
 		const relPath = normalizeHotReloadMatchPath(file, root);
@@ -737,6 +761,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 						const msg = JSON.parse(String(data));
 						if (msg?.type === 'ns:hmr-resync-request') {
 							moduleGraph.emitFullGraph(ws as any);
+						} else if (msg?.type === 'custom' && typeof msg.event === 'string') {
+							// Device→server custom events (the JS hot registry's
+							// `import.meta.hot.send(event, data)` arrives here as
+							// `{ type: 'custom', event, data }`, mirroring Vite's wire
+							// protocol). Framework strategies opt in via
+							// `handleClientCustomEvent`; Angular uses it for the
+							// `angular:invalidate` failed-`ɵɵreplaceMetadata` recovery.
+							// Fire-and-forget: a throwing handler must never break the
+							// message pump.
+							Promise.resolve(strategy.handleClientCustomEvent?.({ event: msg.event, data: msg.data, server }, buildStrategyDeps())).catch((err) => {
+								if (verbose) console.warn('[hmr-ws] client custom event handler failed for', msg.event, err);
+							});
 						} else if (msg?.type === 'ns:hmr-sfc-registry-request') {
 							// Resend full SFC registry (lightweight code path)
 							strategy
@@ -802,24 +838,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 		async handleHotUpdate(ctx) {
 			// Every flavor owns its `handleHotUpdate` (shared prologue + its tail);
 			// call the active strategy's hook directly with the injected deps.
-			return strategy.handleHotUpdate?.(ctx, {
-				wss,
-				moduleGraph,
-				strategy,
-				verbose,
-				sfcFileMap,
-				depFileMap,
-				sharedTransformRequest,
-				getHmrSourceRootsCached,
-				getBootstrapEntryRelPath,
-				isSocketClientOpen,
-				getHmrSocketRole,
-				shouldRemapImport,
-				rememberAngularReloadSuppression,
-				getRootComponentIdentity,
-				getGraphInitialPopulationPromise: () => graphInitialPopulationPromise,
-				appRootDir: APP_ROOT_DIR,
-			});
+			return strategy.handleHotUpdate?.(ctx, buildStrategyDeps());
 		},
 	};
 }

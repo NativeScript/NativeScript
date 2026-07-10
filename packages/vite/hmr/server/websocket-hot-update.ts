@@ -324,14 +324,19 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 		return null;
 	}
 
-	const srcDir = `${root}/src`;
-	const coreDir = `${root}/core`;
-	const appDir = `${root}/${APP_ROOT_DIR}`;
-	const normalizedFile = file.split(path.sep).join('/');
-	const inSrcOrCore = normalizedFile.includes(srcDir) || normalizedFile.includes(coreDir);
-	const inApp = normalizedFile.includes(appDir);
-	const shouldIgnore = !(inSrcOrCore || inApp);
-	if (shouldIgnore) return null;
+	// No second project-scope filter here. The authoritative allowlist is the
+	// `isWithinHmrScope` gate at the top of this prologue — app source dir plus
+	// tsconfig-configured shared-library roots. An older, narrower re-filter at
+	// this point (project-root `src`/`core`/app-dir substring checks) silently
+	// dropped workspace-library files: their `.ts`/`.html` edits never reached
+	// the framework tails, so a monorepo lib component's class edit could only
+	// flow through Analog's in-place `ɵɵreplaceMetadata` path — which reuses
+	// the live instance and can NEVER apply class-body changes — while the
+	// Angular reboot broadcast (`ns:angular-update`) that actually delivers
+	// them never fired. The visible symptom: editing a lib component's class
+	// (e.g. converting inputs to signals) appears to hot-update but the running
+	// instance keeps the old shape, and the next template edit that uses the
+	// new shape throws (`ctx.x is not a function`) on every subsequent save.
 	if (verbose) console.log(`[hmr-ws] Hot update for: ${file}`);
 
 	// Tailwind / content-scanning CSS broadcast for non-CSS edits.

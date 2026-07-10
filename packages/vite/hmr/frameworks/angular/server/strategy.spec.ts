@@ -235,3 +235,116 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 		expect(result).toBeUndefined();
 	});
 });
+
+describe('angularServerStrategy.handleClientCustomEvent (angular:invalidate recovery)', () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	// Each test creates its OWN component file under a temp project root: the
+	// handler resolves the invalidate id against the monorepo workspace root
+	// first and the vite project root second, and dedupes reboots per resolved
+	// file — unique paths keep tests independent of the module-level dedupe map.
+	function makeProject(componentRel: string) {
+		const tmpRoot = mkdtempSync(path.join(os.tmpdir(), 'angular-invalidate-'));
+		const abs = path.join(tmpRoot, componentRel);
+		mkdirSync(path.dirname(abs), { recursive: true });
+		writeFileSync(abs, 'export class HeaderComponent {}');
+		return tmpRoot;
+	}
+
+	function makeInvalidateServer(root: string) {
+		return {
+			config: { root, plugins: [] },
+			moduleGraph: {
+				getModuleById: vi.fn(() => undefined),
+				getModulesByFile: vi.fn(() => undefined),
+				invalidateModule: vi.fn(),
+			},
+		} as any;
+	}
+
+	function makeInvalidateDeps(client: FakeClient) {
+		return {
+			wss: { clients: new Set<FakeClient>([client]) },
+			moduleGraph: { version: 3 },
+			strategy: { flavor: 'angular' },
+			verbose: false,
+			sharedTransformRequest: { invalidateMany: vi.fn() },
+			getBootstrapEntryRelPath: () => '/src/main.ts',
+			isSocketClientOpen: (c: any) => !!c && c.readyState === 1,
+			getHmrSocketRole: () => 'device',
+			rememberAngularReloadSuppression: vi.fn(),
+			getRootComponentIdentity: () => null,
+		} as any;
+	}
+
+	it('broadcasts the ns:angular-update reboot when the device reports a failed in-place apply', async () => {
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const componentRel = 'src/app/header-a.component.ts';
+		const tmpRoot = makeProject(componentRel);
+		try {
+			const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+			const deps = makeInvalidateDeps(openClient);
+			const server = makeInvalidateServer(tmpRoot);
+
+			await angularServerStrategy.handleClientCustomEvent!(
+				{
+					event: 'angular:invalidate',
+					// Angular sends the compiler-embedded id: encodeURIComponent('<rel>@<Class>').
+					data: { id: encodeURIComponent(`${componentRel}@HeaderComponent`), message: 'ctx.showExtra is not a function', error: true },
+					server,
+				},
+				deps,
+			);
+
+			expect(openClient.send).toHaveBeenCalledTimes(1);
+			const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
+			expect(payload).toMatchObject({ type: 'ns:angular-update', origin: 'http://test:5173', path: `/${componentRel}`, version: 3, importerEntry: '/src/main.ts' });
+			expect(Array.isArray(payload.evictPaths)).toBe(true);
+			expect(deps.rememberAngularReloadSuppression).toHaveBeenCalledTimes(1);
+			// The failure surfaces always-on so the user sees why the app rebooted.
+			expect(warnSpy.mock.calls.some((c) => String(c[0]).includes('failed to apply in-place component update'))).toBe(true);
+		} finally {
+			rmSync(tmpRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('dedupes repeated invalidates for the same component inside the reboot window', async () => {
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const componentRel = 'src/app/header-b.component.ts';
+		const tmpRoot = makeProject(componentRel);
+		try {
+			const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+			const deps = makeInvalidateDeps(openClient);
+			const server = makeInvalidateServer(tmpRoot);
+			const ctx = { event: 'angular:invalidate', data: { id: encodeURIComponent(`${componentRel}@HeaderComponent`) }, server };
+
+			await angularServerStrategy.handleClientCustomEvent!(ctx, deps);
+			await angularServerStrategy.handleClientCustomEvent!(ctx, deps);
+
+			// One failed apply fans out to several invalidate sends (one per
+			// stale hot listener / LView walk) — only ONE reboot broadcast.
+			expect(openClient.send).toHaveBeenCalledTimes(1);
+		} finally {
+			rmSync(tmpRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('ignores other custom events and unresolvable component ids', async () => {
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const deps = makeInvalidateDeps(openClient);
+		const server = makeInvalidateServer('/nonexistent-project-root');
+
+		await angularServerStrategy.handleClientCustomEvent!({ event: 'some:other-event', data: { id: 'src/app/x.ts@X' }, server }, deps);
+		expect(openClient.send).not.toHaveBeenCalled();
+
+		await angularServerStrategy.handleClientCustomEvent!({ event: 'angular:invalidate', data: { id: encodeURIComponent('does/not/exist.component.ts@Nope') }, server }, deps);
+		expect(openClient.send).not.toHaveBeenCalled();
+		expect(warnSpy.mock.calls.some((c) => String(c[0]).includes('unresolvable component id'))).toBe(true);
+	});
+});

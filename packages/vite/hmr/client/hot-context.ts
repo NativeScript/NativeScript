@@ -30,6 +30,18 @@ interface HotModuleEntry {
 	disposeCallbacks: HotCallback[];
 	pruneCallbacks: HotCallback[];
 	declined: boolean;
+	/**
+	 * Custom-event listeners (`hot.on`) registered by the module's CURRENT
+	 * evaluation, so the next evaluation can prune them from the global
+	 * registry (Vite parity: stock Vite clears a module's stale event
+	 * listeners in `createHotContext`). Without pruning, every re-evaluation
+	 * (eviction + re-import, reboots) stacks another listener holding the
+	 * previous module instance in its closure — for Angular that means each
+	 * `angular:component-update` fans out to N stale
+	 * `Component_HmrLoad` fetches + `ɵɵreplaceMetadata` calls against dead
+	 * component classes.
+	 */
+	ownListeners?: Map<string, Set<HotCallback>>;
 }
 
 export interface NsHotRegistry {
@@ -190,7 +202,23 @@ function createRegistry(): NsHotRegistry {
 			entry.disposeCallbacks = [];
 			entry.pruneCallbacks = [];
 			entry.declined = false;
+			// Prune the previous evaluation's `hot.on` listeners (see
+			// `HotModuleEntry.ownListeners`) — they close over the replaced
+			// module instance and would otherwise fire forever.
+			if (entry.ownListeners) {
+				for (const [event, callbacks] of entry.ownListeners) {
+					const globalSet = eventListeners.get(event);
+					if (!globalSet) continue;
+					for (const cb of callbacks) {
+						globalSet.delete(cb);
+					}
+					if (globalSet.size === 0) {
+						eventListeners.delete(event);
+					}
+				}
+			}
 			const ownListeners = new Map<string, Set<HotCallback>>();
+			entry.ownListeners = ownListeners;
 			return {
 				get data() {
 					return entry.data;
