@@ -11,6 +11,7 @@ import { applyCssText, handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 import { markDevBootComplete } from '../shared/runtime/boot-complete.js';
+import { installLaunchNotificationBridge } from '../shared/runtime/launch-bridge.js';
 import { getNsHotRegistry } from './hot-context.js';
 
 const VERBOSE = ENV_VERBOSE;
@@ -91,6 +92,43 @@ function ensureCoreAliasesOnGlobalThis() {
 }
 // Apply once on module evaluation
 ensureCoreAliasesOnGlobalThis();
+
+// Late-registration bridge for one-shot iOS launch notifications.
+//
+// Under a webpack (or non-HMR vite) build the app bundle evaluates BEFORE
+// `UIApplicationMain` finishes launching, so app code that does
+// `Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, cb)`
+// registers in time and `cb` fires. Under the HTTP dev session UIKit is fully
+// launched (the boot placeholder is on screen) long before the app graph
+// evaluates — those observers register AFTER the notification fired and are
+// never called. Real-world fallout: apps that gate SDK init (auth clients,
+// Firebase, Sentry) behind didFinishLaunching silently never initialize, and
+// only under HMR.
+//
+// The bridge wraps `addNotificationObserver` so a post-launch registration
+// for Did/WillFinishLaunching still registers normally (harmless) AND has its
+// callback invoked on the next macrotask with a synthesized NSNotification.
+// This client module evaluates before the entry graph (session-bootstrap
+// imports it first), so the wrapper is in place before app code runs.
+// Launch-notification bridge (see shared/runtime/launch-bridge.ts): the
+// DETERMINISTIC install happens in the /__ns_dev__/client bootstrap wrapper
+// (it statically imports the /ns/core bridge + the shared installer and runs
+// before the app entry). This module-eval attempt and the global hook are
+// belt-and-braces for exotic boot paths — this client evaluates async and can
+// lose the race against the entry graph, so it must never be the only wrap.
+function tryInstallLaunchNotificationBridge(attempts: number, explicitApplication?: any) {
+	let wrappedAny = false;
+	try {
+		wrappedAny = installLaunchNotificationBridge(explicitApplication, [getCore('Application')]);
+	} catch {}
+	if (!wrappedAny && attempts > 0) {
+		setTimeout(() => tryInstallLaunchNotificationBridge(attempts - 1, explicitApplication), 100);
+	}
+}
+tryInstallLaunchNotificationBridge(100);
+try {
+	(globalThis as any).__NS_DEV_INSTALL_LAUNCH_BRIDGE__ = (explicitApplication?: any) => tryInstallLaunchNotificationBridge(100, explicitApplication);
+} catch {}
 
 // Install the device CSS applier. CSS-bearing modules (a Vue SFC `<style>` via
 // `/ns/asm`, an imported `.css` via `/ns/m`) call `__NS_REGISTER_CSS__(tag, css)`,

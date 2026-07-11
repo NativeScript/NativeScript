@@ -128,10 +128,26 @@ export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin:
 	// resolves to the SAME module record/realm instead of minting a new one.
 	const coreBridgeUrl = `${normalizedOrigin}/ns/core`;
 
+	const launchBridgeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/launch-bridge.js`;
+
 	return `
 import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from ${JSON.stringify(vendorBootstrapUrl)};
 import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from ${JSON.stringify(vendorBundleUrl)};
 import { installNsHotRegistry as __nsBrowserRuntimeInstallHotRegistry } from ${JSON.stringify(resolvedHotContextImport)};
+import { installLaunchNotificationBridge as __nsBrowserRuntimeInstallLaunchBridge } from ${JSON.stringify(launchBridgeUrl)};
+import * as __nsBrowserRuntimeCoreBridge from ${JSON.stringify(coreBridgeUrl)};
+
+// Launch-notification bridge — must precede the app entry (this wrapper is
+// imported by the session bootstrap BEFORE the entry graph). Passing the
+// /ns/core realm's Application: that is the instance app code gets, and the
+// only deterministic wrap point (the full HMR client evaluates async and
+// loses the race against the entry). See shared/runtime/launch-bridge.ts.
+try {
+	const __nsCoreNs = __nsBrowserRuntimeCoreBridge && (__nsBrowserRuntimeCoreBridge.default ?? __nsBrowserRuntimeCoreBridge);
+	__nsBrowserRuntimeInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);
+} catch (launchBridgeErr) {
+	console.warn('[ns-browser-runtime-client] launch-notification bridge install failed', launchBridgeErr);
+}
 
 // Install the JS hot registry FIRST: every served app module's injected
 // prelude reads globalThis.__NS_HOT_REGISTRY__ at evaluation time, and this

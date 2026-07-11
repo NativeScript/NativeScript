@@ -209,24 +209,64 @@ export function buildDefineShimStatements(values: RuntimeDefineValues): string[]
 // identifier a binding the normalizer leaves alone AND the correct value, so HMR
 // matches the bundle. Captured from the resolved config in `configResolved`.
 const USER_DEFINE_IDENTIFIER_RE = /^__[A-Za-z0-9_]+__$/;
+const USER_PROCESS_ENV_DEFINE_RE = /^process\.env\.([A-Za-z_$][\w$]*)$/;
 let userDefineEntries: Array<[string, string]> = [];
+let userProcessEnvDefineEntries: Record<string, string> = {};
 
 /**
  * Record the app's `__FOO__`-style `define` entries from the resolved Vite
- * config. Non-identifier keys (`process.env.X`, `global.isIOS`, `import.meta.*`)
- * are ignored — only bare `__FOO__` identifiers can appear free in app code and
- * get mis-bound. Vite `define` VALUES are JS-expression strings (e.g. `"true"`),
- * so they pass through verbatim; a non-string value is JSON-encoded defensively.
+ * config. `global.isIOS` / `import.meta.*` keys are ignored — only bare
+ * `__FOO__` identifiers can appear free in app code and get mis-bound. Vite
+ * `define` VALUES are JS-expression strings (e.g. `"true"`), so they pass
+ * through verbatim; a non-string value is JSON-encoded defensively.
+ *
+ * `process.env.<KEY>` entries are captured SEPARATELY: production bundles get
+ * them via Vite's textual substitution, but raw-served HMR modules read the
+ * injected `globalThis.process.env` shim — without these entries every
+ * dotenv-sourced value (webpack's dotenv-webpack behavior mirrored by app
+ * configs via `define`) is silently `undefined` only under HMR (observed:
+ * `SHARED_KEYCHAIN_GROUP` missing broke FCUUID shared-keychain device ids).
+ * Define values are JS expressions — for the env shim we want the runtime
+ * VALUE, so JSON-parse the common `JSON.stringify(...)`-encoded case and fall
+ * back to the raw text for anything exotic.
  */
 export function setUserDefineEntries(define: Record<string, unknown> | undefined): void {
 	const entries: Array<[string, string]> = [];
+	const envEntries: Record<string, string> = {};
 	if (define) {
 		for (const [key, value] of Object.entries(define)) {
+			const envMatch = USER_PROCESS_ENV_DEFINE_RE.exec(key);
+			if (envMatch) {
+				const expr = typeof value === 'string' ? value : JSON.stringify(value);
+				// A missing dotenv key is commonly defined as the literal
+				// `undefined` expression (correct for text substitution). The
+				// env-shim equivalent is ABSENCE — stringifying it would make
+				// `process.env.X` the string "undefined" on device (observed as
+				// a login field prefilled with the text "undefined").
+				if (expr === undefined || expr === 'undefined' || expr === 'null') {
+					continue;
+				}
+				let resolved: string = expr;
+				try {
+					const parsed = JSON.parse(expr);
+					resolved = typeof parsed === 'string' ? parsed : String(parsed);
+				} catch {
+					// Not JSON (a raw code expression) — keep the text verbatim.
+				}
+				envEntries[envMatch[1]] = resolved;
+				continue;
+			}
 			if (!USER_DEFINE_IDENTIFIER_RE.test(key)) continue;
 			entries.push([key, typeof value === 'string' ? value : JSON.stringify(value)]);
 		}
 	}
 	userDefineEntries = entries;
+	userProcessEnvDefineEntries = envEntries;
+}
+
+/** The captured `process.env.<KEY>` define values (see setUserDefineEntries). */
+export function getUserProcessEnvDefineEntries(): Record<string, string> {
+	return userProcessEnvDefineEntries;
 }
 
 /**

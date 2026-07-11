@@ -13,7 +13,7 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { getCliFlags, resolvePlatform } from '../../helpers/cli-flags.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
-import { buildDefineShimStatements, buildGuardedDefineSeedStatement, buildUserDefineShimStatements, getRuntimeDefineValues } from '../../helpers/global-defines.js';
+import { buildDefineShimStatements, buildGuardedDefineSeedStatement, buildUserDefineShimStatements, getRuntimeDefineValues, getUserProcessEnvDefineEntries } from '../../helpers/global-defines.js';
 import { linkAngularPartialsIfNeeded } from '../frameworks/angular/server/linker.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
@@ -33,7 +33,20 @@ try {
 		__processEnvEntries[k] = String(v);
 	}
 } catch {}
-const __processEnvJson = JSON.stringify(__processEnvEntries);
+
+// Serialized lazily (and cached) so the app's `process.env.<KEY>` define
+// entries — captured from the resolved Vite config in `configResolved`, i.e.
+// AFTER this module evaluates — are included. Production bundles get those
+// values via Vite's textual substitution; raw-served HMR modules only see
+// this shim. CLI --env.* flags win on key collisions (they are the more
+// specific, per-invocation input).
+let __processEnvJsonCache: string | null = null;
+function getProcessEnvJson(): string {
+	if (__processEnvJsonCache === null) {
+		__processEnvJsonCache = JSON.stringify({ ...getUserProcessEnvDefineEntries(), ...__processEnvEntries });
+	}
+	return __processEnvJsonCache;
+}
 
 // Canonical define values resolved once
 const __runtimeDefines = (() => {
@@ -318,7 +331,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// missing. App code that pre-populates `process.env` (e.g. an Azure
 		// App Configuration boot module) is preserved; we never overwrite a
 		// populated env with the bare `{ NODE_ENV: 'development' }` stub.
-		`if (typeof globalThis.process === "undefined" || globalThis.process === null) { globalThis.process = { env: ${__processEnvJson} }; } else if (!globalThis.process.env) { globalThis.process.env = ${__processEnvJson}; }`,
+		`if (typeof globalThis.process === "undefined" || globalThis.process === null) { globalThis.process = { env: ${getProcessEnvJson()} }; } else if (!globalThis.process.env) { globalThis.process.env = ${getProcessEnvJson()}; }`,
 		// Seed platform defines from the dev server's CLI flags BEFORE the const
 		// shims snapshot them — see __platformSeed above for the ESM-ordering
 		// rationale (externalized core imports evaluate before the bundle body).

@@ -396,6 +396,31 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 				});
 			}
 			await importModule(session.clientUrl);
+			// Deterministic point for the client's launch-notification bridge:
+			// core is loaded (the boot placeholder uses Application) and the
+			// app entry has NOT evaluated yet — app code registering
+			// launch-time observers (UIApplicationDidFinishLaunchingNotification
+			// gates around SDK init are common) is guaranteed to hit the
+			// wrapped addNotificationObserver and get the missed one-shot
+			// notification replayed. The client's own module-eval attempt can
+			// lose this race (the vendor registry it resolves core through is
+			// only populated by the client bootstrap).
+			try {
+				const installLaunchBridge = (getGlobalScope() as any).__NS_DEV_INSTALL_LAUNCH_BRIDGE__;
+				if (typeof installLaunchBridge === 'function') {
+					// Pass the /ns/core realm's Application explicitly — that is
+					// the instance app code gets (its @nativescript/core imports
+					// rewrite to the /ns/core bridge). The client's own lookup
+					// prefers the vendor-registry realm, which can be a DIFFERENT
+					// Application whose wrapped `.ios` the app never touches.
+					let coreApplication: unknown;
+					try {
+						const coreNs: any = await importModule(new URL('/ns/core', session.origin).toString());
+						coreApplication = (coreNs?.default ?? coreNs)?.Application ?? coreNs?.Application;
+					} catch {}
+					installLaunchBridge(coreApplication);
+				}
+			} catch {}
 			await importModule(session.entryUrl);
 		} finally {
 			stopBootImportHeartbeat();
