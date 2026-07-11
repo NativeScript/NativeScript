@@ -195,6 +195,34 @@ describe('runHotUpdatePrologue', () => {
 		expect(update.tag).toBeUndefined();
 	});
 
+	it('broadcasts an app.css refresh when a workspace-lib Tailwind content file (.html) changes', async () => {
+		// A brand-new utility class (e.g. `text-green-500`) added to a
+		// workspace-lib template only renders if the device re-fetches
+		// `app.css` so Tailwind's content scan regenerates. The lib template
+		// IS in the preprocessCSS dep set (Vite expands Tailwind's
+		// dir-dependency globs), but the old project-scope re-filter returned
+		// early for files outside `<root>/src|core|app` — so the content-file
+		// broadcast below it never fired for lib edits and the new class
+		// silently never applied. This pins the post-fix behavior.
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const libHtml = '/repo/libs/xplat/nativescript/features/src/lib/ui/components/header/header.component.html';
+		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/repo/libs'] });
+		const ctx = makeCtx(libHtml);
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([libHtml]) });
+
+		const result = await runHotUpdatePrologue(ctx, deps);
+
+		// The prologue must NOT swallow the lib edit — the framework tail
+		// (template swap / reboot routing) still needs to run after it.
+		expect(result).not.toBeNull();
+		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
+		expect(cssMsg).toBeTruthy();
+		expect(cssMsg.updates[0].path).toBe('/src/app.css');
+		// No tag → the client replaces the boot-time app.css selectors.
+		expect(cssMsg.updates[0].tag).toBeUndefined();
+	});
+
 	it('broadcasts an ns:hmr-pending message to open clients for in-scope changes', async () => {
 		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
 		const closedClient: FakeClient = { readyState: 3, send: vi.fn() };

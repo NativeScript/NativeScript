@@ -17,16 +17,21 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
 // Per-session memo: the device-reachable origin is stable for a dev server's
 // lifetime, but `getServerOrigin` is called multiple times per `/ns/m` request
 // (each call re-runs CLI-flag parsing + NIC enumeration via
-// `resolveDeviceReachableOrigin`). Cache it on the server instance via a
-// WeakMap so a long-running session computes it once and a fresh server (new
-// session) recomputes.
+// `resolveDeviceReachableOrigin`). Keyed by `server.config` (NOT the server
+// object): Vite 8 hands hot-update hooks a compat WRAPPER over the dev server
+// whose object identity differs from the `configureServer` instance, while
+// `server.config` stays the same ResolvedConfig through any wrapper. Keying
+// by the server object made every hot-update call a cache miss (harmless for
+// this pure recompute, but wasteful — and the same identity split was an
+// outright correctness bug for app-css-state; see helpers/app-css-state.ts).
 const ORIGIN_CACHE = new WeakMap<object, string>();
 
 export function getServerOrigin(server: ViteDevServer): string {
-	const cached = ORIGIN_CACHE.get(server as unknown as object);
+	const cacheKey = (server?.config && typeof server.config === 'object' ? server.config : server) as unknown as object;
+	const cached = ORIGIN_CACHE.get(cacheKey);
 	if (cached) return cached;
 	const origin = computeServerOrigin(server);
-	ORIGIN_CACHE.set(server as unknown as object, origin);
+	ORIGIN_CACHE.set(cacheKey, origin);
 	return origin;
 }
 
