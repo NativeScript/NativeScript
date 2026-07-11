@@ -12,6 +12,21 @@ import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helper
 export interface EnsureNativeScriptModuleBindingsOptions {
 	preserveNonPluginVendorImports?: boolean;
 	resolvedSpecifierOverrides?: Map<string, string>;
+	/**
+	 * Rewrite vendor/plugin imports to their `/ns/m/node_modules/<pkg>` HTTP
+	 * ESM form instead of the `__nsVendorRequire` registry shim.
+	 *
+	 * Worker realms need this: the vendor registry (`__nsVendorRegistry` /
+	 * `__nsRequire`) is installed by the MAIN realm's dev-session bootstrap
+	 * and never exists inside a `new Worker(...)` context, so the registry
+	 * shim's fallback to the native `require()` fails for every vendor
+	 * package (observed with `@nativescript/zip` in a zip worker on a fresh
+	 * install — the first boot's DB unzip was the first code path to ever
+	 * exercise a vendor require inside a worker). The HTTP form gives the
+	 * worker its own realm-local copy via the deps-bundle bridge — the same
+	 * isolation semantics webpack's per-worker bundles had.
+	 */
+	vendorImportsAsHttp?: boolean;
 }
 
 interface NativeScriptImportBinding {
@@ -164,6 +179,16 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 				preservedImports.push(original);
 				continue;
 			}
+			if (options?.vendorImportsAsHttp) {
+				// `ns_worker=1` tells the /ns/m route to bypass the deps-bundle
+				// bridge and serve the package's own transformed module: the
+				// bundle drags the full dependency closure (Angular included)
+				// into the worker realm, where injectables like
+				// _PlatformLocation reject the whole entry evaluation with
+				// "needs to be compiled using the JIT compiler".
+				preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${canonical}?ns_worker=1`));
+				continue;
+			}
 			const binding = getModuleBinding(canonical);
 			binding.sideEffectOnly = true;
 			continue;
@@ -193,6 +218,11 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		}
 		if (!canonical) {
 			preservedImports.push(original);
+			continue;
+		}
+		if (options?.vendorImportsAsHttp) {
+			// See the side-effect branch above for the `ns_worker=1` rationale.
+			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${canonical}?ns_worker=1`));
 			continue;
 		}
 

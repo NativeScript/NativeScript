@@ -163,6 +163,47 @@ describe('ensureNativeScriptModuleBindings — package metadata NativeScript det
 		expect(text).toMatch(/(?:const|var)\s+SyncStatus\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*['"]SyncStatus['"]\)/);
 	});
 
+	it('routes vendor imports to /ns/m/node_modules HTTP form with vendorImportsAsHttp (worker realms)', () => {
+		// Worker realms never have the main realm's vendor registry —
+		// `__nsVendorRequire('@nativescript/zip')` inside a zip worker falls
+		// back to the native require() and fails. The HTTP form keeps the
+		// import a real ESM import the worker can resolve on its own.
+		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-bindings-'));
+		tempRoots.push(root);
+
+		mkdirSync(join(root, 'node_modules', '@nativescript', 'zip'), { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app' }, null, 2));
+		writeFileSync(
+			join(root, 'node_modules', '@nativescript', 'zip', 'package.json'),
+			JSON.stringify(
+				{
+					name: '@nativescript/zip',
+					main: './index',
+					nativescript: {
+						platforms: {
+							ios: '6.0.0',
+						},
+					},
+				},
+				null,
+				2,
+			),
+		);
+
+		process.chdir(root);
+
+		const input = `import { Zip } from '@nativescript/zip';\nexport const unzip = (o) => Zip.unzip(o);`;
+		const out = ensureNativeScriptModuleBindings(input, { vendorImportsAsHttp: true });
+		const text = squish(out);
+
+		// The import statement survives with the HTTP specifier — no registry
+		// shim. `ns_worker=1` makes the /ns/m route bypass the deps-bundle
+		// bridge (the full bundle can't evaluate in a worker realm).
+		expect(text).toContain(`import { Zip } from '/ns/m/node_modules/@nativescript/zip?ns_worker=1'`);
+		expect(text).not.toContain('__nsVendorRequire');
+		expect(text).not.toContain('__nsVendorModule_');
+	});
+
 	it('preserves exact bare runtime-plugin subpaths instead of collapsing them to the root package', () => {
 		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-bindings-'));
 		tempRoots.push(root);

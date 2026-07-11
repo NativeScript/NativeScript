@@ -60,6 +60,27 @@ const __platformSeed = __runtimeDefines.platform ? buildGuardedDefineSeedStateme
 
 interface ProcessCodeForDeviceOptions {
 	resolvedSpecifierOverrides?: Map<string, string>;
+	/**
+	 * The request being served carries `?ns_worker=1` — it is part of a
+	 * worker realm's module graph (marker propagated by the /ns/m route), so
+	 * vendor imports must take the per-module HTTP form regardless of the
+	 * module's own filename.
+	 */
+	workerRealm?: boolean;
+}
+
+/**
+ * True when the served module id names a worker ENTRY by the NativeScript
+ * `.worker` filename convention (`zip.worker.ts`, `effect.worker`, …). The
+ * /ns/m route strips script extensions, so match both the extensionless and
+ * extension-carrying forms, ignoring any query suffix.
+ */
+export function isWorkerEntryModuleId(sourceId?: string): boolean {
+	if (!sourceId) {
+		return false;
+	}
+	const clean = sourceId.split('?')[0];
+	return /\.worker(?:\.(?:ts|tsx|js|jsx|mjs|mts|cts))?$/i.test(clean);
 }
 
 // Default-import forms of the app's nativescript.config-as-JSON module:
@@ -252,6 +273,15 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	const bindingOptions: EnsureNativeScriptModuleBindingsOptions = {
 		preserveNonPluginVendorImports: preserveVendorImports,
 		resolvedSpecifierOverrides,
+		// Worker entries evaluate in their own realm, where the main realm's
+		// vendor registry / __nsRequire never exist — route their vendor
+		// imports to the /ns/m/node_modules HTTP ESM form instead (realm-local
+		// copy via the deps-bundle bridge, matching webpack's per-worker
+		// bundling semantics). Entry-level detection by the `.worker` filename
+		// convention; a worker's TRANSITIVE imports share URLs with the main
+		// realm and cannot be forked per-realm, so plugins consumed by worker
+		// code should be imported from the worker entry itself.
+		vendorImportsAsHttp: options?.workerRealm || isWorkerEntryModuleId(sourceId),
 	};
 
 	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.

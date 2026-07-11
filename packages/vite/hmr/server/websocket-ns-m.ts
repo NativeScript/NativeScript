@@ -13,7 +13,7 @@ import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
-import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
+import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
 import { createNsMResponseMemo } from './ns-m-response-memo.js';
@@ -291,11 +291,22 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			}
 			if (!spec.startsWith('/')) spec = '/' + spec;
 
+			// Worker-realm serves must NOT take the deps-bundle bridge: the
+			// bundle evaluates the full dependency closure in the worker realm,
+			// where Angular's injectables reject the entry evaluation
+			// ("_PlatformLocation needs to be compiled using the JIT compiler").
+			// Per-module serving gives the worker just the graphs it imports.
+			// A request belongs to a worker realm when it carries `?ns_worker=1`
+			// (propagated onto every /ns/m child specifier of a worker serve
+			// below) OR when it IS a worker entry by filename — the runtime's
+			// `new Worker(...)` fetch has no way to carry the marker itself.
+			const isWorkerRealmRequest = urlObj.searchParams.get('ns_worker') === '1' || isWorkerEntryModuleId(spec);
+
 			// Deps-bundle shim short-circuit: a bundled node_modules module is
 			// served as a thin registry shim (see deps-bundle.ts) — the whole
 			// transform pipeline below is skipped. Non-bundled specs (no
 			// recording yet, CJS files, build failure) fall through unchanged.
-			if (depsBundle && spec.includes('/node_modules/')) {
+			if (depsBundle && !isWorkerRealmRequest && spec.includes('/node_modules/')) {
 				const shim = depsBundle.getShimForSpec(spec);
 				if (shim) {
 					res.statusCode = 200;
@@ -535,7 +546,10 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// context conservatively invalidates on any live edit — star-export
 			// expansion and the link-check read other modules, so this module's
 			// own transform hash is not sufficient.
-			const memoContext = `${strategy?.flavor || ''}|${getServerOrigin(server)}|${options.getGraphVersion()}|${resolvedCandidate || ''}`;
+			// Worker-realm serves produce a DIFFERENT body (vendor imports as
+			// per-module HTTP + ns_worker marker propagation) — keep the two
+			// variants in separate memo slots.
+			const memoContext = `${strategy?.flavor || ''}|${getServerOrigin(server)}|${options.getGraphVersion()}|${resolvedCandidate || ''}|${isWorkerRealmRequest ? 'worker' : 'main'}`;
 			const memoKey = memoDisabled ? null : responseMemo.buildKey(spec, transformed.code, memoContext);
 			if (memoKey) {
 				const memoized = responseMemo.get(memoKey);
@@ -554,7 +568,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// normalization, /ns/rt helper-alias injection). One classification
 			// point — see classifyServedModule for the full case list.
 			const isNodeMod = classifyServedModule(resolvedCandidate || spec) === 'library';
-			code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec);
+			code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec, isWorkerRealmRequest ? { workerRealm: true } : undefined);
 			// import.meta.hot is JS-owned: cleanCode() strips Vite's browser
 			// __vite__createHotContext assignment and processCodeForDevice
 			// injects the NS hot-context prelude (globalThis.__NS_HOT_REGISTRY__,
@@ -809,6 +823,22 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 					console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
 				}
 			}
+			// Worker-realm marker propagation: every /ns/m child specifier in a
+			// `?ns_worker=1` response carries the marker too, so the ENTIRE
+			// worker module graph stays on per-module serving. Without this,
+			// a worker entry's transitive app modules (e.g. a utils barrel
+			// importing rxjs/@angular/core) resolve node_modules specs through
+			// the deps-bundle bridge, dragging the full dependency closure —
+			// Angular included — into the worker realm, where injectables
+			// reject the entry evaluation ("_PlatformLocation needs to be
+			// compiled using the JIT compiler").
+			if (isWorkerRealmRequest) {
+				code = code.replace(/((?:from\s*|import\s*\(?\s*|import\s+)["'])((?:https?:\/\/[^"']+)?\/ns\/m\/[^"']*?)(["'])/g, (full, pre: string, url: string, post: string) => {
+					if (/[?&]ns_worker=1/.test(url)) return full;
+					return `${pre}${url}${url.includes('?') ? '&' : '?'}ns_worker=1${post}`;
+				});
+			}
+
 			// Only fully successful serves are memoized — every early-return
 			// above (link-check throw module, 404 stubs, 500s) stays uncached.
 			if (memoKey) {
