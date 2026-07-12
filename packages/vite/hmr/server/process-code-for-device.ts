@@ -455,6 +455,15 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		result = inlineNsConfigVirtualImports(result);
 	} catch {}
 
+	// Un-prefix REAL bare-module ids Vite serves as `/@id/<id>` (no `__x00__`
+	// virtual marker) BEFORE the virtual-id strip below. Vite uses `/@id/` for
+	// any resolved id that isn't a file path — including genuine packages that
+	// aren't in optimizeDeps (e.g. `html-entities`), not just virtual modules.
+	// Restoring the bare specifier lets the module-bindings pass route them
+	// like any other dependency import; deleting them left the consumer's
+	// bindings undefined (observed as `decode is not defined` in
+	// DecodeHtmlEntitiesPipe).
+	result = result.replace(/(import\s+[^;]+\s+from\s+["'])\/@id\/(?!__x00__)([^"']+)(["'])/g, '$1$2$3');
 	// Remove Vite internal imports (dynamic-import-helper, etc.)
 	// This handles both standalone lines and concatenated imports on the same line
 	// EXCEPT oxc runtime helpers (decorators etc.): Vite 8's oxc transform emits

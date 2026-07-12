@@ -3,6 +3,24 @@ import { getAllDependencies } from './utils.js';
 
 let targetFlavor: string;
 
+/**
+ * Seed the flavor singleton from an explicit source of truth — the flavor the
+ * user's config declared (e.g. `angularConfig()` → `baseConfig({ flavor:
+ * 'angular' })`). Dependency-based detection reads only the project's OWN
+ * package.json, which misses hoisted framework packages in monorepos (an Nx
+ * app depending on a root-level `@nativescript/angular` detects as
+ * 'javascript'). A wrong flavor silently disables flavor-gated build steps —
+ * most critically the deps-bundle Angular linker, leaving `ɵɵngDeclare*`
+ * partial declarations unlinked and crashing at runtime with "needs to be
+ * compiled using the JIT compiler" the first time such a factory is pulled
+ * (observed with `_PlatformLocation` during an HMR reboot).
+ */
+export function setProjectFlavor(flavor: string): void {
+	if (flavor) {
+		targetFlavor = flavor;
+	}
+}
+
 export function getProjectFlavor(): string {
 	if (!targetFlavor) {
 		const detectedFlavor = determineProjectFlavor();

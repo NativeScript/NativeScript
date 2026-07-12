@@ -65,7 +65,7 @@ import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuil
 import type { Platform } from '../../helpers/platform-types.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
-import { createNodeBuiltinPolyfillEsbuildPlugin, createSolidJsxEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createVendorEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin } from '../shared/vendor/vendor-esbuild-plugins.js';
+import { createNodeBuiltinPolyfillEsbuildPlugin, createSolidJsxEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createVendorEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createOptionalDependencyStubEsbuildPlugin, createNativeAddonStubEsbuildPlugin } from '../shared/vendor/vendor-esbuild-plugins.js';
 import { getVendorManifest, setVendorRuntimeModuleProvider } from '../shared/vendor/registry.js';
 import { collectVendorModules } from '../shared/vendor/manifest-collect.js';
 import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.js';
@@ -636,7 +636,18 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// createNodeBuiltinPolyfillEsbuildPlugin bundles installed npm polyfills
 	// (buffer, events, ...) that would otherwise leak as bare builtin externals
 	// the device cannot resolve.
-	const buildPlugins = (): esbuild.Plugin[] => [createWebpackLoaderStubEsbuildPlugin(), createNodeBuiltinPolyfillEsbuildPlugin(projectRoot, NODE_BUILTINS), createNativeClassEsbuildPlugin(platform as Platform), createVendorEsbuildPlugin(projectRoot), createDepsImportRoutingPlugin(projectRoot, workspaceRoot, String(platform), flavor), ...(flavor === 'angular' ? [createDepsAngularLinkerPlugin(projectRoot)] : []), ...(flavor === 'solid' ? [createSolidJsxEsbuildPlugin(projectRoot)] : []), createUnicodeRegexEsbuildPlugin(projectRoot)];
+	const buildPlugins = (): esbuild.Plugin[] => [
+		createWebpackLoaderStubEsbuildPlugin(),
+		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot, NODE_BUILTINS),
+		createNativeClassEsbuildPlugin(platform as Platform),
+		createVendorEsbuildPlugin(projectRoot),
+		createDepsImportRoutingPlugin(projectRoot, workspaceRoot, String(platform), flavor),
+		...(flavor === 'angular' ? [createDepsAngularLinkerPlugin(projectRoot)] : []),
+		...(flavor === 'solid' ? [createSolidJsxEsbuildPlugin(projectRoot)] : []),
+		createUnicodeRegexEsbuildPlugin(projectRoot),
+		createOptionalDependencyStubEsbuildPlugin(projectRoot),
+		createNativeAddonStubEsbuildPlugin(),
+	];
 	const sharedBuildOptions = {
 		platform: 'neutral' as const,
 		format: 'esm' as const,

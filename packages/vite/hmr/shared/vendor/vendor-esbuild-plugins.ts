@@ -1,5 +1,6 @@
 import * as esbuild from 'esbuild';
 import path from 'path';
+import fs from 'fs';
 import { readFile } from 'fs/promises';
 import { createRequire } from 'node:module';
 import { getAngularLinkerFactory, runAngularLinker } from '../../frameworks/angular/build/shared-linker.js';
@@ -329,7 +330,13 @@ export function createUnicodeRegexEsbuildPlugin(projectRoot: string): esbuild.Pl
 				try {
 					if (!babel) {
 						babel = await import('@babel/core');
-						unicodePropertyRegexPlugin = (await import('@babel/plugin-transform-unicode-property-regex')).default;
+						// CJS interop: under a CJS-compiled host, `import()` of this
+						// package yields { default: { default: fn } } (__importStar
+						// wraps module.exports, which itself carries a transpiled
+						// `default`). Unwrap both layers or Babel rejects the plugin
+						// entry ("plugins[0] must be a string, object, function").
+						const mod: any = await import('@babel/plugin-transform-unicode-property-regex');
+						unicodePropertyRegexPlugin = mod.default?.default ?? mod.default ?? mod;
 					}
 				} catch (e: any) {
 					// Don't fail the build if the optional transform tooling is
@@ -399,6 +406,134 @@ export function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin 
 					return { contents: await readFile(args.path, 'utf8'), loader: 'js' };
 				}
 			});
+		},
+	};
+}
+
+/**
+ * Resolve-fallback for OPTIONAL bare imports inside node_modules code.
+ *
+ * Server-leaning packages guard optional peers with try/catch requires —
+ * e.g. `@nestjs/core` lazily requires `@nestjs/microservices` and
+ * `@nestjs/websockets/socket-module` and degrades gracefully when they're
+ * absent. esbuild resolves eagerly, so ONE such unresolvable specifier fails
+ * the entire vendor/deps bundle ("Could not resolve ..."). This plugin lets
+ * default resolution run first (onResolve returns undefined when the id
+ * resolves); only genuinely unresolvable bare ids — requested FROM inside
+ * node_modules — map to a stub module that THROWS on evaluation, preserving
+ * the try/catch-optional semantics instead of masking real missing modules
+ * with `undefined` exports.
+ */
+export function createOptionalDependencyStubEsbuildPlugin(projectRoot: string): esbuild.Plugin {
+	const requireFromProject = createRequire(path.join(projectRoot, 'package.json'));
+	// `@scope/name/sub` → `@scope/name`; `pkg/sub` → `pkg`; `.prisma/client/…` → `.prisma`.
+	const packageNameOf = (spec: string): string => {
+		const parts = spec.split('/');
+		return spec.startsWith('@') && parts.length >= 2 ? `${parts[0]}/${parts[1]}` : parts[0];
+	};
+	// Is the package physically installed? Walk Node's node_modules lookup
+	// chain from the importer, then the project root. Presence is judged by the
+	// package DIRECTORY (its package.json file), never by entry resolution.
+	const presenceCache = new Map<string, boolean>();
+	const isPackageInstalled = (pkgName: string, fromDir: string): boolean => {
+		const cacheKey = `${pkgName}\0${fromDir}`;
+		const cached = presenceCache.get(cacheKey);
+		if (cached !== undefined) return cached;
+		let present = false;
+		let dir = fromDir;
+		for (;;) {
+			if (fs.existsSync(path.join(dir, 'node_modules', pkgName, 'package.json'))) {
+				present = true;
+				break;
+			}
+			const parent = path.dirname(dir);
+			if (parent === dir) break;
+			dir = parent;
+		}
+		if (!present) present = fs.existsSync(path.join(projectRoot, 'node_modules', pkgName, 'package.json'));
+		presenceCache.set(cacheKey, present);
+		return present;
+	};
+	const stubbed = new Set<string>();
+	return {
+		name: 'ns-optional-dependency-stub',
+		setup(build) {
+			// Bare-specifier classification mirrors Node's: only `./x`, `../x`, `.`,
+			// `..` and absolute paths are non-bare. A leading dot does NOT make a
+			// specifier relative — `.prisma/client/index-browser` (Prisma's generated
+			// client, required by `@prisma/client`) is a bare id that resolves through
+			// node_modules, and must be stub-eligible when the generated package is
+			// absent. esbuild plugin filters are Go RE2 (no lookahead), hence the
+			// three-alternation form: bare start, `.x…`, `..x…`.
+			build.onResolve({ filter: /^[^./]|^\.[^./]|^\.\.[^/]/ }, (args) => {
+				// Only bare ids requested by node_modules code; app-code imports
+				// should keep failing loudly so misconfiguration stays visible.
+				if (!args.importer || !/node_modules[\\/]/.test(args.importer)) return undefined;
+				if (args.path.startsWith('node:')) return undefined;
+				try {
+					requireFromProject.resolve(args.path, { paths: [path.dirname(args.importer)] });
+					return undefined; // resolvable — let esbuild handle it normally
+				} catch {
+					// Node's resolver failing is NOT proof the package is missing:
+					// NativeScript plugins commonly ship extensionless platform mains
+					// (`"main": "./index"` with only index.ios.js/index.android.js on
+					// disk) that only esbuild's platform resolveExtensions can resolve.
+					// Stubbing an INSTALLED package plants an eagerly-thrown bomb in
+					// the bundle (ESM imports of the stub evaluate at bundle start —
+					// observed killing dev-session bootstrap via
+					// @nativescript-community/text under @nativescript-community/
+					// ui-label). Only genuinely ABSENT packages are stub-eligible;
+					// present-but-unresolvable ones fall through to esbuild, which
+					// either resolves them or fails the BUILD loudly with importer
+					// attribution — a diagnosable build error instead of a device
+					// bootstrap fatal.
+					if (isPackageInstalled(packageNameOf(args.path), path.dirname(args.importer))) {
+						return undefined;
+					}
+					stubbed.add(args.path);
+					return { path: args.path, namespace: 'ns-optional-dep-stub' };
+				}
+			});
+			build.onLoad({ filter: /.*/, namespace: 'ns-optional-dep-stub' }, (args) => ({
+				contents: `throw new Error(${JSON.stringify(`Cannot find module '${args.path}'`)});`,
+				loader: 'js',
+			}));
+			// Loud, counted summary (fail-open safety nets must not be silent):
+			// every stub is a module that will THROW if its importer's try/catch
+			// guard doesn't cover it on device.
+			build.onEnd(() => {
+				if (stubbed.size) {
+					console.log(`[ns-vendor] stubbed ${stubbed.size} absent optional dependenc${stubbed.size === 1 ? 'y' : 'ies'} (throw-on-evaluate): ${Array.from(stubbed).sort().join(', ')}`);
+					stubbed.clear();
+				}
+			});
+		},
+	};
+}
+
+/**
+ * Stub native Node addons (`*.node` binaries) in vendored node_modules code.
+ *
+ * Compiled addons can never evaluate on the device runtime, and esbuild has no
+ * loader for them — a single `require('./fsevents.node')` reached transitively
+ * (fsevents is an optional dep of file watchers like chokidar) hard-fails the
+ * ENTIRE vendor/deps bundle with "No loader is configured for .node files".
+ * Loading such a file as a module that THROWS mirrors exactly what happens on
+ * any platform where the binary is absent/incompatible (e.g. fsevents on
+ * Linux), so consumers' try/catch-optional guards keep working.
+ *
+ * onLoad (not onResolve) so only real resolved `.node` FILES are stubbed — a
+ * package whose name merely ends in `.node` still resolves to its JS entry and
+ * never hits this filter.
+ */
+export function createNativeAddonStubEsbuildPlugin(): esbuild.Plugin {
+	return {
+		name: 'ns-native-addon-stub',
+		setup(build) {
+			build.onLoad({ filter: /node_modules[\\/].*\.node$/ }, (args) => ({
+				contents: `throw new Error(${JSON.stringify(`Cannot load native addon '${path.basename(args.path)}' on the NativeScript runtime`)});`,
+				loader: 'js',
+			}));
 		},
 	};
 }

@@ -8,7 +8,7 @@ import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
 import type { Platform } from '../../../helpers/platform-types.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 import { getGlobalDefines } from '../../../helpers/global-defines.js';
-import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createNodeBuiltinPolyfillEsbuildPlugin } from './vendor-esbuild-plugins.js';
+import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createNodeBuiltinPolyfillEsbuildPlugin, createOptionalDependencyStubEsbuildPlugin, createNativeAddonStubEsbuildPlugin } from './vendor-esbuild-plugins.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -317,6 +317,10 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		// plugins) BEFORE resolution — a single `loader!./x` specifier would
 		// otherwise hard-fail the whole bundle. See the plugin for details.
 		createWebpackLoaderStubEsbuildPlugin(),
+		createOptionalDependencyStubEsbuildPlugin(options.projectRoot),
+		// Stub compiled `.node` addons (fsevents & co.) — unloadable by esbuild and
+		// unrunnable on device; a throwing stub preserves optional-dep semantics.
+		createNativeAddonStubEsbuildPlugin(),
 		// Bundle installed npm polyfills for node-builtin names (buffer, events,
 		// ...) instead of leaving bare externals the device cannot resolve.
 		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot),

@@ -82,7 +82,20 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 		const isVuePrebundle = (src: string | null | undefined) => !!src && /\.vite\/deps\/(?:vue|nativescript-vue)[^/]*\.js/.test(src);
 		const isVuePackage = (src: string | null | undefined) => !!src && (src === 'vue' || src.startsWith('vue/') || src.includes('nativescript-vue'));
 		const isVueLike = (src: string | null | undefined) => (isVuePackage(src) || isVuePrebundle(src)) && !isSfcPath(src);
-		const isViteVirtual = (src: string | null | undefined) => !!src && (/\/\@id\//.test(src) || /\0/.test(src) || /__x00__/.test(src));
+		// True virtual modules only (`\0`/`__x00__`-marked). A plain `/@id/<id>`
+		// is Vite's URL form for any REAL resolved bare id that isn't a file
+		// path (e.g. `html-entities` when not in optimizeDeps) — those must be
+		// rewritten to the bare id (see below), not removed; removing them
+		// left consumer bindings undefined (`decode is not defined`).
+		// Exemption: oxc runtime helper virtuals are real servable URLs that
+		// downstream passes preserve/origin-prefix — keep them here too.
+		const isViteVirtual = (src: string | null | undefined) => !!src && (/\0/.test(src) || /__x00__/.test(src)) && !src.includes('__x00__@oxc-project+runtime');
+		const realIdPrefixed = (src: string | null | undefined): string | null => {
+			if (!src || !src.startsWith('/@id/')) return null;
+			const bare = src.slice('/@id/'.length);
+			if (!bare || bare.includes('__x00__') || bare.includes('\0')) return null;
+			return bare;
+		};
 		const isVitePrebundle = (src: string | null | undefined) => !!src && /node_modules\/\.vite\/deps\//.test(src);
 		const vitePrebundleId = (src: string | null | undefined): string | null => {
 			if (!src) return null;
@@ -145,6 +158,10 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 					} else {
 						// Keep other prebundles as-is; they may be fetchable directly from the dev server
 					}
+				} else if (realIdPrefixed(src)) {
+					// Real bare id served under /@id/ — restore the bare specifier so
+					// the module-bindings pass routes it like any dependency import.
+					path.node.source = t.stringLiteral(realIdPrefixed(src) as string);
 				} else if (isViteVirtual(src) || src === '@vite/client' || src === '/@vite/client') {
 					// Removing the Vite client import should also remove its declared locals from our
 					// `declared` set; otherwise later bridge rewrites may unnecessarily suffix names
@@ -387,7 +404,14 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 			Identifier(path) {
 				const name = path.node.name;
 				if (!name || !name.startsWith('_')) return;
-				if (/^__ns_(?:rt|core)_ns(?:\d+|_re)$/.test(name)) return;
+				// Only single-underscore names are downlevel/Vue helper aliases
+				// (`_toDisplayString`, `_Symbol`). Double-underscore names are
+				// runtime globals by convention (`__ns__setInterval`, ...) —
+				// aliasing them destructures `rt.ns__setInterval` (undefined) and
+				// shadows the real global; observed as `setInterval is not a
+				// function` in worker realms when the app's timer polyfill
+				// assigned the shadowed undefined binding over the working global.
+				if (name.startsWith('__')) return;
 				if (path.scope.hasBinding(name)) return;
 				if (t.isObjectProperty(path.parent) && path.parent.key === path.node && !path.parent.computed) return;
 				if (t.isMemberExpression(path.parent) && path.parent.property === path.node && !path.parent.computed) return;
@@ -470,8 +494,9 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 			const STRICT_RESERVED = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
 			const props: t.ObjectProperty[] = [];
 			for (const underscored of underscoreUses) {
-				// Never alias our own generated internals
-				if (/^__ns_(?:rt|core)_ns(?:\d+|_re)$/.test(underscored)) continue;
+				// Never alias our own generated internals or double-underscore
+				// runtime globals (see the Identifier visitor above).
+				if (underscored.startsWith('__')) continue;
 				const base = underscored.replace(/^_+/, '');
 				// Skip reserved/restricted words — they cannot be used as binding names in strict mode
 				if (STRICT_RESERVED.has(base) || STRICT_RESERVED.has(underscored)) continue;

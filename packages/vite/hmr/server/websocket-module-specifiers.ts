@@ -763,11 +763,39 @@ export function resolveInternalRuntimePluginBareSpecifier(spec: string, projectR
 	}
 
 	const packageMainInfo = getPackageMainFieldInfo(packageName, projectRoot);
-	if (!packageMainInfo.hasExports && packageMainInfo.mainEntries.has(subpath)) {
+	if (!packageMainInfo.hasExports && subpathMatchesMainEntry(subpath, packageMainInfo.mainEntries)) {
 		return packageName;
 	}
 
 	return normalized;
+}
+
+/**
+ * True when a resolved subpath IS the package's main entry, accounting for
+ * NativeScript plugin conventions: `main` is commonly extensionless
+ * (`"main": "dist/index"`) while Vite's platform-aware resolver lands on the
+ * concrete file (`dist/index.ios.js`). An exact-string check misses that, the
+ * subpath is then kept as the vendor specifier, and the device's vendor
+ * registry (keyed on bare package ids) can't serve it — the import falls to
+ * the runtime's base require and comes back as an empty placeholder module
+ * (observed as `MediaServer is not a constructor` for
+ * `@blackout-lighting-console/media-server`).
+ */
+function subpathMatchesMainEntry(subpath: string, mainEntries: Set<string>): boolean {
+	if (mainEntries.has(subpath)) {
+		return true;
+	}
+	const normalize = (value: string) => value.replace(/\.(m|c)?(js|ts)$/, '').replace(/\.(ios|android|visionos)$/, '');
+	const strippedSubpath = normalize(subpath);
+	if (mainEntries.has(strippedSubpath)) {
+		return true;
+	}
+	for (const entry of mainEntries) {
+		if (normalize(entry) === strippedSubpath) {
+			return true;
+		}
+	}
+	return false;
 }
 
 export function shouldPreserveBareRuntimePluginSubpathImport(spec: string, projectRoot: string): boolean {

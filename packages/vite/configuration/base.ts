@@ -22,7 +22,7 @@ import { mainEntryPlugin } from '../helpers/main-entry.js';
 import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
 import { buildCoreUrl, corePathToSub, specToCoreSub } from '../helpers/ns-core-url.js';
 import { resolveDeviceReachableOrigin } from '../helpers/dev-host.js';
-import { getProjectFlavor } from '../helpers/flavor.js';
+import { getProjectFlavor, setProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
 import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
@@ -129,6 +129,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	}
 
 	flavor = flavor || (getProjectFlavor() as string);
+	// Seed the flavor singleton with the config-declared flavor so every later
+	// getProjectFlavor() consumer (deps-bundle linker gating, boot recorder,
+	// worker serving) sees the truth even when package.json detection can't —
+	// see setProjectFlavor for the hoisted-monorepo failure this prevents.
+	setProjectFlavor(flavor);
 	if (verbose) {
 		console.log(`Building for ${flavor}.`);
 	}

@@ -1,6 +1,7 @@
 import path from 'path';
 import fs, { readFileSync } from 'fs';
 import { createRequire } from 'node:module';
+import { getMonorepoWorkspaceRoot } from '../../../helpers/project.js';
 
 // Internal representation of resolved vendor inputs, including any metadata we
 // need during esbuild bundling
@@ -115,7 +116,259 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	// Server-side SDKs that require Node networking APIs (net, tls, dns, crypto).
 	// These are backend tools, not device-side.
 	'mongodb',
+	// Prisma is a server-side ORM; a monorepo root commonly declares it for a
+	// backend app. `@prisma/client` requires the GENERATED `.prisma/client`
+	// package (may be absent entirely until `prisma generate` runs) and the
+	// adapters require Node driver stacks — never device-side.
+	'@prisma/client',
+	'@prisma/adapter-better-sqlite3',
+	'@prisma/adapter-pg',
+	'@prisma/engines',
+	'prisma',
+	// WASM build instantiated via top-level await — cannot join the single-eval
+	// es2019 vendor/deps bundle (esbuild rejects TLA at that target, and the
+	// bundle's synchronous registry could not observe it anyway).
+	'yoga-layout',
 ]);
+
+// ============================================================================
+// App-source import evidence (root-dep vendoring gate)
+//
+// The workspace-root sweep exists for ONE reason: hoisted monorepos declare
+// packages at the root that the APP's own code imports (html-entities,
+// fast-xml-parser, ...). But a monorepo root also declares backend/server
+// dependencies (jose, @nestjs/*, pg, prisma, ...) that must never reach the
+// device — the vendor/deps bundle EAGERLY EVALUATES every entry on-device at
+// session start, so one server package importing `node:crypto` named exports
+// (jose's `KeyObject`) fails instantiation of the ENTIRE dev-session graph.
+// Build-time gates can't catch that: externalized builtins only fail on the
+// device, at module instantiation.
+//
+// So root deps are gated on EVIDENCE: a root dependency joins vendor only when
+// the app's device-reachable source actually imports it. "Device-reachable
+// source" = the app's `src`/`app` dirs plus every workspace-root tsconfig path
+// alias target (Nx-style `libs/*` sources, served through the vite pipeline —
+// e.g. fast-xml-parser is imported by a lib, not by app src). App-declared
+// dependencies keep the old contract (always vendored); skipped root deps keep
+// per-module HTTP serving.
+// ============================================================================
+
+const SOURCE_FILE_RE = /\.(?:ts|tsx|js|jsx|mjs|cjs|vue|svelte)$/;
+// `assets`/`www`/`public` are static-copy payloads (fonts, prebuilt WebView
+// bundles, …) — loaded as FILES into a browser/webview realm, never through
+// the device module graph. A minified webview bundle in there mentioning
+// `from"partysocket"` is a false witness that would vendor (and eagerly
+// evaluate) a DOM-dependent package on device (`class … extends Event` →
+// bootstrap fatal).
+const SOURCE_SKIP_DIR_RE = /^(?:node_modules|dist|platforms|coverage|hooks|assets|www|public|\..*)$/;
+// import/export ... from 'x' | import('x') | require('x') | bare `import 'x'`
+const IMPORT_SPEC_RE = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)['"]([^'"\n]+)['"]/g;
+const MAX_SCANNED_SOURCE_FILES = 20000;
+
+// package name → every full bare specifier the app source imports from it
+// (`@noble/curves` → {`@noble/curves/ed25519`}). Keeping the full specifiers
+// lets the gate distinguish root-entry evidence from subpath-only evidence.
+const appSourceImportsCache = new Map<string, Map<string, Set<string>>>();
+
+function bareSpecifierToPackageName(spec: string): string | null {
+	// Mirrors Node: `./x`, `../x`, `.`, `..`, absolute paths are non-bare.
+	// Alias-shaped ids (`~/x`, `@/x`, `#x`) can't be npm root deps and are
+	// harmless if collected — they simply never intersect the root dep names.
+	if (!spec || spec === '.' || spec === '..' || spec.startsWith('./') || spec.startsWith('../') || spec.startsWith('/') || /^[A-Za-z]:[\\/]/.test(spec) || spec.startsWith('node:')) {
+		return null;
+	}
+	const parts = spec.split('/');
+	return spec.startsWith('@') ? (parts.length >= 2 ? `${parts[0]}/${parts[1]}` : null) : parts[0];
+}
+
+// Crude-but-safe JSONC comment strip for tsconfig files (string-aware).
+function stripJsonComments(text: string): string {
+	let out = '';
+	let inString = false;
+	for (let i = 0; i < text.length; i++) {
+		const ch = text[i];
+		if (inString) {
+			out += ch;
+			if (ch === '\\') {
+				out += text[++i] ?? '';
+			} else if (ch === '"') {
+				inString = false;
+			}
+		} else if (ch === '"') {
+			inString = true;
+			out += ch;
+		} else if (ch === '/' && text[i + 1] === '/') {
+			while (i < text.length && text[i] !== '\n') i++;
+			out += '\n';
+		} else if (ch === '/' && text[i + 1] === '*') {
+			i += 2;
+			while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
+			i++;
+		} else {
+			out += ch;
+		}
+	}
+	return out;
+}
+
+function deviceReachableSourceRoots(projectRoot: string, workspaceRoot: string): string[] {
+	const roots: string[] = [];
+	const addDir = (candidate: string) => {
+		try {
+			let dir = candidate;
+			// A candidate naming an existing FILE (alias target like
+			// `libs/x/src/index.ts`) means "scan that file's directory" — but a
+			// candidate that doesn't exist at all must be SKIPPED, never walked up
+			// to an existing ancestor. Walking up turned a missing `<app>/app` into
+			// scanning the whole project root, which swept root-level BUILD CONFIG
+			// files (vite-app.config.ts importing @sentry/vite-plugin) into
+			// "device-reachable evidence" and vendored server-only toolchains.
+			if (!fs.existsSync(dir)) return;
+			if (!fs.statSync(dir).isDirectory()) dir = path.dirname(dir);
+			if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return;
+			dir = path.resolve(dir);
+			// Never scan node_modules-resolved targets or an ancestor of the
+			// workspace root; dedup nested dirs.
+			if (dir.includes(`${path.sep}node_modules${path.sep}`) || workspaceRoot.startsWith(dir + path.sep) || dir === workspaceRoot) return;
+			for (const existing of roots) {
+				if (dir === existing || dir.startsWith(existing + path.sep)) return;
+			}
+			for (let i = roots.length - 1; i >= 0; i--) {
+				if (roots[i].startsWith(dir + path.sep)) roots.splice(i, 1);
+			}
+			roots.push(dir);
+		} catch {
+			// unreadable candidate — skip
+		}
+	};
+	for (const d of ['src', 'app']) addDir(path.join(projectRoot, d));
+	for (const tsconfigName of ['tsconfig.base.json', 'tsconfig.json']) {
+		const tsconfigPath = path.join(workspaceRoot, tsconfigName);
+		if (!fs.existsSync(tsconfigPath)) continue;
+		try {
+			const cfg = JSON.parse(stripJsonComments(readFileSync(tsconfigPath, 'utf-8')));
+			const paths: Record<string, unknown> = cfg?.compilerOptions?.paths ?? {};
+			for (const targets of Object.values(paths)) {
+				for (const target of Array.isArray(targets) ? targets : []) {
+					// `libs/x/src/index.ts` and `libs/x/src/*` both → `libs/x/src`
+					addDir(path.resolve(workspaceRoot, String(target).replace(/\*.*$/, '')));
+				}
+			}
+		} catch {
+			// Unparseable tsconfig — app src roots still provide most evidence.
+		}
+		break;
+	}
+	return roots;
+}
+
+// Strip JS/TS comments (string-aware) before import matching. A commented-out
+// `// import "sacn";` is NOT evidence — it vendored Node-only DMX libraries
+// whose eager on-device evaluation was fatal (`Buffer is not defined`). The
+// stripper tracks '\''/'"'/backtick strings with escapes; it does NOT lex
+// regex literals, so a `/*` inside a regex can over-strip the REST of one
+// file. That bias is deliberate: lost evidence only demotes a package to
+// per-module HTTP serving, while fabricated evidence eagerly evaluates it on
+// device (a bootstrap fatal) — and imports sit above regex-bearing code in
+// practice.
+function stripJsComments(text: string): string {
+	let out = '';
+	type State = 'code' | 'line' | 'block' | 'single' | 'double' | 'template';
+	let state: State = 'code';
+	for (let i = 0; i < text.length; i++) {
+		const ch = text[i];
+		const next = text[i + 1];
+		switch (state) {
+			case 'code':
+				if (ch === '/' && next === '/') {
+					state = 'line';
+					i++;
+				} else if (ch === '/' && next === '*') {
+					state = 'block';
+					i++;
+				} else {
+					if (ch === "'") state = 'single';
+					else if (ch === '"') state = 'double';
+					else if (ch === '`') state = 'template';
+					out += ch;
+				}
+				break;
+			case 'line':
+				if (ch === '\n') {
+					state = 'code';
+					out += ch;
+				}
+				break;
+			case 'block':
+				if (ch === '*' && next === '/') {
+					state = 'code';
+					i++;
+				} else if (ch === '\n') {
+					out += ch; // keep line numbers meaningful for debugging
+				}
+				break;
+			case 'single':
+			case 'double':
+			case 'template': {
+				out += ch;
+				if (ch === '\\') {
+					out += text[++i] ?? '';
+				} else if ((state === 'single' && ch === "'") || (state === 'double' && ch === '"') || (state === 'template' && ch === '`') || (state !== 'template' && ch === '\n')) {
+					state = 'code';
+				}
+				break;
+			}
+		}
+	}
+	return out;
+}
+
+function collectAppSourceBareImports(projectRoot: string, workspaceRoot: string, debug: boolean): Map<string, Set<string>> {
+	const cached = appSourceImportsCache.get(projectRoot);
+	if (cached) return cached;
+	const specsByPackage = new Map<string, Set<string>>();
+	let scanned = 0;
+	const walk = (dir: string) => {
+		if (scanned >= MAX_SCANNED_SOURCE_FILES) return;
+		let dirents: fs.Dirent[];
+		try {
+			dirents = fs.readdirSync(dir, { withFileTypes: true });
+		} catch {
+			return;
+		}
+		for (const dirent of dirents) {
+			if (scanned >= MAX_SCANNED_SOURCE_FILES) return;
+			if (dirent.isDirectory()) {
+				if (!SOURCE_SKIP_DIR_RE.test(dirent.name)) walk(path.join(dir, dirent.name));
+			} else if (dirent.isFile() && SOURCE_FILE_RE.test(dirent.name)) {
+				scanned++;
+				let text: string;
+				try {
+					text = stripJsComments(readFileSync(path.join(dir, dirent.name), 'utf-8'));
+				} catch {
+					continue;
+				}
+				IMPORT_SPEC_RE.lastIndex = 0;
+				let match: RegExpExecArray | null;
+				while ((match = IMPORT_SPEC_RE.exec(text)) !== null) {
+					const name = bareSpecifierToPackageName(match[1]);
+					if (name) {
+						let specs = specsByPackage.get(name);
+						if (!specs) specsByPackage.set(name, (specs = new Set()));
+						specs.add(match[1]);
+					}
+				}
+			}
+		}
+	};
+	const t0 = Date.now();
+	for (const root of deviceReachableSourceRoots(projectRoot, workspaceRoot)) walk(root);
+	if (debug) {
+		console.log(`[vendor] app-source import scan: ${specsByPackage.size} bare packages across ${scanned} files in ${Date.now() - t0}ms`);
+	}
+	appSourceImportsCache.set(projectRoot, specsByPackage);
+	return specsByPackage;
+}
 
 export function collectVendorModules(projectRoot: string, platform: string, flavor?: string): CollectedVendorModules {
 	const packageJsonPath = path.resolve(projectRoot, 'package.json');
@@ -235,6 +488,83 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 
 	addDeps(pkg.dependencies);
 	addDeps(pkg.optionalDependencies);
+
+	// Monorepo hoisting: the app commonly resolves runtime packages declared in
+	// the WORKSPACE ROOT package.json (Nx-style single-version workspaces hoist
+	// everything there — the app's own package.json lists only the NS
+	// runtime/plugin subset). Collecting only the app's deps left those hoisted
+	// packages out of the vendor manifest entirely, so their imports fell
+	// through to per-module HTTP CommonJS serving with fragile interop
+	// (observed: `html-entities` losing its named exports → `decode is not
+	// defined`, then `.html5` of undefined once required over HTTP). Runtime
+	// `dependencies` only — root devDependencies are build tooling by
+	// convention, and the skip rules still filter framework/tooling packages.
+	//
+	// Root deps are additionally gated on bare-entry resolvability: a monorepo
+	// root can declare packages with no root entry at all (e.g. `emojibase-data`
+	// exports only subpaths), and importing such a name from the generated
+	// vendor entry fails the entire esbuild build. Skipped packages simply keep
+	// today's HTTP-served behavior.
+	try {
+		const workspaceRootPath = getMonorepoWorkspaceRoot(projectRoot);
+		if (workspaceRootPath && path.resolve(workspaceRootPath) !== path.resolve(projectRoot)) {
+			const rootPkg = JSON.parse(readFileSync(path.join(workspaceRootPath, 'package.json'), 'utf-8'));
+			// Evidence gate: only root deps the app's device-reachable source
+			// actually imports (see the scanner above for the full rationale —
+			// vendor entries are eagerly EVALUATED on-device, so server-side root
+			// deps must never be swept in just because they resolve).
+			const appImports = collectAppSourceBareImports(projectRoot, path.resolve(workspaceRootPath), debug);
+			const addRootDeps = (deps: Record<string, unknown> | undefined) => {
+				if (!deps) return;
+				for (const [name, spec] of Object.entries(deps)) {
+					if (isUnvendorableLocalSource(name, spec, projectRequire, platform)) continue;
+					// Policy exclusions match PACKAGE NAMES (`@prisma/client` in
+					// ALWAYS_EXCLUDE / NS_VENDOR_EXCLUDE); check here so subpath specs
+					// (`@prisma/client/runtime/…`) can't route around an excluded name.
+					if (shouldSkipDependency(name) || envExcludes.has(name)) {
+						if (debug) console.log(`[vendor] skipping root dependency ${name} (excluded by policy)`);
+						continue;
+					}
+					const importedSpecs = appImports.get(name);
+					if (!importedSpecs) {
+						if (debug) console.log(`[vendor] skipping root dependency ${name} (not imported by app source)`);
+						continue;
+					}
+					if (importedSpecs.has(name)) {
+						// Root-entry evidence — vendor the package root (old contract).
+						try {
+							projectRequire.resolve(name);
+						} catch {
+							if (debug) console.log(`[vendor] skipping root dependency ${name} (no resolvable bare entry)`);
+							continue;
+						}
+						addCandidate(name);
+						continue;
+					}
+					// Subpath-only evidence: the app never imports the package ROOT, and
+					// vendor entries are eagerly evaluated on-device — some roots throw
+					// BY DESIGN to force submodule imports (`@noble/curves`: "Incorrect
+					// usage. Import submodules instead", killing dev-session bootstrap).
+					// Vendor exactly the subpaths the app imports; anything else in the
+					// package keeps per-module HTTP serving.
+					for (const subpath of importedSpecs) {
+						try {
+							projectRequire.resolve(subpath);
+						} catch {
+							if (debug) console.log(`[vendor] skipping root dependency subpath ${subpath} (not resolvable)`);
+							continue;
+						}
+						if (debug) console.log(`[vendor] vendoring subpath ${subpath} (root ${name} has subpath-only evidence)`);
+						addCandidate(subpath);
+					}
+				}
+			};
+			addRootDeps(rootPkg.dependencies);
+			addRootDeps(rootPkg.optionalDependencies);
+		}
+	} catch {
+		// No workspace root / unreadable root package.json — single-repo layout.
+	}
 
 	for (const name of ALWAYS_INCLUDE) {
 		// Some force-included packages are only present transitively in apps that
