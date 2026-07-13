@@ -1,4 +1,5 @@
-import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServedModuleContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import type { FrameworkModuleRequestContext, FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServedModuleContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import { interceptNgComponentRequest } from './ng-component-route.js';
 import type { NsHotUpdateContext } from '../../../server/websocket-hot-update.js';
 import type { ViteDevServer } from 'vite';
 import * as path from 'path';
@@ -551,14 +552,6 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 					console.log('[hmr-ws][angular] invalidated transitive importers:', transitiveImporters.length);
 				}
 			} else if (isTs && typeof angularChangedSource === 'string') {
-				// Surfacing this log unconditionally lets the user
-				// immediately confirm whether narrowing fired for a
-				// given `.ts` edit (the summary line below still
-				// emits `narrowed=yes`/`no`, but having both makes
-				// the decision easier to spot in noisy logs and lets
-				// the user diff scenarios without flipping
-				// `NS_HMR_VERBOSE=true`).
-				//
 				// Narrowing means "skip Vite re-transform" (the
 				// importers still get evicted from the V8 module
 				// registry so live bindings refresh). The importer
@@ -703,6 +696,12 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			return [];
 		}
 		return;
+	},
+	// AnalogJS `/@ng/component` metadata fetches: gate boot-time fetches to the
+	// no-update stub, delegate live update fetches downstream to Analog's
+	// middleware (with the empty-body guard the iOS ESM loader needs).
+	interceptModuleRequest(ctx: FrameworkModuleRequestContext): boolean {
+		return interceptNgComponentRequest(ctx);
 	},
 	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
 	// identity: Angular runtime imports go through the vendor bridge and there are

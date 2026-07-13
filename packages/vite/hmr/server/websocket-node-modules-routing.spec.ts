@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { getBlockedDeviceNodeModulesReason, stripDecoratedServePrefixes } from './websocket-module-specifiers.js';
+import { getBlockedDeviceNodeModulesReason } from './websocket-module-specifiers.js';
 import { rewriteImports } from './websocket-device-transform.js';
-import { canonicalizeNsMImportPath } from './websocket-ns-m-paths.js';
+import { canonicalizeNsMImportPath, collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 
 describe('node_modules HTTP import canonicalization', () => {
 	it('preserves resolved dependency filenames for relative node_modules imports', () => {
@@ -48,9 +48,9 @@ describe('node_modules HTTP import canonicalization', () => {
 	});
 });
 
-describe('stripDecoratedServePrefixes', () => {
+describe('collapseLegacyNsMTags (inbound request specs)', () => {
 	it('extracts a path-carried HMR version from __ns_hmr__ requests', () => {
-		expect(stripDecoratedServePrefixes('/__ns_hmr__/v492/src/app/components/checkin/checkin.component')).toEqual({
+		expect(collapseLegacyNsMTags('/__ns_hmr__/v492/src/app/components/checkin/checkin.component', 'inbound-request-spec')).toEqual({
 			cleanedSpec: '/src/app/components/checkin/checkin.component',
 			bootTaggedRequest: false,
 			forcedVer: 'v492',
@@ -58,7 +58,7 @@ describe('stripDecoratedServePrefixes', () => {
 	});
 
 	it('extracts a path-carried HMR version from boot-tagged requests', () => {
-		expect(stripDecoratedServePrefixes('/__ns_boot__/b1/__ns_hmr__/v492/src/app/components/checkin/checkin.component')).toEqual({
+		expect(collapseLegacyNsMTags('/__ns_boot__/b1/__ns_hmr__/v492/src/app/components/checkin/checkin.component', 'inbound-request-spec')).toEqual({
 			cleanedSpec: '/src/app/components/checkin/checkin.component',
 			bootTaggedRequest: true,
 			forcedVer: 'v492',
@@ -66,12 +66,12 @@ describe('stripDecoratedServePrefixes', () => {
 	});
 
 	it('preserves nonce and live request tags', () => {
-		expect(stripDecoratedServePrefixes('/__ns_hmr__/live/src/app/app.routes')).toEqual({
+		expect(collapseLegacyNsMTags('/__ns_hmr__/live/src/app/app.routes', 'inbound-request-spec')).toEqual({
 			cleanedSpec: '/src/app/app.routes',
 			bootTaggedRequest: false,
 			forcedVer: 'live',
 		});
-		expect(stripDecoratedServePrefixes('/__ns_hmr__/n1/src/app/components/signup/signup.component')).toEqual({
+		expect(collapseLegacyNsMTags('/__ns_hmr__/n1/src/app/components/signup/signup.component', 'inbound-request-spec')).toEqual({
 			cleanedSpec: '/src/app/components/signup/signup.component',
 			bootTaggedRequest: false,
 			forcedVer: 'n1',

@@ -43,7 +43,6 @@ declare global {
 	var __NS_ANGULAR_HMR_REGISTER_ONLY__: boolean | undefined;
 	var __NS_HMR_CLIENT_ACTIVE__: boolean | undefined;
 	var __NS_HMR_CLIENT_SOCKET_READY__: boolean | undefined;
-	var __NS_HMR_ALLOW_INITIAL_MOUNT__: boolean | undefined;
 	var __NS_HMR_INITIAL_MOUNT_IN_PROGRESS__: boolean | undefined;
 	var __NS_HMR_RESCUE_SCHEDULED__: boolean | undefined;
 	var __NS_HMR_BACK_WRAPPED__: boolean | undefined;

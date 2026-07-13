@@ -37,21 +37,3 @@ export function createHmrPendingMessage(input: { origin: string; path: string; k
 		timestamp: typeof input.timestamp === 'number' && Number.isFinite(input.timestamp) ? input.timestamp : 0,
 	};
 }
-
-/**
- * Parser used by the client to identify a pending message regardless of
- * which framework is active. We accept the message only when every
- * expected field is present and well-formed — this guards against
- * accidental matches on legacy server payloads or developer-written
- * mocks during tests.
- */
-export function isHmrPendingMessage(value: unknown): value is HmrPendingMessage {
-	if (!value || typeof value !== 'object') return false;
-	const v = value as Partial<HmrPendingMessage>;
-	if (v.type !== 'ns:hmr-pending') return false;
-	if (typeof v.path !== 'string' || !v.path) return false;
-	if (typeof v.timestamp !== 'number' || !Number.isFinite(v.timestamp)) return false;
-	const allowed: HmrPendingKind[] = ['ts', 'css', 'html', 'unknown'];
-	if (!(allowed as readonly string[]).includes(v.kind || '')) return false;
-	return true;
-}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createHmrPendingMessage, isHmrPendingMessage } from './websocket-hmr-pending.js';
+import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 
 describe('createHmrPendingMessage', () => {
 	it('produces the documented shape with all fields preserved', () => {
@@ -52,56 +52,5 @@ describe('createHmrPendingMessage', () => {
 		for (const kind of ['ts', 'css', 'html', 'unknown'] as const) {
 			expect(createHmrPendingMessage({ origin: 'o', path: '/p', kind, timestamp: 1 }).kind).toBe(kind);
 		}
-	});
-});
-
-describe('isHmrPendingMessage', () => {
-	it('accepts well-formed pending messages', () => {
-		expect(
-			isHmrPendingMessage({
-				type: 'ns:hmr-pending',
-				origin: 'http://localhost:8080',
-				path: '/src/foo.ts',
-				kind: 'ts',
-				timestamp: 1,
-			}),
-		).toBe(true);
-	});
-
-	it("rejects messages with the wrong type field (e.g. legacy 'hmr:update')", () => {
-		expect(
-			isHmrPendingMessage({
-				type: 'hmr:update',
-				path: '/src/foo.ts',
-				kind: 'ts',
-				timestamp: 1,
-			}),
-		).toBe(false);
-	});
-
-	it('rejects messages missing required fields', () => {
-		expect(isHmrPendingMessage({ type: 'ns:hmr-pending', kind: 'ts', timestamp: 1 })).toBe(false);
-		expect(isHmrPendingMessage({ type: 'ns:hmr-pending', path: '/p', timestamp: 1 })).toBe(false);
-		expect(isHmrPendingMessage({ type: 'ns:hmr-pending', path: '/p', kind: 'ts' })).toBe(false);
-		expect(isHmrPendingMessage({ type: 'ns:hmr-pending', path: '', kind: 'ts', timestamp: 1 })).toBe(false);
-	});
-
-	it('rejects non-objects', () => {
-		expect(isHmrPendingMessage(null)).toBe(false);
-		expect(isHmrPendingMessage(undefined)).toBe(false);
-		expect(isHmrPendingMessage('string')).toBe(false);
-		expect(isHmrPendingMessage(42)).toBe(false);
-	});
-
-	it('rejects messages with an unknown kind even if everything else is well-formed', () => {
-		expect(
-			isHmrPendingMessage({
-				type: 'ns:hmr-pending',
-				origin: 'o',
-				path: '/p',
-				kind: 'binary',
-				timestamp: 1,
-			}),
-		).toBe(false);
 	});
 });

@@ -77,8 +77,6 @@
 		"./hmr/shared/runtime/browser-runtime-contract.js": "./hmr/shared/runtime/browser-runtime-contract.js",
 		"./hmr/shared/runtime/session-bootstrap": "./hmr/shared/runtime/session-bootstrap.js",
 		"./hmr/shared/runtime/session-bootstrap.js": "./hmr/shared/runtime/session-bootstrap.js",
-		"./hmr/shared/runtime/http-only-boot": "./hmr/shared/runtime/http-only-boot.js",
-		"./hmr/shared/runtime/http-only-boot.js": "./hmr/shared/runtime/http-only-boot.js",
 		"./hmr/shared/runtime/module-provenance": "./hmr/shared/runtime/module-provenance.js",
 		"./hmr/shared/runtime/module-provenance.js": "./hmr/shared/runtime/module-provenance.js",
 		"./hmr/shared/runtime/hooks": "./hmr/shared/runtime/hooks.js",

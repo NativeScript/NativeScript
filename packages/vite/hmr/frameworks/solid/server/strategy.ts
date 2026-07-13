@@ -1,4 +1,5 @@
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import { ensureRoutesDefaultExport } from '../../../server/websocket-served-module-helpers.js';
 import * as path from 'path';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
@@ -158,6 +159,7 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
 	// identity: Solid HMR runs through Vite's solid-refresh plugin + the generic
 	// vendor bridge, and has no dedicated HTTP endpoints to version.
+	normalizeServedExports: ensureRoutesDefaultExport,
 	//
 	// Solid HMR: patch @solid-refresh's $$refreshESM to do inline patching
 	// during module re-evaluation instead of deferring to hot.accept() callback.

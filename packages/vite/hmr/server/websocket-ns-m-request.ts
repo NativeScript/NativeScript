@@ -1,7 +1,8 @@
 import type { TransformResult } from 'vite';
 import * as path from 'path';
 
-import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 
 export interface NsMRequestContext {
 	requestUrl: string;
@@ -29,7 +30,8 @@ export interface ResolveNsMTransformedModuleOptions {
 	context: NsMRequestContext;
 	transformRequest: (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 	resolveId: (id: string) => Promise<string | null>;
-	loadVirtualId: (id: string) => Promise<string | { code?: string } | TransformResult | null>;
+	/** Matches `pluginContainer.load`'s LoadResult (which includes `void`). */
+	loadVirtualId: (id: string) => Promise<string | { code?: string } | TransformResult | null | void>;
 	timeoutMs?: number;
 }
 
@@ -93,7 +95,7 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 		}
 
 		spec = spec.replace(/[?#].*$/, '');
-		const decorated = stripDecoratedServePrefixes(spec);
+		const decorated = collapseLegacyNsMTags(spec, 'inbound-request-spec');
 		spec = decorated.cleanedSpec;
 		bootTaggedRequest = decorated.bootTaggedRequest;
 		forcedVer ||= decorated.forcedVer;
@@ -150,7 +152,7 @@ async function tryTransformRequest(transformRequest: ResolveNsMTransformedModule
 	}
 }
 
-function getLoadedCode(loadResult: string | { code?: string } | TransformResult | null): string | null {
+function getLoadedCode(loadResult: string | { code?: string } | TransformResult | null | void): string | null {
 	if (!loadResult) {
 		return null;
 	}

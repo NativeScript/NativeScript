@@ -1,4 +1,5 @@
 import type { HmrContext, ViteDevServer } from 'vite';
+import type { ServerResponse } from 'node:http';
 import type { WebSocketServer } from 'ws';
 // Type-only import (erased at emit). `NsHotUpdateContext` already references
 // `FrameworkServerStrategy`, so this is a deliberate type-level cycle — fine for
@@ -61,6 +62,19 @@ export interface FrameworkServedModuleContext {
 	projectRoot: string;
 	serverOrigin: string;
 	verbose: boolean;
+}
+
+/**
+ * Inputs for {@link FrameworkServerStrategy.interceptModuleRequest}: the raw
+ * `/ns/m` request BEFORE spec resolution. `isLiveComponentUpdateFetch` is the
+ * live-broadcast gate injected from the WebSocket plugin's component-update
+ * ledger (Angular; undefined for other flavors).
+ */
+export interface FrameworkModuleRequestContext {
+	urlObj: URL;
+	res: ServerResponse;
+	next: () => void;
+	isLiveComponentUpdateFetch?: (componentId: string, timestamp: number) => boolean;
 }
 
 /**
@@ -160,6 +174,25 @@ export interface FrameworkServerStrategy {
 	 * Defaults to `false` (every flavor keeps the component-style broadcast).
 	 */
 	ownsComponentStyleHmr?(server: ViteDevServer): boolean;
+
+	/**
+	 * Intercept a `/ns/m` request before spec resolution. Return `true` when
+	 * the request was fully answered (or delegated downstream via `next()`),
+	 * so the shared route stops processing it. Angular implements this for
+	 * AnalogJS `/@ng/component` metadata fetches (see
+	 * `frameworks/angular/server/ng-component-route.ts`). Defaults to no
+	 * interception.
+	 */
+	interceptModuleRequest?(ctx: FrameworkModuleRequestContext): boolean;
+
+	/**
+	 * Last-chance export normalization on the final served body (after the
+	 * CJS wrap, before URL canonicalization). Vue/Solid/TS implement the
+	 * `routes` default-export alias so both `import { routes }` and
+	 * `import routes` resolve against a route-config module. Defaults to
+	 * identity.
+	 */
+	normalizeServedExports?(code: string): string;
 
 	/**
 	 * Override the `/ns/m` served-module import rewrite. Defaults to the shared

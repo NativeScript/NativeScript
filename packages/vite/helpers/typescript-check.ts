@@ -173,7 +173,7 @@ function getTypeCheckOptions(setting?: TypeCheckSetting): ResolvedTypeCheckOptio
 	const flags = getCliFlags();
 	const platform: PlatformType | undefined = resolvePlatform(flags);
 	const verbose = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
-	const envMode = coerceTypeCheckMode(process.env.NS_VITE_TYPECHECK ?? process.env.NS_VITE_TYPE_CHECK);
+	const envMode = coerceTypeCheckMode(process.env.NS_VITE_TYPECHECK);
 	const cliMode = coerceTypeCheckMode(flags.typecheck ?? flags['type-check'] ?? flags.typeCheck);
 
 	let resolved: ResolvedTypeCheckOptions = {
@@ -191,7 +191,7 @@ function getTypeCheckOptions(setting?: TypeCheckSetting): ResolvedTypeCheckOptio
 		resolved = applyTypeCheckMode(resolved, cliMode);
 	}
 
-	const envLogDiagnostics = coerceBoolean(process.env.NS_VITE_TYPECHECK_LOG ?? process.env.NS_VITE_TYPE_CHECK_LOG);
+	const envLogDiagnostics = coerceBoolean(process.env.NS_VITE_TYPECHECK_LOG);
 	if (typeof envLogDiagnostics === 'boolean') {
 		resolved.logDiagnostics = envLogDiagnostics;
 	}

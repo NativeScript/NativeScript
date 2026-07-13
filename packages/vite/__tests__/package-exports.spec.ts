@@ -13,8 +13,6 @@ describe('@nativescript/vite package exports', () => {
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/vendor-bootstrap.js');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder.js');
-		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/http-only-boot');
-		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/http-only-boot.js');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/module-provenance');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/module-provenance.js');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/hooks');

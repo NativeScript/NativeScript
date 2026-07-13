@@ -128,7 +128,8 @@ function runColdBootKickstart(urls: readonly string[], runtimeApi: NsRuntimeDevH
 // bar never goes backwards when count temporarily wins over time), and
 // re-asserts `'importing-main'` so only the progress + detail change.
 // The wall-clock fallback covers long node_modules stretches where the
-// snippet doesn't fire (deliberate carve-out in `rewriteNsMImportPathForHmr`).
+// snippet doesn't fire (the /ns/m route only injects it into app modules,
+// never node_modules/library modules).
 //
 // Stopped in the caller's `finally` so it never races past
 // `'waiting-for-app'` or stomps an `'error'` frame.

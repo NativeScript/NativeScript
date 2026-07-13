@@ -27,7 +27,7 @@ import { fileURLToPath } from 'url';
 describe('__nsNavigateUsingApp prop forwarding', () => {
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = path.dirname(__filename);
-	const clientSrc = readFileSync(path.join(__dirname, 'index.ts'), 'utf-8');
+	const navigateSrc = readFileSync(path.join(__dirname, 'navigate-app.ts'), 'utf-8');
 
 	it('forwards opts.props as Vue rootProps when building the destination app', () => {
 		// The call has to be `AppFactory(component, props)` — passing only
@@ -37,7 +37,7 @@ describe('__nsNavigateUsingApp prop forwarding', () => {
 		//
 		// Locate the AppFactory call and grab the trailing arg list. Using
 		// non-greedy capture survives nested parens inside `normalizeComponent(...)`.
-		const callMatch = clientSrc.match(/const app = AppFactory\((.*?)\);/);
+		const callMatch = navigateSrc.match(/const app = AppFactory\((.*?)\);/);
 		expect(callMatch).toBeTruthy();
 		const argList = callMatch![1];
 		// Two top-level arguments: component, props
@@ -49,6 +49,6 @@ describe('__nsNavigateUsingApp prop forwarding', () => {
 		// Regression guard: a prior refactor passed `comp` directly to AppFactory
 		// which broke <script setup> destinations. The normalizeComponent wrap
 		// must stay in place.
-		expect(clientSrc).toMatch(/AppFactory\(normalizeComponent\(comp,/);
+		expect(navigateSrc).toMatch(/AppFactory\(normalizeComponent\(comp,/);
 	});
 });

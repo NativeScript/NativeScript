@@ -9,10 +9,12 @@ import ts from 'typescript';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
-import { findMonorepoWorkspaceRoot, getMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
+import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
-import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin, tsFallbackTransformPlugin, angularWorkerUrlPreservePlugin } from '../helpers/workers.js';
+import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
+import { tsFallbackTransformPlugin } from '../hmr/frameworks/angular/build/ts-fallback-transform.js';
+import { angularWorkerUrlPreservePlugin } from '../hmr/frameworks/angular/build/worker-url-preserve.js';
 import { createTsConfigPathsResolver, getTsConfigData } from '../helpers/ts-config-paths.js';
 import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
@@ -20,8 +22,7 @@ import { cliPlugin } from '../helpers/ns-cli-plugins.js';
 import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
 import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
-import { buildCoreUrl, corePathToSub, specToCoreSub } from '../helpers/ns-core-url.js';
-import { resolveDeviceReachableOrigin } from '../helpers/dev-host.js';
+import { nsCoreExternalUrlsPlugin } from '../helpers/ns-core-external-urls.js';
 import { getProjectFlavor, setProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
@@ -42,26 +43,6 @@ import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
-// Load HMR plugins lazily to avoid compiling dev-only sources during library build
-// This prevents TypeScript from traversing the heavy HMR implementation graph when not needed
-// function getHMRPluginsSafe(opts: {
-//   platform: string;
-//   flavor: string;
-//   verbose: boolean;
-// }): any[] {
-//   try {
-//     // Use eval("require") so TypeScript doesn't statically resolve the TS sources
-//     // This prevents the compiler from traversing dev-only HMR code during library builds
-//     const req = eval("require") as NodeRequire;
-//     const mod = req("../hmr/server/index.js");
-//     if (mod && typeof mod.getHMRPlugins === "function") {
-//       return mod.getHMRPlugins(opts) || [];
-//     }
-//   } catch {
-//     /* ignore: HMR not available or excluded */
-//   }
-//   return [];
-// }
 const require = createRequire(import.meta.url);
 // Optional PostCSS import plugin (only used if available)
 // Try to load postcss-import to control CSS @import resolution simply
@@ -359,123 +340,13 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			externalConfigsPlugin(),
 			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
 			// the full /ns/core HTTP URL so bundle.mjs contains NO bundled copy
-			// of the core runtime. The plugin runs with enforce:'pre' so it
-			// fires BEFORE Vite's alias resolution converts bare specifiers to
-			// absolute filesystem paths, and apply:'build' so the dev-server
-			// transform pipeline (which has its own import-map) is unaffected.
-			//
-			// Why this is necessary: core's transitively-bundled helpers (e.g.
-			// `@nativescript/zone-js` patches) write `import '@nativescript/core/globals'`
-			// in their source. Without this interception, rolldown leaves those
-			// as bare specifiers in the emitted bundle.mjs output, iOS's ESM
-			// loader can't resolve bare specifiers at module-instantiation time
-			// (the runtime import map is installed later by the HMR client), and
-			// it falls back to a filesystem lookup that crashes with
-			// "Module not found: Cannot find module @nativescript/core/globals".
-			//
-			// The broader architecture: Vite is the single source of truth for
-			// every `@nativescript/core` URL on the device, so a build-time
-			// pre-resolver routes every reference into the runtime bridge.
-			...(hmrActive
-				? [
-						((): any => {
-							// Routes through `resolveDeviceReachableOrigin` so the
-							// origin baked into externalized `@nativescript/core*`
-							// URLs is something the DEVICE can reach. Wildcard
-							// binds (`0.0.0.0`) and Android loopback get remapped
-							// to a real LAN IP (preferred) or `10.0.2.2` (Android
-							// emulator). Same helper used by `main-entry.ts` so
-							// both code paths produce byte-identical URL strings
-							// — required by the iOS HTTP ESM cache identity rule.
-							const port = hmrPort;
-							// Protocol baked into externalized @nativescript/core URLs must
-							// match the dev server's protocol. `NS_HTTPS` is the single
-							// switch (it also drives the server TLS + `wss` HMR socket);
-							// `NS_HMR_PROTO` remains an explicit override when set.
-							const proto: 'http' | 'https' = (process.env.NS_HMR_PROTO ? process.env.NS_HMR_PROTO === 'https' : useHttps) ? 'https' : 'http';
-							const { origin } = resolveDeviceReachableOrigin({
-								host: process.env.NS_HMR_HOST,
-								platform,
-								protocol: proto,
-								port,
-							});
-							return {
-								name: 'ns-core-external-urls',
-								enforce: 'pre',
-								apply: 'build',
-								async resolveId(source: string, importer: string | undefined) {
-									// Route every `@nativescript/core*` reference
-									// (bare specifier OR absolute path into the
-									// installed @nativescript/core package OR its
-									// subpath import-map aliases) through the ONE
-									// canonical URL generator. URL proliferation
-									// (`?p=`, versioned, mixed query vs path
-									// forms) produces distinct iOS HTTP ESM cache
-									// entries for the same module, yielding
-									// double evaluation.
-									const sub = specToCoreSub(source);
-									if (sub !== null) {
-										if (process.env.NS_CORE_EXTERNAL_DEBUG) {
-											console.log('[ns-core-external]', 'source=', source, 'sub=', sub, 'importer=', importer?.slice(-80));
-										}
-										const url = buildCoreUrl(origin, sub);
-										return { id: url, external: 'absolute' };
-									}
-									// Monorepo-source core (`<workspace>/packages/core`
-									// via a file: dependency). The resolve-alias step
-									// runs BEFORE this hook and rewrites bare
-									// `@nativescript/core[/sub]` specifiers to absolute
-									// paths under NS_CORE_ROOT; for a node_modules
-									// install those still match specToCoreSub above,
-									// but workspace-source paths do not — without this
-									// branch the entire core library is silently
-									// inlined into bundle.mjs as a dead second realm
-									// (`Frame.topmost()` undefined on tap while the
-									// served realm owns the live UI).
-									//
-									// These must NOT map to `/ns/core/<sub>`: in the
-									// monorepo, the served core graph's internal
-									// imports resolve to workspace-relative
-									// `/ns/m/packages/core/<file>` URLs (Vite emits
-									// `/@fs/`-style ids for files outside the app
-									// root; see rewriteFsAbsoluteToNsM). A
-									// `/ns/core/<sub>` URL would serve a SECOND body
-									// for the same file in the same realm — its
-									// side-effect registrations re-run against shared
-									// classes and crash (`Cannot redefine property:
-									// default:width` from CssAnimationProperty.register).
-									// Resolve to the concrete file and emit the same
-									// `/ns/m/<workspace-rel>` spelling the served
-									// graph uses so the bundle joins the live realm.
-									if (corePathToSub(source, NS_CORE_ROOT) === null) return null;
-									const wsRoot = getMonorepoWorkspaceRoot(projectRoot);
-									const wsRootNorm = wsRoot ? normalizeModuleId(wsRoot).replace(/\/+$/, '') : '';
-									const resolved = await this.resolve(source, importer, { skipSelf: true });
-									const fileAbs = normalizeModuleId(((resolved && resolved.id) || source).split('?')[0]);
-									if (process.env.NS_CORE_EXTERNAL_DEBUG) {
-										console.log('[ns-core-external:workspace]', 'source=', source, 'file=', fileAbs, 'importer=', importer?.slice(-80));
-									}
-									if (wsRootNorm && fileAbs.startsWith(wsRootNorm + '/')) {
-										return { id: `${origin}/ns/m/${fileAbs.slice(wsRootNorm.length + 1)}`, external: 'absolute' as const };
-									}
-									// Could not anchor the resolved file under the
-									// workspace root — fall back to the canonical
-									// bridge URL rather than inlining a core copy.
-									const fallbackSub = corePathToSub(fileAbs, NS_CORE_ROOT) ?? corePathToSub(source, NS_CORE_ROOT);
-									console.warn('[ns-core-external] workspace-core path could not be anchored under the workspace root; using /ns/core bridge URL for', source);
-									return { id: buildCoreUrl(origin, fallbackSub), external: 'absolute' as const };
-								},
-							};
-						})(),
-					]
-				: []),
+			// of the core runtime (see helpers/ns-core-external-urls.ts).
+			...(hmrActive ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps })] : []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),
 			...createNativeClassTransformerPlugin(),
 			createThemeCoreCssFallbackPlugin(THEME_CORE_ROOT, projectRoot, platform),
-			// Redirect fragment.android to a single virtual id before other resolvers
-			// androidBootRedirectPlugin(),
 			// Ensure Rollup phase replaces in node_modules too
 			// Important for various vendor handling
 			replace({
@@ -538,8 +409,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// empty URL, no worker asset is emitted, and the shipped bundle
 			// crashes on device with a `ReadText("")` assertion inside V8's
 			// module loader. See `angularWorkerUrlPreservePlugin` in
-			// `helpers/workers.ts` for the full rationale. Monkey-patch is
-			// idempotent and a no-op in non-Angular projects.
+			// `hmr/frameworks/angular/build/worker-url-preserve.ts` for the full
+			// rationale. Monkey-patch is idempotent and a no-op in non-Angular
+			// projects.
 			...(!hmrActive ? [angularWorkerUrlPreservePlugin({ verbose })] : []),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),

@@ -1,5 +1,6 @@
 import { deriveHttpOrigin, getCore, getCurrentApp, getHMRWsUrl, getHttpOriginForVite, graph, invalidateModulesByUrls, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
+import { resolveVendorModule } from '../../../shared/runtime/vendor-resolve.js';
 import { findSfcAncestors } from './dep-propagation.js';
 
 const APP_VIRTUAL_WITH_SLASH = (() => {
@@ -25,20 +26,8 @@ export const sfcArtifactMap = new Map<string, string>();
 // Install dev shims for nativescript-vue navigation to observe and (optionally) rescue
 export function installNsVueDevShims() {
 	try {
-		const g: any = getGlobalScope();
-		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
-		const req: any = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-		const getMod = (id: string) => {
-			try {
-				if (reg && reg.has(id)) return reg.get(id);
-			} catch {}
-			try {
-				if (typeof req === 'function') return req(id);
-			} catch {}
-			return null;
-		};
-		const nv = getMod('nativescript-vue');
-		const rh = getMod('nativescript-vue/dist/runtimeHelpers');
+		const nv = resolveVendorModule('nativescript-vue');
+		const rh = resolveVendorModule('nativescript-vue/dist/runtimeHelpers');
 		const wrap = (orig: any, label: string) => {
 			if (typeof orig !== 'function') return orig;
 			if ((orig as any).__ns_wrapped__) return orig; // idempotent
@@ -81,66 +70,18 @@ export function installNsVueDevShims() {
 	} catch {}
 }
 
-// initial root component for back fallback
-const ORIG_ROOT_COMPONENT: any | null = null;
-
 // Ensure Vue runtime global functions exist before evaluating SFC artifacts that rely on globalThis.* indirections.
 export function ensureVueGlobals() {
 	try {
 		const g: any = globalThis;
 		const vueAlready = g.defineComponent && g.resolveComponent && g.createVNode;
-		const req: any = getGlobalScope().__nsVendorRegistry?.get ? getGlobalScope().__nsVendorRequire || getGlobalScope().__nsRequire || getGlobalScope().require : getGlobalScope().__nsRequire || getGlobalScope().require;
-		const registry: Map<string, any> | undefined = globalThis.__nsVendorRegistry;
-		let nvMod: any = null;
-		let vueMod: any = null;
 		// Prefer nativescript-vue first so createApp has .start and NSVRoot is available
-		if (registry && registry.has('nativescript-vue')) {
-			nvMod = registry.get('nativescript-vue');
-		}
-		if (registry && registry.has('vue')) {
-			vueMod = registry.get('vue');
-		}
-		if (!nvMod && typeof req === 'function') {
-			try {
-				nvMod = req('nativescript-vue');
-			} catch {}
-		}
-		if (!vueMod && typeof req === 'function') {
-			try {
-				vueMod = req('vue');
-			} catch {}
-			if (!vueMod) {
-				try {
-					vueMod = req('@vue/runtime-core');
-				} catch {}
-			}
-		}
-		const baseMod = nvMod || vueMod;
-		let chosenMod: any = baseMod;
-		if (!chosenMod) {
-			// Last-ditch attempts on known ids
-			try {
-				chosenMod = req && typeof req === 'function' ? req('nativescript-vue') : null;
-			} catch {}
-			if (!chosenMod) {
-				try {
-					chosenMod = req && typeof req === 'function' ? req('vue') : null;
-				} catch {}
-			}
-			if (!chosenMod) return;
-		}
-		if (!vueMod) {
-			// Last-ditch attempts on known ids
-			try {
-				vueMod = req && typeof req === 'function' ? req('vue') : null;
-			} catch {}
-			if (!vueMod) {
-				try {
-					vueMod = req && typeof req === 'function' ? req('nativescript-vue') : null;
-				} catch {}
-			}
-			if (!vueMod) return;
-		}
+		const nvMod: any = resolveVendorModule('nativescript-vue');
+		let vueMod: any = resolveVendorModule('vue') ?? resolveVendorModule('@vue/runtime-core');
+		const chosenMod: any = nvMod || vueMod;
+		if (!chosenMod) return;
+		// No standalone vue realm available: nativescript-vue re-exports the runtime API.
+		if (!vueMod) vueMod = nvMod;
 		// Polyfill essential runtime helpers often imported from 'vue' by compiled SFC render code
 		try {
 			const polyNormalizeClass = (val: any): string => {
@@ -336,15 +277,7 @@ export function ensurePiniaOnApp(app: any) {
 			} catch {}
 			// Attempt to set active pinia if API is available
 			try {
-				const registry: Map<string, any> | undefined = g.__nsVendorRegistry;
-				const req: any = registry?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-				let piniaMod: any = null;
-				if (registry && registry.has('pinia')) piniaMod = registry.get('pinia');
-				if (!piniaMod && typeof req === 'function') {
-					try {
-						piniaMod = req('pinia');
-					} catch {}
-				}
+				const piniaMod = resolveVendorModule('pinia');
 				const resolved = (piniaMod && (piniaMod.default ?? piniaMod)) || null;
 				const setActivePinia = resolved?.setActivePinia;
 				if (typeof setActivePinia === 'function') setActivePinia(g.__NS_HMR_PINIA__);
@@ -352,17 +285,7 @@ export function ensurePiniaOnApp(app: any) {
 			return;
 		}
 		// Prefer vendor registry/require to load 'pinia'
-		const registry: Map<string, any> | undefined = g.__nsVendorRegistry;
-		const req: any = registry?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-		let piniaMod: any = null;
-		if (registry && registry.has('pinia')) {
-			piniaMod = registry.get('pinia');
-		}
-		if (!piniaMod && typeof req === 'function') {
-			try {
-				piniaMod = req('pinia');
-			} catch {}
-		}
+		const piniaMod = resolveVendorModule('pinia');
 		if (!piniaMod) return;
 		const resolved = (piniaMod && (piniaMod.default ?? piniaMod)) || null;
 		const createPinia = resolved?.createPinia;
@@ -382,14 +305,10 @@ export function ensurePiniaOnApp(app: any) {
 // Prefer nativescript-vue's own bootstrap to set up element registry and built-ins
 export function ensureNsVueBootstrap() {
 	try {
-		const g: any = globalThis;
 		if (nsVueInitDone) return;
-		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
-		const req: any = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-		if (typeof req !== 'function') return;
 		// Try full init, which should register core elements and built-in components
 		try {
-			const nv = req('nativescript-vue/dist/nativescript');
+			const nv = resolveVendorModule('nativescript-vue/dist/nativescript');
 			const init = (nv && (nv.init || nv.default?.init)) || undefined;
 			if (typeof init === 'function') {
 				init();
@@ -400,7 +319,7 @@ export function ensureNsVueBootstrap() {
 		} catch {}
 		// Fallback: register core elements only
 		try {
-			const elems = req('nativescript-vue/dist/nativescript/elements');
+			const elems = resolveVendorModule('nativescript-vue/dist/nativescript/elements');
 			const fn = (elems && (elems.registerCoreElements || elems.default?.registerCoreElements)) || undefined;
 			if (typeof fn === 'function') {
 				fn();
@@ -414,17 +333,7 @@ export function ensureNsVueBootstrap() {
 function installBuiltInComponentsOnApp(app: any) {
 	try {
 		if (!app || typeof app.component !== 'function') return;
-		const g: any = getGlobalScope();
-		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
-		const req: any = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-		if (typeof req !== 'function') return;
-		const comps = (() => {
-			try {
-				return req('nativescript-vue/dist/components');
-			} catch {
-				return null;
-			}
-		})();
+		const comps = resolveVendorModule('nativescript-vue/dist/components');
 		const built = comps && (comps.BUILT_IN_COMPONENTS || comps.default?.BUILT_IN_COMPONENTS);
 		if (!built || typeof built !== 'object') return;
 		const ctx = (app as any)._context;
@@ -439,45 +348,6 @@ function installBuiltInComponentsOnApp(app: any) {
 		}
 		if (__NS_ENV_VERBOSE__) {
 			console.log('[hmr-client] installed built-in components:', Array.from(registered).join(','));
-		}
-	} catch {}
-}
-
-// Ensure the Pinia instance is also active in the HTTP ESM module world and that we provide
-// the exact piniaSymbol exported by that module, so getActivePinia() and inject() both succeed
-// regardless of which module copy a component imports.
-async function syncPiniaAcrossEsm(app: any) {
-	try {
-		const g = globalThis;
-		const piniaInst = g.__NS_HMR_PINIA__ || app?._context?.provides?.pinia;
-		if (!piniaInst) return;
-		// Resolve Pinia from ESM world and set active
-		let esmUrl: string | null = null;
-		try {
-			esmUrl = await requestModuleFromServer('pinia');
-		} catch {}
-		if (esmUrl) {
-			try {
-				const mod: any = await safeDynImport(esmUrl);
-				const resolved = (mod && (mod.default ?? mod)) || mod;
-				const setActivePinia = resolved?.setActivePinia || mod?.setActivePinia;
-				const piniaSymbol = resolved?.piniaSymbol || mod?.piniaSymbol;
-				if (typeof setActivePinia === 'function') {
-					try {
-						setActivePinia(piniaInst);
-					} catch {}
-				}
-				if (piniaSymbol && app?._context?.provides && !app._context.provides[piniaSymbol]) {
-					try {
-						app._context.provides[piniaSymbol] = piniaInst;
-					} catch {}
-					try {
-						g.__NS_PINIA_SYMBOL__ = piniaSymbol;
-					} catch {}
-				}
-			} catch (e) {
-				if (__NS_ENV_VERBOSE__) console.warn('[hmr-client] syncPiniaAcrossEsm failed import', e);
-			}
 		}
 	} catch {}
 }
@@ -509,15 +379,7 @@ function bridgePiniaProvides(app: any, existingApp?: any) {
 			if (known && typeof known === 'symbol') candidates.push(known);
 		} catch {}
 		try {
-			const vendorReg: Map<string, any> | undefined = g.__nsVendorRegistry;
-			const req: any = vendorReg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-			let vmod: any = null;
-			if (vendorReg && vendorReg.has('pinia')) vmod = vendorReg.get('pinia');
-			else if (typeof req === 'function') {
-				try {
-					vmod = req('pinia');
-				} catch {}
-			}
+			const vmod: any = resolveVendorModule('pinia');
 			const resolved = (vmod && (vmod.default ?? vmod)) || vmod;
 			const vendorSym = resolved?.piniaSymbol || vmod?.piniaSymbol;
 			if (vendorSym && typeof vendorSym === 'symbol') candidates.push(vendorSym);
@@ -698,29 +560,19 @@ function tryInPlaceVueReload(comp: any): boolean {
 export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number) {
 	try {
 		if (typeof msg.path === 'string' && /\.vue$/i.test(msg.path)) {
-			// Gate updates: only remount if this path is actually marked as changed in the current delta
+			// The registry update is the authoritative signal that this SFC changed
+			// for the announced version — record it unconditionally so remounts are
+			// resilient to out-of-order or dropped delta delivery.
 			try {
-				const base = String(msg.path).split('?')[0];
-				const inChanged = sfcChangedIds.has(base) || sfcChangedIds.has(msg.path);
-				const versionsMatch = sfcChangedVersion != null && sfcChangedVersion === graphVersion;
-				if (!inChanged || !versionsMatch) {
-					// Be resilient to out-of-order delivery: treat the registry update itself
-					// as authoritative signal that this SFC changed for the announced version.
-					// This unblocks remounts when the delta was dropped or applied earlier than we recorded.
-					try {
-						const effectiveVersion = typeof msg.version === 'number' ? msg.version : graphVersion;
-						sfcChangedVersion = effectiveVersion;
-						sfcChangedIds.add(base);
-						if (__NS_ENV_VERBOSE__) console.log('[hmr][sfc-registry-update] accepting as change (out-of-order)', { path: msg.path, graphVersion, sfcChangedVersion });
-					} catch {}
-				}
+				sfcChangedVersion = typeof msg.version === 'number' ? msg.version : graphVersion;
+				sfcChangedIds.add(String(msg.path).split('?')[0]);
 			} catch {}
 			try {
 				ensureVueGlobals();
 				const changedPath = String(msg.path);
 				// Default: remount the SFC that changed, so editing a page reflects
 				// immediately even if a different page is displayed.
-				let comp = await loadSfcComponent(changedPath, 'sfc_update');
+				let comp = await loadSfcComponent(changedPath);
 				// Preferred path: patch the changed component's mounted instances in
 				// place (App.vue shell, route, scroll all survive). Returning null tells
 				// the overlay no resetRootView is needed.
@@ -736,7 +588,7 @@ export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number)
 				if (comp && hmrComponentHasRequiredProps(comp)) {
 					const ancestors = findSfcAncestors(changedPath, graph);
 					for (const ancestor of ancestors) {
-						const ancestorComp = await loadSfcComponent(ancestor, 'sfc_update_ancestor');
+						const ancestorComp = await loadSfcComponent(ancestor);
 						if (ancestorComp && !hmrComponentHasRequiredProps(ancestorComp)) {
 							if (__NS_ENV_VERBOSE__) console.log('[hmr][vue] child SFC needs props; remounting nearest mountable ancestor', { changed: changedPath, ancestor });
 							comp = ancestorComp;
@@ -778,20 +630,6 @@ export function sfcChangedInVersion(version: number): boolean {
 	return sfcChangedVersion != null && sfcChangedVersion === version && sfcChangedIds.size > 0;
 }
 
-async function waitForSfcMapping(id: string, timeoutMs = 350): Promise<boolean> {
-	if (!/\.vue$/i.test(id)) return true;
-	const base = id.split('?')[0];
-	const srcIdx = base.indexOf(APP_VIRTUAL_WITH_SLASH);
-	const rel = srcIdx !== -1 ? base.slice(srcIdx) : base;
-	if (sfcArtifactMap.has(rel) || sfcArtifactMap.has(base)) return true;
-	const start = Date.now();
-	while (Date.now() - start < timeoutMs) {
-		await new Promise((r) => setTimeout(r, 30));
-		if (sfcArtifactMap.has(rel) || sfcArtifactMap.has(base)) return true;
-	}
-	return false;
-}
-
 // Map a graph id (possibly a .vue source path) to actual import spec
 export function addSfcMapping(originalPath: string, fileName: string) {
 	try {
@@ -810,7 +648,7 @@ export function addSfcMapping(originalPath: string, fileName: string) {
 // Build explicit SFC variant URL (script/template). Always preserves the
 // variant query. CANONICAL (unversioned): module identity is the URL;
 // freshness comes from the eviction in `evictSfcArtifacts` below.
-function resolveSfcVariantSpec(id: string, type: 'script' | 'template', cacheBustTag?: string): string {
+function resolveSfcVariantSpec(id: string, type: 'script' | 'template'): string {
 	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
 	const base = id.split('?')[0];
 	if (!origin) return base + `?vue&type=${type}`;
@@ -819,7 +657,7 @@ function resolveSfcVariantSpec(id: string, type: 'script' | 'template', cacheBus
 }
 
 // Resolve deterministic SFC assembler ESM module (canonical, unversioned).
-function resolveSfcAssemblerSpec(id: string, cacheBustTag?: string): string {
+function resolveSfcAssemblerSpec(id: string): string {
 	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
 	const base = id.split('?')[0];
 	if (!origin) return base; // fallback: device will likely fail; origin should be available in dev
@@ -871,7 +709,7 @@ function evictSfcArtifacts(id: string): void {
 
 // Safely load a component for a .vue SFC. Prefer deterministic assembler first to avoid
 // any variant-compile or TDZ flakiness; only fall back to variant assembly if needed.
-export async function loadSfcComponent(targetVuePath: string, tag: string): Promise<any | null> {
+export async function loadSfcComponent(targetVuePath: string): Promise<any | null> {
 	// Minimal mode removed: always go through deterministic assembler + device reset
 	// Ensure Vue globals exist BEFORE evaluating variant modules; their top-level aliasing reads globalThis.* once.
 	ensureVueGlobals();
@@ -886,7 +724,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 	// Prefer deterministic assembler first so AST normalization (including nav helpers) always applies.
 	try {
 		if (!DISABLE_ASM) {
-			const asmMod = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath, tag + '_asm_first'));
+			const asmMod = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath));
 			const asmComp = (asmMod as any)?.default ?? (asmMod as any);
 			if (asmComp && typeof asmComp === 'object') {
 				if (__NS_ENV_VERBOSE__) console.log('[hmr][vue-reset][diag] using assembler-first component');
@@ -899,11 +737,11 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 	// 1) Variant assembly (script then template) – closest to browser behavior
 	try {
 		// Import script variant FIRST to avoid TDZ due to cyclic evaluation between script/template.
-		const scriptMod = await safeDynImport(resolveSfcVariantSpec(targetVuePath, 'script', tag + '_script'));
+		const scriptMod = await safeDynImport(resolveSfcVariantSpec(targetVuePath, 'script'));
 		// Ensure script default is readable before importing the template; this enforces a stable order.
 		const base: any = await safeReadDefault(scriptMod as any);
 		// Now import the template render implementation
-		const templateMod = await safeDynImport(resolveSfcVariantSpec(targetVuePath, 'template', tag + '_template'));
+		const templateMod = await safeDynImport(resolveSfcVariantSpec(targetVuePath, 'template'));
 		if (__NS_ENV_VERBOSE__) {
 			const sKeys = scriptMod ? Object.keys(scriptMod).join(',') : '<none>';
 			const tKeys = templateMod ? Object.keys(templateMod).join(',') : '<none>';
@@ -922,7 +760,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 			if (!render) {
 				try {
 					if (__NS_ENV_VERBOSE__) console.log('[hmr][vue-reset][diag] no render from template variant; attempting assembler for', targetVuePath);
-					const asmMod = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath, tag + '_asm_norender'));
+					const asmMod = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath));
 					const asmComp = (asmMod as any)?.default ?? (asmMod as any);
 					if (asmComp && typeof asmComp === 'object' && typeof (asmComp as any).render === 'function') {
 						try {
@@ -960,7 +798,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 			if (!exportKeys.length) {
 				if (__NS_ENV_VERBOSE__) console.log('[hmr][vue-reset][diag] no script exports detected; attempting assembler import for', targetVuePath);
 				try {
-					const asm = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath, tag + '_asm'));
+					const asm = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath));
 					const compAsm = (asm as any)?.default ?? (asm as any);
 					if (compAsm && typeof compAsm === 'object') {
 						if (__NS_ENV_VERBOSE__) console.log('[hmr][vue-reset][diag] assembler import succeeded and will be used');
@@ -1009,7 +847,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 	try {
 		if (DISABLE_ASM) throw new Error('asm disabled by __NS_HMR_DISABLE_ASM__');
 		await new Promise<void>((r) => setTimeout(r, 10));
-		const mod = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath, tag + '_asm_final'));
+		const mod = await safeDynImport(resolveSfcAssemblerSpec(targetVuePath));
 		try {
 			const comp = await safeReadDefault(mod as any);
 			if (comp) return comp;
@@ -1050,20 +888,8 @@ export function getRootForVue(
 	} catch {}
 	try {
 		if (!RootCtor) {
-			const registry: Map<string, any> | undefined = g.__nsVendorRegistry;
-			const req: any = registry?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-			let domMod: any = null;
-			if (registry && registry.has('nativescript-vue/dist/dom')) {
-				domMod = registry.get('nativescript-vue/dist/dom');
-				if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] NS DOM from vendor registry');
-			} else if (typeof req === 'function') {
-				try {
-					domMod = req('nativescript-vue/dist/dom');
-					if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] NS DOM via require');
-				} catch (e) {
-					if (__NS_ENV_VERBOSE__) console.warn('[hmr-client] [createRoot] NS DOM require failed', e);
-				}
-			}
+			const domMod: any = resolveVendorModule('nativescript-vue/dist/dom');
+			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] NS DOM', domMod ? 'resolved from vendor chain' : 'unresolved');
 			if (domMod) {
 				const nsDom = (domMod && (domMod.default ?? domMod)) || domMod;
 				const ctor = nsDom?.NSVRoot || (nsDom?.default && nsDom.default.NSVRoot) || domMod?.NSVRoot;
@@ -1103,28 +929,14 @@ export function getRootForVue(
 		if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] app created via createApp');
 	}
 	try {
-		const registry: Map<string, any> | undefined = g.__nsVendorRegistry;
-		const req: any = registry?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-		let rh: any = null;
-		if (registry && registry.has('nativescript-vue/dist/runtimeHelpers')) rh = registry.get('nativescript-vue/dist/runtimeHelpers');
-		if (!rh && typeof req === 'function') {
-			try {
-				rh = req('nativescript-vue/dist/runtimeHelpers');
-			} catch {}
-		}
+		const rh: any = resolveVendorModule('nativescript-vue/dist/runtimeHelpers');
 		const setRootApp = rh && (rh.setRootApp || rh.default?.setRootApp);
 		if (typeof setRootApp === 'function') {
 			setRootApp(app);
 			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] runtimeHelpers.setRootApp applied');
 		}
 		try {
-			let nv: any = null;
-			if (registry && registry.has('nativescript-vue')) nv = registry.get('nativescript-vue');
-			if (!nv && typeof req === 'function') {
-				try {
-					nv = req('nativescript-vue');
-				} catch {}
-			}
+			const nv: any = resolveVendorModule('nativescript-vue');
 			const setRootApp2 = nv && (nv.setRootApp || nv.default?.setRootApp);
 			if (typeof setRootApp2 === 'function') {
 				setRootApp2(app);
@@ -1147,16 +959,6 @@ export function getRootForVue(
 	} catch (e) {
 		if (__NS_ENV_VERBOSE__) console.warn('[hmr-client] [createRoot] ensurePiniaOnApp failed', e);
 	}
-	try {
-		(async () => {
-			try {
-				await syncPiniaAcrossEsm(app);
-				if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] Pinia state sync requested');
-			} catch (e) {
-				if (__NS_ENV_VERBOSE__) console.warn('[hmr-client] [createRoot] syncPiniaAcrossEsm failed', e);
-			}
-		})();
-	} catch {}
 	try {
 		bridgePiniaProvides(app, existingApp);
 		if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] provides bridged from previous app');
@@ -1288,7 +1090,7 @@ export function ensureBackWrapperInstalled(performResetRoot: (comp: any) => void
 		if (!g.__nsAttemptBackRemount) {
 			g.__nsAttemptBackRemount = () => {
 				try {
-					const orig = g.__NS_HMR_ORIG_ROOT_COMPONENT__ || ORIG_ROOT_COMPONENT;
+					const orig = g.__NS_HMR_ORIG_ROOT_COMPONENT__;
 					if (orig) {
 						performResetRoot(orig);
 						return true;
@@ -1324,7 +1126,7 @@ export function ensureBackWrapperInstalled(performResetRoot: (comp: any) => void
 				// fall through to fallback
 			}
 			// Fallback: reset to original root component if available
-			const orig = g.__NS_HMR_ORIG_ROOT_COMPONENT__ || ORIG_ROOT_COMPONENT;
+			const orig = g.__NS_HMR_ORIG_ROOT_COMPONENT__;
 			if (orig) {
 				try {
 					// Reuse the proven remount pipeline for consistency
@@ -1337,42 +1139,4 @@ export function ensureBackWrapperInstalled(performResetRoot: (comp: any) => void
 			console.warn('[hmr-client] No usable Frame and no original root component available; cannot navigate back.');
 		};
 	} catch {}
-}
-async function requestModuleFromServer(name: string): Promise<string | null> {
-	try {
-		// Derive the dev-server origin (mirrors other resolver helpers in this file)
-		const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
-		if (!origin) return null;
-
-		// Candidate URL patterns that a Vite-like server might expose for resolving modules to importable URLs.
-		const candidates = [
-			// Vite serves bare imports under /@modules/<name>
-			`${origin.replace(/\/$/, '')}/@modules/${encodeURIComponent(name)}`,
-			// Some setups use @id for resolved module ids
-			`${origin.replace(/\/$/, '')}/@id/${encodeURIComponent(name)}`,
-			// Custom-ish endpoint pattern used elsewhere in this project style
-			`${origin.replace(/\/$/, '')}/ns/esmmod?name=${encodeURIComponent(name)}`,
-		];
-
-		// Probe each candidate with a lightweight HEAD request first; if allowed, return the candidate URL.
-		for (const url of candidates) {
-			try {
-				const res = await fetch(url, { method: 'HEAD' as any });
-				if (res && (res.ok || res.status === 200)) return url;
-			} catch {
-				// ignore and try next
-			}
-		}
-
-		// As a final attempt, try GET on the first candidate and return if we get a module-like response.
-		try {
-			const url = candidates[0];
-			const res = await fetch(url, { method: 'GET' as any });
-			if (res && res.ok) return url;
-		} catch {}
-
-		return null;
-	} catch {
-		return null;
-	}
 }

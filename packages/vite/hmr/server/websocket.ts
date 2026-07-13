@@ -7,7 +7,6 @@ import { createHash } from 'crypto';
 import { getVendorManifest } from '../shared/vendor/registry.js';
 import { getPackageJson, getProjectFilePath } from '../../helpers/project.js';
 import { loadPrebuiltVendorManifest } from '../shared/vendor/manifest-loader.js';
-import '../vendor-bootstrap.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { vueServerStrategy, processSfcCode } from '../frameworks/vue/server/strategy.js';
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';

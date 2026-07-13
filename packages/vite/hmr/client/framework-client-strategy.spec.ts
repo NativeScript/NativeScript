@@ -19,7 +19,7 @@ describe('FrameworkClientStrategy contract', () => {
 	it('Vue owns the SFC mount/navigate/registry surface and opts out of the navigate fast path', () => {
 		expect(vueClientStrategy.flavor).toBe('vue');
 		expect(vueClientStrategy.allowNavigateFastPath).toBe(false);
-		const vueHooks = ['installBackWrapper', 'selectMountCandidate', 'loadComponentForMount', 'beforeNavigateBuild', 'onNavAppCreated', 'createRoot', 'recordPayloadChanges', 'refreshAfterBatch', 'handleSfcRegistry', 'handleSfcRegistryUpdate'] as const;
+		const vueHooks = ['installBackWrapper', 'selectMountCandidate', 'loadComponentForMount', 'createRoot', 'recordPayloadChanges', 'refreshAfterBatch', 'handleSfcRegistry', 'handleSfcRegistryUpdate'] as const;
 		for (const hook of vueHooks) {
 			expect(typeof vueClientStrategy[hook]).toBe('function');
 		}
@@ -31,7 +31,7 @@ describe('FrameworkClientStrategy contract', () => {
 		expect(angularClientStrategy.flavor).toBe('angular');
 		expect(angularClientStrategy.allowNavigateFastPath).toBe(true);
 		expect(typeof angularClientStrategy.handleHotUpdateMessage).toBe('function');
-		const sharedDefaultHooks = ['installBackWrapper', 'selectMountCandidate', 'loadComponentForMount', 'beforeNavigateBuild', 'onNavAppCreated', 'createRoot', 'recordPayloadChanges', 'refreshAfterBatch', 'handleSfcRegistry', 'handleSfcRegistryUpdate'] as const;
+		const sharedDefaultHooks = ['installBackWrapper', 'selectMountCandidate', 'loadComponentForMount', 'createRoot', 'recordPayloadChanges', 'refreshAfterBatch', 'handleSfcRegistry', 'handleSfcRegistryUpdate'] as const;
 		for (const hook of sharedDefaultHooks) {
 			expect(angularClientStrategy[hook]).toBeUndefined();
 		}

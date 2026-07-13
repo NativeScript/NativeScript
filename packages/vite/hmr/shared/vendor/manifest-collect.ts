@@ -31,9 +31,6 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'bufferutil',
 	'utf-8-validate',
 	'node-gyp-build',
-	'bufferutil',
-	'utf-8-validate',
-	'node-gyp-build',
 	// All @babel/* and babel-* packages are build-time tools, never runtime deps.
 	// They get pulled in as peer deps of packages like @nativescript-community/solid-js
 	// but should never be in the vendor bundle (they require 'fs', 'path', etc.).

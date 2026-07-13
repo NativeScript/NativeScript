@@ -1,6 +1,7 @@
 import type { FrameworkClientStrategy, FrameworkClientMountContext, FrameworkClientBatchContext, FrameworkClientMessageContext } from '../../../client/framework-client-strategy.js';
 import { ENV_VERBOSE as VERBOSE, getGraphVersion } from '../../../client/utils.js';
-import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap, sfcChangedInVersion } from './index.js';
+import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap, sfcChangedInVersion } from './index.js';
+import { installVueNavigateUsingApp } from './navigate-app.js';
 import { driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
 import { findNearestSfcBoundaries } from './dep-propagation.js';
 
@@ -9,7 +10,7 @@ const VUE_SFC_RE = /\.vue$/i;
 /** Injectable seam so the propagation decision tree is unit testable. */
 export interface VueDepPropagationDeps {
 	findBoundaries: typeof findNearestSfcBoundaries;
-	loadComponent: (targetVuePath: string, tag: string) => Promise<any | null>;
+	loadComponent: (targetVuePath: string) => Promise<any | null>;
 	sfcChangedInVersion: (version: number) => boolean;
 	getVersion: () => number;
 	driveOverlay: typeof driveVueSfcUpdateOverlay;
@@ -60,7 +61,7 @@ export async function propagateDepChangeToSfcBoundary(drained: string[], ctx: Fr
 		await deps.driveOverlay(
 			{
 				filePath: target,
-				loadComponent: () => deps.loadComponent(target, 'dep_update'),
+				loadComponent: () => deps.loadComponent(target),
 				applyComponent: (component) => Promise.resolve(performResetRoot(component)),
 			},
 			{ getOverlay: ctx.getOverlay ?? (() => null) },
@@ -85,11 +86,11 @@ export const vueClientStrategy: FrameworkClientStrategy = {
 	install() {
 		installNsVueDevShims();
 		// Prime Vue globals (createApp/NSVRoot) eagerly the moment the dynamically
-		// imported client strategy resolves. The app-driven navigation path
-		// (`__nsNavigateUsingApp` → `beforeNavigateBuild`) is not gated on the
-		// strategy import, so seeding them here makes those later hooks pure
-		// belt-and-suspenders rather than the first time globals are ensured.
+		// imported client strategy resolves, then expose the deterministic
+		// app-driven navigator (`globalThis.__nsNavigateUsingApp`) the `/ns/rt`
+		// bridge's `$navigateTo` routes through.
 		ensureVueGlobals();
+		installVueNavigateUsingApp();
 	},
 
 	installBackWrapper(performResetRoot, getCore) {
@@ -125,16 +126,8 @@ export const vueClientStrategy: FrameworkClientStrategy = {
 		return candidate;
 	},
 
-	loadComponentForMount(candidate: string, tag: string): Promise<any> {
-		return loadSfcComponent(candidate, tag);
-	},
-
-	beforeNavigateBuild() {
-		ensureVueGlobals();
-	},
-
-	onNavAppCreated(app: any) {
-		ensurePiniaOnApp(app);
+	loadComponentForMount(candidate: string): Promise<any> {
+		return loadSfcComponent(candidate);
 	},
 
 	createRoot(newComponent: any, state: any): any {

@@ -9,6 +9,7 @@ import { getProjectAppPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from '../../../server/websocket-module-specifiers.js';
+import { ensureRoutesDefaultExport } from '../../../server/websocket-served-module-helpers.js';
 import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 import { createProcessSfcCode } from './sfc-transforms.js';
 import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMessage } from '../../../shared/protocol.js';
@@ -566,6 +567,8 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 	rewriteVendorSpec(code: string, origin: string, version: number) {
 		return rewriteVendorVueSpec(code, origin, version);
 	},
+	// Route-config modules are commonly consumed as `import routes from './routes'`.
+	normalizeServedExports: ensureRoutesDefaultExport,
 	// ── Vue owns its dev HTTP surface + device config ─────────────────────
 	// The SFC dev endpoints are inherently Vue-only, so Vue owns registering
 	// them (and contributing its import-map + volatile-pattern entries) rather

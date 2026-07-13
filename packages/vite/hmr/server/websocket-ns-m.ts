@@ -1,5 +1,4 @@
 import type { TransformResult, ViteDevServer } from 'vite';
-import * as path from 'path';
 
 import { parse as babelParse } from '@babel/parser';
 import traverse from '@babel/traverse';
@@ -8,10 +7,10 @@ import { sanitizeStrayCoreReferences } from './core-sanitize.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-shims.js';
-import { canonicalizeNsMImportPath } from './websocket-ns-m-paths.js';
+import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
+import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
-import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
@@ -61,11 +60,6 @@ export interface RegisterNsModuleServerRouteOptions {
 	isLiveAngularComponentUpdateFetch?(componentId: string, timestamp: number): boolean;
 }
 
-// Minimal valid ESM body for "no component update available": the iOS HTTP
-// ESM loader (`LoadHttpModuleForUrl`) rejects empty bodies even on HTTP 200,
-// so an actual empty response would crash the component's `_HmrLoad` import.
-const NG_COMPONENT_NO_UPDATE_STUB = '// [ns:m] no Angular component update for this request — substituted with valid empty module to satisfy iOS HTTP loader (rejects empty bodies)\nexport {};\n';
-
 /**
  * Registers the `/ns/m/*` device module server: the HTTP endpoint every
  * NativeScript device uses to fetch app/source modules (and AnalogJS Angular
@@ -98,104 +92,21 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			const sharedTransformRequest = options.sharedTransformRequest;
 			const ensureInitialGraphPopulationStarted = options.ensureInitialGraphPopulationStarted;
 			const strategy = options.getStrategy();
-			// Delegate AnalogJS Angular component live-reload endpoints.
-			//
-			// Angular 21's `ɵɵgetReplaceMetadataURL` (in @angular/core
-			// _debug_node-chunk.mjs) builds the metadata-replacement URL as
-			// `new URL('./@ng/component?c=<id>&t=<ts>', import.meta.url).href`.
-			// Because `import.meta.url` for a NS-served module is
-			// `http://host:port/ns/m/<project-relative>/component.ts`, the
-			// resolved metadata URL ends up *nested* under the component's
-			// directory: `/ns/m/<dir>/@ng/component?c=...&t=...`.
-			//
-			// AnalogJS's `liveReloadPlugin` registers a middleware that matches
-			// `/@ng/component` anywhere in `req.url` and returns either an empty
-			// module body (no HMR update available) or the metadata-replacement
-			// code (after a save invalidates the file). Without this delegation
-			// the NS `/ns/m/` middleware would treat the path as a file lookup,
-			// fail to resolve `@ng/component` against disk, and respond with
-			// 404 — which surfaces as `HTTP fetch/compile failed` at the
-			// component's own `_HmrLoad(Date.now())` call on initial boot and
-			// blocks Angular component bootstrapping.
-			//
-			// Calling `next()` here lets AnalogJS's middleware (or any other
-			// middleware later in the chain) handle the request. Analog's
-			// middleware reads only the `?c=` query string and is pathname-
-			// agnostic, so we don't need to rewrite `req.url` for it to work.
-			//
-			// HOWEVER: AnalogJS responds with an EMPTY body (`res.end('')`)
-			// for non-invalidated component IDs (initial boot, before any
-			// file save). The iOS HTTP ESM loader's
-			// `LoadHttpModuleForUrl` (ModuleInternalCallbacks.mm) treats an
-			// empty body as a fetch failure (`body.empty() → reject`), even
-			// when the HTTP status is 200 OK. That bubbles up as
-			// `HTTP fetch/compile failed` at the device's `__ns_import(...)`
-			// inside each component's `_HmrLoad(Date.now())` and crashes
-			// Angular's component bootstrap. To make Analog's empty
-			// "no-update" response acceptable to the iOS loader, we wrap
-			// `res.write` / `res.end` and substitute a minimal valid ESM
-			// module body (`export {}`) when downstream writes nothing.
-			// Non-empty bodies (real HMR update payloads after a save)
-			// pass through unchanged.
-			if (urlObj.pathname.includes('/@ng/component')) {
-				// Boot-fetch gate: every compiled component runs
-				// `<Class>_HmrLoad(Date.now())` on evaluation, so every cold
-				// boot hits this route for every component. Analog serves a
-				// REAL metadata-replacement payload whenever the component's
-				// module was invalidated at any point in the dev server's
-				// lifetime (Vite's `lastInvalidationTimestamp` never resets),
-				// and a boot-time `ɵɵreplaceMetadata` on the root component
-				// tears down the PageRouterOutlet frame — the "relaunch after
-				// an HMR edit → white screen" failure. Only fetches echoing a
-				// forwarded `angular:component-update` broadcast's exact
-				// `(id, t)` pair may reach Analog; a fresh boot already
-				// evaluates the latest transformed source and never needs a
-				// replacement payload.
-				const isLiveUpdateFetch = options.isLiveAngularComponentUpdateFetch;
-				if (isLiveUpdateFetch) {
-					const componentId = urlObj.searchParams.get('c') || '';
-					const timestampRaw = urlObj.searchParams.get('t');
-					// `Number(null)` is 0 — require an actual `t` param.
-					const timestamp = timestampRaw ? Number(timestampRaw) : NaN;
-					if (!componentId || !Number.isFinite(timestamp) || !isLiveUpdateFetch(componentId, timestamp)) {
-						res.statusCode = 200;
-						res.setHeader('Content-Type', 'text/javascript');
-						res.setHeader('Cache-Control', 'no-cache');
-						res.end(NG_COMPONENT_NO_UPDATE_STUB);
-						return;
-					}
-				}
-				const chunks: string[] = [];
-				const origEnd = res.end.bind(res);
-				let ended = false;
-				const captureChunk = (chunk: unknown): void => {
-					if (chunk == null) return;
-					if (typeof chunk === 'string') {
-						chunks.push(chunk);
-					} else if (Buffer.isBuffer(chunk)) {
-						chunks.push(chunk.toString('utf8'));
-					} else {
-						chunks.push(String(chunk));
-					}
-				};
-				(res as any).write = function (chunk?: unknown, ..._args: unknown[]): boolean {
-					captureChunk(chunk);
-					return true;
-				};
-				(res as any).end = function (chunk?: unknown, ..._args: unknown[]): unknown {
-					if (ended) return true;
-					ended = true;
-					captureChunk(chunk);
-					let body = chunks.join('');
-					if (body.length === 0) {
-						body = NG_COMPONENT_NO_UPDATE_STUB;
-					}
-					try {
-						res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'));
-					} catch {}
-					return (origEnd as (data: string) => unknown)(body);
-				};
-				return next();
+			// Framework request interception, BEFORE spec resolution. Angular
+			// uses this to delegate AnalogJS `/@ng/component` live-reload
+			// fetches (with the boot-fetch gate and iOS empty-body guard —
+			// see frameworks/angular/server/ng-component-route.ts). Must run
+			// first: an intercepted request must not kick off graph
+			// population or the transform pipeline.
+			if (
+				strategy?.interceptModuleRequest?.({
+					urlObj,
+					res,
+					next,
+					isLiveComponentUpdateFetch: options.isLiveAngularComponentUpdateFetch,
+				})
+			) {
+				return;
 			}
 			// graphVersion starts at 1 and stays stable during cold boot (see
 			// `upsertGraphModule`'s bumpVersion option and the inline comment
@@ -210,52 +121,27 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// this handler would miss the round-trip timing and per-route
 			// breakdowns.
 			setDeviceModuleHeaders(res);
-			// Support both query (?path=/abs) and path-style (/ns/m/abs)
-			let spec = urlObj.searchParams.get('path') || '';
-			if (!spec) {
-				const base = '/ns/m';
-				const rest = urlObj.pathname.slice(base.length);
-				if (rest && rest !== '/') spec = rest;
-			}
-			// Special-case stub for anomalous '@' imports emitted as '/__invalid_at__.mjs'
-			if (spec === '/__invalid_at__.mjs' || spec === '__invalid_at__.mjs') {
-				res.statusCode = 200;
-				res.end("// invalid '@' import stub\nexport {}\n");
-				return;
-			}
-			if (!spec) {
-				res.statusCode = 200;
-				res.end('export {}\n');
-				return;
-			}
+			// Inbound spec normalization is owned by createNsMRequestContext
+			// (websocket-ns-m-request.ts): query/path-style spec extraction,
+			// the anomalous-'@' and empty-spec stubs, legacy boot/HMR tag
+			// stripping, absolute-filesystem → project-relative mapping,
+			// `@/` aliasing, the blocked-device-import gate, and candidate
+			// expansion. Its specs pin all of it.
 			const serverRoot = (server.config?.root || process.cwd()) as string;
 			const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(serverRoot);
-			spec = spec.replace(/[?#].*$/, '');
-			// Tolerate LEGACY path-based boot/HMR prefixes from stale cached
-			// device code (`/ns/m/__ns_boot__/b1/…`, `/ns/m/__ns_hmr__/<tag>/…`).
-			// Current servers never emit them — freshness is eviction-driven.
-			try {
-				spec = stripDecoratedServePrefixes(spec).cleanedSpec;
-			} catch {}
-			// Normalize absolute filesystem paths back to project-relative ids (e.g. /src/app.ts)
-			try {
-				const toPosix = (p: string) => p.replace(/\\/g, '/');
-				const rootPosix = toPosix(serverRoot);
-				const specPosix = toPosix(spec);
-				// If spec is an absolute path under the project root, convert to '/'+relative
-				const isAbsFs = /^\//.test(specPosix) || /^[A-Za-z]:\//.test(spec); // posix or win drive
-				if (isAbsFs) {
-					let rel = specPosix.startsWith(rootPosix) ? specPosix.slice(rootPosix.length) : require('path').posix.relative(rootPosix, specPosix);
-					if (!rel.startsWith('..')) {
-						if (!rel.startsWith('/')) rel = '/' + rel;
-						// Ensure leading '/src' style when path maps into src
-						spec = rel;
-					}
-				}
-			} catch {}
-			// Serve Vite virtual modules (/@id/ prefix). These are internal
-			// virtual modules (e.g., \0nsvite:nsconfig-json for ~/package.json)
-			// that don't exist on disk. Decode the ID and load via plugin container.
+			const contextResult = createNsMRequestContext(req.url || '', serverRoot, APP_VIRTUAL_WITH_SLASH, monorepoWorkspaceRoot);
+			if (contextResult.kind === 'next') return next();
+			if (contextResult.kind === 'response') {
+				res.statusCode = contextResult.statusCode;
+				res.end(contextResult.code);
+				return;
+			}
+			const requestContext = contextResult.value;
+			const spec = requestContext.spec;
+			// Serve Vite virtual modules (/@id/ prefix) directly — these are
+			// internal virtual modules (e.g., \0nsvite:nsconfig-json for
+			// ~/package.json) that don't exist on disk and must NOT run
+			// through the device post-processing pipeline below.
 			if (spec.startsWith('/@id/')) {
 				try {
 					// First try Vite's transform pipeline directly
@@ -281,15 +167,6 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 					}
 				} catch {}
 			}
-			if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
-			if (spec.startsWith('./')) spec = spec.slice(1);
-			const blockedNodeModulesReason = getBlockedDeviceNodeModulesReason(spec);
-			if (blockedNodeModulesReason) {
-				res.statusCode = 404;
-				res.end(`// [ns:m] blocked device import\nthrow new Error(${JSON.stringify(`[ns/m] ${blockedNodeModulesReason}`)});\nexport {};\n`);
-				return;
-			}
-			if (!spec.startsWith('/')) spec = '/' + spec;
 
 			// Worker-realm serves must NOT take the deps-bundle bridge: the
 			// bundle evaluates the full dependency closure in the worker realm,
@@ -344,17 +221,6 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				}
 				// Fall through to default handling if inline compile produced nothing.
 			}
-			const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
-			const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
-			const candidates = [...(hasExt ? [spec] : []), baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs'];
-			const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot, monorepoWorkspaceRoot);
-			let transformed: TransformResult | null = null;
-			let resolvedCandidate: string | null = null;
-			const rawExplicitModule = tryReadRawExplicitJavaScriptModule(spec, serverRoot);
-			if (rawExplicitModule) {
-				transformed = { code: rawExplicitModule.code } as TransformResult;
-				resolvedCandidate = rawExplicitModule.resolvedId;
-			}
 			// Queue and dedupe transformRequest calls so heavy app graphs do not
 			// overwhelm Vite with concurrent work. Slow-transform warnings start only
 			// when the transform actually begins executing, and requests stay pending
@@ -363,97 +229,37 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				const r = await sharedTransformRequest(url, timeoutMs);
 				// A type-only .ts module legitimately transforms to EMPTY code
 				// (e.g. a workspace lib's `interfaces.ts` holding only `export
-				// type ...`). Every candidate gate below tests `r?.code`
-				// truthiness, so '' would cascade through all fallbacks into a
-				// 404 "transform miss" — and one 404 in the entry graph fails
-				// the whole dev-session boot. Normalize to the canonical empty
-				// ESM module instead.
+				// type ...`). Every candidate gate in the resolution pipeline
+				// tests `r?.code` truthiness, so '' would cascade through all
+				// fallbacks into a 404 "transform miss" — and one 404 in the
+				// entry graph fails the whole dev-session boot. Normalize to
+				// the canonical empty ESM module instead.
 				if (r && typeof r.code === 'string' && r.code.trim() === '') {
 					return { ...r, code: 'export {}\n' };
 				}
 				return r;
 			};
-			if (!transformed?.code) {
-				for (const cand of transformCandidates) {
-					try {
-						const r = await transformWithTimeout(cand);
-						if (r?.code) {
-							transformed = r;
-							resolvedCandidate = cand;
-							break;
-						}
-					} catch {}
+			const resolvePluginContainerId = async (id: string): Promise<string | null> => {
+				try {
+					const resolved = await server.pluginContainer?.resolveId?.(id, undefined);
+					return typeof resolved === 'string' ? resolved : resolved?.id || null;
+				} catch {
+					return null;
 				}
-			}
-			// Fallback 1: ask Vite to resolve the id, then transform the resolved id (handles aliases and virtual ids)
-			if (!transformed?.code) {
-				try {
-					const rid = await server.pluginContainer?.resolveId?.(spec, undefined);
-					const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
-					if (ridStr) {
-						const r = await transformWithTimeout(ridStr);
-						if (r?.code) {
-							transformed = r;
-							resolvedCandidate = ridStr;
-						}
-					}
-				} catch {}
-			}
-			// Fallback 1b: if spec is a /node_modules/ path, extract bare specifier
-			// and try resolveId with that. This handles package.json "exports" field
-			// resolution (e.g., solid-js/jsx-runtime → solid-js/dist/solid.js).
-			if (!transformed?.code && spec.includes('/node_modules/')) {
-				try {
-					const nmIdx = spec.lastIndexOf('/node_modules/');
-					const bare = spec.slice(nmIdx + '/node_modules/'.length);
-					if (bare && !bare.startsWith('.')) {
-						const rid = await server.pluginContainer?.resolveId?.(bare, undefined);
-						const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
-						if (ridStr) {
-							const r = await transformWithTimeout(ridStr);
-							if (r?.code) {
-								transformed = r;
-								resolvedCandidate = ridStr;
-							}
-						}
-					}
-				} catch {}
-			}
-			// Fallback 2: try /@fs absolute path under project root (Vite file system alias).
-			// In a monorepo with hoisted node_modules the file may live above
-			// `serverRoot`, so try the workspace root next.
-			if (!transformed?.code) {
-				try {
-					const toPosix = (p: string) => p.replace(/\\/g, '/');
-					const rootsToTry = [serverRoot, ...(monorepoWorkspaceRoot && path.resolve(monorepoWorkspaceRoot) !== path.resolve(serverRoot) ? [monorepoWorkspaceRoot] : [])];
-					for (const root of rootsToTry) {
-						const rootPosix = toPosix(root).replace(/\/$/, '');
-						const absPosix = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
-						const fsId = `/@fs${absPosix}`;
-						if (resolveCandidateFilePath(fsId, serverRoot, monorepoWorkspaceRoot)) {
-							const r = await transformWithTimeout(fsId);
-							if (r?.code) {
-								transformed = r;
-								resolvedCandidate = fsId;
-								break;
-							}
-						}
-					}
-				} catch {}
-			}
-			// Fallback 3: try adding ?import to hint Vite's transform pipeline
-			if (!transformed?.code) {
-				for (const cand of transformCandidates) {
-					try {
-						const r = await transformWithTimeout(`${cand}${cand.includes('?') ? '&' : '?'}import`);
-						if (r?.code) {
-							transformed = r;
-							resolvedCandidate = `${cand}?import`;
-							break;
-						}
-					} catch {}
-				}
-			}
+			};
+			const loadVirtualId = (id: string) => server.pluginContainer.load(id);
+			// Canonical "spec → transformed module" resolution
+			// (websocket-ns-m-request.ts): raw explicit JS read → transform
+			// candidates → resolveId → bare node_modules specifier →
+			// /@fs project+workspace roots → ?import hint.
+			const resolution = await resolveNsMTransformedModule({
+				context: requestContext,
+				transformRequest: transformWithTimeout,
+				resolveId: resolvePluginContainerId,
+				loadVirtualId,
+			});
+			let transformed: TransformResult | null = resolution.transformed;
+			const resolvedCandidate: string | null = resolution.resolvedCandidate;
 			// Solid HMR: patch the served `@solid-refresh` runtime so $$refreshESM
 			// applies registry updates inline on module re-evaluation. The full
 			// patch (and its server-side diagnostics) lives in the Solid strategy's
@@ -511,33 +317,19 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 					res.end(code || 'export {}\n');
 					return;
 				}
-				// Generic bare module resolution via Vite plugin container
-				if (isBare) {
-					try {
-						const resolved = await server.pluginContainer?.resolveId?.(spec, undefined);
-						const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
-						if (resolvedId) {
-							const r = await transformWithTimeout(resolvedId);
-							if (r?.code) {
-								transformed = r;
-								resolvedCandidate = resolvedId;
-							}
-						}
-					} catch {}
-				}
-				if (!transformed?.code) {
-					// Emit a module that throws with context for easier on-device debugging
-					try {
-						const tried = Array.from(new Set(transformCandidates.length > 0 ? transformCandidates : candidates)).slice(0, 12);
-						const out = `// [ns:m] transform miss path=${spec} tried=${tried.length}\n` + `throw new Error(${JSON.stringify(`[ns/m] transform failed for ${spec} (tried ${tried.length} candidates).`)});\nexport {};\n`;
-						res.statusCode = 404;
-						res.end(out);
-						return;
-					} catch {
-						res.statusCode = 404;
-						res.end('export {}\n');
-						return;
-					}
+				// (Bare specifiers already went through resolveId in the
+				// resolution pipeline above — reaching here means a true miss.)
+				// Emit a module that throws with context for easier on-device debugging
+				try {
+					const tried = Array.from(new Set(requestContext.transformCandidates.length > 0 ? requestContext.transformCandidates : requestContext.candidates)).slice(0, 12);
+					const out = `// [ns:m] transform miss path=${spec} tried=${tried.length}\n` + `throw new Error(${JSON.stringify(`[ns/m] transform failed for ${spec} (tried ${tried.length} candidates).`)});\nexport {};\n`;
+					res.statusCode = 404;
+					res.end(out);
+					return;
+				} catch {
+					res.statusCode = 404;
+					res.end('export {}\n');
+					return;
 				}
 			}
 			// Final-response memo (see ns-m-response-memo.ts): identical
@@ -647,16 +439,10 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				res.statusCode = 500;
 				return void res.end(`throw new Error(${JSON.stringify((e as any)?.message || String(e))});\nexport {};`);
 			}
-			// Defensive export normalization: if a module defines `routes` and only exports it named,
-			// add a default export alias so both `import { routes }` and `import routes` work.
+			// Framework export normalization (e.g. the Vue/Solid/TS `routes`
+			// default-export alias — see FrameworkServerStrategy.normalizeServedExports).
 			try {
-				if (!/\bexport\s+default\b/.test(code)) {
-					const hasNamedRoutes = /\bexport\s*\{\s*routes\s*\}/.test(code);
-					const hasConstRoutes = /\bconst\s+routes\s*=/.test(code) || /\bvar\s+routes\s*=/.test(code) || /\blet\s+routes\s*=/.test(code);
-					if (hasNamedRoutes && hasConstRoutes) {
-						code += `\nexport default routes;\n`;
-					}
-				}
+				code = strategy?.normalizeServedExports?.(code) ?? code;
 			} catch {}
 
 			// Every emitted endpoint URL is CANONICAL (unversioned).
@@ -671,37 +457,13 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				code = canonicalizeRtImports(code, getServerOrigin(server));
 				code = strategy.canonicalizeFrameworkImports?.(code, getServerOrigin(server)) ?? code;
 			} catch {}
-			// `/ns/m` URL finalize step.
-			//
-			// `canonicalizeNsMImportPath` strips any `__ns_hmr__/<tag>/`
-			// and `__ns_boot__/b1/` segments so every emitted URL is the
-			// canonical stable form (cache busting is driven by
-			// `__NS_DEV__.invalidateModules` + the runtime's eviction nonce, not
-			// URL decoration).
+			// `/ns/m` URL finalize step: collapse every emitted /ns/m URL form
+			// (static/side-effect/dynamic imports, new URL(...) shapes, SFC
+			// URLs) to the canonical stable form. Cache busting is driven by
+			// `__NS_DEV__.invalidateModules` + the runtime's eviction nonce,
+			// not URL decoration — see websocket-ns-m-paths.ts.
 			try {
-				const origin = getServerOrigin(server);
-				const rewritePath = (p: string) => canonicalizeNsMImportPath(p);
-				// /ns/m URL forms — all collapse to canonical stable
-				// URLs via the `rewriteNsMImportPathForHmr` rewriter.
-				// 1) Static imports: import ... from "/ns/m/..."
-				code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
-				// 2) Side-effect imports: import "/ns/m/..."
-				code = code.replace(/(import\s*(?!\()\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
-				// 3) Dynamic imports: import("/ns/m/...")
-				code = code.replace(/(import\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*\))/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
-				// 4) new URL("/ns/m/...", import.meta.url)
-				code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\))/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
-				// 5) __ns_import(new URL('/ns/m/...', import.meta.url).href)
-				code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
-				// 6) Force absolute HTTP for new URL('/ns/m/...', import.meta.url).href → canonical stable URL.
-				try {
-					code = code.replace(/new\s+URL\(\s*["'](\/ns\/m\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}${rewritePath(p1)}`)}`);
-				} catch {}
-				// 7) SFC URLs (Vue) — canonical, like everything else. Freshness
-				// is driven by the Vue client evicting the SFC artifact URL set.
-				try {
-					code = code.replace(/new\s+URL\(\s*["']\/ns\/sfc(\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}/ns/sfc${p1}`)}`);
-				} catch {}
+				code = collapseLegacyNsMTags(code, 'outbound-served-code', getServerOrigin(server));
 			} catch {}
 			// Final guard: eliminate any lingering named imports from /ns/core to avoid
 			// evaluation-time "does not provide an export named ..." in the device runtime.
@@ -759,38 +521,27 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 									// Delegator re-exports default from /ns/asm — skip; assembler will be checked when imported by upstream
 									continue;
 								} else if (u.pathname.startsWith('/ns/m')) {
-									// Resolve to local project path and transform with same candidate logic as /ns/m handler
-									let local = u.pathname.replace(/^\/ns\/m/, '');
+									// Resolve the import target through the SAME
+									// canonical pipeline the /ns/m route itself uses
+									// (websocket-ns-m-request.ts) instead of a third
+									// hand-rolled copy of candidate expansion.
 									try {
-										// Normalize project-relative path
-										if (local.startsWith('@/')) local = APP_VIRTUAL_WITH_SLASH + local.slice(2);
-										if (local.startsWith('./')) local = local.slice(1);
-										if (!local.startsWith('/')) local = '/' + local;
-										const hasExt = /(\.ts|\.tsx|\.js|\.jsx|\.mjs|\.mts|\.cts|\.vue)$/i.test(local);
-										const baseNoExt = hasExt ? local.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : local;
-										const cands = [...(hasExt ? [local] : []), baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs'];
-										let t: TransformResult | null = null;
-										for (const cand of cands) {
-											try {
-												const r = await server.transformRequest(cand);
-												if (r?.code) {
-													t = r;
-													break;
-												}
-											} catch {}
-											if (t?.code) break;
+										const targetContextResult = createNsMRequestContext(u.pathname, serverRoot, APP_VIRTUAL_WITH_SLASH, monorepoWorkspaceRoot);
+										if (targetContextResult.kind === 'context') {
+											const targetResolution = await resolveNsMTransformedModule({
+												context: targetContextResult.value,
+												transformRequest: async (url) => {
+													try {
+														return await server.transformRequest(url);
+													} catch {
+														return null;
+													}
+												},
+												resolveId: resolvePluginContainerId,
+												loadVirtualId,
+											});
+											targetCode = targetResolution.transformed?.code || '';
 										}
-										if (!t?.code) {
-											try {
-												const rid = await server.pluginContainer?.resolveId?.(local, undefined);
-												const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
-												if (ridStr) {
-													const r2 = await server.transformRequest(ridStr);
-													if (r2?.code) t = r2;
-												}
-											} catch {}
-										}
-										targetCode = t?.code || '';
 									} catch {}
 								} else if (u.pathname.startsWith('/ns/rt') || u.pathname.startsWith('/ns/core')) {
 									// Bridges export named/default as needed; skip default check

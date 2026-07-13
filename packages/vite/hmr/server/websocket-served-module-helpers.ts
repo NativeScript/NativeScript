@@ -198,6 +198,26 @@ export function stripCoreGlobalsImports(code: string): string {
 	return code.replace(pattern, '');
 }
 
+// The ONE device-side implementation of Vite's variable-dynamic-import
+// helper. Injected by `ensureVariableDynamicImportHelper` and by
+// `stripViteDynamicImportVirtual` when it removes the `/@id/__x00__vite`
+// virtual that normally provides it — both paths must emit the same shim.
+const VARIABLE_DYNAMIC_IMPORT_HELPER_SOURCE =
+	`const __variableDynamicImportRuntimeHelper = (map, request, importMode) => {\n` +
+	`  try { if (request === '@') { return import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href); } } catch {}\n` +
+	`  const loader = map && (map[request] || map[request?.replace(/\\\\/g, "/")]);\n` +
+	`  if (!loader) {\n` +
+	`    const error = new Error("Cannot dynamically import: " + request);\n` +
+	`    error.code = 'ERR_MODULE_NOT_FOUND';\n` +
+	`    return Promise.reject(error);\n` +
+	`  }\n` +
+	`  try {\n` +
+	`    return loader(importMode);\n` +
+	`  } catch (err) {\n` +
+	`    return Promise.reject(err);\n` +
+	`  }\n` +
+	`};\n`;
+
 export function ensureVariableDynamicImportHelper(code: string): string {
 	if (!code.includes('__variableDynamicImportRuntimeHelper')) {
 		return code;
@@ -206,23 +226,8 @@ export function ensureVariableDynamicImportHelper(code: string): string {
 	if (PAT.VARIABLE_DYNAMIC_IMPORT_HELPER_PATTERN.test(code)) {
 		return code;
 	}
-	const helper =
-		`const __variableDynamicImportRuntimeHelper = (map, request, importMode) => {\n` +
-		`  try { if (request === '@') { return import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href); } } catch {}\n` +
-		`  const loader = map && (map[request] || map[request?.replace(/\\\\/g, "/")]);\n` +
-		`  if (!loader) {\n` +
-		`    const error = new Error("Cannot dynamically import: " + request);\n` +
-		`    error.code = 'ERR_MODULE_NOT_FOUND';\n` +
-		`    return Promise.reject(error);\n` +
-		`  }\n` +
-		`  try {\n` +
-		`    return loader(importMode);\n` +
-		`  } catch (err) {\n` +
-		`    return Promise.reject(err);\n` +
-		`  }\n` +
-		`};\n`;
 
-	return `${helper}${code}`;
+	return `${VARIABLE_DYNAMIC_IMPORT_HELPER_SOURCE}${code}`;
 }
 
 export function ensureGuardPlainDynamicImports(code: string): string {
@@ -356,6 +361,15 @@ type ModuleExportSurface = {
 	starSources: string[];
 };
 
+// One of three deliberately-separate export scanners; each answers a
+// different question and merging them would couple unrelated contracts:
+//   - `extractDirectExportedNames` (websocket-core-bridge.ts): direct lexical
+//     exports only — the shared primitive both other scanners build on.
+//   - `scanModuleExportSurface` (here): direct exports PLUS re-export lists
+//     and `export * from` sources, because star expansion must know both what
+//     a module claims and where the rest comes from.
+//   - `extractExportMetadata` (below): does a module have a default export
+//     and which named ones — shape-only, for SFC route metadata.
 function scanModuleExportSurface(code: string): ModuleExportSurface {
 	const ownNames = new Set<string>(extractDirectExportedNames(code));
 	for (const m of code.matchAll(/\bexport\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s*["'][^"']+["']/g)) {
@@ -551,8 +565,7 @@ export function stripViteDynamicImportVirtual(code: string): string {
 		code = code.replace(/\/@id\/__x00__vite\/dynamic-import-helper[^"'`)]*/g, '/__NS_UNUSED_DYNAMIC_IMPORT_HELPER__');
 	}
 	if (!/__variableDynamicImportRuntimeHelper/.test(code)) {
-		const inline = `const __variableDynamicImportRuntimeHelper = (map, request, importMode) => {\n  try { if (request === '@') { return import('/ns/m/__invalid_at__.mjs'); } } catch {}\n  const loader = map && (map[request] || map[request?.replace(/\\\\/g, '/')]);\n  if (!loader) { const e = new Error('Cannot dynamically import: ' + request); /*@ts-ignore*/ e.code = 'ERR_MODULE_NOT_FOUND'; return Promise.reject(e); }\n  try { return loader(importMode); } catch (e) { return Promise.reject(e); }\n};\n`;
-		code = inline + code;
+		code = VARIABLE_DYNAMIC_IMPORT_HELPER_SOURCE + code;
 	}
 	if (code !== original) {
 		code = `// [hmr-sanitize] removed virtual dynamic-import-helper\n${code}`;
@@ -560,6 +573,9 @@ export function stripViteDynamicImportVirtual(code: string): string {
 	return code;
 }
 
+// Shape-only scanner (see the scanner taxonomy above scanModuleExportSurface):
+// answers "does this module export a default, and which named exports?" for
+// the Vue SFC route metadata. It intentionally ignores re-export sources.
 export function extractExportMetadata(code: string): { hasDefault: boolean; named: string[] } {
 	const named = new Set<string>();
 	let hasDefault = /\bexport\s+default\b/.test(code);
@@ -587,6 +603,22 @@ export function extractExportMetadata(code: string): { hasDefault: boolean; name
 	} catch {}
 	named.delete('default');
 	return { hasDefault, named: Array.from(named) };
+}
+
+/**
+ * Defensive export normalization for route-config modules: if a served module
+ * defines `routes` and only exports it named, append a default-export alias so
+ * both `import { routes }` and `import routes` resolve. Backing implementation
+ * for `FrameworkServerStrategy.normalizeServedExports` (Vue/Solid/TS).
+ */
+export function ensureRoutesDefaultExport(code: string): string {
+	if (/\bexport\s+default\b/.test(code)) return code;
+	const hasNamedRoutes = /\bexport\s*\{\s*routes\s*\}/.test(code);
+	const hasConstRoutes = /\bconst\s+routes\s*=/.test(code) || /\bvar\s+routes\s*=/.test(code) || /\blet\s+routes\s*=/.test(code);
+	if (hasNamedRoutes && hasConstRoutes) {
+		return code + `\nexport default routes;\n`;
+	}
+	return code;
 }
 
 function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
@@ -640,33 +672,50 @@ export function assertNoOptimizedArtifacts(code: string, contextLabel: string): 
 	}
 }
 
-export function ensureDestructureCoreImports(code: string): string {
+type BridgeImportDestructureOptions = {
+	/** Regex source for the bridge URL path; an optional http(s) origin prefix is handled by the caller-side template. */
+	pathPattern: string;
+	/** Identifier used for the synthesized default-import binding. */
+	tempName: string;
+	/** /ns/core numbers repeats (`_1`, `_2`…); /ns/rt always emits the single fixed name (pinned by dedupeRtNamedImportsAgainstDestructures). */
+	numberRepeats: boolean;
+	/** Return true to leave a matched import untouched. */
+	shouldSkip?: (src: string) => boolean;
+};
+
+/** Convert an import spec list (`A, B as C`) into a destructure pattern (`A, B: C`). */
+function toDestructurePattern(specList: string): string {
+	return specList
+		.split(',')
+		.map((s) => s.trim())
+		.filter(Boolean)
+		.map((seg) => {
+			const match = seg.split(/\s+as\s+/i);
+			return match.length === 2 ? `${match[0].trim()}: ${match[1].trim()}` : seg;
+		})
+		.join(', ');
+}
+
+// Rewrite named imports from a bridge URL (`/ns/core`, `/ns/rt`) into a
+// default import plus `const {}` destructure. The bridge modules export a
+// default namespace object, so a named import that survives to the device
+// fails at link time ("does not provide an export named ...").
+function destructureBridgeImports(code: string, opts: BridgeImportDestructureOptions): string {
 	try {
 		let result = code;
-		let coreImportCounter = 0;
-		const toDestructure = (specList: string) =>
-			specList
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.map((seg) => {
-					const match = seg.split(/\s+as\s+/i);
-					return match.length === 2 ? `${match[0].trim()}: ${match[1].trim()}` : seg;
-				})
-				.join(', ');
-		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
-		result = result.replace(reNamed, (_full, prefix: string, specList: string, src: string) => {
-			if (isDeepCoreSubpath(src)) return _full;
-			const tempName = `__ns_core_ns_re${coreImportCounter > 0 ? `_${coreImportCounter}` : ''}`;
-			coreImportCounter++;
-			const decl = `const { ${toDestructure(specList)} } = ${tempName};`;
-			return `${prefix}import ${tempName} from ${JSON.stringify(src)};\n${decl}\n`;
+		let counter = 0;
+		const srcPattern = `((?:https?:\\/\\/[^"']+)?${opts.pathPattern})`;
+		const reNamed = new RegExp(`(^|\\n)\\s*import\\s*\\{([^}]+)\\}\\s*from\\s*["']${srcPattern}['"];?\\s*`, 'gm');
+		result = result.replace(reNamed, (full, prefix: string, specList: string, src: string) => {
+			if (opts.shouldSkip?.(src)) return full;
+			const tempName = opts.numberRepeats && counter > 0 ? `${opts.tempName}_${counter}` : opts.tempName;
+			counter++;
+			return `${prefix}import ${tempName} from ${JSON.stringify(src)};\nconst { ${toDestructurePattern(specList)} } = ${tempName};\n`;
 		});
-		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
-		result = result.replace(reMixed, (_full, prefix: string, defName: string, specList: string, src: string) => {
-			if (isDeepCoreSubpath(src)) return _full;
-			const decl = `const { ${toDestructure(specList)} } = ${defName};`;
-			return `${prefix}import ${defName} from ${JSON.stringify(src)};\n${decl}\n`;
+		const reMixed = new RegExp(`(^|\\n)\\s*import\\s+([A-Za-z_$][\\w$]*)\\s*,\\s*\\{([^}]+)\\}\\s*from\\s*["']${srcPattern}['"];?\\s*`, 'gm');
+		result = result.replace(reMixed, (full, prefix: string, defName: string, specList: string, src: string) => {
+			if (opts.shouldSkip?.(src)) return full;
+			return `${prefix}import ${defName} from ${JSON.stringify(src)};\nconst { ${toDestructurePattern(specList)} } = ${defName};\n`;
 		});
 		return result;
 	} catch {
@@ -674,34 +723,22 @@ export function ensureDestructureCoreImports(code: string): string {
 	}
 }
 
+export function ensureDestructureCoreImports(code: string): string {
+	return destructureBridgeImports(code, {
+		pathPattern: String.raw`\/ns\/core(?:\/[^"']+)?`,
+		tempName: '__ns_core_ns_re',
+		numberRepeats: true,
+		// Deep core subpaths keep their named-import form (see core-sanitize.ts).
+		shouldSkip: isDeepCoreSubpath,
+	});
+}
+
 export function ensureDestructureRtImports(code: string): string {
-	try {
-		let result = code;
-		const toDestructure = (specList: string) =>
-			specList
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.map((seg) => {
-					const match = seg.split(/\s+as\s+/i);
-					return match.length === 2 ? `${match[0].trim()}: ${match[1].trim()}` : seg;
-				})
-				.join(', ');
-		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?)['"];?\s*/gm;
-		result = result.replace(reNamed, (_full, prefix: string, specList: string, src: string) => {
-			const tempName = `__ns_rt_ns_re`;
-			const decl = `const { ${toDestructure(specList)} } = ${tempName};`;
-			return `${prefix}import ${tempName} from ${JSON.stringify(src)};\n${decl}\n`;
-		});
-		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?)['"];?\s*/gm;
-		result = result.replace(reMixed, (_full, prefix: string, defName: string, specList: string, src: string) => {
-			const decl = `const { ${toDestructure(specList)} } = ${defName};`;
-			return `${prefix}import ${defName} from ${JSON.stringify(src)};\n${decl}\n`;
-		});
-		return result;
-	} catch {
-		return code;
-	}
+	return destructureBridgeImports(code, {
+		pathPattern: String.raw`\/ns\/rt(?:\/[\d]+)?`,
+		tempName: '__ns_rt_ns_re',
+		numberRepeats: false,
+	});
 }
 
 export function dedupeRtNamedImportsAgainstDestructures(code: string): string {

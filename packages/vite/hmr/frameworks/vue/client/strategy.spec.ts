@@ -48,7 +48,7 @@ describe('propagateDepChangeToSfcBoundary', () => {
 		const ctx = makeCtx();
 		const propagated = await propagateDepChangeToSfcBoundary(['/src/test2.ts'], ctx, deps);
 		expect(propagated).toBe(true);
-		expect(deps.loadComponent).toHaveBeenCalledWith('/src/components/Home.vue', 'dep_update');
+		expect(deps.loadComponent).toHaveBeenCalledWith('/src/components/Home.vue');
 		expect(ctx.performResetRoot).toHaveBeenCalledWith({ name: 'FreshComponent' });
 	});
 

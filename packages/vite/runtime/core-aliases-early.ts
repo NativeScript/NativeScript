@@ -1,4 +1,5 @@
 import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
+import { getVendorRequire } from '../hmr/shared/runtime/vendor-resolve.js';
 // Early alias installer for @nativescript/core plus Android init resilience.
 // Runs on device in the virtual entry context.
 
@@ -24,8 +25,8 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 					}
 				} catch {}
 				try {
-					const req = g.__nsVendorRequire || g.__nsRequire || g.require;
-					if (typeof req === 'function') {
+					const req = getVendorRequire();
+					if (req) {
 						const mod = req(moduleId);
 						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
 					}

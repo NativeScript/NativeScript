@@ -71,12 +71,12 @@ export function boot() {
 	//      with `__ns_boot__/b1/` so the dev-server detects main.ts as
 	//      a boot request and injects the snippet at the top of the
 	//      served module body.
-	//   2. `rewriteNsMImportPathForHmr(..., bootTaggedRequest=true)` then
-	//      preserves the boot prefix on EVERY app-module static import
-	//      that flows through the boot-tagged module — see the
-	//      `if (bootTaggedRequest) return /ns/m/__ns_boot__/b1${...}` branch
-	//      in `websocket-ns-m-paths.ts`. The snippet propagates through
-	//      the entire transitive app-module graph (~7 modules for the
+	//   2. The then-current boot-tag rewriter (since removed; inbound
+	//      `__ns_boot__/` prefixes are now stripped by
+	//      `canonicalizeNsMImportPath`) preserved the boot prefix on
+	//      EVERY app-module static import that flowed through the
+	//      boot-tagged module, so the snippet propagated through the
+	//      entire transitive app-module graph (~7 modules for the
 	//      safety app, hundreds for larger Angular apps).
 	//   3. Any module containing a top-level `await` keyword — even one
 	//      guarded by `if (...) { await ...; }` — is parsed as an ASYNC

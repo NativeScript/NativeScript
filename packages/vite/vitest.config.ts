@@ -12,7 +12,7 @@ export default defineConfig({
 			provider: 'v8',
 			reportsDirectory: '../../coverage/packages/vite',
 			reporter: ['text-summary', 'html'],
-			include: ['configuration/**', 'helpers/**', 'hmr/**', 'polyfills/**', 'runtime/**', 'shims/**', 'transformers/**', 'index.ts'],
+			include: ['configuration/**', 'helpers/**', 'hmr/**', 'polyfills/**', 'runtime/**', 'shims/**', 'index.ts'],
 			exclude: ['**/*.spec.ts', '**/__tests__/**', 'dist/**', '**/*.d.ts'],
 		},
 	},

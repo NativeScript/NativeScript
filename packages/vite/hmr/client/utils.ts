@@ -2,6 +2,7 @@
  * No circulars - don't import from other hmr/client/* modules here.
  */
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { getVendorRequire } from '../shared/runtime/vendor-resolve.js';
 import { readNsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 
@@ -96,8 +97,8 @@ export function getCore(name: string): any {
 	} catch {}
 	// 3) Device require (still resolves to vendor realm when available)
 	try {
-		const req = g && (g.__nsVendorRequire || g.__nsRequire || g.require);
-		if (typeof req === 'function') {
+		const req = getVendorRequire();
+		if (req) {
 			if (name === 'Application') {
 				const appMod = req('@nativescript/core/application');
 				const appModule = (appMod && (appMod.default || appMod)) || appMod;

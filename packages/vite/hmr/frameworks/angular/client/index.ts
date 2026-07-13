@@ -1,69 +1,23 @@
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { getNsHotRegistry } from '../../../client/hot-context.js';
+import { getOverlayApi, resolveOverlayEnabled, setUpdateStage, type HmrUpdateOverlayInfo, type HmrUpdateOverlayStage } from '../../../client/overlay-driver.js';
 import { readNsRuntimeDevHostApi } from '../../../shared/runtime/browser-runtime-contract.js';
 type GetCoreFn = (name: string) => any;
 
-// HMR-applying progress overlay.
-//
-// We route progress through `globalThis.__NS_HMR_DEV_OVERLAY__`
-// instead of importing the overlay module directly. This mirrors how
-// `client/index.ts` drives the connection overlay and is intentional:
-// the angular client lives in the user-app realm; statically importing
-// `dev-overlay.js` here would risk creating a second copy of the
-// runtime state when bundlers can't dedupe across realms. Reading the
-// stable global keeps a single source of truth and soft-fails (no-op)
-// when the overlay was never installed (production, vitest, etc.).
-type HmrUpdateOverlayStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete';
-
-type HmrUpdateOverlayInfo = {
-	detail?: string;
-	progress?: number | null;
-};
-
-// Opt-out flag for the apply-progress overlay (default: enabled).
-// Driven by `NS_VITE_PROGRESS_OVERLAY=0` (or `false`/`off`/`no`) on the
-// dev server; baked into the bundle via
-// `__NS_HMR_PROGRESS_OVERLAY_ENABLED__` at build time. We collapse the
-// build-time constant into a runtime boolean once so each call-site is
-// a single property check rather than a try/typeof. Tests that re-run
-// the angular client (via vitest) see `undefined` and default to
-// enabled — matching the production dev-server experience.
-const overlayEnabled: boolean = (() => {
-	// Define substitution does not reach this raw-served file — fall back to
-	// the globalThis seed planted by the entry's defines-seed module (which
-	// evaluates before this client is loaded) before defaulting to enabled.
-	try {
-		if (typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean') return __NS_HMR_PROGRESS_OVERLAY_ENABLED__;
-	} catch {}
-	try {
-		const seeded = getGlobalScope().__NS_HMR_PROGRESS_OVERLAY_ENABLED__;
-		if (typeof seeded === 'boolean') return seeded;
-	} catch {}
-	return true;
-})();
-
-function getHmrOverlayApi(): any {
-	if (!overlayEnabled) return null;
-	try {
-		return globalThis.__NS_HMR_DEV_OVERLAY__ || null;
-	} catch {}
-	return null;
-}
+// HMR-applying progress overlay, driven through `client/overlay-driver.ts`.
+// The opt-out gate is collapsed into a runtime boolean once at module load so
+// each call-site is a single property check rather than a try/typeof chain.
+const overlayEnabled: boolean = resolveOverlayEnabled();
 
 function setUpdateOverlayStage(stage: HmrUpdateOverlayStage, info?: HmrUpdateOverlayInfo): void {
 	if (!overlayEnabled) return;
-	try {
-		const api = getHmrOverlayApi();
-		if (api && typeof api.setUpdateStage === 'function') {
-			api.setUpdateStage(stage, info);
-		}
-	} catch {}
+	setUpdateStage(stage, info);
 }
 
 function hideUpdateOverlay(): void {
 	if (!overlayEnabled) return;
 	try {
-		const api = getHmrOverlayApi();
+		const api = getOverlayApi();
 		if (api && typeof api.hide === 'function') {
 			api.hide('hmr-applied');
 		}

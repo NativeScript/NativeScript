@@ -56,7 +56,7 @@ describe('loadSfcComponent eviction protocol', () => {
 	});
 
 	it('evicts the SFC artifact URL set BEFORE importing, and imports canonical URLs', async () => {
-		const comp = await loadSfcComponent('/src/components/Home.vue', 'spec');
+		const comp = await loadSfcComponent('/src/components/Home.vue');
 		expect(comp).toBeTruthy();
 
 		// Eviction ran once with the full artifact set…
@@ -73,7 +73,7 @@ describe('loadSfcComponent eviction protocol', () => {
 
 	it('still re-imports the canonical URL when the runtime lacks the eviction primitive', async () => {
 		delete g.__NS_DEV__.invalidateModules;
-		const comp = await loadSfcComponent('/src/components/Home.vue', 'spec');
+		const comp = await loadSfcComponent('/src/components/Home.vue');
 		expect(comp).toBeTruthy();
 		expect(safeDynImportMock).toHaveBeenCalledWith('http://localhost:5173/ns/asm?path=%2Fsrc%2Fcomponents%2FHome.vue');
 	});
@@ -82,7 +82,7 @@ describe('loadSfcComponent eviction protocol', () => {
 		g.__NS_DEV__.invalidateModules = vi.fn(() => {
 			throw new Error('boom');
 		});
-		const comp = await loadSfcComponent('/src/components/Home.vue', 'spec');
+		const comp = await loadSfcComponent('/src/components/Home.vue');
 		expect(comp).toBeTruthy();
 		expect(safeDynImportMock).toHaveBeenCalledWith('http://localhost:5173/ns/asm?path=%2Fsrc%2Fcomponents%2FHome.vue');
 	});

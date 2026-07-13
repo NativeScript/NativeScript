@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { registerNsModuleServerRoute, type RegisterNsModuleServerRouteOptions } from './websocket-ns-m.js';
+import { interceptNgComponentRequest } from '../frameworks/angular/server/ng-component-route.js';
 
 type FakeRes = {
 	statusCode: number;
@@ -106,9 +107,14 @@ describe('registerNsModuleServerRoute', () => {
 		expect(res.body).toContain('export {}');
 	});
 
-	describe('AnalogJS /@ng/component delegation', () => {
+	describe('AnalogJS /@ng/component delegation (Angular interceptModuleRequest hook)', () => {
+		// The /@ng/component interception is Angular policy: the shared route
+		// only calls `strategy.interceptModuleRequest`, and the Angular server
+		// strategy delegates to `interceptNgComponentRequest`.
+		const angularInterception = { getStrategy: () => ({ interceptModuleRequest: interceptNgComponentRequest }) as any };
+
 		it('delegates to downstream and substitutes a valid empty module for an empty body', async () => {
-			const { handler, ensureInitialGraphPopulationStarted } = mount();
+			const { handler, ensureInitialGraphPopulationStarted } = mount({ ...angularInterception });
 			const res = makeRes();
 			// AnalogJS responds with an empty body for non-invalidated component ids.
 			const next = vi.fn(() => {
@@ -123,7 +129,7 @@ describe('registerNsModuleServerRoute', () => {
 		});
 
 		it('passes a non-empty downstream body through unchanged', async () => {
-			const { handler } = mount();
+			const { handler } = mount({ ...angularInterception });
 			const res = makeRes();
 			const payload = 'export const __metadata = 1;';
 			const next = vi.fn(() => {
@@ -138,7 +144,7 @@ describe('registerNsModuleServerRoute', () => {
 		describe('live-broadcast gate (isLiveAngularComponentUpdateFetch)', () => {
 			it('answers a boot-time fetch (no matching broadcast) with the no-update stub without delegating', async () => {
 				const gate = vi.fn(() => false);
-				const { handler } = mount({ isLiveAngularComponentUpdateFetch: gate });
+				const { handler } = mount({ ...angularInterception, isLiveAngularComponentUpdateFetch: gate });
 				const res = makeRes();
 				const next = vi.fn();
 				await handler({ url: '/ns/m/src/app/@ng/component?c=src%2Fapp%2Fapp.component.ts%40AppComponent&t=1783270000000' }, res, next);
@@ -152,6 +158,7 @@ describe('registerNsModuleServerRoute', () => {
 
 			it('delegates to downstream when the fetch matches a recorded broadcast', async () => {
 				const { handler } = mount({
+					...angularInterception,
 					isLiveAngularComponentUpdateFetch: (id, t) => id === 'src/app/foo.component.ts@FooComponent' && t === 42,
 				});
 				const res = makeRes();
@@ -166,7 +173,7 @@ describe('registerNsModuleServerRoute', () => {
 
 			it('answers fetches with a missing or non-numeric timestamp with the stub', async () => {
 				const gate = vi.fn(() => true);
-				const { handler } = mount({ isLiveAngularComponentUpdateFetch: gate });
+				const { handler } = mount({ ...angularInterception, isLiveAngularComponentUpdateFetch: gate });
 				for (const url of ['/ns/m/src/app/@ng/component?c=src%2Fapp%2Ffoo.component.ts%40FooComponent', '/ns/m/src/app/@ng/component?c=src%2Fapp%2Ffoo.component.ts%40FooComponent&t=abc', '/ns/m/src/app/@ng/component?t=42']) {
 					const res = makeRes();
 					const next = vi.fn();

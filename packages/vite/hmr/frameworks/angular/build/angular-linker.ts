@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite';
 import { runAngularLinker } from './shared-linker.js';
 import { containsRealNgDeclare } from './util.js';
+import { recordLinkerHit } from './linker-stats.js';
 
 function normalizeAngularLinkerId(id: string): string {
 	return id.split('?', 1)[0].replace(/\\/g, '/');
@@ -48,6 +49,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 				if (strictAll && !FILTER.test(cleanId) && !containsRealNgDeclare(code)) return null;
 				const linked = await runAngularLinker(code, { filename: cleanId, projectRoot });
 				if (linked) {
+					recordLinkerHit('vite-load');
 					if (isDebug()) console.log('[ns-angular-linker][vite-load] linked', cleanId);
 					return { code: linked, map: null } as any;
 				}
@@ -64,6 +66,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 			try {
 				const linked = await runAngularLinker(code, { filename: cleanId, projectRoot, freshPlugin: true });
 				if (linked) {
+					recordLinkerHit('vite');
 					if (isDebug()) console.log('[ns-angular-linker][vite] linked', cleanId);
 					return { code: linked, map: null };
 				}
@@ -88,6 +91,7 @@ export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
 				const filename = id.split('?', 1)[0];
 				const linked = await runAngularLinker(code, { filename, projectRoot });
 				if (linked) {
+					recordLinkerHit('vite-post');
 					if (isDebug()) console.log('[ns-angular-linker][vite-post] linked', filename);
 					return { code: linked, map: null };
 				}

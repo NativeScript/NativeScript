@@ -1,6 +1,7 @@
 import { setHmrBootStage } from './dev-overlay.js';
 import { buildPlaceholderPage } from './root-placeholder-view.js';
 import { getGlobalScope } from './global-scope.js';
+import { getVendorRequire } from './vendor-resolve.js';
 import { markDevBootComplete } from './boot-complete.js';
 
 function isPlaceholderView(view: any, placeholderRoot: any): boolean {
@@ -289,8 +290,8 @@ export function installRootPlaceholder(verbose?: boolean) {
 					}
 				} catch {}
 				try {
-					const req = g.__nsVendorRequire || g.__nsRequire || g.require;
-					if (typeof req === 'function') {
+					const req = getVendorRequire();
+					if (req) {
 						const mod = req(moduleId);
 						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
 					}

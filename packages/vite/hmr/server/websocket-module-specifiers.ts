@@ -238,36 +238,6 @@ export function tryReadRawExplicitJavaScriptModule(spec: string, projectRoot: st
 	return null;
 }
 
-export function stripDecoratedServePrefixes(spec: string): { cleanedSpec: string; bootTaggedRequest: boolean; forcedVer: string | null } {
-	let cleanedSpec = spec || '';
-	let bootTaggedRequest = false;
-	let forcedVer: string | null = null;
-
-	try {
-		let changed = true;
-		while (changed) {
-			changed = false;
-			const bootMatch = cleanedSpec.match(/^\/?__ns_boot__\/[^\/]+(\/.*)?$/);
-			if (bootMatch) {
-				bootTaggedRequest = true;
-				cleanedSpec = bootMatch[1] || '/';
-				changed = true;
-			}
-			const hmrMatch = cleanedSpec.match(/^\/?__ns_hmr__\/([^\/]+)(\/.*)?$/);
-			if (hmrMatch) {
-				const tag = hmrMatch[1] || '';
-				if (tag) {
-					forcedVer = tag;
-				}
-				cleanedSpec = hmrMatch[2] || '/';
-				changed = true;
-			}
-		}
-	} catch {}
-
-	return { cleanedSpec, bootTaggedRequest, forcedVer };
-}
-
 export function resolveVendorFromCandidate(specifier: string | null | undefined): string | null {
 	if (!specifier) {
 		return null;

@@ -3,12 +3,11 @@
  *
  * The server-side seam (`hmr/server/framework-strategy.ts`) has a mirror here:
  * each framework that needs bespoke on-device HMR behavior implements this and
- * is selected by `TARGET_FLAVOR`. Today only Vue and Angular ship a dedicated
- * client module; Solid and TypeScript run the shared client paths directly, so
- * they resolve to `undefined` and every hook below is simply skipped.
+ * is selected by `TARGET_FLAVOR` (Vue, Angular, Solid, TypeScript, React all
+ * ship one under `hmr/frameworks/<flavor>/client/`).
  *
  * All members are optional except `install`. A missing hook means "use the
- * shared default", which is byte-for-byte the pre-strategy inline behavior.
+ * shared default".
  *
  * Keeping this file free of any framework import is deliberate: it lets the
  * shared client depend only on the contract, so the concrete per-flavor module
@@ -59,6 +58,14 @@ export interface FrameworkClientStrategy {
 	 */
 	readonly allowNavigateFastPath?: boolean;
 
+	/**
+	 * When true, the shared queue drives the apply-progress overlay's
+	 * 'evicting'/'reimporting' frames around its drain (Solid). Frameworks that
+	 * drive the overlay from their own update path (Angular, Vue) leave this
+	 * unset so the queue stays silent.
+	 */
+	readonly drivesQueueOverlayStages?: boolean;
+
 	/** One-time client install (dev shims / HMR hooks). Runs at strategy resolve. */
 	install(): void;
 
@@ -69,19 +76,20 @@ export interface FrameworkClientStrategy {
 	selectMountCandidate?(ctx: FrameworkClientMountContext): string | null;
 
 	/** Load the component to mount for `candidate` (e.g. Vue SFC assembly). */
-	loadComponentForMount?(candidate: string, tag: string): Promise<any>;
-
-	/** Ensure framework globals exist before building a navigation app. */
-	beforeNavigateBuild?(): void;
-
-	/** Hook the freshly-created navigation app instance (e.g. attach Pinia). */
-	onNavAppCreated?(app: any): void;
+	loadComponentForMount?(candidate: string): Promise<any>;
 
 	/** Build the NS root view for `newComponent` (framework-specific mount). */
 	createRoot?(newComponent: any, state: any): any;
 
 	/** Record changed-module metadata from a delta payload (framework bookkeeping). */
 	recordPayloadChanges?(changed: any[], graphVersion: number): void;
+
+	/**
+	 * Post-process one freshly re-imported module during the queue drain
+	 * (TypeScript/React: refresh the bundled module registry so Builder /
+	 * `loadModule` resolves the NEW code-behind instead of the boot-bundle copy).
+	 */
+	afterModuleReimport?(id: string, mod: any): void;
 
 	/** Framework UI refresh after a re-import batch drains. */
 	refreshAfterBatch?(drained: string[], ctx: FrameworkClientBatchContext): void | Promise<void>;
