@@ -17,6 +17,14 @@ export interface AppCssState {
 	 * is unavailable or throws.
 	 */
 	refresh?: () => Promise<AppCssRefreshResult>;
+	/**
+	 * Whether the generated app stylesheet differs from the baseline captured
+	 * at dev-server startup. `bundle.mjs` bakes `app.css` at `ns prepare` time
+	 * (≈ server startup), so a cold app relaunch mid-session boots with that
+	 * snapshot — when this returns true, the server pushes a connect-time CSS
+	 * sync to the freshly connected client (see css-connect-sync.ts).
+	 */
+	hasChangedSinceStartup?: () => Promise<boolean>;
 }
 
 /**

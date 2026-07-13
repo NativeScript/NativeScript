@@ -183,6 +183,12 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			const normalizedAppCssPath = normalizeFsPath(appCssPath);
 			const watchedDeps = new Set<string>([normalizedAppCssPath]);
 			let lastGeneratedCss: string | undefined;
+			// First successful generation ≈ what `ns prepare` baked into
+			// bundle.mjs (same disk state, same pipeline). A cold app relaunch
+			// mid-session boots with that snapshot, so comparing against this
+			// baseline tells the websocket layer whether a freshly connected
+			// client needs a CSS sync (see hasChangedSinceStartup below).
+			let startupGeneratedCss: string | undefined;
 
 			const refreshDeps = async (): Promise<AppCssRefreshResult> => {
 				try {
@@ -194,6 +200,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					const generatedCss = result?.code ?? '';
 					const changed = lastGeneratedCss === undefined || generatedCss !== lastGeneratedCss;
 					lastGeneratedCss = generatedCss;
+					if (startupGeneratedCss === undefined) {
+						startupGeneratedCss = generatedCss;
+					}
 					server.watcher.add(appCssPath);
 					const next = new Set<string>([normalizedAppCssPath]);
 					for (const dep of result?.deps ?? []) {
@@ -227,7 +236,18 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				return next;
 			};
 
-			setAppCssState(server, { path: normalizedAppCssPath, deps: watchedDeps, refresh: queueRefresh });
+			const hasChangedSinceStartup = async (): Promise<boolean> => {
+				await queueRefresh();
+				if (startupGeneratedCss === undefined || lastGeneratedCss === undefined) {
+					// No baseline (both startup generations failed). Report "changed"
+					// so the connect sync still runs — reapplying identical CSS is
+					// idempotent, while skipping a real drift leaves stale styles.
+					return true;
+				}
+				return lastGeneratedCss !== startupGeneratedCss;
+			};
+
+			setAppCssState(server, { path: normalizedAppCssPath, deps: watchedDeps, refresh: queueRefresh, hasChangedSinceStartup });
 
 			void queueRefresh();
 

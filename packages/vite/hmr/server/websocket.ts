@@ -38,6 +38,7 @@ import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialG
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
 import type { NsHotUpdateContext } from './websocket-hot-update.js';
+import { maybeSendConnectCssSync } from './css-connect-sync.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
@@ -766,6 +767,19 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 
 			wss.on('connection', async (ws) => {
 				if (verbose) console.log('[hmr-ws] Client connected (dynamic fetch mode)');
+
+				// Cold-relaunch stylesheet sync: the app boots with the CSS baked
+				// into bundle.mjs at prepare time, so if app.css drifted during
+				// this session, push the current stylesheet to the reconnecting
+				// full client. Fire-and-forget — the drift check re-runs
+				// Tailwind/PostCSS and must not delay the registry/graph sends
+				// below. Full-role only (see css-connect-sync.ts for why the
+				// bootstrap socket is unsafe to sync).
+				if (getHmrSocketRole(ws as any) === 'full') {
+					maybeSendConnectCssSync(server, ws as any, { verbose }).catch((error) => {
+						if (verbose) console.warn('[hmr-ws] connect css sync failed', error);
+					});
+				}
 
 				ws.on('close', () => verbose && console.log('[hmr-ws] Client disconnected'));
 				ws.on('message', (data: any) => {

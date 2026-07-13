@@ -250,22 +250,34 @@ export async function handleHmrMessage(ev: any) {
 		// edits because `handleCssUpdates` is a leaf — there's no
 		// downstream module-evaluation path that would hit the queue's
 		// 'complete' transition.
+		//
+		// `reason: 'connect-sync'` is the server-pushed boot-time
+		// stylesheet sync after an app relaunch mid-session — no user
+		// edit triggered it and no `ns:hmr-pending` preceded it, so
+		// apply silently instead of flashing the overlay during boot.
 		const cssCount = msg.updates.length;
-		try {
-			setUpdateOverlayStage('reimporting', { detail: buildCssApplyingDetail(cssCount) });
-		} catch {}
+		const silent = msg.reason === 'connect-sync';
+		if (!silent) {
+			try {
+				setUpdateOverlayStage('reimporting', { detail: buildCssApplyingDetail(cssCount) });
+			} catch {}
+		}
 		try {
 			const origin = msg.origin || getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
 			await handleCssUpdates(msg.updates, origin);
-			try {
-				setUpdateOverlayStage('complete', { detail: buildCssAppliedDetail(cssCount) });
-			} catch {}
+			if (!silent) {
+				try {
+					setUpdateOverlayStage('complete', { detail: buildCssAppliedDetail(cssCount) });
+				} catch {}
+			}
 			return;
 		} catch (e) {
 			console.warn('[hmr-client] CSS updates handling failed:', e);
-			try {
-				setUpdateOverlayStage('complete', { detail: 'CSS update failed' });
-			} catch {}
+			if (!silent) {
+				try {
+					setUpdateOverlayStage('complete', { detail: 'CSS update failed' });
+				} catch {}
+			}
 			return;
 		}
 	}

@@ -81,6 +81,14 @@ export interface CssUpdatesMessage {
 	type: 'ns:css-updates';
 	origin: string;
 	updates: CssUpdateItem[];
+	/**
+	 * `connect-sync` marks the boot-time stylesheet sync the server sends to a
+	 * freshly connected full client (see `css-connect-sync.ts`): `bundle.mjs`
+	 * bakes `app.css` at `ns prepare` time, so an app relaunch mid-session
+	 * boots with stale styles until this replaces them. The client applies it
+	 * silently (no HMR-applying overlay) since no user edit triggered it.
+	 */
+	reason?: 'connect-sync';
 }
 
 /** Incremental module-graph delta broadcast on every graph mutation. */
