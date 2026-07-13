@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload } from './websocket-angular-hot-update.js';
+import { normalizeHotReloadMatchPath, shouldSuppressAngularComponentUpdatePayload, shouldSuppressViteFullReloadPayload } from './websocket-angular-hot-update.js';
 
 describe('shouldSuppressViteFullReloadPayload', () => {
 	const root = '/Users/example/app';
@@ -59,6 +59,39 @@ describe('shouldSuppressViteFullReloadPayload', () => {
 					path: '/src/app/components/login/login.component.html',
 				},
 				pendingEntries: [entry],
+				root,
+				now: 6_000,
+			}),
+		).toBe(false);
+	});
+});
+
+describe('shouldSuppressAngularComponentUpdatePayload', () => {
+	const root = '/Users/example/app';
+	const pendingTsUpdate = {
+		absPath: normalizeHotReloadMatchPath('/Users/example/app/src/app/listen-now.component.ts'),
+		relPath: normalizeHotReloadMatchPath('/Users/example/app/src/app/listen-now.component.ts', root),
+		expiresAt: 5_000,
+	};
+
+	it('suppresses the matching Analog component event when an Angular TS reboot owns the file', () => {
+		expect(
+			shouldSuppressAngularComponentUpdatePayload({
+				payload: { type: 'custom', event: 'angular:component-update', data: { id: encodeURIComponent('src/app/listen-now.component.ts@ListenNowComponent') } },
+				pendingEntries: [pendingTsUpdate],
+				root,
+				now: 1_000,
+			}),
+		).toBe(true);
+	});
+
+	it('preserves unrelated component updates and expired suppression entries', () => {
+		const unrelated = { type: 'custom', event: 'angular:component-update', data: { id: 'src/app/browse.component.ts@BrowseComponent' } };
+		expect(shouldSuppressAngularComponentUpdatePayload({ payload: unrelated, pendingEntries: [pendingTsUpdate], root, now: 1_000 })).toBe(false);
+		expect(
+			shouldSuppressAngularComponentUpdatePayload({
+				payload: { type: 'custom', event: 'angular:component-update', data: { id: 'src/app/listen-now.component.ts@ListenNowComponent' } },
+				pendingEntries: [pendingTsUpdate],
 				root,
 				now: 6_000,
 			}),

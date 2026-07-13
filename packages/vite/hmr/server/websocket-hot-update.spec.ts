@@ -195,7 +195,7 @@ describe('runHotUpdatePrologue', () => {
 		expect(update.tag).toBeUndefined();
 	});
 
-	it('broadcasts an app.css refresh when a workspace-lib Tailwind content file (.html) changes', async () => {
+	it('broadcasts an app.css refresh when regenerated Tailwind output changes', async () => {
 		// A brand-new utility class (e.g. `text-green-500`) added to a
 		// workspace-lib template only renders if the device re-fetches
 		// `app.css` so Tailwind's content scan regenerates. The lib template
@@ -209,18 +209,61 @@ describe('runHotUpdatePrologue', () => {
 		const libHtml = '/repo/libs/xplat/nativescript/features/src/lib/ui/components/header/header.component.html';
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/repo/libs'] });
 		const ctx = makeCtx(libHtml);
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([libHtml]) });
+		const refresh = vi.fn(async () => ({ changed: true }));
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([libHtml]), refresh } as any);
 
 		const result = await runHotUpdatePrologue(ctx, deps);
 
 		// The prologue must NOT swallow the lib edit — the framework tail
 		// (template swap / reboot routing) still needs to run after it.
 		expect(result).not.toBeNull();
+		expect(refresh).toHaveBeenCalledTimes(1);
 		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
 		expect(cssMsg).toBeTruthy();
 		expect(cssMsg.updates[0].path).toBe('/src/app.css');
 		// No tag → the client replaces the boot-time app.css selectors.
 		expect(cssMsg.updates[0].tag).toBeUndefined();
+	});
+
+	it('does not broadcast app.css when regenerated Tailwind output is unchanged', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const file = '/proj/src/app/listen-now.component.ts';
+		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
+		const ctx = makeCtx(file);
+		const refresh = vi.fn(async () => ({ changed: false }));
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([file]), refresh } as any);
+
+		const result = await runHotUpdatePrologue(ctx, deps);
+
+		expect(result).not.toBeNull();
+		expect(refresh).toHaveBeenCalledTimes(1);
+		const sentTypes = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0])).type);
+		expect(sentTypes).not.toContain('ns:css-updates');
+	});
+
+	it('defers changed app.css output into an Angular TS update instead of broadcasting it separately', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const file = '/proj/src/app/listen-now.component.ts';
+		const strategy = { flavor: 'angular' } as any;
+		const deps = makeDeps({ wss, strategy, getHmrSourceRootsCached: () => ['/proj/src'] });
+		const ctx = makeCtx(file);
+		appCssStateModule.setAppCssState(
+			ctx.server as any,
+			{
+				path: '/proj/src/app.css',
+				deps: new Set<string>([file]),
+				refresh: vi.fn(async () => ({ changed: true })),
+			} as any,
+		);
+
+		const result = await runHotUpdatePrologue(ctx, deps);
+
+		expect(result?.deferredCssUpdates).toHaveLength(1);
+		expect(result?.deferredCssUpdates?.[0]).toMatchObject({ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css' });
+		const sentTypes = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0])).type);
+		expect(sentTypes).not.toContain('ns:css-updates');
 	});
 
 	it('broadcasts an ns:hmr-pending message to open clients for in-scope changes', async () => {

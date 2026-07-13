@@ -66,6 +66,12 @@ export interface AngularUpdateMessage {
 	timestamp: number;
 	evictPaths: string[];
 	importerEntry: string;
+	/**
+	 * App stylesheet refresh produced by the same content-file edit. Angular
+	 * applies it inside the serialized reboot cycle so CSS replacement cannot
+	 * race view-tree teardown/recreation.
+	 */
+	cssUpdates?: CssUpdateItem[];
 	/** Legacy fallback the Angular client still reads; not emitted by the current server. */
 	entryCandidates?: string[];
 }

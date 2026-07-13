@@ -1,9 +1,22 @@
 import type { ViteDevServer } from 'vite';
 
+/** Result of regenerating the fully transformed app stylesheet. */
+export interface AppCssRefreshResult {
+	/** True when the post-PostCSS/Tailwind output changed. */
+	changed: boolean;
+}
+
 /** Tracks the project's `app.css` entry and the files it imports, for HMR invalidation. */
 export interface AppCssState {
 	path: string;
 	deps: Set<string>;
+	/**
+	 * Re-run the app stylesheet pipeline against the current content files and
+	 * compare its output with the previous successful generation. Optional for
+	 * compatibility with embedders; callers conservatively refresh CSS when it
+	 * is unavailable or throws.
+	 */
+	refresh?: () => Promise<AppCssRefreshResult>;
 }
 
 /**

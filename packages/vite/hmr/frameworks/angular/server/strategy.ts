@@ -29,6 +29,11 @@ import type { AngularUpdateMessage } from '../../../shared/protocol.js';
 const ANGULAR_APP_DIR = getProjectAppPath();
 const ANGULAR_APP_VIRTUAL_WITH_SLASH = `${getProjectAppVirtualPath()}/`;
 const ANGULAR_RUNTIME_FILE_PATTERN = /\.(ts|js|tsx|jsx|mjs)$/i;
+const ANGULAR_STYLE_MODULE_PATTERN = /\.(?:css|scss|sass|less|styl)(?:\?|$)/i;
+
+function isAngularTransitiveImporterExcluded(id: string): boolean {
+	return id.includes('/node_modules/') || ANGULAR_STYLE_MODULE_PATTERN.test(id);
+}
 
 function findAngularEntryFiles(root: string): string[] {
 	const srcDir = path.join(root, ANGULAR_APP_DIR);
@@ -143,7 +148,7 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 	try {
 		transitiveImporters = collectTransitiveImportersForInvalidation({
 			modules: hotUpdateRoots as unknown as Iterable<TransitiveImporterModuleLike>,
-			isExcluded: (id) => id.includes('/node_modules/'),
+			isExcluded: isAngularTransitiveImporterExcluded,
 			maxDepth: 16,
 		});
 		for (const mod of transitiveImporters) {
@@ -290,7 +295,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	async handleHotUpdate(ctx, deps) {
 		const state = await runHotUpdatePrologue(ctx, deps);
 		if (!state) return;
-		const { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary } = state;
+		const { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary, deferredCssUpdates } = state;
 		const { strategy, verbose, wss, moduleGraph, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
 		const { file, server } = ctx;
 
@@ -527,7 +532,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		try {
 			transitiveImporters = collectTransitiveImportersForInvalidation({
 				modules: angularTransitiveInvalidationRoots,
-				isExcluded: (id) => id.includes('/node_modules/'),
+				isExcluded: isAngularTransitiveImporterExcluded,
 				maxDepth: 16,
 			});
 			if (verbose) {
@@ -671,6 +676,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 				timestamp: Date.now(),
 				evictPaths,
 				importerEntry: bootstrapEntryRel,
+				...(deferredCssUpdates?.length ? { cssUpdates: deferredCssUpdates } : {}),
 			};
 			if (verbose) {
 				console.log(

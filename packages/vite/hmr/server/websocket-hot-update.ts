@@ -10,7 +10,7 @@ import { collectGraphUpdateModulesForHotUpdate, type HotUpdateGraphModuleLike } 
 import { getAppCssState } from '../../helpers/app-css-state.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
-import type { CssUpdatesMessage } from '../shared/protocol.js';
+import type { CssUpdateItem, CssUpdatesMessage } from '../shared/protocol.js';
 import { getServerOrigin } from './server-origin.js';
 import type { BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
 
@@ -69,6 +69,8 @@ export interface HotUpdatePrologueState {
 	updateRel: string;
 	metrics: HmrUpdateMetrics;
 	emitSummary: () => void;
+	/** App CSS output changed during an Angular TS edit; attach it to the reboot message. */
+	deferredCssUpdates?: CssUpdateItem[];
 }
 
 /**
@@ -245,6 +247,7 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 	}
 
 	const root = server.config.root || process.cwd();
+	let deferredCssUpdates: CssUpdateItem[] | undefined;
 
 	// CSS hot-update — handled BEFORE the project-scope filter because
 	// workspace deps (component `styleUrls`, `@import` partials) live outside
@@ -365,13 +368,11 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 	// component `.ts` as its importer.
 	//
 	// To bridge that gap, `mainEntryPlugin` stores the set of
-	// `preprocessCSS` deps for `app.css` on the server as
-	// `__nsAppCssDeps` (refreshed when `app.css` /
-	// `tailwind.config.*` change, or when files are added /
-	// removed). If the changed file is in that set, we
-	// broadcast a `ns:css-updates` for `app.css` so the device
-	// fetches fresh CSS through `?direct=1` and Vite re-runs
-	// PostCSS+Tailwind — picking up the new utility class.
+	// `preprocessCSS` deps for `app.css` on the server and exposes a refresh
+	// callback. If the changed file is in that set, we regenerate the fully
+	// transformed CSS and compare it with the previous successful output.
+	// Ordinary content edits are skipped; a newly generated utility changes the
+	// output and still refreshes `app.css` on the device.
 	//
 	// This MUST run before the framework branches because
 	// several of them return early (notably the Angular HTML
@@ -385,33 +386,55 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 			if (deps && appCssPath) {
 				const normalizedFile = path.resolve(file).replace(/\\/g, '/');
 				if (deps.has(normalizedFile)) {
-					const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
-					const relRaw = path.posix.normalize(path.posix.relative(rootPosix, appCssPath));
-					const appCssRel = relRaw && relRaw !== '.' && !relRaw.startsWith('..') ? (relRaw.startsWith('/') ? relRaw : `/${relRaw}`) : null;
-					if (appCssRel) {
-						const origin = getServerOrigin(server);
-						const timestamp = Date.now();
-						const msg: CssUpdatesMessage = {
-							type: 'ns:css-updates',
-							origin,
-							updates: [
-								{
-									type: 'css-update',
-									path: appCssRel,
-									acceptedPath: appCssRel,
-									timestamp,
-								},
-							],
-						};
-						wss.clients.forEach((client) => {
-							if (isSocketClientOpen(client)) {
-								try {
-									client.send(JSON.stringify(msg));
-									updateMetrics.recipients += 1;
-								} catch {}
+					let cssOutputChanged = true;
+					if (typeof appCssState.refresh === 'function') {
+						try {
+							cssOutputChanged = (await appCssState.refresh()).changed;
+						} catch (error) {
+							// Conservative fallback: comparison failure must never suppress
+							// a genuinely new utility class.
+							cssOutputChanged = true;
+							if (verbose) console.warn('[ns-hmr][server] app.css output comparison failed; forcing refresh', error);
+						}
+					}
+					if (!cssOutputChanged) {
+						if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS output unchanged after ${path.basename(file)}; skipped app.css refresh`);
+					} else {
+						const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
+						const relRaw = path.posix.normalize(path.posix.relative(rootPosix, appCssPath));
+						const appCssRel = relRaw && relRaw !== '.' && !relRaw.startsWith('..') ? (relRaw.startsWith('/') ? relRaw : `/${relRaw}`) : null;
+						if (appCssRel) {
+							const origin = getServerOrigin(server);
+							const timestamp = Date.now();
+							const update: CssUpdateItem = {
+								type: 'css-update',
+								path: appCssRel,
+								acceptedPath: appCssRel,
+								timestamp,
+							};
+							// A TS component edit already causes an Angular root reboot. Carry
+							// the CSS work in that same message so the device serializes it with
+							// the reboot instead of racing view-tree teardown.
+							if (strategy.flavor === 'angular' && file.endsWith('.ts')) {
+								deferredCssUpdates = [update];
+								if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS output changed after ${path.basename(file)}; deferred ${appCssRel} to Angular reboot`);
+							} else {
+								const msg: CssUpdatesMessage = {
+									type: 'ns:css-updates',
+									origin,
+									updates: [update],
+								};
+								wss.clients.forEach((client) => {
+									if (isSocketClientOpen(client)) {
+										try {
+											client.send(JSON.stringify(msg));
+											updateMetrics.recipients += 1;
+										} catch {}
+									}
+								});
+								if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS content-file edit (${path.basename(file)}) broadcast ${appCssRel}`);
 							}
-						});
-						if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS content-file edit (${path.basename(file)}) broadcast ${appCssRel}`);
+						}
 					}
 				}
 			}
@@ -420,5 +443,5 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 		}
 	}
 
-	return { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary };
+	return { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary, deferredCssUpdates };
 }

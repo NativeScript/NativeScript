@@ -188,7 +188,8 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 	it('purges caches and broadcasts ns:angular-update for a changed .ts component (reboot path)', async () => {
 		const emitSummary = vi.fn();
 		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
-		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/home.component.ts', metrics, emitSummary } as any);
+		const deferredCssUpdates = [{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 123 }];
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/home.component.ts', metrics, emitSummary, deferredCssUpdates } as any);
 		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
 
 		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
@@ -202,10 +203,31 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 		expect(openClient.send).toHaveBeenCalledTimes(1);
 		const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
 		expect(payload).toMatchObject({ type: 'ns:angular-update', origin: 'http://test:5173', path: '/src/app/home.component.ts', version: 7, importerEntry: '/src/main.ts' });
+		expect(payload.cssUpdates).toEqual(deferredCssUpdates);
 		expect(Array.isArray(payload.evictPaths)).toBe(true);
 		expect(emitSummary).toHaveBeenCalledTimes(1);
 		// Angular suppresses Vite's default hot update for .ts/.html edits.
 		expect(result).toEqual([]);
+	});
+
+	it('keeps app.css?direct out of the Angular runtime eviction closure', async () => {
+		const emitSummary = vi.fn();
+		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/home.component.ts', metrics, emitSummary } as any);
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const deps = makeDeps(openClient);
+		const appCssImporter = { id: '/proj/src/app.css?direct=1', importers: new Set() };
+		const mainImporter = { id: '/proj/src/main.ts', importers: new Set() };
+		const changedModule = { id: '/proj/src/app/home.component.ts', importers: new Set([appCssImporter, mainImporter]), importedModules: new Set() };
+		const ctx = { file: '/proj/src/app/home.component.ts', server: makeServer(), modules: [changedModule], read: async () => '@Component({}) export class HomeComponent {}' } as any;
+
+		await angularServerStrategy.handleHotUpdate!(ctx, deps);
+
+		const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
+		expect(payload.evictPaths).toContain('http://test:5173/ns/m/src/main.ts');
+		expect(payload.evictPaths.some((url: string) => url.includes('app.css'))).toBe(false);
 	});
 
 	it('ignores non-template/non-script files (returns before broadcasting or emitting a summary)', async () => {

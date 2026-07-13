@@ -1,6 +1,7 @@
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { getNsHotRegistry } from '../../../client/hot-context.js';
 import { getOverlayApi, resolveOverlayEnabled, setUpdateStage, type HmrUpdateOverlayInfo, type HmrUpdateOverlayStage } from '../../../client/overlay-driver.js';
+import { handleCssUpdates } from '../../../client/css-handler.js';
 import { readNsRuntimeDevHostApi } from '../../../shared/runtime/browser-runtime-contract.js';
 type GetCoreFn = (name: string) => any;
 
@@ -61,6 +62,21 @@ export function installAngularHmrClientHooks(): void {
 interface AngularUpdateOptions {
 	getCore: GetCoreFn;
 	verbose: boolean;
+	/** Test seam; production uses the shared device CSS handler. */
+	applyCssUpdates?: typeof handleCssUpdates;
+}
+
+async function applyDeferredCssUpdates(msg: any, options: AngularUpdateOptions): Promise<void> {
+	const updates = Array.isArray(msg?.cssUpdates) ? msg.cssUpdates : [];
+	if (!updates.length) return;
+	try {
+		const apply = options.applyCssUpdates ?? handleCssUpdates;
+		await apply(updates, typeof msg?.origin === 'string' ? msg.origin : '');
+	} catch (error) {
+		// The Angular module refresh is still viable. Surface the CSS failure, but
+		// continue with the reboot so one fetch cannot strand the old application.
+		console.warn('[ns-hmr][angular] deferred app.css update failed:', (error as any)?.message || error);
+	}
 }
 
 // HMR cycle serialization mutex.
@@ -791,6 +807,12 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			setUpdateOverlayStage('rebooting', {
 				detail: `Re-bootstrapping Angular (refresh ${Math.max(0, tAfterRefresh - t0)}ms)`,
 			});
+			// Tailwind content CSS belongs to this same save. Fetch and install it
+			// inside the serialized Angular cycle, immediately before constructing
+			// the replacement tree. This prevents a standalone CSS message from
+			// racing teardown, while allowing the new views to resolve both existing
+			// bindings and newly generated utility selectors during construction.
+			await applyDeferredCssUpdates(msg, options);
 			try {
 				reboot(true);
 			} finally {

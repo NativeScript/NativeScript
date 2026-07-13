@@ -18,7 +18,7 @@ import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
-import { createAngularComponentUpdateLedger, normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
+import { createAngularComponentUpdateLedger, normalizeHotReloadMatchPath, shouldSuppressAngularComponentUpdatePayload, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
 import { canonicalizeTransformRequestCacheKey } from './transform-cache-invalidation.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
@@ -391,6 +391,19 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 							if (verbose) {
 								console.log('[hmr-ws][bridge] dropped angular:component-update for root component — reboot path owns the root view (PageRouterOutlet frame)');
 							}
+							return;
+						}
+						// A `.ts` save is owned by the Angular reboot path. Analog can emit
+						// a component metadata update for the same file moments later; do
+						// not apply both mechanisms to the freshly rebuilt routed view tree.
+						if (
+							shouldSuppressAngularComponentUpdatePayload({
+								payload: normalized,
+								pendingEntries: pendingAngularReloadSuppressions.values(),
+								root: pluginRoot,
+							})
+						) {
+							if (verbose) console.log('[hmr-ws][bridge] dropped angular:component-update — pending Angular reboot owns the same TS file');
 							return;
 						}
 						// Ledger for the /@ng/component boot-fetch gate: only

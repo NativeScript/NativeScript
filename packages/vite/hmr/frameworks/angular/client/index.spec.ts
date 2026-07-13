@@ -67,6 +67,34 @@ describe('handleAngularHotUpdateMessage', () => {
 		}
 	});
 
+	it('applies a deferred Tailwind app.css update inside the Angular cycle before reboot', async () => {
+		const order: string[] = [];
+		const reboot = vi.fn(() => order.push('reboot'));
+		const applyCssUpdates = vi.fn(async () => {
+			order.push('css');
+		});
+		const g = getGlobalScope();
+		const previousReboot = g.__reboot_ng_modules__;
+		g.__reboot_ng_modules__ = reboot;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage(
+				{
+					type: 'ns:angular-update',
+					origin: 'http://localhost:5173',
+					cssUpdates: [{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 123 }],
+				},
+				{ getCore: () => undefined, verbose: false, applyCssUpdates },
+			);
+
+			expect(handled).toBe(true);
+			expect(applyCssUpdates).toHaveBeenCalledTimes(1);
+			expect(order).toEqual(['css', 'reboot']);
+		} finally {
+			g.__reboot_ng_modules__ = previousReboot;
+		}
+	});
+
 	// Stable URL + Explicit Invalidation.
 	//
 	// When the server emits an `evictPaths` array, the client must:

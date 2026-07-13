@@ -485,6 +485,47 @@ export function normalizeHotReloadMatchPath(raw: string, root?: string): string 
 	return normalized;
 }
 
+/**
+ * True when Analog's in-place component metadata event targets the same TS
+ * file already owned by a pending `ns:angular-update` reboot. A single save
+ * must never both rebuild the Angular root and then run `ɵɵreplaceMetadata`
+ * against that freshly rebuilt routed component tree.
+ */
+export function shouldSuppressAngularComponentUpdatePayload(options: { payload: any; pendingEntries: Iterable<PendingAngularReloadSuppressionEntry>; root?: string; now?: number }): boolean {
+	const { payload, pendingEntries, root } = options;
+	const now = options.now ?? Date.now();
+	if (!payload || payload.type !== 'custom' || payload.event !== 'angular:component-update') {
+		return false;
+	}
+
+	const rawId = payload?.data?.id;
+	if (typeof rawId !== 'string' || !rawId) {
+		return false;
+	}
+
+	let componentFile = rawId;
+	try {
+		componentFile = decodeURIComponent(rawId);
+	} catch {}
+	// Class names never contain `@`, but a scoped directory may. Analog uses the
+	// final `@` as the path/class delimiter.
+	const classDelimiter = componentFile.lastIndexOf('@');
+	componentFile = classDelimiter >= 0 ? componentFile.slice(0, classDelimiter) : componentFile;
+	if (!componentFile) {
+		return false;
+	}
+
+	const componentAbs = normalizeHotReloadMatchPath(componentFile);
+	const componentRel = normalizeHotReloadMatchPath(componentFile, root);
+	for (const entry of pendingEntries) {
+		if (!entry || entry.expiresAt <= now) continue;
+		if (componentAbs === entry.absPath || componentAbs === entry.relPath || componentRel === entry.absPath || componentRel === entry.relPath) {
+			return true;
+		}
+	}
+	return false;
+}
+
 export function shouldSuppressViteFullReloadPayload(options: { payload: any; pendingEntries: Iterable<PendingAngularReloadSuppressionEntry>; root?: string; now?: number }): boolean {
 	const { payload, pendingEntries, root } = options;
 	const now = options.now ?? Date.now();
