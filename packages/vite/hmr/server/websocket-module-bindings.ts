@@ -164,7 +164,13 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 			let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
 			const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
-			if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
+			// Preserving a bare vendor id is only correct where the IMPORT MAP
+			// exists to route it (main realm). Worker realms have no import map —
+			// a preserved bare specifier falls through to the runtime's
+			// placeholder module and every named import fails instantiation
+			// ("does not provide an export named ..."). When vendorImportsAsHttp
+			// is set (worker serve), fall through to the HTTP rewrite below.
+			if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier && !options?.vendorImportsAsHttp) {
 				preservedImports.push(original);
 				continue;
 			}
@@ -186,7 +192,15 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 				// into the worker realm, where injectables like
 				// _PlatformLocation reject the whole entry evaluation with
 				// "needs to be compiled using the JIT compiler".
-				preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${canonical}?ns_worker=1`));
+				//
+				// Keep the CONCRETE module the importer asked for: `canonical`
+				// only decides vendor membership. Canonicalization collapses a
+				// package-internal file (Vite-transformed `/@fs/...` form of
+				// drizzle-orm's `./table.utils.js`) to the package ROOT, which
+				// both drops subpath-only exports ("does not provide an export
+				// named 'TableName'") and manufactures import cycles through
+				// the barrel (lodash-es `add.js` ↔ root → TDZ fatal).
+				preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${normalizeNodeModulesSpecifier(specifier) || (/^[^./]/.test(specifier) ? specifier : canonical)}?ns_worker=1`));
 				continue;
 			}
 			const binding = getModuleBinding(canonical);
@@ -205,7 +219,10 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 		let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
 		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
-		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
+		// See the side-effect branch above: bare preservation relies on the main
+		// realm's import map; in a worker serve (vendorImportsAsHttp) it must not
+		// win over the /ns/m HTTP rewrite.
+		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier && !options?.vendorImportsAsHttp) {
 			preservedImports.push(original);
 			continue;
 		}
@@ -221,8 +238,9 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			continue;
 		}
 		if (options?.vendorImportsAsHttp) {
-			// See the side-effect branch above for the `ns_worker=1` rationale.
-			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${canonical}?ns_worker=1`));
+			// See the side-effect branch above for the `ns_worker=1` rationale
+			// and why the URL must keep the importer's concrete subpath.
+			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${normalizeNodeModulesSpecifier(specifier) || (/^[^./]/.test(specifier) ? specifier : canonical)}?ns_worker=1`));
 			continue;
 		}
 
