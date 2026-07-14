@@ -1,8 +1,7 @@
 import type { ViteDevServer } from 'vite';
-import * as path from 'path';
 import { getAppCssState } from '../../helpers/app-css-state.js';
-import { getServerOrigin } from './server-origin.js';
-import type { CssUpdatesMessage } from '../shared/protocol.js';
+import { appCssRootRelPath, buildCssUpdateItem, buildCssUpdatesMessage } from './css-update-message.js';
+import { isSocketClientOpen } from './socket-utils.js';
 
 /**
  * Boot-time stylesheet sync for freshly connected full HMR clients.
@@ -26,49 +25,32 @@ import type { CssUpdatesMessage } from '../shared/protocol.js';
  */
 export async function maybeSendConnectCssSync(server: ViteDevServer, ws: { send: (data: string) => void; readyState?: number; OPEN?: number }, opts: { verbose?: boolean } = {}): Promise<boolean> {
 	const state = getAppCssState(server);
-	if (!state?.path || typeof state.hasChangedSinceStartup !== 'function') {
+	if (!state?.path || typeof state.refresh !== 'function') {
 		return false;
 	}
 
-	let changed: boolean;
-	try {
-		changed = await state.hasChangedSinceStartup();
-	} catch (error) {
-		// Conservative: syncing identical CSS is idempotent; skipping a real
-		// drift leaves the relaunched app stale for the rest of the session.
-		changed = true;
-		if (opts.verbose) console.warn('[hmr-ws] connect-sync drift check failed; syncing anyway', error);
-	}
-	if (!changed) {
+	// Cheap gate first: the drift check below re-runs Tailwind/PostCSS.
+	const root = server.config?.root || process.cwd();
+	const appCssRel = appCssRootRelPath(root, state.path);
+	if (!appCssRel) {
 		return false;
 	}
 
-	const root = (server.config?.root || process.cwd()).replace(/\\/g, '/').replace(/\/$/, '');
-	const rel = path.posix.normalize(path.posix.relative(root, state.path.replace(/\\/g, '/')));
-	if (!rel || rel === '.' || rel.startsWith('..')) {
-		return false;
-	}
-	const appCssRel = rel.startsWith('/') ? rel : `/${rel}`;
-
-	const openState = typeof ws.OPEN === 'number' ? ws.OPEN : 1;
-	if (typeof ws.readyState === 'number' && ws.readyState !== openState) {
+	// `refresh` is non-throwing by contract and conservative on failure
+	// (reports changed — reapplying identical CSS is idempotent, while
+	// skipping a real drift leaves the relaunched app stale all session).
+	const { changedSinceStartup } = await state.refresh();
+	if (!changedSinceStartup) {
 		return false;
 	}
 
-	const timestamp = Date.now();
-	const msg: CssUpdatesMessage = {
-		type: 'ns:css-updates',
-		origin: getServerOrigin(server),
-		reason: 'connect-sync',
-		updates: [
-			{
-				type: 'css-update',
-				path: appCssRel,
-				acceptedPath: appCssRel,
-				timestamp,
-			},
-		],
-	};
+	// Re-check openness AFTER the await — the socket can close during the
+	// Tailwind compilation.
+	if (!isSocketClientOpen(ws)) {
+		return false;
+	}
+
+	const msg = buildCssUpdatesMessage(server, [buildCssUpdateItem(appCssRel)], { reason: 'connect-sync' });
 	try {
 		ws.send(JSON.stringify(msg));
 	} catch (error) {

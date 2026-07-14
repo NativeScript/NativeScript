@@ -39,6 +39,7 @@ import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginM
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
 import type { NsHotUpdateContext } from './websocket-hot-update.js';
 import { maybeSendConnectCssSync } from './css-connect-sync.js';
+import { isSocketClientOpen } from './socket-utils.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
@@ -121,15 +122,6 @@ const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['react', reactServerStrategy],
 	['typescript', typescriptServerStrategy],
 ]);
-
-function isSocketClientOpen(client: { readyState?: number; OPEN?: number } | null | undefined): boolean {
-	if (!client) {
-		return false;
-	}
-
-	const openState = typeof client.OPEN === 'number' ? client.OPEN : 1;
-	return client.readyState === openState;
-}
 
 function getHmrSocketRoleFromRequestUrl(requestUrl: string | undefined): string {
 	try {
@@ -628,27 +620,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				}
 			});
 
-			// Additional connection diagnostics
-			wss.on('connection', (ws, req) => {
-				const role = getHmrSocketRoleFromRequestUrl(req.url);
-				(ws as any).__nsHmrClientRole = role;
-				try {
-					if (verbose) {
-						const ra = (req.socket as any)?.remoteAddress;
-						const rp = (req.socket as any)?.remotePort;
-						console.log('[hmr-ws] Client connected', { role, remote: ra + (rp ? ':' + rp : '') });
-					}
-				} catch {}
-				ws.on('close', () => {
-					try {
-						if (verbose) {
-							const ra = (req.socket as any)?.remoteAddress;
-							const rp = (req.socket as any)?.remotePort;
-							console.log('[hmr-ws] Client disconnected', { role, remote: ra + (rp ? ':' + rp : '') });
-						}
-					} catch {}
-				});
-			});
 			wss.on('error', (err) => {
 				console.warn('[hmr-ws] server error:', err?.message || String(err));
 			});
@@ -765,23 +736,32 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getStrategy: () => strategy,
 			});
 
-			wss.on('connection', async (ws) => {
-				if (verbose) console.log('[hmr-ws] Client connected (dynamic fetch mode)');
+			wss.on('connection', async (ws, req) => {
+				// Stamp the role from the connect URL so the broadcast loops
+				// (which only see the socket) can read it via `getHmrSocketRole`.
+				const role = getHmrSocketRoleFromRequestUrl(req?.url);
+				(ws as any).__nsHmrClientRole = role;
+				const remote = (() => {
+					try {
+						const ra = (req?.socket as any)?.remoteAddress;
+						const rp = (req?.socket as any)?.remotePort;
+						return ra ? ra + (rp ? ':' + rp : '') : undefined;
+					} catch {
+						return undefined;
+					}
+				})();
+				if (verbose) console.log('[hmr-ws] Client connected', { role, remote });
 
-				// Cold-relaunch stylesheet sync: the app boots with the CSS baked
-				// into bundle.mjs at prepare time, so if app.css drifted during
-				// this session, push the current stylesheet to the reconnecting
-				// full client. Fire-and-forget — the drift check re-runs
-				// Tailwind/PostCSS and must not delay the registry/graph sends
-				// below. Full-role only (see css-connect-sync.ts for why the
-				// bootstrap socket is unsafe to sync).
-				if (getHmrSocketRole(ws as any) === 'full') {
+				// Cold-relaunch stylesheet sync for full-role clients — see
+				// css-connect-sync.ts. Fire-and-forget: the drift check re-runs
+				// Tailwind/PostCSS and must not delay the registry/graph sends below.
+				if (role === 'full') {
 					maybeSendConnectCssSync(server, ws as any, { verbose }).catch((error) => {
 						if (verbose) console.warn('[hmr-ws] connect css sync failed', error);
 					});
 				}
 
-				ws.on('close', () => verbose && console.log('[hmr-ws] Client disconnected'));
+				ws.on('close', () => verbose && console.log('[hmr-ws] Client disconnected', { role, remote }));
 				ws.on('message', (data: any) => {
 					try {
 						const msg = JSON.parse(String(data));

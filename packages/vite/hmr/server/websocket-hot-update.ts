@@ -10,7 +10,9 @@ import { collectGraphUpdateModulesForHotUpdate, type HotUpdateGraphModuleLike } 
 import { getAppCssState } from '../../helpers/app-css-state.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
-import type { CssUpdateItem, CssUpdatesMessage } from '../shared/protocol.js';
+import type { CssUpdateItem } from '../shared/protocol.js';
+import { appCssRootRelPath, buildCssUpdateItem, buildCssUpdatesMessage } from './css-update-message.js';
+import { processContentCssUpdate } from './content-css-update.js';
 import { getServerOrigin } from './server-origin.js';
 import type { BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
 
@@ -290,29 +292,20 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 		}
 
 		const toRootRel = (absOrFile: string) => '/' + path.posix.normalize(path.relative(root, absOrFile)).split(path.sep).join('/');
-		// GLOBAL → app entry CSS path (default `app.css` tag on the client).
-		// COMPONENT → the style file's own path, tagged by that path.
-		const broadcastPath = isGlobalStyle ? toRootRel(appEntryCssAbs) : toRootRel(file);
+		// GLOBAL → app entry CSS path (default `app.css` tag on the client),
+		// through the guarded canonical helper. COMPONENT → the style file's
+		// OWN path (may legitimately escape the root for workspace libs).
+		const broadcastPath = isGlobalStyle ? appCssRootRelPath(root, appEntryCssAbs) : toRootRel(file);
 		const tag = isGlobalStyle ? undefined : broadcastPath;
 
 		updateMetrics.tAfterFramework = Date.now();
+		if (!broadcastPath) {
+			if (verbose) console.warn(`[hmr-ws] global app.css path escapes the project root; skipped CSS broadcast for ${file}`);
+			emitHmrUpdateSummary();
+			return null;
+		}
 		try {
-			const origin = getServerOrigin(server);
-			const timestamp = Date.now();
-			const msg: CssUpdatesMessage = {
-				type: 'ns:css-updates',
-				origin,
-				updates: [
-					{
-						type: 'css-update',
-						path: broadcastPath,
-						acceptedPath: broadcastPath,
-						timestamp,
-						...(tag ? { tag } : {}),
-					},
-				],
-			};
-
+			const msg = buildCssUpdatesMessage(server, [buildCssUpdateItem(broadcastPath, { tag })]);
 			wss.clients.forEach((client) => {
 				if (isSocketClientOpen(client)) {
 					client.send(JSON.stringify(msg));
@@ -342,105 +335,23 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 	// new shape throws (`ctx.x is not a function`) on every subsequent save.
 	if (verbose) console.log(`[hmr-ws] Hot update for: ${file}`);
 
-	// Tailwind / content-scanning CSS broadcast for non-CSS edits.
-	//
-	// Background: when a `.html` template or `.ts` file scanned
-	// by Tailwind's `content` config gets a brand-new utility
-	// class (e.g. `pt-6` that was never used in the codebase
-	// before), the booted CSS bundle doesn't contain a rule for
-	// it. The Angular template HMR swaps the markup, the view
-	// re-renders, the class lookup misses, and the layout
-	// regresses to its default.
-	//
-	// In a "normal" Vite setup, the `vite:css` plugin consumes
-	// each PostCSS `dependency` message via `addWatchFile`, and
-	// `vite:css-analysis` later registers each watched file as
-	// an importer of the CSS module. A content-file edit then
-	// invalidates the CSS module through the moduleGraph and
-	// `ctx.modules`/`mod.importers` would surface it.
-	//
-	// NS HMR breaks that chain: `app.css` is loaded via a
-	// virtual module (`virtual:ns-app-css`) whose `load` hook
-	// calls `preprocessCSS(...)` and emits a JS module — the
-	// CSS itself is never a moduleGraph node, so the importer
-	// chain never forms. `ctx.modules` for the html edit only
-	// contains the html-as-Angular-template module with the
-	// component `.ts` as its importer.
-	//
-	// To bridge that gap, `mainEntryPlugin` stores the set of
-	// `preprocessCSS` deps for `app.css` on the server and exposes a refresh
-	// callback. If the changed file is in that set, we regenerate the fully
-	// transformed CSS and compare it with the previous successful output.
-	// Ordinary content edits are skipped; a newly generated utility changes the
-	// output and still refreshes `app.css` on the device.
-	//
-	// This MUST run before the framework branches because
-	// several of them return early (notably the Angular HTML
-	// live-reload path), and the broadcast must land alongside
+	// Tailwind / content-scanning CSS routing for non-CSS edits — see
+	// `processContentCssUpdate` for the full background. This MUST run before
+	// the framework branches because several of them return early (notably the
+	// Angular HTML live-reload path), and the broadcast must land alongside
 	// the framework's own template-update payload.
 	if (!file.endsWith('.css')) {
-		try {
-			const appCssState = getAppCssState(server);
-			const deps = appCssState?.deps;
-			const appCssPath = appCssState?.path;
-			if (deps && appCssPath) {
-				const normalizedFile = path.resolve(file).replace(/\\/g, '/');
-				if (deps.has(normalizedFile)) {
-					let cssOutputChanged = true;
-					if (typeof appCssState.refresh === 'function') {
-						try {
-							cssOutputChanged = (await appCssState.refresh()).changed;
-						} catch (error) {
-							// Conservative fallback: comparison failure must never suppress
-							// a genuinely new utility class.
-							cssOutputChanged = true;
-							if (verbose) console.warn('[ns-hmr][server] app.css output comparison failed; forcing refresh', error);
-						}
-					}
-					if (!cssOutputChanged) {
-						if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS output unchanged after ${path.basename(file)}; skipped app.css refresh`);
-					} else {
-						const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
-						const relRaw = path.posix.normalize(path.posix.relative(rootPosix, appCssPath));
-						const appCssRel = relRaw && relRaw !== '.' && !relRaw.startsWith('..') ? (relRaw.startsWith('/') ? relRaw : `/${relRaw}`) : null;
-						if (appCssRel) {
-							const origin = getServerOrigin(server);
-							const timestamp = Date.now();
-							const update: CssUpdateItem = {
-								type: 'css-update',
-								path: appCssRel,
-								acceptedPath: appCssRel,
-								timestamp,
-							};
-							// A TS component edit already causes an Angular root reboot. Carry
-							// the CSS work in that same message so the device serializes it with
-							// the reboot instead of racing view-tree teardown.
-							if (strategy.flavor === 'angular' && file.endsWith('.ts')) {
-								deferredCssUpdates = [update];
-								if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS output changed after ${path.basename(file)}; deferred ${appCssRel} to Angular reboot`);
-							} else {
-								const msg: CssUpdatesMessage = {
-									type: 'ns:css-updates',
-									origin,
-									updates: [update],
-								};
-								wss.clients.forEach((client) => {
-									if (isSocketClientOpen(client)) {
-										try {
-											client.send(JSON.stringify(msg));
-											updateMetrics.recipients += 1;
-										} catch {}
-									}
-								});
-								if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS content-file edit (${path.basename(file)}) broadcast ${appCssRel}`);
-							}
-						}
-					}
-				}
-			}
-		} catch (error) {
-			console.warn('[hmr-ws] CSS content-source broadcast failed:', error);
-		}
+		const contentCss = await processContentCssUpdate({
+			server,
+			file,
+			root,
+			wss,
+			isSocketClientOpen,
+			deferToFrameworkUpdate: strategy.defersContentCssToFrameworkUpdate?.(file) ?? false,
+			verbose,
+		});
+		deferredCssUpdates = contentCss.deferredCssUpdates;
+		updateMetrics.recipients += contentCss.recipients;
 	}
 
 	return { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary, deferredCssUpdates };

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getAppCssState, setAppCssState, type AppCssState } from './app-css-state.js';
 
 function makeState(path: string): AppCssState {
-	return { path, deps: new Set([path]) };
+	return { path, deps: new Set([path]), refresh: async () => ({ changed: true, changedSinceStartup: false }) };
 }
 
 describe('app-css-state', () => {

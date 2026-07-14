@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The deferred-CSS path calls the shared device CSS handler directly; mock the
+// module (no production test seam) so specs can observe ordering without
+// device fetches.
+vi.mock('../../../client/css-handler.js', () => ({
+	handleCssUpdates: vi.fn(async () => {}),
+	APP_CSS_TAG: 'app.css',
+}));
+
 import { handleAngularHotUpdateMessage } from './index.js';
+import { handleCssUpdates } from '../../../client/css-handler.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import type { NsHotRegistry } from '../../../client/hot-context.js';
 
@@ -70,7 +79,9 @@ describe('handleAngularHotUpdateMessage', () => {
 	it('applies a deferred Tailwind app.css update inside the Angular cycle before reboot', async () => {
 		const order: string[] = [];
 		const reboot = vi.fn(() => order.push('reboot'));
-		const applyCssUpdates = vi.fn(async () => {
+		const cssHandlerMock = vi.mocked(handleCssUpdates);
+		cssHandlerMock.mockClear();
+		cssHandlerMock.mockImplementationOnce(async () => {
 			order.push('css');
 		});
 		const g = getGlobalScope();
@@ -84,11 +95,12 @@ describe('handleAngularHotUpdateMessage', () => {
 					origin: 'http://localhost:5173',
 					cssUpdates: [{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 123 }],
 				},
-				{ getCore: () => undefined, verbose: false, applyCssUpdates },
+				{ getCore: () => undefined, verbose: false },
 			);
 
 			expect(handled).toBe(true);
-			expect(applyCssUpdates).toHaveBeenCalledTimes(1);
+			expect(cssHandlerMock).toHaveBeenCalledTimes(1);
+			expect(cssHandlerMock).toHaveBeenCalledWith([expect.objectContaining({ path: '/src/app.css' })], 'http://localhost:5173');
 			expect(order).toEqual(['css', 'reboot']);
 		} finally {
 			g.__reboot_ng_modules__ = previousReboot;

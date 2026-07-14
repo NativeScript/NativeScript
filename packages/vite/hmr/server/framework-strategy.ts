@@ -176,6 +176,19 @@ export interface FrameworkServerStrategy {
 	ownsComponentStyleHmr?(server: ViteDevServer): boolean;
 
 	/**
+	 * Content-file edits (Tailwind scans) that change the generated `app.css`
+	 * are normally broadcast as a standalone `ns:css-updates`. Return `true`
+	 * when the framework's own update message must carry them instead — the
+	 * prologue then hands them to the tail via
+	 * {@link HotUpdatePrologueState.deferredCssUpdates} so the device
+	 * serializes the CSS with the framework's update cycle instead of racing
+	 * it (Angular: a TS edit reboots the root, and the CSS must land inside
+	 * that reboot, not against a view tree mid-teardown). Defaults to `false`
+	 * (standalone broadcast).
+	 */
+	defersContentCssToFrameworkUpdate?(file: string): boolean;
+
+	/**
 	 * Intercept a `/ns/m` request before spec resolution. Return `true` when
 	 * the request was fully answered (or delegated downstream via `next()`),
 	 * so the shared route stops processing it. Angular implements this for

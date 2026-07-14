@@ -123,6 +123,7 @@ export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin:
 	const vendorBootstrapUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
 	const resolvedHotContextImport = resolveBootstrapImportUrl(normalizedOrigin, options.hotContextImport || '/ns/m/node_modules/@nativescript/vite/hmr/client/hot-context.js');
 	const entryRuntimeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js`;
+	const cssHandlerUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js`;
 	// Canonical, unversioned core-bridge URL (see helpers/ns-core-url.ts) — the
 	// app graph already loaded this exact URL during boot, so importing it here
 	// resolves to the SAME module record/realm instead of minting a new one.
@@ -300,12 +301,46 @@ async function __nsBrowserRuntimeFetchText(url) {
 	return '';
 }
 
+let __nsBrowserRuntimeCssHandlerPromise;
+function __nsBrowserRuntimeLoadCssHandler() {
+	if (!__nsBrowserRuntimeCssHandlerPromise) {
+		__nsBrowserRuntimeCssHandlerPromise = import(${JSON.stringify(cssHandlerUrl)}).catch((error) => {
+			// Allow a retry on the next update instead of caching the failure.
+			__nsBrowserRuntimeCssHandlerPromise = undefined;
+			throw error;
+		});
+	}
+	return __nsBrowserRuntimeCssHandlerPromise;
+}
+
 async function __nsBrowserRuntimeHandleCssUpdates(msg) {
 	const updates = Array.isArray(msg?.updates) ? msg.updates : [];
 	if (!updates.length) {
 		return;
 	}
+	// Delegate to the shared client css-handler — the ONE fetch+apply pipeline
+	// for bootstrap and full client alike, honoring per-update tags (a
+	// component styleUrls update must replace under its own tag; the inline
+	// applier below only knows the global stylesheet).
+	try {
+		const cssHandler = await __nsBrowserRuntimeLoadCssHandler();
+		if (cssHandler && typeof cssHandler.handleCssUpdates === 'function') {
+			await cssHandler.handleCssUpdates(updates, __NS_BROWSER_RUNTIME_ORIGIN__);
+			return;
+		}
+	} catch (cssHandlerErr) {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] shared css-handler unavailable; using inline fallback', cssHandlerErr);
+		}
+	}
+	// Inline fallback (css-handler import failed): GLOBAL updates only. The
+	// inline applier replaces under the global app.css tag, so applying a
+	// component-tagged update here would clobber the global stylesheet.
 	for (const update of updates) {
+		if (update && typeof update.tag === 'string' && update.tag) {
+			console.warn('[ns-browser-runtime-client] skipped component CSS update (tagged applier unavailable):', update.tag);
+			continue;
+		}
 		const cssPath = update?.path || update?.acceptedPath || '';
 		if (!cssPath) {
 			continue;

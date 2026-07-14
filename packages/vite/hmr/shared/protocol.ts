@@ -82,11 +82,9 @@ export interface CssUpdatesMessage {
 	origin: string;
 	updates: CssUpdateItem[];
 	/**
-	 * `connect-sync` marks the boot-time stylesheet sync the server sends to a
-	 * freshly connected full client (see `css-connect-sync.ts`): `bundle.mjs`
-	 * bakes `app.css` at `ns prepare` time, so an app relaunch mid-session
-	 * boots with stale styles until this replaces them. The client applies it
-	 * silently (no HMR-applying overlay) since no user edit triggered it.
+	 * `connect-sync` marks the boot-time stylesheet sync pushed to a freshly
+	 * connected full client; the client applies it silently (no overlay). Full
+	 * rationale in `hmr/server/css-connect-sync.ts`.
 	 */
 	reason?: 'connect-sync';
 }

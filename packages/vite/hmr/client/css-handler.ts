@@ -43,11 +43,19 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 	if (typeof cssText !== 'string' || !cssText.length) return;
 
 	try {
-		const applyInHttpCoreRealm = getPreferredCssApplier();
-		if (applyInHttpCoreRealm) {
-			applyInHttpCoreRealm(cssText, true);
-			if (VERBOSE) console.info('[ns-hmr] CSS applied through HTTP core realm');
-			return;
+		// The HTTP-core-realm applier (entry-runtime's `__NS_HMR_APPLY_CSS__`)
+		// always replaces under the global `app.css` tag, so it is only correct
+		// for GLOBAL stylesheet updates — routing a component-tagged update
+		// through it would wipe the global stylesheet and install the
+		// component's rules in its place. Component tags take the tagged
+		// remove+add path below.
+		if (tag === APP_CSS_TAG) {
+			const applyInHttpCoreRealm = getPreferredCssApplier();
+			if (applyInHttpCoreRealm) {
+				applyInHttpCoreRealm(cssText, true);
+				if (VERBOSE) console.info('[ns-hmr] CSS applied through HTTP core realm');
+				return;
+			}
 		}
 
 		// Replace selectors via remove + add tagged pair so deleted

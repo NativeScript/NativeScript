@@ -6,7 +6,7 @@
  * template swaps.
  */
 
-import { getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, moduleFetchCache, getHttpOriginForVite, graph, setGraphVersion, getGraphVersion, getCore, ENV_VERBOSE } from './utils.js';
+import { pendingModuleFetches, moduleFetchCache, resolveHmrHttpOrigin, graph, setGraphVersion, getGraphVersion, getCore, ENV_VERBOSE } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
@@ -230,7 +230,7 @@ export async function handleHmrMessage(ev: any) {
 				pending.reject(new Error(`[hmr-fetch] ${msg.error} for ${pending.spec}`));
 			} else {
 				try {
-					const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+					const origin = resolveHmrHttpOrigin();
 					if (!origin) throw new Error('no-http-origin');
 					const url = origin + '/ns/m' + (String(pending.spec).startsWith('/') ? pending.spec : '/' + pending.spec);
 					moduleFetchCache.set(pending.spec, url);
@@ -251,10 +251,9 @@ export async function handleHmrMessage(ev: any) {
 		// downstream module-evaluation path that would hit the queue's
 		// 'complete' transition.
 		//
-		// `reason: 'connect-sync'` is the server-pushed boot-time
-		// stylesheet sync after an app relaunch mid-session — no user
-		// edit triggered it and no `ns:hmr-pending` preceded it, so
-		// apply silently instead of flashing the overlay during boot.
+		// `reason: 'connect-sync'` (server-pushed boot-time stylesheet sync,
+		// see hmr/server/css-connect-sync.ts) applies silently — no user edit
+		// triggered it and no `ns:hmr-pending` preceded it.
 		const cssCount = msg.updates.length;
 		const silent = msg.reason === 'connect-sync';
 		if (!silent) {
@@ -263,7 +262,7 @@ export async function handleHmrMessage(ev: any) {
 			} catch {}
 		}
 		try {
-			const origin = msg.origin || getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+			const origin = resolveHmrHttpOrigin(msg.origin);
 			await handleCssUpdates(msg.updates, origin);
 			if (!silent) {
 				try {

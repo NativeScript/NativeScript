@@ -245,6 +245,13 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	ownsComponentStyleHmr(server) {
 		return ((server.config?.plugins as Array<{ name?: string }> | undefined) ?? []).some((plugin) => plugin?.name === 'analogjs-live-reload-plugin');
 	},
+	// A TS component edit already causes an Angular root reboot; carry any
+	// Tailwind-generated app.css change inside that same `ns:angular-update`
+	// message (see `deferredCssUpdates` in the prologue) so the device
+	// serializes the CSS apply with the reboot instead of racing teardown.
+	defersContentCssToFrameworkUpdate(file: string) {
+		return file.endsWith('.ts');
+	},
 	// Device-reported failed in-place component update → reboot recovery.
 	//
 	// Angular core sends `angular:invalidate` (over `import.meta.hot.send`,

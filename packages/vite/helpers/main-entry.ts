@@ -9,7 +9,8 @@ import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { buildCoreUrl } from './ns-core-url.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
-import { setAppCssState, type AppCssRefreshResult } from './app-css-state.js';
+import { setAppCssState } from './app-css-state.js';
+import { createAppCssRefresher } from './app-css-refresh.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { buildGlobalSeedStatements, getRuntimeSeedValues } from './global-defines.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
@@ -182,74 +183,36 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			const normalizeFsPath = (p: string): string => path.resolve(p).replace(/\\/g, '/');
 			const normalizedAppCssPath = normalizeFsPath(appCssPath);
 			const watchedDeps = new Set<string>([normalizedAppCssPath]);
-			let lastGeneratedCss: string | undefined;
-			// First successful generation ≈ what `ns prepare` baked into
-			// bundle.mjs (same disk state, same pipeline). A cold app relaunch
-			// mid-session boots with that snapshot, so comparing against this
-			// baseline tells the websocket layer whether a freshly connected
-			// client needs a CSS sync (see hasChangedSinceStartup below).
-			let startupGeneratedCss: string | undefined;
 
-			const refreshDeps = async (): Promise<AppCssRefreshResult> => {
-				try {
-					const rawCode = fs.readFileSync(appCssPath, 'utf-8');
-					// Same platform @import rewrite as the virtual:ns-app-css load hook —
-					// this raw read also bypasses the ns-css-platform transform.
-					const code = rewritePlatformCssImports(rawCode, path.dirname(appCssPath), opts.platform) ?? rawCode;
-					const result = await preprocessCSS(code, appCssPath, server.config);
-					const generatedCss = result?.code ?? '';
-					const changed = lastGeneratedCss === undefined || generatedCss !== lastGeneratedCss;
-					lastGeneratedCss = generatedCss;
-					if (startupGeneratedCss === undefined) {
-						startupGeneratedCss = generatedCss;
+			// The refresher owns serialization, previous-output comparison, and the
+			// startup baseline (see helpers/app-css-refresh.ts). This thunk owns the
+			// generation itself plus the watcher/dep-set side effects of a scan.
+			const generate = async (): Promise<string> => {
+				const rawCode = fs.readFileSync(appCssPath, 'utf-8');
+				// Same platform @import rewrite as the virtual:ns-app-css load hook —
+				// this raw read also bypasses the ns-css-platform transform.
+				const code = rewritePlatformCssImports(rawCode, path.dirname(appCssPath), opts.platform) ?? rawCode;
+				const result = await preprocessCSS(code, appCssPath, server.config);
+				server.watcher.add(appCssPath);
+				const next = new Set<string>([normalizedAppCssPath]);
+				for (const dep of result?.deps ?? []) {
+					if (typeof dep === 'string' && dep) {
+						server.watcher.add(dep);
+						next.add(normalizeFsPath(dep));
 					}
-					server.watcher.add(appCssPath);
-					const next = new Set<string>([normalizedAppCssPath]);
-					for (const dep of result?.deps ?? []) {
-						if (typeof dep === 'string' && dep) {
-							server.watcher.add(dep);
-							next.add(normalizeFsPath(dep));
-						}
-					}
-					// Atomic-ish replace: clear + repopulate the existing
-					// Set so any concurrent reader sees a consistent view
-					// when iterating with `.has()`.
-					watchedDeps.clear();
-					for (const f of next) watchedDeps.add(f);
-					return { changed };
-				} catch (error) {
-					// Conservative fallback: if comparison fails, the hot-update path
-					// must still refresh app.css so a new utility can never be silently
-					// omitted. The device fetch will surface the underlying CSS error.
-					if (opts.verbose) console.warn('[ns-entry] app.css refresh comparison failed; forcing CSS HMR', error);
-					return { changed: true };
 				}
+				// Atomic-ish replace: clear + repopulate the existing
+				// Set so any concurrent reader sees a consistent view
+				// when iterating with `.has()`.
+				watchedDeps.clear();
+				for (const f of next) watchedDeps.add(f);
+				return result?.code ?? '';
 			};
+			const refresh = createAppCssRefresher({ generate, verbose: opts.verbose });
 
-			// Serialize preprocessCSS calls. A content edit can arrive while the
-			// startup dependency scan is still running; queueing gives that edit a
-			// real baseline instead of racing two Tailwind compilations.
-			let refreshQueue = Promise.resolve<AppCssRefreshResult>({ changed: false });
-			const queueRefresh = (): Promise<AppCssRefreshResult> => {
-				const next = refreshQueue.then(refreshDeps, refreshDeps);
-				refreshQueue = next;
-				return next;
-			};
+			setAppCssState(server, { path: normalizedAppCssPath, deps: watchedDeps, refresh });
 
-			const hasChangedSinceStartup = async (): Promise<boolean> => {
-				await queueRefresh();
-				if (startupGeneratedCss === undefined || lastGeneratedCss === undefined) {
-					// No baseline (both startup generations failed). Report "changed"
-					// so the connect sync still runs — reapplying identical CSS is
-					// idempotent, while skipping a real drift leaves stale styles.
-					return true;
-				}
-				return lastGeneratedCss !== startupGeneratedCss;
-			};
-
-			setAppCssState(server, { path: normalizedAppCssPath, deps: watchedDeps, refresh: queueRefresh, hasChangedSinceStartup });
-
-			void queueRefresh();
+			void refresh();
 
 			// Re-scan when `app.css` itself or a Tailwind config file
 			// changes — Tailwind's content list and utility definitions
@@ -261,7 +224,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (pendingRefresh) clearTimeout(pendingRefresh);
 				pendingRefresh = setTimeout(() => {
 					pendingRefresh = null;
-					void queueRefresh();
+					void refresh();
 				}, 50);
 			};
 			const isAppCssOrTailwindConfig = (file: string): boolean => {

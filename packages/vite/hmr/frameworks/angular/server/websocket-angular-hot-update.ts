@@ -486,6 +486,24 @@ export function normalizeHotReloadMatchPath(raw: string, root?: string): string 
 }
 
 /**
+ * True when any candidate path matches a live (unexpired) suppression entry,
+ * comparing every candidate against both the entry's absolute and
+ * root-relative forms — payload paths arrive in either shape depending on the
+ * emitter. Shared by both suppression predicates below.
+ */
+function matchesPendingSuppression(candidates: ReadonlyArray<string | null>, pendingEntries: Iterable<PendingAngularReloadSuppressionEntry>, now: number): boolean {
+	for (const entry of pendingEntries) {
+		if (!entry || entry.expiresAt <= now) continue;
+		for (const candidate of candidates) {
+			if (candidate && (candidate === entry.absPath || candidate === entry.relPath)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
  * True when Analog's in-place component metadata event targets the same TS
  * file already owned by a pending `ns:angular-update` reboot. A single save
  * must never both rebuild the Angular root and then run `ɵɵreplaceMetadata`
@@ -517,13 +535,7 @@ export function shouldSuppressAngularComponentUpdatePayload(options: { payload: 
 
 	const componentAbs = normalizeHotReloadMatchPath(componentFile);
 	const componentRel = normalizeHotReloadMatchPath(componentFile, root);
-	for (const entry of pendingEntries) {
-		if (!entry || entry.expiresAt <= now) continue;
-		if (componentAbs === entry.absPath || componentAbs === entry.relPath || componentRel === entry.absPath || componentRel === entry.relPath) {
-			return true;
-		}
-	}
-	return false;
+	return matchesPendingSuppression([componentAbs, componentRel], pendingEntries, now);
 }
 
 export function shouldSuppressViteFullReloadPayload(options: { payload: any; pendingEntries: Iterable<PendingAngularReloadSuppressionEntry>; root?: string; now?: number }): boolean {
@@ -536,16 +548,5 @@ export function shouldSuppressViteFullReloadPayload(options: { payload: any; pen
 
 	const payloadPath = typeof payload.path === 'string' && payload.path !== '*' ? normalizeHotReloadMatchPath(payload.path, root) : null;
 	const payloadTriggeredBy = typeof payload.triggeredBy === 'string' ? normalizeHotReloadMatchPath(payload.triggeredBy, root) : null;
-
-	for (const entry of pendingEntries) {
-		if (!entry || entry.expiresAt <= now) {
-			continue;
-		}
-
-		if (payloadTriggeredBy === entry.absPath || payloadTriggeredBy === entry.relPath || payloadPath === entry.relPath || payloadPath === entry.absPath) {
-			return true;
-		}
-	}
-
-	return false;
+	return matchesPendingSuppression([payloadTriggeredBy, payloadPath], pendingEntries, now);
 }

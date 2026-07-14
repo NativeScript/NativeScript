@@ -1,4 +1,4 @@
-import { deriveHttpOrigin, getCore, getCurrentApp, getHMRWsUrl, getHttpOriginForVite, graph, invalidateModulesByUrls, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
+import { getCore, getCurrentApp, graph, invalidateModulesByUrls, normalizeSpec, resolveHmrHttpOrigin, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { resolveVendorModule } from '../../../shared/runtime/vendor-resolve.js';
 import { findSfcAncestors } from './dep-propagation.js';
@@ -649,7 +649,7 @@ export function addSfcMapping(originalPath: string, fileName: string) {
 // variant query. CANONICAL (unversioned): module identity is the URL;
 // freshness comes from the eviction in `evictSfcArtifacts` below.
 function resolveSfcVariantSpec(id: string, type: 'script' | 'template'): string {
-	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+	const origin = resolveHmrHttpOrigin();
 	const base = id.split('?')[0];
 	if (!origin) return base + `?vue&type=${type}`;
 	const safePath = base.startsWith('/') ? base : '/' + base;
@@ -658,7 +658,7 @@ function resolveSfcVariantSpec(id: string, type: 'script' | 'template'): string 
 
 // Resolve deterministic SFC assembler ESM module (canonical, unversioned).
 function resolveSfcAssemblerSpec(id: string): string {
-	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+	const origin = resolveHmrHttpOrigin();
 	const base = id.split('?')[0];
 	if (!origin) return base; // fallback: device will likely fail; origin should be available in dev
 	const safePath = base.startsWith('/') ? base : '/' + base;
@@ -680,7 +680,7 @@ function resolveSfcAssemblerSpec(id: string): string {
 //   - the full `/ns/sfc<path>` delegation module (static `.vue` imports
 //     rewritten by the server inside `/ns/m` modules)
 export function buildSfcEvictionUrls(id: string): string[] {
-	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+	const origin = resolveHmrHttpOrigin();
 	if (!origin) return [];
 	const base = id.split('?')[0];
 	const safePath = base.startsWith('/') ? base : '/' + base;

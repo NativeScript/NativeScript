@@ -1,5 +1,5 @@
 import type { FrameworkClientBatchContext, FrameworkClientStrategy } from '../../../client/framework-client-strategy.js';
-import { ENV_VERBOSE as VERBOSE, deriveHttpOrigin, getCore, getHMRWsUrl, getHttpOriginForVite, normalizeSpec } from '../../../client/utils.js';
+import { ENV_VERBOSE as VERBOSE, getCore, normalizeSpec, resolveHmrHttpOrigin } from '../../../client/utils.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 
 // Define substitution does not reach this raw-served file; prefer the
@@ -202,7 +202,7 @@ async function applyTypescriptRefresh(drained: string[]): Promise<void> {
 		// so Builder.createViewFromEntry picks up fresh content.
 		const rawAssetIds = drained.filter((id) => /\.(xml|css|scss|sass|less)$/i.test(id));
 		if (rawAssetIds.length && typeof g.registerModule === 'function') {
-			const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+			const origin = resolveHmrHttpOrigin();
 			if (origin) {
 				for (const id of rawAssetIds) {
 					try {

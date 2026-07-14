@@ -2,6 +2,7 @@ import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { getNsHotRegistry } from '../../../client/hot-context.js';
 import { getOverlayApi, resolveOverlayEnabled, setUpdateStage, type HmrUpdateOverlayInfo, type HmrUpdateOverlayStage } from '../../../client/overlay-driver.js';
 import { handleCssUpdates } from '../../../client/css-handler.js';
+import { resolveHmrHttpOrigin } from '../../../client/utils.js';
 import { readNsRuntimeDevHostApi } from '../../../shared/runtime/browser-runtime-contract.js';
 type GetCoreFn = (name: string) => any;
 
@@ -62,16 +63,13 @@ export function installAngularHmrClientHooks(): void {
 interface AngularUpdateOptions {
 	getCore: GetCoreFn;
 	verbose: boolean;
-	/** Test seam; production uses the shared device CSS handler. */
-	applyCssUpdates?: typeof handleCssUpdates;
 }
 
-async function applyDeferredCssUpdates(msg: any, options: AngularUpdateOptions): Promise<void> {
+async function applyDeferredCssUpdates(msg: any): Promise<void> {
 	const updates = Array.isArray(msg?.cssUpdates) ? msg.cssUpdates : [];
 	if (!updates.length) return;
 	try {
-		const apply = options.applyCssUpdates ?? handleCssUpdates;
-		await apply(updates, typeof msg?.origin === 'string' ? msg.origin : '');
+		await handleCssUpdates(updates, resolveHmrHttpOrigin(msg?.origin));
 	} catch (error) {
 		// The Angular module refresh is still viable. Surface the CSS failure, but
 		// continue with the reboot so one fetch cannot strand the old application.
@@ -812,7 +810,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			// the replacement tree. This prevents a standalone CSS message from
 			// racing teardown, while allowing the new views to resolve both existing
 			// bindings and newly generated utility selectors during construction.
-			await applyDeferredCssUpdates(msg, options);
+			await applyDeferredCssUpdates(msg);
 			try {
 				reboot(true);
 			} finally {

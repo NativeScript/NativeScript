@@ -1,30 +1,18 @@
 import type { ViteDevServer } from 'vite';
-
-/** Result of regenerating the fully transformed app stylesheet. */
-export interface AppCssRefreshResult {
-	/** True when the post-PostCSS/Tailwind output changed. */
-	changed: boolean;
-}
+import type { AppCssRefreshResult } from './app-css-refresh.js';
 
 /** Tracks the project's `app.css` entry and the files it imports, for HMR invalidation. */
 export interface AppCssState {
 	path: string;
 	deps: Set<string>;
 	/**
-	 * Re-run the app stylesheet pipeline against the current content files and
-	 * compare its output with the previous successful generation. Optional for
-	 * compatibility with embedders; callers conservatively refresh CSS when it
-	 * is unavailable or throws.
+	 * Re-run the app stylesheet pipeline against the current content files.
+	 * NEVER rejects; conservative on failure (see `createAppCssRefresher`,
+	 * the only production implementation — test stubs must honor the same
+	 * contract). `changedSinceStartup` drives the connect-time stylesheet
+	 * sync (see hmr/server/css-connect-sync.ts).
 	 */
-	refresh?: () => Promise<AppCssRefreshResult>;
-	/**
-	 * Whether the generated app stylesheet differs from the baseline captured
-	 * at dev-server startup. `bundle.mjs` bakes `app.css` at `ns prepare` time
-	 * (≈ server startup), so a cold app relaunch mid-session boots with that
-	 * snapshot — when this returns true, the server pushes a connect-time CSS
-	 * sync to the freshly connected client (see css-connect-sync.ts).
-	 */
-	hasChangedSinceStartup?: () => Promise<boolean>;
+	refresh: () => Promise<AppCssRefreshResult>;
 }
 
 /**

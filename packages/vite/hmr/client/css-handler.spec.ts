@@ -49,6 +49,23 @@ describe('css-handler', () => {
 		expect(onCssStateChange).toHaveBeenCalled();
 	});
 
+	it('never routes a component-tagged update through the HTTP-realm applier (it only replaces the global app.css tag)', () => {
+		const realmApplier = vi.fn();
+		const addTaggedAdditionalCSS = vi.fn(() => true);
+		const removeTaggedAdditionalCSS = vi.fn(() => true);
+		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
+		getGlobalScope().Application = { addCss: vi.fn(), getRootView: vi.fn(() => null) };
+		getGlobalScope().addTaggedAdditionalCSS = addTaggedAdditionalCSS;
+		getGlobalScope().removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
+
+		const tag = '/src/app/header/header.component.css';
+		applyCssText('.appstore-header { color: blue; }', tag);
+
+		expect(realmApplier).not.toHaveBeenCalled();
+		expect(removeTaggedAdditionalCSS).toHaveBeenCalledWith(tag);
+		expect(addTaggedAdditionalCSS).toHaveBeenCalledWith('.appstore-header { color: blue; }', tag);
+	});
+
 	it('replaces under a per-component tag (component styleUrls), independent of the app.css tag', () => {
 		const onCssStateChange = vi.fn();
 		const addTaggedAdditionalCSS = vi.fn(() => true);

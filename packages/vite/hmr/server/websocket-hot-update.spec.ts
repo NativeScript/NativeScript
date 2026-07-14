@@ -6,6 +6,9 @@ import * as appCssStateModule from '../../helpers/app-css-state.js';
 
 let originSpy: ReturnType<typeof vi.spyOn>;
 
+/** Inert stand-in for the (required, non-throwing) app-css refresh. */
+const noopRefresh = async () => ({ changed: true, changedSinceStartup: false });
+
 type FakeClient = { readyState: number; send: ReturnType<typeof vi.fn> };
 
 /**
@@ -151,7 +154,7 @@ describe('runHotUpdatePrologue', () => {
 		const strategy = { flavor: 'angular', ownsComponentStyleHmr } as any;
 		const deps = makeDeps({ wss, strategy, getHmrSourceRootsCached: () => ['/proj/src'] });
 		const ctx = makeCtx('/proj/src/app.css');
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>() });
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(), refresh: noopRefresh });
 
 		const result = await runHotUpdatePrologue(ctx, deps);
 
@@ -168,7 +171,7 @@ describe('runHotUpdatePrologue', () => {
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
 		// Register app.css state so the edited file is recognized as the global entry.
 		const ctx = makeCtx('/proj/src/app.css');
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>() });
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(), refresh: noopRefresh });
 		const result = await runHotUpdatePrologue(ctx, deps);
 		expect(result).toBeNull();
 		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
@@ -185,7 +188,7 @@ describe('runHotUpdatePrologue', () => {
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/libs'] });
 		const ctx = makeCtx('/libs/theme/_buttons.css');
 		// The edited partial is an @import dep of app.css → refetch app.css.
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(['/libs/theme/_buttons.css']) });
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(['/libs/theme/_buttons.css']), refresh: noopRefresh });
 		const result = await runHotUpdatePrologue(ctx, deps);
 		expect(result).toBeNull();
 		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
@@ -209,7 +212,7 @@ describe('runHotUpdatePrologue', () => {
 		const libHtml = '/repo/libs/xplat/nativescript/features/src/lib/ui/components/header/header.component.html';
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/repo/libs'] });
 		const ctx = makeCtx(libHtml);
-		const refresh = vi.fn(async () => ({ changed: true }));
+		const refresh = vi.fn(async () => ({ changed: true, changedSinceStartup: true }));
 		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([libHtml]), refresh } as any);
 
 		const result = await runHotUpdatePrologue(ctx, deps);
@@ -231,7 +234,7 @@ describe('runHotUpdatePrologue', () => {
 		const file = '/proj/src/app/listen-now.component.ts';
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
 		const ctx = makeCtx(file);
-		const refresh = vi.fn(async () => ({ changed: false }));
+		const refresh = vi.fn(async () => ({ changed: false, changedSinceStartup: false }));
 		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([file]), refresh } as any);
 
 		const result = await runHotUpdatePrologue(ctx, deps);
@@ -242,11 +245,12 @@ describe('runHotUpdatePrologue', () => {
 		expect(sentTypes).not.toContain('ns:css-updates');
 	});
 
-	it('defers changed app.css output into an Angular TS update instead of broadcasting it separately', async () => {
+	it('defers changed app.css output into the framework update when the strategy hook opts in (Angular TS reboot)', async () => {
 		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
 		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
 		const file = '/proj/src/app/listen-now.component.ts';
-		const strategy = { flavor: 'angular' } as any;
+		const defersContentCssToFrameworkUpdate = vi.fn((f: string) => f.endsWith('.ts'));
+		const strategy = { flavor: 'angular', defersContentCssToFrameworkUpdate } as any;
 		const deps = makeDeps({ wss, strategy, getHmrSourceRootsCached: () => ['/proj/src'] });
 		const ctx = makeCtx(file);
 		appCssStateModule.setAppCssState(
@@ -254,16 +258,40 @@ describe('runHotUpdatePrologue', () => {
 			{
 				path: '/proj/src/app.css',
 				deps: new Set<string>([file]),
-				refresh: vi.fn(async () => ({ changed: true })),
+				refresh: vi.fn(async () => ({ changed: true, changedSinceStartup: true })),
 			} as any,
 		);
 
 		const result = await runHotUpdatePrologue(ctx, deps);
 
+		expect(defersContentCssToFrameworkUpdate).toHaveBeenCalledWith(file);
 		expect(result?.deferredCssUpdates).toHaveLength(1);
 		expect(result?.deferredCssUpdates?.[0]).toMatchObject({ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css' });
 		const sentTypes = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0])).type);
 		expect(sentTypes).not.toContain('ns:css-updates');
+	});
+
+	it('broadcasts (does not defer) changed app.css output when the strategy has no defer hook', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const file = '/proj/src/app/listen-now.component.ts';
+		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
+		const ctx = makeCtx(file);
+		appCssStateModule.setAppCssState(
+			ctx.server as any,
+			{
+				path: '/proj/src/app.css',
+				deps: new Set<string>([file]),
+				refresh: vi.fn(async () => ({ changed: true, changedSinceStartup: true })),
+			} as any,
+		);
+
+		const result = await runHotUpdatePrologue(ctx, deps);
+
+		expect(result?.deferredCssUpdates).toBeUndefined();
+		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
+		expect(cssMsg).toBeTruthy();
+		expect(cssMsg.updates[0].path).toBe('/src/app.css');
 	});
 
 	it('broadcasts an ns:hmr-pending message to open clients for in-scope changes', async () => {

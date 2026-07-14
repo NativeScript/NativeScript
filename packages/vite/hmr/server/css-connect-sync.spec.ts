@@ -19,7 +19,7 @@ function registerState(server: any, overrides: Partial<AppCssState> = {}): AppCs
 	const state: AppCssState = {
 		path: '/proj/src/app.css',
 		deps: new Set(['/proj/src/app.css']),
-		hasChangedSinceStartup: vi.fn(async () => true),
+		refresh: vi.fn(async () => ({ changed: false, changedSinceStartup: true })),
 		...overrides,
 	};
 	setAppCssState(server, state);
@@ -56,7 +56,7 @@ describe('maybeSendConnectCssSync', () => {
 
 	it('sends nothing when the stylesheet has not drifted', async () => {
 		const server = makeServer();
-		registerState(server, { hasChangedSinceStartup: vi.fn(async () => false) });
+		registerState(server, { refresh: vi.fn(async () => ({ changed: false, changedSinceStartup: false })) });
 		const ws = makeSocket();
 
 		expect(await maybeSendConnectCssSync(server, ws)).toBe(false);
@@ -69,29 +69,7 @@ describe('maybeSendConnectCssSync', () => {
 		expect(ws.send).not.toHaveBeenCalled();
 	});
 
-	it('sends nothing when the state has no drift checker (older embedder)', async () => {
-		const server = makeServer();
-		registerState(server, { hasChangedSinceStartup: undefined });
-		const ws = makeSocket();
-
-		expect(await maybeSendConnectCssSync(server, ws)).toBe(false);
-		expect(ws.send).not.toHaveBeenCalled();
-	});
-
-	it('syncs conservatively when the drift check throws (idempotent to reapply)', async () => {
-		const server = makeServer();
-		registerState(server, {
-			hasChangedSinceStartup: vi.fn(async () => {
-				throw new Error('preprocess failed');
-			}),
-		});
-		const ws = makeSocket();
-
-		expect(await maybeSendConnectCssSync(server, ws)).toBe(true);
-		expect(ws.send).toHaveBeenCalledTimes(1);
-	});
-
-	it('skips sockets that are no longer open', async () => {
+	it('skips sockets that are no longer open (checked after the drift compile)', async () => {
 		const server = makeServer();
 		registerState(server);
 		const ws = makeSocket(3);
@@ -100,12 +78,14 @@ describe('maybeSendConnectCssSync', () => {
 		expect(ws.send).not.toHaveBeenCalled();
 	});
 
-	it('skips an app.css path outside the project root', async () => {
+	it('skips an app.css path outside the project root without running the drift check', async () => {
 		const server = makeServer('/proj');
-		registerState(server, { path: '/elsewhere/app.css' });
+		const refresh = vi.fn(async () => ({ changed: false, changedSinceStartup: true }));
+		registerState(server, { path: '/elsewhere/app.css', refresh });
 		const ws = makeSocket();
 
 		expect(await maybeSendConnectCssSync(server, ws)).toBe(false);
+		expect(refresh).not.toHaveBeenCalled();
 		expect(ws.send).not.toHaveBeenCalled();
 	});
 

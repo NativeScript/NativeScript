@@ -160,6 +160,11 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).toContain('import("http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js")');
 		expect(code).toContain('import("http://192.168.1.5:5173/ns/core")');
 		expect(code).toContain('installHttpCoreCssSupport');
+		// CSS updates delegate to the shared client css-handler (single
+		// fetch+apply pipeline, honors per-update tags); the inline path is
+		// only a global-updates fallback when that import fails.
+		expect(code).toContain('import("http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js")');
+		expect(code).toContain('skipped component CSS update');
 		expect(code).not.toContain('__nsApplyStyleUpdate');
 		// The JS hot registry installs before the entry graph evaluates.
 		expect(code).toContain('installNsHotRegistry');

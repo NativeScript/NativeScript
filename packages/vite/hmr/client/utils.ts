@@ -200,6 +200,16 @@ interface PendingFetch {
 export const pendingModuleFetches = new Map<number, PendingFetch>();
 export const moduleFetchCache = new Map<string, string>(); // spec -> resolved HTTP URL
 
+/**
+ * Canonical client-side HTTP-origin resolution for device fetches: a
+ * message-supplied origin wins, then the origin the entry runtime installed,
+ * then derivation from the HMR websocket URL (which itself has a localhost
+ * fallback). Never returns an empty string.
+ */
+export function resolveHmrHttpOrigin(preferred?: unknown): string {
+	return (typeof preferred === 'string' && preferred) || getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+}
+
 export function deriveHttpOrigin(wsUrl: string | undefined) {
 	try {
 		// Prefer explicit HTTP origin provided by entry-runtime when available
