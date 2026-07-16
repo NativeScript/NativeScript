@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -728,11 +729,17 @@ public class Utils {
 	}
 
 	public static String stringToUpperCase(final String value) {
-		return value.toUpperCase();
+		if (value == null || value.isEmpty()) {
+			return value;
+		}
+		return value.toUpperCase(Locale.getDefault());
 	}
 
 	public static String stringToLowerCase(final String value) {
-		return value.toLowerCase();
+		if (value == null || value.isEmpty()) {
+			return value;
+		}
+		return value.toLowerCase(Locale.getDefault());
 	}
 
 	public static String capitalizeString(final String value) {
@@ -740,7 +747,7 @@ public class Utils {
 			return value;
 		}
 
-		final char[] buffer = value.toLowerCase().toCharArray();
+		final char[] buffer = value.toLowerCase(Locale.getDefault()).toCharArray();
 		boolean capitalizeNext = true;
 
 		for (int i = 0; i < buffer.length; i++) {
