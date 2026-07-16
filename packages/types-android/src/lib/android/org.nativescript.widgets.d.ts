@@ -785,6 +785,9 @@ declare module org {
 				public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
                 public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
                 public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window): void;
+                public static stringToUpperCase(value: string): string;
+                public static stringToLowerCase(value: string): string;
+                public static capitalizeString(value: string): string;
                 public static ignoreEdgeToEdgeOnOlderDevices: boolean;
 				public constructor();
 			}
