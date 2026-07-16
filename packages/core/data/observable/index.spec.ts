@@ -55,5 +55,48 @@ describe('Observable', () => {
 			expect(callCount1).toBe(1);
 			expect(callCount2).toBe(1);
 		});
+
+		it('fires just once when registered after a listener that removes itself', () => {
+			const observable = new Observable();
+			let selfRemovingCallCount = 0;
+			let onceCallCount = 0;
+			let regularCallCount = 0;
+			const selfRemovingHandler = function () {
+				selfRemovingCallCount++;
+				observable.off('test', selfRemovingHandler);
+			};
+			const onceHandler = function () {
+				onceCallCount++;
+			};
+			const regularHandler = function () {
+				regularCallCount++;
+			};
+			observable.on('test', selfRemovingHandler);
+			observable.once('test', onceHandler);
+			observable.on('test', regularHandler);
+			observable.notify({ eventName: 'test', object: observable });
+			observable.notify({ eventName: 'test', object: observable });
+			expect(selfRemovingCallCount).toBe(1);
+			expect(onceCallCount).toBe(1);
+			expect(regularCallCount).toBe(2);
+		});
+
+		it('fires each of two once listeners just once', () => {
+			const observable = new Observable();
+			let callCount1 = 0;
+			let callCount2 = 0;
+			observable.once('test', function () {
+				callCount1++;
+			});
+			observable.once('test', function () {
+				callCount2++;
+			});
+			observable.notify({ eventName: 'test', object: observable });
+			expect(callCount1).toBe(1);
+			expect(callCount2).toBe(1);
+			observable.notify({ eventName: 'test', object: observable });
+			expect(callCount1).toBe(1);
+			expect(callCount2).toBe(1);
+		});
 	});
 });
