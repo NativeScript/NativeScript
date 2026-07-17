@@ -304,6 +304,58 @@ describe('css-selector', () => {
 		expect(selectors.map((sel) => sel.toString().trim())).toEqual(['button', '.login', 'button.login', '#main']);
 	});
 
+	describe('repeated query consistency', () => {
+		it('returns identical results for repeated and structurally identical queries', () => {
+			const { selectorScope } = create(`
+		        button { color: red; }
+		        .login { color: blue; }
+		        #main { color: yellow; }
+		    `);
+
+			const nodeA = { cssType: 'button', cssClasses: new Set(['login']) };
+			const nodeB = { cssType: 'button', cssClasses: new Set(['login']) };
+
+			const first = selectorScope.query(nodeA).selectors.map((sel) => sel.toString());
+			const repeat = selectorScope.query(nodeA).selectors.map((sel) => sel.toString());
+			const structural = selectorScope.query(nodeB).selectors.map((sel) => sel.toString());
+
+			expect(first.length).toBe(2);
+			expect(repeat).toEqual(first);
+			expect(structural).toEqual(first);
+		});
+
+		it('reflects class changes on the same node between queries', () => {
+			const { selectorScope } = create(`
+		        button { color: red; }
+		        .login { color: blue; }
+		    `);
+
+			const node = { cssType: 'button', cssClasses: new Set<string>() };
+			expect(selectorScope.query(node).selectors.length).toBe(1);
+
+			node.cssClasses.add('login');
+			expect(selectorScope.query(node).selectors.length).toBe(2);
+
+			node.cssClasses.delete('login');
+			expect(selectorScope.query(node).selectors.length).toBe(1);
+		});
+
+		it('does not accumulate media-query selectors across repeated queries', () => {
+			const { widthDIPs } = Screen.mainScreen;
+			const { selectorScope } = create(`
+				button { color: red; }
+				@media only screen and (max-width: ${widthDIPs}) {
+					button { color: green; }
+				}
+		    `);
+
+			const node = { cssType: 'button' };
+			expect(selectorScope.query(node).selectors.length).toBe(2);
+			expect(selectorScope.query(node).selectors.length).toBe(2);
+			expect(selectorScope.query(node).selectors.length).toBe(2);
+		});
+	});
+
 	describe('media queries', () => {
 		const { widthDIPs } = Screen.mainScreen;
 
