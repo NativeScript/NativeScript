@@ -451,26 +451,29 @@ export class Observable {
 		}
 
 		if (length === 1) {
-			const index = 0;
-			this._handleListenerEntry<T>(observers[index], index, observers, data);
+			this._handleListenerEntry<T>(observers[0], observers, data);
 		} else {
 			// This keeps a copy of observers list to ensure concurrency
 			const observersCp = observers.slice();
 
 			for (let i = 0; i < length; i++) {
 				const entry = observersCp[i];
-				this._handleListenerEntry<T>(entry, i, observers, data);
+				this._handleListenerEntry<T>(entry, observers, data);
 			}
 		}
 	}
 
-	private static _handleListenerEntry<T extends EventData>(entry: ListenerEntry, index: number, observers: Array<ListenerEntry>, data: T): void {
+	private static _handleListenerEntry<T extends EventData>(entry: ListenerEntry, observers: Array<ListenerEntry>, data: T): void {
 		if (!entry || entry._isRemoved) {
 			return;
 		}
 
 		if (entry.once) {
-			observers.splice(index, 1);
+			entry._isRemoved = true;
+			const index = observers.indexOf(entry);
+			if (index !== -1) {
+				observers.splice(index, 1);
+			}
 		}
 
 		const returnValue = entry.thisArg ? entry.callback.call(entry.thisArg, data) : entry.callback(data);
