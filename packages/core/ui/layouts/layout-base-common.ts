@@ -138,14 +138,18 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 	public eachLayoutChild(callback: (child: View, isLast: boolean) => void): void {
 		let lastChild: View = null;
 
-		this.eachChildView((cv) => {
-			cv._eachLayoutView((lv) => {
-				if (lastChild && !lastChild.isCollapsed) {
-					callback(lastChild, false);
-				}
+		// Single shared callback instead of one closure per child — this runs on
+		// every measure and every layout pass
+		const trackLayoutView = (lv: View) => {
+			if (lastChild && !lastChild.isCollapsed) {
+				callback(lastChild, false);
+			}
 
-				lastChild = lv;
-			});
+			lastChild = lv;
+		};
+
+		this.eachChildView((cv) => {
+			cv._eachLayoutView(trackLayoutView);
 
 			return true;
 		});

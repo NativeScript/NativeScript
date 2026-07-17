@@ -304,6 +304,32 @@ const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
  *
  * @nsView ViewBase
  */
+// Shared traversal callbacks for onLoaded/onUnloaded so each load/unload pass
+// does not allocate a fresh closure per view. Dispatching through the child's
+// parent preserves loadView/unloadView overrides (e.g. TabView); the fallback
+// mirrors the base implementations for the theoretical parentless case.
+const loadedTraversalCallback = (child: ViewBase): boolean => {
+	const parent = child.parent;
+	if (parent) {
+		parent.loadView(child);
+	} else if (!child.isLoaded) {
+		child.callLoaded();
+	}
+
+	return true;
+};
+
+const unloadedTraversalCallback = (child: ViewBase): boolean => {
+	const parent = child.parent;
+	if (parent) {
+		parent.unloadView(child);
+	} else if (child.isLoaded) {
+		child.callUnloaded();
+	}
+
+	return true;
+};
+
 export abstract class ViewBase extends Observable {
 	/**
 	 * String value used when hooking to loaded event.
@@ -722,11 +748,7 @@ export abstract class ViewBase extends Observable {
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
-		this.eachChild((child) => {
-			this.loadView(child);
-
-			return true;
-		});
+		this.eachChild(loadedTraversalCallback);
 
 		this._emit('loaded');
 	}
@@ -740,11 +762,7 @@ export abstract class ViewBase extends Observable {
 
 		this._suspendNativeUpdates(SuspendType.Loaded);
 
-		this.eachChild((child) => {
-			this.unloadView(child);
-
-			return true;
-		});
+		this.eachChild(unloadedTraversalCallback);
 
 		this._isLoaded = false;
 		this._cssState.onUnloaded();

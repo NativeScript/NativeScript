@@ -1177,8 +1177,7 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
 
 				if (isMatchingAllQueries) {
-					const mediaQuerySelectors = selectorScope.getSelectorCandidates(node);
-					selectors.push(...mediaQuerySelectors);
+					appendSelectorCandidates(selectors, selectorScope.getSelectorCandidates(node));
 				}
 			}
 		}

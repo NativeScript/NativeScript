@@ -718,34 +718,44 @@ export class CssState {
 				cssExpsProperties[property] = value;
 				continue;
 			}
-			delete oldProperties[property];
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
-			}
 			if (isCssVariable(property)) {
+				// Scoped css-variables were reset above, so always re-register them
+				// even when the value is unchanged
+				delete oldProperties[property];
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
+				continue;
+			}
+			const unchanged = property in oldProperties && oldProperties[property] === value;
+			delete oldProperties[property];
+			if (unchanged) {
+				// Skip unchanged values
 				continue;
 			}
 			valuesToApply[property] = value;
 		}
 		//we need to parse CSS vars first before evaluating css expressions
 		for (const property in cssExpsProperties) {
-			delete oldProperties[property];
 			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
-			}
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
 			}
 			if (isCssVariable(property)) {
+				// Scoped css-variables were reset above, so always re-register them
+				// even when the value is unchanged
+				delete oldProperties[property];
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
-			}
 
+				valuesToApply[property] = value;
+				continue;
+			}
+			const unchanged = property in oldProperties && oldProperties[property] === value;
+			delete oldProperties[property];
+			if (unchanged) {
+				// Skip unchanged values
+				continue;
+			}
 			valuesToApply[property] = value;
 		}
 
