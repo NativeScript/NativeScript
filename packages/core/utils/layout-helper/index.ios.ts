@@ -1,6 +1,16 @@
 import * as layoutCommon from './layout-helper-common';
 import { ios as iosUtils } from '../native-helper';
 
+// Cache the screen scale to avoid repeated marshalling calls into UIKit
+// (window resolution + screen + scale) on every dp/px conversion during
+// measure and layout passes. The scale of the device's main screen never
+// changes at runtime, and `Screen.mainScreen` relies on the same invariant.
+let mainScreenScale = 0;
+
+function getMainScreenScale(): number {
+	return mainScreenScale || (mainScreenScale = iosUtils.getMainScreen().scale);
+}
+
 export namespace layout {
 	// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Objective C
 	// TODO: While this boosts the performance it is error-prone in case Google changes these constants
@@ -37,15 +47,15 @@ export namespace layout {
 	}
 
 	export function getDisplayDensity(): number {
-		return iosUtils.getMainScreen().scale;
+		return getMainScreenScale();
 	}
 
 	export function toDevicePixels(value: number): number {
-		return value * iosUtils.getMainScreen().scale;
+		return value * getMainScreenScale();
 	}
 
 	export function toDeviceIndependentPixels(value: number): number {
-		return value / iosUtils.getMainScreen().scale;
+		return value / getMainScreenScale();
 	}
 
 	export function round(value: number) {

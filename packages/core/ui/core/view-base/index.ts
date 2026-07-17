@@ -174,7 +174,7 @@ export function getViewByDomId(view: ViewBase, domId: number): ViewBase {
 
 	let retVal: ViewBase;
 	const descendantsCallback = function (child: ViewBase): boolean {
-		if (view._domId === domId) {
+		if (child._domId === domId) {
 			retVal = child;
 
 			// break the iteration by returning false
@@ -842,16 +842,18 @@ export abstract class ViewBase extends Observable {
 		highlighted: ['active', 'pressed'],
 	};
 
-	private getAllAliasedStates(name: string): string[] {
-		const allStates: string[] = [name];
-
-		if (name in this.pseudoClassAliases) {
-			for (let i = 0, length = this.pseudoClassAliases[name].length; i < length; i++) {
-				allStates.push(this.pseudoClassAliases[name][i]);
-			}
+	private addSinglePseudoClass(name: string): void {
+		if (!this.cssPseudoClasses.has(name)) {
+			this.cssPseudoClasses.add(name);
+			this.notifyPseudoClassChanged(name);
 		}
+	}
 
-		return allStates;
+	private deleteSinglePseudoClass(name: string): void {
+		if (this.cssPseudoClasses.has(name)) {
+			this.cssPseudoClasses.delete(name);
+			this.notifyPseudoClassChanged(name);
+		}
 	}
 
 	/**
@@ -861,11 +863,12 @@ export abstract class ViewBase extends Observable {
 	 */
 	@profile
 	public addPseudoClass(name: string): void {
-		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0, length = allStates.length; i < length; i++) {
-			if (!this.cssPseudoClasses.has(allStates[i])) {
-				this.cssPseudoClasses.add(allStates[i]);
-				this.notifyPseudoClassChanged(allStates[i]);
+		this.addSinglePseudoClass(name);
+
+		const aliases = this.pseudoClassAliases[name];
+		if (aliases) {
+			for (let i = 0, length = aliases.length; i < length; i++) {
+				this.addSinglePseudoClass(aliases[i]);
 			}
 		}
 	}
@@ -877,11 +880,12 @@ export abstract class ViewBase extends Observable {
 	 */
 	@profile
 	public deletePseudoClass(name: string): void {
-		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0, length = allStates.length; i < length; i++) {
-			if (this.cssPseudoClasses.has(allStates[i])) {
-				this.cssPseudoClasses.delete(allStates[i]);
-				this.notifyPseudoClassChanged(allStates[i]);
+		this.deleteSinglePseudoClass(name);
+
+		const aliases = this.pseudoClassAliases[name];
+		if (aliases) {
+			for (let i = 0, length = aliases.length; i < length; i++) {
+				this.deleteSinglePseudoClass(aliases[i]);
 			}
 		}
 	}
@@ -1606,10 +1610,15 @@ export const classNameProperty = new Property<ViewBase, string>({
 			cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		}
 
-		rootViewsCssClasses.forEach((c) => cssClasses.add(c));
+		for (let i = 0, length = rootViewsCssClasses.length; i < length; i++) {
+			cssClasses.add(rootViewsCssClasses[i]);
+		}
 
 		if (typeof newValue === 'string' && newValue !== '') {
-			newValue.split(' ').forEach((c) => cssClasses.add(c));
+			const classes = newValue.split(' ');
+			for (let i = 0, length = classes.length; i < length; i++) {
+				cssClasses.add(classes[i]);
+			}
 		}
 
 		view._onCssStateChange();

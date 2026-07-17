@@ -94,6 +94,13 @@ const _globalEventHandlers: {
 	};
 } = {};
 
+// Tracks how many listeners are registered through the deprecated static
+// event-handling APIs so that `notify` can skip the global-handler lookups
+// entirely in the common case where none are used. The count may overshoot
+// when a `once` global listener is spliced during dispatch — that only causes
+// harmless extra lookups, never skipped notifications.
+let _globalEventHandlersCount = 0;
+
 /**
  * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
  * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
@@ -331,7 +338,9 @@ export class Observable {
 			return;
 		}
 
+		const countBeforeRemoval = entries.length;
 		Observable.innerRemoveEventListener(entries, callback, thisArg);
+		_globalEventHandlersCount -= countBeforeRemoval - entries.length;
 
 		if (!entries.length) {
 			// Clear all entries of this type
@@ -376,6 +385,7 @@ export class Observable {
 		}
 
 		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once });
+		_globalEventHandlersCount++;
 	}
 
 	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
@@ -410,6 +420,17 @@ export class Observable {
 	public notify<T extends Optional<EventData, 'object'>>(data: T): void {
 		data.object = data.object || this;
 		const dataWithObject = data as EventData;
+
+		// Fast path: no listeners registered through the deprecated static
+		// event-handling APIs, so only instance observers need to be notified.
+		if (_globalEventHandlersCount === 0) {
+			const observers = this._observers[data.eventName];
+			if (observers) {
+				Observable._fireEvent(observers, dataWithObject);
+			}
+
+			return;
+		}
 
 		const eventClass = this.constructor.name;
 		this._globalNotify(eventClass, 'First', dataWithObject);
@@ -452,7 +473,7 @@ export class Observable {
 			observers.splice(index, 1);
 		}
 
-		const returnValue = entry.thisArg ? entry.callback.apply(entry.thisArg, [data]) : entry.callback(data);
+		const returnValue = entry.thisArg ? entry.callback.call(entry.thisArg, data) : entry.callback(data);
 
 		// This ensures errors thrown inside asynchronous functions do not get swallowed
 		if (returnValue instanceof Promise) {
@@ -474,7 +495,7 @@ export class Observable {
 	 * @param eventName The name of the event to check for.
 	 */
 	public hasListeners(eventName: string): boolean {
-		return eventName in this._observers;
+		return this._observers[eventName] !== undefined;
 	}
 
 	/**
@@ -511,7 +532,14 @@ export class Observable {
 	private static _indexOfListener(list: Array<ListenerEntry>, callback: (data: EventData) => void, thisArg?: any): number {
 		thisArg = thisArg || undefined;
 
-		return list.findIndex((entry) => entry.callback === callback && entry.thisArg === thisArg);
+		for (let i = 0, length = list.length; i < length; i++) {
+			const entry = list[i];
+			if (entry.callback === callback && entry.thisArg === thisArg) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 }
 
