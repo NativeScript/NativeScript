@@ -306,6 +306,11 @@ export class AttributeSelector extends SimpleSelector {
 		public ignoreCase: boolean,
 	) {
 		super();
+
+		// Normalize once at construction instead of on every match
+		if (ignoreCase && value) {
+			this.value = value.toLowerCase();
+		}
 	}
 	public toString(): string {
 		return `[${this.attribute}${wrap(AttributeSelectorOperator[this.test] ?? this.test)}${this.value || ''}]${wrap(this.combinator)}`;
@@ -326,7 +331,6 @@ export class AttributeSelector extends SimpleSelector {
 
 		if (this.ignoreCase) {
 			attr = attr.toLowerCase();
-			this.value = this.value.toLowerCase();
 		}
 
 		// =
@@ -495,13 +499,30 @@ export class SimpleSelectorSequence extends SimpleSelector {
 		return `${this.selectors.join('')}${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
-		return this.selectors.every((sel) => sel.match(node));
+		const selectors = this.selectors;
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			if (!selectors[i].match(node)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 	public mayMatch(node: Node): boolean {
-		return this.selectors.every((sel) => sel.mayMatch(node));
+		const selectors = this.selectors;
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			if (!selectors[i].mayMatch(node)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		this.selectors.forEach((sel) => sel.trackChanges(node, map));
+		const selectors = this.selectors;
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			selectors[i].trackChanges(node, map);
+		}
 	}
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
 		this.head.lookupSort(sorter, base || this);
@@ -564,22 +585,31 @@ export class ComplexSelector extends SelectorCore {
 	}
 
 	public match(node: Node): boolean {
-		return this.groups.every((group, i) => {
+		const groups = this.groups;
+		for (let i = 0, length = groups.length; i < length; i++) {
+			const group = groups[i];
 			if (i === 0) {
 				node = group.getMatchingNode(node, true);
-
-				return !!node;
+				if (!node) {
+					return false;
+				}
 			} else {
 				let ancestor = node;
+				let matched = false;
 				while ((ancestor = ancestor.parent ?? ancestor._modalParent)) {
 					if ((node = group.getMatchingNode(ancestor, true))) {
-						return true;
+						matched = true;
+						break;
 					}
 				}
 
-				return false;
+				if (!matched) {
+					return false;
+				}
 			}
-		});
+		}
+
+		return true;
 	}
 
 	public mayMatch(node: Node): boolean {
@@ -587,7 +617,10 @@ export class ComplexSelector extends SelectorCore {
 	}
 
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		this.selectors.forEach((sel) => sel.trackChanges(node, map));
+		const selectors = this.selectors;
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			selectors[i].trackChanges(node, map);
+		}
 	}
 
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
@@ -659,8 +692,23 @@ export namespace Selector {
 		}
 
 		public getMatchingNode(node: Node, strict: boolean) {
-			const funcName = strict ? 'match' : 'mayMatch';
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel[funcName](node)) ? node : null;
+			const selectors = this.selectors;
+			for (let i = 0, length = selectors.length; i < length; i++) {
+				if (i !== 0) {
+					node = node.parent;
+				}
+
+				if (!node) {
+					return null;
+				}
+
+				const sel = selectors[i];
+				if (!(strict ? sel.match(node) : sel.mayMatch(node))) {
+					return null;
+				}
+			}
+
+			return node;
 		}
 
 		public match(node: Node): boolean {
@@ -949,28 +997,52 @@ function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
 }
 
+// Media query strings come from parsed stylesheets, so the distinct set is small
+// and stable. Cache the split results as splitting happens on every style query.
+const splitMediaQueryCache = new Map<string, string[]>();
+
+function splitMediaQueryString(mediaQueryString: string): string[] {
+	let mediaQueryStrings = splitMediaQueryCache.get(mediaQueryString);
+	if (!mediaQueryStrings) {
+		mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+		splitMediaQueryCache.set(mediaQueryString, mediaQueryStrings);
+	}
+
+	return mediaQueryStrings;
+}
+
 export function matchMediaQueryString(mediaQueryString: string, cachedQueries: string[]): boolean {
 	// It can be a single or multiple queries in case of nested media queries
-	const mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+	const mediaQueryStrings = splitMediaQueryString(mediaQueryString);
 
-	return mediaQueryStrings.every((mq) => {
-		let isMatching: boolean;
+	for (let i = 0, length = mediaQueryStrings.length; i < length; i++) {
+		const mq = mediaQueryStrings[i];
 
 		// Query has already been validated
 		if (cachedQueries.includes(mq)) {
-			isMatching = true;
-		} else {
-			isMatching = checkIfMediaQueryMatches(mq);
-			if (isMatching) {
-				cachedQueries.push(mq);
-			}
+			continue;
 		}
-		return isMatching;
-	});
+
+		if (!checkIfMediaQueryMatches(mq)) {
+			return false;
+		}
+
+		cachedQueries.push(mq);
+	}
+
+	return true;
 }
 
 interface SelectorMap {
 	[key: string]: SelectorCore[];
+}
+
+function appendSelectorCandidates(candidates: SelectorCore[], selectors: SelectorCore[] | undefined): void {
+	if (selectors) {
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			candidates.push(selectors[i]);
+		}
+	}
 }
 
 export abstract class SelectorScope<T extends Node> implements LookupSorter {
@@ -983,13 +1055,17 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 
 	getSelectorCandidates(node: T) {
 		const { cssClasses, id, cssType } = node;
-		const selectorClasses = [this.universal, this.id[id], this.type[cssType]];
+		const candidates: SelectorCore[] = [];
+
+		appendSelectorCandidates(candidates, this.universal);
+		appendSelectorCandidates(candidates, this.id[id]);
+		appendSelectorCandidates(candidates, this.type[cssType]);
 
 		if (cssClasses && cssClasses.size) {
-			cssClasses.forEach((c) => selectorClasses.push(this.class[c]));
+			cssClasses.forEach((c) => appendSelectorCandidates(candidates, this.class[c]));
 		}
 
-		return selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
+		return candidates;
 	}
 
 	sortById(id: string, sel: SelectorCore): void {

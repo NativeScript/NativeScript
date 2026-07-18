@@ -279,6 +279,31 @@ describe('css-selector', () => {
 		//expect(rule.selectors[0].specificity).toEqual(0);
 	});
 
+	it('attribute selector with case-insensitive flag matches repeatedly', () => {
+		const rule = createOne(`button[testAttr='VaLuE' i] { color: red; }`);
+		const matching = { cssType: 'button', testAttr: 'vAlUe' };
+		const nonMatching = { cssType: 'button', testAttr: 'other' };
+
+		// Run multiple times to ensure matching does not depend on per-match state
+		for (let i = 0; i < 3; i++) {
+			expect(rule.selectors[0].match(matching)).toBe(true);
+			expect(rule.selectors[0].match(nonMatching)).toBe(false);
+		}
+	});
+
+	it('query returns selectors sorted by specificity then position', () => {
+		const { selectorScope } = create(`
+	        button { color: red; }
+	        .login { color: blue; }
+	        button.login { color: green; }
+	        #main { color: yellow; }
+	    `);
+
+		const { selectors } = selectorScope.query({ cssType: 'button', id: 'main', cssClasses: new Set(['login']) });
+		expect(selectors.length).toBe(4);
+		expect(selectors.map((sel) => sel.toString().trim())).toEqual(['button', '.login', 'button.login', '#main']);
+	});
+
 	describe('media queries', () => {
 		const { widthDIPs } = Screen.mainScreen;
 
