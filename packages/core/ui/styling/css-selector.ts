@@ -6,8 +6,6 @@ import { isNullOrUndefined } from '../../utils/types';
 import * as ReworkCSS from '../../css';
 import { checkIfMediaQueryMatches } from '../../media-query-list';
 
-export const MEDIA_QUERY_SEPARATOR = '&&';
-
 /**
  * An interface describing the shape of a type on which the selectors may apply.
  * Note, the ui/core/view.View implements Node.
@@ -830,7 +828,7 @@ export namespace Selector {
 export class RuleSet {
 	public selectors: SelectorCore[];
 	public declarations: Declaration[];
-	public mediaQueryString: string;
+	public mediaQueryString: string | string[];
 	public tag?: string | number;
 	public scopedTag?: string;
 
@@ -997,26 +995,28 @@ function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
 }
 
-// Media query strings come from parsed stylesheets, so the distinct set is small
-// and stable. Cache the split results as splitting happens on every style query.
-const splitMediaQueryCache = new Map<string, string[]>();
-
-function splitMediaQueryString(mediaQueryString: string): string[] {
-	let mediaQueryStrings = splitMediaQueryCache.get(mediaQueryString);
-	if (!mediaQueryStrings) {
-		mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
-		splitMediaQueryCache.set(mediaQueryString, mediaQueryStrings);
+export function matchMediaQueryString(mediaQueryString: string | string[], cachedQueries: string[]): boolean {
+	if (!mediaQueryString) {
+		return false;
 	}
 
-	return mediaQueryStrings;
-}
+	if (typeof mediaQueryString === 'string') {
+		// Query has already been validated
+		if (cachedQueries.includes(mediaQueryString)) {
+			return true;
+		}
 
-export function matchMediaQueryString(mediaQueryString: string, cachedQueries: string[]): boolean {
-	// It can be a single or multiple queries in case of nested media queries
-	const mediaQueryStrings = splitMediaQueryString(mediaQueryString);
+		const result = checkIfMediaQueryMatches(mediaQueryString);
+		if (result) {
+			cachedQueries.push(mediaQueryString);
+			return result;
+		}
 
-	for (let i = 0, length = mediaQueryStrings.length; i < length; i++) {
-		const mq = mediaQueryStrings[i];
+		return false;
+	}
+
+	for (let i = 0, length = mediaQueryString.length; i < length; i++) {
+		const mq = mediaQueryString[i];
 
 		// Query has already been validated
 		if (cachedQueries.includes(mq)) {
@@ -1097,15 +1097,15 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 }
 
 export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
-	private _mediaQueryString: string;
+	private _mediaQueryString: string | string[];
 
-	constructor(mediaQueryString: string) {
+	constructor(mediaQueryString: string | string[]) {
 		super();
 
 		this._mediaQueryString = mediaQueryString;
 	}
 
-	get mediaQueryString(): string {
+	get mediaQueryString(): string | string[] {
 		return this._mediaQueryString;
 	}
 }
@@ -1119,7 +1119,7 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		this.lookupRulesets(rulesets);
 	}
 
-	private createMediaQuerySelectorScope(mediaQueryString: string): MediaQuerySelectorScope<T> {
+	private createMediaQuerySelectorScope(mediaQueryString: string | string[]): MediaQuerySelectorScope<T> {
 		const selectorScope = new MediaQuerySelectorScope(mediaQueryString);
 		selectorScope.position = this.position;
 
