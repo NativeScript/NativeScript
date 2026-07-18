@@ -5,7 +5,7 @@ import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariab
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, matchMediaQueryString } from './css-selector';
 import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -317,7 +317,7 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 	}
 }
 
-export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string): void {
+export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string | string[]): void {
 	for (const node of nodes) {
 		if (isKeyframe(node)) {
 			const keyframeRule: Keyframes = {
@@ -328,8 +328,19 @@ export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], key
 
 			keyframes.push(keyframeRule);
 		} else if (isMedia(node)) {
-			// Media query is composite in the case of nested media queries
-			const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
+			// Media query can be an array of strings in case of nested queries
+			let compositeMediaQuery: string | string[];
+
+			if (mediaQueryString) {
+				if (typeof mediaQueryString === 'string') {
+					compositeMediaQuery = [mediaQueryString, node.media];
+				} else {
+					mediaQueryString.push(node.media);
+					compositeMediaQuery = mediaQueryString;
+				}
+			} else {
+				compositeMediaQuery = node.media;
+			}
 
 			_populateRules(node.rules, rulesets, keyframes, compositeMediaQuery);
 		} else if (isRule(node)) {
