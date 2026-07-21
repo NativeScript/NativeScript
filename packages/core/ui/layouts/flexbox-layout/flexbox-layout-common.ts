@@ -3,7 +3,7 @@ import { View, CSSType } from '../../core/view';
 import { CssProperty, ShorthandProperty, makeParser, makeValidator } from '../../core/properties';
 import { unsetValue } from '../../core/properties/property-shared';
 import { Style } from '../../styling/style';
-import { CoreTypes } from '../../enums';
+import { CoreTypes } from '../../../core-types';
 
 export type Basis = 'auto' | number;
 

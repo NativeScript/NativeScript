@@ -2,7 +2,7 @@ import { LayoutBase } from '../layout-base';
 import { Style } from '../../styling/style';
 import { CssProperty } from '../../core/properties';
 import { View } from '../../core/view';
-import { CoreTypes } from '../../enums';
+import { CoreTypes } from '../../../core-types';
 
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 export type FlexWrap = 'nowrap' | 'wrap' | 'wrap-reverse';

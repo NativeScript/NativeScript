@@ -2,7 +2,7 @@ import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Flex
 import { View } from '../../core/view';
 import { Position } from '../../core/view/view-interfaces';
 import { layout } from '../../../utils';
-import { CoreTypes } from '../../enums';
+import { CoreTypes } from '../../../core-types';
 
 export * from './flexbox-layout-common';
 
