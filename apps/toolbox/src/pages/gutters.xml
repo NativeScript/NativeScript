@@ -1,6 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
   <Page.actionBar>
-    <ActionBar title="Edge to Edge" class="action-bar">
+    <ActionBar title="Gutters" class="action-bar">
     </ActionBar>
   </Page.actionBar>
   <ScrollView>
