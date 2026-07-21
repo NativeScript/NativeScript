@@ -3,6 +3,7 @@ import { View, CSSType } from '../../core/view';
 import { CssProperty, ShorthandProperty, makeParser, makeValidator } from '../../core/properties';
 import { unsetValue } from '../../core/properties/property-shared';
 import { Style } from '../../styling/style';
+import { CoreTypes } from '../../enums';
 
 export type Basis = 'auto' | number;
 
@@ -179,6 +180,27 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 	}
 	set alignContent(value: AlignContent) {
 		this.style.alignContent = value;
+	}
+
+	get gap(): string | CoreTypes.LengthType {
+		return this.style.gap;
+	}
+	set gap(value: string | CoreTypes.LengthType) {
+		this.style.gap = value;
+	}
+
+	get rowGap(): CoreTypes.LengthType {
+		return this.style.rowGap;
+	}
+	set rowGap(value: CoreTypes.LengthType) {
+		this.style.rowGap = value;
+	}
+
+	get columnGap(): CoreTypes.LengthType {
+		return this.style.columnGap;
+	}
+	set columnGap(value: CoreTypes.LengthType) {
+		this.style.columnGap = value;
 	}
 
 	public static setOrder(view: View, order: number) {

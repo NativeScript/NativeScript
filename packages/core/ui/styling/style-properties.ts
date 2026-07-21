@@ -1,11 +1,10 @@
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
-import { unsetValue, isCssWideKeyword } from '../core/properties/property-shared';
+import { unsetValue } from '../core/properties/property-shared';
 import { Style } from './style';
 
 import { Color } from '../../color';
 import { Font, parseFont, FontStyle, FontStyleType, FontWeight, FontWeightType, FontVariationSettings, FontVariationSettingsType } from './font';
 import { Background } from './background';
-import { layout } from '../../utils';
 
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
@@ -25,76 +24,9 @@ interface ShorthandPositioning {
 	left: string;
 }
 
-function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
-function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
-function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType | CoreTypes.LengthDipUnit): boolean {
-	if (a == 'auto' || isCssWideKeyword(a)) {
-		return b == 'auto' || isCssWideKeyword(b);
-	}
-
-	if (b == 'auto' || isCssWideKeyword(b)) {
-		return false;
-	}
-
-	if (typeof a === 'number') {
-		if (typeof b === 'number') {
-			return a == b;
-		}
-		if (!b) {
-			return false;
-		}
-		return (b as CoreTypes.LengthDipUnit).unit == 'dip' && a == (b as CoreTypes.LengthDipUnit).value;
-	}
-
-	if (typeof b === 'number') {
-		return a ? (a as CoreTypes.LengthDipUnit).unit == 'dip' && (a as CoreTypes.LengthDipUnit).value == b : false;
-	}
-	if (!a || !b) {
-		return false;
-	}
-	return (a as CoreTypes.LengthDipUnit).value == (b as CoreTypes.LengthDipUnit).value && (a as CoreTypes.LengthDipUnit).unit == (b as CoreTypes.LengthDipUnit).unit;
-}
-
-function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
-	if (length == 'auto' || isCssWideKeyword(length)) {
-		return 'auto';
-	}
-
-	if (typeof length === 'number') {
-		return length.toString();
-	}
-
-	let val = (length as CoreTypes.LengthPercentUnit).value;
-	if ((length as CoreTypes.LengthPercentUnit).unit === '%') {
-		val *= 100;
-	}
-
-	return val + (length as CoreTypes.LengthPercentUnit).unit;
-}
-
-function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length == 'auto' || isCssWideKeyword(length)) {
-		return auto;
-	}
-	if (typeof length === 'number') {
-		return layout.round(layout.toDevicePixels(length));
-	}
-	if (!length) {
-		return auto;
-	}
-	// @ts-ignore
-	switch (length.unit) {
-		case 'px':
-			// @ts-ignore
-			return layout.round(length.value);
-		case '%':
-			// @ts-ignore
-			return layout.round(parentAvailableWidth * length.value);
-		case 'dip':
-		default:
-			// @ts-ignore
-			return layout.round(layout.toDevicePixels(length.value));
-	}
+interface ShorthandGap {
+	row: string;
+	col: string;
 }
 
 function isNonNegativeFiniteNumber(value: number): boolean {
@@ -166,6 +98,28 @@ function parseShorthandPositioning(value: string): ShorthandPositioning {
 		right: right,
 		bottom: bottom,
 		left: left,
+	};
+}
+
+function parseShorthandGap(value: string): ShorthandGap {
+	const arr = value.split(/[ ,]+/);
+
+	let row: string;
+	let col: string;
+
+	if (arr.length === 1) {
+		row = arr[0];
+		col = arr[0];
+	} else if (arr.length === 2) {
+		row = arr[0];
+		col = arr[1];
+	} else {
+		throw new Error('Expected 1 or 2 parameters. Actual: ' + value);
+	}
+
+	return {
+		row,
+		col,
 	};
 }
 
@@ -252,6 +206,22 @@ function convertToPaddings(value: string | CoreTypes.LengthType): [CssProperty<S
 			[paddingRightProperty, value],
 			[paddingBottomProperty, value],
 			[paddingLeftProperty, value],
+		];
+	}
+}
+
+function convertToGaps(value: string | CoreTypes.LengthType): [CssProperty<Style, CoreTypes.LengthType>, CoreTypes.LengthType][] {
+	if (typeof value === 'string' && value !== 'auto') {
+		const gaps = parseShorthandGap(value);
+
+		return [
+			[rowGapProperty, Length.parse(gaps.row)],
+			[columnGapProperty, Length.parse(gaps.col)],
+		];
+	} else {
+		return [
+			[rowGapProperty, value],
+			[columnGapProperty, value],
 		];
 	}
 }
@@ -525,6 +495,56 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	valueConverter: Length.parse,
 });
 paddingBottomProperty.register(Style);
+
+const gapProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
+	name: 'gap',
+	cssName: 'gap',
+	getter: function (this: Style) {
+		if (Length.equals(this.rowGap, this.columnGap)) {
+			return this.rowGap;
+		}
+
+		return `${Length.convertToString(this.rowGap)} ${PercentLength.convertToString(this.columnGap)}`;
+	},
+	converter: convertToGaps,
+});
+gapProperty.register(Style);
+
+export const rowGapProperty = new CssProperty<Style, CoreTypes.LengthType>({
+	name: 'rowGap',
+	cssName: 'row-gap',
+	defaultValue: 0,
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
+	valueChanged: (target, oldValue, newValue) => {
+		const view = target.viewRef.get();
+		if (view) {
+			view.effectiveRowGap = Length.toDevicePixels(newValue, 0);
+		} else {
+			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
+		}
+	},
+});
+rowGapProperty.register(Style);
+
+export const columnGapProperty = new CssProperty<Style, CoreTypes.LengthType>({
+	name: 'columnGap',
+	cssName: 'column-gap',
+	defaultValue: 0,
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
+	valueChanged: (target, oldValue, newValue) => {
+		const view = target.viewRef.get();
+		if (view) {
+			view.effectiveColumnGap = Length.toDevicePixels(newValue, 0);
+		} else {
+			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
+		}
+	},
+});
+columnGapProperty.register(Style);
 
 export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.HorizontalAlignmentType>({
 	name: 'horizontalAlignment',

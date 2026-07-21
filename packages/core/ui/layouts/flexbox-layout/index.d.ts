@@ -68,6 +68,24 @@ export class FlexboxLayout extends LayoutBase {
 	 * @nsProperty
 	 */
 	public alignContent: AlignContent;
+	/**
+	 * Gets or sets the gaps between rows and columns
+	 *
+	 * @nsProperty
+	 */
+	public gap: string | CoreTypes.LengthType;
+	/**
+	 * Gets or sets the gap between rows
+	 *
+	 * @nsProperty
+	 */
+	public rowGap: CoreTypes.LengthType;
+	/**
+	 * Gets or sets the gap between columns
+	 *
+	 * @nsProperty
+	 */
+	public columnGap: CoreTypes.LengthType;
 
 	public static setOrder(view: View, order: number);
 	public static getOrder(view: View): number;
