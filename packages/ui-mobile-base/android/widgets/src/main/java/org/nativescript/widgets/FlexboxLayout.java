@@ -2005,7 +2005,10 @@ public class FlexboxLayout extends LayoutBase {
 	}
 
 	public void setRowGap(int rowGap) {
-		mRowGap = rowGap;
+		if (mRowGap != rowGap) {
+			mRowGap = rowGap;
+			requestLayout();
+		}
 	}
 
 	public int getColumnGap() {
@@ -2013,7 +2016,10 @@ public class FlexboxLayout extends LayoutBase {
 	}
 
 	public void setColumnGap(int columnGap) {
-		mColumnGap = columnGap;
+		if (mColumnGap != columnGap) {
+			mColumnGap = columnGap;
+			requestLayout();
+		}
 	}
 
 	/**
