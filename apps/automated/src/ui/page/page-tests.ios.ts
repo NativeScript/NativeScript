@@ -5,6 +5,23 @@ import { addLabelToPage } from './page-tests-common';
 
 export * from './page-tests-common';
 
+export function test_enableSwipeBackNavigation_updates_the_native_gesture() {
+	const page = new Page();
+	addLabelToPage(page);
+	helper.navigateWithHistory(() => page);
+
+	const gesture = page.ios.navigationController.interactivePopGestureRecognizer;
+	TKUnit.assertTrue(gesture.enabled, 'Swipe-back gesture should initially be enabled.');
+
+	page.enableSwipeBackNavigation = false;
+	TKUnit.assertFalse(gesture.enabled, 'Swipe-back gesture should be disabled after updating the Page property.');
+
+	page.enableSwipeBackNavigation = true;
+	TKUnit.assertTrue(gesture.enabled, 'Swipe-back gesture should be re-enabled after updating the Page property.');
+
+	helper.goBack();
+}
+
 export function test_NavigateToNewPage_InnerControl() {
 	var testPage: Page;
 	var pageFactory = function (): Page {

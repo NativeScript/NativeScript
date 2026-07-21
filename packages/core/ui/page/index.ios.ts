@@ -2,7 +2,7 @@ import { isAccessibilityServiceEnabled } from '../../application';
 import type { Frame } from '../frame';
 import { BackstackEntry, NavigationType } from '../frame/frame-interfaces';
 import { View, IOSHelper } from '../core/view';
-import { PageBase, actionBarHiddenProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from './page-common';
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils/layout-helper';
@@ -575,8 +575,6 @@ export class Page extends PageBase {
 	}
 
 	[actionBarHiddenProperty.setNative](value: boolean) {
-		this._updateEnableSwipeBackNavigation(value);
-
 		// Invalidate all inner controller.
 		invalidateTopmostController(this.viewController);
 
@@ -585,6 +583,10 @@ export class Page extends PageBase {
 			// Update nav-bar visibility with disabled animations
 			frame._updateActionBar(this, true);
 		}
+	}
+
+	[enableSwipeBackNavigationProperty.setNative](value: boolean) {
+		this._updateEnableSwipeBackNavigation(value);
 	}
 
 	public accessibilityScreenChanged(refocus = false): void {
