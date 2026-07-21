@@ -211,19 +211,27 @@ function convertToPaddings(value: string | CoreTypes.LengthType): [CssProperty<S
 }
 
 function convertToGaps(value: string | CoreTypes.LengthType): [CssProperty<Style, CoreTypes.LengthType>, CoreTypes.LengthType][] {
-	if (typeof value === 'string' && value !== 'auto') {
-		const gaps = parseShorthandGap(value);
+	let rowGap: CoreTypes.LengthType;
+	let colGap: CoreTypes.LengthType;
 
-		return [
-			[rowGapProperty, Length.parse(gaps.row)],
-			[columnGapProperty, Length.parse(gaps.col)],
-		];
+	if (typeof value === 'string' && value !== 'auto') {
+		if (value.length) {
+			const gaps = parseShorthandGap(value);
+			rowGap = Length.parse(gaps.row);
+			colGap = Length.parse(gaps.col);
+		} else {
+			rowGap = 0;
+			colGap = 0;
+		}
 	} else {
-		return [
-			[rowGapProperty, value],
-			[columnGapProperty, value],
-		];
+		rowGap = value;
+		colGap = value;
 	}
+
+	return [
+		[rowGapProperty, rowGap],
+		[columnGapProperty, colGap],
+	];
 }
 
 function convertToTransform(value: string): [CssAnimationProperty<any, any>, any][] {
