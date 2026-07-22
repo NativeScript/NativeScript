@@ -1,5 +1,4 @@
 import { Color } from '../../../../color';
-import { Trace } from '../../../../trace';
 import { SDK_VERSION } from '../../../../utils/constants';
 
 export * from './view-helper-common';
