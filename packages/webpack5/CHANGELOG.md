@@ -1,3 +1,7 @@
+## 5.0.38 (2026-07-22)
+
+This was a version bump only for webpack5 to align it with other projects, there were no code changes.
+
 ## 5.0.37 (2026-07-21)
 
 This was a version bump only for webpack5 to align it with other projects, there were no code changes.
