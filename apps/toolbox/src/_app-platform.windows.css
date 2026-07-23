@@ -1,0 +1,59 @@
+/* Import theme rules for Windows and include additional core rules so Windows gets the same
+	 look as other platforms without modifying the NativeScript runtime. */
+@import '../../../node_modules/nativescript-theme-core/css/core.light.windows.css';
+
+/* Only include the Windows-specific theme file here. Importing iOS/Android theme
+	files in the Windows platform CSS can introduce conflicting rules and
+	unexpected colors; platform-specific CSS should be kept separate. */
+
+/* Fallbacks / platform-specific tweaks for Windows host environments */
+
+/* Ensure pages default to white background like the theme */
+.page, Page {
+	background-color: #fff;
+}
+
+/* Visibility helper used across the theme */
+.invisible {
+	visibility: collapse;
+}
+
+/* h-full is referenced in markup but was never defined; map it to full height so a
+   ScrollView inside an auto-sized StackLayout gets a bounded viewport and can scroll. */
+.h-full {
+	height: 100%;
+}
+
+/* Simple shadow/gradient fallbacks — some Windows hosts may not fully support composition */
+.shadow {
+	box-shadow: 0 2 6 rgba(0,0,0,0.2);
+	border-radius: 4;
+}
+.gradient {
+	background: linear-gradient(to bottom, #f12711, #f5af19);
+}
+
+/* Make list items readable on Windows hosts */
+.list-group .list-group-item {
+	padding: 16;
+	color: #212121;
+}
+
+/* TabView / SegmentedBar defaults */
+.tab-view {
+	selected-color: #30bcff;
+	tabs-background-color: #fff;
+}
+.tab-view .tab-view-item {
+	background-color: #fff;
+}
+
+/* Ensure ScrollView / ListView backgrounds don't hide content */
+ScrollView, ListView, Repeater {
+	background-color: transparent;
+}
+
+/* Make sure controls have a sensible default enabled/disabled appearance */
+Button[isEnabled=false], TextField[isEnabled=false], TextView[isEnabled=false] {
+	opacity: 0.6;
+}

@@ -17,7 +17,7 @@ export class AccessibilityModel extends Observable {
 	accessibilityLiveRegions = AccessibilityLiveRegion;
 	accessibilityRole = AccessibilityRole;
 	accessibilityState = AccessibilityState;
-	largeImageSrc = 'https://i.picsum.photos/id/669/5000/5000.jpg?hmac=VlpchW0ODhflKm0SKOYQrc8qysLWbqKmDS1MGT9apAc';
+	largeImageSrc = 'https://picsum.photos/seed/VlpchW0ODhflKm0SKOYQrc8qysLWbqKmDS1MGT9apAc/5000/5000';
 
 	constructor() {
 		super();
@@ -30,8 +30,8 @@ export class AccessibilityModel extends Observable {
 
 		// prettier-ignore
 		this.notifyPropertyChange('largeImageSrc', checked ? 
-			'https://i.picsum.photos/id/669/5000/5000.jpg?hmac=VlpchW0ODhflKm0SKOYQrc8qysLWbqKmDS1MGT9apAc' : 
-			'https://i.picsum.photos/id/684/5000/5000.jpg?hmac=loiXO_OQ-y86XY_hc7p3qJdY39fSd9CuDM0iA_--P4Q');
+			'https://picsum.photos/seed/VlpchW0ODhflKm0SKOYQrc8qysLWbqKmDS1MGT9apAc/5000/5000' : 
+			'https://picsum.photos/seed/loiXO_OQ-y86XY_hc7p3qJdY39fSd9CuDM0iA_--P4Q/5000/5000');
 	}
 
 	openModal() {

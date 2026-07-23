@@ -750,6 +750,8 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 });
 backgroundPositionProperty.register(Style);
 
+
+
 // Border Color properties.
 const borderColorProperty = new ShorthandProperty<Style, string | Color>({
 	name: 'borderColor',

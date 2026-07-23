@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <ProjectGuid>{B6D1F2A0-0E2C-4C7E-9D2B-7A1E5C9D0001}</ProjectGuid>
+    <ProjectName>NativeScript.Widgets</ProjectName>
+    <RootNamespace>NativeScript.Widgets</RootNamespace>
+    <TargetName>NativeScript.Widgets</TargetName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <AppContainerApplication>false</AppContainerApplication>
+    <Desktop>true</Desktop>
+  </PropertyGroup>
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseWinUI>true</UseWinUI>
+    <UseLegacyMallocAlign>false</UseLegacyMallocAlign>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'!='Debug'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <WarningLevel>Level4</WarningLevel>
+      <!-- C++20 has standard coroutines (std::coroutine_handle), so the deprecated /await is gone. -->
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <!-- Static CRT so the in-proc server has NO external VCRUNTIME140.dll dependency (the package
+           carries no VC++ redist / VCLibs framework dep). WinRT components talk over the COM ABI,
+           not CRT objects, so static linking is safe here. -->
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'!='Debug'">MultiThreaded</RuntimeLibrary>
+      <!-- Put the project root on the include path so the cppwinrt-generated files under
+           "Generated Files\" (module.g.cpp, *.g.h) can resolve our project-root pch.h. -->
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="StackLayout.h" />
+    <ClInclude Include="FlexboxLayout.h" />
+    <ClInclude Include="ImageResult.h" />
+    <ClInclude Include="ImageHelper.h" />
+    <ClInclude Include="ShadowImageResult.h" />
+    <ClInclude Include="ShadowHelper.h" />
+    <ClInclude Include="ClipHelper.h" />
+    <ClInclude Include="FontHelper.h" />
+    <ClInclude Include="ScrollHelper.h" />
+    <ClInclude Include="TileHelper.h" />
+    <ClInclude Include="TextShadowHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StackLayout.cpp" />
+    <ClCompile Include="FlexboxLayout.cpp" />
+    <ClCompile Include="ImageHelper.cpp" />
+    <ClCompile Include="ShadowHelper.cpp" />
+    <ClCompile Include="ClipHelper.cpp" />
+    <ClCompile Include="FontHelper.cpp" />
+    <ClCompile Include="ScrollHelper.cpp" />
+    <ClCompile Include="TileHelper.cpp" />
+    <ClCompile Include="TextShadowHelper.cpp" />
+    <ClCompile Include="exports.cpp" />
+    <!-- cppwinrt generates module.g.cpp (DllGetActivationFactory / DllCanUnloadNow exports) under
+         "Generated Files\", but our hand-authored project doesn't auto-include it, so the DLL
+         exported no activation factory → RoGetActivationFactory failed with REGDB_E_CLASSNOTREG.
+         Compile it explicitly. NotUsing: it's generated and doesn't use our PCH. -->
+    <ClCompile Include="$(IntDir)Generated Files\module.g.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="StackLayout.idl" />
+    <Midl Include="FlexboxLayout.idl" />
+    <Midl Include="ImageHelper.idl" />
+    <Midl Include="ShadowHelper.idl" />
+    <Midl Include="ClipHelper.idl" />
+    <Midl Include="FontHelper.idl" />
+    <Midl Include="ScrollHelper.idl" />
+    <Midl Include="TileHelper.idl" />
+    <Midl Include="TextShadowHelper.idl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CppWinRT" Version="2.0.240111.5" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

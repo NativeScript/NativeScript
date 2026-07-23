@@ -99,7 +99,7 @@ if (themePkgDir && existsSync(themePkgDir)) {
  */
 applyExternalConfigs();
 
-type PlatformType = 'android' | 'ios' | 'visionos';
+type PlatformType = 'android' | 'ios' | 'visionos' | 'windows';
 
 export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
@@ -117,6 +117,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		platform = 'ios';
 	} else if (cliFlags.visionos) {
 		platform = 'visionos';
+	} else if (cliFlags.windows) {
+		platform = 'windows';
 	}
 	if (verbose) {
 		console.log('--------------');
@@ -148,6 +150,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		} else if (platform === 'ios' || platform === 'visionos') {
 			// Treat visionOS like iOS for file resolution
 			exts.push('.ios.tsx', '.tsx', '.ios.jsx', '.jsx', '.ios.ts', '.ts', '.ios.js', '.js');
+		} else if (platform === 'windows') {
+			exts.push('.windows.tsx', '.tsx', '.windows.jsx', '.jsx', '.windows.ts', '.ts', '.windows.js', '.js');
 		} else {
 			// Fallback: no platform-specific preference
 			exts.push(...base);
@@ -369,7 +373,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		// Development server configuration for HMR
 		server: isDevMode
 			? {
-					// Expose dev server to local network so simulator or device can connect
+					// Expose dev server to local network so simulator or device can connect.
+					// Windows runs on the same machine so localhost is sufficient.
 					host: process.env.NS_HMR_HOST || (platform === 'android' ? '0.0.0.0' : 'localhost'),
 					// Use a stable port so the device URL remains correct
 					port: 5173,

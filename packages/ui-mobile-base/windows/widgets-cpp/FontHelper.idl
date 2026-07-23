@@ -1,0 +1,9 @@
+namespace NativeScript.Widgets
+{
+    static runtimeclass FontHelper
+    {
+        // Enumerates font files (ttf/otf/ttc) in folderPath via DirectWrite and returns one line
+        // per font face: "fileName|win32FamilyName|typographicFamilyName" joined with '\n'.
+        static String ScanFontsDirectory(String folderPath);
+    }
+}

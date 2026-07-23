@@ -1172,6 +1172,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 		'const __UI_USE_XML_PARSER__ = globalThis.__UI_USE_XML_PARSER__ !== undefined ? globalThis.__UI_USE_XML_PARSER__ : true;',
 		'const __UI_USE_EXTERNAL_RENDERER__ = globalThis.__UI_USE_EXTERNAL_RENDERER__ !== undefined ? globalThis.__UI_USE_EXTERNAL_RENDERER__ : false;',
 		'const __TEST__ = globalThis.__TEST__ !== undefined ? globalThis.__TEST__ : false;',
+		'const __WINDOWS__ = globalThis.__WINDOWS__ !== undefined ? globalThis.__WINDOWS__ : false;',
 	];
 	result = allGlobals.join('\n') + '\n' + result;
 
