@@ -189,13 +189,13 @@ class UIViewControllerImpl extends UIViewController {
 							// only consider when interactive transitions are not enabled
 							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
-							if (SDK_VERSION >= 26) {
+							if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
 								navigationController.interactiveContentPopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
 							}
 						}
 					} else {
 						navigationController.interactivePopGestureRecognizer.enabled = false;
-						if (SDK_VERSION >= 26) {
+						if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
 							navigationController.interactiveContentPopGestureRecognizer.enabled = false;
 						}
 					}
