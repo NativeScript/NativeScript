@@ -1,0 +1,49 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Gutters" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+  <ScrollView>
+    <StackLayout class="gutters-demo" padding="16">
+      <Label text="Flexbox row gap" textAlignment="center" marginBottom="16"/>
+      <FlexboxLayout width="200" flexWrap="wrap" rowGap="{{ rowGap }}">
+        <Label text="One" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Two" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Three" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Four" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Five" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+      </FlexboxLayout>
+      <StackLayout orientation="horizontal" marginTop="16" horizontalAlignment="center">
+        <Label verticalAlignment="center" text="Type row gap:" />
+        <TextField hint="Gap" text="{{ rowGap }}" keyboardType="number" maxLength="2">
+        </TextField>
+      </StackLayout>
+      <Label text="Flexbox column gap" textAlignment="center" marginTop="16" marginBottom="16"/>
+      <FlexboxLayout width="300" flexWrap="wrap" columnGap="{{ columnGap }}">
+        <Label text="One" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Two" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Three" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Four" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Five" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+      </FlexboxLayout>
+      <StackLayout orientation="horizontal" marginTop="16" horizontalAlignment="center">
+        <Label verticalAlignment="center" text="Type column gap:" />
+        <TextField hint="Gap" text="{{ columnGap }}" keyboardType="number" maxLength="2">
+        </TextField>
+      </StackLayout>
+      <Label text="Flexbox gap" textAlignment="center" marginTop="16" marginBottom="16"/>
+      <FlexboxLayout width="250" flexWrap="wrap" gap="{{ gap }}">
+        <Label text="One" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Two" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Three" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Four" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+        <Label text="Five" textAlignment="center" backgroundColor="rgb(0 0 255 / 0.2)" borderColor="blue" borderWidth="1" borderRadius="8" padding="8" flexGrow="1"/>
+      </FlexboxLayout>
+      <StackLayout orientation="horizontal" marginTop="16" horizontalAlignment="center">
+        <Label verticalAlignment="center" text="Type gap:" />
+        <TextField hint="Gap" text="{{ gap }}" keyboardType="number" maxLength="2">
+        </TextField>
+      </StackLayout>
+    </StackLayout>
+  </ScrollView>
+</Page>

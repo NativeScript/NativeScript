@@ -2,7 +2,7 @@ import { LayoutBase } from '../layout-base';
 import { Style } from '../../styling/style';
 import { CssProperty } from '../../core/properties';
 import { View } from '../../core/view';
-import { CoreTypes } from '../../enums';
+import { CoreTypes } from '../../../core-types';
 
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 export type FlexWrap = 'nowrap' | 'wrap' | 'wrap-reverse';
@@ -68,6 +68,24 @@ export class FlexboxLayout extends LayoutBase {
 	 * @nsProperty
 	 */
 	public alignContent: AlignContent;
+	/**
+	 * Gets or sets the gaps between rows and columns
+	 *
+	 * @nsProperty
+	 */
+	public gap: string | CoreTypes.LengthType;
+	/**
+	 * Gets or sets the gap between rows
+	 *
+	 * @nsProperty
+	 */
+	public rowGap: CoreTypes.LengthType;
+	/**
+	 * Gets or sets the gap between columns
+	 *
+	 * @nsProperty
+	 */
+	public columnGap: CoreTypes.LengthType;
 
 	public static setOrder(view: View, order: number);
 	public static getOrder(view: View): number;

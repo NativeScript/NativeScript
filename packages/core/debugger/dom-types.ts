@@ -5,7 +5,7 @@ import { PercentLength } from '../ui/styling/length-shared';
 import { getSetProperties, getComputedCssValues } from '../ui/core/properties';
 const ELEMENT_NODE_TYPE = 1;
 const ROOT_NODE_TYPE = 9;
-const propertyBlacklist = ['effectivePaddingLeft', 'effectivePaddingBottom', 'effectivePaddingRight', 'effectivePaddingTop', 'effectiveBorderTopWidth', 'effectiveBorderRightWidth', 'effectiveBorderBottomWidth', 'effectiveBorderLeftWidth', 'effectiveMinWidth', 'effectiveMinHeight', 'effectiveWidth', 'effectiveHeight', 'effectiveMarginLeft', 'effectiveMarginTop', 'effectiveMarginRight', 'effectiveMarginBottom', 'nodeName', 'nodeType', 'decodeWidth', 'decodeHeight', 'ng-reflect-items', 'domNode', 'touchListenerIsSet', 'bindingContext', 'nativeView'];
+const propertyBlacklist = ['effectivePaddingLeft', 'effectivePaddingBottom', 'effectivePaddingRight', 'effectivePaddingTop', 'effectiveBorderTopWidth', 'effectiveBorderRightWidth', 'effectiveBorderBottomWidth', 'effectiveBorderLeftWidth', 'effectiveMinWidth', 'effectiveMinHeight', 'effectiveWidth', 'effectiveHeight', 'effectiveMarginLeft', 'effectiveMarginTop', 'effectiveMarginRight', 'effectiveMarginBottom', 'effectiveRowGap', 'effectiveColumnGap', 'nodeName', 'nodeType', 'decodeWidth', 'decodeHeight', 'ng-reflect-items', 'domNode', 'touchListenerIsSet', 'bindingContext', 'nativeView'];
 
 function lazy<T>(action: () => T): () => T {
 	let _value: T;
