@@ -273,6 +273,141 @@ export function test_proxy_inside_listview_itemTemplate_crash() {
 	helper.buildUIAndRunTest(list, testAction);
 }
 
+export function test_proxy_hidden_hides_existing_children() {
+	const outer = new StackLayout();
+	const proxy = new ProxyViewContainer();
+	const btn1 = createBtn('1');
+	const btn2 = createBtn('2');
+	const btn3 = createBtn('3');
+
+	function testAction(views: Array<View>) {
+		outer.addChild(btn1);
+		outer.addChild(proxy);
+		proxy.addChild(btn2);
+		proxy.addChild(btn3);
+		outer.addChild(createBtn('4'));
+
+		// Initially all children should be visible
+		assertViewHidden(btn1, false, 'btn1 should be visible initially');
+		assertViewHidden(btn2, false, 'btn2 should be visible initially');
+		assertViewHidden(btn3, false, 'btn3 should be visible initially');
+
+		// Hide the proxy container
+		proxy.hidden = true;
+
+		// Proxy's isCollapsed should be set
+		TKUnit.assertTrue(proxy.isCollapsed, 'Proxy isCollapsed should be true when hidden');
+
+		// All proxy children should be hidden
+		assertViewHidden(btn2, true, 'btn2 should be hidden when proxy is hidden');
+		assertViewHidden(btn3, true, 'btn3 should be hidden when proxy is hidden');
+
+		// Other children should remain visible
+		assertViewHidden(btn1, false, 'btn1 should remain visible');
+	}
+
+	helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_proxy_hidden_shows_children_when_set_to_false() {
+	const outer = new StackLayout();
+	const proxy = new ProxyViewContainer();
+	const btn1 = createBtn('1');
+	const btn2 = createBtn('2');
+
+	function testAction(views: Array<View>) {
+		outer.addChild(proxy);
+		proxy.addChild(btn1);
+		proxy.addChild(btn2);
+
+		// Hide the proxy
+		proxy.hidden = true;
+		assertViewHidden(btn1, true, 'btn1 should be hidden');
+		assertViewHidden(btn2, true, 'btn2 should be hidden');
+
+		// Show the proxy again
+		proxy.hidden = false;
+
+		// Proxy's isCollapsed should be false
+		TKUnit.assertFalse(proxy.isCollapsed, 'Proxy isCollapsed should be false when not hidden');
+
+		// All proxy children should be visible again
+		assertViewHidden(btn1, false, 'btn1 should be visible when proxy is shown');
+		assertViewHidden(btn2, false, 'btn2 should be visible when proxy is shown');
+	}
+
+	helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_proxy_hidden_hides_new_children_added_after_setting_hidden() {
+	const outer = new StackLayout();
+	const proxy = new ProxyViewContainer();
+	const btn1 = createBtn('1');
+
+	function testAction(views: Array<View>) {
+		outer.addChild(proxy);
+
+		// Hide the proxy first
+		proxy.hidden = true;
+
+		// Add a child after hiding
+		proxy.addChild(btn1);
+
+		// The new child should be hidden
+		assertViewHidden(btn1, true, 'New child should be hidden when added to hidden proxy');
+
+		// Add another child
+		const btn2 = createBtn('2');
+		proxy.addChild(btn2);
+		assertViewHidden(btn2, true, 'Another new child should be hidden when added to hidden proxy');
+	}
+
+	helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_proxy_hidden_with_multiple_children() {
+	const outer = new StackLayout();
+	const proxy = new ProxyViewContainer();
+	const btn1 = createBtn('1');
+	const btn2 = createBtn('2');
+	const btn3 = createBtn('3');
+	const btn4 = createBtn('4');
+
+	function testAction(views: Array<View>) {
+		outer.addChild(proxy);
+		proxy.addChild(btn1);
+		proxy.addChild(btn2);
+		proxy.addChild(btn3);
+		proxy.addChild(btn4);
+
+		// All should be visible initially
+		assertViewHidden(btn1, false, 'btn1 should be visible');
+		assertViewHidden(btn2, false, 'btn2 should be visible');
+		assertViewHidden(btn3, false, 'btn3 should be visible');
+		assertViewHidden(btn4, false, 'btn4 should be visible');
+
+		// Hide the proxy
+		proxy.hidden = true;
+
+		// All should be hidden
+		assertViewHidden(btn1, true, 'btn1 should be hidden');
+		assertViewHidden(btn2, true, 'btn2 should be hidden');
+		assertViewHidden(btn3, true, 'btn3 should be hidden');
+		assertViewHidden(btn4, true, 'btn4 should be hidden');
+
+		// Show again
+		proxy.hidden = false;
+
+		// All should be visible again
+		assertViewHidden(btn1, false, 'btn1 should be visible again');
+		assertViewHidden(btn2, false, 'btn2 should be visible again');
+		assertViewHidden(btn3, false, 'btn3 should be visible again');
+		assertViewHidden(btn4, false, 'btn4 should be visible again');
+	}
+
+	helper.buildUIAndRunTest(outer, testAction);
+}
+
 // TODO: Proxy as a direct child to of TabItem is not supported. Not sure if we want to support it.
 //export function test_proxy_inside_tab() {
 //    const proxy = new ProxyViewContainer();
@@ -334,5 +469,18 @@ function assertNativeChildren(layout: LayoutBase, arr: Array<string>) {
 		}
 	} else {
 		TKUnit.assert(false, 'No native view to assert');
+	}
+}
+
+function assertViewHidden(view: View, expectedHidden: boolean, message: string) {
+	if (view.android) {
+		const visibility = view.android.getVisibility();
+		const isHidden = visibility === android.view.View.GONE;
+		TKUnit.assertEqual(isHidden, expectedHidden, message);
+	} else if (view.ios) {
+		const isHidden = view.ios.hidden;
+		TKUnit.assertEqual(isHidden, expectedHidden, message);
+	} else {
+		TKUnit.assert(false, 'No native view to assert hidden state');
 	}
 }
