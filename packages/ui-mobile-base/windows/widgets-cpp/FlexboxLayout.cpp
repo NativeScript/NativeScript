@@ -383,11 +383,6 @@ namespace winrt::NativeScript::Widgets::implementation
                 case ALIGN_STRETCH:
                     itemCross = lineCross;
                     crossPos = crossStart;
-                    // Re-measure at the stretched cross size only if it changed to avoid redundant WinRT calls.
-                    if (std::abs(item.CrossSize - lineCross) > 0.5)
-                    {
-                        item.Element.Measure(AsSize(item.MainSize, lineCross, isRow));
-                    }
                     break;
                 default: // ALIGN_START, ALIGN_BASELINE
                     itemCross = item.CrossSize;
