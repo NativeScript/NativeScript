@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.0.23](https://github.com/Akylas/NativeScript/compare/@akylas/nativescript@9.0.22...@akylas/nativescript@9.0.23) (2026-07-30)
+
+* fixed widgets released as aar
+
 ### [9.0.22](https://github.com/Akylas/NativeScript/compare/@akylas/nativescript@8.9.15...@akylas/nativescript@9.0.22) (2026-06-11)
 
 
