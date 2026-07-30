@@ -1,15 +1,8 @@
 {
 	"extends": "../../.eslintrc.json",
 	"rules": {},
-	"ignorePatterns": ["!**/*", "**/global-types.d.ts", "**/node_modules/**/*", "**/__tests__/**/*", "**/vite.config.*.timestamp*", "**/vitest.config.*.timestamp*"],
+	"ignorePatterns": ["!**/*", "**/global-types.d.ts", "**/node_modules/**/*", "**/__tests__/**/*", "**/platforms/**/*", "**/css/lib/**/*", "**/vite.config.*.timestamp*", "**/vitest.config.*.timestamp*"],
 	"overrides": [
-		{
-			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-			"parserOptions": {
-				"project": ["packages/core/tsconfig.*?.json"]
-			},
-			"rules": {}
-		},
 		{
 			"files": ["*.ts", "*.tsx"],
 			"rules": {}

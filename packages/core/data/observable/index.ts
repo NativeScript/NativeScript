@@ -40,6 +40,11 @@ interface ListenerEntry {
 	callback: (data: EventData) => void;
 	thisArg?: any;
 	once?: true;
+	_isRemoved?: true;
+}
+
+interface ListEntryMap {
+	[eventName: string]: Array<ListenerEntry>;
 }
 
 let _wrappedIndex = 0;
@@ -89,6 +94,13 @@ const _globalEventHandlers: {
 	};
 } = {};
 
+// Tracks how many listeners are registered through the deprecated static
+// event-handling APIs so that `notify` can skip the global-handler lookups
+// entirely in the common case where none are used. The count may overshoot
+// when a `once` global listener is spliced during dispatch — that only causes
+// harmless extra lookups, never skipped notifications.
+let _globalEventHandlersCount = 0;
+
 /**
  * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
  * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
@@ -107,7 +119,7 @@ export class Observable {
 	 */
 	public _isViewBase: boolean;
 
-	private readonly _observers: { [eventName: string]: Array<ListenerEntry> } = {};
+	private readonly _observers: ListEntryMap = {};
 
 	/**
 	 * Gets the value of the specified property.
@@ -297,7 +309,7 @@ export class Observable {
 
 			// If we have neither `thisArg` nor `callback`, just remove all events
 			// of this type regardless.
-
+			entry._isRemoved = true;
 			entries.splice(i, 1);
 			i--;
 		}
@@ -326,7 +338,9 @@ export class Observable {
 			return;
 		}
 
+		const countBeforeRemoval = entries.length;
 		Observable.innerRemoveEventListener(entries, callback, thisArg);
+		_globalEventHandlersCount -= countBeforeRemoval - entries.length;
 
 		if (!entries.length) {
 			// Clear all entries of this type
@@ -371,6 +385,7 @@ export class Observable {
 		}
 
 		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once });
+		_globalEventHandlersCount++;
 	}
 
 	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
@@ -379,7 +394,7 @@ export class Observable {
 			const eventName = data.eventName + eventType;
 			const entries = _globalEventHandlers[eventClass][eventName];
 			if (entries) {
-				Observable._handleEvent(entries, data);
+				Observable._fireEvent(entries, data);
 			}
 		}
 
@@ -388,7 +403,7 @@ export class Observable {
 			const eventName = data.eventName + eventType;
 			const entries = _globalEventHandlers['*'][eventName];
 			if (entries) {
-				Observable._handleEvent(entries, data);
+				Observable._fireEvent(entries, data);
 			}
 		}
 	}
@@ -406,40 +421,68 @@ export class Observable {
 		data.object = data.object || this;
 		const dataWithObject = data as EventData;
 
+		// Fast path: no listeners registered through the deprecated static
+		// event-handling APIs, so only instance observers need to be notified.
+		if (_globalEventHandlersCount === 0) {
+			const observers = this._observers[data.eventName];
+			if (observers) {
+				Observable._fireEvent(observers, dataWithObject);
+			}
+
+			return;
+		}
+
 		const eventClass = this.constructor.name;
 		this._globalNotify(eventClass, 'First', dataWithObject);
 
 		const observers = this._observers[data.eventName];
 		if (observers) {
-			Observable._handleEvent(observers, dataWithObject);
+			Observable._fireEvent(observers, dataWithObject);
 		}
 
 		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
-	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
-		if (!observers.length) {
+	private static _fireEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
+		const length = observers.length;
+
+		if (!length) {
 			return;
 		}
 
-		for (let i = observers.length - 1; i >= 0; i--) {
-			const entry = observers[i];
-			if (!entry) {
-				continue;
-			}
+		if (length === 1) {
+			this._handleListenerEntry<T>(observers[0], observers, data);
+		} else {
+			// This keeps a copy of observers list to ensure concurrency
+			const observersCp = observers.slice();
 
-			if (entry.once) {
-				observers.splice(i, 1);
+			for (let i = 0; i < length; i++) {
+				const entry = observersCp[i];
+				this._handleListenerEntry<T>(entry, observers, data);
 			}
+		}
+	}
 
-			const returnValue = entry.thisArg ? entry.callback.apply(entry.thisArg, [data]) : entry.callback(data);
+	private static _handleListenerEntry<T extends EventData>(entry: ListenerEntry, observers: Array<ListenerEntry>, data: T): void {
+		if (!entry || entry._isRemoved) {
+			return;
+		}
 
-			// This ensures errors thrown inside asynchronous functions do not get swallowed
-			if (returnValue instanceof Promise) {
-				returnValue.catch((err) => {
-					console.error(err);
-				});
+		if (entry.once) {
+			entry._isRemoved = true;
+			const index = observers.indexOf(entry);
+			if (index !== -1) {
+				observers.splice(index, 1);
 			}
+		}
+
+		const returnValue = entry.thisArg ? entry.callback.call(entry.thisArg, data) : entry.callback(data);
+
+		// This ensures errors thrown inside asynchronous functions do not get swallowed
+		if (returnValue instanceof Promise) {
+			returnValue.catch((err) => {
+				console.error(err);
+			});
 		}
 	}
 
@@ -455,7 +498,7 @@ export class Observable {
 	 * @param eventName The name of the event to check for.
 	 */
 	public hasListeners(eventName: string): boolean {
-		return eventName in this._observers;
+		return this._observers[eventName] !== undefined;
 	}
 
 	/**
@@ -492,7 +535,14 @@ export class Observable {
 	private static _indexOfListener(list: Array<ListenerEntry>, callback: (data: EventData) => void, thisArg?: any): number {
 		thisArg = thisArg || undefined;
 
-		return list.findIndex((entry) => entry.callback === callback && entry.thisArg === thisArg);
+		for (let i = 0, length = list.length; i < length; i++) {
+			const entry = list[i];
+			if (entry.callback === callback && entry.thisArg === thisArg) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 }
 

@@ -107,6 +107,63 @@ export const android: {
 	 * Hides the soft input method, usually a soft keyboard.
 	 */
 	dismissSoftInput: (nativeView?: android.view.View) => void;
+	/**
+	 * Sets the dark mode handler for the application.
+	 * @param options Options to set dark mode handler.
+	 */
+	setDarkModeHandler(options?: { activity?: androidx.appcompat.app.AppCompatActivity; handler: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean }): void;
+	/**
+	 * Sets the navigation bar color for the application.
+	 * @param options Options to set navigation bar color.
+	 */
+	setNavigationBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void;
+	/**
+	 * Sets the status bar color for the application.
+	 * @param options Options to set status bar color.
+	 */
+	setStatusBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void;
+	/**
+	 * Enables edge-to-edge navigation for the provided activity.
+	 * @param activity The activity to enable edge-to-edge navigation for.
+	 * @param options Optional configuration for status and navigation bar colors.
+	 */
+	enableEdgeToEdge(
+		activityOrWindow: androidx.activity.ComponentActivity,
+		options?: {
+			statusBarLightColor?: Color;
+			statusBarDarkColor?: Color;
+			navigationBarLightColor?: Color;
+			navigationBarDarkColor?: Color;
+			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+		},
+	): void;
+
+	/**
+	 * Enables edge-to-edge navigation for the provided Window.
+	 * @param activity The activity to enable edge-to-edge navigation for.
+	 * @param options Optional configuration for status and navigation bar colors.
+	 */
+	enableEdgeToEdge(
+		activity: androidx.activity.ComponentActivity,
+		window: android.view.Window,
+		options?: {
+			statusBarLightColor?: Color;
+			statusBarDarkColor?: Color;
+			navigationBarLightColor?: Color;
+			navigationBarDarkColor?: Color;
+			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+		},
+	): void;
+
+	/**
+	 * Gets whether edge-to-edge is ignored on older devices (API 34 an older).
+	 */
+	getIgnoreEdgeToEdgeOnOlderDevices(): boolean;
+
+	/**
+	 * Sets whether to ignore edge-to-edge on older devices (API 34 an older).
+	 */
+	setIgnoreEdgeToEdgeOnOlderDevices(value: boolean): void;
 };
 
 /**

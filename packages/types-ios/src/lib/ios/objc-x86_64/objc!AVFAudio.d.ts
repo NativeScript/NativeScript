@@ -151,7 +151,7 @@ declare class AVAudioApplication extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	setInputMutedError(muted: boolean): boolean;
+	setInputMutedError(muted: boolean, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -451,7 +451,7 @@ declare class AVAudioConverter extends NSObject {
 
 	convertToBufferErrorWithInputFromBlock(outputBuffer: AVAudioBuffer, outError: interop.Pointer | interop.Reference<NSError>, inputBlock: (p1: number, p2: interop.Pointer | interop.Reference<AVAudioConverterInputStatus>) => AVAudioBuffer): AVAudioConverterOutputStatus;
 
-	convertToBufferFromBufferError(outputBuffer: AVAudioPCMBuffer, inputBuffer: AVAudioPCMBuffer): boolean;
+	convertToBufferFromBufferError(outputBuffer: AVAudioPCMBuffer, inputBuffer: AVAudioPCMBuffer, error?: interop.Reference<NSError>): boolean;
 
 	initFromFormatToFormat(fromFormat: AVAudioFormat, toFormat: AVAudioFormat): this;
 
@@ -645,7 +645,7 @@ declare class AVAudioEngine extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	enableManualRenderingModeFormatMaximumFrameCountError(mode: AVAudioEngineManualRenderingMode, pcmFormat: AVAudioFormat, maximumFrameCount: number): boolean;
+	enableManualRenderingModeFormatMaximumFrameCountError(mode: AVAudioEngineManualRenderingMode, pcmFormat: AVAudioFormat, maximumFrameCount: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
@@ -664,11 +664,11 @@ declare class AVAudioEngine extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	renderOfflineToBufferError(numberOfFrames: number, buffer: AVAudioPCMBuffer): AVAudioEngineManualRenderingStatus;
+	renderOfflineToBufferError(numberOfFrames: number, buffer: AVAudioPCMBuffer, error?: interop.Reference<NSError>): AVAudioEngineManualRenderingStatus;
 
 	reset(): void;
 
-	startAndReturnError(): boolean;
+	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	stop(): void;
 }
@@ -914,19 +914,19 @@ declare class AVAudioFile extends NSObject {
 	 */
 	close(): void;
 
-	initForReadingCommonFormatInterleavedError(fileURL: NSURL, format: AVAudioCommonFormat, interleaved: boolean): this;
+	initForReadingCommonFormatInterleavedError(fileURL: NSURL, format: AVAudioCommonFormat, interleaved: boolean, error?: interop.Reference<NSError>): this;
 
-	initForReadingError(fileURL: NSURL): this;
+	initForReadingError(fileURL: NSURL, error?: interop.Reference<NSError>): this;
 
-	initForWritingSettingsCommonFormatInterleavedError(fileURL: NSURL, settings: NSDictionary<string, any>, format: AVAudioCommonFormat, interleaved: boolean): this;
+	initForWritingSettingsCommonFormatInterleavedError(fileURL: NSURL, settings: NSDictionary<string, any>, format: AVAudioCommonFormat, interleaved: boolean, error?: interop.Reference<NSError>): this;
 
-	initForWritingSettingsError(fileURL: NSURL, settings: NSDictionary<string, any>): this;
+	initForWritingSettingsError(fileURL: NSURL, settings: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
-	readIntoBufferError(buffer: AVAudioPCMBuffer): boolean;
+	readIntoBufferError(buffer: AVAudioPCMBuffer, error?: interop.Reference<NSError>): boolean;
 
-	readIntoBufferFrameCountError(buffer: AVAudioPCMBuffer, frames: number): boolean;
+	readIntoBufferFrameCountError(buffer: AVAudioPCMBuffer, frames: number, error?: interop.Reference<NSError>): boolean;
 
-	writeFromBufferError(buffer: AVAudioPCMBuffer): boolean;
+	writeFromBufferError(buffer: AVAudioPCMBuffer, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1037,7 +1037,7 @@ declare class AVAudioIONode extends AVAudioNode {
 	/**
 	 * @since 13.0
 	 */
-	setVoiceProcessingEnabledError(enabled: boolean): boolean;
+	setVoiceProcessingEnabledError(enabled: boolean, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1491,19 +1491,19 @@ declare class AVAudioPlayer extends NSObject {
 
 	averagePowerForChannel(channelNumber: number): number;
 
-	initWithContentsOfURLError(url: NSURL): this;
+	initWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 7.0
 	 */
-	initWithContentsOfURLFileTypeHintError(url: NSURL, utiString: string): this;
+	initWithContentsOfURLFileTypeHintError(url: NSURL, utiString: string, error?: interop.Reference<NSError>): this;
 
-	initWithDataError(data: NSData): this;
+	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 7.0
 	 */
-	initWithDataFileTypeHintError(data: NSData, utiString: string): this;
+	initWithDataFileTypeHintError(data: NSData, utiString: string, error?: interop.Reference<NSError>): this;
 
 	pause(): void;
 
@@ -1763,9 +1763,9 @@ declare class AVAudioRecorder extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	initWithURLFormatError(url: NSURL, format: AVAudioFormat): this;
+	initWithURLFormatError(url: NSURL, format: AVAudioFormat, error?: interop.Reference<NSError>): this;
 
-	initWithURLSettingsError(url: NSURL, settings: NSDictionary<string, any>): this;
+	initWithURLSettingsError(url: NSURL, settings: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
 	pause(): void;
 
@@ -1864,7 +1864,7 @@ declare class AVAudioSequencer extends NSObject {
 
 	constructor(o: { audioEngine: AVAudioEngine; });
 
-	beatsForHostTimeError(inHostTime: number): number;
+	beatsForHostTimeError(inHostTime: number, error?: interop.Reference<NSError>): number;
 
 	beatsForSeconds(seconds: number): number;
 
@@ -1873,15 +1873,15 @@ declare class AVAudioSequencer extends NSObject {
 	 */
 	createAndAppendTrack(): AVMusicTrack;
 
-	dataWithSMPTEResolutionError(SMPTEResolution: number): NSData;
+	dataWithSMPTEResolutionError(SMPTEResolution: number, error?: interop.Reference<NSError>): NSData;
 
-	hostTimeForBeatsError(inBeats: number): number;
+	hostTimeForBeatsError(inBeats: number, error?: interop.Reference<NSError>): number;
 
 	initWithAudioEngine(engine: AVAudioEngine): this;
 
-	loadFromDataOptionsError(data: NSData, options: AVMusicSequenceLoadOptions): boolean;
+	loadFromDataOptionsError(data: NSData, options: AVMusicSequenceLoadOptions, error?: interop.Reference<NSError>): boolean;
 
-	loadFromURLOptionsError(fileURL: NSURL, options: AVMusicSequenceLoadOptions): boolean;
+	loadFromURLOptionsError(fileURL: NSURL, options: AVMusicSequenceLoadOptions, error?: interop.Reference<NSError>): boolean;
 
 	prepareToPlay(): void;
 
@@ -1902,11 +1902,11 @@ declare class AVAudioSequencer extends NSObject {
 	 */
 	setUserCallback(userCallback: (p1: AVMusicTrack, p2: NSData, p3: number) => void): void;
 
-	startAndReturnError(): boolean;
+	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	stop(): void;
 
-	writeToURLSMPTEResolutionReplaceExistingError(fileURL: NSURL, resolution: number, replace: boolean): boolean;
+	writeToURLSMPTEResolutionReplaceExistingError(fileURL: NSURL, resolution: number, replace: boolean, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -2308,7 +2308,7 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 6.0
 	 */
-	overrideOutputAudioPortError(portOverride: AVAudioSessionPortOverride): boolean;
+	overrideOutputAudioPortError(portOverride: AVAudioSessionPortOverride, error?: interop.Reference<NSError>): boolean;
 
 	prepareRouteSelectionForPlaybackWithCompletionHandler(completionHandler: (p1: boolean, p2: AVAudioSessionRouteSelection) => void): void;
 
@@ -2321,134 +2321,134 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 3.0
 	 */
-	setActiveError(active: boolean): boolean;
+	setActiveError(active: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 6.0
 	 */
-	setActiveWithFlagsError(active: boolean, flags: number): boolean;
+	setActiveWithFlagsError(active: boolean, flags: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	setActiveWithOptionsError(active: boolean, options: AVAudioSessionSetActiveOptions): boolean;
+	setActiveWithOptionsError(active: boolean, options: AVAudioSessionSetActiveOptions, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 10.0
 	 */
-	setAggregatedIOPreferenceError(inIOType: AVAudioSessionIOType): boolean;
+	setAggregatedIOPreferenceError(inIOType: AVAudioSessionIOType, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	setAllowHapticsAndSystemSoundsDuringRecordingError(inValue: boolean): boolean;
+	setAllowHapticsAndSystemSoundsDuringRecordingError(inValue: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 3.0
 	 */
-	setCategoryError(category: string): boolean;
+	setCategoryError(category: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 10.0
 	 */
-	setCategoryModeOptionsError(category: string, mode: string, options: AVAudioSessionCategoryOptions): boolean;
+	setCategoryModeOptionsError(category: string, mode: string, options: AVAudioSessionCategoryOptions, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 11.0
 	 */
-	setCategoryModeRouteSharingPolicyOptionsError(category: string, mode: string, policy: AVAudioSessionRouteSharingPolicy, options: AVAudioSessionCategoryOptions): boolean;
+	setCategoryModeRouteSharingPolicyOptionsError(category: string, mode: string, policy: AVAudioSessionRouteSharingPolicy, options: AVAudioSessionCategoryOptions, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	setCategoryWithOptionsError(category: string, options: AVAudioSessionCategoryOptions): boolean;
+	setCategoryWithOptionsError(category: string, options: AVAudioSessionCategoryOptions, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	setInputDataSourceError(dataSource: AVAudioSessionDataSourceDescription): boolean;
+	setInputDataSourceError(dataSource: AVAudioSessionDataSourceDescription, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	setInputGainError(gain: number): boolean;
+	setInputGainError(gain: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	setModeError(mode: string): boolean;
+	setModeError(mode: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	setOutputDataSourceError(dataSource: AVAudioSessionDataSourceDescription): boolean;
+	setOutputDataSourceError(dataSource: AVAudioSessionDataSourceDescription, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 26.0
 	 */
-	setOutputMutedError(muted: boolean): boolean;
+	setOutputMutedError(muted: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 3.0
 	 * @deprecated 6.0
 	 */
-	setPreferredHardwareSampleRateError(sampleRate: number): boolean;
+	setPreferredHardwareSampleRateError(sampleRate: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 3.0
 	 */
-	setPreferredIOBufferDurationError(duration: number): boolean;
+	setPreferredIOBufferDurationError(duration: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
 	 */
-	setPreferredInputError(inPort: AVAudioSessionPortDescription): boolean;
+	setPreferredInputError(inPort: AVAudioSessionPortDescription, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
 	 */
-	setPreferredInputNumberOfChannelsError(count: number): boolean;
+	setPreferredInputNumberOfChannelsError(count: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 14.0
 	 */
-	setPreferredInputOrientationError(orientation: AVAudioStereoOrientation): boolean;
+	setPreferredInputOrientationError(orientation: AVAudioStereoOrientation, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 18.2
 	 */
-	setPreferredMicrophoneInjectionModeError(inValue: AVAudioSessionMicrophoneInjectionMode): boolean;
+	setPreferredMicrophoneInjectionModeError(inValue: AVAudioSessionMicrophoneInjectionMode, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
 	 */
-	setPreferredOutputNumberOfChannelsError(count: number): boolean;
+	setPreferredOutputNumberOfChannelsError(count: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	setPreferredSampleRateError(sampleRate: number): boolean;
+	setPreferredSampleRateError(sampleRate: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 18.2
 	 */
-	setPrefersEchoCancelledInputError(value: boolean): boolean;
+	setPrefersEchoCancelledInputError(value: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 17.0
 	 */
-	setPrefersInterruptionOnRouteDisconnectError(inValue: boolean): boolean;
+	setPrefersInterruptionOnRouteDisconnectError(inValue: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 14.5
 	 */
-	setPrefersNoInterruptionsFromSystemAlertsError(inValue: boolean): boolean;
+	setPrefersNoInterruptionsFromSystemAlertsError(inValue: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 15.0
 	 */
-	setSupportsMultichannelContentError(inValue: boolean): boolean;
+	setSupportsMultichannelContentError(inValue: boolean, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum AVAudioSessionActivationOptions {
@@ -2611,7 +2611,7 @@ declare class AVAudioSessionDataSourceDescription extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	setPreferredPolarPatternError(pattern: string): boolean;
+	setPreferredPolarPatternError(pattern: string, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -2953,7 +2953,7 @@ declare class AVAudioSessionPortDescription extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	setPreferredDataSourceError(dataSource: AVAudioSessionDataSourceDescription): boolean;
+	setPreferredDataSourceError(dataSource: AVAudioSessionDataSourceDescription, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -3384,7 +3384,7 @@ declare class AVAudioUnit extends AVAudioNode {
 
 	readonly version: number;
 
-	loadAudioUnitPresetAtURLError(url: NSURL): boolean;
+	loadAudioUnitPresetAtURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -3896,11 +3896,11 @@ declare class AVAudioUnitSampler extends AVAudioUnitMIDIInstrument {
 
 	stereoPan: number;
 
-	loadAudioFilesAtURLsError(audioFiles: NSArray<NSURL> | NSURL[]): boolean;
+	loadAudioFilesAtURLsError(audioFiles: NSArray<NSURL> | NSURL[], error?: interop.Reference<NSError>): boolean;
 
-	loadInstrumentAtURLError(instrumentURL: NSURL): boolean;
+	loadInstrumentAtURLError(instrumentURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	loadSoundBankInstrumentAtURLProgramBankMSBBankLSBError(bankURL: NSURL, program: number, bankMSB: number, bankLSB: number): boolean;
+	loadSoundBankInstrumentAtURLProgramBankMSBBankLSBError(bankURL: NSURL, program: number, bankMSB: number, bankLSB: number, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -4395,9 +4395,9 @@ declare class AVMIDIPlayer extends NSObject {
 
 	constructor(o: { data: NSData; soundBankURL: NSURL; });
 
-	initWithContentsOfURLSoundBankURLError(inURL: NSURL, bankURL: NSURL): this;
+	initWithContentsOfURLSoundBankURLError(inURL: NSURL, bankURL: NSURL, error?: interop.Reference<NSError>): this;
 
-	initWithDataSoundBankURLError(data: NSData, bankURL: NSURL): this;
+	initWithDataSoundBankURLError(data: NSData, bankURL: NSURL, error?: interop.Reference<NSError>): this;
 
 	play(completionHandler: () => void): void;
 

@@ -944,28 +944,28 @@ interface MTLBinaryArchive extends NSObjectProtocol {
 
 	label: string;
 
-	addComputePipelineFunctionsWithDescriptorError(descriptor: MTLComputePipelineDescriptor): boolean;
+	addComputePipelineFunctionsWithDescriptorError(descriptor: MTLComputePipelineDescriptor, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 15.0
 	 */
-	addFunctionWithDescriptorLibraryError(descriptor: MTLFunctionDescriptor, library: MTLLibrary): boolean;
+	addFunctionWithDescriptorLibraryError(descriptor: MTLFunctionDescriptor, library: MTLLibrary, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 18.0
 	 */
-	addLibraryWithDescriptorError(descriptor: MTLStitchedLibraryDescriptor): boolean;
+	addLibraryWithDescriptorError(descriptor: MTLStitchedLibraryDescriptor, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 18.0
 	 */
-	addMeshRenderPipelineFunctionsWithDescriptorError(descriptor: MTLMeshRenderPipelineDescriptor): boolean;
+	addMeshRenderPipelineFunctionsWithDescriptorError(descriptor: MTLMeshRenderPipelineDescriptor, error?: interop.Reference<NSError>): boolean;
 
-	addRenderPipelineFunctionsWithDescriptorError(descriptor: MTLRenderPipelineDescriptor): boolean;
+	addRenderPipelineFunctionsWithDescriptorError(descriptor: MTLRenderPipelineDescriptor, error?: interop.Reference<NSError>): boolean;
 
-	addTileRenderPipelineFunctionsWithDescriptorError(descriptor: MTLTileRenderPipelineDescriptor): boolean;
+	addTileRenderPipelineFunctionsWithDescriptorError(descriptor: MTLTileRenderPipelineDescriptor, error?: interop.Reference<NSError>): boolean;
 
-	serializeToURLError(url: NSURL): boolean;
+	serializeToURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 declare var MTLBinaryArchive: {
 
@@ -1477,7 +1477,7 @@ declare class MTLCaptureManager extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	startCaptureWithDescriptorError(descriptor: MTLCaptureDescriptor): boolean;
+	startCaptureWithDescriptorError(descriptor: MTLCaptureDescriptor, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 11.0
@@ -2477,7 +2477,7 @@ interface MTLComputePipelineState extends MTLAllocation, NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	newComputePipelineStateWithAdditionalBinaryFunctionsError(functions: NSArray<MTLFunction> | MTLFunction[]): MTLComputePipelineState;
+	newComputePipelineStateWithAdditionalBinaryFunctionsError(functions: NSArray<MTLFunction> | MTLFunction[], error?: interop.Reference<NSError>): MTLComputePipelineState;
 
 	/**
 	 * @since 14.0
@@ -3182,7 +3182,7 @@ interface MTLDevice extends NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	newBinaryArchiveWithDescriptorError(descriptor: MTLBinaryArchiveDescriptor): MTLBinaryArchive;
+	newBinaryArchiveWithDescriptorError(descriptor: MTLBinaryArchiveDescriptor, error?: interop.Reference<NSError>): MTLBinaryArchive;
 
 	newBufferWithBytesLengthOptions(pointer: interop.Pointer | interop.Reference<any>, length: number, options: MTLResourceOptions): MTLBuffer;
 
@@ -3207,39 +3207,39 @@ interface MTLDevice extends NSObjectProtocol {
 	/**
 	 * @since 9.0
 	 */
-	newComputePipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLComputePipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLComputePipelineReflection>): MTLComputePipelineState;
+	newComputePipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLComputePipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLComputePipelineReflection>, error?: interop.Reference<NSError>): MTLComputePipelineState;
 
 	newComputePipelineStateWithFunctionCompletionHandler(computeFunction: MTLFunction, completionHandler: (p1: MTLComputePipelineState, p2: NSError) => void): void;
 
-	newComputePipelineStateWithFunctionError(computeFunction: MTLFunction): MTLComputePipelineState;
+	newComputePipelineStateWithFunctionError(computeFunction: MTLFunction, error?: interop.Reference<NSError>): MTLComputePipelineState;
 
 	newComputePipelineStateWithFunctionOptionsCompletionHandler(computeFunction: MTLFunction, options: MTLPipelineOption, completionHandler: (p1: MTLComputePipelineState, p2: MTLComputePipelineReflection, p3: NSError) => void): void;
 
-	newComputePipelineStateWithFunctionOptionsReflectionError(computeFunction: MTLFunction, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLComputePipelineReflection>): MTLComputePipelineState;
+	newComputePipelineStateWithFunctionOptionsReflectionError(computeFunction: MTLFunction, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLComputePipelineReflection>, error?: interop.Reference<NSError>): MTLComputePipelineState;
 
 	/**
 	 * @since 14.0
 	 */
-	newCounterSampleBufferWithDescriptorError(descriptor: MTLCounterSampleBufferDescriptor): MTLCounterSampleBuffer;
+	newCounterSampleBufferWithDescriptorError(descriptor: MTLCounterSampleBufferDescriptor, error?: interop.Reference<NSError>): MTLCounterSampleBuffer;
 
 	newDefaultLibrary(): MTLLibrary;
 
 	/**
 	 * @since 10.0
 	 */
-	newDefaultLibraryWithBundleError(bundle: NSBundle): MTLLibrary;
+	newDefaultLibraryWithBundleError(bundle: NSBundle, error?: interop.Reference<NSError>): MTLLibrary;
 
 	newDepthStencilStateWithDescriptor(descriptor: MTLDepthStencilDescriptor): MTLDepthStencilState;
 
 	/**
 	 * @since 14.0
 	 */
-	newDynamicLibraryError(library: MTLLibrary): MTLDynamicLibrary;
+	newDynamicLibraryError(library: MTLLibrary, error?: interop.Reference<NSError>): MTLDynamicLibrary;
 
 	/**
 	 * @since 14.0
 	 */
-	newDynamicLibraryWithURLError(url: NSURL): MTLDynamicLibrary;
+	newDynamicLibraryWithURLError(url: NSURL, error?: interop.Reference<NSError>): MTLDynamicLibrary;
 
 	/**
 	 * @since 12.0
@@ -3261,17 +3261,17 @@ interface MTLDevice extends NSObjectProtocol {
 	 */
 	newIndirectCommandBufferWithDescriptorMaxCommandCountOptions(descriptor: MTLIndirectCommandBufferDescriptor, maxCount: number, options: MTLResourceOptions): MTLIndirectCommandBuffer;
 
-	newLibraryWithDataError(data: NSObject & OS_dispatch_data): MTLLibrary;
+	newLibraryWithDataError(data: NSObject & OS_dispatch_data, error?: interop.Reference<NSError>): MTLLibrary;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 16.0
 	 */
-	newLibraryWithFileError(filepath: string): MTLLibrary;
+	newLibraryWithFileError(filepath: string, error?: interop.Reference<NSError>): MTLLibrary;
 
 	newLibraryWithSourceOptionsCompletionHandler(source: string, options: MTLCompileOptions, completionHandler: (p1: MTLLibrary, p2: NSError) => void): void;
 
-	newLibraryWithSourceOptionsError(source: string, options: MTLCompileOptions): MTLLibrary;
+	newLibraryWithSourceOptionsError(source: string, options: MTLCompileOptions, error?: interop.Reference<NSError>): MTLLibrary;
 
 	/**
 	 * @since 15.0
@@ -3281,17 +3281,17 @@ interface MTLDevice extends NSObjectProtocol {
 	/**
 	 * @since 15.0
 	 */
-	newLibraryWithStitchedDescriptorError(descriptor: MTLStitchedLibraryDescriptor): MTLLibrary;
+	newLibraryWithStitchedDescriptorError(descriptor: MTLStitchedLibraryDescriptor, error?: interop.Reference<NSError>): MTLLibrary;
 
 	/**
 	 * @since 11.0
 	 */
-	newLibraryWithURLError(url: NSURL): MTLLibrary;
+	newLibraryWithURLError(url: NSURL, error?: interop.Reference<NSError>): MTLLibrary;
 
 	/**
 	 * @since 18.0
 	 */
-	newLogStateWithDescriptorError(descriptor: MTLLogStateDescriptor): MTLLogState;
+	newLogStateWithDescriptorError(descriptor: MTLLogStateDescriptor, error?: interop.Reference<NSError>): MTLLogState;
 
 	/**
 	 * @since 13.0
@@ -3300,11 +3300,11 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newRenderPipelineStateWithDescriptorCompletionHandler(descriptor: MTLRenderPipelineDescriptor, completionHandler: (p1: MTLRenderPipelineState, p2: NSError) => void): void;
 
-	newRenderPipelineStateWithDescriptorError(descriptor: MTLRenderPipelineDescriptor): MTLRenderPipelineState;
+	newRenderPipelineStateWithDescriptorError(descriptor: MTLRenderPipelineDescriptor, error?: interop.Reference<NSError>): MTLRenderPipelineState;
 
 	newRenderPipelineStateWithDescriptorOptionsCompletionHandler(descriptor: MTLRenderPipelineDescriptor, options: MTLPipelineOption, completionHandler: (p1: MTLRenderPipelineState, p2: MTLRenderPipelineReflection, p3: NSError) => void): void;
 
-	newRenderPipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>): MTLRenderPipelineState;
+	newRenderPipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>, error?: interop.Reference<NSError>): MTLRenderPipelineState;
 
 	/**
 	 * @since 16.0
@@ -3314,7 +3314,7 @@ interface MTLDevice extends NSObjectProtocol {
 	/**
 	 * @since 16.0
 	 */
-	newRenderPipelineStateWithMeshDescriptorOptionsReflectionError(descriptor: MTLMeshRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>): MTLRenderPipelineState;
+	newRenderPipelineStateWithMeshDescriptorOptionsReflectionError(descriptor: MTLMeshRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>, error?: interop.Reference<NSError>): MTLRenderPipelineState;
 
 	/**
 	 * @since 11.0
@@ -3324,12 +3324,12 @@ interface MTLDevice extends NSObjectProtocol {
 	/**
 	 * @since 11.0
 	 */
-	newRenderPipelineStateWithTileDescriptorOptionsReflectionError(descriptor: MTLTileRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>): MTLRenderPipelineState;
+	newRenderPipelineStateWithTileDescriptorOptionsReflectionError(descriptor: MTLTileRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>, error?: interop.Reference<NSError>): MTLRenderPipelineState;
 
 	/**
 	 * @since 18.0
 	 */
-	newResidencySetWithDescriptorError(desc: MTLResidencySetDescriptor): MTLResidencySet;
+	newResidencySetWithDescriptorError(desc: MTLResidencySetDescriptor, error?: interop.Reference<NSError>): MTLResidencySet;
 
 	newSamplerStateWithDescriptor(descriptor: MTLSamplerDescriptor): MTLSamplerState;
 
@@ -3477,7 +3477,7 @@ interface MTLDynamicLibrary extends NSObjectProtocol {
 
 	label: string;
 
-	serializeToURLError(url: NSURL): boolean;
+	serializeToURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 declare var MTLDynamicLibrary: {
 
@@ -4696,7 +4696,7 @@ interface MTLLibrary extends NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	newFunctionWithDescriptorError(descriptor: MTLFunctionDescriptor): MTLFunction;
+	newFunctionWithDescriptorError(descriptor: MTLFunctionDescriptor, error?: interop.Reference<NSError>): MTLFunction;
 
 	newFunctionWithName(functionName: string): MTLFunction;
 
@@ -4708,7 +4708,7 @@ interface MTLLibrary extends NSObjectProtocol {
 	/**
 	 * @since 10.0
 	 */
-	newFunctionWithNameConstantValuesError(name: string, constantValues: MTLFunctionConstantValues): MTLFunction;
+	newFunctionWithNameConstantValuesError(name: string, constantValues: MTLFunctionConstantValues, error?: interop.Reference<NSError>): MTLFunction;
 
 	/**
 	 * @since 14.0
@@ -4718,7 +4718,7 @@ interface MTLLibrary extends NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	newIntersectionFunctionWithDescriptorError(descriptor: MTLIntersectionFunctionDescriptor): MTLFunction;
+	newIntersectionFunctionWithDescriptorError(descriptor: MTLIntersectionFunctionDescriptor, error?: interop.Reference<NSError>): MTLFunction;
 }
 declare var MTLLibrary: {
 
@@ -6896,7 +6896,7 @@ interface MTLRenderPipelineState extends MTLAllocation, NSObjectProtocol {
 	/**
 	 * @since 15.0
 	 */
-	newRenderPipelineStateWithAdditionalBinaryFunctionsError(additionalBinaryFunctions: MTLRenderPipelineFunctionsDescriptor): MTLRenderPipelineState;
+	newRenderPipelineStateWithAdditionalBinaryFunctionsError(additionalBinaryFunctions: MTLRenderPipelineFunctionsDescriptor, error?: interop.Reference<NSError>): MTLRenderPipelineState;
 
 	/**
 	 * @since 15.0

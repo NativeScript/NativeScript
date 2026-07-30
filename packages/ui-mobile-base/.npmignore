@@ -1,1 +1,6 @@
 *.dSYM*
+
+# Build-provenance state (links committed native artifacts to their sources).
+# Committed to git, but never published.
+native-build-state.json
+tools/

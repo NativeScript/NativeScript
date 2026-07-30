@@ -1,3 +1,334 @@
+## 9.0.20 (2026-05-27)
+
+### 🩹 Fixes
+
+- **android:** Removed invalid default padding conversion ([90f834138](https://github.com/NativeScript/NativeScript/commit/90f834138))
+
+### ❤️ Thank You
+
+- Dimitris - Rafail Katsampas @CatchABus
+
+## 9.0.19 (2026-05-27)
+
+### 🚀 Features
+
+- **ios:** option to delay the launch event until the app becomes active ([#9906](https://github.com/NativeScript/NativeScript/pull/9906))
+
+### 🩹 Fixes
+
+- **core:** complete `sideEffects` declarations for inspector modules, network requests in devtools ([#11229](https://github.com/NativeScript/NativeScript/pull/11229))
+- **android:** nested frame restoration step ([#11226](https://github.com/NativeScript/NativeScript/pull/11226))
+- **ios:** improve TabView handling around more navigation controller ([#11225](https://github.com/NativeScript/NativeScript/pull/11225))
+- **android:** apply accessibility CSS classes and font scale on init ([#11224](https://github.com/NativeScript/NativeScript/pull/11224))
+- **core:** prevent exponential traversal in _dialogClosed and _onRootViewReset ([#11220](https://github.com/NativeScript/NativeScript/pull/11220))
+- **ios:** layout validity status during layout changed event ([#11218](https://github.com/NativeScript/NativeScript/pull/11218))
+- **android:** correct TabView fragment manager resolution ([#11217](https://github.com/NativeScript/NativeScript/pull/11217))
+- **ios:** enableSwipeBackNavigation on ios 26+ ([#11211](https://github.com/NativeScript/NativeScript/pull/11211))
+
+### 🔥 Performance
+
+- **core:** reduce padding native setter calls ([#11216](https://github.com/NativeScript/NativeScript/pull/11216))
+
+### ❤️ Thank You
+
+- Copilot @Copilot
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- Osei Fortune @triniwiz
+- Owen Carey @owenthcarey
+
+## 9.0.18 (2026-03-30)
+
+### 🩹 Fixes
+
+- **ios:** liquid glass flexbox ([#11134](https://github.com/NativeScript/NativeScript/pull/11134))
+- **ios:** guard against non-string imageURI in createUIImageFromURI ([#11144](https://github.com/NativeScript/NativeScript/pull/11144))
+- **ios:** scene notify first launch ([#11149](https://github.com/NativeScript/NativeScript/pull/11149))
+- **android:** setTextColor is non-nullable, prevent null exception ([#11147](https://github.com/NativeScript/NativeScript/pull/11147))
+- **TextField:** allow toggling of secure when secureWithoutAutofill is present ([65503ba3f](https://github.com/NativeScript/NativeScript/commit/65503ba3f))
+- **core:** split http module to solve circular refs ([#11141](https://github.com/NativeScript/NativeScript/pull/11141))
+- **android:** enable edge-to-edge only for fullscreen modals ([#11140](https://github.com/NativeScript/NativeScript/pull/11140))
+- **core:** size export in View object ([#11132](https://github.com/NativeScript/NativeScript/pull/11132))
+
+### 🔥 Performance
+
+- **TextField:** optimize secureWithoutAutofill ([#11131](https://github.com/NativeScript/NativeScript/pull/11131))
+
+### ❤️ Thank You
+
+- Abdelkarim Ait Bourich @VeinDevTtv
+- Dimitris-Rafail Katsampas @CatchABus
+- felixkrautschuk
+- Juan de Dios Martínez Vallejo
+- Nathan Walker
+- xieweilyg
+
+## 9.0.17 (2026-03-04)
+
+### 🩹 Fixes
+
+- **ios:** secureWithoutAutofill on TextField ([#11129](https://github.com/NativeScript/NativeScript/pull/11129))
+- **android:** inset props on interface ([#11103](https://github.com/NativeScript/NativeScript/pull/11103))
+
+### ❤️ Thank You
+
+- Nathan Walker
+- Osei Fortune @triniwiz
+
+## 9.0.16 (2026-02-25)
+
+### 🩹 Fixes
+
+- **android:** status bar style handling for API 30+ ([#11102](https://github.com/NativeScript/NativeScript/pull/11102))
+
+### ❤️ Thank You
+
+- darklight365
+
+## 9.0.15 (2026-02-19)
+
+### 🩹 Fixes
+
+- **ios:** statusBarStyle default handling and explicit control ([#11093](https://github.com/NativeScript/NativeScript/pull/11093))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 9.0.14 (2026-02-18)
+
+### 🚀 Features
+
+- **android:** edge to edge cutout inset ([#11069](https://github.com/NativeScript/NativeScript/pull/11069))
+
+### 🩹 Fixes
+
+- **android:** edge to edge bottom was applied 2x ([#11090](https://github.com/NativeScript/NativeScript/pull/11090))
+
+### ❤️ Thank You
+
+- Osei Fortune @triniwiz
+
+## 9.0.13 (2026-01-31)
+
+### 🚀 Features
+
+- **core:** bind overridden value converters to the target ([#11018](https://github.com/NativeScript/NativeScript/pull/11018))
+
+### 🩹 Fixes
+
+- **segmented-bar:** selectedTextColor via CSS ([#11060](https://github.com/NativeScript/NativeScript/pull/11060))
+- **android:** improve edge to edge handling ([#11058](https://github.com/NativeScript/NativeScript/pull/11058))
+- **android:** protection when a11y callback fires early ([#11061](https://github.com/NativeScript/NativeScript/pull/11061))
+
+### ❤️ Thank You
+
+- Jon Zgoda @jzgoda
+- Osei Fortune @triniwiz
+- pichurichko @pichurichko
+
+## 9.0.12 (2026-01-29)
+
+### 🚀 Features
+
+- **slider:** add linear-gradient support for track background ([#11015](https://github.com/NativeScript/NativeScript/pull/11015))
+
+### 🩹 Fixes
+
+- polyfills eager handling when not commonjs ([#11057](https://github.com/NativeScript/NativeScript/pull/11057))
+- **segmented-bar:** ios backgroundColor border radius on initial rendering ([#11054](https://github.com/NativeScript/NativeScript/pull/11054))
+- **ios:** apply hidden property to shadow layer ([#11051](https://github.com/NativeScript/NativeScript/pull/11051))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Jon Zgoda @jzgoda
+- Nathan Walker
+- Qazi Omair Ahmed @omairqazi29
+- Samuel Schultze
+
+## 9.0.11 (2026-01-04)
+
+### 🚀 Features
+
+- **config:** remote module security ([#11040](https://github.com/NativeScript/NativeScript/pull/11040))
+
+### 🩹 Fixes
+
+- **ios:** SegmentedBar update selected text color when selected background color changes ([#11016](https://github.com/NativeScript/NativeScript/pull/11016))
+
+### ❤️ Thank You
+
+- Jorge Cancino Oteíza @JorgeOteiza
+- Nathan Walker
+
+## 9.0.10 (2025-12-21)
+
+- CI workflow adjustments, same changes as 9.0.9
+
+## 9.0.9 (2025-12-21)
+
+### 🚀 Features
+
+- **ios:** statusBarStyle improvements for other edge cases ([15ae1514c](https://github.com/NativeScript/NativeScript/commit/15ae1514c))
+- **ios:** SplitView layout improvements ([edfa9b07c](https://github.com/NativeScript/NativeScript/commit/edfa9b07c))
+- **ios:** SplitView lifecycle improvements ([#11011](https://github.com/NativeScript/NativeScript/pull/11011))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 9.0.8 (2025-12-12)
+
+### 🚀 Features
+
+- **TabView:** use UITab with iOS 18+ and allow search role usage ([#11008](https://github.com/NativeScript/NativeScript/pull/11008))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 9.0.7 (2025-12-10)
+
+### 🩹 Fixes
+
+- **android:** Android 16 back press navigation failure ([#11006](https://github.com/NativeScript/NativeScript/pull/11006))
+- **RootLayout:** close shade cover when topmost popup doesn't need it ([#11007](https://github.com/NativeScript/NativeScript/pull/11007))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+
+## 9.0.6 (2025-12-07)
+
+### 🩹 Fixes
+
+- **android:** edge to edge guards on activity type ([#11005](https://github.com/NativeScript/NativeScript/pull/11005))
+- **ios:** null-check for action bar updates ([#11003](https://github.com/NativeScript/NativeScript/pull/11003))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
+## 9.0.5 (2025-12-04)
+
+### 🩹 Fixes
+
+- **android:** invalid a11y listeners that crashed apps on exit ([#11000](https://github.com/NativeScript/NativeScript/pull/11000))
+- **android:** prevent splash screen from being shown during navigation ([#10999](https://github.com/NativeScript/NativeScript/pull/10999))
+- **ListView:** android sectioned data state to match ios for framework integrations ([e2fc18312](https://github.com/NativeScript/NativeScript/commit/e2fc18312))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
+## 9.0.4 (2025-11-28)
+
+### 🩹 Fixes
+
+- **ios:** prevent gc from collecting current navigation transition ([#10967](https://github.com/NativeScript/NativeScript/pull/10967))
+- **SplitView:** export improvements ([#10968](https://github.com/NativeScript/NativeScript/pull/10968))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+
+## 9.0.3 (2025-11-23)
+
+### 🚀 Features
+
+- **core:** improve esm/commonjs compat with emoji-regex dependency ([8aa77c23c](https://github.com/NativeScript/NativeScript/commit/8aa77c23c))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 9.0.2 (2025-11-20)
+
+### 🩹 Fixes
+
+- **image-source:** url loading under different conditions ([#10955](https://github.com/NativeScript/NativeScript/pull/10955))
+- **core:** hook helper ([dec2b4b2d](https://github.com/NativeScript/NativeScript/commit/dec2b4b2d))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+# 9.0.0 (2025-11-17)
+
+### 🚀 Features
+
+- @nativescript/vite ([#10948](https://github.com/NativeScript/NativeScript/pull/10948))
+- **core:** ensure concurrency when firing events ([#10946](https://github.com/NativeScript/NativeScript/pull/10946))
+- **ios:** TabView iOS 26+ bottomAccessory + minimizeBehavior ([#10945](https://github.com/NativeScript/NativeScript/pull/10945))
+- **ios:** SplitView UI component ([#10942](https://github.com/NativeScript/NativeScript/pull/10942))
+- **core:** support for style direction property (ltr/rtl) ([#10691](https://github.com/NativeScript/NativeScript/pull/10691))
+- **tabs:** iconSource support for sys:// and font:// icons ([#10783](https://github.com/NativeScript/NativeScript/pull/10783))
+- **ListView:** sticky headers, sectioned data, optional search bar with auto-hide ([#10790](https://github.com/NativeScript/NativeScript/pull/10790))
+- **ios:** iosGlassEffect and LiquidGlass containers ([#10901](https://github.com/NativeScript/NativeScript/pull/10901))
+- **core:** multiple css box-shadows support ([#10777](https://github.com/NativeScript/NativeScript/pull/10777))
+- **android:** API Level 35+ OnBackPressed handling ([#10938](https://github.com/NativeScript/NativeScript/pull/10938))
+- **android:** utils for enableEdgeToEdge, setStatusBarColor, setNavigationBarColor, setDarkModeHandler ([fcb8253b4](https://github.com/NativeScript/NativeScript/commit/fcb8253b4))
+- **android:** edge to edge ([#10774](https://github.com/NativeScript/NativeScript/pull/10774))
+- **android:** support independent broadcast listeners ([#10936](https://github.com/NativeScript/NativeScript/pull/10936))
+- **ios:** multi-window support ([#10786](https://github.com/NativeScript/NativeScript/pull/10786))
+- **search-bar:** clear button color support ([#10903](https://github.com/NativeScript/NativeScript/pull/10903))
+- **core:** statusBarStyle ease of use and more control ([#10859](https://github.com/NativeScript/NativeScript/pull/10859))
+- **webpack:** support es module bundling ([#10788](https://github.com/NativeScript/NativeScript/pull/10788))
+- **dialogs:** allow using keyboard enter/return to confirm on iOS ([#10799](https://github.com/NativeScript/NativeScript/pull/10799))
+- **TextField:** decimal keyboardType ([#10789](https://github.com/NativeScript/NativeScript/pull/10789))
+- iOS 26 types with improvements (ActionBar, Switch) + .ns-{platform}-{sdkVersion} css root scoping ([#10775](https://github.com/NativeScript/NativeScript/pull/10775))
+- **ios:** improved handling for navigation events ([#10757](https://github.com/NativeScript/NativeScript/pull/10757))
+- **TextField:** support css white-space and text-overflow ([#10737](https://github.com/NativeScript/NativeScript/pull/10737))
+- **nx-cloud:** organize workspace caching with improved input/outputs ([#10734](https://github.com/NativeScript/NativeScript/pull/10734))
+
+### 🩹 Fixes
+
+- **core:** makeParser check value as is first ([2f2f948b1](https://github.com/NativeScript/NativeScript/commit/2f2f948b1))
+- **core:** makeParser impl ([26534108f](https://github.com/NativeScript/NativeScript/commit/26534108f))
+- **ios:** Switch offBackgroundColor handling for iOS 26+ ([#10943](https://github.com/NativeScript/NativeScript/pull/10943))
+- **ios:** allow creating missing view controllers on reused views ([#10941](https://github.com/NativeScript/NativeScript/pull/10941))
+- **android:** ListView margin handling on layout containers ([#10937](https://github.com/NativeScript/NativeScript/pull/10937))
+- **ios:** apply fontScaleInternal on app startup ([#10935](https://github.com/NativeScript/NativeScript/pull/10935))
+- **webpack:** es module source mapping improvements ([bbeca526f](https://github.com/NativeScript/NativeScript/commit/bbeca526f))
+- **android:** remove extra font padding by default ([#10771](https://github.com/NativeScript/NativeScript/pull/10771))
+- **application:** remove dupe cssChanged event handler definition ([#10892](https://github.com/NativeScript/NativeScript/pull/10892))
+- **android:** coerce string width/height in ImageAssetOptions ([#10862](https://github.com/NativeScript/NativeScript/pull/10862))
+- **android:** prevent clipped font icons on Android ([#10858](https://github.com/NativeScript/NativeScript/pull/10858))
+- animation types ([e1ff2982e](https://github.com/NativeScript/NativeScript/commit/e1ff2982e))
+- **webpack:** es module source map resolution ([#10860](https://github.com/NativeScript/NativeScript/pull/10860))
+- types export on ui/index ([54c069f51](https://github.com/NativeScript/NativeScript/commit/54c069f51))
+- **android:** make button default text not all caps for improved consistency ([#10854](https://github.com/NativeScript/NativeScript/pull/10854))
+- **android:** shared element with target name already added to transaction ([#10793](https://github.com/NativeScript/NativeScript/pull/10793))
+- **core:** pin source-map due to minor bump using url ([1cc3c7374](https://github.com/NativeScript/NativeScript/commit/1cc3c7374))
+- **android:** improved handling for nested frames ([#10713](https://github.com/NativeScript/NativeScript/pull/10713))
+- **core:** FlexboxLayout nested views alignment corrections ([#10766](https://github.com/NativeScript/NativeScript/pull/10766))
+- **core:** Improved css clip-path parsing ([#10753](https://github.com/NativeScript/NativeScript/pull/10753))
+- **android:** RootLayout shade cover unexpected delay ([#10752](https://github.com/NativeScript/NativeScript/pull/10752))
+- **android:** RootLayout shade cover blinking animation ([#10750](https://github.com/NativeScript/NativeScript/pull/10750))
+- **android:** allow CSS styling of neutral button in dialogs ([#10745](https://github.com/NativeScript/NativeScript/pull/10745))
+- core packaging missing .d.ts files ([#10742](https://github.com/NativeScript/NativeScript/pull/10742))
+- **ios:** listview measurement ([#10740](https://github.com/NativeScript/NativeScript/pull/10740))
+
+### 🔥 Performance
+
+- property optimizations ([#10850](https://github.com/NativeScript/NativeScript/pull/10850))
+
+### ❤️ Thank You
+
+- Abdelkarim Ait Bourich @VeinDevTtv
+- Ahmed salman @ahmedsalman74
+- Dimitris-Rafail Katsampas @CatchABus
+- dollaransh17 @dollaransh17
+- Eduardo Speroni @edusperoni
+- felixkrautschuk
+- Nathan Walker
+- Osei Fortune @triniwiz
+- Samuel Schultze
+- snehitha-30727
+
 ## 8.9.9 (2025-09-09)
 
 ### 🚀 Features

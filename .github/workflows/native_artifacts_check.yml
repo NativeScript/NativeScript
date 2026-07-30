@@ -1,0 +1,35 @@
+# Verifies that the committed native artifacts (packages/core/platforms) are in
+# sync with their sources in packages/ui-mobile-base. Native builds are expensive
+# and not rebuilt in CI, so this guards against changing native sources without
+# rebuilding + committing the artifacts. Pure content hashing — no Xcode/Android
+# toolchain required.
+name: 'Native artifacts check'
+on:
+  pull_request:
+    paths:
+      - 'packages/ui-mobile-base/**'
+      - 'packages/core/platforms/**'
+
+permissions:
+  contents: read
+
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+jobs:
+  native-artifacts-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: 23.5.0
+          cache: 'npm'
+      - name: 'Derive appropriate SHAs for base and head for `nx affected` commands'
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+        with:
+          main-branch-name: 'main'
+      - name: 'Install dependencies'
+        run: npm ci
+      - name: 'Verify native build state'
+        run: npx nx verify-native ui-mobile-base

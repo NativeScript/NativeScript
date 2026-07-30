@@ -250,9 +250,9 @@ declare class NINearbyAccessoryConfiguration extends NIConfiguration {
 	/**
 	 * @since 16.0
 	 */
-	initWithAccessoryDataBluetoothPeerIdentifierError(accessoryData: NSData, identifier: NSUUID): this;
+	initWithAccessoryDataBluetoothPeerIdentifierError(accessoryData: NSData, identifier: NSUUID, error?: interop.Reference<NSError>): this;
 
-	initWithDataError(data: NSData): this;
+	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 }
 
 /**

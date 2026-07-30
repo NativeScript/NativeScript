@@ -83,6 +83,10 @@ export class StackLayout extends StackLayoutBase {
 		measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
 		measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
+		// Check against our maximum sizes (Infinity when unconstrained)
+		measureWidth = Math.min(measureWidth, this.effectiveMaxWidth);
+		measureHeight = Math.min(measureHeight, this.effectiveMaxHeight);
+
 		this._totalLength = isVertical ? measureHeight : measureWidth;
 
 		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
@@ -147,14 +151,18 @@ export class StackLayout extends StackLayoutBase {
 		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
+			case CoreTypes.HorizontalAlignment.start:
+				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? right - left - this._totalLength + paddingLeft : paddingLeft;
+				break;
 			case CoreTypes.HorizontalAlignment.center:
 				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
-
 			case CoreTypes.HorizontalAlignment.right:
 				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
-
+			case CoreTypes.HorizontalAlignment.end:
+				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? paddingLeft : right - left - this._totalLength + paddingLeft;
+				break;
 			case CoreTypes.HorizontalAlignment.left:
 			case CoreTypes.HorizontalAlignment.stretch:
 			default:

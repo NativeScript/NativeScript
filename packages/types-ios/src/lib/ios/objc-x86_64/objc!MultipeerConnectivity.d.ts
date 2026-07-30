@@ -288,11 +288,11 @@ declare class MCSession extends NSObject {
 
 	nearbyConnectionDataForPeerWithCompletionHandler(peerID: MCPeerID, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	sendDataToPeersWithModeError(data: NSData, peerIDs: NSArray<MCPeerID> | MCPeerID[], mode: MCSessionSendDataMode): boolean;
+	sendDataToPeersWithModeError(data: NSData, peerIDs: NSArray<MCPeerID> | MCPeerID[], mode: MCSessionSendDataMode, error?: interop.Reference<NSError>): boolean;
 
 	sendResourceAtURLWithNameToPeerWithCompletionHandler(resourceURL: NSURL, resourceName: string, peerID: MCPeerID, completionHandler: (p1: NSError) => void): NSProgress;
 
-	startStreamWithNameToPeerError(streamName: string, peerID: MCPeerID): NSOutputStream;
+	startStreamWithNameToPeerError(streamName: string, peerID: MCPeerID, error?: interop.Reference<NSError>): NSOutputStream;
 }
 
 interface MCSessionDelegate extends NSObjectProtocol {

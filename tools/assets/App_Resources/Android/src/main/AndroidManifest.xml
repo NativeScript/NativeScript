@@ -21,7 +21,8 @@
 		android:icon="@drawable/icon"
 		android:label="@string/app_name"
 		android:theme="@style/AppTheme"
-		android:hardwareAccelerated="true">
+		android:hardwareAccelerated="true"
+		android:supportsRtl="true">
 
 		<activity
 			android:name="com.tns.NativeScriptActivity"
@@ -29,7 +30,7 @@
 			android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|locale|uiMode"
 			android:theme="@style/LaunchScreenTheme"
 			android:hardwareAccelerated="true"
-      		android:launchMode="singleTask"
+			android:launchMode="singleTask"
 			android:exported="true">
 
 			<meta-data android:name="SET_THEME_ON_LAUNCH" android:resource="@style/AppTheme" />

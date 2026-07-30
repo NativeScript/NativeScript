@@ -497,6 +497,21 @@ declare class NSObject implements NSObjectProtocol {
 	accessibilityIncrement(): void;
 
 	/**
+	 * @since 18.2
+	 */
+	accessibilityLineEndPositionFromCurrentSelection(): number;
+
+	/**
+	 * @since 18.2
+	 */
+	accessibilityLineRangeForPosition(position: number): NSRange;
+
+	/**
+	 * @since 18.2
+	 */
+	accessibilityLineStartPositionFromCurrentSelection(): number;
+
+	/**
 	 * @since 5.0
 	 */
 	accessibilityPerformEscape(): boolean;
@@ -682,7 +697,12 @@ declare class NSObject implements NSObjectProtocol {
 	 */
 	prepareForInterfaceBuilder(): void;
 
-	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer | interop.Reference<any>, rowbytes: number, x: number, y: number, width: number, height: number, info: any): void;
+	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer | interop.Reference<any>, rowbytes: number, originx: number, originy: number, width: number, height: number, info: any): void;
+
+	/**
+	 * @since 19.0
+	 */
+	provideImageToMTLTextureCommandBufferOriginxOriginyWidthHeightUserInfo(texture: MTLTexture, commandBuffer: MTLCommandBuffer, originx: number, originy: number, width: number, height: number, info: any): void;
 
 	removeObserverForKeyPath(observer: NSObject, keyPath: string): void;
 
@@ -752,9 +772,9 @@ declare class NSObject implements NSObjectProtocol {
 	 */
 	unableToSetNilForKey(key: string): void;
 
-	validateValueForKeyError(ioValue: interop.Pointer | interop.Reference<any>, inKey: string): boolean;
+	validateValueForKeyError(ioValue: interop.Pointer | interop.Reference<any>, inKey: string, error?: interop.Reference<NSError>): boolean;
 
-	validateValueForKeyPathError(ioValue: interop.Pointer | interop.Reference<any>, inKeyPath: string): boolean;
+	validateValueForKeyPathError(ioValue: interop.Pointer | interop.Reference<any>, inKeyPath: string, error?: interop.Reference<NSError>): boolean;
 
 	valueForKey(key: string): any;
 

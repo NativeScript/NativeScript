@@ -2,7 +2,7 @@ import { ImageSource } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 import * as http from '@nativescript/core/http';
 import * as fs from '@nativescript/core/file-system';
-import { addHeader } from '@nativescript/core/http/http-request';
+import { requestInternal, addHeader, BaseHttpContent } from '@nativescript/core/http/http-request-internal';
 
 export var test_getString_isDefined = function () {
 	TKUnit.assert(typeof http.getString !== 'undefined', 'Method http.getString() should be defined!');
@@ -17,7 +17,7 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -67,7 +67,7 @@ export var test_getJSON = function (done) {
 			//// Argument (e) is Error!
 			//console.log(e);
 			done(e);
-		}
+		},
 	);
 };
 
@@ -115,7 +115,7 @@ export var test_getJSONP = function (done) {
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -156,7 +156,7 @@ export var test_gzip_request_explicit = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -180,7 +180,7 @@ export var test_gzip_request_implicit = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -205,7 +205,7 @@ export var test_getImage = function (done) {
 		(err) => {
 			// Argument (e) is Error!
 			done(err);
-		}
+		},
 	);
 };
 
@@ -258,7 +258,7 @@ export var test_getFile = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -280,7 +280,7 @@ export var test_getContentAsFile = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -329,6 +329,89 @@ export var test_request_requestShouldTimeout = function (done) {
 	});
 };
 
+export var test_requestInternal_responseStatusCodeShouldBeDefined = function (done) {
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
+		function (response) {
+			//// Argument (response) is HttpResponse!
+			var statusCode = response.statusCode;
+			try {
+				TKUnit.assert(typeof statusCode !== 'undefined', 'response.statusCode should be defined!');
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
+export var test_requestInternal_responseContentShouldExposeNativeContentFunctions = function (done) {
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
+		function (response) {
+			try {
+				TKUnit.assert(typeof response.content.toNativeImage === 'function' && typeof response.content.toNativeString === 'function', `response.content should expose native content functions!`);
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
+export var test_requestInternal_responseContentShouldExposeHandlerFunctions = function (done) {
+	const responseHandler = {
+		toDummy1: () => 'dummy1',
+		toDummy2: () => 'dummy2',
+	};
+
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }, responseHandler).then(
+		function (response) {
+			try {
+				TKUnit.assert(typeof response.content.toDummy1 === 'function' && typeof response.content.toDummy2 === 'function', `response.content should expose content handler functions!`);
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
+export var test_requestInternal_responseHandlerShouldBeAvailable = function (done) {
+	const suffix = '-nsformatted';
+	const responseHandler = {
+		toFormattedString: function (this: BaseHttpContent) {
+			return this.toNativeString() + suffix;
+		},
+	};
+
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }, responseHandler).then(
+		function (response) {
+			const value = response.content.toFormattedString();
+			try {
+				TKUnit.assert(typeof value === 'string' && value.endsWith(suffix), `response.content.toFormattedString should return the response string appended with ${suffix} at the end!`);
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
 export var test_request_responseStatusCodeShouldBeDefined = function (done) {
 	var result: http.HttpResponse;
 
@@ -347,7 +430,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -363,7 +446,7 @@ export var test_headRequest_responseStatusCodeShouldBeDefined = function (done) 
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -387,7 +470,7 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -409,7 +492,7 @@ export var test_request_responseContentShouldBeDefined = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -428,7 +511,7 @@ export var test_request_responseContentToStringShouldReturnString = function (do
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -447,7 +530,7 @@ export var test_request_responseContentToJSONShouldReturnJSON = function (done) 
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -468,7 +551,7 @@ export var test_request_responseContentToImageShouldReturnCorrectImage = functio
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -487,7 +570,7 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = fu
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCreateDirPathIfNecesary = function (done) {
@@ -507,7 +590,7 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCr
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -526,7 +609,7 @@ export var test_request_responseContentToFileFromContentShouldReturnCorrectFile 
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -551,7 +634,7 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -597,7 +680,7 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -627,7 +710,7 @@ export var test_request_FormDataContentSentAndReceivedProperly = function (done)
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -655,7 +738,7 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -684,12 +767,12 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 			function (e) {
 				done(e);
 				// console.log("Error occurred " + e);
-			}
+			},
 		);
 };
 
 export var test_getString_WorksProperlyInWorker = function (done) {
-	const worker = new Worker('./http-string-worker');
+	const worker = new Worker(new URL('./http-string-worker', import.meta.url));
 	console.log('Worker Created');
 	worker.onmessage = function (msg) {
 		console.log('Message received');

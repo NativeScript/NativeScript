@@ -12,13 +12,7 @@
 		"sourceMap": true,
 		"inlineSourceMap": false,
 		"baseUrl": ".",
-		"types": ["node"],
-		"plugins": [
-			{
-				"transform": "./packages/webpack5/src/transformers/NativeClass/index.ts",
-				"type": "raw"
-			}
-		]
+		"types": ["node"]
 	},
 	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "vite.config.ts", "vitest.setup.ts"],
 	"include": ["**/*.ts", "./references.d.ts"]

@@ -136,7 +136,7 @@ declare class LAContext extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	canEvaluatePolicyError(policy: LAPolicy): boolean;
+	canEvaluatePolicyError(policy: LAPolicy, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0

@@ -1,11 +1,10 @@
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
-import { unsetValue, isCssWideKeyword } from '../core/properties/property-shared';
+import { unsetValue } from '../core/properties/property-shared';
 import { Style } from './style';
 
 import { Color } from '../../color';
 import { Font, parseFont, FontStyle, FontStyleType, FontWeight, FontWeightType, FontVariationSettings, FontVariationSettingsType } from './font';
 import { Background } from './background';
-import { layout } from '../../utils';
 
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
@@ -16,6 +15,7 @@ import { LinearGradient } from './linear-gradient';
 import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
+import { parseCSSCommaSeparatedListOfValues } from './css-utils';
 
 interface ShorthandPositioning {
 	top: string;
@@ -24,76 +24,9 @@ interface ShorthandPositioning {
 	left: string;
 }
 
-function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
-function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
-function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType | CoreTypes.LengthDipUnit): boolean {
-	if (a == 'auto' || isCssWideKeyword(a)) {
-		return b == 'auto' || isCssWideKeyword(b);
-	}
-
-	if (b == 'auto' || isCssWideKeyword(b)) {
-		return false;
-	}
-
-	if (typeof a === 'number') {
-		if (typeof b === 'number') {
-			return a == b;
-		}
-		if (!b) {
-			return false;
-		}
-		return (b as CoreTypes.LengthDipUnit).unit == 'dip' && a == (b as CoreTypes.LengthDipUnit).value;
-	}
-
-	if (typeof b === 'number') {
-		return a ? (a as CoreTypes.LengthDipUnit).unit == 'dip' && (a as CoreTypes.LengthDipUnit).value == b : false;
-	}
-	if (!a || !b) {
-		return false;
-	}
-	return (a as CoreTypes.LengthDipUnit).value == (b as CoreTypes.LengthDipUnit).value && (a as CoreTypes.LengthDipUnit).unit == (b as CoreTypes.LengthDipUnit).unit;
-}
-
-function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
-	if (length == 'auto' || isCssWideKeyword(length)) {
-		return 'auto';
-	}
-
-	if (typeof length === 'number') {
-		return length.toString();
-	}
-
-	let val = (length as CoreTypes.LengthPercentUnit).value;
-	if ((length as CoreTypes.LengthPercentUnit).unit === '%') {
-		val *= 100;
-	}
-
-	return val + (length as CoreTypes.LengthPercentUnit).unit;
-}
-
-function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length == 'auto' || isCssWideKeyword(length)) {
-		return auto;
-	}
-	if (typeof length === 'number') {
-		return layout.round(layout.toDevicePixels(length));
-	}
-	if (!length) {
-		return auto;
-	}
-	// @ts-ignore
-	switch (length.unit) {
-		case 'px':
-			// @ts-ignore
-			return layout.round(length.value);
-		case '%':
-			// @ts-ignore
-			return layout.round(parentAvailableWidth * length.value);
-		case 'dip':
-		default:
-			// @ts-ignore
-			return layout.round(layout.toDevicePixels(length.value));
-	}
+interface ShorthandGap {
+	row: string;
+	col: string;
 }
 
 function isNonNegativeFiniteNumber(value: number): boolean {
@@ -165,6 +98,28 @@ function parseShorthandPositioning(value: string): ShorthandPositioning {
 		right: right,
 		bottom: bottom,
 		left: left,
+	};
+}
+
+function parseShorthandGap(value: string): ShorthandGap {
+	const arr = value.split(/[ ,]+/);
+
+	let row: string;
+	let col: string;
+
+	if (arr.length === 1) {
+		row = arr[0];
+		col = arr[0];
+	} else if (arr.length === 2) {
+		row = arr[0];
+		col = arr[1];
+	} else {
+		throw new Error('Expected 1 or 2 parameters. Actual: ' + value);
+	}
+
+	return {
+		row,
+		col,
 	};
 }
 
@@ -253,6 +208,30 @@ function convertToPaddings(value: string | CoreTypes.LengthType): [CssProperty<S
 			[paddingLeftProperty, value],
 		];
 	}
+}
+
+function convertToGaps(value: string | CoreTypes.LengthType): [CssProperty<Style, CoreTypes.LengthType>, CoreTypes.LengthType][] {
+	let rowGap: CoreTypes.LengthType;
+	let colGap: CoreTypes.LengthType;
+
+	if (typeof value === 'string' && value !== 'auto') {
+		if (value.length) {
+			const gaps = parseShorthandGap(value);
+			rowGap = Length.parse(gaps.row);
+			colGap = Length.parse(gaps.col);
+		} else {
+			rowGap = 0;
+			colGap = 0;
+		}
+	} else {
+		rowGap = value;
+		colGap = value;
+	}
+
+	return [
+		[rowGapProperty, rowGap],
+		[columnGapProperty, colGap],
+	];
 }
 
 function convertToTransform(value: string): [CssAnimationProperty<any, any>, any][] {
@@ -349,6 +328,32 @@ export const heightProperty = new CssAnimationProperty<Style, CoreTypes.PercentL
 });
 heightProperty.register(Style);
 
+export const maxWidthProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
+	name: 'maxWidth',
+	cssName: 'max-width',
+	// 'auto' means unconstrained (no maximum).
+	defaultValue: 'auto',
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	// The effective pixel value is resolved at measure time in
+	// View._updateEffectiveLayoutValues (percent needs the parent size), so we
+	// only need to trigger a relayout here. On iOS that is done via affectsLayout;
+	// on Android the native setNative handler applies it and re-measures.
+	valueConverter: PercentLength.parse,
+});
+maxWidthProperty.register(Style);
+
+export const maxHeightProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
+	name: 'maxHeight',
+	cssName: 'max-height',
+	// 'auto' means unconstrained (no maximum).
+	defaultValue: 'auto',
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	valueConverter: PercentLength.parse,
+});
+maxHeightProperty.register(Style);
+
 const marginProperty = new ShorthandProperty<Style, string | CoreTypes.PercentLengthType>({
 	name: 'margin',
 	cssName: 'margin',
@@ -403,6 +408,12 @@ export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLeng
 });
 marginBottomProperty.register(Style);
 
+export const paddingInternalProperty = new CssProperty<Style, string>({
+	name: 'paddingInternal',
+	cssName: '_paddingInternal',
+});
+paddingInternalProperty.register(Style);
+
 const paddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'padding',
 	cssName: 'padding',
@@ -426,7 +437,8 @@ export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>(
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+			view.effectivePaddingLeft = paddingLeftProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
+			target.paddingInternal = view.getEffectivePaddingShorthand();
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -444,7 +456,8 @@ export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+			view.effectivePaddingRight = paddingRightProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
+			target.paddingInternal = view.getEffectivePaddingShorthand();
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -462,7 +475,8 @@ export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+			view.effectivePaddingTop = paddingTopProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
+			target.paddingInternal = view.getEffectivePaddingShorthand();
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -480,7 +494,8 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+			view.effectivePaddingBottom = paddingBottomProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
+			target.paddingInternal = view.getEffectivePaddingShorthand();
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -488,6 +503,56 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	valueConverter: Length.parse,
 });
 paddingBottomProperty.register(Style);
+
+const gapProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
+	name: 'gap',
+	cssName: 'gap',
+	getter: function (this: Style) {
+		if (Length.equals(this.rowGap, this.columnGap)) {
+			return this.rowGap;
+		}
+
+		return `${Length.convertToString(this.rowGap)} ${PercentLength.convertToString(this.columnGap)}`;
+	},
+	converter: convertToGaps,
+});
+gapProperty.register(Style);
+
+export const rowGapProperty = new CssProperty<Style, CoreTypes.LengthType>({
+	name: 'rowGap',
+	cssName: 'row-gap',
+	defaultValue: 0,
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
+	valueChanged: (target, oldValue, newValue) => {
+		const view = target.viewRef.get();
+		if (view) {
+			view.effectiveRowGap = Length.toDevicePixels(newValue, 0);
+		} else {
+			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
+		}
+	},
+});
+rowGapProperty.register(Style);
+
+export const columnGapProperty = new CssProperty<Style, CoreTypes.LengthType>({
+	name: 'columnGap',
+	cssName: 'column-gap',
+	defaultValue: 0,
+	affectsLayout: global.isIOS,
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
+	valueChanged: (target, oldValue, newValue) => {
+		const view = target.viewRef.get();
+		if (view) {
+			view.effectiveColumnGap = Length.toDevicePixels(newValue, 0);
+		} else {
+			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
+		}
+	},
+});
+columnGapProperty.register(Style);
 
 export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.HorizontalAlignmentType>({
 	name: 'horizontalAlignment',
@@ -992,25 +1057,38 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 });
 borderBottomLeftRadiusProperty.register(Style);
 
-const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
+const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBoxShadow(
-			newValue
-				? {
-						inset: newValue.inset,
-						offsetX: Length.toDevicePixels(newValue.offsetX, 0),
-						offsetY: Length.toDevicePixels(newValue.offsetY, 0),
-						blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
-						spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
-						color: newValue.color,
-					}
+	valueChanged: (target, _oldValue, newValue) => {
+		target.backgroundInternal = target.backgroundInternal.withBoxShadows(
+			newValue?.length
+				? newValue.map((v) => {
+						return {
+							inset: v.inset,
+							offsetX: Length.toDevicePixels(v.offsetX, 0),
+							offsetY: Length.toDevicePixels(v.offsetY, 0),
+							blurRadius: Length.toDevicePixels(v.blurRadius, 0),
+							spreadRadius: Length.toDevicePixels(v.spreadRadius, 0),
+							color: v.color,
+						};
+					})
 				: null,
 		);
 	},
 	valueConverter: (value) => {
-		return parseCSSShadow(value);
+		const values = parseCSSCommaSeparatedListOfValues(value);
+		const result: ShadowCSSValues[] = [];
+
+		// The first layer specified is drawn as if it is closest to the user
+		for (let i = values.length - 1; i >= 0; i--) {
+			const shadowVal = parseCSSShadow(values[i]);
+			if (shadowVal) {
+				result.push(shadowVal);
+			}
+		}
+
+		return result;
 	},
 });
 boxShadowProperty.register(Style);
@@ -1036,6 +1114,14 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 	},
 });
 clipPathProperty.register(Style);
+
+export const directionProperty = new InheritedCssProperty<Style, CoreTypes.LayoutDirectionType>({
+	defaultValue: null,
+	name: 'direction',
+	cssName: 'direction',
+	affectsLayout: __APPLE__,
+});
+directionProperty.register(Style);
 
 export const zIndexProperty = new CssProperty<Style, number>({
 	name: 'zIndex',

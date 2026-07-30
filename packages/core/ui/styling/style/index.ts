@@ -106,11 +106,13 @@ export class Style extends Observable {
 	}
 
 	public fontInternal: Font;
+	public iconFontFamily: string;
 	/**
 	 * This property ensures inheritance of a11y scale among views.
 	 */
 	public fontScaleInternal: number;
 	public backgroundInternal: Background;
+	public paddingInternal: string;
 
 	public rotate: number;
 	public rotateX: number;
@@ -150,7 +152,9 @@ export class Style extends Observable {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
-	public boxShadow: ShadowCSSValues;
+	public boxShadow: string | ShadowCSSValues[];
+
+	public direction: CoreTypes.LayoutDirectionType;
 
 	public fontSize: number;
 	public fontFamily: string;
@@ -179,6 +183,8 @@ export class Style extends Observable {
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;
+	public maxWidth: CoreTypes.PercentLengthType;
+	public maxHeight: CoreTypes.PercentLengthType;
 	public width: CoreTypes.PercentLengthType;
 	public height: CoreTypes.PercentLengthType;
 	public margin: string | CoreTypes.PercentLengthType;
@@ -191,6 +197,9 @@ export class Style extends Observable {
 	public paddingTop: CoreTypes.LengthType;
 	public paddingRight: CoreTypes.LengthType;
 	public paddingBottom: CoreTypes.LengthType;
+	public gap: string | CoreTypes.LengthType;
+	public rowGap: CoreTypes.LengthType;
+	public columnGap: CoreTypes.LengthType;
 	public horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 	public verticalAlignment: CoreTypes.VerticalAlignmentType;
 

@@ -41,12 +41,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// set mode
 	config.mode(mode);
 
-	// use source map files by default with v9+
+	// Inline source maps for v9+ dev builds.
+	// Chrome DevTools cannot fetch external .map files in this debugging
+	// flow: bundled DevTools blocks http:// via CSP, the appspot frontend
+	// hits the same CSP, and the iOS V8 inspector backend fetch is blocked
+	// by App Transport Security. A `data:` URL inlined in the bundle
+	// sidesteps all three since DevTools handles it without any network
+	// request. Production builds keep their configured devtool unchanged.
+
+	let defaultSourceMap: Config.DevTool = 'inline-source-map';
+
 	function useSourceMapFiles() {
 		if (mode === 'development') {
-			// in development we always use source-map files with v9+ runtimes
-			// they are parsed and mapped to display in-flight app error screens
-			env.sourceMap = 'source-map';
+			defaultSourceMap = 'source-map';
 		}
 	}
 	// determine target output by @nativescript/* runtime version
@@ -97,6 +104,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				env.commonjs = true;
 			}
 		}
+	} else {
+		env.commonjs = true;
+	}
+
+	if (env.hmr) {
+		// HMR webpack should use CommonJS
+		env.commonjs = true;
 	}
 
 	// config.stats({
@@ -149,8 +163,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
-		const defaultSourceMap = 'inline-source-map';
-
 		if (typeof map === 'undefined') {
 			// source-maps disabled in production by default
 			// enabled with --env.sourceMap=<type>
@@ -175,36 +187,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Use devtool for both CommonJS and ESM - let webpack handle source mapping properly
 	config.devtool(sourceMapType);
-
-	// For ESM builds, fix the sourceMappingURL to use correct paths
-	if (!env.commonjs && sourceMapType && sourceMapType !== 'hidden-source-map') {
-		class FixSourceMapUrlPlugin {
-			apply(compiler) {
-				compiler.hooks.emit.tap('FixSourceMapUrlPlugin', (compilation) => {
-          const leadingCharacter = process.platform === "win32" ? "/":"";
-					Object.keys(compilation.assets).forEach((filename) => {
-						if (filename.endsWith('.mjs') || filename.endsWith('.js')) {
-							const asset = compilation.assets[filename];
-							let source = asset.source();
-
-							// Replace sourceMappingURL to use file:// protocol pointing to actual location
-							source = source.replace(
-								/\/\/# sourceMappingURL=(.+\.map)/g,
-								`//# sourceMappingURL=file://${leadingCharacter}${outputPath}/$1`,
-							);
-
-							compilation.assets[filename] = {
-								source: () => source,
-								size: () => source.length,
-							};
-						}
-					});
-				});
-			}
-		}
-
-		config.plugin('FixSourceMapUrlPlugin').use(FixSourceMapUrlPlugin);
-	}
 
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
@@ -282,6 +264,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
 			config.output.filename(`[name].${env.uniqueBundle}.mjs`);
 		}
+		// Prevent webpack from generating Node-style ESM shims for __dirname/__filename.
+		// For output modules, webpack defaults these to a fileURLToPath(import.meta.url) helper
+		// imported from bare "url", which does not match the NativeScript iOS runtime contract.
+		// The runtime already provides import.meta.dirname and initializes global.__dirname,
+		// so webpack's helper is redundant and can misresolve in bundle/worker contexts.
+		// ESM app or dependency code should use import.meta.dirname/import.meta.url instead
+		// of expecting webpack to synthesize __dirname/__filename.
+		config.node.set('__dirname', false);
+		config.node.set('__filename', false);
 	}
 
 	config.watchOptions({
@@ -476,7 +467,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					before: [require('../transformers/NativeClass').default],
 				};
 			},
-		});
+		})
+		.end()
+		// Ensure pre-loaders run BEFORE ts-loader (loaders execute right-to-left):
+		// order: [ts-loader, native-class-downlevel-loader, native-class-strip-loader]
+		// execution: strip -> downlevel -> ts-loader
+		.use('native-class-downlevel-loader')
+		.loader('native-class-downlevel-loader')
+		.end()
+		.use('native-class-strip-loader')
+		.loader('native-class-strip-loader');
 
 	// Use Fork TS Checker to do type checking in a separate non-blocking process
 	config.when(hasDependency('typescript'), (config) => {

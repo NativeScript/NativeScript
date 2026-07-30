@@ -1814,7 +1814,9 @@ declare const enum NSStringDrawingOptions {
 
 	UsesDeviceMetrics = 8,
 
-	TruncatesLastVisibleLine = 32
+	TruncatesLastVisibleLine = 32,
+
+	OptionsResolvesNaturalAlignmentWithBaseWritingDirection = 512
 }
 
 declare function NSStringFromCGAffineTransform(transform: CGAffineTransform): string;
@@ -2307,6 +2309,11 @@ declare class NSTextContentStorage extends NSTextContentManager implements NSTex
 
 	delegate: NSTextContentStorageDelegate;
 
+	/**
+	 * @since 26.0
+	 */
+	includesTextListMarkers: boolean;
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
@@ -2597,6 +2604,11 @@ declare class NSTextLayoutManager extends NSObject implements NSSecureCoding, NS
 
 	renderingAttributesValidator: (p1: NSTextLayoutManager, p2: NSTextLayoutFragment) => void;
 
+	/**
+	 * @since 26.0
+	 */
+	resolvesNaturalAlignmentWithBaseWritingDirection: boolean;
+
 	textContainer: NSTextContainer;
 
 	readonly textContentManager: NSTextContentManager;
@@ -2854,6 +2866,11 @@ declare class NSTextList extends NSObject implements NSCopying, NSSecureCoding {
 	readonly ordered: boolean;
 
 	startingItemNumber: number;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly includesTextListMarkers: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -3314,7 +3331,7 @@ declare class NSTextStorage extends NSMutableAttributedString implements NSSecur
 
 	static new(): NSTextStorage; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSTextStorage; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSTextStorage; // inherited from NSItemProviderReading
 
 	readonly changeInLength: number;
 
@@ -3628,6 +3645,11 @@ declare const enum NSWritingDirectionFormatType {
 
 	Override = 2
 }
+
+/**
+ * @since 18.2
+ */
+declare var NSWritingToolsExclusionAttributeName: string;
 
 /**
  * @since 2.0
@@ -4725,6 +4747,8 @@ declare class UIAction extends UIMenuElement implements UIMenuLeaf {
 	 */
 	readonly presentationSourceItem: UIPopoverPresentationControllerSourceItem; // inherited from UIMenuLeaf
 
+	repeatBehavior: UIMenuElementRepeatBehavior; // inherited from UIMenuLeaf
+
 	/**
 	 * @since 17.0
 	 */
@@ -4764,6 +4788,11 @@ declare class UIAction extends UIMenuElement implements UIMenuLeaf {
 
 	self(): this;
 }
+
+/**
+ * @since 26.0
+ */
+declare var UIActionNewFromPasteboard: string;
 
 /**
  * @since 15.0
@@ -6153,6 +6182,11 @@ declare class UIApplication extends UIResponder {
 	completeStateRestoration(): void;
 
 	/**
+	 * @since 18.2
+	 */
+	defaultStatusForCategoryError(category: UIApplicationCategory, error?: interop.Reference<NSError>): UIApplicationCategoryDefaultStatus;
+
+	/**
 	 * @since 3.0
 	 * @deprecated 8.0
 	 */
@@ -6317,6 +6351,49 @@ declare var UIApplicationBackgroundFetchIntervalNever: number;
  */
 declare var UIApplicationBackgroundRefreshStatusDidChangeNotification: string;
 
+/**
+ * @since 18.2
+ */
+declare const enum UIApplicationCategory {
+
+	WebBrowser = 1
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIApplicationCategoryDefaultErrorCode {
+
+	RateLimited = 1
+}
+
+/**
+ * @since 18.2
+ */
+declare var UIApplicationCategoryDefaultErrorDomain: string;
+
+/**
+ * @since 18.2
+ */
+declare var UIApplicationCategoryDefaultRetryAvailabilityDateErrorKey: string;
+
+/**
+ * @since 18.2
+ */
+declare const enum UIApplicationCategoryDefaultStatus {
+
+	Unavailable = 0,
+
+	IsDefault = 1,
+
+	NotDefault = 2
+}
+
+/**
+ * @since 18.2
+ */
+declare var UIApplicationCategoryDefaultStatusLastProvidedDateErrorKey: string;
+
 interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
@@ -6331,9 +6408,14 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 8.0
+	 * @deprecated 26.0
 	 */
 	applicationContinueUserActivityRestorationHandler?(application: UIApplication, userActivity: NSUserActivity, restorationHandler: (p1: NSArray<UIUserActivityRestoring>) => void): boolean;
 
+	/**
+	 * @since 2.0
+	 * @deprecated 26.0
+	 */
 	applicationDidBecomeActive?(application: UIApplication): void;
 
 	/**
@@ -6365,6 +6447,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 8.0
+	 * @deprecated 26.0
 	 */
 	applicationDidFailToContinueUserActivityWithTypeError?(application: UIApplication, userActivityType: string, error: NSError): void;
 
@@ -6412,6 +6495,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 8.0
+	 * @deprecated 26.0
 	 */
 	applicationDidUpdateUserActivity?(application: UIApplication, userActivity: NSUserActivity): void;
 
@@ -6468,6 +6552,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 26.0
 	 */
 	applicationOpenURLOptions?(app: UIApplication, url: NSURL, options: NSDictionary<string, any>): boolean;
 
@@ -6479,6 +6564,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 26.0
 	 */
 	applicationPerformActionForShortcutItemCompletionHandler?(application: UIApplication, shortcutItem: UIApplicationShortcutItem, completionHandler: (p1: boolean) => void): void;
 
@@ -6544,6 +6630,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 10.0
+	 * @deprecated 26.0
 	 */
 	applicationUserDidAcceptCloudKitShareWithMetadata?(application: UIApplication, cloudKitShareMetadata: CKShareMetadata): void;
 
@@ -6566,6 +6653,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 8.0
+	 * @deprecated 26.0
 	 */
 	applicationWillContinueUserActivityWithType?(application: UIApplication, userActivityType: string): boolean;
 
@@ -6576,6 +6664,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 4.0
+	 * @deprecated 26.0
 	 */
 	applicationWillEnterForeground?(application: UIApplication): void;
 
@@ -6584,6 +6673,10 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 	 */
 	applicationWillFinishLaunchingWithOptions?(application: UIApplication, launchOptions: NSDictionary<string, any>): boolean;
 
+	/**
+	 * @since 2.0
+	 * @deprecated 26.0
+	 */
 	applicationWillResignActive?(application: UIApplication): void;
 
 	applicationWillTerminate?(application: UIApplication): void;
@@ -6634,21 +6727,25 @@ declare var UIApplicationLaunchOptionsAnnotationKey: string;
 
 /**
  * @since 7.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsBluetoothCentralsKey: string;
 
 /**
  * @since 7.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsBluetoothPeripheralsKey: string;
 
 /**
  * @since 10.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsCloudKitShareMetadataKey: string;
 
 /**
  * @since 14.5
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsEventAttributionKey: string;
 
@@ -6660,45 +6757,58 @@ declare var UIApplicationLaunchOptionsLocalNotificationKey: string;
 
 /**
  * @since 4.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsLocationKey: string;
 
 /**
  * @since 5.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsNewsstandDownloadsKey: string;
 
 /**
  * @since 3.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsRemoteNotificationKey: string;
 
 /**
- * @since 9.0
+ * @since 3.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsShortcutItemKey: string;
 
 /**
  * @since 3.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsSourceApplicationKey: string;
 
 /**
  * @since 3.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsURLKey: string;
 
 /**
  * @since 8.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsUserActivityDictionaryKey: string;
 
 /**
  * @since 8.0
+ * @deprecated 26.0
  */
 declare var UIApplicationLaunchOptionsUserActivityTypeKey: string;
 
 declare function UIApplicationMain(argc: number, argv: interop.Reference<interop.Pointer | interop.Reference<any>>, principalClassName: string, delegateClassName: string): never;
+
+/**
+ * @since 18.3
+ */
+declare var UIApplicationOpenDefaultApplicationsSettingsURLString: string;
 
 /**
  * @since 14.5
@@ -6722,21 +6832,25 @@ declare var UIApplicationOpenURLOptionUniversalLinksOnly: string;
 
 /**
  * @since 9.0
+ * @deprecated 26.0
  */
 declare var UIApplicationOpenURLOptionsAnnotationKey: string;
 
 /**
  * @since 14.5
+ * @deprecated 26.0
  */
 declare var UIApplicationOpenURLOptionsEventAttributionKey: string;
 
 /**
  * @since 9.0
+ * @deprecated 26.0
  */
 declare var UIApplicationOpenURLOptionsOpenInPlaceKey: string;
 
 /**
  * @since 9.0
+ * @deprecated 26.0
  */
 declare var UIApplicationOpenURLOptionsSourceApplicationKey: string;
 
@@ -7024,20 +7138,6 @@ declare const enum UIAttachmentBehaviorType {
 }
 
 /**
- * @since 13.4
- */
-declare const enum UIAxis {
-
-	Neither = 0,
-
-	Horizontal = 1,
-
-	Vertical = 2,
-
-	Both = 3
-}
-
-/**
  * @since 14.0
  */
 declare class UIBackgroundConfiguration extends NSObject implements NSCopying, NSSecureCoding {
@@ -7153,6 +7253,49 @@ declare class UIBackgroundConfiguration extends NSObject implements NSCopying, N
 	resolvedStrokeColorForTintColor(tintColor: UIColor): UIColor;
 
 	updatedConfigurationForState(state: UIConfigurationState): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIBackgroundExtensionView extends UIView {
+
+	static alloc(): UIBackgroundExtensionView; // inherited from NSObject
+
+	static appearance(): UIBackgroundExtensionView; // inherited from UIAppearance
+
+	/**
+	 * @since 8.0
+	 */
+	static appearanceForTraitCollection(trait: UITraitCollection): UIBackgroundExtensionView; // inherited from UIAppearance
+
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIBackgroundExtensionView; // inherited from UIAppearance
+
+	/**
+	 * @since 9.0
+	 */
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBackgroundExtensionView; // inherited from UIAppearance
+
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIBackgroundExtensionView; // inherited from UIAppearance
+
+	/**
+	 * @since 9.0
+	 */
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBackgroundExtensionView; // inherited from UIAppearance
+
+	static new(): UIBackgroundExtensionView; // inherited from NSObject
+
+	automaticallyPlacesContentView: boolean;
+
+	contentView: UIView;
 }
 
 /**
@@ -7349,6 +7492,11 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBarButtonItem; // inherited from UIAppearance
 
 	/**
+	 * @since 26.0
+	 */
+	static fixedSpaceItem(): UIBarButtonItem;
+
+	/**
 	 * @since 14.0
 	 */
 	static fixedSpaceItemOfWidth(width: number): UIBarButtonItem;
@@ -7361,6 +7509,11 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 	static new(): UIBarButtonItem; // inherited from NSObject
 
 	action: string;
+
+	/**
+	 * @since 26.0
+	 */
+	badge: UIBarButtonItemBadge;
 
 	/**
 	 * @since 9.0
@@ -7378,6 +7531,16 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 	 * @since 16.0
 	 */
 	hidden: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	hidesSharedBackground: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	identifier: string;
 
 	/**
 	 * @since 14.0
@@ -7405,6 +7568,11 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 	 * @since 15.0
 	 */
 	selected: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	sharesBackground: boolean;
 
 	style: UIBarButtonItemStyle;
 
@@ -7753,6 +7921,40 @@ declare class UIBarButtonItemAppearance extends NSObject implements NSCopying, N
 }
 
 /**
+ * @since 26.0
+ */
+declare class UIBarButtonItemBadge extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UIBarButtonItemBadge; // inherited from NSObject
+
+	static badgeWithCount(count: number): UIBarButtonItemBadge;
+
+	static badgeWithString(stringValue: string): UIBarButtonItemBadge;
+
+	static indicatorBadge(): UIBarButtonItemBadge;
+
+	static new(): UIBarButtonItemBadge; // inherited from NSObject
+
+	backgroundColor: UIColor;
+
+	font: UIFont;
+
+	foregroundColor: UIColor;
+
+	readonly stringValue: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 9.0
  */
 declare class UIBarButtonItemGroup extends NSObject implements NSCoding {
@@ -7763,6 +7965,11 @@ declare class UIBarButtonItemGroup extends NSObject implements NSCoding {
 	 * @since 16.0
 	 */
 	static fixedGroupWithRepresentativeItemItems(representativeItem: UIBarButtonItem, items: NSArray<UIBarButtonItem> | UIBarButtonItem[]): UIBarButtonItemGroup;
+
+	/**
+	 * @since 26.0
+	 */
+	static groupWithFixedSpace(): UIBarButtonItemGroup;
 
 	/**
 	 * @since 16.0
@@ -7830,6 +8037,8 @@ declare const enum UIBarButtonItemStyle {
 
 	Plain = 0,
 
+	Prominent = 2,
+
 	Bordered = 1,
 
 	Done = 2
@@ -7885,7 +8094,9 @@ declare const enum UIBarButtonSystemItem {
 
 	PageCurl = 23,
 
-	Close = 24
+	Close = 24,
+
+	WritingTools = 25
 }
 
 /**
@@ -8600,13 +8811,33 @@ declare class UIButtonConfiguration extends NSObject implements NSCopying, NSSec
 
 	static borderlessButtonConfiguration(): UIButtonConfiguration;
 
+	/**
+	 * @since 26.0
+	 */
+	static clearGlassButtonConfiguration(): UIButtonConfiguration;
+
 	static filledButtonConfiguration(): UIButtonConfiguration;
+
+	/**
+	 * @since 26.0
+	 */
+	static glassButtonConfiguration(): UIButtonConfiguration;
 
 	static grayButtonConfiguration(): UIButtonConfiguration;
 
 	static new(): UIButtonConfiguration; // inherited from NSObject
 
 	static plainButtonConfiguration(): UIButtonConfiguration;
+
+	/**
+	 * @since 26.0
+	 */
+	static prominentClearGlassButtonConfiguration(): UIButtonConfiguration;
+
+	/**
+	 * @since 26.0
+	 */
+	static prominentGlassButtonConfiguration(): UIButtonConfiguration;
 
 	static tintedButtonConfiguration(): UIButtonConfiguration;
 
@@ -8659,6 +8890,11 @@ declare class UIButtonConfiguration extends NSObject implements NSCopying, NSSec
 	subtitleLineBreakMode: NSLineBreakMode;
 
 	subtitleTextAttributesTransformer: (p1: NSDictionary<string, any>) => NSDictionary<string, any>;
+
+	/**
+	 * @since 26.0
+	 */
+	symbolContentTransition: UISymbolContentTransition;
 
 	title: string;
 
@@ -11735,13 +11971,23 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	static colorWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): UIColor;
 
+	/**
+	 * @since 26.0
+	 */
+	static colorWithRedGreenBlueAlphaExposure(red: number, green: number, blue: number, alpha: number, exposure: number): UIColor;
+
+	/**
+	 * @since 26.0
+	 */
+	static colorWithRedGreenBlueAlphaLinearExposure(red: number, green: number, blue: number, alpha: number, linearExposure: number): UIColor;
+
 	static colorWithWhiteAlpha(white: number, alpha: number): UIColor;
 
 	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	static new(): UIColor; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIColor;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): UIColor;
 
 	readonly CGColor: any;
 
@@ -11756,9 +12002,19 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 	readonly accessibilityName: string;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly linearExposure: number;
+
+	/**
 	 * @since 18.0
 	 */
 	readonly prominence: UIColorProminence;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly standardDynamicRangeColor: UIColor;
 
 	static readonly blackColor: UIColor;
 
@@ -12048,9 +12304,24 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	constructor(o: { red: number; green: number; blue: number; alpha: number; });
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { red: number; green: number; blue: number; alpha: number; exposure: number; });
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { red: number; green: number; blue: number; alpha: number; linearExposure: number; });
+
 	constructor(o: { white: number; alpha: number; });
 
 	class(): typeof NSObject;
+
+	/**
+	 * @since 26.0
+	 */
+	colorByApplyingContentHeadroom(contentHeadroom: number): UIColor;
 
 	colorWithAlphaComponent(alpha: number): UIColor;
 
@@ -12105,6 +12376,16 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	initWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): this;
 
+	/**
+	 * @since 26.0
+	 */
+	initWithRedGreenBlueAlphaExposure(red: number, green: number, blue: number, alpha: number, exposure: number): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithRedGreenBlueAlphaLinearExposure(red: number, green: number, blue: number, alpha: number, linearExposure: number): this;
+
 	initWithWhiteAlpha(white: number, alpha: number): this;
 
 	isEqual(object: any): boolean;
@@ -12152,9 +12433,19 @@ declare class UIColorPickerViewController extends UIViewController {
 
 	delegate: UIColorPickerViewControllerDelegate;
 
+	/**
+	 * @since 26.0
+	 */
+	maximumLinearExposure: number;
+
 	selectedColor: UIColor;
 
 	supportsAlpha: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	supportsEyedropper: boolean;
 }
 
 /**
@@ -12232,9 +12523,19 @@ declare class UIColorWell extends UIControl {
 
 	static new(): UIColorWell; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	maximumLinearExposure: number;
+
 	selectedColor: UIColor;
 
 	supportsAlpha: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	supportsEyedropper: boolean;
 
 	title: string;
 }
@@ -12276,6 +12577,8 @@ declare class UICommand extends UIMenuElement implements UIMenuLeaf {
 	 * @since 16.0
 	 */
 	readonly presentationSourceItem: UIPopoverPresentationControllerSourceItem; // inherited from UIMenuLeaf
+
+	repeatBehavior: UIMenuElementRepeatBehavior; // inherited from UIMenuLeaf
 
 	/**
 	 * @since 17.0
@@ -13132,6 +13435,18 @@ declare var UIContextMenuInteractionDelegate: {
 };
 
 /**
+ * @since 26.0
+ */
+declare class UIContextMenuSystem extends UIMenuSystem {
+
+	static alloc(): UIContextMenuSystem; // inherited from NSObject
+
+	static new(): UIContextMenuSystem; // inherited from NSObject
+
+	static readonly sharedSystem: UIContextMenuSystem;
+}
+
+/**
  * @since 11.0
  */
 declare class UIContextualAction extends NSObject {
@@ -13469,37 +13784,81 @@ declare const enum UIControlState {
 	Reserved = 4278190080
 }
 
-interface UICoordinateSpace extends NSObjectProtocol {
+/**
+ * @since 18.4
+ */
+declare class UIConversationContext extends NSObject {
 
-	/**
-	 * @since 8.0
-	 */
-	bounds: CGRect;
+	static alloc(): UIConversationContext; // inherited from NSObject
 
-	/**
-	 * @since 8.0
-	 */
-	convertPointFromCoordinateSpace(point: CGPoint, coordinateSpace: UICoordinateSpace): CGPoint;
+	static new(): UIConversationContext; // inherited from NSObject
 
-	/**
-	 * @since 8.0
-	 */
-	convertPointToCoordinateSpace(point: CGPoint, coordinateSpace: UICoordinateSpace): CGPoint;
+	entries: NSArray<UIConversationEntry>;
 
-	/**
-	 * @since 8.0
-	 */
-	convertRectFromCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
+	participantNameByIdentifier: NSDictionary<string, NSPersonNameComponents>;
 
-	/**
-	 * @since 8.0
-	 */
-	convertRectToCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
+	responsePrimaryRecipientIdentifiers: NSSet<string>;
+
+	selfIdentifiers: NSSet<string>;
+
+	threadIdentifier: string;
 }
-declare var UICoordinateSpace: {
 
-	prototype: UICoordinateSpace;
-};
+/**
+ * @since 18.4
+ */
+declare class UIConversationEntry extends NSObject {
+
+	static alloc(): UIConversationEntry; // inherited from NSObject
+
+	static new(): UIConversationEntry; // inherited from NSObject
+
+	entryIdentifier: string;
+
+	primaryRecipientIdentifiers: NSSet<string>;
+
+	replyThreadIdentifier: string;
+
+	senderIdentifier: string;
+
+	sentDate: Date;
+
+	text: string;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UICornerConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): UICornerConfiguration; // inherited from NSObject
+
+	static capsuleConfiguration(): UICornerConfiguration;
+
+	static capsuleConfigurationWithMaximumRadius(maximumRadius: number): UICornerConfiguration;
+
+	static configurationWithRadius(radius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithTopLeftRadiusTopRightRadiusBottomLeftRadiusBottomRightRadius(topLeftRadius: UICornerRadius, topRightRadius: UICornerRadius, bottomLeftRadius: UICornerRadius, bottomRightRadius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformBottomRadiusTopLeftRadiusTopRightRadius(bottomRadius: UICornerRadius, topLeftRadius: UICornerRadius, topRightRadius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformLeftRadiusTopRightRadiusBottomRightRadius(leftRadius: UICornerRadius, topRightRadius: UICornerRadius, bottomRightRadius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformLeftRadiusUniformRightRadius(leftRadius: UICornerRadius, rightRadius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformRadius(radius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformRightRadiusTopLeftRadiusBottomLeftRadius(rightRadius: UICornerRadius, topLeftRadius: UICornerRadius, bottomLeftRadius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformTopRadiusBottomLeftRadiusBottomRightRadius(topRadius: UICornerRadius, bottomLeftRadius: UICornerRadius, bottomRightRadius: UICornerRadius): UICornerConfiguration;
+
+	static configurationWithUniformTopRadiusUniformBottomRadius(topRadius: UICornerRadius, bottomRadius: UICornerRadius): UICornerConfiguration;
+
+	static new(): UICornerConfiguration; // inherited from NSObject
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
 
 declare const enum UICornerCurve {
 
@@ -13508,6 +13867,24 @@ declare const enum UICornerCurve {
 	Circular = 1,
 
 	Continuous = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare class UICornerRadius extends NSObject implements NSCopying {
+
+	static alloc(): UICornerRadius; // inherited from NSObject
+
+	static containerConcentricRadius(): UICornerRadius;
+
+	static containerConcentricRadiusWithMinimum(minimum: number): UICornerRadius;
+
+	static fixedRadius(radius: number): UICornerRadius;
+
+	static new(): UICornerRadius; // inherited from NSObject
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 /**
@@ -13718,6 +14095,11 @@ declare class UIDeferredMenuElement extends UIMenuElement {
 
 	static alloc(): UIDeferredMenuElement; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	static elementUsingFocusWithIdentifierShouldCacheItems(identifier: string, shouldCacheItems: boolean): UIDeferredMenuElement;
+
 	static elementWithProvider(elementProvider: (p1: (p1: NSArray<UIMenuElement>) => void) => void): UIDeferredMenuElement;
 
 	/**
@@ -13726,6 +14108,23 @@ declare class UIDeferredMenuElement extends UIMenuElement {
 	static elementWithUncachedProvider(elementProvider: (p1: (p1: NSArray<UIMenuElement>) => void) => void): UIDeferredMenuElement;
 
 	static new(): UIDeferredMenuElement; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	readonly identifier: string;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIDeferredMenuElementProvider extends NSObject {
+
+	static alloc(): UIDeferredMenuElementProvider; // inherited from NSObject
+
+	static new(): UIDeferredMenuElementProvider; // inherited from NSObject
+
+	static providerWithElementProvider(elementProvider: (p1: (p1: NSArray<UIMenuElement>) => void) => void): UIDeferredMenuElementProvider;
 }
 
 /**
@@ -13967,13 +14366,13 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	contentsForTypeError(typeName: string): any;
+	contentsForTypeError(typeName: string, error?: interop.Reference<NSError>): any;
 
 	disableEditing(): void;
 
 	enableEditing(): void;
 
-	fileAttributesToWriteToURLForSaveOperationError(url: NSURL, saveOperation: UIDocumentSaveOperation): NSDictionary<any, any>;
+	fileAttributesToWriteToURLForSaveOperationError(url: NSURL, saveOperation: UIDocumentSaveOperation, error?: interop.Reference<NSError>): NSDictionary<any, any>;
 
 	fileNameExtensionForTypeSaveOperation(typeName: string, saveOperation: UIDocumentSaveOperation): string;
 
@@ -13989,7 +14388,7 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	loadFromContentsOfTypeError(contents: any, typeName: string): boolean;
+	loadFromContentsOfTypeError(contents: any, typeName: string, error?: interop.Reference<NSError>): boolean;
 
 	navigationItemDidEndRenamingWithTitle(navigationItem: UINavigationItem, title: string): void;
 
@@ -14036,7 +14435,7 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	presentedSubitemDidChangeAtURL(url: NSURL): void;
 
-	readFromURLError(url: NSURL): boolean;
+	readFromURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	relinquishPresentedItemToReader(reader: (p1: () => void) => void): void;
 
@@ -14067,9 +14466,9 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	userInteractionNoLongerPermittedForError(error: NSError): void;
 
-	writeContentsAndAttributesSafelyToURLForSaveOperationError(contents: any, additionalFileAttributes: NSDictionary<any, any>, url: NSURL, saveOperation: UIDocumentSaveOperation): boolean;
+	writeContentsAndAttributesSafelyToURLForSaveOperationError(contents: any, additionalFileAttributes: NSDictionary<any, any>, url: NSURL, saveOperation: UIDocumentSaveOperation, error?: interop.Reference<NSError>): boolean;
 
-	writeContentsToURLForSaveOperationOriginalContentsURLError(contents: any, url: NSURL, saveOperation: UIDocumentSaveOperation, originalContentsURL: NSURL): boolean;
+	writeContentsToURLForSaveOperationOriginalContentsURLError(contents: any, url: NSURL, saveOperation: UIDocumentSaveOperation, originalContentsURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -14086,6 +14485,8 @@ declare class UIDocumentBrowserAction extends NSObject {
 	readonly identifier: string;
 
 	image: UIImage;
+
+	imageOnlyForContextMenu: UIImage;
 
 	readonly localizedTitle: string;
 
@@ -14361,6 +14762,16 @@ declare const enum UIDocumentChangeKind {
  * @since 18.0
  */
 declare var UIDocumentCreationIntentDefault: string;
+
+/**
+ * @since 26.0
+ */
+declare var UIDocumentDidMoveToWritableLocationNotification: string;
+
+/**
+ * @since 26.0
+ */
+declare var UIDocumentDidMoveToWritableLocationOldURLKey: string;
 
 /**
  * @since 3.2
@@ -17200,6 +17611,44 @@ declare const enum UIGestureRecognizerState {
 }
 
 /**
+ * @since 26.0
+ */
+declare class UIGlassContainerEffect extends UIVisualEffect {
+
+	static alloc(): UIGlassContainerEffect; // inherited from NSObject
+
+	static new(): UIGlassContainerEffect; // inherited from NSObject
+
+	spacing: number;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIGlassEffect extends UIVisualEffect {
+
+	static alloc(): UIGlassEffect; // inherited from NSObject
+
+	static effectWithStyle(style: UIGlassEffectStyle): UIGlassEffect;
+
+	static new(): UIGlassEffect; // inherited from NSObject
+
+	interactive: boolean;
+
+	tintColor: UIColor;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UIGlassEffectStyle {
+
+	Regular = 0,
+
+	Clear = 1
+}
+
+/**
  * @since 3.2
  */
 declare function UIGraphicsAddPDFContextDestinationAtPoint(name: string, point: CGPoint): void;
@@ -17374,7 +17823,7 @@ declare class UIGraphicsPDFRenderer extends UIGraphicsRenderer {
 
 	initWithBoundsFormat(bounds: CGRect, format: UIGraphicsPDFRendererFormat): this;
 
-	writePDFToURLWithActionsError(url: NSURL, actions: (p1: UIGraphicsPDFRendererContext) => void): boolean;
+	writePDFToURLWithActionsError(url: NSURL, actions: (p1: UIGraphicsPDFRendererContext) => void, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -17464,7 +17913,7 @@ declare class UIGraphicsRenderer extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	runDrawingActionsCompletionActionsError(drawingActions: (p1: UIGraphicsRendererContext) => void, completionActions: (p1: UIGraphicsRendererContext) => void): boolean;
+	runDrawingActionsCompletionActionsError(drawingActions: (p1: UIGraphicsRendererContext) => void, completionActions: (p1: UIGraphicsRendererContext) => void, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -17618,6 +18067,15 @@ declare const enum UIGuidedAccessRestrictionState {
  * @since 7.0
  */
 declare function UIGuidedAccessRestrictionStateForIdentifier(restrictionIdentifier: string): UIGuidedAccessRestrictionState;
+
+declare const enum UIHDRHeadroomUsageLimit {
+
+	Unspecified = -1,
+
+	Active = 0,
+
+	Inactive = 1
+}
 
 /**
  * @since 17.0
@@ -17906,7 +18364,7 @@ declare class UIImage extends NSObject implements NSItemProviderReading, NSItemP
 
 	static new(): UIImage; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIImage;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): UIImage;
 
 	/**
 	 * @since 13.0
@@ -18683,6 +19141,18 @@ declare const enum UIImageResizingMode {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum UIImageSymbolColorRenderingMode {
+
+	Automatic = 0,
+
+	Flat = 1,
+
+	Gradient = 2
+}
+
+/**
  * @since 13.0
  */
 declare class UIImageSymbolConfiguration extends UIImageConfiguration {
@@ -18698,6 +19168,11 @@ declare class UIImageSymbolConfiguration extends UIImageConfiguration {
 	 * @since 15.0
 	 */
 	static configurationPreferringMulticolor(): UIImageSymbolConfiguration;
+
+	/**
+	 * @since 26.0
+	 */
+	static configurationWithColorRenderingMode(mode: UIImageSymbolColorRenderingMode): UIImageSymbolConfiguration;
 
 	static configurationWithFont(font: UIFont): UIImageSymbolConfiguration;
 
@@ -18735,6 +19210,11 @@ declare class UIImageSymbolConfiguration extends UIImageConfiguration {
 	 */
 	static configurationWithTraitCollection(traitCollection: UITraitCollection): UIImageSymbolConfiguration; // inherited from UIImageConfiguration
 
+	/**
+	 * @since 26.0
+	 */
+	static configurationWithVariableValueMode(variableValueMode: UIImageSymbolVariableValueMode): UIImageSymbolConfiguration;
+
 	static configurationWithWeight(weight: UIImageSymbolWeight): UIImageSymbolConfiguration;
 
 	static new(): UIImageSymbolConfiguration; // inherited from NSObject
@@ -18766,6 +19246,18 @@ declare const enum UIImageSymbolScale {
 	Medium = 2,
 
 	Large = 3
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UIImageSymbolVariableValueMode {
+
+	Automatic = 0,
+
+	Color = 1,
+
+	Draw = 2
 }
 
 /**
@@ -18862,8 +19354,14 @@ declare class UIImageView extends UIView implements UIAccessibilityContentSizeCa
 
 	image: UIImage;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly imageDynamicRange: UIImageDynamicRange;
 
+	/**
+	 * @since 17.0
+	 */
 	preferredImageDynamicRange: UIImageDynamicRange;
 
 	/**
@@ -19146,6 +19644,16 @@ declare var UIIndirectScribbleInteractionDelegate: {
 };
 
 /**
+ * @since 18.4
+ */
+declare class UIInputSuggestion extends NSObject {
+
+	static alloc(): UIInputSuggestion; // inherited from NSObject
+
+	static new(): UIInputSuggestion; // inherited from NSObject
+}
+
+/**
  * @since 7.0
  */
 declare class UIInputView extends UIView {
@@ -19248,6 +19756,11 @@ declare class UIInputViewController extends UIViewController implements UITextIn
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	/**
+	 * @since 18.4
+	 */
+	conversationContextDidChange(context: UIConversationContext, textInput: UITextInput): void;
 
 	dismissKeyboard(): void;
 
@@ -19390,7 +19903,7 @@ declare var UIItemProviderReadingAugmentationDesignating: {
 
 	_ui_augmentingNSItemProviderReadingClass(): typeof NSObject;
 
-	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIItemProviderReadingAugmentationDesignating;
+	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): UIItemProviderReadingAugmentationDesignating;
 };
 
 interface UIItemProviderReadingAugmentationProviding {
@@ -19399,7 +19912,7 @@ declare var UIItemProviderReadingAugmentationProviding: {
 
 	prototype: UIItemProviderReadingAugmentationProviding;
 
-	objectWithItemProviderDataTypeIdentifierRequestedClassError(data: NSData, typeIdentifier: string, requestedClass: typeof NSObject): any;
+	objectWithItemProviderDataTypeIdentifierRequestedClassError(data: NSData, typeIdentifier: string, requestedClass: typeof NSObject, error?: interop.Reference<NSError>): any;
 };
 
 /**
@@ -21204,6 +21717,98 @@ declare var UILookToDictateCapable: {
 };
 
 /**
+ * @since 18.4
+ */
+declare class UIMailConversationContext extends UIConversationContext {
+
+	static alloc(): UIMailConversationContext; // inherited from NSObject
+
+	static new(): UIMailConversationContext; // inherited from NSObject
+
+	responseHasCustomSignature: boolean;
+
+	responseSecondaryRecipientIdentifiers: NSSet<string>;
+
+	responseSubject: string;
+}
+
+/**
+ * @since 18.4
+ */
+declare class UIMailConversationEntry extends UIConversationEntry {
+
+	static alloc(): UIMailConversationEntry; // inherited from NSObject
+
+	static new(): UIMailConversationEntry; // inherited from NSObject
+
+	kind: UIMailConversationEntryKind;
+
+	responseSecondaryRecipientIdentifiers: NSSet<string>;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum UIMailConversationEntryKind {
+
+	None = 0,
+
+	Personal = 1,
+
+	Promotion = 2,
+
+	Social = 3,
+
+	Transaction = 4,
+
+	News = 5
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIMainMenuSystem extends UIMenuSystem {
+
+	static alloc(): UIMainMenuSystem; // inherited from NSObject
+
+	static new(): UIMainMenuSystem; // inherited from NSObject
+
+	static readonly sharedSystem: UIMainMenuSystem;
+
+	setBuildConfigurationBuildHandler(configuration: UIMainMenuSystemConfiguration, buildHandler: (p1: UIMenuBuilder) => void): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIMainMenuSystemConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): UIMainMenuSystemConfiguration; // inherited from NSObject
+
+	static new(): UIMainMenuSystemConfiguration; // inherited from NSObject
+
+	documentPreference: UIMenuSystemElementGroupPreference;
+
+	readonly findingConfiguration: UIMenuSystemFindElementGroupConfiguration;
+
+	findingPreference: UIMenuSystemElementGroupPreference;
+
+	inspectorPreference: UIMenuSystemElementGroupPreference;
+
+	newScenePreference: UIMenuSystemElementGroupPreference;
+
+	printingPreference: UIMenuSystemElementGroupPreference;
+
+	sidebarPreference: UIMenuSystemElementGroupPreference;
+
+	textFormattingPreference: UIMenuSystemElementGroupPreference;
+
+	toolbarPreference: UIMenuSystemElementGroupPreference;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+/**
  * @since 5.0
  */
 declare class UIManagedDocument extends UIDocument {
@@ -21222,15 +21827,15 @@ declare class UIManagedDocument extends UIDocument {
 
 	static readonly persistentStoreName: string;
 
-	additionalContentForURLError(absoluteURL: NSURL): any;
+	additionalContentForURLError(absoluteURL: NSURL, error?: interop.Reference<NSError>): any;
 
-	configurePersistentStoreCoordinatorForURLOfTypeModelConfigurationStoreOptionsError(storeURL: NSURL, fileType: string, configuration: string, storeOptions: NSDictionary<any, any>): boolean;
+	configurePersistentStoreCoordinatorForURLOfTypeModelConfigurationStoreOptionsError(storeURL: NSURL, fileType: string, configuration: string, storeOptions: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
 
 	persistentStoreTypeForFileType(fileType: string): string;
 
-	readAdditionalContentFromURLError(absoluteURL: NSURL): boolean;
+	readAdditionalContentFromURLError(absoluteURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	writeAdditionalContentToURLOriginalContentsURLError(content: any, absoluteURL: NSURL, absoluteOriginalContentsURL: NSURL): boolean;
+	writeAdditionalContentToURLOriginalContentsURLError(content: any, absoluteURL: NSURL, absoluteOriginalContentsURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -21331,15 +21936,80 @@ interface UIMenuBuilder {
 
 	insertChildMenuAtStartOfMenuForIdentifier(childMenu: UIMenu, parentIdentifier: string): void;
 
+	/**
+	 * @since 26.0
+	 */
+	insertElementsAfterActionForIdentifier(insertedElements: NSArray<UIMenuElement> | UIMenuElement[], siblingIdentifier: string): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsAfterCommandForActionPropertyList(insertedElements: NSArray<UIMenuElement> | UIMenuElement[], siblingAction: string, siblingPropertyList: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsAfterMenuForIdentifier(insertedElements: NSArray<UIMenuElement> | UIMenuElement[], siblingIdentifier: string): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsAtEndOfMenuForIdentifier(childElements: NSArray<UIMenuElement> | UIMenuElement[], parentIdentifier: string): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsAtStartOfMenuForIdentifier(childElements: NSArray<UIMenuElement> | UIMenuElement[], parentIdentifier: string): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsBeforeActionForIdentifier(insertedElements: NSArray<UIMenuElement> | UIMenuElement[], siblingIdentifier: string): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsBeforeCommandForActionPropertyList(insertedElements: NSArray<UIMenuElement> | UIMenuElement[], siblingAction: string, siblingPropertyList: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	insertElementsBeforeMenuForIdentifier(insertedElements: NSArray<UIMenuElement> | UIMenuElement[], siblingIdentifier: string): void;
+
 	insertSiblingMenuAfterMenuForIdentifier(siblingMenu: UIMenu, siblingIdentifier: string): void;
 
 	insertSiblingMenuBeforeMenuForIdentifier(siblingMenu: UIMenu, siblingIdentifier: string): void;
 
 	menuForIdentifier(identifier: string): UIMenu;
 
+	/**
+	 * @since 26.0
+	 */
+	removeActionForIdentifier(removedIdentifier: string): void;
+
+	/**
+	 * @since 26.0
+	 */
+	removeCommandForActionPropertyList(removedAction: string, removedPropertyList: any): void;
+
 	removeMenuForIdentifier(removedIdentifier: string): void;
 
+	/**
+	 * @since 26.0
+	 */
+	replaceActionForIdentifierWithElements(replacedIdentifier: string, replacementElements: NSArray<UIMenuElement> | UIMenuElement[]): void;
+
 	replaceChildrenOfMenuForIdentifierFromChildrenBlock(parentIdentifier: string, childrenBlock: (p1: NSArray<UIMenuElement>) => NSArray<UIMenuElement>): void;
+
+	/**
+	 * @since 26.0
+	 */
+	replaceCommandForActionPropertyListWithElements(replacedAction: string, replacedPropertyList: any, replacementElements: NSArray<UIMenuElement> | UIMenuElement[]): void;
+
+	/**
+	 * @since 26.0
+	 */
+	replaceMenuForIdentifierWithElements(replacedIdentifier: string, replacementElements: NSArray<UIMenuElement> | UIMenuElement[]): void;
 
 	replaceMenuForIdentifierWithMenu(replacedIdentifier: string, replacementMenu: UIMenu): void;
 }
@@ -21577,6 +22247,18 @@ declare const enum UIMenuElementAttributes {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum UIMenuElementRepeatBehavior {
+
+	Automatic = 0,
+
+	Repeatable = 1,
+
+	NonRepeatable = 2
+}
+
+/**
  * @since 16.0
  */
 declare const enum UIMenuElementSize {
@@ -21611,6 +22293,11 @@ declare var UIMenuFile: string;
  * @since 13.0
  */
 declare var UIMenuFind: string;
+
+/**
+ * @since 26.0
+ */
+declare var UIMenuFindPanel: string;
 
 /**
  * @since 13.0
@@ -21672,6 +22359,8 @@ interface UIMenuLeaf extends NSObjectProtocol {
 	 */
 	presentationSourceItem: UIPopoverPresentationControllerSourceItem;
 
+	repeatBehavior: UIMenuElementRepeatBehavior;
+
 	/**
 	 * @since 17.0
 	 */
@@ -21706,7 +22395,13 @@ declare var UIMenuLookup: string;
 declare var UIMenuMinimizeAndZoom: string;
 
 /**
+ * @since 26.0
+ */
+declare var UIMenuNewItem: string;
+
+/**
  * @since 13.0
+ * @deprecated 26.0
  */
 declare var UIMenuNewScene: string;
 
@@ -21833,6 +22528,44 @@ declare class UIMenuSystem extends NSObject {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum UIMenuSystemElementGroupPreference {
+
+	Automatic = 0,
+
+	Removed = 1,
+
+	Included = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIMenuSystemFindElementGroupConfiguration extends NSObject {
+
+	static alloc(): UIMenuSystemFindElementGroupConfiguration; // inherited from NSObject
+
+	static new(): UIMenuSystemFindElementGroupConfiguration; // inherited from NSObject
+
+	style: UIMenuSystemFindElementGroupConfigurationStyle;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UIMenuSystemFindElementGroupConfigurationStyle {
+
+	Automatic = 0,
+
+	Search = 1,
+
+	NonEditableText = 2,
+
+	EditableText = 3
+}
+
+/**
  * @since 13.0
  */
 declare var UIMenuText: string;
@@ -21886,6 +22619,44 @@ declare var UIMenuWindow: string;
  * @since 13.0
  */
 declare var UIMenuWritingDirection: string;
+
+/**
+ * @since 18.4
+ */
+declare class UIMessageConversationContext extends UIConversationContext {
+
+	static alloc(): UIMessageConversationContext; // inherited from NSObject
+
+	static new(): UIMessageConversationContext; // inherited from NSObject
+
+	isJunk: boolean;
+}
+
+/**
+ * @since 18.4
+ */
+declare class UIMessageConversationEntry extends UIConversationEntry {
+
+	static alloc(): UIMessageConversationEntry; // inherited from NSObject
+
+	static new(): UIMessageConversationEntry; // inherited from NSObject
+
+	dataKind: UIMessageConversationEntryDataKind;
+
+	wasSentBySelf: boolean;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum UIMessageConversationEntryDataKind {
+
+	Text = 0,
+
+	Attachment = 1,
+
+	Other = 2
+}
 
 /**
  * @since 4.0
@@ -22000,6 +22771,9 @@ interface UIMutableTraits extends NSObjectProtocol {
 
 	horizontalSizeClass: UIUserInterfaceSizeClass;
 
+	/**
+	 * @since 17.0
+	 */
 	imageDynamicRange: UIImageDynamicRange;
 
 	layoutDirection: UITraitEnvironmentLayoutDirection;
@@ -22014,9 +22788,24 @@ interface UIMutableTraits extends NSObjectProtocol {
 	preferredContentSizeCategory: string;
 
 	/**
+	 * @since 26.0
+	 */
+	resolvesNaturalAlignmentWithBaseWritingDirection: boolean;
+
+	/**
 	 * @since 17.0
 	 */
 	sceneCaptureState: UISceneCaptureState;
+
+	/**
+	 * @since 26.0
+	 */
+	splitViewControllerLayoutEnvironment: UISplitViewControllerLayoutEnvironment;
+
+	/**
+	 * @since 26.0
+	 */
+	tabAccessoryEnvironment: UITabAccessoryEnvironment;
 
 	toolbarItemPresentationSize: UINSToolbarItemPresentationSize;
 
@@ -22333,9 +23122,25 @@ declare class UINavigationBarAppearance extends UIBarAppearance {
 
 	buttonAppearance: UIBarButtonItemAppearance;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 26.0
+	 */
 	doneButtonAppearance: UIBarButtonItemAppearance;
 
+	/**
+	 * @since 26.0
+	 */
+	largeSubtitleTextAttributes: NSDictionary<string, any>;
+
 	largeTitleTextAttributes: NSDictionary<string, any>;
+
+	prominentButtonAppearance: UIBarButtonItemAppearance;
+
+	/**
+	 * @since 26.0
+	 */
+	subtitleTextAttributes: NSDictionary<string, any>;
 
 	titlePositionAdjustment: UIOffset;
 
@@ -22415,6 +23220,11 @@ declare class UINavigationController extends UIViewController {
 	 * @since 8.0
 	 */
 	hidesBarsWhenVerticallyCompact: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly interactiveContentPopGestureRecognizer: UIGestureRecognizer;
 
 	/**
 	 * @since 7.0
@@ -22533,6 +23343,16 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 	additionalOverflowItems: UIDeferredMenuElement;
 
 	/**
+	 * @since 26.0
+	 */
+	attributedSubtitle: NSAttributedString;
+
+	/**
+	 * @since 26.0
+	 */
+	attributedTitle: NSAttributedString;
+
+	/**
 	 * @since 16.0
 	 */
 	backAction: UIAction;
@@ -22580,6 +23400,26 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 	 * @since 11.0
 	 */
 	hidesSearchBarWhenScrolling: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	largeAttributedSubtitle: NSAttributedString;
+
+	/**
+	 * @since 26.0
+	 */
+	largeSubtitle: string;
+
+	/**
+	 * @since 26.0
+	 */
+	largeSubtitleView: UIView;
+
+	/**
+	 * @since 26.0
+	 */
+	largeTitle: string;
 
 	/**
 	 * @since 11.0
@@ -22643,6 +23483,21 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 	readonly searchBarPlacement: UINavigationItemSearchBarPlacement;
 
 	/**
+	 * @since 26.0
+	 */
+	searchBarPlacementAllowsExternalIntegration: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	searchBarPlacementAllowsToolbarIntegration: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly searchBarPlacementBarButtonItem: UIBarButtonItem;
+
+	/**
 	 * @since 11.0
 	 */
 	searchController: UISearchController;
@@ -22656,6 +23511,16 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 	 * @since 16.0
 	 */
 	style: UINavigationItemStyle;
+
+	/**
+	 * @since 26.0
+	 */
+	subtitle: string;
+
+	/**
+	 * @since 26.0
+	 */
+	subtitleView: UIView;
 
 	title: string;
 
@@ -22743,9 +23608,15 @@ declare const enum UINavigationItemSearchBarPlacement {
 
 	Automatic = 0,
 
-	Inline = 1,
+	Integrated = 1,
 
-	Stacked = 2
+	Stacked = 2,
+
+	IntegratedCentered = 3,
+
+	IntegratedButton = 4,
+
+	Inline = 1
 }
 
 /**
@@ -25793,24 +26664,6 @@ declare const enum UIRectCorner {
 	AllCorners = -1
 }
 
-/**
- * @since 7.0
- */
-declare const enum UIRectEdge {
-
-	None = 0,
-
-	Top = 1,
-
-	Left = 2,
-
-	Bottom = 4,
-
-	Right = 8,
-
-	All = 15
-}
-
 declare function UIRectFill(rect: CGRect): void;
 
 declare function UIRectFillUsingBlendMode(rect: CGRect, blendMode: CGBlendMode): void;
@@ -26027,6 +26880,8 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 
 	readonly nextResponder: UIResponder;
 
+	readonly pencilKitResponderState: PKResponderState;
+
 	/**
 	 * @since 7.0
 	 */
@@ -26060,6 +26915,26 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	readonly  // inherited from NSObjectProtocol
+
+	/**
+	 * @since 26.0
+	 */
+	alignCenter(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	alignJustified(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	alignLeft(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	alignRight(sender: any): void;
 
 	becomeFirstResponder(): boolean;
 
@@ -26171,6 +27046,11 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	move(sender: any): void;
 
 	/**
+	 * @since 26.0
+	 */
+	newFromPasteboard(sender: any): void;
+
+	/**
 	 * @since 3.0
 	 */
 	paste(sender: any): void;
@@ -26191,6 +27071,11 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	pasteAndSearch(sender: any): void;
 
 	pasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): void;
+
+	/**
+	 * @since 26.0
+	 */
+	performClose(sender: any): void;
 
 	performSelector(aSelector: string): any;
 
@@ -26222,6 +27107,11 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	 * @since 15.0
 	 */
 	print(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	providerForDeferredMenuElement(deferredElement: UIDeferredMenuElement): UIDeferredMenuElementProvider;
 
 	/**
 	 * @since 3.2
@@ -26259,6 +27149,11 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	self(): this;
 
 	/**
+	 * @since 18.2
+	 */
+	showWritingTools(sender: any): void;
+
+	/**
 	 * @since 7.0
 	 */
 	targetForActionWithSender(action: string, sender: any): any;
@@ -26269,9 +27164,19 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	toggleBoldface(sender: any): void;
 
 	/**
+	 * @since 26.0
+	 */
+	toggleInspector(sender: any): void;
+
+	/**
 	 * @since 6.0
 	 */
 	toggleItalics(sender: any): void;
+
+	/**
+	 * @since 15.0
+	 */
+	toggleSidebar(sender: any): void;
 
 	/**
 	 * @since 6.0
@@ -26313,6 +27218,26 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 }
 
 interface UIResponderStandardEditActions extends NSObjectProtocol {
+
+	/**
+	 * @since 26.0
+	 */
+	alignCenter?(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	alignJustified?(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	alignLeft?(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	alignRight?(sender: any): void;
 
 	/**
 	 * @since 3.0
@@ -26380,6 +27305,11 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 	move?(sender: any): void;
 
 	/**
+	 * @since 26.0
+	 */
+	newFromPasteboard?(sender: any): void;
+
+	/**
 	 * @since 3.0
 	 */
 	paste?(sender: any): void;
@@ -26398,6 +27328,11 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 	 * @since 15.0
 	 */
 	pasteAndSearch?(sender: any): void;
+
+	/**
+	 * @since 26.0
+	 */
+	performClose?(sender: any): void;
 
 	/**
 	 * @since 15.0
@@ -26420,14 +27355,29 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 	selectAll?(sender: any): void;
 
 	/**
+	 * @since 18.2
+	 */
+	showWritingTools?(sender: any): void;
+
+	/**
 	 * @since 6.0
 	 */
 	toggleBoldface?(sender: any): void;
 
 	/**
+	 * @since 26.0
+	 */
+	toggleInspector?(sender: any): void;
+
+	/**
 	 * @since 6.0
 	 */
 	toggleItalics?(sender: any): void;
+
+	/**
+	 * @since 15.0
+	 */
+	toggleSidebar?(sender: any): void;
 
 	/**
 	 * @since 6.0
@@ -26509,6 +27459,11 @@ declare class UIScene extends UIResponder {
 	readonly activationState: UISceneActivationState;
 
 	delegate: UISceneDelegate;
+
+	/**
+	 * @since 26.0
+	 */
+	destructionConditions: NSSet<UISceneDestructionCondition>;
 
 	/**
 	 * @since 14.0
@@ -26694,6 +27649,18 @@ declare var UISceneDelegate: {
 
 	prototype: UISceneDelegate;
 };
+
+/**
+ * @since 26.0
+ */
+declare class UISceneDestructionCondition extends NSObject implements NSCopying {
+
+	static alloc(): UISceneDestructionCondition; // inherited from NSObject
+
+	static new(): UISceneDestructionCondition; // inherited from NSObject
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
 
 /**
  * @since 13.0
@@ -26896,6 +27863,31 @@ declare class UISceneWindowingBehaviors extends NSObject {
 }
 
 /**
+ * @since 26.0
+ */
+declare class UISceneWindowingControlStyle extends NSObject {
+
+	static alloc(): UISceneWindowingControlStyle; // inherited from NSObject
+
+	static new(): UISceneWindowingControlStyle; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly automaticStyle: UISceneWindowingControlStyle;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly minimalStyle: UISceneWindowingControlStyle;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly unifiedStyle: UISceneWindowingControlStyle;
+}
+
+/**
  * @since 2.0
  */
 declare class UIScreen extends NSObject implements UITraitEnvironment {
@@ -27028,7 +28020,7 @@ declare class UIScreen extends NSObject implements UITraitEnvironment {
 
 	/**
 	 * @since 2.0
-	 * @deprecated 100000
+	 * @deprecated 26.0
 	 */
 	static readonly mainScreen: UIScreen;
 
@@ -27279,6 +28271,90 @@ declare var UIScribbleInteractionDelegate: {
 };
 
 /**
+ * @since 26.0
+ */
+declare class UIScrollEdgeEffect extends NSObject {
+
+	static alloc(): UIScrollEdgeEffect; // inherited from NSObject
+
+	static new(): UIScrollEdgeEffect; // inherited from NSObject
+
+	hidden: boolean;
+
+	style: UIScrollEdgeEffectStyle;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIScrollEdgeEffectStyle extends NSObject {
+
+	static alloc(): UIScrollEdgeEffectStyle; // inherited from NSObject
+
+	static new(): UIScrollEdgeEffectStyle; // inherited from NSObject
+
+	static readonly automaticStyle: UIScrollEdgeEffectStyle;
+
+	static readonly hardStyle: UIScrollEdgeEffectStyle;
+
+	static readonly softStyle: UIScrollEdgeEffectStyle;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UIScrollEdgeElementContainerInteraction extends NSObject implements UIInteraction {
+
+	static alloc(): UIScrollEdgeElementContainerInteraction; // inherited from NSObject
+
+	static new(): UIScrollEdgeElementContainerInteraction; // inherited from NSObject
+
+	edge: UIRectEdge;
+
+	scrollView: UIScrollView;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	willMoveToView(view: UIView): void;
+}
+
+/**
  * @since 13.4
  */
 declare const enum UIScrollType {
@@ -27357,6 +28433,11 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 	 */
 	automaticallyAdjustsScrollIndicatorInsets: boolean;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly bottomEdgeEffect: UIScrollEdgeEffect;
+
 	bounces: boolean;
 
 	/**
@@ -27428,6 +28509,11 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 	 */
 	keyboardDismissMode: UIScrollViewKeyboardDismissMode;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly leftEdgeEffect: UIScrollEdgeEffect;
+
 	maximumZoomScale: number;
 
 	minimumZoomScale: number;
@@ -27450,6 +28536,11 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 	refreshControl: UIRefreshControl;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly rightEdgeEffect: UIScrollEdgeEffect;
+
+	/**
 	 * @since 17.4
 	 */
 	readonly scrollAnimating: boolean;
@@ -27463,6 +28554,11 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 	showsHorizontalScrollIndicator: boolean;
 
 	showsVerticalScrollIndicator: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly topEdgeEffect: UIScrollEdgeEffect;
 
 	readonly tracking: boolean;
 
@@ -27825,11 +28921,18 @@ declare class UISearchBar extends UIView implements UIBarPositioning, UILookToDi
 	 */
 	allowedWritingToolsResultOptions: UIWritingToolsResultOptions; // inherited from UITextInputTraits
 
+	allowsNumberPadPopover: boolean; // inherited from UITextInputTraits
+
 	autocapitalizationType: UITextAutocapitalizationType; // inherited from UITextInputTraits
 
 	autocorrectionType: UITextAutocorrectionType; // inherited from UITextInputTraits
 
 	readonly barPosition: UIBarPosition; // inherited from UIBarPositioning
+
+	/**
+	 * @since 18.4
+	 */
+	conversationContext: UIConversationContext; // inherited from UITextInputTraits
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -28028,8 +29131,14 @@ interface UISearchBarDelegate extends UIBarPositioningDelegate {
 
 	/**
 	 * @since 3.0
+	 * @deprecated 100000
 	 */
 	searchBarShouldChangeTextInRangeReplacementText?(searchBar: UISearchBar, range: NSRange, text: string): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	searchBarShouldChangeTextInRangesReplacementText?(searchBar: UISearchBar, ranges: NSArray<NSValue> | NSValue[], replacementText: string): boolean;
 
 	searchBarShouldEndEditing?(searchBar: UISearchBar): boolean;
 
@@ -28556,6 +29665,11 @@ declare class UISearchTab extends UITab {
 	static alloc(): UISearchTab; // inherited from NSObject
 
 	static new(): UISearchTab; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	automaticallyActivatesSearch: boolean;
 
 	constructor(o: { viewControllerProvider: (p1: UITab) => UIViewController; });
 
@@ -29293,9 +30407,19 @@ declare class UISlider extends UIControl implements NSCoding {
 	preferredBehavioralStyle: UIBehavioralStyle;
 
 	/**
+	 * @since 26.0
+	 */
+	sliderStyle: UISliderStyle;
+
+	/**
 	 * @since 5.0
 	 */
 	thumbTintColor: UIColor;
+
+	/**
+	 * @since 26.0
+	 */
+	trackConfiguration: UISliderTrackConfiguration;
 
 	value: number;
 
@@ -29326,6 +30450,86 @@ declare class UISlider extends UIControl implements NSCoding {
 	thumbRectForBoundsTrackRectValue(bounds: CGRect, rect: CGRect, value: number): CGRect;
 
 	trackRectForBounds(bounds: CGRect): CGRect;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UISliderStyle {
+
+	Default = 0,
+
+	Thumbless = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare class UISliderTick extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): UISliderTick; // inherited from NSObject
+
+	static new(): UISliderTick; // inherited from NSObject
+
+	static tickWithPositionTitleImage(position: number, title: string, image: UIImage): UISliderTick;
+
+	image: UIImage;
+
+	readonly position: number;
+
+	title: string;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UISliderTrackConfiguration extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): UISliderTrackConfiguration; // inherited from NSObject
+
+	static configurationWithNumberOfTicks(ticks: number): UISliderTrackConfiguration;
+
+	static configurationWithTicks(ticks: NSArray<UISliderTick> | UISliderTick[]): UISliderTrackConfiguration;
+
+	static new(): UISliderTrackConfiguration; // inherited from NSObject
+
+	allowsTickValuesOnly: boolean;
+
+	maximumEnabledValue: number;
+
+	minimumEnabledValue: number;
+
+	neutralValue: number;
+
+	readonly ticks: NSArray<UISliderTick>;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.4
+ */
+declare class UISmartReplySuggestion extends UIInputSuggestion {
+
+	static alloc(): UISmartReplySuggestion; // inherited from NSObject
+
+	static new(): UISmartReplySuggestion; // inherited from NSObject
+
+	readonly smartReply: string;
 }
 
 /**
@@ -29381,6 +30585,11 @@ declare class UISplitViewController extends UIViewController {
 	displayModeButtonVisibility: UISplitViewControllerDisplayModeButtonVisibility;
 
 	/**
+	 * @since 26.0
+	 */
+	maximumInspectorColumnWidth: number;
+
+	/**
 	 * @since 8.0
 	 */
 	maximumPrimaryColumnWidth: number;
@@ -29391,9 +30600,19 @@ declare class UISplitViewController extends UIViewController {
 	maximumSupplementaryColumnWidth: number;
 
 	/**
+	 * @since 26.0
+	 */
+	minimumInspectorColumnWidth: number;
+
+	/**
 	 * @since 8.0
 	 */
 	minimumPrimaryColumnWidth: number;
+
+	/**
+	 * @since 26.0
+	 */
+	minimumSecondaryColumnWidth: number;
 
 	/**
 	 * @since 14.0
@@ -29406,6 +30625,16 @@ declare class UISplitViewController extends UIViewController {
 	preferredDisplayMode: UISplitViewControllerDisplayMode;
 
 	/**
+	 * @since 26.0
+	 */
+	preferredInspectorColumnWidth: number;
+
+	/**
+	 * @since 26.0
+	 */
+	preferredInspectorColumnWidthFraction: number;
+
+	/**
 	 * @since 14.0
 	 */
 	preferredPrimaryColumnWidth: number;
@@ -29414,6 +30643,16 @@ declare class UISplitViewController extends UIViewController {
 	 * @since 8.0
 	 */
 	preferredPrimaryColumnWidthFraction: number;
+
+	/**
+	 * @since 26.0
+	 */
+	preferredSecondaryColumnWidth: number;
+
+	/**
+	 * @since 26.0
+	 */
+	preferredSecondaryColumnWidthFraction: number;
 
 	/**
 	 * @since 14.0
@@ -29488,6 +30727,11 @@ declare class UISplitViewController extends UIViewController {
 	initWithStyle(style: UISplitViewControllerStyle): this;
 
 	/**
+	 * @since 26.0
+	 */
+	isShowingColumn(column: UISplitViewControllerColumn): boolean;
+
+	/**
 	 * @since 14.0
 	 */
 	setViewControllerForColumn(vc: UIViewController, column: UISplitViewControllerColumn): void;
@@ -29529,7 +30773,9 @@ declare const enum UISplitViewControllerColumn {
 
 	Secondary = 2,
 
-	Compact = 3
+	Compact = 3,
+
+	Inspector = 4
 }
 
 interface UISplitViewControllerDelegate {
@@ -29558,6 +30804,16 @@ interface UISplitViewControllerDelegate {
 	 * @since 14.0
 	 */
 	splitViewControllerDidExpand?(svc: UISplitViewController): void;
+
+	/**
+	 * @since 26.0
+	 */
+	splitViewControllerDidHideColumn?(svc: UISplitViewController, column: UISplitViewControllerColumn): void;
+
+	/**
+	 * @since 26.0
+	 */
+	splitViewControllerDidShowColumn?(svc: UISplitViewController, column: UISplitViewControllerColumn): void;
 
 	/**
 	 * @since 14.0
@@ -29689,6 +30945,18 @@ declare const enum UISplitViewControllerDisplayModeButtonVisibility {
 	Never = 1,
 
 	Always = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UISplitViewControllerLayoutEnvironment {
+
+	None = 0,
+
+	Expanded = 1,
+
+	Collapsed = 2
 }
 
 /**
@@ -30518,6 +31786,34 @@ declare const enum UISwitchStyle {
 }
 
 /**
+ * @since 26.0
+ */
+declare class UISymbolContentTransition extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UISymbolContentTransition; // inherited from NSObject
+
+	static new(): UISymbolContentTransition; // inherited from NSObject
+
+	static transitionWithContentTransition(contentTransition: NSSymbolContentTransition): UISymbolContentTransition;
+
+	static transitionWithContentTransitionOptions(contentTransition: NSSymbolContentTransition, options: NSSymbolEffectOptions): UISymbolContentTransition;
+
+	readonly contentTransition: NSSymbolContentTransition;
+
+	readonly options: NSSymbolEffectOptions;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 17.0
  */
 declare class UISymbolEffectCompletionContext extends NSObject {
@@ -30555,6 +31851,13 @@ declare class UITab extends NSObject implements UIAccessibilityIdentification, U
 	allowsHiding: boolean;
 
 	badgeValue: string;
+
+	/**
+	 * @since 18.4
+	 */
+	enabled: boolean;
+
+	readonly hasVisiblePlacement: boolean;
 
 	hidden: boolean;
 
@@ -30629,6 +31932,36 @@ declare class UITab extends NSObject implements UIAccessibilityIdentification, U
 	retainCount(): number;
 
 	self(): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class UITabAccessory extends NSObject {
+
+	static alloc(): UITabAccessory; // inherited from NSObject
+
+	static new(): UITabAccessory; // inherited from NSObject
+
+	readonly contentView: UIView;
+
+	constructor(o: { contentView: UIView; });
+
+	initWithContentView(contentView: UIView): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UITabAccessoryEnvironment {
+
+	Unspecified = 0,
+
+	None = 1,
+
+	Regular = 2,
+
+	Inline = 3
 }
 
 /**
@@ -30822,9 +32155,19 @@ declare class UITabBarController extends UIViewController implements NSCoding, U
 	static new(): UITabBarController; // inherited from NSObject
 
 	/**
+	 * @since 26.0
+	 */
+	bottomAccessory: UITabAccessory;
+
+	/**
 	 * @since 18.0
 	 */
 	compactTabIdentifiers: NSArray<string>;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly contentLayoutGuide: UILayoutGuide;
 
 	customizableViewControllers: NSArray<UIViewController>;
 
@@ -30865,6 +32208,11 @@ declare class UITabBarController extends UIViewController implements NSCoding, U
 	 * @since 18.0
 	 */
 	tabBarHidden: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	tabBarMinimizeBehavior: UITabBarMinimizeBehavior;
 
 	/**
 	 * @since 18.0
@@ -30922,6 +32270,11 @@ declare class UITabBarController extends UIViewController implements NSCoding, U
 	retainCount(): number;
 
 	self(): this;
+
+	/**
+	 * @since 26.0
+	 */
+	setBottomAccessoryAnimated(bottomAccessory: UITabAccessory, animated: boolean): void;
 
 	/**
 	 * @since 18.0
@@ -31073,6 +32426,11 @@ declare class UITabBarControllerSidebar extends NSObject {
 
 	hidden: boolean;
 
+	/**
+	 * @since 18.2
+	 */
+	navigationOverflowItems: UIDeferredMenuElement;
+
 	preferredLayout: UITabBarControllerSidebarLayout;
 
 	reconfigureItemForTab(tab: UITab): void;
@@ -31105,7 +32463,27 @@ interface UITabBarControllerSidebarDelegate extends NSObjectProtocol {
 
 	tabBarControllerSidebarItemForRequest?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, request: UITabSidebarItemRequest): UITabSidebarItem;
 
+	/**
+	 * @since 18.4
+	 */
+	tabBarControllerSidebarItemsForAddingToDragSessionTab?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, dragSession: UIDragSession, tab: UITab): NSArray<UIDragItem>;
+
+	/**
+	 * @since 18.4
+	 */
+	tabBarControllerSidebarItemsForBeginningDragSessionTab?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, dragSession: UIDragSession, tab: UITab): NSArray<UIDragItem>;
+
 	tabBarControllerSidebarLeadingSwipeActionsConfigurationForTab?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, tab: UITab): UISwipeActionsConfiguration;
+
+	/**
+	 * @since 18.4
+	 */
+	tabBarControllerSidebarSidebarActionGroupAcceptItemsFromDropSession?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, sidebarAction: UIAction, group: UITabGroup, session: UIDropSession): void;
+
+	/**
+	 * @since 18.4
+	 */
+	tabBarControllerSidebarSidebarActionGroupOperationForAcceptingItemsFromDropSession?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, sidebarAction: UIAction, group: UITabGroup, session: UIDropSession): UIDropOperation;
 
 	tabBarControllerSidebarTrailingSwipeActionsConfigurationForTab?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, tab: UITab): UISwipeActionsConfiguration;
 
@@ -31381,6 +32759,20 @@ declare class UITabBarItemStateAppearance extends NSObject {
 	titlePositionAdjustment: UIOffset;
 
 	titleTextAttributes: NSDictionary<string, any>;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UITabBarMinimizeBehavior {
+
+	Automatic = 0,
+
+	Never = 1,
+
+	OnScrollDown = 2,
+
+	OnScrollUp = 3
 }
 
 declare const enum UITabBarSystemItem {
@@ -34322,11 +35714,18 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	 */
 	allowedWritingToolsResultOptions: UIWritingToolsResultOptions; // inherited from UITextInputTraits
 
+	allowsNumberPadPopover: boolean; // inherited from UITextInputTraits
+
 	autocapitalizationType: UITextAutocapitalizationType; // inherited from UITextInputTraits
 
 	autocorrectionType: UITextAutocorrectionType; // inherited from UITextInputTraits
 
 	readonly beginningOfDocument: UITextPosition; // inherited from UITextInput
+
+	/**
+	 * @since 18.4
+	 */
+	conversationContext: UIConversationContext; // inherited from UITextInputTraits
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -34539,6 +35938,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	insertDictationResult(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
+	/**
+	 * @since 18.4
+	 */
+	insertInputSuggestion(inputSuggestion: UIInputSuggestion): void;
+
 	insertText(text: string): void;
 
 	insertTextAlternativesStyle(text: string, alternatives: NSArray<string> | string[], style: UITextAlternativeStyle): void;
@@ -34657,12 +36061,32 @@ interface UITextFieldDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 16.0
+	 * @deprecated 100000
 	 */
 	textFieldEditMenuForCharactersInRangeSuggestedActions?(textField: UITextField, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
 
+	/**
+	 * @since 26.0
+	 */
+	textFieldEditMenuForCharactersInRangesSuggestedActions?(textField: UITextField, ranges: NSArray<NSValue> | NSValue[], suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
+	/**
+	 * @since 18.4
+	 */
+	textFieldInsertInputSuggestion?(textField: UITextField, inputSuggestion: UIInputSuggestion): void;
+
 	textFieldShouldBeginEditing?(textField: UITextField): boolean;
 
+	/**
+	 * @since 2.0
+	 * @deprecated 100000
+	 */
 	textFieldShouldChangeCharactersInRangeReplacementString?(textField: UITextField, range: NSRange, string: string): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	textFieldShouldChangeCharactersInRangesReplacementString?(textField: UITextField, ranges: NSArray<NSValue> | NSValue[], string: string): boolean;
 
 	textFieldShouldClear?(textField: UITextField): boolean;
 
@@ -35416,6 +36840,11 @@ interface UITextInput extends UIKeyInput {
 
 	insertDictationResult?(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
+	/**
+	 * @since 18.4
+	 */
+	insertInputSuggestion?(inputSuggestion: UIInputSuggestion): void;
+
 	insertTextAlternativesStyle?(text: string, alternatives: NSArray<string> | string[], style: UITextAlternativeStyle): void;
 
 	insertTextPlaceholderWithSize?(size: CGSize): UITextPlaceholder;
@@ -35530,6 +36959,11 @@ declare class UITextInputContext extends NSObject {
 declare var UITextInputCurrentInputModeDidChangeNotification: string;
 
 interface UITextInputDelegate extends NSObjectProtocol {
+
+	/**
+	 * @since 18.4
+	 */
+	conversationContextDidChange(context: UIConversationContext, textInput: UITextInput): void;
 
 	selectionDidChange(textInput: UITextInput): void;
 
@@ -35692,9 +37126,16 @@ interface UITextInputTraits extends NSObjectProtocol {
 	 */
 	allowedWritingToolsResultOptions?: UIWritingToolsResultOptions;
 
+	allowsNumberPadPopover?: boolean;
+
 	autocapitalizationType?: UITextAutocapitalizationType;
 
 	autocorrectionType?: UITextAutocorrectionType;
+
+	/**
+	 * @since 18.4
+	 */
+	conversationContext?: UIConversationContext;
 
 	enablesReturnKeyAutomatically?: boolean;
 
@@ -36459,7 +37900,21 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 */
 	selectable: boolean;
 
+	/**
+	 * @since 2.0
+	 * @deprecated 100000
+	 */
 	selectedRange: NSRange;
+
+	/**
+	 * @since 26.0
+	 */
+	selectedRanges: NSArray<NSValue>;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly subclassForWritingToolsCoordinator: typeof NSObject;
 
 	text: string;
 
@@ -36512,6 +37967,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 */
 	readonly writingToolsActive: boolean;
 
+	/**
+	 * @since 18.2
+	 */
+	readonly writingToolsCoordinator: UIWritingToolsCoordinator;
+
 	adjustsFontForContentSizeCategory: boolean; // inherited from UIContentSizeCategoryAdjusting
 
 	/**
@@ -36519,11 +37979,18 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 */
 	allowedWritingToolsResultOptions: UIWritingToolsResultOptions; // inherited from UITextInputTraits
 
+	allowsNumberPadPopover: boolean; // inherited from UITextInputTraits
+
 	autocapitalizationType: UITextAutocapitalizationType; // inherited from UITextInputTraits
 
 	autocorrectionType: UITextAutocorrectionType; // inherited from UITextInputTraits
 
 	readonly beginningOfDocument: UITextPosition; // inherited from UITextInput
+
+	/**
+	 * @since 18.4
+	 */
+	conversationContext: UIConversationContext; // inherited from UITextInputTraits
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -36744,6 +38211,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	insertDictationResult(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
+	/**
+	 * @since 18.4
+	 */
+	insertInputSuggestion(inputSuggestion: UIInputSuggestion): void;
+
 	insertText(text: string): void;
 
 	insertTextAlternativesStyle(text: string, alternatives: NSArray<string> | string[], style: UITextAlternativeStyle): void;
@@ -36882,8 +38354,19 @@ interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 
 	/**
 	 * @since 16.0
+	 * @deprecated 100000
 	 */
 	textViewEditMenuForTextInRangeSuggestedActions?(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
+	/**
+	 * @since 26.0
+	 */
+	textViewEditMenuForTextInRangesSuggestedActions?(textView: UITextView, ranges: NSArray<NSValue> | NSValue[], suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
+	/**
+	 * @since 18.4
+	 */
+	textViewInsertInputSuggestion?(textView: UITextView, inputSuggestion: UIInputSuggestion): void;
 
 	/**
 	 * @since 17.0
@@ -36897,7 +38380,16 @@ interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 
 	textViewShouldBeginEditing?(textView: UITextView): boolean;
 
+	/**
+	 * @since 2.0
+	 * @deprecated 100000
+	 */
 	textViewShouldChangeTextInRangeReplacementText?(textView: UITextView, range: NSRange, text: string): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	textViewShouldChangeTextInRangesReplacementText?(textView: UITextView, ranges: NSArray<NSValue> | NSValue[], text: string): boolean;
 
 	textViewShouldEndEditing?(textView: UITextView): boolean;
 
@@ -37263,7 +38755,16 @@ declare class UIToolbarAppearance extends UIBarAppearance {
 
 	buttonAppearance: UIBarButtonItemAppearance;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 26.0
+	 */
 	doneButtonAppearance: UIBarButtonItemAppearance;
+
+	/**
+	 * @since 26.0
+	 */
+	prominentButtonAppearance: UIBarButtonItemAppearance;
 }
 
 interface UIToolbarDelegate extends UIBarPositioningDelegate {
@@ -37546,6 +39047,11 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 	 */
 	static traitCollectionWithForceTouchCapability(capability: UIForceTouchCapability): UITraitCollection;
 
+	/**
+	 * @since 26.0
+	 */
+	static traitCollectionWithHDRHeadroomUsageLimit(hdrHeadroomUsageLimit: UIHDRHeadroomUsageLimit): UITraitCollection;
+
 	static traitCollectionWithHorizontalSizeClass(horizontalSizeClass: UIUserInterfaceSizeClass): UITraitCollection;
 
 	/**
@@ -37578,9 +39084,19 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 	static traitCollectionWithPreferredContentSizeCategory(preferredContentSizeCategory: string): UITraitCollection;
 
 	/**
+	 * @since 26.0
+	 */
+	static traitCollectionWithResolvesNaturalAlignmentWithBaseWritingDirection(resolvesNaturalAlignmentWithBaseWritingDirection: boolean): UITraitCollection;
+
+	/**
 	 * @since 17.0
 	 */
 	static traitCollectionWithSceneCaptureState(sceneCaptureState: UISceneCaptureState): UITraitCollection;
+
+	/**
+	 * @since 26.0
+	 */
+	static traitCollectionWithTabAccessoryEnvironment(tabAccessoryEnvironment: UITabAccessoryEnvironment): UITraitCollection;
 
 	static traitCollectionWithToolbarItemPresentationSize(toolbarItemPresentationSize: UINSToolbarItemPresentationSize): UITraitCollection;
 
@@ -37633,6 +39149,11 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 	 */
 	readonly forceTouchCapability: UIForceTouchCapability;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly hdrHeadroomUsageLimit: UIHDRHeadroomUsageLimit;
+
 	readonly horizontalSizeClass: UIUserInterfaceSizeClass;
 
 	/**
@@ -37666,9 +39187,24 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 	readonly preferredContentSizeCategory: string;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly resolvesNaturalAlignmentWithBaseWritingDirection: boolean;
+
+	/**
 	 * @since 17.0
 	 */
 	readonly sceneCaptureState: UISceneCaptureState;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly splitViewControllerLayoutEnvironment: UISplitViewControllerLayoutEnvironment;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly tabAccessoryEnvironment: UITabAccessoryEnvironment;
 
 	readonly toolbarItemPresentationSize: UINSToolbarItemPresentationSize;
 
@@ -37838,6 +39374,24 @@ declare class UITraitForceTouchCapability extends NSObject implements UINSIntege
 }
 
 /**
+ * @since 26.0
+ */
+declare class UITraitHDRHeadroomUsageLimit extends NSObject implements UINSIntegerTraitDefinition {
+
+	static alloc(): UITraitHDRHeadroomUsageLimit; // inherited from NSObject
+
+	static new(): UITraitHDRHeadroomUsageLimit; // inherited from NSObject
+
+	static readonly affectsColorAppearance: boolean; // inherited from UITraitDefinition
+
+	static readonly defaultValue: number; // inherited from UINSIntegerTraitDefinition
+
+	static readonly identifier: string; // inherited from UITraitDefinition
+
+	static readonly name: string; // inherited from UITraitDefinition
+}
+
+/**
  * @since 17.0
  */
 declare class UITraitHorizontalSizeClass extends NSObject implements UINSIntegerTraitDefinition {
@@ -37960,6 +39514,24 @@ declare class UITraitPreferredContentSizeCategory extends NSObject implements UI
 }
 
 /**
+ * @since 26.0
+ */
+declare class UITraitResolvesNaturalAlignmentWithBaseWritingDirection extends NSObject implements UIObjectTraitDefinition {
+
+	static alloc(): UITraitResolvesNaturalAlignmentWithBaseWritingDirection; // inherited from NSObject
+
+	static new(): UITraitResolvesNaturalAlignmentWithBaseWritingDirection; // inherited from NSObject
+
+	static readonly affectsColorAppearance: boolean; // inherited from UITraitDefinition
+
+	static readonly defaultValue: NSObjectProtocol; // inherited from UIObjectTraitDefinition
+
+	static readonly identifier: string; // inherited from UITraitDefinition
+
+	static readonly name: string; // inherited from UITraitDefinition
+}
+
+/**
  * @since 17.0
  */
 declare class UITraitSceneCaptureState extends NSObject implements UINSIntegerTraitDefinition {
@@ -37967,6 +39539,42 @@ declare class UITraitSceneCaptureState extends NSObject implements UINSIntegerTr
 	static alloc(): UITraitSceneCaptureState; // inherited from NSObject
 
 	static new(): UITraitSceneCaptureState; // inherited from NSObject
+
+	static readonly affectsColorAppearance: boolean; // inherited from UITraitDefinition
+
+	static readonly defaultValue: number; // inherited from UINSIntegerTraitDefinition
+
+	static readonly identifier: string; // inherited from UITraitDefinition
+
+	static readonly name: string; // inherited from UITraitDefinition
+}
+
+/**
+ * @since 26.0
+ */
+declare class UITraitSplitViewControllerLayoutEnvironment extends NSObject implements UINSIntegerTraitDefinition {
+
+	static alloc(): UITraitSplitViewControllerLayoutEnvironment; // inherited from NSObject
+
+	static new(): UITraitSplitViewControllerLayoutEnvironment; // inherited from NSObject
+
+	static readonly affectsColorAppearance: boolean; // inherited from UITraitDefinition
+
+	static readonly defaultValue: number; // inherited from UINSIntegerTraitDefinition
+
+	static readonly identifier: string; // inherited from UITraitDefinition
+
+	static readonly name: string; // inherited from UITraitDefinition
+}
+
+/**
+ * @since 26.0
+ */
+declare class UITraitTabAccessoryEnvironment extends NSObject implements UINSIntegerTraitDefinition {
+
+	static alloc(): UITraitTabAccessoryEnvironment; // inherited from NSObject
+
+	static new(): UITraitTabAccessoryEnvironment; // inherited from NSObject
 
 	static readonly affectsColorAppearance: boolean; // inherited from UITraitDefinition
 
@@ -38800,6 +40408,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 */
 	contentStretch: CGRect;
 
+	cornerConfiguration: UICornerConfiguration;
+
 	/**
 	 * @since 11.0
 	 */
@@ -39248,6 +40858,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
 
+	directionalEdgeInsetsForLayoutRegion(layoutRegion: UIViewLayoutRegion): NSDirectionalEdgeInsets;
+
 	displayLayer(layer: CALayer): void;
 
 	drawLayerInContext(layer: CALayer, ctx: any): void;
@@ -39260,6 +40872,10 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 * @since 7.0
 	 */
 	drawViewHierarchyInRectAfterScreenUpdates(rect: CGRect, afterUpdates: boolean): boolean;
+
+	edgeInsetsForLayoutRegion(layoutRegion: UIViewLayoutRegion): UIEdgeInsets;
+
+	effectiveRadiusForCorner(corner: UIRectCorner): number;
 
 	/**
 	 * @since 6.0
@@ -39323,6 +40939,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 * @since 10.0
 	 */
 	layerWillDraw(layer: CALayer): void;
+
+	layoutGuideForLayoutRegion(layoutRegion: UIViewLayoutRegion): UILayoutGuide;
 
 	layoutIfNeeded(): void;
 
@@ -39435,6 +41053,11 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 */
 	setNeedsUpdateConstraints(): void;
 
+	/**
+	 * @since 26.0
+	 */
+	setNeedsUpdateProperties(): void;
+
 	setPassThroughParent(passThroughParent: boolean): void;
 
 	shouldUpdateFocusInContext(context: UIFocusUpdateContext): boolean;
@@ -39482,6 +41105,16 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	updateConstraintsIfNeeded(): void;
 
 	updateFocusIfNeeded(): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updateProperties(): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updatePropertiesIfNeeded(): void;
 
 	/**
 	 * @since 17.0
@@ -39618,7 +41251,9 @@ declare const enum UIViewAnimationOptions {
 
 	PreferredFramesPerSecond60 = 50331648,
 
-	PreferredFramesPerSecond30 = 117440512
+	PreferredFramesPerSecond30 = 117440512,
+
+	FlushUpdates = 268435456
 }
 
 declare const enum UIViewAnimationTransition {
@@ -39814,6 +41449,11 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	readonly childViewControllerForHomeIndicatorAutoHidden: UIViewController;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly childViewControllerForInterfaceOrientationLock: UIViewController;
+
+	/**
 	 * @since 14.0
 	 */
 	readonly childViewControllerForPointerLock: UIViewController;
@@ -40002,6 +41642,11 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	 * @since 11.0
 	 */
 	readonly prefersHomeIndicatorAutoHidden: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly prefersInterfaceOrientationLocked: boolean;
 
 	/**
 	 * @since 14.0
@@ -40439,6 +42084,11 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	setNeedsUpdateOfHomeIndicatorAutoHidden(): void;
 
 	/**
+	 * @since 26.0
+	 */
+	setNeedsUpdateOfPrefersInterfaceOrientationLocked(): void;
+
+	/**
 	 * @since 14.0
 	 */
 	setNeedsUpdateOfPrefersPointerLocked(): void;
@@ -40452,6 +42102,11 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	 * @since 16.0
 	 */
 	setNeedsUpdateOfSupportedInterfaceOrientations(): void;
+
+	/**
+	 * @since 26.0
+	 */
+	setNeedsUpdateProperties(): void;
 
 	/**
 	 * @since 8.0
@@ -40538,6 +42193,16 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	updateContentUnavailableConfigurationUsingState(state: UIContentUnavailableConfigurationState): void;
 
 	updateFocusIfNeeded(): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updateProperties(): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updatePropertiesIfNeeded(): void;
 
 	/**
 	 * @since 17.0
@@ -40813,6 +42478,11 @@ declare class UIViewControllerTransition extends NSObject {
 
 	static partialCurlTransition(): UIViewControllerTransition;
 
+	/**
+	 * @since 26.0
+	 */
+	static zoomWithOptionsSourceBarButtonItemProvider(options: UIZoomTransitionOptions, sourceBarButtonItemProvider: (p1: UIZoomTransitionSourceViewProviderContext) => UIBarButtonItem): UIViewControllerTransition;
+
 	static zoomWithOptionsSourceViewProvider(options: UIZoomTransitionOptions, sourceViewProvider: (p1: UIZoomTransitionSourceViewProviderContext) => UIView): UIViewControllerTransition;
 }
 
@@ -40948,6 +42618,34 @@ declare const enum UIViewKeyframeAnimationOptions {
 }
 
 /**
+ * @since 26.0
+ */
+declare class UIViewLayoutRegion extends NSObject {
+
+	static alloc(): UIViewLayoutRegion; // inherited from NSObject
+
+	static marginsLayoutRegionWithCornerAdaptation(adaptivityAxis: UIViewLayoutRegionAdaptivityAxis): UIViewLayoutRegion;
+
+	static new(): UIViewLayoutRegion; // inherited from NSObject
+
+	static readableContentLayoutRegionWithCornerAdaptation(adaptivityAxis: UIViewLayoutRegionAdaptivityAxis): UIViewLayoutRegion;
+
+	static safeAreaLayoutRegionWithCornerAdaptation(adaptivityAxis: UIViewLayoutRegionAdaptivityAxis): UIViewLayoutRegion;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum UIViewLayoutRegionAdaptivityAxis {
+
+	None = 0,
+
+	Horizontal = 1,
+
+	Vertical = 2
+}
+
+/**
  * @since 6.0
  */
 declare var UIViewNoIntrinsicMetric: number;
@@ -40978,6 +42676,11 @@ declare class UIViewPropertyAnimator extends NSObject implements NSCopying, UIVi
 	readonly delay: number;
 
 	readonly duration: number;
+
+	/**
+	 * @since 26.0
+	 */
+	flushUpdates: boolean;
 
 	interruptible: boolean;
 
@@ -41585,6 +43288,10 @@ declare class UIWindowScene extends UIScene implements UITraitChangeObservable, 
 	 */
 	activityItemsConfigurationSource: UIActivityItemsConfigurationProviding;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 26.0
+	 */
 	readonly coordinateSpace: UICoordinateSpace;
 
 	/**
@@ -41599,6 +43306,10 @@ declare class UIWindowScene extends UIScene implements UITraitChangeObservable, 
 
 	readonly fullScreen: boolean;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 26.0
+	 */
 	readonly interfaceOrientation: UIInterfaceOrientation;
 
 	/**
@@ -41817,7 +43528,21 @@ interface UIWindowSceneDelegate extends UISceneDelegate {
 
 	window?: UIWindow;
 
+	/**
+	 * @since 26.0
+	 */
+	preferredWindowingControlStyleForScene?(windowScene: UIWindowScene): UISceneWindowingControlStyle;
+
+	/**
+	 * @since 13.0
+	 * @deprecated 26.0
+	 */
 	windowSceneDidUpdateCoordinateSpaceInterfaceOrientationTraitCollection?(windowScene: UIWindowScene, previousCoordinateSpace: UICoordinateSpace, previousInterfaceOrientation: UIInterfaceOrientation, previousTraitCollection: UITraitCollection): void;
+
+	/**
+	 * @since 26.0
+	 */
+	windowSceneDidUpdateEffectiveGeometry?(windowScene: UIWindowScene, previousEffectiveGeometry: UIWindowSceneGeometry): void;
 
 	windowScenePerformActionForShortcutItemCompletionHandler?(windowScene: UIWindowScene, shortcutItem: UIApplicationShortcutItem, completionHandler: (p1: boolean) => void): void;
 
@@ -41913,7 +43638,22 @@ declare class UIWindowSceneGeometry extends NSObject implements NSCopying {
 
 	static new(): UIWindowSceneGeometry; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	readonly coordinateSpace: UICoordinateSpace;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly interactivelyResizing: boolean;
+
 	readonly interfaceOrientation: UIInterfaceOrientation;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly interfaceOrientationLocked: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -41996,6 +43736,11 @@ declare class UIWindowSceneProminentPlacement extends UIWindowScenePlacement {
 declare var UIWindowSceneSessionRoleApplication: string;
 
 /**
+ * @since 26.0
+ */
+declare var UIWindowSceneSessionRoleAssistiveAccessApplication: string;
+
+/**
  * @since 13.0
  * @deprecated 16.0
  */
@@ -42033,6 +43778,230 @@ declare const enum UIWritingToolsBehavior {
 }
 
 /**
+ * @since 18.2
+ */
+declare class UIWritingToolsCoordinator extends NSObject implements UIInteraction {
+
+	static alloc(): UIWritingToolsCoordinator; // inherited from NSObject
+
+	static new(): UIWritingToolsCoordinator; // inherited from NSObject
+
+	readonly behavior: UIWritingToolsBehavior;
+
+	decorationContainerView: UIView;
+
+	readonly delegate: UIWritingToolsCoordinatorDelegate;
+
+	effectContainerView: UIView;
+
+	/**
+	 * @since 26.0
+	 */
+	includesTextListMarkers: boolean;
+
+	preferredBehavior: UIWritingToolsBehavior;
+
+	preferredResultOptions: UIWritingToolsResultOptions;
+
+	readonly resultOptions: UIWritingToolsResultOptions;
+
+	readonly state: UIWritingToolsCoordinatorState;
+
+	static readonly isWritingToolsAvailable: boolean;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { delegate: UIWritingToolsCoordinatorDelegate; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	initWithDelegate(delegate: UIWritingToolsCoordinatorDelegate): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	stopWritingTools(): void;
+
+	updateForReflowedTextInContextWithIdentifier(contextID: NSUUID): void;
+
+	updateRangeWithTextReasonForContextWithIdentifier(range: NSRange, replacementText: NSAttributedString, reason: UIWritingToolsCoordinatorTextUpdateReason, contextID: NSUUID): void;
+
+	willMoveToView(view: UIView): void;
+}
+
+/**
+ * @since 18.2
+ */
+declare class UIWritingToolsCoordinatorAnimationParameters extends NSObject {
+
+	static alloc(): UIWritingToolsCoordinatorAnimationParameters; // inherited from NSObject
+
+	static new(): UIWritingToolsCoordinatorAnimationParameters; // inherited from NSObject
+
+	completionHandler: () => void;
+
+	readonly delay: number;
+
+	readonly duration: number;
+
+	progressHandler: (p1: number) => void;
+}
+
+/**
+ * @since 18.2
+ */
+declare class UIWritingToolsCoordinatorContext extends NSObject {
+
+	static alloc(): UIWritingToolsCoordinatorContext; // inherited from NSObject
+
+	static new(): UIWritingToolsCoordinatorContext; // inherited from NSObject
+
+	readonly attributedString: NSAttributedString;
+
+	readonly identifier: NSUUID;
+
+	readonly range: NSRange;
+
+	readonly resolvedRange: NSRange;
+
+	constructor(o: { attributedString: NSAttributedString; range: NSRange; });
+
+	initWithAttributedStringRange(attributedString: NSAttributedString, range: NSRange): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorContextScope {
+
+	UserSelection = 0,
+
+	FullDocument = 1,
+
+	VisibleArea = 2
+}
+
+/**
+ * @since 18.2
+ */
+interface UIWritingToolsCoordinatorDelegate extends NSObjectProtocol {
+
+	writingToolsCoordinatorFinishTextAnimationForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, textAnimation: UIWritingToolsCoordinatorTextAnimation, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: () => void): void;
+
+	writingToolsCoordinatorPrepareForTextAnimationForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, textAnimation: UIWritingToolsCoordinatorTextAnimation, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: () => void): void;
+
+	writingToolsCoordinatorReplaceRangeInContextProposedTextReasonAnimationParametersCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, replacementText: NSAttributedString, reason: UIWritingToolsCoordinatorTextReplacementReason, animationParameters: UIWritingToolsCoordinatorAnimationParameters, completion: (p1: NSAttributedString) => void): void;
+
+	writingToolsCoordinatorRequestsBoundingBezierPathsForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: NSArray<UIBezierPath>) => void): void;
+
+	writingToolsCoordinatorRequestsContextsForScopeCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, scope: UIWritingToolsCoordinatorContextScope, completion: (p1: NSArray<UIWritingToolsCoordinatorContext>) => void): void;
+
+	writingToolsCoordinatorRequestsDecorationContainerViewForRangeInContextCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: UIView) => void): void;
+
+	writingToolsCoordinatorRequestsPreviewForTextAnimationOfRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, textAnimation: UIWritingToolsCoordinatorTextAnimation, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: UITargetedPreview) => void): void;
+
+	/**
+	 * @since 18.2
+	 * @deprecated 18.4
+	 */
+	writingToolsCoordinatorRequestsRangeInContextWithIdentifierForPointCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, point: CGPoint, completion: (p1: NSRange, p2: NSUUID) => void): void;
+
+	writingToolsCoordinatorRequestsSingleContainerSubrangesOfRangeInContextCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: NSArray<NSValue>) => void): void;
+
+	writingToolsCoordinatorRequestsUnderlinePathsForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: NSArray<UIBezierPath>) => void): void;
+
+	writingToolsCoordinatorSelectRangesInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, ranges: NSArray<NSValue> | NSValue[], context: UIWritingToolsCoordinatorContext, completion: () => void): void;
+
+	writingToolsCoordinatorWillChangeToStateCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, newState: UIWritingToolsCoordinatorState, completion: () => void): void;
+}
+declare var UIWritingToolsCoordinatorDelegate: {
+
+	prototype: UIWritingToolsCoordinatorDelegate;
+};
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorState {
+
+	Inactive = 0,
+
+	Noninteractive = 1,
+
+	InteractiveResting = 2,
+
+	InteractiveStreaming = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorTextAnimation {
+
+	Anticipate = 0,
+
+	Remove = 1,
+
+	Insert = 2
+}
+
+/**
+ * @since 18.2
+ */
+declare function UIWritingToolsCoordinatorTextAnimationDebugDescription(animationType: UIWritingToolsCoordinatorTextAnimation): string;
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorTextReplacementReason {
+
+	Interactive = 0,
+
+	Noninteractive = 1
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorTextUpdateReason {
+
+	Typing = 0,
+
+	UndoRedo = 1
+}
+
+/**
  * @since 18.0
  */
 declare const enum UIWritingToolsResultOptions {
@@ -42045,7 +44014,9 @@ declare const enum UIWritingToolsResultOptions {
 
 	List = 4,
 
-	Table = 8
+	Table = 8,
+
+	PresentationIntent = 16
 }
 
 /**

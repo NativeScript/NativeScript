@@ -1,4 +1,8 @@
 
+declare interface UIView {
+	setPassThroughParent(value: boolean): void;
+}
+
 declare class TNSLabel extends UILabel {
 
 	static alloc(): TNSLabel; // inherited from NSObject

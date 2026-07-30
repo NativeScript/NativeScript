@@ -851,7 +851,7 @@ declare class MKGeoJSONDecoder extends NSObject {
 
 	static new(): MKGeoJSONDecoder; // inherited from NSObject
 
-	geoJSONObjectsWithDataError(data: NSData): NSArray<MKGeoJSONObject>;
+	geoJSONObjectsWithDataError(data: NSData, error?: interop.Reference<NSError>): NSArray<MKGeoJSONObject>;
 }
 
 /**
@@ -1736,7 +1736,7 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	static new(): MKMapItem; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): MKMapItem;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): MKMapItem;
 
 	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>): boolean;
 

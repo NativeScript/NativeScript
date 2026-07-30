@@ -124,7 +124,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 				);
 			}
 		} else if (value instanceof ImageSource) {
-			// Support binding the imageSource trough the src property
+			// Support binding the imageSource through the src property
 
 			// This will help avoid cleanup on the actual provided image source in case view gets disposed
 			this.imageSource = new ImageSource(value.getNativeSource());

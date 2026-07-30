@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <ActionBar title="Primary View" class="action-bar" iosLargeTitle="true"></ActionBar>
+
+  <!-- Primary column (master) -->
+  <GridLayout rows="auto,*">
+    <!-- <Label text="Primary" marginBottom="12" marginLeft="8" fontSize="22" fontWeight="bold" /> -->
+    <ListView row="1" items="{{ items }}" itemTap="{{ onItemTap }}" backgroundColor="white">
+      <ListView.itemTemplate>
+        <GridLayout padding="12">
+          <Label text="{{ $value }}" fontSize="18" />
+        </GridLayout>
+      </ListView.itemTemplate>
+    </ListView>
+  </GridLayout>
+
+</Page>

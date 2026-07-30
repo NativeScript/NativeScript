@@ -195,7 +195,7 @@ declare class PKAddPassesViewController extends UIViewController {
 	/**
 	 * @since 16.4
 	 */
-	initWithIssuerDataSignatureError(issuerData: NSData, signature: NSData): this;
+	initWithIssuerDataSignatureError(issuerData: NSData, signature: NSData, error?: interop.Reference<NSError>): this;
 
 	initWithPass(pass: PKPass): this;
 
@@ -1590,7 +1590,7 @@ declare class PKPass extends PKObject {
 
 	constructor(o: { data: NSData; });
 
-	initWithDataError(data: NSData): this;
+	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
 	localizedValueForFieldKey(key: string): any;
 }
@@ -3673,7 +3673,7 @@ declare class PKVehicleConnectionSession extends NSObject {
 
 	invalidate(): void;
 
-	sendDataError(message: NSData): boolean;
+	sendDataError(message: NSData, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum PKVehicleConnectionSessionConnectionState {

@@ -15,3 +15,14 @@ export function getFilenameFromUrl(url: string) {
 
 	return result;
 }
+
+export function parseJSON(source: string): any {
+	const src = source.trim();
+	const lastIndex = src.lastIndexOf(')');
+
+	if (lastIndex === src.length - 1) {
+		return JSON.parse(src.substring(src.indexOf('(') + 1, lastIndex));
+	}
+
+	return JSON.parse(src);
+}

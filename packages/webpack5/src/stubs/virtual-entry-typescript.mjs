@@ -13,7 +13,11 @@ if (typeof import.meta.glob !== 'undefined') {
 		'~/**/*.@(xml|js|ts|scss|css)',
 		{ eager: true }, // uncomment to import immediately
 	);
-	global.registerBundlerModules(modules);
+	if (typeof global.registerBundlerModules === 'function') {
+		global.registerBundlerModules(modules);
+	} else {
+		global.registerWebpackModules(modules);
+	}
 } else {
 	const require = createRequire(import.meta.url);
 	const root = fileURLToPath(new URL('./src', import.meta.url));
@@ -63,6 +67,10 @@ if (typeof import.meta.glob !== 'undefined') {
 	}
 	const context = loadContextSync();
 
-	global.registerBundlerModules(context);
+	if (typeof global.registerBundlerModules === 'function') {
+		global.registerBundlerModules(context);
+	} else {
+		global.registerWebpackModules(context);
+	}
 }
 // VIRTUAL ENTRY END

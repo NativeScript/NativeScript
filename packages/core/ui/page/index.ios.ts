@@ -2,7 +2,7 @@ import { isAccessibilityServiceEnabled } from '../../application';
 import type { Frame } from '../frame';
 import { BackstackEntry, NavigationType } from '../frame/frame-interfaces';
 import { View, IOSHelper } from '../core/view';
-import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from './page-common';
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils/layout-helper';
@@ -117,6 +117,8 @@ class UIViewControllerImpl extends UIViewController {
 		// Pages in backstack are unloaded so raise loaded here.
 		if (!owner.isLoaded) {
 			owner.callLoaded();
+			// On first appearance, apply status bar style after the page is attached to the frame/nav stack.
+			owner.updateStatusBar();
 		} else {
 			// Note: Handle the case of canceled backstack navigation. (https://github.com/NativeScript/NativeScript/issues/7430)
 			// In this case viewWillAppear will be executed for the previous page and it will change the ActionBar
@@ -187,9 +189,15 @@ class UIViewControllerImpl extends UIViewController {
 							// only consider when interactive transitions are not enabled
 							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+							if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
+								navigationController.interactiveContentPopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+							}
 						}
 					} else {
 						navigationController.interactivePopGestureRecognizer.enabled = false;
+						if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
+							navigationController.interactiveContentPopGestureRecognizer.enabled = false;
+						}
 					}
 				}
 			}
@@ -319,11 +327,20 @@ class UIViewControllerImpl extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -348,11 +365,14 @@ class UIViewControllerImpl extends UIViewController {
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner?.deref();
-		if (owner) {
-			return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
-		} else {
-			return UIStatusBarStyle.Default;
+		if (owner?.statusBarStyle) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
+			} else {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
 		}
+		return UIStatusBarStyle.Default;
 	}
 }
 
@@ -373,7 +393,13 @@ export class Page extends PageBase {
 	}
 
 	createNativeView() {
-		return this.viewController.view;
+		// View controller can be disposed during view disposal, so make sure to create a new one if not defined
+		if (!this._ios) {
+			const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+			controller.view.backgroundColor = this._backgroundColor;
+			this.viewController = this._ios = controller;
+		}
+		return this._ios.view;
 	}
 
 	disposeNativeView() {
@@ -434,20 +460,24 @@ export class Page extends PageBase {
 
 	public _updateStatusBarStyle(value?: string) {
 		const frame = this.frame;
-		if (frame && value) {
+		if (frame?.ios && value) {
 			const navigationController: UINavigationController = frame.ios.controller;
-			const navigationBar = navigationController.navigationBar;
-
-			navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
+			IOSHelper.invalidateStatusBarAppearance(navigationController, `Page._updateStatusBarStyle:${value}`);
 		}
 	}
 
 	public _updateEnableSwipeBackNavigation(enabled: boolean) {
 		const navController = this._ios.navigationController;
-		if (this.frame && navController && navController.interactivePopGestureRecognizer) {
+		if (this.frame && navController) {
 			// Make sure we don't set true if cannot go back
 			enabled = enabled && this.frame.canGoBack();
-			navController.interactivePopGestureRecognizer.enabled = enabled;
+			if (navController.interactivePopGestureRecognizer) {
+				navController.interactivePopGestureRecognizer.enabled = enabled;
+			}
+
+			if (SDK_VERSION >= 26 && navController.interactiveContentPopGestureRecognizer) {
+				navController.interactiveContentPopGestureRecognizer.enabled = enabled;
+			}
 		}
 	}
 
@@ -484,7 +514,7 @@ export class Page extends PageBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		if (!__VISIONOS__ && SDK_VERSION <= 10) {
+		if (!__VISIONOS__ && SDK_VERSION <= 10 && this.viewController) {
 			// iOS 10 and below don't have safe area insets API,
 			// there we need only the top inset on the Page
 			insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
@@ -545,8 +575,6 @@ export class Page extends PageBase {
 	}
 
 	[actionBarHiddenProperty.setNative](value: boolean) {
-		this._updateEnableSwipeBackNavigation(value);
-
 		// Invalidate all inner controller.
 		invalidateTopmostController(this.viewController);
 
@@ -557,19 +585,8 @@ export class Page extends PageBase {
 		}
 	}
 
-	[statusBarStyleProperty.getDefault](): UIBarStyle {
-		return UIBarStyle.Default;
-	}
-	[statusBarStyleProperty.setNative](value: string | UIBarStyle) {
-		const frame = this.frame;
-		if (frame) {
-			const navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
-			if (typeof value === 'string') {
-				navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
-			} else {
-				navigationBar.barStyle = value;
-			}
-		}
+	[enableSwipeBackNavigationProperty.setNative](value: boolean) {
+		this._updateEnableSwipeBackNavigation(value);
 	}
 
 	public accessibilityScreenChanged(refocus = false): void {

@@ -1,5 +1,5 @@
-import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
+import { Trace } from '../../trace';
 import { Length } from './length-shared';
 
 export function cleanupImportantFlags(value: unknown, propertyName: string) {
@@ -18,9 +18,14 @@ export function cleanupImportantFlags(value: unknown, propertyName: string) {
 }
 
 /**
- * Matches whitespace except if the whitespace is contained in parenthesis - ex. rgb(a), hsl color.
+ * Matches whitespace except if the whitespace is contained in parenthesis - e.g. rgb(a), hsl color.
  */
-const PARTS_RE = /\s(?![^(]*\))/;
+const WHITE_SPACE_RE = /\s(?![^(]*\))/;
+
+/**
+ * Matches comma except if the comma is contained in parenthesis - e.g. rgb(a, b, c).
+ */
+const COMMA_RE = /,(?![^(]*\))/;
 
 /**
  * Matches a Length value with or without a unit
@@ -32,12 +37,22 @@ const LENGTH_RE = /^-?[0-9]+[a-zA-Z%]*?$/;
  */
 const isLength = (v) => v === '0' || LENGTH_RE.test(v);
 
+export function parseCSSCommaSeparatedListOfValues(value: string): string[] {
+	const values: string[] = [];
+
+	if (!value) {
+		return [];
+	}
+
+	return value.split(COMMA_RE);
+}
+
 export function parseCSSShorthand(value: string): {
 	values: Array<CoreTypes.LengthType>;
 	color: string;
 	inset: boolean;
 } {
-	const parts = value.trim().split(PARTS_RE);
+	const parts = value.trim().split(WHITE_SPACE_RE);
 	const first = parts[0];
 
 	if (['', 'none', 'unset'].includes(first)) {

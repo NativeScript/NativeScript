@@ -53,10 +53,16 @@ export namespace IOSHelper {
 	export const traitCollectionColorAppearanceChangedEvent: string;
 
 	/**
+	 * String value used when hooking to traitCollectionLayoutDirectionChangedEvent event.
+	 */
+	export const traitCollectionLayoutDirectionChangedEvent: string;
+
+	/**
 	 * Returns a view with viewController or undefined if no such found along the view's parent chain.
 	 * @param view The view form which to start the search.
 	 */
 	export function getParentWithViewController(view: View): View;
+	export function invalidateStatusBarAppearance(controller?: any /* UIViewController */, reason?: string): void;
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
 	export function layoutView(controller: any /* UIViewController */, owner: View): void;

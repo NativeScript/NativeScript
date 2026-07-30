@@ -12,7 +12,7 @@ import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
-import { NavigationData } from '.';
+import { Frame as FrameDefinition, NavigationData } from '.';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame, NavigationData } from './frame-interfaces';
@@ -35,7 +35,7 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 }
 
 @CSSType('Frame')
-export class FrameBase extends CustomLayoutView {
+export class FrameBase extends CustomLayoutView implements FrameDefinition {
 	public static navigatingToEvent = 'navigatingTo';
 	public static navigatedToEvent = 'navigatedTo';
 

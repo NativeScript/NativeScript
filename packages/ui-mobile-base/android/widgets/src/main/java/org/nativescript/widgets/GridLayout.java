@@ -1,11 +1,11 @@
 package org.nativescript.widgets;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.util.AttributeSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,18 +29,22 @@ public class GridLayout extends LayoutBase {
 	private final HashMap<View, MeasureSpecs> map = new HashMap<>();
 
 	public GridLayout(Context context) {
-		this(context, (AttributeSet)null);
+		this(context, (AttributeSet) null);
 	}
+
 	public GridLayout(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
+
 	public GridLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
+
 	public GridLayout(Context context, String rows) {
 		this(context);
 		this.addRowsFromJSON(rows);
 	}
+
 	public GridLayout(Context context, String rows, String columns) {
 		this(context, rows);
 		this.addColumnsFromJSON(rows);
@@ -92,7 +96,7 @@ public class GridLayout extends LayoutBase {
 				return;
 			}
 			JSONArray rows = new JSONArray(value);
-			for (int i = 0; i < rows.length() ; i++) {
+			for (int i = 0; i < rows.length(); i++) {
 				JSONObject row = rows.getJSONObject(i);
 				addRow(row.getInt("value"), GridUnitType.values()[row.getInt("type")]);
 			}
@@ -101,13 +105,14 @@ public class GridLayout extends LayoutBase {
 			exception.printStackTrace();
 		}
 	}
+
 	public void addColumnsFromJSON(String value) {
 		try {
 			if (value == null) {
 				return;
 			}
 			JSONArray columns = new JSONArray(value);
-			for (int i = 0; i < columns.length() ; i++) {
+			for (int i = 0; i < columns.length(); i++) {
 				JSONObject column = columns.getJSONObject(i);
 				addColumn(column.getInt("value"), GridUnitType.values()[column.getInt("type")]);
 			}
@@ -116,6 +121,7 @@ public class GridLayout extends LayoutBase {
 			exception.printStackTrace();
 		}
 	}
+
 	public void addRowsAndColumnsFromJSON(String rowsString, String jsonString) {
 		addRowsFromJSON(rowsString);
 		addColumnsFromJSON(jsonString);
@@ -223,7 +229,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private ItemSpec getColumnSpec(CommonLayoutParams lp) {
-		if (this._cols.size() == 0) {
+		if (this._cols.isEmpty()) {
 			return this.helper.singleColumn;
 		}
 
@@ -232,7 +238,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private ItemSpec getRowSpec(CommonLayoutParams lp) {
-		if (this._rows.size() == 0) {
+		if (this._rows.isEmpty()) {
 			return this.helper.singleRow;
 		}
 
@@ -241,7 +247,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private int getColumnSpan(CommonLayoutParams lp, int columnIndex) {
-		if (this._cols.size() == 0) {
+		if (this._cols.isEmpty()) {
 			return 1;
 		}
 
@@ -249,7 +255,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private int getRowSpan(CommonLayoutParams lp, int rowIndex) {
-		if (this._rows.size() == 0) {
+		if (this._rows.isEmpty()) {
 			return 1;
 		}
 
@@ -344,8 +350,10 @@ public class GridLayout extends LayoutBase {
 			}
 
 			MeasureSpecs measureSpecs = this.map.get(child);
-			this.updateMeasureSpecs(child, measureSpecs);
-			this.helper.addMeasureSpec(measureSpecs);
+			if (measureSpecs != null) {
+				this.updateMeasureSpecs(child, measureSpecs);
+				this.helper.addMeasureSpec(measureSpecs);
+			}
 		}
 
 		this.helper.measure();
@@ -1145,7 +1153,7 @@ class MeasureHelper {
 			}
 
 			if (remainingSpace > 0) {
-				this.minRowStarValue = Math.max(remainingSpace / measureSpec.starRowsCount, this.minRowStarValue);
+				this.minRowStarValue = Math.max((float) remainingSpace / measureSpec.starRowsCount, this.minRowStarValue);
 			}
 		}
 	}
@@ -1165,7 +1173,7 @@ class MeasureHelper {
 			}
 
 			if (remainingSpace > 0) {
-				this.minColumnStarValue = Math.max(remainingSpace / measureSpec.starColumnsCount, this.minColumnStarValue);
+				this.minColumnStarValue = Math.max((float) remainingSpace / measureSpec.starColumnsCount, this.minColumnStarValue);
 			}
 		}
 	}

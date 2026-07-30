@@ -298,12 +298,12 @@ declare class CIBlendKernel extends CIColorKernel {
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIBlendKernel; // inherited from CIKernel
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData, error?: interop.Reference<NSError>): CIBlendKernel; // inherited from CIKernel
 
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIBlendKernel; // inherited from CIKernel
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number, error?: interop.Reference<NSError>): CIBlendKernel; // inherited from CIKernel
 
 	/**
 	 * @since 8.0
@@ -982,12 +982,12 @@ declare class CIColorKernel extends CIKernel {
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIColorKernel; // inherited from CIKernel
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData, error?: interop.Reference<NSError>): CIColorKernel; // inherited from CIKernel
 
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIColorKernel; // inherited from CIKernel
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number, error?: interop.Reference<NSError>): CIColorKernel; // inherited from CIKernel
 
 	/**
 	 * @since 8.0
@@ -1212,7 +1212,7 @@ declare class CIContext extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	HEIF10RepresentationOfImageColorSpaceOptionsError(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
+	HEIF10RepresentationOfImageColorSpaceOptionsError(image: CIImage, colorSpace: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 11.0
@@ -1227,7 +1227,7 @@ declare class CIContext extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	OpenEXRRepresentationOfImageOptionsError(image: CIImage, options: NSDictionary<string, any>): NSData;
+	OpenEXRRepresentationOfImageOptionsError(image: CIImage, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 11.0
@@ -1329,7 +1329,7 @@ declare class CIContext extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	prepareRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint): boolean;
+	prepareRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint, error?: interop.Reference<NSError>): boolean;
 
 	renderToBitmapRowBytesBoundsFormatColorSpace(image: CIImage, data: interop.Pointer | interop.Reference<any>, rowBytes: number, bounds: CGRect, format: number, colorSpace: any): void;
 
@@ -1356,47 +1356,47 @@ declare class CIContext extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	startTaskToClearError(destination: CIRenderDestination): CIRenderTask;
+	startTaskToClearError(destination: CIRenderDestination, error?: interop.Reference<NSError>): CIRenderTask;
 
 	/**
 	 * @since 11.0
 	 */
-	startTaskToRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint): CIRenderTask;
+	startTaskToRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint, error?: interop.Reference<NSError>): CIRenderTask;
 
 	/**
 	 * @since 11.0
 	 */
-	startTaskToRenderToDestinationError(image: CIImage, destination: CIRenderDestination): CIRenderTask;
+	startTaskToRenderToDestinationError(image: CIImage, destination: CIRenderDestination, error?: interop.Reference<NSError>): CIRenderTask;
 
 	/**
 	 * @since 15.0
 	 */
-	writeHEIF10RepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
+	writeHEIF10RepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 11.0
 	 */
-	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
+	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 10.0
 	 */
-	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
+	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 17.0
 	 */
-	writeOpenEXRRepresentationOfImageToURLOptionsError(image: CIImage, url: NSURL, options: NSDictionary<string, any>): boolean;
+	writeOpenEXRRepresentationOfImageToURLOptionsError(image: CIImage, url: NSURL, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 11.0
 	 */
-	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
+	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 10.0
 	 */
-	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
+	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 }
 
 interface CIConvertLab extends CIFilterProtocol {
@@ -2272,7 +2272,7 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	 * @since 6.0
 	 * @deprecated 17.0
 	 */
-	static filterArrayFromSerializedXMPInputImageExtentError(xmpData: NSData, extent: CGRect): NSArray<CIFilter>;
+	static filterArrayFromSerializedXMPInputImageExtentError(xmpData: NSData, extent: CGRect, error?: interop.Reference<NSError>): NSArray<CIFilter>;
 
 	static filterNamesInCategories(categories: NSArray<string> | string[]): NSArray<string>;
 
@@ -3804,12 +3804,12 @@ declare class CIImageProcessorKernel extends NSObject {
 
 	static alloc(): CIImageProcessorKernel; // inherited from NSObject
 
-	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage> | CIImage[], _arguments: NSDictionary<string, any>): CIImage;
+	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage> | CIImage[], _arguments: NSDictionary<string, any>, error?: interop.Reference<NSError>): CIImage;
 
 	/**
 	 * @since 19.0
 	 */
-	static applyWithExtentsInputsArgumentsError(extents: NSArray<CIVector> | CIVector[], inputs: NSArray<CIImage> | CIImage[], _arguments: NSDictionary<string, any>): NSArray<CIImage>;
+	static applyWithExtentsInputsArgumentsError(extents: NSArray<CIVector> | CIVector[], inputs: NSArray<CIImage> | CIImage[], _arguments: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSArray<CIImage>;
 
 	static formatForInputAtIndex(inputIndex: number): number;
 
@@ -3820,12 +3820,12 @@ declare class CIImageProcessorKernel extends NSObject {
 	 */
 	static outputFormatAtIndexArguments(outputIndex: number, _arguments: NSDictionary<string, any>): number;
 
-	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput): boolean;
+	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 19.0
 	 */
-	static processWithInputsArgumentsOutputsError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, outputs: NSArray<CIImageProcessorOutput> | CIImageProcessorOutput[]): boolean;
+	static processWithInputsArgumentsOutputsError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, outputs: NSArray<CIImageProcessorOutput> | CIImageProcessorOutput[], error?: interop.Reference<NSError>): boolean;
 
 	static roiForInputArgumentsOutputRect(inputIndex: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
 
@@ -3924,12 +3924,12 @@ declare class CIKernel extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIKernel;
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData, error?: interop.Reference<NSError>): CIKernel;
 
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIKernel;
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number, error?: interop.Reference<NSError>): CIKernel;
 
 	/**
 	 * @since 8.0
@@ -3940,7 +3940,7 @@ declare class CIKernel extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	static kernelsWithMetalStringError(source: string): NSArray<CIKernel>;
+	static kernelsWithMetalStringError(source: string, error?: interop.Reference<NSError>): NSArray<CIKernel>;
 
 	/**
 	 * @since 8.0
@@ -5060,7 +5060,7 @@ declare class CIRenderTask extends NSObject {
 
 	static new(): CIRenderTask; // inherited from NSObject
 
-	waitUntilCompletedAndReturnError(): CIRenderInfo;
+	waitUntilCompletedAndReturnError(error?: interop.Reference<NSError>): CIRenderInfo;
 }
 
 interface CIRippleTransition extends CITransitionFilter {
@@ -5947,12 +5947,12 @@ declare class CIWarpKernel extends CIKernel {
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIWarpKernel; // inherited from CIKernel
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData, error?: interop.Reference<NSError>): CIWarpKernel; // inherited from CIKernel
 
 	/**
 	 * @since 11.0
 	 */
-	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIWarpKernel; // inherited from CIKernel
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number, error?: interop.Reference<NSError>): CIWarpKernel; // inherited from CIKernel
 
 	/**
 	 * @since 8.0

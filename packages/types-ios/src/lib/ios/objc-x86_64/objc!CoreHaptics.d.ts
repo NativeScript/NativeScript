@@ -12,11 +12,11 @@ interface CHHapticAdvancedPatternPlayer extends CHHapticPatternPlayer {
 
 	playbackRate: number;
 
-	pauseAtTimeError(time: number): boolean;
+	pauseAtTimeError(time: number, error?: interop.Reference<NSError>): boolean;
 
-	resumeAtTimeError(time: number): boolean;
+	resumeAtTimeError(time: number, error?: interop.Reference<NSError>): boolean;
 
-	seekToOffsetError(offsetTime: number): boolean;
+	seekToOffsetError(offsetTime: number, error?: interop.Reference<NSError>): boolean;
 }
 declare var CHHapticAdvancedPatternPlayer: {
 
@@ -42,9 +42,9 @@ interface CHHapticDeviceCapability {
 
 	supportsHaptics: boolean;
 
-	attributesForDynamicParameterError(inParameter: string): CHHapticParameterAttributes;
+	attributesForDynamicParameterError(inParameter: string, error?: interop.Reference<NSError>): CHHapticParameterAttributes;
 
-	attributesForEventParameterEventTypeError(inParameter: string, type: string): CHHapticParameterAttributes;
+	attributesForEventParameterEventTypeError(inParameter: string, type: string, error?: interop.Reference<NSError>): CHHapticParameterAttributes;
 }
 declare var CHHapticDeviceCapability: {
 
@@ -165,29 +165,29 @@ declare class CHHapticEngine extends NSObject {
 
 	constructor(o: { audioSession: AVAudioSession; });
 
-	createAdvancedPlayerWithPatternError(pattern: CHHapticPattern): CHHapticAdvancedPatternPlayer;
+	createAdvancedPlayerWithPatternError(pattern: CHHapticPattern, error?: interop.Reference<NSError>): CHHapticAdvancedPatternPlayer;
 
-	createPlayerWithPatternError(pattern: CHHapticPattern): CHHapticPatternPlayer;
+	createPlayerWithPatternError(pattern: CHHapticPattern, error?: interop.Reference<NSError>): CHHapticPatternPlayer;
 
-	initAndReturnError(): this;
+	initAndReturnError(error?: interop.Reference<NSError>): this;
 
-	initWithAudioSessionError(audioSession: AVAudioSession): this;
+	initWithAudioSessionError(audioSession: AVAudioSession, error?: interop.Reference<NSError>): this;
 
 	notifyWhenPlayersFinished(finishedHandler: (p1: NSError) => CHHapticEngineFinishedAction): void;
 
-	playPatternFromDataError(data: NSData): boolean;
+	playPatternFromDataError(data: NSData, error?: interop.Reference<NSError>): boolean;
 
-	playPatternFromURLError(fileURL: NSURL): boolean;
+	playPatternFromURLError(fileURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	registerAudioResourceOptionsError(resourceURL: NSURL, options: NSDictionary<any, any>): number;
+	registerAudioResourceOptionsError(resourceURL: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): number;
 
-	startAndReturnError(): boolean;
+	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	startWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	stopWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	unregisterAudioResourceError(resourceID: number): boolean;
+	unregisterAudioResourceError(resourceID: number, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum CHHapticEngineFinishedAction {
@@ -463,18 +463,18 @@ declare class CHHapticPattern extends NSObject {
 
 	constructor(o: { events: NSArray<CHHapticEvent> | CHHapticEvent[]; parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[]; });
 
-	exportDictionaryAndReturnError(): NSDictionary<string, any>;
+	exportDictionaryAndReturnError(error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.0
 	 */
-	initWithContentsOfURLError(ahapURL: NSURL): this;
+	initWithContentsOfURLError(ahapURL: NSURL, error?: interop.Reference<NSError>): this;
 
-	initWithDictionaryError(patternDict: NSDictionary<string, any>): this;
+	initWithDictionaryError(patternDict: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
-	initWithEventsParameterCurvesError(events: NSArray<CHHapticEvent> | CHHapticEvent[], parameterCurves: NSArray<CHHapticParameterCurve> | CHHapticParameterCurve[]): this;
+	initWithEventsParameterCurvesError(events: NSArray<CHHapticEvent> | CHHapticEvent[], parameterCurves: NSArray<CHHapticParameterCurve> | CHHapticParameterCurve[], error?: interop.Reference<NSError>): this;
 
-	initWithEventsParametersError(events: NSArray<CHHapticEvent> | CHHapticEvent[], parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[]): this;
+	initWithEventsParametersError(events: NSArray<CHHapticEvent> | CHHapticEvent[], parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[], error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -559,15 +559,15 @@ interface CHHapticPatternPlayer extends NSObjectProtocol {
 
 	isMuted: boolean;
 
-	cancelAndReturnError(): boolean;
+	cancelAndReturnError(error?: interop.Reference<NSError>): boolean;
 
-	scheduleParameterCurveAtTimeError(parameterCurve: CHHapticParameterCurve, time: number): boolean;
+	scheduleParameterCurveAtTimeError(parameterCurve: CHHapticParameterCurve, time: number, error?: interop.Reference<NSError>): boolean;
 
-	sendParametersAtTimeError(parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[], time: number): boolean;
+	sendParametersAtTimeError(parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[], time: number, error?: interop.Reference<NSError>): boolean;
 
-	startAtTimeError(time: number): boolean;
+	startAtTimeError(time: number, error?: interop.Reference<NSError>): boolean;
 
-	stopAtTimeError(time: number): boolean;
+	stopAtTimeError(time: number, error?: interop.Reference<NSError>): boolean;
 }
 declare var CHHapticPatternPlayer: {
 

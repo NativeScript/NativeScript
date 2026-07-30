@@ -258,7 +258,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	static new(): CNContact; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): CNContact;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): CNContact;
 
 	static predicateForContactsInContainerWithIdentifier(containerIdentifier: string): NSPredicate;
 
@@ -729,7 +729,7 @@ declare class CNContactStore extends NSObject {
 	 */
 	readonly currentHistoryToken: NSData;
 
-	containersMatchingPredicateError(predicate: NSPredicate): NSArray<CNContainer>;
+	containersMatchingPredicateError(predicate: NSPredicate, error?: interop.Reference<NSError>): NSArray<CNContainer>;
 
 	defaultContainerIdentifier(): string;
 
@@ -738,22 +738,22 @@ declare class CNContactStore extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	enumeratorForChangeHistoryFetchRequestError(request: CNChangeHistoryFetchRequest): CNFetchResult<NSEnumerator<CNChangeHistoryEvent>>;
+	enumeratorForChangeHistoryFetchRequestError(request: CNChangeHistoryFetchRequest, error?: interop.Reference<NSError>): CNFetchResult<NSEnumerator<CNChangeHistoryEvent>>;
 
 	/**
 	 * @since 13.0
 	 */
-	enumeratorForContactFetchRequestError(request: CNContactFetchRequest): CNFetchResult<NSEnumerator<CNContact>>;
+	enumeratorForContactFetchRequestError(request: CNContactFetchRequest, error?: interop.Reference<NSError>): CNFetchResult<NSEnumerator<CNContact>>;
 
-	executeSaveRequestError(saveRequest: CNSaveRequest): boolean;
+	executeSaveRequestError(saveRequest: CNSaveRequest, error?: interop.Reference<NSError>): boolean;
 
-	groupsMatchingPredicateError(predicate: NSPredicate): NSArray<CNGroup>;
+	groupsMatchingPredicateError(predicate: NSPredicate, error?: interop.Reference<NSError>): NSArray<CNGroup>;
 
 	requestAccessForEntityTypeCompletionHandler(entityType: CNEntityType, completionHandler: (p1: boolean, p2: NSError) => void): void;
 
-	unifiedContactWithIdentifierKeysToFetchError(identifier: string, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): CNContact;
+	unifiedContactWithIdentifierKeysToFetchError(identifier: string, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[], error?: interop.Reference<NSError>): CNContact;
 
-	unifiedContactsMatchingPredicateKeysToFetchError(predicate: NSPredicate, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): NSArray<CNContact>;
+	unifiedContactsMatchingPredicateKeysToFetchError(predicate: NSPredicate, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[], error?: interop.Reference<NSError>): NSArray<CNContact>;
 }
 
 /**
@@ -793,9 +793,9 @@ declare class CNContactVCardSerialization extends NSObject {
 
 	static alloc(): CNContactVCardSerialization; // inherited from NSObject
 
-	static contactsWithDataError(data: NSData): NSArray<CNContact>;
+	static contactsWithDataError(data: NSData, error?: interop.Reference<NSError>): NSArray<CNContact>;
 
-	static dataWithContactsError(contacts: NSArray<CNContact> | CNContact[]): NSData;
+	static dataWithContactsError(contacts: NSArray<CNContact> | CNContact[], error?: interop.Reference<NSError>): NSData;
 
 	static descriptorForRequiredKeys(): CNKeyDescriptor;
 
@@ -2341,7 +2341,7 @@ declare class CNMutableContact extends CNContact {
 
 	static new(): CNMutableContact; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): CNMutableContact; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): CNMutableContact; // inherited from NSItemProviderReading
 
 	birthday: NSDateComponents;
 

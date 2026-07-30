@@ -127,7 +127,7 @@ declare class AVCaptureEventSound extends NSObject {
 
 	constructor(o: { URL: NSURL; });
 
-	initWithURLError(url: NSURL): this;
+	initWithURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 }
 
 /**

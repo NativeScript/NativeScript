@@ -8,7 +8,7 @@ export function navigatingTo(args: EventData) {
 }
 
 export class SampleData extends Observable {
-	src: string = 'https://source.unsplash.com/random';
+	src: string = 'https://i.pravatar.cc/300';
 	savedData: string = '';
 	resizedImage: ImageSource;
 	async save() {

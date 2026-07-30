@@ -669,7 +669,8 @@ export class CSS3Parser {
 			text: undefined,
 			components: [],
 		};
-		do {
+		// eslint-disable-next-line no-constant-condition
+		while (true) {
 			if (this.nextInputCodePointIndex >= this.text.length) {
 				funcToken.text = name + '(' + this.text.substring(start);
 
@@ -692,6 +693,6 @@ export class CSS3Parser {
 				}
 				// TODO: Else we won't advance
 			}
-		} while (true);
+		}
 	}
 }

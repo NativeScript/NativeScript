@@ -293,7 +293,7 @@ declare class UNNotificationAttachment extends NSObject implements NSCopying, NS
 
 	static alloc(): UNNotificationAttachment; // inherited from NSObject
 
-	static attachmentWithIdentifierURLOptionsError(identifier: string, URL: NSURL, options: NSDictionary<any, any>): UNNotificationAttachment;
+	static attachmentWithIdentifierURLOptionsError(identifier: string, URL: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): UNNotificationAttachment;
 
 	static new(): UNNotificationAttachment; // inherited from NSObject
 
@@ -519,7 +519,7 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 	/**
 	 * @since 15.0
 	 */
-	contentByUpdatingWithProviderError(provider: UNNotificationContentProviding): UNNotificationContent;
+	contentByUpdatingWithProviderError(provider: UNNotificationContentProviding, error?: interop.Reference<NSError>): UNNotificationContent;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

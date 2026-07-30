@@ -1,3 +1,123 @@
+## 5.0.38 (2026-07-22)
+
+This was a version bump only for webpack5 to align it with other projects, there were no code changes.
+
+## 5.0.37 (2026-07-21)
+
+This was a version bump only for webpack5 to align it with other projects, there were no code changes.
+
+## 5.0.36 (2026-07-08)
+
+### 🩹 Fixes
+
+- **webpack:** restore source map files and always respect env.sourceMap ([#11303](https://github.com/NativeScript/NativeScript/pull/11303))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 5.0.35 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** inline sourcemaps ([#11188](https://github.com/NativeScript/NativeScript/pull/11188))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 5.0.34 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** resolve source map path with proper encoding ([#11180](https://github.com/NativeScript/NativeScript/pull/11180))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 5.0.33 (2026-03-30)
+
+### 🩹 Fixes
+
+- **webpack:** disable __dirname & __filename webpack polyfills for esm builds ([#11146](https://github.com/NativeScript/NativeScript/pull/11146))
+
+### ❤️ Thank You
+
+- Daniel Grima @dangrima90
+
+## 5.0.32 (2026-03-18)
+
+### 🩹 Fixes
+
+- **webpack:** enable traversal of child nodes for NativeClass detection ([#11137](https://github.com/NativeScript/NativeScript/pull/11137))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 5.0.31 (2026-01-06)
+
+- LICENSE and README.md are now included in the package assets.
+
+## 5.0.30 (2026-01-06)
+
+### 🩹 Fixes
+
+- **webpack:** ts-patch transform ([#11041](https://github.com/NativeScript/NativeScript/pull/11041))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 5.0.29 (2025-12-19)
+
+### 🩹 Fixes
+
+- **webpack:** sourceMap path when using CommonJS ([#11013](https://github.com/NativeScript/NativeScript/pull/11013))
+
+### ❤️ Thank You
+
+- Jason Cassidy @jcassidyav
+
+## 5.0.28 (2025-12-05)
+
+### 🩹 Fixes
+
+- **webpack:** hmr handling ([#11002](https://github.com/NativeScript/NativeScript/pull/11002))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 5.0.27 (2025-11-28)
+
+### 🩹 Fixes
+
+- **webpack:** fallback to commonjs when no runtimes detected ([d22797e1e](https://github.com/NativeScript/NativeScript/commit/d22797e1e))
+- **webpack:** backwards compat with older core versions ([c907e31ae](https://github.com/NativeScript/NativeScript/commit/c907e31ae))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 5.0.25 (2025-11-17)
+
+### 🚀 Features
+
+- NativeClass transformer now supports ts-patch and ts-loader ([#10952](https://github.com/NativeScript/NativeScript/pull/10952))
+- **webpack:** support es module bundling ([#10788](https://github.com/NativeScript/NativeScript/pull/10788))
+
+### 🩹 Fixes
+
+- **webpack:** es module source mapping improvements ([bbeca526f](https://github.com/NativeScript/NativeScript/commit/bbeca526f))
+- **webpack:** es module source map resolution ([#10860](https://github.com/NativeScript/NativeScript/pull/10860))
+
+### ❤️ Thank You
+
+- farfromrefuge
+- Nathan Walker
+
 ## 5.0.24 (2025-03-23)
 
 ### 🚀 Features

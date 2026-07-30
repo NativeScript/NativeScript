@@ -63,13 +63,6 @@ export class PageBase extends ContentView {
 		}
 	}
 
-	get statusBarStyle(): 'light' | 'dark' {
-		return this.style.statusBarStyle;
-	}
-	set statusBarStyle(value: 'light' | 'dark') {
-		this.style.statusBarStyle = value;
-	}
-
 	public get androidStatusBarBackground(): Color {
 		return this.style.androidStatusBarBackground;
 	}
@@ -213,15 +206,6 @@ export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>
 	valueConverter: booleanConverter,
 });
 enableSwipeBackNavigationProperty.register(PageBase);
-
-/**
- * Property backing statusBarStyle.
- */
-export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
-	name: 'statusBarStyle',
-	cssName: 'status-bar-style',
-});
-statusBarStyleProperty.register(Style);
 
 /**
  * Property backing androidStatusBarBackground.

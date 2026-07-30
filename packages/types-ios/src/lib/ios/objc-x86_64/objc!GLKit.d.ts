@@ -196,7 +196,7 @@ declare class GLKMesh extends NSObject {
 
 	static new(): GLKMesh; // inherited from NSObject
 
-	static newMeshesFromAssetSourceMeshesError(asset: MDLAsset, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>): NSArray<GLKMesh>;
+	static newMeshesFromAssetSourceMeshesError(asset: MDLAsset, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>, error?: interop.Reference<NSError>): NSArray<GLKMesh>;
 
 	readonly name: string;
 
@@ -210,7 +210,7 @@ declare class GLKMesh extends NSObject {
 
 	constructor(o: { mesh: MDLMesh; });
 
-	initWithMeshError(mesh: MDLMesh): this;
+	initWithMeshError(mesh: MDLMesh, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -482,23 +482,23 @@ declare class GLKTextureLoader extends NSObject {
 
 	static alloc(): GLKTextureLoader; // inherited from NSObject
 
-	static cubeMapWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>): GLKTextureInfo;
+	static cubeMapWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
-	static cubeMapWithContentsOfFilesOptionsError(paths: NSArray<any> | any[], options: NSDictionary<string, number>): GLKTextureInfo;
+	static cubeMapWithContentsOfFilesOptionsError(paths: NSArray<any> | any[], options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
-	static cubeMapWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>): GLKTextureInfo;
+	static cubeMapWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
 	static new(): GLKTextureLoader; // inherited from NSObject
 
-	static textureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, number>): GLKTextureInfo;
+	static textureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
-	static textureWithContentsOfDataOptionsError(data: NSData, options: NSDictionary<string, number>): GLKTextureInfo;
+	static textureWithContentsOfDataOptionsError(data: NSData, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
-	static textureWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>): GLKTextureInfo;
+	static textureWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
-	static textureWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>): GLKTextureInfo;
+	static textureWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
-	static textureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>): GLKTextureInfo;
+	static textureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
 
 	constructor(o: { sharegroup: EAGLSharegroup; });
 

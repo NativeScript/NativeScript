@@ -65,13 +65,13 @@ export class ImageSource {
 	 * Loads this instance from the specified system image name.
 	 * @param name the name of the system image
 	 */
-	static fromSystemImageSync(name: string, instance: ImageBase): ImageSource;
+	static fromSystemImageSync(name: string, instance?: ImageBase): ImageSource;
 
 	/**
 	 * Loads this instance from the specified system image name asynchronously.
 	 * @param name the name of the system image
 	 */
-	static fromSystemImage(name: string, instance: ImageBase): Promise<ImageSource>;
+	static fromSystemImage(name: string, instance?: ImageBase): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified file.

@@ -27,6 +27,11 @@ export interface ScreenMetrics {
 	 */
 	scale: number;
 
+	/**
+	 * (iOS only) Gets the native UIScreen instance.
+	 */
+	screen: UIScreen;
+
 	_updateMetrics(): void;
 }
 

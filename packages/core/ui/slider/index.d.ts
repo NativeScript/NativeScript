@@ -18,7 +18,7 @@ export class Slider extends View {
 	/**
 	 * String value used when hooking to accessibilityDecrement event.
 	 *
-	 * @nsEvent {accessibilityDecrementEvent} accessibilityDecrement
+	 * @nsEvent {AccessibilityDecrementEventData} accessibilityDecrement
 	 */
 	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
 

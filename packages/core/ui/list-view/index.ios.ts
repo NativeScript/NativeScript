@@ -1,15 +1,19 @@
-import { ItemEventData } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty } from './list-view-common';
+import { ItemEventData, SearchEventData, ItemsSource } from '.';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty } from './list-view-common';
 import { CoreTypes } from '../../core-types';
-import { View, KeyedTemplate } from '../core/view';
+import { View, type KeyedTemplate, type Template } from '../core/view';
 import { Length } from '../styling/length-shared';
 import { Observable, EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { StackLayout } from '../layouts/stack-layout';
 import { ProxyViewContainer } from '../proxy-view-container';
 import { profile } from '../../profiling';
 import { Trace } from '../../trace';
+import { Builder } from '../builder';
+import { Label } from '../label';
+import { isFunction } from '../../utils/types';
 
 export * from './list-view-common';
 
@@ -61,11 +65,47 @@ class ListViewCell extends UITableViewCell {
 	public owner: WeakRef<View>;
 }
 
+@NativeClass
+class ListViewHeaderCell extends UITableViewHeaderFooterView {
+	public static initWithEmptyBackground(): ListViewHeaderCell {
+		const cell = <ListViewHeaderCell>ListViewHeaderCell.new();
+		// Clear background by default - this will make headers transparent
+		cell.backgroundColor = UIColor.clearColor;
+
+		return cell;
+	}
+
+	initWithReuseIdentifier(reuseIdentifier: string): this {
+		const cell = <this>super.initWithReuseIdentifier(reuseIdentifier);
+		// Clear background by default - this will make headers transparent
+		cell.backgroundColor = UIColor.clearColor;
+
+		return cell;
+	}
+
+	public willMoveToSuperview(newSuperview: UIView): void {
+		const parent = <ListView>(this.view ? this.view.parent : null);
+
+		// When inside ListView and there is no newSuperview this header is
+		// removed from native visual tree so we remove it from our tree too.
+		if (parent && !newSuperview) {
+			parent._removeHeaderContainer(this);
+		}
+	}
+
+	public get view(): View {
+		return this.owner ? this.owner.deref() : null;
+	}
+
+	public owner: WeakRef<View>;
+}
+
 function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eventName: string, indexPath: NSIndexPath) {
 	const args = <ItemEventData>{
 		eventName: eventName,
 		object: listView,
 		index: indexPath.row,
+		section: indexPath.section,
 		view: view,
 		ios: cell,
 		android: undefined,
@@ -88,10 +128,33 @@ class DataSource extends NSObject implements UITableViewDataSource {
 		return dataSource;
 	}
 
+	public numberOfSectionsInTableView(tableView: UITableView): number {
+		const owner = this._owner?.deref();
+
+		if (!owner) {
+			return 1;
+		}
+
+		const sections = owner._getSectionCount();
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: numberOfSections = ${sections} (sectioned: ${owner.sectioned})`, Trace.categories.Debug);
+		}
+		return sections;
+	}
+
 	public tableViewNumberOfRowsInSection(tableView: UITableView, section: number) {
 		const owner = this._owner?.deref();
 
-		return owner && owner.items ? owner.items.length : 0;
+		if (!owner) {
+			return 0;
+		}
+
+		const sectionItems = owner._getItemsInSection(section);
+		const rowCount = sectionItems ? sectionItems.length : 0;
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: numberOfRows in section ${section} = ${rowCount}`, Trace.categories.Debug);
+		}
+		return rowCount;
 	}
 
 	public tableViewCellForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): UITableViewCell {
@@ -184,6 +247,55 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
 		return layout.toDeviceIndependentPixels(height);
 	}
+
+	public tableViewViewForHeaderInSection(tableView: UITableView, section: number): UIView {
+		const owner = this._owner?.deref();
+
+		if (!owner || !owner.stickyHeader || !owner.stickyHeaderTemplate) {
+			if (Trace.isEnabled()) {
+				Trace.write(`ListView: No sticky header (stickyHeader: ${owner?.stickyHeader}, hasTemplate: ${!!owner?.stickyHeaderTemplate})`, Trace.categories.Debug);
+			}
+			return null;
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: Creating sticky header`, Trace.categories.Debug);
+		}
+
+		const headerReuseIdentifier = 'stickyHeader';
+		let headerCell = <ListViewHeaderCell>tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerReuseIdentifier);
+
+		if (!headerCell) {
+			// Use proper iOS initialization for registered header cells
+			headerCell = <ListViewHeaderCell>ListViewHeaderCell.alloc().initWithReuseIdentifier(headerReuseIdentifier);
+			headerCell.backgroundColor = UIColor.clearColor;
+		}
+
+		owner._prepareHeader(headerCell, section);
+
+		return headerCell;
+	}
+
+	public tableViewHeightForHeaderInSection(tableView: UITableView, section: number): number {
+		const owner = this._owner?.deref();
+
+		if (!owner || !owner.stickyHeader) {
+			return 0;
+		}
+
+		let height: number;
+		if (owner.stickyHeaderHeight === 'auto') {
+			height = 44;
+		} else {
+			height = layout.toDeviceIndependentPixels(Length.toDevicePixels(owner.stickyHeaderHeight, 44));
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: Sticky header height: ${height}`, Trace.categories.Debug);
+		}
+
+		return height;
+	}
 }
 
 @NativeClass
@@ -233,6 +345,91 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 
 		return layout.toDeviceIndependentPixels(owner._effectiveRowHeight);
 	}
+
+	public tableViewViewForHeaderInSection(tableView: UITableView, section: number): UIView {
+		const owner = this._owner?.deref();
+
+		if (!owner || !owner.stickyHeader || !owner.stickyHeaderTemplate) {
+			if (Trace.isEnabled()) {
+				Trace.write(`ListView: No sticky header (stickyHeader: ${owner?.stickyHeader}, hasTemplate: ${!!owner?.stickyHeaderTemplate})`, Trace.categories.Debug);
+			}
+			return null;
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: Creating sticky header`, Trace.categories.Debug);
+		}
+
+		const headerReuseIdentifier = 'stickyHeader';
+		let headerCell = <ListViewHeaderCell>tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerReuseIdentifier);
+
+		if (!headerCell) {
+			headerCell = <ListViewHeaderCell>ListViewHeaderCell.alloc().initWithReuseIdentifier(headerReuseIdentifier);
+			headerCell.backgroundColor = UIColor.clearColor;
+		}
+
+		owner._prepareHeader(headerCell, section);
+
+		return headerCell;
+	}
+
+	public tableViewHeightForHeaderInSection(tableView: UITableView, section: number): number {
+		const owner = this._owner?.deref();
+
+		if (!owner || !owner.stickyHeader) {
+			return 0;
+		}
+
+		let height: number;
+		if (owner.stickyHeaderHeight === 'auto') {
+			height = 44;
+		} else {
+			height = layout.toDeviceIndependentPixels(Length.toDevicePixels(owner.stickyHeaderHeight, 44));
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: Sticky header height: ${height}`, Trace.categories.Debug);
+		}
+
+		return height;
+	}
+}
+
+@NativeClass
+class UISearchResultsUpdatingImpl extends NSObject implements UISearchResultsUpdating {
+	public static ObjCProtocols = [UISearchResultsUpdating];
+
+	private _owner: WeakRef<ListView>;
+
+	public static initWithOwner(owner: WeakRef<ListView>): UISearchResultsUpdatingImpl {
+		const handler = <UISearchResultsUpdatingImpl>UISearchResultsUpdatingImpl.new();
+		handler._owner = owner;
+
+		return handler;
+	}
+
+	public updateSearchResultsForSearchController(searchController: UISearchController) {
+		const owner = this._owner ? this._owner.get() : null;
+		if (!owner) {
+			return;
+		}
+
+		const searchText = searchController.searchBar.text || '';
+
+		// Track search state
+		owner._isSearchActive = searchController.active;
+
+		// Create SearchEventData
+		const eventData: SearchEventData = {
+			eventName: ListViewBase.searchChangeEvent,
+			object: owner,
+			text: searchText,
+			ios: searchController,
+		};
+
+		// Fire the searchChange event
+		owner.notify(eventData);
+	}
 }
 
 export class ListView extends ListViewBase {
@@ -244,11 +441,18 @@ export class ListView extends ListViewBase {
 	private _preparingCell: boolean;
 	private _isDataDirty: boolean;
 	private _map: Map<ListViewCell, ItemView>;
+	private _headerMap: Map<ListViewHeaderCell, View>;
+	private _preparingHeader: boolean;
+	private _headerTemplateCache: View;
+	private _searchController: UISearchController;
+	private _searchDelegate: UISearchResultsUpdatingImpl;
+	_isSearchActive: boolean = false;
 	widthMeasureSpec = 0;
 
 	constructor() {
 		super();
 		this._map = new Map<ListViewCell, ItemView>();
+		this._headerMap = new Map<ListViewHeaderCell, View>();
 		this._heights = new Array<number>();
 	}
 
@@ -260,17 +464,139 @@ export class ListView extends ListViewBase {
 		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
 		nativeView.registerClassForCellReuseIdentifier(ListViewCell.class(), this._defaultTemplate.key);
+		nativeView.registerClassForHeaderFooterViewReuseIdentifier(ListViewHeaderCell.class(), 'stickyHeader');
 		nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
 		nativeView.rowHeight = UITableViewAutomaticDimension;
 		nativeView.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
 		this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
+
+		// Control section header top padding (iOS 15+)
+		if (nativeView.respondsToSelector('setSectionHeaderTopPadding:')) {
+			if (!this.stickyHeaderTopPadding) {
+				nativeView.sectionHeaderTopPadding = 0;
+			}
+			// When stickyHeaderTopPadding is true, don't set the property to use iOS default
+		}
+
 		this._setNativeClipToBounds();
 	}
 
 	disposeNativeView() {
+		this._cleanupSearchController();
 		this._delegate = null;
 		this._dataSource = null;
 		super.disposeNativeView();
+	}
+
+	private _setupSearchController() {
+		if (!this.showSearch || this._searchController) {
+			return; // Already setup or not needed
+		}
+
+		// 1. Create UISearchController with nil (show results in this table)
+		this._searchController = UISearchController.alloc().initWithSearchResultsController(null);
+		this._searchDelegate = UISearchResultsUpdatingImpl.initWithOwner(new WeakRef(this));
+
+		// 2. Tell it who will update results
+		this._searchController.searchResultsUpdater = this._searchDelegate;
+
+		// 3. Critical: Don't dim or obscure the table, and prevent extra content
+		this._searchController.obscuresBackgroundDuringPresentation = false;
+		this._searchController.dimsBackgroundDuringPresentation = false;
+		this._searchController.hidesNavigationBarDuringPresentation = false;
+
+		// 4. Placeholder text and styling
+		this._searchController.searchBar.placeholder = 'Search';
+		this._searchController.searchBar.searchBarStyle = UISearchBarStyle.Minimal;
+
+		// 5. CRITICAL: Proper presentation context setup
+		const viewController = this._getViewController();
+		if (viewController) {
+			viewController.definesPresentationContext = true;
+			viewController.providesPresentationContextTransitionStyle = true;
+
+			// 6a. If we're in a UINavigationController (iOS 11+)...
+			if (SDK_VERSION >= 11.0 && viewController.navigationItem) {
+				viewController.navigationItem.searchController = this._searchController;
+
+				// Set auto-hide behavior based on searchAutoHide property
+				viewController.navigationItem.hidesSearchBarWhenScrolling = this.searchAutoHide;
+
+				// Optional: Enable large titles for better auto-hide effect when searchAutoHide is true
+				// if (this.searchAutoHide && viewController.navigationController && viewController.navigationController.navigationBar) {
+				// 	// Only set large titles if not already configured
+				// 	if (!viewController.navigationController.navigationBar.prefersLargeTitles) {
+				// 		viewController.navigationController.navigationBar.prefersLargeTitles = true;
+				// 	}
+				// 	// Set large title display mode for this specific view controller
+				// 	if (viewController.navigationItem.largeTitleDisplayMode === UINavigationItemLargeTitleDisplayMode.Automatic) {
+				// 		viewController.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+				// 	}
+				// }
+			} else {
+				// 6b. Fallback: put it at the top of our table
+				this.nativeViewProtected.tableHeaderView = this._searchController.searchBar;
+			}
+		} else {
+			// Fallback: no view controller found, use table header
+			this.nativeViewProtected.tableHeaderView = this._searchController.searchBar;
+		}
+
+		// 7. Ensure search bar is properly sized and prevent content inset issues
+		this._searchController.searchBar.sizeToFit();
+
+		// 8. Disable automatic content inset adjustment that can cause spacing issues
+		if (this.nativeViewProtected.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
+			// iOS 11+ - prevent automatic content inset adjustments
+			this.nativeViewProtected.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+		} else {
+			// iOS 10 and below - disable automatic content inset
+			this.nativeViewProtected.automaticallyAdjustsScrollIndicatorInsets = false;
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: UISearchController setup complete with searchAutoHide: ${this.searchAutoHide}`, Trace.categories.Debug);
+		}
+	}
+
+	private _cleanupSearchController() {
+		if (!this._searchController) {
+			return;
+		}
+
+		// Remove search controller from navigation item or table header
+		const viewController = this._getViewController();
+		if (viewController && viewController.navigationItem && viewController.navigationItem.searchController === this._searchController) {
+			viewController.navigationItem.searchController = null;
+		} else if (this.nativeViewProtected.tableHeaderView === this._searchController.searchBar) {
+			this.nativeViewProtected.tableHeaderView = null;
+		}
+
+		// Reset content inset adjustment behavior
+		if (this.nativeViewProtected.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
+			// iOS 11+ - restore automatic content inset adjustments
+			this.nativeViewProtected.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+		} else {
+			// iOS 10 and below - restore automatic content inset
+			this.nativeViewProtected.automaticallyAdjustsScrollIndicatorInsets = true;
+		}
+
+		// Cleanup references
+		this._searchController.searchResultsUpdater = null;
+		this._searchController = null;
+		this._searchDelegate = null;
+	}
+
+	private _getViewController(): UIViewController {
+		// Helper to get the current view controller
+		let parent = this.parent;
+		while (parent) {
+			if (parent.viewController) {
+				return parent.viewController;
+			}
+			parent = parent.parent;
+		}
+		return null;
 	}
 
 	_setNativeClipToBounds() {
@@ -288,6 +614,11 @@ export class ListView extends ListViewBase {
 			this.refresh();
 		}
 		this.nativeViewProtected.delegate = this._delegate;
+
+		// Setup search controller if enabled
+		if (this.showSearch) {
+			this._setupSearchController();
+		}
 	}
 
 	// @ts-ignore
@@ -296,11 +627,14 @@ export class ListView extends ListViewBase {
 	}
 
 	get _childrenCount(): number {
-		return this._map.size;
+		return this._map.size + this._headerMap.size;
 	}
 
 	public eachChildView(callback: (child: View) => boolean): void {
 		this._map.forEach((view, key) => {
+			callback(view);
+		});
+		this._headerMap.forEach((view, key) => {
 			callback(view);
 		});
 	}
@@ -336,6 +670,11 @@ export class ListView extends ListViewBase {
 	public refresh() {
 		// clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
 		this._map.forEach((view, nativeView, map) => {
+			if (!(view.bindingContext instanceof Observable)) {
+				view.bindingContext = null;
+			}
+		});
+		this._headerMap.forEach((view, nativeView, map) => {
 			if (!(view.bindingContext instanceof Observable)) {
 				view.bindingContext = null;
 			}
@@ -385,8 +724,8 @@ export class ListView extends ListViewBase {
 	}
 
 	public requestLayout(): void {
-		// When preparing cell don't call super - no need to invalidate our measure when cell desiredSize is changed.
-		if (!this._preparingCell) {
+		// When preparing cell or header don't call super - no need to invalidate our measure when cell/header desiredSize is changed.
+		if (!this._preparingCell && !this._preparingHeader) {
 			super.requestLayout();
 		}
 	}
@@ -409,6 +748,9 @@ export class ListView extends ListViewBase {
 		this._map.forEach((childView, listViewCell) => {
 			View.measureChild(this, childView, childView._currentWidthMeasureSpec, childView._currentHeightMeasureSpec);
 		});
+		this._headerMap.forEach((childView, listViewHeaderCell) => {
+			View.measureChild(this, childView, childView._currentWidthMeasureSpec, childView._currentHeightMeasureSpec);
+		});
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
@@ -422,6 +764,12 @@ export class ListView extends ListViewBase {
 				childView.iosOverflowSafeAreaEnabled = false;
 				View.layoutChild(this, childView, 0, 0, width, cellHeight);
 			}
+		});
+		this._headerMap.forEach((childView, listViewHeaderCell) => {
+			const headerHeight = this.stickyHeaderHeight === 'auto' ? 44 : Length.toDevicePixels(this.stickyHeaderHeight, 44);
+			const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
+			childView.iosOverflowSafeAreaEnabled = false;
+			View.layoutChild(this, childView, 0, 0, width, headerHeight);
 		});
 	}
 
@@ -445,11 +793,21 @@ export class ListView extends ListViewBase {
 			this._preparingCell = true;
 			let view: ItemView = cell.view;
 			if (!view) {
-				view = this._getItemTemplate(indexPath.row).createView();
+				if (this.sectioned) {
+					// For sectioned data, we need to calculate the absolute index for template selection
+					let absoluteIndex = 0;
+					for (let i = 0; i < indexPath.section; i++) {
+						absoluteIndex += this._getItemsInSection(i).length;
+					}
+					absoluteIndex += indexPath.row;
+					view = this._getItemTemplate(absoluteIndex).createView();
+				} else {
+					view = this._getItemTemplate(indexPath.row).createView();
+				}
 			}
 
 			const args = notifyForItemAtIndex(this, cell, view, ITEMLOADING, indexPath);
-			view = args.view || this._getDefaultItemContent(indexPath.row);
+			view = args.view || this._getDefaultItemContent(this.sectioned ? indexPath.row : indexPath.row);
 
 			// Proxy containers should not get treated as layouts.
 			// Wrap them in a real layout as well.
@@ -469,8 +827,14 @@ export class ListView extends ListViewBase {
 				cell.owner = new WeakRef(view);
 			}
 
-			this._prepareItem(view, indexPath.row);
-			view._listViewItemIndex = indexPath.row;
+			if (this.sectioned) {
+				this._prepareItemInSection(view, indexPath.section, indexPath.row);
+				view._listViewItemIndex = indexPath.row; // Keep row index for compatibility
+				(view as any)._listViewSectionIndex = indexPath.section;
+			} else {
+				this._prepareItem(view, indexPath.row);
+				view._listViewItemIndex = indexPath.row;
+			}
 			this._map.set(cell, view);
 
 			// We expect that views returned from itemLoading are new (e.g. not reused).
@@ -503,6 +867,163 @@ export class ListView extends ListViewBase {
 		this._map.delete(cell);
 	}
 
+	public _prepareHeader(headerCell: ListViewHeaderCell, section: number): number {
+		let headerHeight: number;
+		try {
+			this._preparingHeader = true;
+			let view: View = headerCell.view;
+			if (!view) {
+				view = this._getHeaderTemplate();
+				if (!view) {
+					if (Trace.isEnabled()) {
+						Trace.write(`ListView: Failed to create header view for section ${section}`, Trace.categories.Debug);
+					}
+					// Create a fallback view
+					const lbl = new Label();
+					lbl.text = `Section ${section}`;
+					view = lbl;
+				}
+			}
+
+			// Handle header cell reuse
+			if (!headerCell.view) {
+				headerCell.owner = new WeakRef(view);
+			} else if (headerCell.view !== view) {
+				// Remove old view and set new one
+				(<UIView>headerCell.view.nativeViewProtected)?.removeFromSuperview();
+				this._removeHeaderContainer(headerCell);
+				headerCell.owner = new WeakRef(view);
+			}
+
+			// Clear existing binding context and set new one
+			if (view.bindingContext) {
+				view.bindingContext = null;
+			}
+
+			if (this.sectioned) {
+				const sectionData = this._getSectionData(section);
+				if (sectionData) {
+					view.bindingContext = sectionData;
+				} else {
+					// Fallback if section data is missing
+					view.bindingContext = { title: `Section ${section}`, section: section };
+				}
+			} else {
+				view.bindingContext = this.bindingContext;
+			}
+
+			// Force immediate binding context evaluation
+			if (view && typeof (view as any)._onBindingContextChanged === 'function') {
+				(view as any)._onBindingContextChanged(null, view.bindingContext);
+
+				// Also trigger for child views
+				// @ts-ignore
+				if (view._childrenCount) {
+					view.eachChildView((child) => {
+						if (typeof (child as any)._onBindingContextChanged === 'function') {
+							(child as any)._onBindingContextChanged(null, view.bindingContext);
+						}
+						return true;
+					});
+				}
+			}
+			this._headerMap.set(headerCell, view);
+
+			// Add new header view to the cell
+			if (view && !view.parent) {
+				this._addView(view);
+				headerCell.contentView.addSubview(view.nativeViewProtected);
+			}
+
+			// Request layout and measure/layout the header
+			if (view && view.bindingContext) {
+				view.requestLayout();
+			}
+
+			headerHeight = this._layoutHeader(view);
+		} finally {
+			this._preparingHeader = false;
+		}
+
+		return headerHeight;
+	}
+
+	private _layoutHeader(headerView: View): number {
+		if (headerView) {
+			const headerHeight = this.stickyHeaderHeight === 'auto' ? 44 : Length.toDevicePixels(this.stickyHeaderHeight, 44);
+			const heightMeasureSpec: number = layout.makeMeasureSpec(headerHeight, layout.EXACTLY);
+
+			const measuredSize = View.measureChild(this, headerView, this.widthMeasureSpec, heightMeasureSpec);
+			// Layout the header with the measured size
+			View.layoutChild(this, headerView, 0, 0, measuredSize.measuredWidth, measuredSize.measuredHeight);
+
+			return measuredSize.measuredHeight;
+		}
+
+		return 44;
+	}
+
+	private _getHeaderTemplate(): View {
+		if (this.stickyHeaderTemplate) {
+			if (__UI_USE_EXTERNAL_RENDERER__) {
+				if (isFunction(this.stickyHeaderTemplate)) {
+					return (<Template>this.stickyHeaderTemplate)();
+				}
+			} else {
+				if (typeof this.stickyHeaderTemplate === 'string') {
+					try {
+						const parsed = Builder.parse(this.stickyHeaderTemplate, this);
+						if (!parsed) {
+							// Create a simple fallback
+							const fallbackLabel = new Label();
+							fallbackLabel.text = 'Parse Failed';
+							return fallbackLabel;
+						}
+						return parsed;
+					} catch (error) {
+						if (Trace.isEnabled()) {
+							Trace.write(`ListView: Template parsing error: ${error}`, Trace.categories.Debug);
+						}
+						// Create a simple fallback
+						const errorLabel = new Label();
+						errorLabel.text = 'Template Error';
+						return errorLabel;
+					}
+				} else {
+					const view = (<Template>this.stickyHeaderTemplate)();
+					if (Trace.isEnabled()) {
+						Trace.write(`ListView: Created header view from template function: ${!!view} (type: ${view?.constructor?.name})`, Trace.categories.Debug);
+					}
+					return view;
+				}
+			}
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: No sticky header template, creating default`, Trace.categories.Debug);
+		}
+
+		// Return a default header if no template is provided
+		const lbl = new Label();
+		lbl.text = 'Default Header';
+		return lbl;
+	}
+
+	public _removeHeaderContainer(headerCell: ListViewHeaderCell): void {
+		const view: View = headerCell.view;
+		// This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
+		if (!(view.parent instanceof ListView)) {
+			this._removeView(view.parent);
+		}
+
+		// No need to request layout when we are removing headers.
+		const preparing = this._preparingHeader;
+		this._preparingHeader = true;
+		view.parent._removeView(view);
+		this._preparingHeader = preparing;
+		this._headerMap.delete(headerCell);
+	}
+
 	[separatorColorProperty.getDefault](): UIColor {
 		return this.nativeViewProtected.separatorColor;
 	}
@@ -532,5 +1053,102 @@ export class ListView extends ListViewBase {
 		const nativeView = this.nativeViewProtected;
 		const estimatedHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(value, 0));
 		nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
+	}
+
+	[stickyHeaderProperty.getDefault](): boolean {
+		return false;
+	}
+	[stickyHeaderProperty.setNative](value: boolean) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: stickyHeader set to ${value}`, Trace.categories.Debug);
+		}
+		// Immediately refresh to apply changes
+		if (this.isLoaded) {
+			this.refresh();
+		}
+	}
+
+	[stickyHeaderTemplateProperty.getDefault](): string | Template {
+		return null;
+	}
+	[stickyHeaderTemplateProperty.setNative](value: string | Template) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: stickyHeaderTemplate set: ${typeof value} ${value ? '(has value)' : '(null)'}`, Trace.categories.Debug);
+		}
+		// Clear any cached template
+		this._headerTemplateCache = null;
+		// Immediately refresh to apply changes
+		if (this.isLoaded) {
+			this.refresh();
+		}
+	}
+
+	[stickyHeaderHeightProperty.getDefault](): CoreTypes.LengthType {
+		return 'auto';
+	}
+	[stickyHeaderHeightProperty.setNative](value: CoreTypes.LengthType) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: stickyHeaderHeight set to ${value}`, Trace.categories.Debug);
+		}
+		// Immediately refresh to apply changes
+		if (this.isLoaded) {
+			this.refresh();
+		}
+	}
+
+	[sectionedProperty.getDefault](): boolean {
+		return false;
+	}
+	[sectionedProperty.setNative](value: boolean) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: sectioned set to ${value}`, Trace.categories.Debug);
+		}
+		// Immediately refresh to apply changes
+		if (this.isLoaded) {
+			this.refresh();
+		}
+	}
+
+	[showSearchProperty.getDefault](): boolean {
+		return false;
+	}
+	[showSearchProperty.setNative](value: boolean) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: showSearch set to ${value}`, Trace.categories.Debug);
+		}
+
+		if (value) {
+			this._setupSearchController();
+		} else {
+			this._cleanupSearchController();
+		}
+	}
+
+	[searchAutoHideProperty.getDefault](): boolean {
+		return false;
+	}
+	[searchAutoHideProperty.setNative](value: boolean) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: searchAutoHide set to ${value}`, Trace.categories.Debug);
+		}
+
+		// If search is already enabled, update the existing search controller
+		if (this.showSearch && this._searchController) {
+			const viewController = this._getViewController();
+			if (viewController && viewController.navigationItem && SDK_VERSION >= 11.0) {
+				viewController.navigationItem.hidesSearchBarWhenScrolling = value;
+
+				// Enable large titles for better auto-hide effect when searchAutoHide is true
+				// if (value && viewController.navigationController && viewController.navigationController.navigationBar) {
+				// 	if (!viewController.navigationController.navigationBar.prefersLargeTitles) {
+				// 		viewController.navigationController.navigationBar.prefersLargeTitles = true;
+				// 	}
+				// 	if (viewController.navigationItem.largeTitleDisplayMode === UINavigationItemLargeTitleDisplayMode.Automatic) {
+				// 		viewController.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+				// 	}
+				// }
+			}
+		}
+		// If search is not enabled yet, the property will be used when _setupSearchController is called
 	}
 }

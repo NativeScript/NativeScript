@@ -1,0 +1,11 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outDir": "../../dist/out-tsc",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"allowJs": true,
+		"types": ["vitest/globals", "vitest/importMeta", "vite/client", "node", "vitest"]
+	},
+	"include": ["vitest.config.ts", "**/*.test.ts", "**/*.spec.ts", "**/*.ts"]
+}

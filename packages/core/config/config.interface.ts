@@ -215,6 +215,28 @@ interface IConfigEmbed extends IConfigEmbedProps {
 	android?: IConfigEmbedProps;
 }
 
+interface ISecurityConfig {
+	/**
+	 * Enable remote ES module loading in production.
+	 * Default: false
+	 *
+	 * When false, any attempt to import("https://...") in production
+	 * will throw an error.
+	 */
+	allowRemoteModules: boolean;
+
+	/**
+	 * Restrict remote modules to specific URL prefixes.
+	 * Only used when allowRemoteModules is true.
+	 *
+	 * If empty or not provided, all HTTPS URLs are allowed
+	 * (not recommended for production).
+	 */
+	remoteModuleAllowlist?: string[];
+}
+
+type BundlerType = 'webpack' | 'vite';
+
 export interface NativeScriptConfig {
 	/**
 	 * App's bundle id
@@ -249,10 +271,30 @@ export interface NativeScriptConfig {
 	 */
 	embed?: IConfigEmbed;
 	/**
+	 * @deprecated Use `bundlerConfigPath` instead.
 	 * Custom webpack config path
 	 * The default is `webpack.config.js` in the root however you can use a custom name and place elsewhere.
 	 */
 	webpackConfigPath?: string;
+	/**
+	 * Custom bundler config path
+	 * For example, `vite.config.ts`, `webpack.config.js`, etc.
+	 * The default is `webpack.config.js` however you can use a custom name and place elsewhere.
+	 */
+	bundlerConfigPath?: string;
+	/**
+	 * Bundler to use for this project.
+	 * Default is 'webpack'.
+	 */
+	bundler?: BundlerType;
+	/**
+	 * Enable runtime logging of script loading.
+	 */
+	logScriptLoading?: boolean;
+	/**
+	 * Show visual error display when an uncaught JS exception occurs.
+	 */
+	showErrorDisplay?: boolean;
 	/**
 	 * iOS specific configurations
 	 * Various iOS specific configurations including iOS runtime flags.
@@ -293,4 +335,9 @@ export interface NativeScriptConfig {
 	 * Set project persistent hooks to run
 	 */
 	hooks?: IConfigHook[];
+
+	/**
+	 * Security configurations
+	 */
+	security?: ISecurityConfig;
 }

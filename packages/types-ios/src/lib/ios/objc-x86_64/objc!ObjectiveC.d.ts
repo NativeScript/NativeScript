@@ -772,9 +772,9 @@ declare class NSObject implements NSObjectProtocol {
 	 */
 	unableToSetNilForKey(key: string): void;
 
-	validateValueForKeyError(ioValue: interop.Pointer | interop.Reference<any>, inKey: string): boolean;
+	validateValueForKeyError(ioValue: interop.Pointer | interop.Reference<any>, inKey: string, error?: interop.Reference<NSError>): boolean;
 
-	validateValueForKeyPathError(ioValue: interop.Pointer | interop.Reference<any>, inKeyPath: string): boolean;
+	validateValueForKeyPathError(ioValue: interop.Pointer | interop.Reference<any>, inKeyPath: string, error?: interop.Reference<NSError>): boolean;
 
 	valueForKey(key: string): any;
 

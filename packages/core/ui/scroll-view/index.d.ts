@@ -86,7 +86,7 @@ export class ScrollView extends ContentView {
 	/**
 	 * Raised when a scroll event occurs.
 	 */
-	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any): void;
+	on(eventName: 'scroll', callback: (data: ScrollEventData) => void, thisArg?: any): void;
 
 	_onOrientationChanged(): void;
 }

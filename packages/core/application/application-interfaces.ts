@@ -1,5 +1,6 @@
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
+import type { CoreTypes } from '../core-types';
 
 /**
  * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -80,6 +81,16 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 	 * New system appearance value.
 	 */
 	newValue: 'light' | 'dark';
+}
+
+/**
+ * Event data containing information for system layout direction changed event.
+ */
+export interface LayoutDirectionChangedEventData extends ApplicationEventData {
+	/**
+	 * New layout direction value.
+	 */
+	newValue: CoreTypes.LayoutDirectionType;
 }
 
 /**
@@ -215,4 +226,29 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 
 export interface LoadAppCSSEventData extends ApplicationEventData {
 	cssFile: string;
+}
+
+/**
+ * iOS Event data containing information for scene lifecycle events (iOS 13+).
+ */
+export interface SceneEventData extends ApplicationEventData {
+	/**
+	 * The UIWindowScene instance associated with this event.
+	 */
+	scene?: UIWindowScene;
+
+	/**
+	 * The UIWindow associated with this scene (if applicable).
+	 */
+	window?: UIWindow;
+
+	/**
+	 * Scene connection options (for sceneWillConnect event).
+	 */
+	connectionOptions?: UISceneConnectionOptions;
+
+	/**
+	 * Additional user info from the notification.
+	 */
+	userInfo?: NSDictionary<any, any>;
 }

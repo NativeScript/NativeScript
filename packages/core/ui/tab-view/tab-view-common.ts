@@ -12,9 +12,13 @@ export const traceCategory = 'TabView';
 
 @CSSType('TabViewItem')
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
+	declare canBeLoaded?: boolean;
+
+	role: string;
 	private _title = '';
 	private _view: View;
 	private _iconSource: string;
+	iconFontFamily: string;
 
 	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
@@ -74,7 +78,7 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 		const tabView = this.parent as TabViewBase;
 		if (tabView && tabView.items) {
 			// Don't load items until their fragments are instantiated.
-			if ((<TabViewItemDefinition>this).canBeLoaded) {
+			if (this.canBeLoaded) {
 				super.loadView(view);
 			}
 		}
@@ -94,6 +98,16 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
+	/**
+	 * iOS 26+: Optional bottom accessory view that appears beneath the tab bar.
+	 * Provide a NativeScript View instance. On platforms < iOS 26 this is ignored.
+	 */
+	public iosBottomAccessory: View;
+
+	/**
+	 * iOS 26+: Controls tab bar minimize behavior. One of: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp'.
+	 */
+	public iosTabBarMinimizeBehavior: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
 
 	get androidSelectedTabHighlightColor(): Color {
 		return this.style.androidSelectedTabHighlightColor;
@@ -248,10 +262,16 @@ export const itemsProperty = new Property<TabViewBase, TabViewItemDefinition[]>(
 });
 itemsProperty.register(TabViewBase);
 
-export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'iosIconRenderingMode', defaultValue: 'automatic' });
+export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({
+	name: 'iosIconRenderingMode',
+	defaultValue: 'automatic',
+});
 iosIconRenderingModeProperty.register(TabViewBase);
 
-export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'androidIconRenderingMode', defaultValue: 'alwaysOriginal' });
+export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({
+	name: 'androidIconRenderingMode',
+	defaultValue: 'alwaysOriginal',
+});
 androidIconRenderingModeProperty.register(TabViewBase);
 
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
@@ -262,7 +282,10 @@ export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);
 
-export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bottom'>({ name: 'androidTabsPosition', defaultValue: 'top' });
+export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bottom'>({
+	name: 'androidTabsPosition',
+	defaultValue: 'top',
+});
 androidTabsPositionProperty.register(TabViewBase);
 
 export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({
@@ -271,6 +294,20 @@ export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 androidSwipeEnabledProperty.register(TabViewBase);
+
+// iOS 26 bottom accessory support
+export const iosBottomAccessoryProperty = new Property<TabViewBase, View>({
+	name: 'iosBottomAccessory',
+});
+iosBottomAccessoryProperty.register(TabViewBase);
+
+// iOS 26 tab bar minimize behavior
+export type TabBarMinimizeType = 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
+export const iosTabBarMinimizeBehaviorProperty = new Property<TabViewBase, TabBarMinimizeType>({
+	name: 'iosTabBarMinimizeBehavior',
+	defaultValue: 'automatic',
+});
+iosTabBarMinimizeBehaviorProperty.register(TabViewBase);
 
 export const tabTextFontSizeProperty = new CssProperty<Style, number>({
 	name: 'tabTextFontSize',
@@ -286,6 +323,12 @@ export const tabTextColorProperty = new CssProperty<Style, Color>({
 	valueConverter: (v) => new Color(v),
 });
 tabTextColorProperty.register(Style);
+
+export const iconFontFamilyProperty = new CssProperty<Style, string>({
+	name: 'iconFontFamily',
+	cssName: 'icon-font-family',
+});
+iconFontFamilyProperty.register(Style);
 
 export const tabBackgroundColorProperty = new CssProperty<Style, Color>({
 	name: 'tabBackgroundColor',

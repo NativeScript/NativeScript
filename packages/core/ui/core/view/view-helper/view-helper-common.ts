@@ -1,6 +1,7 @@
 // Types
 import { View as ViewDefinition } from '..';
-import { CoreTypes, layout, Trace } from './view-helper-shared';
+import { CoreTypes } from '../../../../core-types';
+import { layout, Trace } from './view-helper-shared';
 
 export class ViewHelper {
 	public static measureChild(parent: ViewDefinition, child: ViewDefinition, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
@@ -23,8 +24,8 @@ export class ViewHelper {
 			const horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
 			const verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
 
-			const childWidthMeasureSpec = ViewHelper.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === 'stretch');
-			const childHeightMeasureSpec = ViewHelper.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === 'stretch');
+			const childWidthMeasureSpec = ViewHelper.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === 'stretch', child.effectiveMaxWidth);
+			const childHeightMeasureSpec = ViewHelper.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === 'stretch', child.effectiveMaxHeight);
 
 			if (Trace.isEnabled()) {
 				Trace.write(`${child.parent} :measureChild: ${child} ${layout.measureSpecToString(childWidthMeasureSpec)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`, Trace.categories.Layout);
@@ -95,18 +96,21 @@ export class ViewHelper {
 		}
 
 		switch (hAlignment) {
+			case 'start':
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? right - childWidth - effectiveMarginRight : left + effectiveMarginLeft;
+				break;
 			case 'left':
 				childLeft = left + effectiveMarginLeft;
 				break;
-
 			case 'center':
 				childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
 				break;
-
 			case 'right':
 				childLeft = right - childWidth - effectiveMarginRight;
 				break;
-
+			case 'end':
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? left + effectiveMarginLeft : right - childWidth - effectiveMarginRight;
+				break;
 			case 'stretch':
 			default:
 				childLeft = left + effectiveMarginLeft;
@@ -154,7 +158,7 @@ export class ViewHelper {
 		return curState | newState;
 	}
 
-	private static getMeasureSpec(parentSpec: number, margins: number, childLength: number, stretched: boolean): number {
+	private static getMeasureSpec(parentSpec: number, margins: number, childLength: number, stretched: boolean, maxLength: number = Number.POSITIVE_INFINITY): number {
 		const parentLength = layout.getMeasureSpecSize(parentSpec);
 		const parentSpecMode = layout.getMeasureSpecMode(parentSpec);
 
@@ -189,6 +193,24 @@ export class ViewHelper {
 					resultSize = 0;
 					resultMode = layout.UNSPECIFIED;
 					break;
+			}
+		}
+
+		// Apply max-width/max-height: the child may not exceed maxLength. When the parent
+		// is UNSPECIFIED, a finite max turns the spec into an AT_MOST cap so the child is
+		// still bounded; otherwise we shrink the resolved size (and relax EXACTLY to AT_MOST
+		// so a stretched child isn't forced past its max).
+		if (isFinite(maxLength) && maxLength >= 0) {
+			if (resultMode === layout.UNSPECIFIED) {
+				resultSize = maxLength;
+				resultMode = layout.AT_MOST;
+			} else if (resultSize > maxLength) {
+				resultSize = maxLength;
+				// An explicit width/height capped by max is still an exact size (min(width, max)).
+				// A stretched child (no explicit length) should only be bounded, not forced to max.
+				if (resultMode === layout.EXACTLY && childLength < 0) {
+					resultMode = layout.AT_MOST;
+				}
 			}
 		}
 

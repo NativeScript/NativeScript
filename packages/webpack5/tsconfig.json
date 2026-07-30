@@ -5,7 +5,7 @@
 		"target": "es2018",
 		"module": "commonjs",
 		"declaration": true,
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": false,
 		"experimentalDecorators": true,
 		"lib": ["es2018"],
 		"sourceMap": true,

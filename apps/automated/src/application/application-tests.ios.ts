@@ -52,6 +52,7 @@ export function testIOSApplicationInitialized() {
 		TKUnit.assert(Application.ios.systemAppearance(), 'iOS system appearance not initialized.');
 	}
 
+	TKUnit.assert(Application.ios.layoutDirection(), 'iOS layout direction not initialized.');
 	TKUnit.assert(Application.ios.window, 'iOS window not initialized.');
 	TKUnit.assert(Application.ios.rootController, 'iOS root controller not initialized.');
 }

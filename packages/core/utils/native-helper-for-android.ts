@@ -1,3 +1,4 @@
+import { Color } from '../color';
 import { numberHasDecimals, numberIs64Bit } from './types';
 import { getNativeApp } from '../application/helpers-common';
 import { androidGetCurrentActivity } from '../application/helpers';
@@ -293,4 +294,159 @@ export function isRealDevice(): boolean {
 	const fingerprint = android.os.Build.FINGERPRINT;
 
 	return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
+}
+
+const DefaultLightScrim = new Color(0xe6, 0xff, 0xff, 0xff);
+const DefaultDarkScrim = new Color(0x80, 0x1b, 0x1b, 0x1b);
+const DefaultStatusBarLight = new Color(0);
+const DefaultStatusBarDark = new Color(0);
+
+interface ISystemColor {
+	navigationBarLight: Color;
+	navigationBarDark: Color;
+	statusBarLight: Color;
+	statusBarDark: Color;
+	handler?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+}
+const systemColors = new WeakMap<androidx.appcompat.app.AppCompatActivity, ISystemColor>();
+
+function setEnableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity, existingColors: ISystemColor) {
+	enableEdgeToEdge(activity, {
+		statusBarLightColor: existingColors.statusBarLight,
+		statusBarDarkColor: existingColors.statusBarDark,
+		navigationBarLightColor: existingColors.navigationBarLight,
+		navigationBarDarkColor: existingColors.navigationBarDark,
+		handleDarkMode: existingColors?.handler ?? null,
+	});
+}
+
+export function setStatusBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void {
+	const statusBarLightColor = options?.lightColor ?? null;
+	const statusBarDarkColor = options?.darkColor ?? null;
+	const activity = options?.activity ?? getCurrentActivity();
+
+	if (activity) {
+		const existingColors = systemColors.get(activity) ?? {
+			navigationBarLight: DefaultLightScrim,
+			navigationBarDark: DefaultDarkScrim,
+			statusBarLight: DefaultStatusBarLight,
+			statusBarDark: DefaultStatusBarDark,
+		};
+		existingColors.statusBarLight ??= statusBarLightColor;
+		existingColors.statusBarDark ??= statusBarDarkColor;
+		systemColors.set(getCurrentActivity(), existingColors);
+
+		setEnableEdgeToEdge(activity, existingColors);
+	}
+}
+
+export function setNavigationBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void {
+	const navigationBarLightColor = options?.lightColor ?? null;
+	const navigationBarDarkColor = options?.darkColor ?? null;
+	const activity = options?.activity ?? getCurrentActivity();
+	if (activity) {
+		const existingColors = systemColors.get(activity) ?? {
+			navigationBarLight: DefaultLightScrim,
+			navigationBarDark: DefaultDarkScrim,
+			statusBarLight: DefaultStatusBarLight,
+			statusBarDark: DefaultStatusBarDark,
+		};
+		existingColors.navigationBarLight ??= navigationBarLightColor;
+		existingColors.navigationBarDark ??= navigationBarDarkColor;
+		systemColors.set(getCurrentActivity(), existingColors);
+
+		setEnableEdgeToEdge(activity, existingColors);
+	}
+}
+
+export function setDarkModeHandler(options?: { activity?: androidx.appcompat.app.AppCompatActivity; handler: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean }): void {
+	const darkModeHandler = options?.handler ?? null;
+	const activity = options?.activity ?? getCurrentActivity();
+	if (activity) {
+		const existingColors = systemColors.get(activity) ?? {
+			navigationBarLight: DefaultLightScrim,
+			navigationBarDark: DefaultDarkScrim,
+			statusBarLight: DefaultStatusBarLight,
+			statusBarDark: DefaultStatusBarDark,
+		};
+
+		existingColors.handler ??= darkModeHandler;
+
+		systemColors.set(getCurrentActivity(), existingColors);
+
+		setEnableEdgeToEdge(activity, existingColors);
+	}
+}
+
+export type EdgeToEdgeOptions = {
+	statusBarLightColor?: Color;
+	statusBarDarkColor?: Color;
+	navigationBarLightColor?: Color;
+	navigationBarDarkColor?: Color;
+	handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+};
+
+export type WindowOrOptions = android.view.Window | EdgeToEdgeOptions;
+
+export function enableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity, windowOrOptions?: WindowOrOptions, options?: EdgeToEdgeOptions): void {
+	let handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode;
+	let statusBarLight: number = 0;
+	let statusBarDark: number = 0;
+	let navigationBarLight: number = DefaultLightScrim.android;
+	let navigationBarDark: number = DefaultDarkScrim.android;
+	let opts: EdgeToEdgeOptions = windowOrOptions as never;
+	let isWindow = false;
+
+	if (windowOrOptions instanceof android.view.Window) {
+		opts = options;
+		isWindow = true;
+	}
+
+	if (opts) {
+		if (typeof opts.handleDarkMode === 'function') {
+			handleDarkMode = new org.nativescript.widgets.Utils.HandleDarkMode({
+				onHandle(bar, resources) {
+					if (bar === 0) {
+						return opts.handleDarkMode('status', resources);
+					} else {
+						return opts.handleDarkMode('navigation', resources);
+					}
+				},
+			});
+		}
+		if (opts.statusBarLightColor instanceof Color) {
+			statusBarLight = opts.statusBarLightColor.android;
+		}
+		if (opts.statusBarDarkColor instanceof Color) {
+			statusBarDark = opts.statusBarDarkColor.android;
+		}
+		if (opts.navigationBarLightColor instanceof Color) {
+			navigationBarLight = opts.navigationBarLightColor.android;
+		}
+		if (opts.navigationBarDarkColor instanceof Color) {
+			navigationBarDark = opts.navigationBarDarkColor.android;
+		}
+	}
+
+	if (handleDarkMode) {
+		if (isWindow) {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, windowOrOptions as never, handleDarkMode);
+		} else {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, java.lang.Integer.valueOf(statusBarLight), java.lang.Integer.valueOf(statusBarDark), java.lang.Integer.valueOf(navigationBarLight), java.lang.Integer.valueOf(navigationBarDark), handleDarkMode);
+		}
+	} else {
+		if (isWindow) {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, windowOrOptions as never);
+		} else {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, java.lang.Integer.valueOf(statusBarLight), java.lang.Integer.valueOf(statusBarDark), java.lang.Integer.valueOf(navigationBarLight), java.lang.Integer.valueOf(navigationBarDark));
+		}
+	}
+}
+
+export function getIgnoreEdgeToEdgeOnOlderDevices(): boolean {
+	return org.nativescript.widgets.Utils.ignoreEdgeToEdgeOnOlderDevices;
+}
+
+export function setIgnoreEdgeToEdgeOnOlderDevices(value: boolean) {
+	org.nativescript.widgets.Utils.ignoreEdgeToEdgeOnOlderDevices = value;
 }

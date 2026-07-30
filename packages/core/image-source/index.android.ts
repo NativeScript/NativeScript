@@ -1,7 +1,7 @@
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import { getImageRequest } from '../http/http-shared';
 import { path as fsPath, knownFolders } from '../file-system';
+import { requestInternal as httpRequest } from '../http/http-request-internal';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
 import { getNativeApp } from '../application/helpers-common';
 import { Font } from '../ui/styling/font';
@@ -63,7 +63,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		return getImageRequest(url) as Promise<ImageSource>;
+		return httpRequest({ url, method: 'GET' }).then((response) => response.content.toNativeImage().then((value) => new ImageSource(value)));
 	}
 
 	static fromResourceSync(name: string): ImageSource {
@@ -181,13 +181,14 @@ export class ImageSource implements ImageSourceDefinition {
 		const textBounds = new android.graphics.Rect();
 		paint.getTextBounds(source, 0, source.length, textBounds);
 
-		const textWidth = textBounds.width();
-		const textHeight = textBounds.height();
+		const padding = 1;
+		const textWidth = textBounds.width() + padding * 2;
+		const textHeight = textBounds.height() + padding * 2;
 		if (textWidth > 0 && textHeight > 0) {
 			const bitmap = android.graphics.Bitmap.createBitmap(textWidth, textHeight, android.graphics.Bitmap.Config.ARGB_8888);
 
 			const canvas = new android.graphics.Canvas(bitmap);
-			canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
+			canvas.drawText(source, -textBounds.left + padding, -textBounds.top + padding, paint);
 
 			return new ImageSource(bitmap);
 		}

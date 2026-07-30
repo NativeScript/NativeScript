@@ -62,6 +62,13 @@ export class SearchBar extends View {
 	textFieldHintColor: Color;
 
 	/**
+	 * Gets or sets the Clear Button color of the SearchBar component.
+	 *
+	 * @nsProperty
+	 */
+	clearButtonColor: Color | string;
+
+	/**
 	 * Adds a listener for the specified event name.
 	 *
 	 * @param eventName The name of the event.

@@ -5,7 +5,7 @@ import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariab
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, matchMediaQueryString } from './css-selector';
 import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -54,6 +54,7 @@ let currentScopeTag: string = null;
 
 const animationsSymbol = Symbol('animations');
 const kebabCasePattern = /-([a-z])/g;
+const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
 
 /**
@@ -316,7 +317,7 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 	}
 }
 
-export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string): void {
+export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string | string[]): void {
 	for (const node of nodes) {
 		if (isKeyframe(node)) {
 			const keyframeRule: Keyframes = {
@@ -327,8 +328,19 @@ export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], key
 
 			keyframes.push(keyframeRule);
 		} else if (isMedia(node)) {
-			// Media query is composite in the case of nested media queries
-			const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
+			// Media query can be an array of strings in case of nested queries
+			let compositeMediaQuery: string | string[];
+
+			if (mediaQueryString) {
+				if (typeof mediaQueryString === 'string') {
+					compositeMediaQuery = [mediaQueryString, node.media];
+				} else {
+					mediaQueryString.push(node.media);
+					compositeMediaQuery = mediaQueryString;
+				}
+			} else {
+				compositeMediaQuery = node.media;
+			}
 
 			_populateRules(node.rules, rulesets, keyframes, compositeMediaQuery);
 		} else if (isRule(node)) {
@@ -606,7 +618,14 @@ export class CssState {
 			return;
 		}
 
-		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
+		const selectors = this._match.selectors;
+		const matchingSelectors: SelectorCore[] = [];
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			const sel = selectors[i];
+			if (!sel.dynamic || sel.match(view)) {
+				matchingSelectors.push(sel);
+			}
+		}
 
 		// Ideally we should return here if there are no matching selectors, however
 		// if there are property removals, returning here would not remove them
@@ -699,7 +718,6 @@ export class CssState {
 
 		const valuesToApply = {};
 		const cssExpsProperties = {};
-		const replacementFunc = (g) => g[1].toUpperCase();
 
 		for (const property in newPropertyValues) {
 			const value = cleanupImportantFlags(newPropertyValues[property], property);
@@ -747,7 +765,7 @@ export class CssState {
 			if (property in view.style) {
 				view.style[`css:${property}`] = unsetValue;
 			} else {
-				const camelCasedProperty = property.replace(kebabCasePattern, replacementFunc);
+				const camelCasedProperty = property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 				view[camelCasedProperty] = unsetValue;
 			}
 		}
@@ -758,7 +776,7 @@ export class CssState {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;
 				} else {
-					const camelCasedProperty = property.replace(kebabCasePattern, replacementFunc);
+					const camelCasedProperty = property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 					view[camelCasedProperty] = value;
 				}
 			} catch (e) {

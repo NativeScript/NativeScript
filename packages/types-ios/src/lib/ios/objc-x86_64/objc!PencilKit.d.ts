@@ -216,7 +216,7 @@ declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithDataError(data: NSData): this;
+	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 14.0

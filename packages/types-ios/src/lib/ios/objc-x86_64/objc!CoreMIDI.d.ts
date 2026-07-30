@@ -490,9 +490,9 @@ declare class MIDICISession extends NSObject {
 
 	constructor(o: { discoveredNode: MIDICIDiscoveredNode; dataReadyHandler: () => void; disconnectHandler: (p1: MIDICISession, p2: NSError) => void; });
 
-	disableProfileOnChannelError(profile: MIDICIProfile, channel: number): boolean;
+	disableProfileOnChannelError(profile: MIDICIProfile, channel: number, error?: interop.Reference<NSError>): boolean;
 
-	enableProfileOnChannelError(profile: MIDICIProfile, channel: number): boolean;
+	enableProfileOnChannelError(profile: MIDICIProfile, channel: number, error?: interop.Reference<NSError>): boolean;
 
 	initWithDiscoveredNodeDataReadyHandlerDisconnectHandler(discoveredNode: MIDICIDiscoveredNode, handler: () => void, disconnectHandler: (p1: MIDICISession, p2: NSError) => void): this;
 
@@ -1438,7 +1438,7 @@ declare class MIDIUMPCIProfile extends NSObject {
 
 	readonly totalChannelCount: number;
 
-	setProfileStateEnabledChannelCountError(isEnabled: boolean, enabledChannelCount: number): boolean;
+	setProfileStateEnabledChannelCountError(isEnabled: boolean, enabledChannelCount: number, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1599,11 +1599,11 @@ declare class MIDIUMPMutableEndpoint extends MIDIUMPEndpoint {
 
 	initWithNameDeviceInfoProductInstanceIDMIDIProtocolDestinationCallback(name: string, deviceInfo: MIDI2DeviceInfo, productInstanceID: string, MIDIProtocol: MIDIProtocolID, destinationCallback: (p1: interop.Pointer | interop.Reference<MIDIEventList>, p2: interop.Pointer | interop.Reference<any>) => void): this;
 
-	registerFunctionBlocksMarkAsStaticError(functionBlocks: NSArray<MIDIUMPMutableFunctionBlock> | MIDIUMPMutableFunctionBlock[], markAsStatic: boolean): boolean;
+	registerFunctionBlocksMarkAsStaticError(functionBlocks: NSArray<MIDIUMPMutableFunctionBlock> | MIDIUMPMutableFunctionBlock[], markAsStatic: boolean, error?: interop.Reference<NSError>): boolean;
 
-	setEnabledError(isEnabled: boolean): boolean;
+	setEnabledError(isEnabled: boolean, error?: interop.Reference<NSError>): boolean;
 
-	setNameError(name: string): boolean;
+	setNameError(name: string, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1621,11 +1621,11 @@ declare class MIDIUMPMutableFunctionBlock extends MIDIUMPFunctionBlock {
 
 	initWithNameDirectionFirstGroupTotalGroupsSpannedMaxSysEx8StreamsMIDI1InfoUIHintIsEnabled(name: string, direction: MIDIUMPFunctionBlockDirection, firstGroup: number, totalGroupsSpanned: number, maxSysEx8Streams: number, MIDI1Info: MIDIUMPFunctionBlockMIDI1Info, UIHint: MIDIUMPFunctionBlockUIHint, isEnabled: boolean): this;
 
-	reconfigureWithFirstGroupDirectionMIDI1InfoUIHintError(firstGroup: number, direction: MIDIUMPFunctionBlockDirection, MIDI1Info: MIDIUMPFunctionBlockMIDI1Info, UIHint: MIDIUMPFunctionBlockUIHint): boolean;
+	reconfigureWithFirstGroupDirectionMIDI1InfoUIHintError(firstGroup: number, direction: MIDIUMPFunctionBlockDirection, MIDI1Info: MIDIUMPFunctionBlockMIDI1Info, UIHint: MIDIUMPFunctionBlockUIHint, error?: interop.Reference<NSError>): boolean;
 
-	setEnabledError(isEnabled: boolean): boolean;
+	setEnabledError(isEnabled: boolean, error?: interop.Reference<NSError>): boolean;
 
-	setNameError(name: string): boolean;
+	setNameError(name: string, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum MIDIUMPProtocolOptions {

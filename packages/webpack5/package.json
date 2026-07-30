@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.25-alpha.1",
+	"version": "5.0.39-next.1",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -12,8 +12,7 @@
 	"license": "Apache-2.0",
 	"scripts": {
 		"test": "jest",
-		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs",
-		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
+		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs"
 	},
 	"dependencies": {
 		"@babel/core": "^7.0.0",
@@ -31,8 +30,6 @@
 		"dotenv-webpack": "^8.0.0",
 		"fork-ts-checker-webpack-plugin": "^9.0.0",
 		"loader-utils": "^2.0.0 || ^3.0.0",
-		"lodash.get": "^4.0.0",
-		"micromatch": "^4.0.0",
 		"postcss": "^8.0.0",
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
@@ -61,15 +58,13 @@
 		"@types/css": "0.0.38",
 		"@types/jest": "29.5.4",
 		"@types/loader-utils": "2.0.6",
-		"@types/lodash.get": "4.4.9",
-		"@types/micromatch": "4.0.9",
 		"@types/sax": "1.2.7",
 		"@types/terser-webpack-plugin": "5.2.0",
 		"@types/webpack-virtual-modules": "0.4.2",
 		"jest": "~29.7.0",
 		"jest-matcher-utils": "~29.7.0",
 		"nativescript-vue-template-compiler": "2.9.3",
-		"ts-jest": "29.4.4",
+		"ts-jest": "29.4.5",
 		"typescript": "~5.8.0"
 	},
 	"peerDependencies": {
@@ -79,5 +74,28 @@
 		"nativescript-vue-template-compiler": {
 			"optional": true
 		}
-	}
+	},
+	"homepage": "https://docs.nativescript.org/configuration/webpack",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript"
+	},
+	"author": {
+		"name": "Igor Randjelovic",
+		"email": "rigor789@gmail.com"
+	},
+	"contributors": [
+		{
+			"name": "NativeScript",
+			"email": "oss@nativescript.org"
+		}
+	],
+	"keywords": [
+		"NativeScript",
+		"JavaScript",
+		"Android",
+		"iOS",
+		"TypeScript",
+		"webpack"
+	]
 }

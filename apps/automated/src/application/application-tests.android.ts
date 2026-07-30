@@ -43,13 +43,14 @@ export function testAndroidApplicationInitialized() {
 	TKUnit.assert(
 		// @ts-expect-error
 		Application.android.foregroundActivity.isNativeScriptActivity,
-		'Android foregroundActivity.isNativeScriptActivity is false.'
+		'Android foregroundActivity.isNativeScriptActivity is false.',
 	);
 	TKUnit.assert(Application.android.startActivity, 'Android startActivity not initialized.');
 	TKUnit.assert(Application.android.nativeApp, 'Android nativeApp not initialized.');
 	TKUnit.assert(Application.android.orientation(), 'Android orientation not initialized.');
 	TKUnit.assert(Utils.android.getPackageName(), 'Android packageName not initialized.');
 	TKUnit.assert(Application.android.systemAppearance(), 'Android system appearance not initialized.');
+	TKUnit.assert(Application.android.layoutDirection(), 'Android layout direction not initialized.');
 }
 
 export function testSystemAppearance() {

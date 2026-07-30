@@ -471,7 +471,7 @@ declare class EKEventStore extends NSObject {
 	/**
 	 * @since 5.0
 	 */
-	commit(): boolean;
+	commit(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
@@ -519,22 +519,22 @@ declare class EKEventStore extends NSObject {
 	/**
 	 * @since 5.0
 	 */
-	removeCalendarCommitError(calendar: EKCalendar, commit: boolean): boolean;
+	removeCalendarCommitError(calendar: EKCalendar, commit: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	removeEventSpanCommitError(event: EKEvent, span: EKSpan, commit: boolean): boolean;
+	removeEventSpanCommitError(event: EKEvent, span: EKSpan, commit: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	removeEventSpanError(event: EKEvent, span: EKSpan): boolean;
+	removeEventSpanError(event: EKEvent, span: EKSpan, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	removeReminderCommitError(reminder: EKReminder, commit: boolean): boolean;
+	removeReminderCommitError(reminder: EKReminder, commit: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
@@ -565,22 +565,22 @@ declare class EKEventStore extends NSObject {
 	/**
 	 * @since 5.0
 	 */
-	saveCalendarCommitError(calendar: EKCalendar, commit: boolean): boolean;
+	saveCalendarCommitError(calendar: EKCalendar, commit: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	saveEventSpanCommitError(event: EKEvent, span: EKSpan, commit: boolean): boolean;
+	saveEventSpanCommitError(event: EKEvent, span: EKSpan, commit: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	saveEventSpanError(event: EKEvent, span: EKSpan): boolean;
+	saveEventSpanError(event: EKEvent, span: EKSpan, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	saveReminderCommitError(reminder: EKReminder, commit: boolean): boolean;
+	saveReminderCommitError(reminder: EKReminder, commit: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0

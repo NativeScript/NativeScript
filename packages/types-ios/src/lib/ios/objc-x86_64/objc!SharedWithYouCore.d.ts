@@ -66,7 +66,7 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 
 	static new(): SWCollaborationMetadata; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): SWCollaborationMetadata;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): SWCollaborationMetadata;
 
 	readonly collaborationIdentifier: string;
 

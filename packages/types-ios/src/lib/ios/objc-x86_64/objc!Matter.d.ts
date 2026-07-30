@@ -427,7 +427,7 @@ declare class MTRAccessControlClusterReviewFabricRestrictionsResponseParams exte
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -573,7 +573,7 @@ declare class MTRAccountLoginClusterGetSetupPINResponseParams extends NSObject i
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -1658,7 +1658,7 @@ declare class MTRApplicationLauncherClusterLauncherResponseParams extends NSObje
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -8123,7 +8123,7 @@ declare class MTRAttributeReport extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -65638,61 +65638,61 @@ declare class MTRCertificates extends NSObject {
 
 	static convertX509Certificate(x509Certificate: NSData): NSData;
 
-	static createCertificateSigningRequestError(keypair: MTRKeypair): NSData;
+	static createCertificateSigningRequestError(keypair: MTRKeypair, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.4
 	 */
-	static createIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIDFabricIDError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerID: number, fabricID: number): NSData;
+	static createIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIDFabricIDError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerID: number, fabricID: number, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.6
 	 */
-	static createIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIDFabricIDValidityPeriodError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerID: number, fabricID: number, validityPeriod: NSDateInterval): NSData;
+	static createIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIDFabricIDValidityPeriodError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerID: number, fabricID: number, validityPeriod: NSDateInterval, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.4
 	 */
-	static createOperationalCertificateSigningCertificateOperationalPublicKeyFabricIDNodeIDCaseAuthenticatedTagsError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricID: number, nodeID: number, caseAuthenticatedTags: NSSet<number>): NSData;
+	static createOperationalCertificateSigningCertificateOperationalPublicKeyFabricIDNodeIDCaseAuthenticatedTagsError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricID: number, nodeID: number, caseAuthenticatedTags: NSSet<number>, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.6
 	 */
-	static createOperationalCertificateSigningCertificateOperationalPublicKeyFabricIDNodeIDCaseAuthenticatedTagsValidityPeriodError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricID: number, nodeID: number, caseAuthenticatedTags: NSSet<number>, validityPeriod: NSDateInterval): NSData;
+	static createOperationalCertificateSigningCertificateOperationalPublicKeyFabricIDNodeIDCaseAuthenticatedTagsValidityPeriodError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricID: number, nodeID: number, caseAuthenticatedTags: NSSet<number>, validityPeriod: NSDateInterval, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.4
 	 */
-	static createRootCertificateIssuerIDFabricIDError(keypair: MTRKeypair, issuerID: number, fabricID: number): NSData;
+	static createRootCertificateIssuerIDFabricIDError(keypair: MTRKeypair, issuerID: number, fabricID: number, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.6
 	 */
-	static createRootCertificateIssuerIDFabricIDValidityPeriodError(keypair: MTRKeypair, issuerID: number, fabricID: number, validityPeriod: NSDateInterval): NSData;
+	static createRootCertificateIssuerIDFabricIDValidityPeriodError(keypair: MTRKeypair, issuerID: number, fabricID: number, validityPeriod: NSDateInterval, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	static generateCertificateSigningRequestError(keypair: MTRKeypair): NSData;
+	static generateCertificateSigningRequestError(keypair: MTRKeypair, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	static generateIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIdFabricIdError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerId: number, fabricId: number): NSData;
+	static generateIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIdFabricIdError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerId: number, fabricId: number, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	static generateOperationalCertificateSigningCertificateOperationalPublicKeyFabricIdNodeIdCaseAuthenticatedTagsError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricId: number, nodeId: number, caseAuthenticatedTags: NSArray<number> | number[]): NSData;
+	static generateOperationalCertificateSigningCertificateOperationalPublicKeyFabricIdNodeIdCaseAuthenticatedTagsError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricId: number, nodeId: number, caseAuthenticatedTags: NSArray<number> | number[], error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	static generateRootCertificateIssuerIdFabricIdError(keypair: MTRKeypair, issuerId: number, fabricId: number): NSData;
+	static generateRootCertificateIssuerIdFabricIdError(keypair: MTRKeypair, issuerId: number, fabricId: number, error?: interop.Reference<NSError>): NSData;
 
 	static isCertificateEqualTo(certificate1: NSData, certificate2: NSData): boolean;
 
@@ -65703,7 +65703,7 @@ declare class MTRCertificates extends NSObject {
 	/**
 	 * @since 16.4
 	 */
-	static publicKeyFromCSRError(csr: NSData): NSData;
+	static publicKeyFromCSRError(csr: NSData, error?: interop.Reference<NSError>): NSData;
 }
 
 /**
@@ -65819,7 +65819,7 @@ declare class MTRChannelClusterChangeChannelResponseParams extends NSObject impl
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -66091,7 +66091,7 @@ declare class MTRChannelClusterProgramGuideResponseParams extends NSObject imple
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -86801,7 +86801,7 @@ declare class MTRCommissionerControlClusterReverseOpenCommissioningWindowParams 
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -86957,7 +86957,7 @@ declare class MTRContentAppObserverClusterContentAppMessageResponseParams extend
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -87235,7 +87235,7 @@ declare class MTRContentLauncherClusterLauncherResponseParams extends NSObject i
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -88005,7 +88005,7 @@ declare class MTRDeviceController extends NSObject {
 	/**
 	 * @since 16.4
 	 */
-	static computePASEVerifierForSetupPasscodeIterationsSaltError(setupPasscode: number, iterations: number, salt: NSData): NSData;
+	static computePASEVerifierForSetupPasscodeIterationsSaltError(setupPasscode: number, iterations: number, salt: NSData, error?: interop.Reference<NSError>): NSData;
 
 	static decodeXPCReadParams(params: NSDictionary<string, any>): MTRReadParams;
 
@@ -88098,18 +88098,18 @@ declare class MTRDeviceController extends NSObject {
 	/**
 	 * @since 16.4
 	 */
-	cancelCommissioningForNodeIDError(nodeID: number): boolean;
+	cancelCommissioningForNodeIDError(nodeID: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	commissionDeviceCommissioningParamsError(deviceId: number, commissioningParams: MTRCommissioningParameters): boolean;
+	commissionDeviceCommissioningParamsError(deviceId: number, commissioningParams: MTRCommissioningParameters, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.4
 	 */
-	commissionNodeWithIDCommissioningParamsError(nodeID: number, commissioningParams: MTRCommissioningParameters): boolean;
+	commissionNodeWithIDCommissioningParamsError(nodeID: number, commissioningParams: MTRCommissioningParameters, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.1
@@ -88117,12 +88117,12 @@ declare class MTRDeviceController extends NSObject {
 	 */
 	computePaseVerifierIterationsSalt(setupPincode: number, iterations: number, salt: NSData): NSData;
 
-	continueCommissioningDeviceIgnoreAttestationFailureError(opaqueDeviceHandle: interop.Pointer | interop.Reference<any>, ignoreAttestationFailure: boolean): boolean;
+	continueCommissioningDeviceIgnoreAttestationFailureError(opaqueDeviceHandle: interop.Pointer | interop.Reference<any>, ignoreAttestationFailure: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.4
 	 */
-	deviceBeingCommissionedWithNodeIDError(nodeID: number): MTRBaseDevice;
+	deviceBeingCommissionedWithNodeIDError(nodeID: number, error?: interop.Reference<NSError>): MTRBaseDevice;
 
 	/**
 	 * @since 16.1
@@ -88145,42 +88145,42 @@ declare class MTRDeviceController extends NSObject {
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	getDeviceBeingCommissionedError(deviceId: number): MTRBaseDevice;
+	getDeviceBeingCommissionedError(deviceId: number, error?: interop.Reference<NSError>): MTRBaseDevice;
 
 	/**
 	 * @since 17.6
 	 */
-	initWithParametersError(parameters: MTRDeviceControllerAbstractParameters): this;
+	initWithParametersError(parameters: MTRDeviceControllerAbstractParameters, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	openPairingWindowDurationError(deviceID: number, duration: number): boolean;
+	openPairingWindowDurationError(deviceID: number, duration: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	openPairingWindowWithPINDurationDiscriminatorSetupPINError(deviceID: number, duration: number, discriminator: number, setupPIN: number): string;
+	openPairingWindowWithPINDurationDiscriminatorSetupPINError(deviceID: number, duration: number, discriminator: number, setupPIN: number, error?: interop.Reference<NSError>): string;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	pairDeviceAddressPortSetupPINCodeError(deviceID: number, address: string, port: number, setupPINCode: number): boolean;
+	pairDeviceAddressPortSetupPINCodeError(deviceID: number, address: string, port: number, setupPINCode: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	pairDeviceDiscriminatorSetupPINCodeError(deviceID: number, discriminator: number, setupPINCode: number): boolean;
+	pairDeviceDiscriminatorSetupPINCodeError(deviceID: number, discriminator: number, setupPINCode: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	pairDeviceOnboardingPayloadError(deviceID: number, onboardingPayload: string): boolean;
+	pairDeviceOnboardingPayloadError(deviceID: number, onboardingPayload: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.4
@@ -88228,12 +88228,12 @@ declare class MTRDeviceController extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	setupCommissioningSessionWithDiscoveredDevicePayloadNewNodeIDError(discoveredDevice: MTRCommissionableBrowserResult, payload: MTRSetupPayload, newNodeID: number): boolean;
+	setupCommissioningSessionWithDiscoveredDevicePayloadNewNodeIDError(discoveredDevice: MTRCommissionableBrowserResult, payload: MTRSetupPayload, newNodeID: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.2
 	 */
-	setupCommissioningSessionWithPayloadNewNodeIDError(payload: MTRSetupPayload, newNodeID: number): boolean;
+	setupCommissioningSessionWithPayloadNewNodeIDError(payload: MTRSetupPayload, newNodeID: number, error?: interop.Reference<NSError>): boolean;
 
 	shutdown(): void;
 
@@ -88251,7 +88251,7 @@ declare class MTRDeviceController extends NSObject {
 	 * @since 16.1
 	 * @deprecated 16.4
 	 */
-	stopDevicePairingError(deviceID: number): boolean;
+	stopDevicePairingError(deviceID: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 18.2
@@ -88370,16 +88370,16 @@ declare class MTRDeviceControllerFactory extends NSObject {
 
 	readonly running: boolean;
 
-	createControllerOnExistingFabricError(startupParams: MTRDeviceControllerStartupParams): MTRDeviceController;
+	createControllerOnExistingFabricError(startupParams: MTRDeviceControllerStartupParams, error?: interop.Reference<NSError>): MTRDeviceController;
 
-	createControllerOnNewFabricError(startupParams: MTRDeviceControllerStartupParams): MTRDeviceController;
+	createControllerOnNewFabricError(startupParams: MTRDeviceControllerStartupParams, error?: interop.Reference<NSError>): MTRDeviceController;
 
 	/**
 	 * @since 17.6
 	 */
 	preWarmCommissioningSession(): void;
 
-	startControllerFactoryError(startupParams: MTRDeviceControllerFactoryParams): boolean;
+	startControllerFactoryError(startupParams: MTRDeviceControllerFactoryParams, error?: interop.Reference<NSError>): boolean;
 
 	stopControllerFactory(): void;
 }
@@ -89412,7 +89412,7 @@ declare class MTRDeviceEnergyManagementModeClusterChangeToModeResponseParams ext
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -89933,7 +89933,7 @@ declare class MTRDiagnosticLogsClusterRetrieveLogsResponseParams extends NSObjec
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -90182,7 +90182,7 @@ declare class MTRDishwasherModeClusterChangeToModeResponseParams extends NSObjec
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -90584,7 +90584,7 @@ declare class MTRDoorLockClusterGetCredentialStatusResponseParams extends NSObje
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -90658,7 +90658,7 @@ declare class MTRDoorLockClusterGetHolidayScheduleResponseParams extends NSObjec
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -90763,7 +90763,7 @@ declare class MTRDoorLockClusterGetUserResponseParams extends NSObject implement
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -90857,7 +90857,7 @@ declare class MTRDoorLockClusterGetWeekDayScheduleResponseParams extends NSObjec
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -90936,7 +90936,7 @@ declare class MTRDoorLockClusterGetYearDayScheduleResponseParams extends NSObjec
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -91218,7 +91218,7 @@ declare class MTRDoorLockClusterSetCredentialResponseParams extends NSObject imp
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -92739,7 +92739,7 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileResponseComman
 	 * @since 17.0
 	 * @deprecated 18.2
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -92811,7 +92811,7 @@ declare class MTRElectricalMeasurementClusterGetProfileInfoResponseCommandParams
 	 * @since 17.0
 	 * @deprecated 18.2
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -93397,7 +93397,7 @@ declare class MTREnergyEVSEClusterGetTargetsResponseParams extends NSObject impl
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -93572,7 +93572,7 @@ declare class MTREnergyEVSEModeClusterChangeToModeResponseParams extends NSObjec
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -94348,7 +94348,7 @@ declare class MTREventReport extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -94814,7 +94814,7 @@ declare class MTRGeneralCommissioningClusterArmFailSafeResponseParams extends NS
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -94890,7 +94890,7 @@ declare class MTRGeneralCommissioningClusterCommissioningCompleteResponseParams 
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -94959,7 +94959,7 @@ declare class MTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams ex
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -95218,7 +95218,7 @@ declare class MTRGeneralDiagnosticsClusterPayloadTestResponseParams extends NSOb
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -95314,7 +95314,7 @@ declare class MTRGeneralDiagnosticsClusterTimeSnapshotResponseParams extends NSO
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -95653,7 +95653,7 @@ declare class MTRGroupKeyManagementClusterKeySetReadAllIndicesResponseParams ext
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -95707,7 +95707,7 @@ declare class MTRGroupKeyManagementClusterKeySetReadResponseParams extends NSObj
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -95867,7 +95867,7 @@ declare class MTRGroupsClusterAddGroupResponseParams extends NSObject implements
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -95926,7 +95926,7 @@ declare class MTRGroupsClusterGetGroupMembershipResponseParams extends NSObject 
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -96013,7 +96013,7 @@ declare class MTRGroupsClusterRemoveGroupResponseParams extends NSObject impleme
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -96089,7 +96089,7 @@ declare class MTRGroupsClusterViewGroupResponseParams extends NSObject implement
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -96312,7 +96312,7 @@ declare class MTRICDManagementClusterRegisterClientResponseParams extends NSObje
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -96360,7 +96360,7 @@ declare class MTRICDManagementClusterStayActiveResponseParams extends NSObject i
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -97037,7 +97037,7 @@ declare class MTRKeypadInputClusterSendKeyResponseParams extends NSObject implem
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -97177,7 +97177,7 @@ declare class MTRLaundryWasherModeClusterChangeToModeResponseParams extends NSOb
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -97654,7 +97654,7 @@ declare class MTRManualSetupPayloadParser extends NSObject {
 
 	initWithDecimalStringRepresentation(decimalStringRepresentation: string): this;
 
-	populatePayload(): MTRSetupPayload;
+	populatePayload(error?: interop.Reference<NSError>): MTRSetupPayload;
 }
 
 /**
@@ -98065,7 +98065,7 @@ declare class MTRMediaPlaybackClusterPlaybackResponseParams extends NSObject imp
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -98990,7 +98990,7 @@ declare class MTRNetworkCommissioningClusterConnectNetworkResponseParams extends
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -99033,7 +99033,7 @@ declare class MTRNetworkCommissioningClusterNetworkConfigResponseParams extends 
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -99197,7 +99197,7 @@ declare class MTRNetworkCommissioningClusterScanNetworksResponseParams extends N
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -99560,7 +99560,7 @@ declare class MTROTAHeaderParser extends NSObject {
 
 	static alloc(): MTROTAHeaderParser; // inherited from NSObject
 
-	static headerFromDataError(data: NSData): MTROTAHeader;
+	static headerFromDataError(data: NSData, error?: interop.Reference<NSError>): MTROTAHeader;
 
 	static new(): MTROTAHeaderParser; // inherited from NSObject
 }
@@ -99732,7 +99732,7 @@ declare class MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams exten
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -99894,7 +99894,7 @@ declare class MTROTASoftwareUpdateProviderClusterQueryImageResponseParams extend
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -100564,7 +100564,7 @@ declare class MTROnboardingPayloadParser extends NSObject {
 
 	static new(): MTROnboardingPayloadParser; // inherited from NSObject
 
-	static setupPayloadForOnboardingPayloadError(onboardingPayload: string): MTRSetupPayload;
+	static setupPayloadForOnboardingPayloadError(onboardingPayload: string, error?: interop.Reference<NSError>): MTRSetupPayload;
 }
 
 /**
@@ -100816,7 +100816,7 @@ declare class MTROperationalCredentialsClusterAttestationResponseParams extends 
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -100880,7 +100880,7 @@ declare class MTROperationalCredentialsClusterCSRResponseParams extends NSObject
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -100934,7 +100934,7 @@ declare class MTROperationalCredentialsClusterCertificateChainResponseParams ext
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -101048,7 +101048,7 @@ declare class MTROperationalCredentialsClusterNOCResponseParams extends NSObject
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -101291,7 +101291,7 @@ declare class MTROperationalStateClusterOperationalCommandResponseParams extends
 	/**
 	 * @since 17.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -101779,7 +101779,7 @@ declare class MTROvenCavityOperationalStateClusterOperationalCommandResponsePara
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -101931,7 +101931,7 @@ declare class MTROvenModeClusterChangeToModeResponseParams extends NSObject impl
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -103290,7 +103290,7 @@ declare class MTRQRCodeSetupPayloadParser extends NSObject {
 
 	initWithBase38Representation(base38Representation: string): this;
 
-	populatePayload(): MTRSetupPayload;
+	populatePayload(error?: interop.Reference<NSError>): MTRSetupPayload;
 }
 
 /**
@@ -103343,7 +103343,7 @@ declare class MTRRVCCleanModeClusterChangeToModeResponseParams extends NSObject 
 	/**
 	 * @since 17.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -103539,7 +103539,7 @@ declare class MTRRVCOperationalStateClusterOperationalCommandResponseParams exte
 	/**
 	 * @since 17.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -103735,7 +103735,7 @@ declare class MTRRVCRunModeClusterChangeToModeResponseParams extends NSObject im
 	/**
 	 * @since 17.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -104048,7 +104048,7 @@ declare class MTRRefrigeratorAndTemperatureControlledCabinetModeClusterChangeToM
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -104394,7 +104394,7 @@ declare class MTRServiceAreaClusterSelectAreasResponseParams extends NSObject im
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -104447,7 +104447,7 @@ declare class MTRServiceAreaClusterSkipAreaResponseParams extends NSObject imple
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -104543,7 +104543,7 @@ declare class MTRSetupPayload extends NSObject implements NSCopying, NSSecureCod
 	 * @since 16.2
 	 * @deprecated 17.6
 	 */
-	static setupPayloadWithOnboardingPayloadError(onboardingPayload: string): MTRSetupPayload;
+	static setupPayloadWithOnboardingPayloadError(onboardingPayload: string, error?: interop.Reference<NSError>): MTRSetupPayload;
 
 	commissioningFlow: MTRCommissioningFlow;
 
@@ -104613,7 +104613,7 @@ declare class MTRSetupPayload extends NSObject implements NSCopying, NSSecureCod
 	 * @since 16.1
 	 * @deprecated 17.6
 	 */
-	getAllOptionalVendorData(): NSArray<MTROptionalQRCodeInfo>;
+	getAllOptionalVendorData(error?: interop.Reference<NSError>): NSArray<MTROptionalQRCodeInfo>;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -105367,7 +105367,7 @@ declare class MTRTargetNavigatorClusterNavigateTargetResponseParams extends NSOb
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -106232,7 +106232,7 @@ declare class MTRThermostatClusterAtomicResponseParams extends NSObject implemen
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -106322,7 +106322,7 @@ declare class MTRThermostatClusterGetWeeklyScheduleResponseParams extends NSObje
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -107069,7 +107069,7 @@ declare class MTRThreadBorderRouterManagementClusterDatasetResponseParams extend
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -107609,7 +107609,7 @@ declare class MTRThreadNetworkDirectoryClusterOperationalDatasetResponseParams e
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -107964,7 +107964,7 @@ declare class MTRTimeSynchronizationClusterSetTimeZoneResponseParams extends NSO
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -108440,7 +108440,7 @@ declare class MTRUnitTestingClusterBooleanResponseParams extends NSObject implem
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -108709,7 +108709,7 @@ declare class MTRUnitTestingClusterSimpleStructResponseParams extends NSObject i
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -108768,7 +108768,7 @@ declare class MTRUnitTestingClusterTestAddArgumentsResponseParams extends NSObje
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109012,7 +109012,7 @@ declare class MTRUnitTestingClusterTestComplexNullableOptionalResponseParams ext
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109076,7 +109076,7 @@ declare class MTRUnitTestingClusterTestEmitTestEventResponseParams extends NSObj
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109130,7 +109130,7 @@ declare class MTRUnitTestingClusterTestEmitTestFabricScopedEventResponseParams e
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109194,7 +109194,7 @@ declare class MTRUnitTestingClusterTestEnumsResponseParams extends NSObject impl
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109380,7 +109380,7 @@ declare class MTRUnitTestingClusterTestListInt8UReverseResponseParams extends NS
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109571,7 +109571,7 @@ declare class MTRUnitTestingClusterTestNullableOptionalResponseParams extends NS
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109641,7 +109641,7 @@ declare class MTRUnitTestingClusterTestSimpleArgumentResponseParams extends NSOb
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109711,7 +109711,7 @@ declare class MTRUnitTestingClusterTestSpecificResponseParams extends NSObject i
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -109836,7 +109836,7 @@ declare class MTRUnitTestingClusterTestStructArrayArgumentResponseParams extends
 	/**
 	 * @since 17.0
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -110252,7 +110252,7 @@ declare class MTRWaterHeaterModeClusterChangeToModeResponseParams extends NSObje
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -110568,7 +110568,7 @@ declare class MTRWiFiNetworkManagementClusterNetworkPassphraseResponseParams ext
 	/**
 	 * @since 18.4
 	 */
-	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+	initWithResponseValueError(responseValue: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 }
 
 /**

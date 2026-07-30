@@ -6,7 +6,8 @@ import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
 import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
-import { Property, InheritedProperty } from '../properties';
+import { Property, InheritedProperty, CssProperty } from '../properties';
+import { Style } from '../../styling/style';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
 import { setupAccessibleView } from '../../../application/helpers';
@@ -71,6 +72,23 @@ type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; option
 // TODO: remove once we fully switch to the new event system
 const warnedEvent = new Set<string>();
 
+// Resolves a max-width/max-height style value to an effective device-pixel constraint.
+// 'auto' (the default) or an unresolvable percent (parent size unknown) means "no maximum",
+// represented as Infinity so that Math.min(measured, effectiveMax) becomes a no-op.
+function resolveEffectiveMax(value: CoreTypes.PercentLengthType, availableSize: number): number {
+	if (value == null || value === 'auto') {
+		return Number.POSITIVE_INFINITY;
+	}
+	// A percent cannot be resolved when the parent size is unspecified (availableSize < 0);
+	// treat it as unconstrained rather than collapsing the view to ~0.
+	if (typeof value === 'object' && (value as CoreTypes.LengthPercentUnit).unit === '%' && availableSize < 0) {
+		return Number.POSITIVE_INFINITY;
+	}
+	const resolved = PercentLength.toDevicePixels(value, Number.POSITIVE_INFINITY, availableSize);
+	// Safety net for any other unresolved/bogus negative result.
+	return resolved < 0 ? Number.POSITIVE_INFINITY : resolved;
+}
+
 export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
@@ -79,12 +97,22 @@ export abstract class ViewCommon extends ViewBase {
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
 	public accessibilityIgnoresInvertColors: boolean;
+
+	public originX: number;
+	public originY: number;
+	public isEnabled: boolean;
+	public isUserInteractionEnabled: boolean;
+	public iosOverflowSafeArea: boolean;
+	public iosOverflowSafeAreaEnabled: boolean;
+	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: CoreTypes.AndroidOverflow;
 
 	public testID: string;
 
@@ -97,6 +125,11 @@ export abstract class ViewCommon extends ViewBase {
 	 */
 	public visionHoverStyle: string | VisionHoverOptions;
 	public visionIgnoreHoverStyle: boolean;
+
+	/**
+	 * iOS 26+ Glass
+	 */
+	iosGlassEffect: GlassEffectType;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -112,7 +145,6 @@ export abstract class ViewCommon extends ViewBase {
 	private _measuredWidth: number;
 	private _measuredHeight: number;
 
-	protected _isLayoutValid: boolean;
 	private _cssType: string;
 
 	private _localAnimations: Set<Animation>;
@@ -193,6 +225,12 @@ export abstract class ViewCommon extends ViewBase {
 		super.onLoaded();
 
 		setupAccessibleView(this);
+
+		if (this.statusBarStyle) {
+			// reapply status bar style on load
+			// helps back navigation cases to restore if overridden
+			this.updateStatusBarStyle(this.statusBarStyle);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -716,17 +754,23 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): ShadowCSSValues {
+	get boxShadow(): string | ShadowCSSValues[] {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: ShadowCSSValues) {
+	set boxShadow(value: string | ShadowCSSValues[]) {
 		this.style.boxShadow = value;
+	}
+
+	get direction(): CoreTypes.LayoutDirectionType {
+		return this.style.direction;
+	}
+	set direction(value: CoreTypes.LayoutDirectionType) {
+		this.style.direction = value;
 	}
 
 	get minWidth(): CoreTypes.LengthType {
 		return this.style.minWidth;
 	}
-
 	set minWidth(value: CoreTypes.LengthType) {
 		this.style.minWidth = value;
 	}
@@ -736,6 +780,20 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set minHeight(value: CoreTypes.LengthType) {
 		this.style.minHeight = value;
+	}
+
+	get maxWidth(): CoreTypes.PercentLengthType {
+		return this.style.maxWidth;
+	}
+	set maxWidth(value: CoreTypes.PercentLengthType) {
+		this.style.maxWidth = value;
+	}
+
+	get maxHeight(): CoreTypes.PercentLengthType {
+		return this.style.maxHeight;
+	}
+	set maxHeight(value: CoreTypes.PercentLengthType) {
+		this.style.maxHeight = value;
 	}
 
 	get width(): CoreTypes.PercentLengthType {
@@ -970,18 +1028,18 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.androidDynamicElevationOffset = value;
 	}
 
+	/**
+	 * (Android only) Gets closest window parent considering modals.
+	 */
+	getClosestWindow(): android.view.Window {
+		// platform impl
+		return null;
+	}
+
 	//END Style property shortcuts
 
-	public originX: number;
-	public originY: number;
-	public isEnabled: boolean;
-	public isUserInteractionEnabled: boolean;
-	public iosOverflowSafeArea: boolean;
-	public iosOverflowSafeAreaEnabled: boolean;
-	public iosIgnoreSafeArea: boolean;
-
 	get isLayoutValid(): boolean {
-		return this._isLayoutValid;
+		return false;
 	}
 
 	get cssType(): string {
@@ -993,6 +1051,17 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set cssType(type: string) {
 		this._cssType = type.toLowerCase();
+	}
+
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// platform specific impl
 	}
 
 	get isLayoutRequired(): boolean {
@@ -1031,11 +1100,6 @@ export abstract class ViewCommon extends ViewBase {
 		}
 	}
 
-	public requestLayout(): void {
-		this._isLayoutValid = false;
-		super.requestLayout();
-	}
-
 	public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
 	public abstract onLayout(left: number, top: number, right: number, bottom: number): void;
 	public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
@@ -1072,7 +1136,6 @@ export abstract class ViewCommon extends ViewBase {
 	 * Returns two booleans - the first if "boundsChanged" the second is "sizeChanged".
 	 */
 	_setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean; sizeChanged: boolean } {
-		this._isLayoutValid = true;
 		const boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
 		const sizeChanged: boolean = this._oldRight - this._oldLeft !== right - left || this._oldBottom - this._oldTop !== bottom - top;
 		this._oldLeft = left;
@@ -1193,12 +1256,14 @@ export abstract class ViewCommon extends ViewBase {
 		const availableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
 
 		this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, availableWidth);
+		this.effectiveMaxWidth = resolveEffectiveMax(style.maxWidth, availableWidth);
 		this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, availableWidth);
 		this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, availableWidth);
 
 		const availableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
 
 		this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, availableHeight);
+		this.effectiveMaxHeight = resolveEffectiveMax(style.maxHeight, availableHeight);
 		this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, availableHeight);
 		this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, availableHeight);
 	}
@@ -1232,6 +1297,32 @@ export abstract class ViewCommon extends ViewBase {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Shared helper method for applying glass effects to views.
+	 * This method can be used by View and its subclasses (LiquidGlass, LiquidGlassContainer, etc.)
+	 * iOS only at the moment but could be applied to others once supported in other platforms.
+	 *
+	 * @param value - The glass effect configuration
+	 * @param options - Configuration options for different glass effect behaviors
+	 * @param options.effectType - Type of effect to create: 'glass' | 'container'
+	 * @param options.targetView - The UIVisualEffectView to apply the effect to (if updating existing view)
+	 * @param options.toGlassStyleFn - Custom function to convert variant to UIGlassEffectStyle
+	 * @param options.onCreate - Callback when a new effect view is created (for initial setup)
+	 * @param options.onUpdate - Callback when an existing effect view is updated
+	 */
+	protected _applyGlassEffect(
+		value: GlassEffectType,
+		options: {
+			effectType: 'glass' | 'container';
+			targetView?: UIVisualEffectView;
+			toGlassStyleFn?: (variant?: GlassEffectVariant) => number;
+			onCreate?: (effectView: UIVisualEffectView, effect: UIVisualEffect) => void;
+			onUpdate?: (effectView: UIVisualEffectView, effect: UIVisualEffect, duration: number) => void;
+		},
+	): UIVisualEffectView | undefined {
+		return undefined;
 	}
 
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
@@ -1288,6 +1379,15 @@ export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean
 });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
+	name: 'statusBarStyle',
+	cssName: 'status-bar-style',
+});
+statusBarStyleProperty.register(Style);
+
 // Apple only
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({
 	name: 'iosOverflowSafeArea',
@@ -1309,11 +1409,29 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
 
+export const androidOverflowEdgeProperty = new Property<ViewCommon, CoreTypes.AndroidOverflow>({
+	name: 'androidOverflowEdge',
+	defaultValue: 'ignore',
+});
+androidOverflowEdgeProperty.register(ViewCommon);
+
 /**
  * Glass effects
  */
-export type GlassEffectVariant = 'regular' | 'clear' | 'identity';
-export type GlassEffectConfig = { variant?: GlassEffectVariant; interactive?: boolean; tint: string | Color };
+export type GlassEffectVariant = 'regular' | 'clear' | 'identity' | 'none';
+export type GlassEffectConfig = {
+	variant?: GlassEffectVariant;
+	interactive?: boolean;
+	tint?: string | Color;
+	/**
+	 * (LiquidGlassContainer only) spacing between child elements (default is 8)
+	 */
+	spacing?: number;
+	/**
+	 * Duration in milliseconds to animate effect changes (default is 300ms)
+	 */
+	animateChangeDuration?: number;
+};
 export type GlassEffectType = GlassEffectVariant | GlassEffectConfig;
 export const iosGlassEffectProperty = new Property<ViewCommon, GlassEffectType>({
 	name: 'iosGlassEffect',

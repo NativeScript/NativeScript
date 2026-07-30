@@ -6,8 +6,6 @@ import * as helper from '../../ui-helper';
 
 const testDir = 'ui/label';
 
-const expectLayoutRequest = __APPLE__ && Utils.SDK_VERSION >= 18;
-
 export class LabelTest extends testModule.UITest<Label> {
 	public create(): Label {
 		const label = new Label();
@@ -234,6 +232,82 @@ export class LabelTest extends testModule.UITest<Label> {
 		}
 	}
 
+	public test_maxWidth_caps_label_measured_width() {
+		const label = this.testView;
+		label.horizontalAlignment = 'left';
+		label.verticalAlignment = 'top';
+		// An explicit width larger than maxWidth: the used width is min(width, maxWidth).
+		label.width = 300;
+		label.maxWidth = 100;
+
+		this.waitUntilTestElementLayoutIsValid();
+
+		TKUnit.assertAreClose(label.getMeasuredWidth(), Utils.layout.toDevicePixels(100), 1, 'maxWidth should cap the label measured width to 100.');
+	}
+
+	public test_maxHeight_caps_label_measured_height() {
+		const label = this.testView;
+		label.horizontalAlignment = 'left';
+		label.verticalAlignment = 'top';
+		label.height = 300;
+		label.maxHeight = 100;
+
+		this.waitUntilTestElementLayoutIsValid();
+
+		TKUnit.assertAreClose(label.getMeasuredHeight(), Utils.layout.toDevicePixels(100), 1, 'maxHeight should cap the label measured height to 100.');
+	}
+
+	public test_maxWidth_larger_than_content_does_not_stretch_label() {
+		// A maximum larger than the natural content width must leave the label unaffected.
+		const label = this.testView;
+		label.horizontalAlignment = 'left';
+		label.verticalAlignment = 'top';
+		label.text = 'i';
+		label.fontSize = 9;
+		label.maxWidth = 1000;
+
+		this.waitUntilTestElementLayoutIsValid();
+
+		TKUnit.assertTrue(label.getMeasuredWidth() < Utils.layout.toDevicePixels(1000), 'A large maxWidth should not stretch the label to the maximum.');
+	}
+
+	public test_maxWidth_clamps_long_text_label() {
+		// The common responsive case: a wrapped label whose natural text is wider than maxWidth.
+		const label = this.testView;
+		label.horizontalAlignment = 'left';
+		label.verticalAlignment = 'top';
+		label.textWrap = true;
+		label.text = 'This is a fairly long label text that would otherwise be much wider than one hundred dips';
+		label.maxWidth = 100;
+
+		this.waitUntilTestElementLayoutIsValid();
+
+		const eps = Utils.layout.toDevicePixels(1);
+		TKUnit.assertTrue(label.getMeasuredWidth() <= Utils.layout.toDevicePixels(100) + eps, 'maxWidth should keep a long-text label within the maximum width.');
+	}
+
+	public test_maxWidth_percent_resolves_against_parent() {
+		const label = new Label();
+		label.text = 'Label';
+		label.horizontalAlignment = 'left';
+		label.verticalAlignment = 'top';
+		// Explicit width wider than the resolved 50% cap so the clamp is deterministic.
+		label.width = 300;
+		label.maxWidth = { value: 0.5, unit: '%' };
+
+		const host = new StackLayout();
+		host.width = 200;
+		host.height = 200;
+		host.addChild(label);
+
+		const mainPage = helper.getCurrentPage();
+		mainPage.content = host;
+		TKUnit.waitUntilReady(() => host.isLoaded && host.isLayoutValid);
+
+		// 50% of the 200-dip parent = 100 dip.
+		TKUnit.assertAreClose(label.getMeasuredWidth(), Utils.layout.toDevicePixels(100), 2, 'maxWidth percent should resolve to 50% of the parent width (100).');
+	}
+
 	public test_Set_TextWrap_Native() {
 		const testLabel = this.testView;
 		testLabel.text = 'this is very very very very very very very very very very very very very very very very very very very very very very very long text';
@@ -305,8 +379,8 @@ export class LabelTest extends testModule.UITest<Label> {
 
 		if (testLabel.android) {
 			actualTextSize = testLabel.android.getTextSize();
-			const density = Utils.layout.getDisplayDensity();
-			expSize = fontSize * density;
+			// This will cover the case of device text size being affected by a11y
+			expSize = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, fontSize, testLabel._context.getResources().getDisplayMetrics());
 			TKUnit.assertAreClose(actualTextSize, expSize, 0.1, 'Wrong native FontSize');
 
 			actualColors = testLabel.android.getTextColors();
@@ -603,7 +677,9 @@ export class LabelTest extends testModule.UITest<Label> {
 
 		let mainPage = helper.getCurrentPage();
 		mainPage.content = host;
-		TKUnit.waitUntilReady(() => host.isLoaded);
+
+		// Check if view is loaded and layout is valid
+		TKUnit.waitUntilReady(() => host.isLoaded && host.isLayoutValid);
 
 		let called = false;
 		label.requestLayout = () => (called = true);
@@ -618,7 +694,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	}
 
 	public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
-		this.requestLayoutFixture(expectLayoutRequest, '', (label) => {
+		this.requestLayoutFixture(false, '', (label) => {
 			label.textWrap = false;
 			let host = new GridLayout();
 			host.width = 100;
@@ -629,7 +705,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	}
 
 	public test_ChangingTextWhenInFixedSizeGridShouldNotRequestLayout() {
-		this.requestLayoutFixture(expectLayoutRequest, 'Hello World', (label) => {
+		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new GridLayout();
 			host.width = 100;
@@ -640,7 +716,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	}
 
 	public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
-		this.requestLayoutFixture(expectLayoutRequest, '', (label) => {
+		this.requestLayoutFixture(false, '', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			label.width = 100;
@@ -651,7 +727,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	}
 
 	public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
-		this.requestLayoutFixture(expectLayoutRequest, 'Hello World', (label) => {
+		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			label.width = 100;
@@ -692,7 +768,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	}
 
 	public test_ChangingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldNotRequestLayout() {
-		this.requestLayoutFixture(expectLayoutRequest, 'Hello World', (label) => {
+		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			host.width = 100;

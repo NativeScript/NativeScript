@@ -1,6 +1,6 @@
 ﻿import type { File } from '../file-system';
 import type { ImageSource } from '../image-source';
-import type { HttpResponse, HttpRequestOptions } from './http-interfaces';
+import type { HttpRequestOptions } from './http-interfaces';
 export { request } from './http-request';
 export * from './http-interfaces';
 

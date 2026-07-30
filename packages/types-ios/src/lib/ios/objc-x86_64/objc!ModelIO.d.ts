@@ -460,7 +460,7 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	exportAssetToURL(URL: NSURL): boolean;
 
-	exportAssetToURLError(URL: NSURL): boolean;
+	exportAssetToURLError(URL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	initWithBufferAllocator(bufferAllocator: MDLMeshBufferAllocator): this;
 
@@ -468,7 +468,7 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	initWithURLVertexDescriptorBufferAllocator(URL: NSURL, vertexDescriptor: MDLVertexDescriptor, bufferAllocator: MDLMeshBufferAllocator): this;
 
-	initWithURLVertexDescriptorBufferAllocatorPreserveTopologyError(URL: NSURL, vertexDescriptor: MDLVertexDescriptor, bufferAllocator: MDLMeshBufferAllocator, preserveTopology: boolean): this;
+	initWithURLVertexDescriptorBufferAllocatorPreserveTopologyError(URL: NSURL, vertexDescriptor: MDLVertexDescriptor, bufferAllocator: MDLMeshBufferAllocator, preserveTopology: boolean, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 11.0
@@ -1403,7 +1403,7 @@ declare class MDLMesh extends MDLObject {
 	/**
 	 * @since 11.0
 	 */
-	makeVerticesUniqueAndReturnError(): boolean;
+	makeVerticesUniqueAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	removeAttributeNamed(name: string): void;
 

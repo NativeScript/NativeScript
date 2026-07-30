@@ -2,13 +2,14 @@
  * Contains the TabView class, which represents a standard content component with tabs.
  */
 
-import { View } from '../core/view';
+import type { View } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
 import { Style } from '../styling/style';
+import type { TabBarMinimizeType } from './tab-view-common';
 /**
  * Represents a tab view entry.
  *
@@ -35,6 +36,11 @@ export class TabViewItem extends ViewBase {
 	 * @nsProperty
 	 */
 	public iconSource: string;
+
+	/**
+	 * Gets or sets the role of the TabViewItem.
+	 */
+	public role: string;
 
 	/**
 	 * Gets or sets the text transform of the tab titles.
@@ -118,6 +124,21 @@ export class TabView extends View {
 	 * @nsProperty
 	 */
 	selectedTabTextColor: Color;
+
+	/**
+	 * Gets or sets the iOS tab bar minimize behavior (iOS 26+).
+	 *
+	 * @nsProperty
+	 */
+	iosTabBarMinimizeBehavior: TabBarMinimizeType;
+
+	/**
+	 * iOS 26+: Optional bottom accessory view that appears above the tab bar.
+	 * Provide a NativeScript View instance. On platforms < iOS 26 this is ignored.
+	 *
+	 * @nsProperty
+	 */
+	iosBottomAccessory: View;
 
 	/**
 	 * Gets or sets the color of the horizontal line drawn below the currently selected tab on Android.

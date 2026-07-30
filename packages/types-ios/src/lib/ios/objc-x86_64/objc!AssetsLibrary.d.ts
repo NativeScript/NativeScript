@@ -221,7 +221,7 @@ declare class ALAssetRepresentation extends NSObject {
 	 * @since 4
 	 * @deprecated 9
 	 */
-	getBytesFromOffsetLengthError(buffer: string | interop.Pointer | interop.Reference<any>, offset: number, length: number): number;
+	getBytesFromOffsetLengthError(buffer: string | interop.Pointer | interop.Reference<any>, offset: number, length: number, error?: interop.Reference<NSError>): number;
 
 	/**
 	 * @since 4

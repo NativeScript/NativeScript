@@ -319,7 +319,7 @@ interface BEExtensionProcess extends NSObjectProtocol {
 
 	invalidate(): void;
 
-	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
 }
 declare var BEExtensionProcess: {
 
@@ -421,7 +421,7 @@ declare class BELayerHierarchy extends NSObject {
 
 	static alloc(): BELayerHierarchy; // inherited from NSObject
 
-	static layerHierarchyWithError(): BELayerHierarchy;
+	static layerHierarchyWithError(error?: interop.Reference<NSError>): BELayerHierarchy;
 
 	static new(): BELayerHierarchy; // inherited from NSObject
 
@@ -442,9 +442,9 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 	/**
 	 * @since 26.0
 	 */
-	static handleWithPortDataError(port: number, data: NSData): BELayerHierarchyHandle;
+	static handleWithPortDataError(port: number, data: NSData, error?: interop.Reference<NSError>): BELayerHierarchyHandle;
 
-	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHandle;
+	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object, error?: interop.Reference<NSError>): BELayerHierarchyHandle;
 
 	static new(): BELayerHierarchyHandle; // inherited from NSObject
 
@@ -471,14 +471,14 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 
 	static alloc(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
-	static coordinatorWithError(): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithError(error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator;
 
 	/**
 	 * @since 26.0
 	 */
-	static coordinatorWithPortDataError(port: number, data: NSData): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithPortDataError(port: number, data: NSData, error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator;
 
-	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object, error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator;
 
 	static new(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
@@ -558,17 +558,17 @@ declare class BEMediaEnvironment extends NSObject {
 
 	constructor(o: { XPCRepresentation: NSObject & OS_xpc_object; });
 
-	activateWithError(): boolean;
+	activateWithError(error?: interop.Reference<NSError>): boolean;
 
 	createXPCRepresentation(): NSObject & OS_xpc_object;
 
 	initWithWebPageURL(url: NSURL): this;
 
-	initWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): this;
+	initWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object, error?: interop.Reference<NSError>): this;
 
-	makeCaptureSessionWithError(): AVCaptureSession;
+	makeCaptureSessionWithError(error?: interop.Reference<NSError>): AVCaptureSession;
 
-	suspendWithError(): boolean;
+	suspendWithError(error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -603,7 +603,7 @@ declare class BENetworkingProcess extends NSObject implements BEExtensionProcess
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
+	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
 
 	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
 
@@ -615,7 +615,7 @@ declare class BENetworkingProcess extends NSObject implements BEExtensionProcess
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
 
 	performSelector(aSelector: string): any;
 
@@ -647,7 +647,7 @@ declare class BEProcessCapability extends NSObject {
 
 	static suspended(): BEProcessCapability;
 
-	requestWithError(): BEProcessCapabilityGrant;
+	requestWithError(error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
 }
 
 /**
@@ -698,7 +698,7 @@ declare class BERenderingProcess extends NSObject implements BEExtensionProcess 
 
 	createVisibilityPropagationInteraction(): UIInteraction;
 
-	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
+	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
 
 	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
 
@@ -710,7 +710,7 @@ declare class BERenderingProcess extends NSObject implements BEExtensionProcess 
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
 
 	performSelector(aSelector: string): any;
 
@@ -1314,7 +1314,7 @@ declare class BEWebContentProcess extends NSObject implements BEExtensionProcess
 
 	createVisibilityPropagationInteraction(): UIInteraction;
 
-	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
+	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
 
 	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
 
@@ -1326,7 +1326,7 @@ declare class BEWebContentProcess extends NSObject implements BEExtensionProcess
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
 
 	performSelector(aSelector: string): any;
 

@@ -1751,62 +1751,6 @@ declare class ARPositionalTrackingConfiguration extends ARConfiguration {
 /**
  * @since 13.0
  */
-declare class ARQuickLookPreviewItem extends NSObject implements QLPreviewItem {
-
-	static alloc(): ARQuickLookPreviewItem; // inherited from NSObject
-
-	static new(): ARQuickLookPreviewItem; // inherited from NSObject
-
-	allowsContentScaling: boolean;
-
-	canonicalWebPageURL: NSURL;
-
-	readonly debugDescription: string; // inherited from NSObjectProtocol
-
-	readonly description: string; // inherited from NSObjectProtocol
-
-	readonly hash: number; // inherited from NSObjectProtocol
-
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
-
-	readonly previewItemTitle: string; // inherited from QLPreviewItem
-
-	readonly previewItemURL: NSURL; // inherited from QLPreviewItem
-
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-	readonly  // inherited from NSObjectProtocol
-
-	constructor(o: { fileAtURL: NSURL; });
-
-	class(): typeof NSObject;
-
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
-
-	initWithFileAtURL(url: NSURL): this;
-
-	isEqual(object: any): boolean;
-
-	isKindOfClass(aClass: typeof NSObject): boolean;
-
-	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	performSelector(aSelector: string): any;
-
-	performSelectorWithObject(aSelector: string, object: any): any;
-
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
-
-	respondsToSelector(aSelector: string): boolean;
-
-	retainCount(): number;
-
-	self(): this;
-}
-
-/**
- * @since 13.0
- */
 declare class ARRaycastQuery extends NSObject {
 
 	static alloc(): ARRaycastQuery; // inherited from NSObject
@@ -1930,15 +1874,15 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage): boolean;
+	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage, error?: interop.Reference<NSError>): boolean;
 
-	initWithArchiveURLError(url: NSURL): this;
+	initWithArchiveURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	initWithCoder(coder: NSCoder): this;
 
 	referenceObjectByApplyingTransform(transform: simd_float4x4): ARReferenceObject;
 
-	referenceObjectByMergingObjectError(object: ARReferenceObject): ARReferenceObject;
+	referenceObjectByMergingObjectError(object: ARReferenceObject, error?: interop.Reference<NSError>): ARReferenceObject;
 }
 
 /**
@@ -2291,6 +2235,11 @@ declare class ARSession extends NSObject {
 	addAnchor(anchor: ARAnchor): void;
 
 	/**
+	 * @since 26.0
+	 */
+	captureHighResolutionFrameUsingPhotoSettingsCompletion(photoSettings: AVCapturePhotoSettings, completion: (p1: ARFrame, p2: NSError) => void): void;
+
+	/**
 	 * @since 16.0
 	 */
 	captureHighResolutionFrameWithCompletion(completion: (p1: ARFrame, p2: NSError) => void): void;
@@ -2593,6 +2542,16 @@ declare class ARVideoFormat extends NSObject implements NSCopying {
 	 * @since 14.5
 	 */
 	readonly captureDeviceType: string;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly defaultColorSpace: AVCaptureColorSpace;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly defaultPhotoSettings: AVCapturePhotoSettings;
 
 	readonly framesPerSecond: number;
 

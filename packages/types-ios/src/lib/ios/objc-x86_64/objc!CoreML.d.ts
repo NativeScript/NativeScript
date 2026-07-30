@@ -23,7 +23,7 @@ declare class MLArrayBatchProvider extends NSObject implements MLBatchProvider {
 
 	featuresAtIndex(index: number): MLFeatureProvider;
 
-	initWithDictionaryError(dictionary: NSDictionary<string, NSArray<any>>): this;
+	initWithDictionaryError(dictionary: NSDictionary<string, NSArray<any>>, error?: interop.Reference<NSError>): this;
 
 	initWithFeatureProviderArray(array: NSArray<MLFeatureProvider> | MLFeatureProvider[]): this;
 }
@@ -163,15 +163,15 @@ declare const enum MLComputeUnits {
  */
 interface MLCustomLayer {
 
-	encodeToCommandBufferInputsOutputsError?(commandBuffer: MTLCommandBuffer, inputs: NSArray<MTLTexture> | MTLTexture[], outputs: NSArray<MTLTexture> | MTLTexture[]): boolean;
+	encodeToCommandBufferInputsOutputsError?(commandBuffer: MTLCommandBuffer, inputs: NSArray<MTLTexture> | MTLTexture[], outputs: NSArray<MTLTexture> | MTLTexture[], error?: interop.Reference<NSError>): boolean;
 
-	evaluateOnCPUWithInputsOutputsError(inputs: NSArray<MLMultiArray> | MLMultiArray[], outputs: NSArray<MLMultiArray> | MLMultiArray[]): boolean;
+	evaluateOnCPUWithInputsOutputsError(inputs: NSArray<MLMultiArray> | MLMultiArray[], outputs: NSArray<MLMultiArray> | MLMultiArray[], error?: interop.Reference<NSError>): boolean;
 
-	initWithParameterDictionaryError?(parameters: NSDictionary<string, any>): MLCustomLayer;
+	initWithParameterDictionaryError?(parameters: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLCustomLayer;
 
-	outputShapesForInputShapesError(inputShapes: NSArray<NSArray<number>> | NSArray<number>[]): NSArray<NSArray<number>>;
+	outputShapesForInputShapesError(inputShapes: NSArray<NSArray<number>> | NSArray<number>[], error?: interop.Reference<NSError>): NSArray<NSArray<number>>;
 
-	setWeightDataError(weights: NSArray<NSData> | NSData[]): boolean;
+	setWeightDataError(weights: NSArray<NSData> | NSData[], error?: interop.Reference<NSError>): boolean;
 }
 declare var MLCustomLayer: {
 
@@ -183,11 +183,11 @@ declare var MLCustomLayer: {
  */
 interface MLCustomModel {
 
-	initWithModelDescriptionParameterDictionaryError?(modelDescription: MLModelDescription, parameters: NSDictionary<string, any>): MLCustomModel;
+	initWithModelDescriptionParameterDictionaryError?(modelDescription: MLModelDescription, parameters: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLCustomModel;
 
-	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions): MLFeatureProvider;
+	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider;
 
-	predictionsFromBatchOptionsError?(inputBatch: MLBatchProvider, options: MLPredictionOptions): MLBatchProvider;
+	predictionsFromBatchOptionsError?(inputBatch: MLBatchProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLBatchProvider;
 }
 declare var MLCustomModel: {
 
@@ -240,7 +240,7 @@ declare class MLDictionaryFeatureProvider extends NSObject implements MLFeatureP
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithDictionaryError(dictionary: NSDictionary<string, any>): this;
+	initWithDictionaryError(dictionary: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
 	objectForKeyedSubscript(featureName: string): MLFeatureValue;
 }
@@ -334,25 +334,25 @@ declare class MLFeatureValue extends NSObject implements NSCopying, NSSecureCodi
 
 	static alloc(): MLFeatureValue; // inherited from NSObject
 
-	static featureValueWithCGImageConstraintOptionsError(cgImage: any, constraint: MLImageConstraint, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithCGImageConstraintOptionsError(cgImage: any, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithCGImageOrientationConstraintOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithCGImageOrientationConstraintOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithCGImageOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithCGImageOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithCGImagePixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithCGImagePixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithDictionaryError(value: NSDictionary<any, number>): MLFeatureValue;
+	static featureValueWithDictionaryError(value: NSDictionary<any, number>, error?: interop.Reference<NSError>): MLFeatureValue;
 
 	static featureValueWithDouble(value: number): MLFeatureValue;
 
-	static featureValueWithImageAtURLConstraintOptionsError(url: NSURL, constraint: MLImageConstraint, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithImageAtURLConstraintOptionsError(url: NSURL, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithImageAtURLOrientationConstraintOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithImageAtURLOrientationConstraintOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithImageAtURLOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithImageAtURLOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithImageAtURLPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>): MLFeatureValue;
+	static featureValueWithImageAtURLPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
 
 	static featureValueWithInt64(value: number): MLFeatureValue;
 
@@ -606,7 +606,7 @@ declare class MLModel extends NSObject {
 	 * @since 11.0
 	 * @deprecated 100000
 	 */
-	static compileModelAtURLError(modelURL: NSURL): NSURL;
+	static compileModelAtURLError(modelURL: NSURL, error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 14.0
@@ -621,9 +621,9 @@ declare class MLModel extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	static modelWithContentsOfURLConfigurationError(url: NSURL, configuration: MLModelConfiguration): MLModel;
+	static modelWithContentsOfURLConfigurationError(url: NSURL, configuration: MLModelConfiguration, error?: interop.Reference<NSError>): MLModel;
 
-	static modelWithContentsOfURLError(url: NSURL): MLModel;
+	static modelWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): MLModel;
 
 	static new(): MLModel; // inherited from NSObject
 
@@ -647,26 +647,26 @@ declare class MLModel extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	parameterValueForKeyError(key: MLParameterKey): any;
+	parameterValueForKeyError(key: MLParameterKey, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 17.0
 	 */
 	predictionFromFeaturesCompletionHandler(input: MLFeatureProvider, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
 
-	predictionFromFeaturesError(input: MLFeatureProvider): MLFeatureProvider;
+	predictionFromFeaturesError(input: MLFeatureProvider, error?: interop.Reference<NSError>): MLFeatureProvider;
 
 	/**
 	 * @since 17.0
 	 */
 	predictionFromFeaturesOptionsCompletionHandler(input: MLFeatureProvider, options: MLPredictionOptions, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
 
-	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions): MLFeatureProvider;
+	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider;
 
 	/**
 	 * @since 18.0
 	 */
-	predictionFromFeaturesUsingStateError(inputFeatures: MLFeatureProvider, state: MLState): MLFeatureProvider;
+	predictionFromFeaturesUsingStateError(inputFeatures: MLFeatureProvider, state: MLState, error?: interop.Reference<NSError>): MLFeatureProvider;
 
 	/**
 	 * @since 18.0
@@ -676,17 +676,17 @@ declare class MLModel extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	predictionFromFeaturesUsingStateOptionsError(inputFeatures: MLFeatureProvider, state: MLState, options: MLPredictionOptions): MLFeatureProvider;
+	predictionFromFeaturesUsingStateOptionsError(inputFeatures: MLFeatureProvider, state: MLState, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider;
 
 	/**
 	 * @since 12.0
 	 */
-	predictionsFromBatchError(inputBatch: MLBatchProvider): MLBatchProvider;
+	predictionsFromBatchError(inputBatch: MLBatchProvider, error?: interop.Reference<NSError>): MLBatchProvider;
 
 	/**
 	 * @since 12.0
 	 */
-	predictionsFromBatchOptionsError(inputBatch: MLBatchProvider, options: MLPredictionOptions): MLBatchProvider;
+	predictionsFromBatchOptionsError(inputBatch: MLBatchProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLBatchProvider;
 }
 
 /**
@@ -699,17 +699,17 @@ declare class MLModelAsset extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	static modelAssetWithSpecificationDataBlobMappingError(specificationData: NSData, blobMapping: NSDictionary<NSURL, NSData>): MLModelAsset;
+	static modelAssetWithSpecificationDataBlobMappingError(specificationData: NSData, blobMapping: NSDictionary<NSURL, NSData>, error?: interop.Reference<NSError>): MLModelAsset;
 
 	/**
 	 * @since 16.0
 	 */
-	static modelAssetWithSpecificationDataError(specificationData: NSData): MLModelAsset;
+	static modelAssetWithSpecificationDataError(specificationData: NSData, error?: interop.Reference<NSError>): MLModelAsset;
 
 	/**
 	 * @since 18.0
 	 */
-	static modelAssetWithURLError(compiledModelURL: NSURL): MLModelAsset;
+	static modelAssetWithURLError(compiledModelURL: NSURL, error?: interop.Reference<NSError>): MLModelAsset;
 
 	static new(): MLModelAsset; // inherited from NSObject
 
@@ -1124,14 +1124,14 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void): this;
+	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 16.0
 	 */
 	initWithPixelBufferShape(pixelBuffer: any, shape: NSArray<number> | number[]): this;
 
-	initWithShapeDataTypeError(shape: NSArray<number> | number[], dataType: MLMultiArrayDataType): this;
+	initWithShapeDataTypeError(shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 18.0
@@ -1617,16 +1617,16 @@ declare class MLUpdateTask extends MLTask {
 	/**
 	 * @since 14.0
 	 */
-	static updateTaskForModelAtURLTrainingDataCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, completionHandler: (p1: MLUpdateContext) => void): MLUpdateTask;
+	static updateTaskForModelAtURLTrainingDataCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, completionHandler: (p1: MLUpdateContext) => void, error?: interop.Reference<NSError>): MLUpdateTask;
 
-	static updateTaskForModelAtURLTrainingDataConfigurationCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, completionHandler: (p1: MLUpdateContext) => void): MLUpdateTask;
+	static updateTaskForModelAtURLTrainingDataConfigurationCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, completionHandler: (p1: MLUpdateContext) => void, error?: interop.Reference<NSError>): MLUpdateTask;
 
-	static updateTaskForModelAtURLTrainingDataConfigurationProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, progressHandlers: MLUpdateProgressHandlers): MLUpdateTask;
+	static updateTaskForModelAtURLTrainingDataConfigurationProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, progressHandlers: MLUpdateProgressHandlers, error?: interop.Reference<NSError>): MLUpdateTask;
 
 	/**
 	 * @since 14.0
 	 */
-	static updateTaskForModelAtURLTrainingDataProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, progressHandlers: MLUpdateProgressHandlers): MLUpdateTask;
+	static updateTaskForModelAtURLTrainingDataProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, progressHandlers: MLUpdateProgressHandlers, error?: interop.Reference<NSError>): MLUpdateTask;
 
 	resumeWithParameters(updateParameters: NSDictionary<MLParameterKey, any>): void;
 }
@@ -1636,7 +1636,7 @@ declare class MLUpdateTask extends MLTask {
  */
 interface MLWritable extends NSObjectProtocol {
 
-	writeToURLError(url: NSURL): boolean;
+	writeToURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 declare var MLWritable: {
 

@@ -10,7 +10,7 @@ declare class SNAudioFileAnalyzer extends NSObject {
 
 	constructor(o: { URL: NSURL; });
 
-	addRequestWithObserverError(request: SNRequest, observer: SNResultsObserving): boolean;
+	addRequestWithObserverError(request: SNRequest, observer: SNResultsObserving, error?: interop.Reference<NSError>): boolean;
 
 	analyze(): void;
 
@@ -18,7 +18,7 @@ declare class SNAudioFileAnalyzer extends NSObject {
 
 	cancelAnalysis(): void;
 
-	initWithURLError(url: NSURL): this;
+	initWithURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	removeAllRequests(): void;
 
@@ -36,7 +36,7 @@ declare class SNAudioStreamAnalyzer extends NSObject {
 
 	constructor(o: { format: AVAudioFormat; });
 
-	addRequestWithObserverError(request: SNRequest, observer: SNResultsObserving): boolean;
+	addRequestWithObserverError(request: SNRequest, observer: SNResultsObserving, error?: interop.Reference<NSError>): boolean;
 
 	analyzeAudioBufferAtAudioFramePosition(audioBuffer: AVAudioBuffer, audioFramePosition: number): void;
 
@@ -173,9 +173,9 @@ declare class SNClassifySoundRequest extends NSObject implements SNRequest {
 	/**
 	 * @since 15.0
 	 */
-	initWithClassifierIdentifierError(classifierIdentifier: string): this;
+	initWithClassifierIdentifierError(classifierIdentifier: string, error?: interop.Reference<NSError>): this;
 
-	initWithMLModelError(mlModel: MLModel): this;
+	initWithMLModelError(mlModel: MLModel, error?: interop.Reference<NSError>): this;
 
 	isEqual(object: any): boolean;
 

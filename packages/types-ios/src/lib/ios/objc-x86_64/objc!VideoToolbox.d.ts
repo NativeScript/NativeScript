@@ -207,11 +207,11 @@ declare class VTFrameProcessor extends NSObject {
 
 	processWithParametersCompletionHandler(parameters: VTFrameProcessorParameters, completionHandler: (p1: VTFrameProcessorParameters, p2: NSError) => void): void;
 
-	processWithParametersError(parameters: VTFrameProcessorParameters): boolean;
+	processWithParametersError(parameters: VTFrameProcessorParameters, error?: interop.Reference<NSError>): boolean;
 
 	processWithParametersFrameOutputHandler(parameters: VTFrameProcessorParameters, frameOutputHandler: (p1: VTFrameProcessorParameters, p2: CMTime, p3: boolean, p4: NSError) => void): void;
 
-	startSessionWithConfigurationError(configuration: VTFrameProcessorConfiguration): boolean;
+	startSessionWithConfigurationError(configuration: VTFrameProcessorConfiguration, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

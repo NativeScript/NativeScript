@@ -6,7 +6,7 @@ import type { View } from '..';
 import { ViewHelper } from './view-helper-common';
 import { SDK_VERSION } from '../../../../utils/constants';
 import { layout, Trace } from './view-helper-shared';
-import { ios as iOSUtils } from '../../../../utils';
+import { ios as iosUtils, getWindow } from '../../../../utils';
 
 export * from './view-helper-common';
 export const AndroidHelper = 0;
@@ -98,6 +98,9 @@ class UILayoutViewController extends UIViewController {
 			return;
 		}
 
+		// Ensure iOS re-queries `preferredStatusBarStyle` for this controller.
+		IOSHelper.invalidateStatusBarAppearance(this, 'UILayoutViewController.viewWillAppear');
+
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		if (!owner.isLoaded && !owner.parent) {
@@ -113,19 +116,49 @@ class UILayoutViewController extends UIViewController {
 		}
 	}
 
+	// Forward status bar appearance to our content controller when available.
+	// Without this, iOS may use this controller's own preferredStatusBarStyle,
+	// which can be unrelated to the currently shown Page.
+	// @ts-ignore
+	public get childViewControllerForStatusBarStyle(): UIViewController {
+		return this.presentedViewController || this.childViewControllers?.lastObject;
+	}
+
 	// Mind implementation for other controllers
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this.owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
 		}
+	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const owner = this.owner?.deref();
+		if (owner?.statusBarStyle) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
+			} else {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
+		}
+		return UIStatusBarStyle.Default;
 	}
 }
 
@@ -133,8 +166,8 @@ class UILayoutViewController extends UIViewController {
 class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
 	public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
 
-	private owner: WeakRef<View>;
-	private closedCallback: Function;
+	owner: WeakRef<View>;
+	closedCallback: Function;
 
 	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
 		const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
@@ -156,8 +189,8 @@ class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UI
 class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
 	public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
 
-	private owner: WeakRef<View>;
-	private closedCallback: Function;
+	owner: WeakRef<View>;
+	closedCallback: Function;
 
 	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
 		const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
@@ -177,6 +210,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 
 export class IOSHelper {
 	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+	static traitCollectionLayoutDirectionChangedEvent = 'traitCollectionLayoutDirectionChanged';
 	static UILayoutViewController = UILayoutViewController;
 	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
 	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;
@@ -188,6 +222,49 @@ export class IOSHelper {
 
 		// Note: Might return undefined if no parent with viewController is found
 		return view;
+	}
+
+	static invalidateStatusBarAppearance(controller?: UIViewController, reason = ''): void {
+		try {
+			if (!controller) {
+				const window = getWindow<UIWindow>?.();
+				const rootController = window?.rootViewController;
+				controller = rootController ? iosUtils.getVisibleViewController(rootController) : null;
+			}
+
+			if (!controller) {
+				if (Trace.isEnabled()) {
+					Trace.write(`[StatusBar] invalidate skipped (no controller) reason=${reason}`, Trace.categories.NativeLifecycle);
+				}
+				return;
+			}
+
+			const container = controller;
+			let child: UIViewController = null;
+			try {
+				child = container.childViewControllerForStatusBarStyle;
+			} catch {
+				child = null;
+			}
+			if (!child) {
+				if (container instanceof UINavigationController) {
+					child = container.topViewController;
+				} else if (container instanceof UITabBarController) {
+					child = container.selectedViewController;
+				}
+			}
+
+			// Always invalidate container and likely child.
+			container.setNeedsStatusBarAppearanceUpdate?.();
+			child?.setNeedsStatusBarAppearanceUpdate?.();
+
+			// Also invalidate nav container if present.
+			const nav = container instanceof UINavigationController ? container : container.navigationController;
+			nav?.setNeedsStatusBarAppearanceUpdate?.();
+			nav?.topViewController?.setNeedsStatusBarAppearanceUpdate?.();
+		} catch (e) {
+			Trace.write(`[StatusBar] invalidate error: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+		}
 	}
 
 	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {

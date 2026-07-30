@@ -22,6 +22,16 @@
 				"main": "{projectRoot}/src/index.ts",
 				"assets": [
 					{
+						"input": "{projectRoot}",
+						"glob": "README.md",
+						"output": ".."
+					},
+					{
+						"input": "{workspaceRoot}",
+						"glob": "LICENSE",
+						"output": ".."
+					},
+					{
 						"input": "{projectRoot}/src/stubs",
 						"glob": "*.{js,mjs}",
 						"output": "stubs"

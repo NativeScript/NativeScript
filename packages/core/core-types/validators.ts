@@ -7,13 +7,20 @@ export function makeValidator<T>(...values: T[]): (value: any) => value is T {
 }
 
 export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
-	return function (value: any): T {
-		if (allowNumbers && typeof value === 'number') {
-			return value as T;
-		}
+	return (value) => {
+		const lower = value && value.toLowerCase();
 		if (isValid(value)) {
-			return value as T;
+			return value;
+		} else if (isValid(lower)) {
+			return lower;
+		} else {
+			if (allowNumbers) {
+				const convNumber = +value;
+				if (!isNaN(convNumber)) {
+					return value;
+				}
+			}
+			throw new Error('Invalid value: ' + value);
 		}
-		throw new Error(`Invalid value: ${value}`);
 	};
 }

@@ -72,7 +72,12 @@ declare function CGAffineTransformTranslate(t: CGAffineTransform, tx: number, ty
 /**
  * @since 2.0
  */
-declare function CGBitmapContextCreate(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any, bitmapInfo: number): any;
+declare function CGBitmapContextCreate(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGBitmapContextCreateAdaptive(width: number, height: number, auxiliaryInfo: NSDictionary<any, any>, onResolve: (p1: interop.Pointer | interop.Reference<CGContentInfo>, p2: interop.Pointer | interop.Reference<CGBitmapParameters>) => boolean, onAllocate: (p1: interop.Pointer | interop.Reference<CGContentInfo>, p2: interop.Pointer | interop.Reference<CGBitmapParameters>) => any, onFree: (p1: any, p2: interop.Pointer | interop.Reference<CGContentInfo>, p3: interop.Pointer | interop.Reference<CGBitmapParameters>) => void, onError: (p1: NSError, p2: interop.Pointer | interop.Reference<CGContentInfo>, p3: interop.Pointer | interop.Reference<CGBitmapParameters>) => void): any;
 
 /**
  * @since 2.0
@@ -82,7 +87,7 @@ declare function CGBitmapContextCreateImage(context: any): any;
 /**
  * @since 4.0
  */
-declare function CGBitmapContextCreateWithData(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any, bitmapInfo: number, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseInfo: interop.Pointer | interop.Reference<any>): any;
+declare function CGBitmapContextCreateWithData(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseInfo: interop.Pointer | interop.Reference<any>): any;
 
 /**
  * @since 2.0
@@ -136,11 +141,17 @@ declare const enum CGBitmapInfo {
 
 	kCGBitmapAlphaInfoMask = 31,
 
+	kCGBitmapComponentInfoMask = 3840,
+
+	kCGBitmapByteOrderInfoMask = 28672,
+
+	kCGBitmapPixelFormatInfoMask = 983040,
+
 	kCGBitmapFloatInfoMask = 3840,
 
-	kCGBitmapFloatComponents = 256,
-
 	kCGBitmapByteOrderMask = 28672,
+
+	kCGBitmapFloatComponents = 256,
 
 	kCGBitmapByteOrderDefault = 0,
 
@@ -152,6 +163,48 @@ declare const enum CGBitmapInfo {
 
 	kCGBitmapByteOrder32Big = 16384
 }
+
+declare const enum CGBitmapLayout {
+
+	kCGBitmapLayoutAlphaOnly = 0,
+
+	kCGBitmapLayoutGray = 1,
+
+	kCGBitmapLayoutGrayAlpha = 2,
+
+	kCGBitmapLayoutRGBA = 3,
+
+	kCGBitmapLayoutARGB = 4,
+
+	kCGBitmapLayoutRGBX = 5,
+
+	kCGBitmapLayoutXRGB = 6,
+
+	kCGBitmapLayoutBGRA = 7,
+
+	kCGBitmapLayoutBGRX = 8,
+
+	kCGBitmapLayoutABGR = 9,
+
+	kCGBitmapLayoutXBGR = 10,
+
+	kCGBitmapLayoutCMYK = 11
+}
+
+interface CGBitmapParameters {
+	width: number;
+	height: number;
+	bytesPerPixel: number;
+	alignedBytesPerRow: number;
+	component: CGComponent;
+	layout: CGBitmapLayout;
+	format: CGImagePixelFormatInfo;
+	colorSpace: any;
+	hasPremultipliedAlpha: boolean;
+	byteOrder: number;
+	edrTargetHeadroom: number;
+}
+declare var CGBitmapParameters: interop.StructType<CGBitmapParameters>;
 
 declare const enum CGBlendMode {
 
@@ -298,6 +351,11 @@ declare function CGColorCreateGenericRGB(red: number, green: number, blue: numbe
 declare function CGColorCreateSRGB(red: number, green: number, blue: number, alpha: number): any;
 
 /**
+ * @since 26.0
+ */
+declare function CGColorCreateWithContentHeadroom(headroom: number, space: any, red: number, green: number, blue: number, alpha: number): any;
+
+/**
  * @since 2.0
  */
 declare function CGColorCreateWithPattern(space: any, pattern: any, components: interop.Pointer | interop.Reference<number>): any;
@@ -339,6 +397,11 @@ declare function CGColorGetComponents(color: any): interop.Pointer | interop.Ref
 declare function CGColorGetConstantColor(colorName: string): any;
 
 /**
+ * @since 26.0
+ */
+declare function CGColorGetContentHeadroom(color: any): number;
+
+/**
  * @since 2.0
  */
 declare function CGColorGetNumberOfComponents(color: any): number;
@@ -352,6 +415,21 @@ declare function CGColorGetPattern(color: any): any;
  * @since 2.0
  */
 declare function CGColorGetTypeID(): number;
+
+declare const enum CGColorModel {
+
+	kCGColorModelNoColorant = 0,
+
+	kCGColorModelGray = 1,
+
+	kCGColorModelRGB = 2,
+
+	kCGColorModelCMYK = 4,
+
+	kCGColorModelLab = 8,
+
+	kCGColorModelDeviceN = 16
+}
 
 /**
  * @since 2.0
@@ -599,6 +677,38 @@ declare function CGColorSpaceUsesExtendedRange(space: any): boolean;
  * @since 14.0
  */
 declare function CGColorSpaceUsesITUR_2100TF(p1: any): boolean;
+
+declare const enum CGComponent {
+
+	kCGComponentUnknown = 0,
+
+	kCGComponentInteger8Bit = 1,
+
+	kCGComponentInteger10Bit = 6,
+
+	kCGComponentInteger16Bit = 2,
+
+	kCGComponentInteger32Bit = 3,
+
+	kCGComponentFloat16Bit = 5,
+
+	kCGComponentFloat32Bit = 4
+}
+
+interface CGContentInfo {
+	deepestImageComponent: CGComponent;
+	contentColorModels: CGColorModel;
+	hasWideGamut: boolean;
+	hasTransparency: boolean;
+	largestContentHeadroom: number;
+}
+declare var CGContentInfo: interop.StructType<CGContentInfo>;
+
+interface CGContentToneMappingInfo {
+	method: CGToneMapping;
+	options: NSDictionary<any, any>;
+}
+declare var CGContentToneMappingInfo: interop.StructType<CGContentToneMappingInfo>;
 
 /**
  * @since 2.0
@@ -851,6 +961,11 @@ declare function CGContextGetCTM(c: any): CGAffineTransform;
 declare function CGContextGetClipBoundingBox(c: any): CGRect;
 
 /**
+ * @since 26.0
+ */
+declare function CGContextGetContentToneMappingInfo(c: any): CGContentToneMappingInfo;
+
+/**
  * @since 18.0
  */
 declare function CGContextGetEDRTargetHeadroom(c: any): number;
@@ -992,6 +1107,11 @@ declare function CGContextSetCMYKStrokeColor(c: any, cyan: number, magenta: numb
  * @since 2.0
  */
 declare function CGContextSetCharacterSpacing(c: any, spacing: number): void;
+
+/**
+ * @since 26.0
+ */
+declare function CGContextSetContentToneMappingInfo(c: any, info: CGContentToneMappingInfo): void;
 
 /**
  * @since 18.0
@@ -1224,6 +1344,11 @@ declare function CGContextStrokeRectWithWidth(c: any, rect: CGRect, width: numbe
 declare function CGContextSynchronize(c: any): void;
 
 /**
+ * @since 26.0
+ */
+declare function CGContextSynchronizeAttributes(c: any): void;
+
+/**
  * @since 2.0
  */
 declare function CGContextTranslateCTM(c: any, tx: number, ty: number): void;
@@ -1338,6 +1463,11 @@ interface CGDataProviderSequentialCallbacks {
 	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var CGDataProviderSequentialCallbacks: interop.StructType<CGDataProviderSequentialCallbacks>;
+
+/**
+ * @since 26.0
+ */
+declare function CGEXRToneMappingGammaGetDefaultOptions(): NSDictionary<any, any>;
 
 declare const enum CGError {
 
@@ -1564,12 +1694,22 @@ declare function CGGradientCreateWithColorComponents(space: any, components: int
  */
 declare function CGGradientCreateWithColors(space: any, colors: NSArray<any> | any[], locations: interop.Pointer | interop.Reference<number>): any;
 
+/**
+ * @since 26.0
+ */
+declare function CGGradientCreateWithContentHeadroom(headroom: number, space: any, components: interop.Pointer | interop.Reference<number>, locations: interop.Pointer | interop.Reference<number>, count: number): any;
+
 declare const enum CGGradientDrawingOptions {
 
 	kCGGradientDrawsBeforeStartLocation = 1,
 
 	kCGGradientDrawsAfterEndLocation = 2
 }
+
+/**
+ * @since 26.0
+ */
+declare function CGGradientGetContentHeadroom(gradient: any): number;
 
 /**
  * @since 2.0
@@ -1620,7 +1760,31 @@ declare const enum CGImageByteOrderInfo {
 
 	kCGImageByteOrder16Big = 12288,
 
-	kCGImageByteOrder32Big = 16384
+	kCGImageByteOrder32Big = 16384,
+
+	kCGImageByteOrder16Host = 4096,
+
+	kCGImageByteOrder32Host = 8192
+}
+
+/**
+ * @since 26.0
+ */
+declare function CGImageCalculateContentAverageLightLevel(image: any): number;
+
+/**
+ * @since 26.0
+ */
+declare function CGImageCalculateContentHeadroom(image: any): number;
+
+/**
+ * @since 2.0
+ */
+declare const enum CGImageComponentInfo {
+
+	kCGImageComponentInteger = 0,
+
+	kCGImageComponentFloat = 256
 }
 
 /**
@@ -1639,9 +1803,19 @@ declare function CGImageCreate(width: number, height: number, bitsPerComponent: 
 declare function CGImageCreateCopy(image: any): any;
 
 /**
+ * @since 26.0
+ */
+declare function CGImageCreateCopyWithCalculatedHDRStats(image: any): any;
+
+/**
  * @since 2.0
  */
 declare function CGImageCreateCopyWithColorSpace(image: any, space: any): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGImageCreateCopyWithContentAverageLightLevel(image: any, avll: number): any;
 
 /**
  * @since 18.0
@@ -1712,6 +1886,11 @@ declare function CGImageGetBytesPerRow(image: any): number;
  * @since 2.0
  */
 declare function CGImageGetColorSpace(image: any): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGImageGetContentAverageLightLevel(image: any): number;
 
 /**
  * @since 18.0
@@ -2991,14 +3170,59 @@ declare function CGRectUnion(r1: CGRect, r2: CGRect): CGRect;
 declare var CGRectZero: CGRect;
 
 /**
+ * @since 26.0
+ */
+declare function CGRenderingBufferLockBytePtr(provider: any): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 26.0
+ */
+declare function CGRenderingBufferProviderCreate(info: interop.Pointer | interop.Reference<any>, size: number, lockPointer: (p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>, unlockPointer: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void, releaseInfo: (p1: interop.Pointer | interop.Reference<any>) => void): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGRenderingBufferProviderCreateWithCFData(data: NSData): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGRenderingBufferProviderGetSize(provider: any): number;
+
+/**
+ * @since 26.0
+ */
+declare function CGRenderingBufferProviderGetTypeID(): number;
+
+/**
+ * @since 26.0
+ */
+declare function CGRenderingBufferUnlockBytePtr(provider: any): void;
+
+/**
  * @since 2.0
  */
 declare function CGShadingCreateAxial(space: any, start: CGPoint, end: CGPoint, _function: any, extendStart: boolean, extendEnd: boolean): any;
 
 /**
+ * @since 26.0
+ */
+declare function CGShadingCreateAxialWithContentHeadroom(headroom: number, space: any, start: CGPoint, end: CGPoint, _function: any, extendStart: boolean, extendEnd: boolean): any;
+
+/**
  * @since 2.0
  */
 declare function CGShadingCreateRadial(space: any, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any, extendStart: boolean, extendEnd: boolean): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGShadingCreateRadialWithContentHeadroom(headroom: number, space: any, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any, extendStart: boolean, extendEnd: boolean): any;
+
+/**
+ * @since 26.0
+ */
+declare function CGShadingGetContentHeadroom(shading: any): number;
 
 /**
  * @since 2.0
@@ -3092,8 +3316,19 @@ declare const enum CGToneMapping {
 
 declare function CGVectorMake(dx: number, dy: number): CGVector;
 
+/**
+ * @since 11.0
+ */
+declare var kCGAdaptiveMaximumBitDepth: string;
+
+/**
+ * @deprecated 100000
+ */
 declare var kCGBitmapByteOrder16Host: CGBitmapInfo;
 
+/**
+ * @deprecated 100000
+ */
 declare var kCGBitmapByteOrder32Host: CGBitmapInfo;
 
 /**
@@ -3323,9 +3558,34 @@ declare var kCGColorSpaceSRGB: string;
 declare var kCGColorWhite: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCGContentAverageLightLevel: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCGContentAverageLightLevelNits: string;
+
+/**
  * @since 18.0
  */
 declare var kCGDefaultHDRImageContentHeadroom: number;
+
+/**
+ * @since 26.0
+ */
+declare var kCGDynamicRangeConstrained: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCGDynamicRangeHigh: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCGDynamicRangeStandard: string;
 
 /**
  * @since 18.0
@@ -3542,6 +3802,11 @@ declare var kCGPDFXOutputIntentSubtype: string;
  * @since 14.0
  */
 declare var kCGPDFXRegistryName: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCGPreferredDynamicRange: string;
 
 /**
  * @since 18.0

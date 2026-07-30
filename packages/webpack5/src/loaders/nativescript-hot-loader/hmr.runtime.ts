@@ -105,10 +105,19 @@ if (module.hot) {
 	};
 
 	const hasUpdate = () => {
-		return [
+		// Prefer platform-agnostic JS hot-update manifests; fall back to JSON
+		// if needed. On iOS, the .hot-update.js files are present under the
+		// app folder (see platforms/ios <app>/bundle.*.hot-update.js), while on
+		// Android the JSON manifests are used by HMR. Checking JS first keeps
+		// behavior correct for iOS without regressing Android.
+		const candidates = [
+			`~/bundle.${__webpack_hash__}.hot-update.js`,
+			`~/runtime.${__webpack_hash__}.hot-update.js`,
 			`~/bundle.${__webpack_hash__}.hot-update.json`,
 			`~/runtime.${__webpack_hash__}.hot-update.json`,
-		].some((path) => requireExists(path));
+		];
+
+		return candidates.some((path) => requireExists(path));
 	};
 
 	if (global.__onLiveSync !== global[hmrRuntimeLastLiveSyncSymbol]) {

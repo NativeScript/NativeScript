@@ -1370,7 +1370,7 @@ declare class PHContentEditingOutput extends NSObject {
 	/**
 	 * @since 17
 	 */
-	renderedContentURLForTypeError(type: UTType): NSURL;
+	renderedContentURLForTypeError(type: UTType, error?: interop.Reference<NSError>): NSURL;
 }
 
 /**
@@ -1779,7 +1779,7 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSItemProviderR
 
 	static new(): PHLivePhoto; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): PHLivePhoto;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): PHLivePhoto;
 
 	/**
 	 * @since 9.1
@@ -2105,7 +2105,7 @@ declare class PHPersistentChange extends NSObject {
 
 	readonly changeToken: PHPersistentChangeToken;
 
-	changeDetailsForObjectTypeError(objectType: PHObjectType): PHPersistentObjectChangeDetails;
+	changeDetailsForObjectTypeError(objectType: PHObjectType, error?: interop.Reference<NSError>): PHPersistentObjectChangeDetails;
 }
 
 /**
@@ -2212,7 +2212,7 @@ declare class PHPhotoLibrary extends NSObject {
 	/**
 	 * @since 16
 	 */
-	fetchPersistentChangesSinceTokenError(token: PHPersistentChangeToken): PHPersistentChangeFetchResult;
+	fetchPersistentChangesSinceTokenError(token: PHPersistentChangeToken, error?: interop.Reference<NSError>): PHPersistentChangeFetchResult;
 
 	/**
 	 * @since 15
@@ -2222,7 +2222,7 @@ declare class PHPhotoLibrary extends NSObject {
 	/**
 	 * @since 8
 	 */
-	performChangesAndWaitError(changeBlock: () => void): boolean;
+	performChangesAndWaitError(changeBlock: () => void, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8

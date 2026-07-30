@@ -1,7 +1,5 @@
 import { Trace, Page } from '@nativescript/core';
 
-import * as tests from './test-runner';
-
 let executeTests = true;
 
 Trace.enable();
@@ -18,10 +16,18 @@ Trace.addCategories(Trace.categories.Test + ',' + Trace.categories.Error);
 // ));
 
 function runTests() {
-	setTimeout(() => tests.runAll(''), 10);
+	setTimeout(async () => {
+		try {
+			const tests = await import('./test-runner');
+			tests.runAll('');
+		} catch (e) {
+			console.error('[automated] failed to load test-runner', e);
+		}
+	}, 10);
 }
 
 export function onNavigatedTo(args) {
+	console.log('onNavigatedTo');
 	args.object.off(Page.loadedEvent, onNavigatedTo);
 	if (executeTests) {
 		executeTests = false;

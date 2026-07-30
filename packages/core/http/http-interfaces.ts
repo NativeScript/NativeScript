@@ -1,5 +1,6 @@
 import type { ImageSource } from '../image-source';
 import type { File } from '../file-system';
+import type { BaseHttpContent } from './http-request-internal';
 
 /**
  * Provides options for the http requests.
@@ -39,7 +40,7 @@ export interface HttpRequestOptions {
 /**
  * Encapsulates HTTP-response information from an HTTP-request.
  */
-export interface HttpResponse {
+export interface HttpResponse<T = HttpContent> {
 	/**
 	 * Gets the response status code.
 	 */
@@ -53,7 +54,7 @@ export interface HttpResponse {
 	/**
 	 * Gets the response content.
 	 */
-	content?: HttpContent;
+	content?: T;
 }
 
 export type Headers = { [key: string]: string | string[] };
@@ -62,15 +63,8 @@ export enum HttpResponseEncoding {
 	UTF8,
 	GBK,
 }
-/**
- * Encapsulates the content of an HttpResponse.
- */
-export interface HttpContent {
-	/**
-	 * Gets the response body as raw data.
-	 */
-	raw: any;
 
+export interface HttpContentHandler {
 	/**
 	 * Gets the response body as ArrayBuffer
 	 */
@@ -96,3 +90,8 @@ export interface HttpContent {
 	 */
 	toFile: (destinationFilePath?: string) => File;
 }
+
+/**
+ * Encapsulates the content of an HttpResponse.
+ */
+export interface HttpContent extends HttpContentHandler, BaseHttpContent {}

@@ -2,7 +2,6 @@ import '../../globals';
 import { setActivityCallbacks } from '.';
 import { Application } from '../../application';
 import { isEmbedded } from '../embedding';
-
 const EMPTY_FN = () => {};
 declare const com: any;
 
@@ -22,6 +21,7 @@ if (!isEmbedded()) {
 			// Set isNativeScriptActivity in onCreate.
 			// The JS constructor might not be called because the activity is created from Android.
 			this.isNativeScriptActivity = true;
+
 			if (!this._callbacks) {
 				setActivityCallbacks(this);
 			}
@@ -78,6 +78,7 @@ if (!isEmbedded()) {
 			// Set isNativeScriptActivity in onCreate.
 			// The JS constructor might not be called because the activity is created from Android.
 			activity.isNativeScriptActivity = true;
+
 			if (!activity._callbacks) {
 				setActivityCallbacks(activity);
 			}

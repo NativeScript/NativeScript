@@ -73,7 +73,7 @@ Button {
     font-size: 17;
 }
 
-.box-shadow-demo .box-shadow-prop-controls TextField{
+.box-shadow-demo .box-shadow-prop-controls TextField {
     margin-left: 10;
     padding: 5;
     border-bottom-width: 1;
@@ -266,4 +266,105 @@ Button {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Multiple Scenes Demo Styles */
+
+.card {
+    background-color: #f8f9fa;
+    border-radius: 12;
+    border-width: 1;
+    border-color: #e9ecef;
+    margin-bottom: 15;
+}
+
+.code-block {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    padding: 15;
+    border-radius: 8;
+    font-family: "Courier New", monospace;
+    font-size: 12;
+}
+
+.event-item {
+    background-color: #f1f3f4;
+    border-radius: 6;
+    margin-bottom: 5;
+}
+
+.event-item:nth-child(even) {
+    background-color: #e8eaed;
+}
+
+.border {
+    border-width: 1;
+    border-color: #dee2e6;
+    border-radius: 8;
+    background-color: white;
+}
+
+.btn {
+    border-radius: 8;
+    font-weight: bold;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #007bff;
+    border-width: 2;
+    border-color: #007bff;
+}
+
+.h3 {
+    font-size: 18;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.body {
+    font-size: 14;
+    color: #495057;
+}
+
+.caption {
+    font-size: 12;
+    color: #6c757d;
+}
+
+.font-weight-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Sliders Demo Page Styles */
+.sliders-demo-page Slider.gradient-slider {
+    background: linear-gradient(to right, orangered, green, lightblue);
+}
+
+.sliders-demo-page Slider.rainbow-slider {
+    background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+}
+
+.sliders-demo-page Slider.two-color-slider {
+    background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+}
+
+.sliders-demo-page Slider.sunset-slider {
+    background: linear-gradient(to right, #f12711, #f5af19);
+}
+
+.sliders-demo-page Slider.ocean-slider {
+    background: linear-gradient(to right, #2193b0, #6dd5ed);
+}
+
+.sliders-demo-page Slider.purple-slider {
+    background: linear-gradient(to right, #8e2de2, #4a00e0);
+}
+
+.sliders-demo-page Slider.stops-slider {
+    background: linear-gradient(to right, red 0%, yellow 50%, green 100%);
 }

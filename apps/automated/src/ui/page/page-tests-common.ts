@@ -1,4 +1,4 @@
-import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Application, Utils, Builder } from '@nativescript/core';
+import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Utils, Builder } from '@nativescript/core';
 
 // >> article-set-bindingcontext
 export function pageLoaded(args) {

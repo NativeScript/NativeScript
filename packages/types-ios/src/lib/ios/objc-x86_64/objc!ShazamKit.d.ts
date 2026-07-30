@@ -32,20 +32,20 @@ declare class SHCustomCatalog extends SHCatalog {
 	 */
 	constructor(o: { dataRepresentation: NSData; });
 
-	addCustomCatalogFromURLError(customCatalogURL: NSURL): boolean;
+	addCustomCatalogFromURLError(customCatalogURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	addReferenceSignatureRepresentingMediaItemsError(signature: SHSignature, mediaItems: NSArray<SHMediaItem> | SHMediaItem[]): boolean;
+	addReferenceSignatureRepresentingMediaItemsError(signature: SHSignature, mediaItems: NSArray<SHMediaItem> | SHMediaItem[], error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 18.0
 	 */
-	initWithDataRepresentationError(dataRepresentation: NSData): this;
+	initWithDataRepresentationError(dataRepresentation: NSData, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 15.0
 	 * @deprecated 18.0
 	 */
-	writeToURLError(destinationURL: NSURL): boolean;
+	writeToURLError(destinationURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum SHErrorCode {
@@ -376,7 +376,7 @@ declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): SHSignature; // inherited from NSObject
 
-	static signatureWithDataRepresentationError(dataRepresentation: NSData): SHSignature;
+	static signatureWithDataRepresentationError(dataRepresentation: NSData, error?: interop.Reference<NSError>): SHSignature;
 
 	readonly dataRepresentation: NSData;
 
@@ -394,7 +394,7 @@ declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding 
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithDataRepresentationError(dataRepresentation: NSData): this;
+	initWithDataRepresentationError(dataRepresentation: NSData, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -411,7 +411,7 @@ declare class SHSignatureGenerator extends NSObject {
 
 	static new(): SHSignatureGenerator; // inherited from NSObject
 
-	appendBufferAtTimeError(buffer: AVAudioPCMBuffer, time: AVAudioTime): boolean;
+	appendBufferAtTimeError(buffer: AVAudioPCMBuffer, time: AVAudioTime, error?: interop.Reference<NSError>): boolean;
 
 	signature(): SHSignature;
 }

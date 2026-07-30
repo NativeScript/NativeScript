@@ -2768,17 +2768,17 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 	/**
 	 * @since 17.0
 	 */
-	static precomputedLightingEnvironmentContentsWithDataError(data: NSData): any;
+	static precomputedLightingEnvironmentContentsWithDataError(data: NSData, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 17.0
 	 */
-	static precomputedLightingEnvironmentContentsWithURLError(url: NSURL): any;
+	static precomputedLightingEnvironmentContentsWithURLError(url: NSURL, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 17.0
 	 */
-	static precomputedLightingEnvironmentDataForContentsDeviceError(contents: any, device: MTLDevice): NSData;
+	static precomputedLightingEnvironmentDataForContentsDeviceError(contents: any, device: MTLDevice, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 8.0
@@ -5110,7 +5110,7 @@ declare class SCNScene extends NSObject implements GKSceneRootNodeType, NSSecure
 	 */
 	static sceneWithMDLAsset(mdlAsset: MDLAsset): SCNScene;
 
-	static sceneWithURLOptionsError(url: NSURL, options: NSDictionary<string, any>): SCNScene;
+	static sceneWithURLOptionsError(url: NSURL, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): SCNScene;
 
 	readonly background: SCNMaterialProperty;
 
@@ -5417,7 +5417,7 @@ declare class SCNSceneSource extends NSObject {
 
 	propertyForKey(key: string): any;
 
-	sceneWithOptionsError(options: NSDictionary<string, any>): SCNScene;
+	sceneWithOptionsError(options: NSDictionary<string, any>, error?: interop.Reference<NSError>): SCNScene;
 
 	sceneWithOptionsStatusHandler(options: NSDictionary<string, any>, statusHandler: (p1: number, p2: SCNSceneSourceStatus, p3: NSError, p4: interop.Pointer | interop.Reference<boolean>) => void): SCNScene;
 }

@@ -686,12 +686,12 @@ declare class MXMetricManager extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	static extendLaunchMeasurementForTaskIDError(taskID: string): boolean;
+	static extendLaunchMeasurementForTaskIDError(taskID: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.0
 	 */
-	static finishExtendedLaunchMeasurementForTaskIDError(taskID: string): boolean;
+	static finishExtendedLaunchMeasurementForTaskIDError(taskID: string, error?: interop.Reference<NSError>): boolean;
 
 	static makeLogHandleWithCategory(category: string): NSObject & OS_os_log;
 

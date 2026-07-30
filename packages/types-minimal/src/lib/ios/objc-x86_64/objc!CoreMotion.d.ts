@@ -695,7 +695,7 @@ declare class CMOdometerData extends NSObject implements NSCopying, NSSecureCodi
 	readonly gpsDate: Date;
 
 	/**
-	 * @since 15.4
+	 * @since 17.0
 	 */
 	readonly maxAbsSlope: number;
 
@@ -705,7 +705,7 @@ declare class CMOdometerData extends NSObject implements NSCopying, NSSecureCodi
 	readonly originDevice: CMOdometerOriginDevice;
 
 	/**
-	 * @since 15.4
+	 * @since 17.0
 	 */
 	readonly slope: number;
 

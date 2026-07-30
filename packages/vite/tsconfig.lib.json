@@ -1,0 +1,19 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmitOnError": true,
+		"noEmitHelpers": true,
+		"declaration": true,
+		"ignoreDeprecations": "5.0",
+		"removeComments": false,
+		"emitDecoratorMetadata": false,
+		"experimentalDecorators": true,
+		"diagnostics": true,
+		"sourceMap": true,
+		"inlineSourceMap": false,
+		"verbatimModuleSyntax": true,
+		"lib": ["ESNext", "dom"]
+	},
+	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "vitest.config.ts", "vitest.setup.ts"],
+	"include": ["**/*.ts"]
+}

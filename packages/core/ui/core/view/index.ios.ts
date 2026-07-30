@@ -1,5 +1,5 @@
 import type { Point, Position } from './view-interfaces';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig, statusBarStyleProperty } from './view-common';
 import { isAccessibilityServiceEnabled } from '../../../application';
 import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -8,7 +8,7 @@ import { layout, ios as iosUtils, getWindow } from '../../../utils';
 import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -53,6 +53,10 @@ export class View extends ViewCommon {
 	 */
 	_nativeBackgroundState: 'unset' | 'invalid' | 'drawn';
 
+	get nativeBackgroundState(): 'unset' | 'invalid' | 'drawn' {
+		return this._nativeBackgroundState;
+	}
+
 	/**
 	 * Glass effect configuration
 	 */
@@ -91,8 +95,7 @@ export class View extends ViewCommon {
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 		const measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
-		const forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
-		if (this.nativeViewProtected && (forceLayout || measureSpecsChanged)) {
+		if (this.nativeViewProtected && (this.isLayoutRequested || measureSpecsChanged)) {
 			// first clears the measured dimension flag
 			this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
@@ -118,7 +121,7 @@ export class View extends ViewCommon {
 			this.layoutNativeView(left, top, right, bottom);
 		}
 
-		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+		const needsLayout = boundsChanged || this.isLayoutRequired;
 		if (needsLayout) {
 			let position: Position;
 
@@ -186,8 +189,13 @@ export class View extends ViewCommon {
 			nativeHeight = nativeSize.height;
 		}
 
-		const measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
-		const measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+		let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+		let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+
+		// Clamp to max-width/max-height (effectiveMax* is Infinity when unconstrained).
+		// Applied after min so that max wins when min > max, matching CSS.
+		measureWidth = Math.min(measureWidth, this.effectiveMaxWidth);
+		measureHeight = Math.min(measureHeight, this.effectiveMaxHeight);
 
 		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
 		const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -255,9 +263,8 @@ export class View extends ViewCommon {
 
 	get isLayoutValid(): boolean {
 		if (this.nativeViewProtected) {
-			return this._isLayoutValid;
+			return !this.isLayoutRequested;
 		}
-
 		return false;
 	}
 
@@ -345,6 +352,20 @@ export class View extends ViewCommon {
 		return insets;
 	}
 
+	public override _setDefaultPaddings(insets: any): void {
+		if (insets instanceof UIEdgeInsets) {
+			this._defaultPaddingTop = layout.toDevicePixels(insets.top);
+			this._defaultPaddingRight = layout.toDevicePixels(insets.right);
+			this._defaultPaddingBottom = layout.toDevicePixels(insets.bottom);
+			this._defaultPaddingLeft = layout.toDevicePixels(insets.left);
+		} else {
+			this._defaultPaddingTop = 0;
+			this._defaultPaddingRight = 0;
+			this._defaultPaddingBottom = 0;
+			this._defaultPaddingLeft = 0;
+		}
+	}
+
 	public getLocationInWindow(): Point {
 		if (!this.nativeViewProtected || !this.nativeViewProtected.window) {
 			return undefined;
@@ -393,7 +414,7 @@ export class View extends ViewCommon {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadows();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
@@ -560,12 +581,21 @@ export class View extends ViewCommon {
 			}
 		}
 
-		if (options.ios && options.ios.presentationStyle) {
-			const presentationStyle = options.ios.presentationStyle;
-			controller.modalPresentationStyle = presentationStyle;
+		if (options.ios) {
+			if (options.ios.presentationStyle) {
+				const presentationStyle = options.ios.presentationStyle;
+				controller.modalPresentationStyle = presentationStyle;
 
-			if (presentationStyle === UIModalPresentationStyle.Popover) {
-				this._setupPopoverControllerDelegate(controller, parent);
+				if (presentationStyle === UIModalPresentationStyle.Popover) {
+					this._setupPopoverControllerDelegate(controller, parent);
+				}
+			}
+			if (options.ios.statusBarStyle) {
+				/**
+				 * https://developer.apple.com/documentation/uikit/uiviewcontroller/modalpresentationcapturesstatusbarappearance
+				 */
+				controller.modalPresentationCapturesStatusBarAppearance = true;
+				this.statusBarStyle = options.ios.statusBarStyle;
 			}
 		}
 
@@ -765,7 +795,12 @@ export class View extends ViewCommon {
 		return this.nativeViewProtected.hidden;
 	}
 	[hiddenProperty.setNative](value: boolean) {
-		this.nativeViewProtected.hidden = value;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+		nativeView.hidden = value;
+		// Apply visibility value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.hidden = nativeView.hidden;
+		}
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
@@ -895,58 +930,122 @@ export class View extends ViewCommon {
 		}
 	}
 
+	protected _applyGlassEffect(
+		value: GlassEffectType,
+		options: {
+			effectType: 'glass' | 'container';
+			targetView?: UIVisualEffectView;
+			toGlassStyleFn?: (variant?: GlassEffectVariant) => number;
+			onCreate?: (effectView: UIVisualEffectView, effect: UIVisualEffect) => void;
+			onUpdate?: (effectView: UIVisualEffectView, effect: UIVisualEffect, duration: number) => void;
+		},
+	): UIVisualEffectView | undefined {
+		const config: GlassEffectConfig | null = typeof value !== 'string' ? value : null;
+		const variant = config ? config.variant : (value as GlassEffectVariant);
+		const defaultDuration = 0.3;
+		const duration = config ? (config.animateChangeDuration ?? defaultDuration) : defaultDuration;
+		const glassSupported = supportsGlass();
+		let effect: UIVisualEffect = UIVisualEffect.new();
+
+		// Create the appropriate effect based on type and variant
+		if (value && !['identity', 'none'].includes(variant) && glassSupported) {
+			if (options.effectType === 'glass') {
+				const styleFn = options.toGlassStyleFn || this.toUIGlassStyle.bind(this);
+				effect = UIGlassEffect.effectWithStyle(styleFn(variant));
+				if (config) {
+					(effect as UIGlassEffect).interactive = !!config.interactive;
+					if (config.tint) {
+						(effect as UIGlassEffect).tintColor = typeof config.tint === 'string' ? new Color(config.tint).ios : config.tint;
+					}
+				}
+			} else if (options.effectType === 'container') {
+				effect = UIGlassContainerEffect.alloc().init();
+				(effect as UIGlassContainerEffect).spacing = config?.spacing ?? 8;
+			}
+		}
+
+		// Handle creating new effect view or updating existing one
+		if (options.targetView) {
+			// Update existing effect view
+			if (options.onUpdate) {
+				options.onUpdate(options.targetView, effect, duration);
+			} else {
+				// Default update behavior: animate effect changes
+				UIView.animateWithDurationAnimations(duration, () => {
+					options.targetView.effect = effect;
+				});
+			}
+			return undefined;
+		} else if (options.onCreate) {
+			// Create new effect view and let caller handle setup
+			const effectView = UIVisualEffectView.alloc().initWithEffect(effect);
+			options.onCreate(effectView, effect);
+			return effectView;
+		}
+		return undefined;
+	}
+	[statusBarStyleProperty.getDefault]() {
+		return this.style.statusBarStyle;
+	}
+	[statusBarStyleProperty.setNative](value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+		this.updateStatusBarStyle(value);
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// iOS requires a controller invalidation to re-evaluate `preferredStatusBarStyle`.
+		const ownerController = this.viewController || IOSHelper.getParentWithViewController(this as any)?.viewController;
+		IOSHelper.invalidateStatusBarAppearance(ownerController, `View.updateStatusBarStyle:${value}`);
+	}
+
 	[iosGlassEffectProperty.setNative](value: GlassEffectType) {
 		if (!this.nativeViewProtected || !supportsGlass()) {
 			return;
 		}
-		if (this._glassEffectView) {
-			this._glassEffectView.removeFromSuperview();
-			this._glassEffectView = null;
-		}
-		if (!value) {
-			return;
-		}
-		let effect: UIGlassEffect;
-		if (typeof value === 'string') {
-			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value));
+
+		if (!this._glassEffectView) {
+			// Create new glass effect view
+			this._glassEffectView = this._applyGlassEffect(value, {
+				effectType: 'glass',
+				onCreate: (effectView, effect) => {
+					// let touches pass to content
+					effectView.userInteractionEnabled = false;
+					effectView.clipsToBounds = true;
+					// size & autoresize
+					if (this._glassEffectMeasure) {
+						clearTimeout(this._glassEffectMeasure);
+					}
+					this._glassEffectMeasure = setTimeout(() => {
+						const size = this.nativeViewProtected.bounds.size;
+						effectView.frame = CGRectMake(0, 0, size.width, size.height);
+						effectView.autoresizingMask = 2;
+						this.nativeViewProtected.insertSubviewAtIndex(effectView, 0);
+					});
+				},
+			});
 		} else {
-			if (value.variant === 'identity') {
-				return;
-			}
-			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value.variant));
-			if (value.interactive) {
-				effect.interactive = true;
-			}
-			if (value.tint) {
-				effect.tintColor = typeof value.tint === 'string' ? new Color(value.tint).ios : value.tint;
-			}
+			// Update existing glass effect view
+			this._applyGlassEffect(value, {
+				effectType: 'glass',
+				targetView: this._glassEffectView,
+			});
 		}
-		this._glassEffectView = UIVisualEffectView.alloc().initWithEffect(effect);
-		// let touches pass to content
-		this._glassEffectView.userInteractionEnabled = false;
-		this._glassEffectView.clipsToBounds = true;
-		// size & autoresize
-		if (this._glassEffectMeasure) {
-			clearTimeout(this._glassEffectMeasure);
-		}
-		this._glassEffectMeasure = setTimeout(() => {
-			const size = this.nativeViewProtected.bounds.size;
-			this._glassEffectView.frame = CGRectMake(0, 0, size.width, size.height);
-			this._glassEffectView.autoresizingMask = 2;
-			this.nativeViewProtected.insertSubviewAtIndex(this._glassEffectView, 0);
-		});
 	}
 
-	public toUIGlassStyle(value?: GlassEffectVariant) {
-		if (supportsGlass()) {
-			switch (value) {
-				case 'regular':
-					return UIGlassEffectStyle?.Regular ?? 0;
-				case 'clear':
-					return UIGlassEffectStyle?.Clear ?? 1;
-			}
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case CoreTypes.LayoutDirection.ltr:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceLeftToRight;
+				break;
+			case CoreTypes.LayoutDirection.rtl:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft;
+				break;
+			default:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.Unspecified;
+				break;
 		}
-		return 1;
 	}
 
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
@@ -996,6 +1095,18 @@ export class View extends ViewCommon {
 		this.sendAccessibilityEvent({
 			iosNotificationType: IOSPostAccessibilityNotificationType.Screen,
 		});
+	}
+
+	public toUIGlassStyle(value?: GlassEffectVariant) {
+		if (supportsGlass()) {
+			switch (value) {
+				case 'regular':
+					return UIGlassEffectStyle.Regular;
+				case 'clear':
+					return UIGlassEffectStyle.Clear;
+			}
+		}
+		return 1;
 	}
 
 	_getCurrentLayoutBounds(): Position {
@@ -1135,7 +1246,7 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		const window = getWindow<UIWindow>();
+		const window = getWindow<UIWindow>?.();
 		return UIView.alloc().initWithFrame(window ? window.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 

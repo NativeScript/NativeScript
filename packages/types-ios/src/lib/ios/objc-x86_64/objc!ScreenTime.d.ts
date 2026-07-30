@@ -68,12 +68,12 @@ declare class STWebHistory extends NSObject {
 	 */
 	fetchHistoryDuringIntervalCompletionHandler(interval: NSDateInterval, completionHandler: (p1: NSSet<NSURL>, p2: NSError) => void): void;
 
-	initWithBundleIdentifierError(bundleIdentifier: string): this;
+	initWithBundleIdentifierError(bundleIdentifier: string, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 18.4
 	 */
-	initWithBundleIdentifierProfileIdentifierError(bundleIdentifier: string, profileIdentifier: string): this;
+	initWithBundleIdentifierProfileIdentifierError(bundleIdentifier: string, profileIdentifier: string, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 18.4
@@ -105,5 +105,5 @@ declare class STWebpageController extends UIViewController {
 
 	suppressUsageRecording: boolean;
 
-	setBundleIdentifierError(bundleIdentifier: string): boolean;
+	setBundleIdentifierError(bundleIdentifier: string, error?: interop.Reference<NSError>): boolean;
 }
