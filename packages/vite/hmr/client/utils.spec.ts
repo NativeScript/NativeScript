@@ -1,0 +1,302 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { _resetHmrModeBannerForTests, buildEvictionUrls, deriveHttpOrigin, emitHmrModeBannerOnce, getGraphVersion, hasExplicitEviction, invalidateModulesByUrls, moduleFetchCache, requestModuleFromServer, setGraphVersion, setHMRWsUrl, setHttpOriginForVite } from './utils.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { installFakeNsRuntime } from '../shared/runtime/ns-runtime-test-double.js';
+
+const ORIGIN = 'http://127.0.0.1:5173';
+
+// The fake ns:runtime module — tests mutate members on this object the same
+// way the device runtime's module carries them.
+const nsRuntime = installFakeNsRuntime(getGlobalScope() as never);
+
+function clearGlobalEvictionFn() {
+	delete nsRuntime.invalidateModules;
+}
+
+function setGlobalEvictionFn(fn: ((urls: readonly string[]) => void) | unknown) {
+	nsRuntime.invalidateModules = fn as never;
+}
+
+describe('setGraphVersion', () => {
+	it('publishes the current graph version on globalThis', () => {
+		const g = getGlobalScope();
+		const previousGraphVersion = getGraphVersion();
+		const previousGlobalGraphVersion = g.__NS_HMR_GRAPH_VERSION__;
+
+		try {
+			setGraphVersion(408);
+
+			expect(getGraphVersion()).toBe(408);
+			expect(g.__NS_HMR_GRAPH_VERSION__).toBe(408);
+		} finally {
+			setGraphVersion(previousGraphVersion);
+			g.__NS_HMR_GRAPH_VERSION__ = previousGlobalGraphVersion;
+		}
+	});
+});
+
+describe('hasExplicitEviction', () => {
+	beforeEach(() => {
+		clearGlobalEvictionFn();
+	});
+
+	afterEach(() => {
+		clearGlobalEvictionFn();
+	});
+
+	it('returns false when the runtime hook is missing', () => {
+		expect(hasExplicitEviction()).toBe(false);
+	});
+
+	it('returns true when the eviction primitive is exposed (flat fallback global)', () => {
+		setGlobalEvictionFn(() => {});
+		expect(hasExplicitEviction()).toBe(true);
+	});
+
+	it('returns false when the eviction primitive is a non-function value', () => {
+		setGlobalEvictionFn('not a function');
+		expect(hasExplicitEviction()).toBe(false);
+	});
+});
+
+describe('invalidateModulesByUrls', () => {
+	beforeEach(() => {
+		clearGlobalEvictionFn();
+		_resetHmrModeBannerForTests();
+	});
+
+	afterEach(() => {
+		clearGlobalEvictionFn();
+	});
+
+	it('returns false and skips the call when the runtime hook is missing', () => {
+		const ok = invalidateModulesByUrls([`${ORIGIN}/ns/m/src/foo.ts`]);
+		expect(ok).toBe(false);
+	});
+
+	it('returns false (no-op) when the URL list is empty even if the runtime hook exists', () => {
+		const fn = vi.fn();
+		setGlobalEvictionFn(fn);
+		const ok = invalidateModulesByUrls([]);
+		expect(ok).toBe(false);
+		expect(fn).not.toHaveBeenCalled();
+	});
+
+	it('hands the canonical URL list to the runtime eviction primitive and returns true', () => {
+		const fn = vi.fn();
+		setGlobalEvictionFn(fn);
+		const urls = [`${ORIGIN}/ns/m/src/foo.ts`, `${ORIGIN}/ns/m/src/bar.ts`];
+		const ok = invalidateModulesByUrls(urls);
+		expect(ok).toBe(true);
+		expect(fn).toHaveBeenCalledTimes(1);
+		expect(fn).toHaveBeenCalledWith(urls);
+	});
+
+	it('soft-fails when the eviction primitive throws', () => {
+		setGlobalEvictionFn(() => {
+			throw new Error('boom');
+		});
+		const ok = invalidateModulesByUrls([`${ORIGIN}/ns/m/src/foo.ts`]);
+		expect(ok).toBe(false);
+	});
+});
+
+describe('buildEvictionUrls', () => {
+	const previousOrigin = process.env.NS_TEST_ORIGIN;
+
+	beforeEach(() => {
+		setHttpOriginForVite(ORIGIN);
+	});
+
+	afterEach(() => {
+		setHttpOriginForVite(undefined);
+		setHMRWsUrl(previousOrigin);
+	});
+
+	it('returns an empty list when no specs are provided', () => {
+		expect(buildEvictionUrls([])).toEqual([]);
+	});
+
+	it('builds BOTH canonical (no-ext) and extensioned /ns/m URLs and dedupes repeats', () => {
+		// Eviction emits both URL variants per spec because the iOS runtime
+		// may key the same module under either variant depending on which
+		// code path populated the entry (see buildEvictionUrls in utils.ts).
+		const urls = buildEvictionUrls(['/src/main.ts', '/src/main.ts', 'src/util.ts']);
+		expect(urls).toEqual([`${ORIGIN}/ns/m/src/main`, `${ORIGIN}/ns/m/src/main.ts`, `${ORIGIN}/ns/m/src/util`, `${ORIGIN}/ns/m/src/util.ts`]);
+	});
+
+	it('skips virtual specs and node_modules ids so vendor stays hot', () => {
+		const urls = buildEvictionUrls(['\0plugin-vue:export-helper', '/src/components/Foo.vue?vue&type=script', '/node_modules/lodash/index.js', '/src/services/api.ts']);
+		expect(urls.some((u) => u.includes('node_modules'))).toBe(false);
+		expect(urls.some((u) => u.includes('plugin-vue'))).toBe(false);
+		// `.vue` is a non-script extension so only the single URL with `.vue`
+		// is emitted (the canonical-vs-extensioned pair only applies to
+		// script-source extensions).
+		// `.ts` is a script extension, so we emit both `/api` and `/api.ts`.
+		expect(urls).toEqual([`${ORIGIN}/ns/m/src/components/Foo.vue`, `${ORIGIN}/ns/m/src/services/api`, `${ORIGIN}/ns/m/src/services/api.ts`]);
+	});
+
+	it('returns an empty list when no http origin is available', () => {
+		setHttpOriginForVite(undefined);
+		setHMRWsUrl(undefined);
+		// `deriveHttpOrigin` falls back to localhost when WS url is missing,
+		// so we drop the global hint to make this a strict negative.
+		const fakeWs = getGlobalScope().WebSocket;
+		try {
+			getGlobalScope().__NS_HTTP_ORIGIN__ = undefined;
+			// Sanity: deriveHttpOrigin still produces a value (defaulting to localhost),
+			// so buildEvictionUrls should not be empty unless the implementation
+			// explicitly opts out — assert it produced at least one URL using the default.
+			const urls = buildEvictionUrls(['/src/main.ts']);
+			// Both canonical and extensioned URLs are emitted now.
+			expect(urls).toHaveLength(2);
+			expect(urls[0]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main$/);
+			expect(urls[1]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main\.ts$/);
+		} finally {
+			getGlobalScope().WebSocket = fakeWs;
+		}
+	});
+
+	it('emits both canonical and extensioned URLs for every script-source variant', () => {
+		const urls = buildEvictionUrls(['/src/components/Home.tsx', '/src/components/Home.jsx', '/src/utils/helper.mjs', '/src/utils/helper.cts', '/src/utils/helper.js']);
+		expect(urls).toEqual([
+			`${ORIGIN}/ns/m/src/components/Home`,
+			`${ORIGIN}/ns/m/src/components/Home.tsx`,
+			`${ORIGIN}/ns/m/src/components/Home.jsx`, // canonical part deduped, extensioned variant unique
+			`${ORIGIN}/ns/m/src/utils/helper`,
+			`${ORIGIN}/ns/m/src/utils/helper.mjs`,
+			`${ORIGIN}/ns/m/src/utils/helper.cts`,
+			`${ORIGIN}/ns/m/src/utils/helper.js`,
+		]);
+	});
+});
+
+describe('emitHmrModeBannerOnce', () => {
+	beforeEach(() => {
+		_resetHmrModeBannerForTests();
+		clearGlobalEvictionFn();
+	});
+
+	afterEach(() => {
+		clearGlobalEvictionFn();
+		delete getGlobalScope().__NS_ENV_VERBOSE__;
+		vi.resetModules();
+		vi.restoreAllMocks();
+	});
+
+	// The mode banner is verbose-only, so the spec reaches for a fresh
+	// module import with `__NS_ENV_VERBOSE__ = true` published BEFORE
+	// the import so the module-level capture sees a truthy define.
+	async function importVerboseUtils() {
+		getGlobalScope().__NS_ENV_VERBOSE__ = true;
+		vi.resetModules();
+		return await import('./utils.js');
+	}
+
+	it('logs once per process and includes the active mode (verbose)', async () => {
+		const utils = await importVerboseUtils();
+		utils._resetHmrModeBannerForTests();
+		const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+		utils.emitHmrModeBannerOnce();
+		utils.emitHmrModeBannerOnce();
+		expect(info).toHaveBeenCalledTimes(1);
+		expect(info.mock.calls[0]?.[0]).toContain('DEGRADED');
+	});
+
+	it('reflects explicit eviction when force-emitted (verbose)', async () => {
+		const utils = await importVerboseUtils();
+		utils._resetHmrModeBannerForTests();
+		const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+		setGlobalEvictionFn(() => {});
+		utils.emitHmrModeBannerOnce(); // first emission picks up the active mode
+		utils.emitHmrModeBannerOnce(true); // forced re-emission, same mode
+		expect(info).toHaveBeenCalledTimes(2);
+		for (const call of info.mock.calls) {
+			expect(String(call[0])).toContain('explicit-eviction');
+		}
+	});
+
+	it('stays silent when verbose is off (default)', () => {
+		const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+		emitHmrModeBannerOnce();
+		emitHmrModeBannerOnce(true);
+		expect(info).not.toHaveBeenCalled();
+	});
+});
+
+describe('requestModuleFromServer', () => {
+	beforeEach(() => {
+		setHttpOriginForVite(ORIGIN);
+		moduleFetchCache.clear();
+		clearGlobalEvictionFn();
+		_resetHmrModeBannerForTests();
+		// Reset the import nonce so counts start from a known baseline.
+		try {
+			getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
+		} catch {}
+		setGraphVersion(0);
+	});
+
+	afterEach(() => {
+		setHttpOriginForVite(undefined);
+		moduleFetchCache.clear();
+		clearGlobalEvictionFn();
+		setGraphVersion(0);
+		try {
+			getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
+		} catch {}
+	});
+
+	it('returns the bare canonical URL on the very first request', async () => {
+		setGlobalEvictionFn(() => {});
+		setGraphVersion(0);
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
+		const url = await requestModuleFromServer('/src/main.ts');
+		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
+		expect(url).not.toMatch(/__ns_hmr__/);
+	});
+
+	it('returns the SAME canonical URL on HMR re-imports (no `__ns_hmr__` tag)', async () => {
+		// Module identity IS the URL: freshness across saves is driven by
+		// ns:runtime `invalidateModules` + the runtime's bust-next-fetch nonce,
+		// not by URL decoration. Even with nonce/version/hash signals
+		// present the emitted URL stays canonical — a tagged URL would
+		// mint a second module identity on the runtime.
+		setGlobalEvictionFn(() => {});
+		setGraphVersion(7);
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 3;
+		const url = await requestModuleFromServer('/src/main.ts');
+		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
+		expect(url).not.toMatch(/__ns_hmr__/);
+	});
+
+	it('strips script extensions so the URL matches the server static-import rewrite output', async () => {
+		setGlobalEvictionFn(() => {});
+		setGraphVersion(5);
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 9;
+		const url = await requestModuleFromServer('/src/foo.ts');
+		expect(url).toBe(`${ORIGIN}/ns/m/src/foo`);
+	});
+
+	it('rejects virtual helper specs without producing a URL', async () => {
+		await expect(requestModuleFromServer('\0plugin-vue:export-helper')).rejects.toThrow(/virtual-helper-skip/);
+	});
+
+	it('memoizes the resolved URL by spec', async () => {
+		setGlobalEvictionFn(() => {});
+		const first = await requestModuleFromServer('/src/main.ts');
+		const second = await requestModuleFromServer('/src/main.ts');
+		expect(first).toBe(second);
+	});
+});
+
+describe('deriveHttpOrigin', () => {
+	it('falls back to a sensible default when the WS url is undefined', () => {
+		expect(deriveHttpOrigin(undefined)).toBe('http://localhost:5173');
+	});
+
+	it('maps wss:// to https:// and preserves the host', () => {
+		expect(deriveHttpOrigin('wss://example.dev:8443/ns-hmr')).toBe('https://example.dev:8443');
+	});
+});

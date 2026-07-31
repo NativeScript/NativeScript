@@ -1,7 +1,24 @@
 /**
  * No circulars - don't import from other hmr/client/* modules here.
  */
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { getVendorRequire } from '../shared/runtime/vendor-resolve.js';
+import { readNsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
+
+// Build-time verbose flag, read defensively so unit tests (where the
+// `define` substitution doesn't run) don't blow up. Exported as the ONE
+// canonical copy for client modules — on device these files are served raw
+// (no define substitution), so the identifier resolves through the
+// globalThis seed planted by the entry's defines-seed module, which this
+// helper reads identically from any importer.
+export const ENV_VERBOSE: boolean = (() => {
+	try {
+		return typeof __NS_ENV_VERBOSE__ === 'boolean' ? __NS_ENV_VERBOSE__ : false;
+	} catch {
+		return false;
+	}
+})();
 
 /**
  * Defensively read a module's default export with progressive backoff.
@@ -33,23 +50,44 @@ export async function safeReadDefault(mod: any): Promise<any | null> {
 	}
 	// Final microtask after macrotask
 	await Promise.resolve();
-	try {
-		return mod?.default ?? mod ?? null;
-	} catch (e) {
-		throw e;
-	}
+	return mod?.default ?? mod ?? null;
 }
 
-// Resolve NativeScript core classes/Application from the vendor realm or globalThis.
-export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
+// Resolve a named export from @nativescript/core (UI classes, Application, the
+// tagged-CSS helpers, etc.) via the vendor realm, globalThis, or device require.
+export function getCore(name: string): any {
 	const g = globalThis;
+	const pickApplicationApi = (candidate: any): any => {
+		if (!candidate) return undefined;
+		const candidates = [candidate, candidate.Application, candidate.app, candidate.application];
+		for (const entry of candidates) {
+			if (entry && (typeof entry.run === 'function' || typeof entry.on === 'function' || typeof entry.resetRootView === 'function')) {
+				return entry;
+			}
+		}
+		return undefined;
+	};
+	if (name === 'Application') {
+		try {
+			const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
+			if (reg && typeof reg.get === 'function') {
+				const mod = reg.get('@nativescript/core/application');
+				const appModule = (mod && (mod.default || mod)) || mod;
+				const picked = pickApplicationApi(appModule);
+				if (picked) return picked;
+			}
+		} catch {}
+	}
 	// 1) Prefer vendor registry to guarantee single realm
 	try {
 		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
 		if (reg && typeof reg.get === 'function') {
 			const mod = reg.get('@nativescript/core');
 			const ns = (mod && (mod.default || mod)) || mod;
-			if (name === 'Application' && (ns?.Application || ns)) return ns.Application || ns;
+			if (name === 'Application') {
+				const picked = pickApplicationApi(ns);
+				if (picked) return picked;
+			}
 			if (ns && ns[name]) return ns[name];
 		}
 	} catch {}
@@ -59,11 +97,20 @@ export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
 	} catch {}
 	// 3) Device require (still resolves to vendor realm when available)
 	try {
-		const req = g && (g.__nsVendorRequire || g.__nsRequire || g.require);
-		if (typeof req === 'function') {
+		const req = getVendorRequire();
+		if (req) {
+			if (name === 'Application') {
+				const appMod = req('@nativescript/core/application');
+				const appModule = (appMod && (appMod.default || appMod)) || appMod;
+				const pickedFromAppModule = pickApplicationApi(appModule);
+				if (pickedFromAppModule) return pickedFromAppModule;
+			}
 			const mod = req('@nativescript/core');
 			const ns = (mod && (mod.default || mod)) || mod;
-			if (name === 'Application' && (ns?.Application || ns)) return ns.Application || ns;
+			if (name === 'Application') {
+				const picked = pickApplicationApi(ns);
+				if (picked) return picked;
+			}
 			if (ns && ns[name]) return ns[name];
 		}
 	} catch {}
@@ -72,9 +119,18 @@ export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
 		const nativeReq = g && g.__nativeRequire;
 		if (typeof nativeReq === 'function') {
 			try {
+				if (name === 'Application') {
+					const appMod = nativeReq('@nativescript/core/application', '/');
+					const appModule = (appMod && (appMod.default || appMod)) || appMod;
+					const pickedFromAppModule = pickApplicationApi(appModule);
+					if (pickedFromAppModule) return pickedFromAppModule;
+				}
 				const mod = nativeReq('@nativescript/core', '/');
 				const ns = (mod && (mod.default || mod)) || mod;
-				if (name === 'Application' && (ns?.Application || ns)) return ns.Application || ns;
+				if (name === 'Application') {
+					const picked = pickApplicationApi(ns);
+					if (picked) return picked;
+				}
 				if (ns && ns[name]) return ns[name];
 			} catch {}
 		}
@@ -128,6 +184,9 @@ export function getGraphVersion(): number {
 }
 export function setGraphVersion(version: number) {
 	graphVersion = version;
+	try {
+		globalThis.__NS_HMR_GRAPH_VERSION__ = version;
+	} catch {}
 }
 export const graph = new Map<string, HmrGraphModule>();
 // local metrics snapshot
@@ -141,11 +200,21 @@ interface PendingFetch {
 export const pendingModuleFetches = new Map<number, PendingFetch>();
 export const moduleFetchCache = new Map<string, string>(); // spec -> resolved HTTP URL
 
+/**
+ * Canonical client-side HTTP-origin resolution for device fetches: a
+ * message-supplied origin wins, then the origin the entry runtime installed,
+ * then derivation from the HMR websocket URL (which itself has a localhost
+ * fallback). Never returns an empty string.
+ */
+export function resolveHmrHttpOrigin(preferred?: unknown): string {
+	return (typeof preferred === 'string' && preferred) || getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+}
+
 export function deriveHttpOrigin(wsUrl: string | undefined) {
 	try {
 		// Prefer explicit HTTP origin provided by entry-runtime when available
 		try {
-			const g: any = globalThis as any;
+			const g: any = getGlobalScope();
 			if (g && typeof g.__NS_HTTP_ORIGIN__ === 'string' && /^https?:\/\//.test(g.__NS_HTTP_ORIGIN__)) {
 				return String(g.__NS_HTTP_ORIGIN__);
 			}
@@ -153,20 +222,152 @@ export function deriveHttpOrigin(wsUrl: string | undefined) {
 		const url = new URL(wsUrl || 'ws://localhost:5173/ns-hmr');
 		const http = url.protocol === 'wss:' ? 'https:' : 'http:';
 		const origin = `${http}//${url.host}`;
-		if (!/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
-			console.warn('[hmr-client][origin] invariant failed for', wsUrl, '→', origin);
-		}
 		return origin;
 	} catch {
 		return 'http://localhost:5173';
 	}
 }
 
+// Detect runtime support for explicit module eviction.
+//
+// The runtime's `invalidateModules(urls)` (ns:runtime) removes the canonical
+// key for each URL from V8's module registry (`g_moduleRegistry`) AND marks
+// the same keys "bust next fetch", so the runtime's next HTTP fetch for
+// those URLs appends a one-shot `__ns_dev_nonce` query param that
+// defeats CFNetwork/NSURLCache staleness. That pairing is what lets the
+// client keep import URLs STABLE across saves — eviction (not URL
+// mutation) is the freshness mechanism. The runtime contract requires
+// this function; `hasExplicitEviction()` remains as a cheap assertion
+// point (and for the mode banner).
+export function hasExplicitEviction(): boolean {
+	try {
+		return typeof readNsRuntimeDevHostApi(getGlobalScope()).invalidateModules === 'function';
+	} catch {
+		return false;
+	}
+}
+
+// One-time mode banner so the user can correlate an HMR slowdown with
+// the active eviction strategy without grepping logs. Verbose-only.
+let _hmrModeBannerEmitted = false;
+export function emitHmrModeBannerOnce(force = false): void {
+	if (_hmrModeBannerEmitted && !force) return;
+	_hmrModeBannerEmitted = true;
+	if (!ENV_VERBOSE) return;
+	try {
+		const supported = hasExplicitEviction();
+		const mode = supported ? 'explicit-eviction (stable URLs)' : 'DEGRADED (ns:runtime invalidateModules missing — stale modules will not be re-fetched)';
+		console.info(`[hmr-client] module reload mode: ${mode}`);
+	} catch {}
+}
+
+// Reset the banner — used by tests so mode flips during a single
+// process are observable.
+export function _resetHmrModeBannerForTests(): void {
+	_hmrModeBannerEmitted = false;
+}
+
+// Explicit module eviction.
+//
+// Hands a list of canonical module URLs (or `/ns/m/...` paths) to the
+// runtime so V8's module registry drops them. Returns true iff the
+// runtime accepted the eviction; returns `false` (without throwing) when
+// ns:runtime's `invalidateModules` is absent, which callers log as a
+// degraded eviction rather than attempting any URL mutation. Empty
+// inputs are no-ops.
+export function invalidateModulesByUrls(urls: readonly string[]): boolean {
+	emitHmrModeBannerOnce();
+	if (!urls || !urls.length) return false;
+	const fn = readNsRuntimeDevHostApi(getGlobalScope()).invalidateModules;
+	if (typeof fn !== 'function') return false;
+	try {
+		fn.call(null, urls.slice());
+		return true;
+	} catch (error) {
+		try {
+			if (ENV_VERBOSE) console.warn('[hmr-client] ns:runtime invalidateModules threw', (error as any)?.message || error);
+		} catch {}
+		return false;
+	}
+}
+
+// Build canonical eviction URLs for a list of specs. Each spec must be
+// a project-relative path (e.g. `/src/foo.ts`) or a normalizable
+// import id; node_modules and virtual specs are filtered out because
+// the runtime canonicalizer routes them through different cache keys
+// and evicting them would invalidate vendor modules unrelated to the
+// HMR change. Output URLs are deduplicated and prefixed with the
+// active dev-server origin.
+// Strip script-source extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`,
+// `.mts`, `.cts`) so eviction and dynamic re-import target the SAME
+// canonical URL that the server's `rewriteImports` produces for static
+// imports. Keep `.vue`, `.json`, `.css`, etc. — those are non-script
+// asset URLs the server serves with their own extension preserved.
+//
+// Why this matters: V8's HTTP-module cache is keyed by URL string. The
+// server-side rewrite turns
+//
+//     import Home from '../components/home'
+//
+// into
+//
+//     import Home from '/ns/m/src/components/home'  (no extension)
+//
+// via `toAppModuleBaseId` (`getProjectRelativeImportPath` collapses
+// every script extension to `.mjs` and then strips it). If we evict
+// `/ns/m/src/components/home.tsx` (the URL the dev re-import path
+// happens to use), V8 still has the no-extension URL cached from the
+// initial boot's static-import path — and the route file's re-import
+// then resolves its `import Home from '../components/home'` to the
+// stale cached module. Stripping here guarantees all three sites
+// (static imports, dynamic re-imports, evictions) agree on one URL
+// per module so a single eviction actually drops the right cache
+// entry.
+const SCRIPT_EXT_RE = /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i;
+function stripScriptExtension(specPath: string): string {
+	return specPath.replace(SCRIPT_EXT_RE, '');
+}
+
+export function buildEvictionUrls(specs: readonly string[]): string[] {
+	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
+	if (!origin) return [];
+	const out: string[] = [];
+	const seen = new Set<string>();
+	const addUrl = (url: string) => {
+		if (seen.has(url)) return;
+		seen.add(url);
+		out.push(url);
+	};
+	for (const raw of specs) {
+		if (!raw || typeof raw !== 'string') continue;
+		// Skip virtual / Vite-internal specs — they don't have a stable
+		// HTTP cache identity and evicting them would be a no-op.
+		if (/^\0|^\/?\0/.test(raw)) continue;
+		if (/plugin-vue:export-helper/.test(raw)) continue;
+		// Skip vendor-realm imports; the bundled vendor module is owned
+		// by the runtime, not the dev server, so /ns/m eviction would
+		// not match its cache key.
+		if (/(^|\/)node_modules\//.test(raw)) continue;
+		const spec = normalizeSpec(raw);
+		if (!spec) continue;
+		const path = spec.startsWith('/') ? spec : '/' + spec;
+		const canonical = stripScriptExtension(path);
+		// Emit BOTH the canonical (no-extension) and original extensioned
+		// URL: static rewritten imports key under the canonical id while
+		// dynamic re-imports/prefetch may key under the extensioned one, so
+		// evicting only one variant leaves a stale body in the other cache.
+		addUrl(origin + '/ns/m' + canonical);
+		if (path !== canonical) {
+			addUrl(origin + '/ns/m' + path);
+		}
+	}
+	return out;
+}
+
 export async function requestModuleFromServer(spec: string): Promise<string> {
 	const isSfcArtifact = (s: string) => /(?:^|\/)sfc-[a-f0-9]{8}\.mjs$/i.test(s) || /\/_ns_hmr\/src\/sfc\//.test(s) || /__NSDOC__\/_ns_hmr\/src\/sfc\//.test(s);
 	// Ignore Vite/virtual helper or empty specs
 	if (/^\/?\0/.test(spec) || /plugin-vue:export-helper/.test(spec)) {
-		if (__NS_ENV_VERBOSE__) console.log('[hmr-fetch] skipping virtual helper', spec);
 		return Promise.reject(new Error('virtual-helper-skip'));
 	}
 	// Short-circuit device artifact paths (SFC compiled files) – never ask the server for these
@@ -181,114 +382,43 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 		// Let the server send the JSON-wrapped ESM code; we will write it as-is.
 		// We still go through the normal request flow below, but short-circuit index heuristics.
 	}
-	// Cache hit: return immediately
-	if (moduleFetchCache.has(spec)) {
-		if (__NS_ENV_VERBOSE__) console.log('[hmr-fetch] cache hit', spec);
-		return Promise.resolve(moduleFetchCache.get(spec)!);
-	}
-	// Construct HTTP ESM URL for this spec and cache it
+	// Strip script-source extensions so the dynamic re-import URL matches the
+	// canonical URL rewriteImports produces for static imports (see
+	// buildEvictionUrls); otherwise eviction clears only one of the two keys.
 	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
 	if (!origin) return Promise.reject(new Error('no-http-origin'));
-	const url = origin + '/ns/m' + (spec.startsWith('/') ? spec : '/' + spec);
-	if (__NS_ENV_VERBOSE__) console.log('[hmr-fetch] resolved', spec, '→', url);
+	const rawPath = spec.startsWith('/') ? spec : '/' + spec;
+	const canonicalPath = stripScriptExtension(rawPath);
+	const url = origin + '/ns/m' + canonicalPath;
+
+	// Canonical URL, always. Module identity IS the URL: freshness comes
+	// from explicit eviction (ns:runtime `invalidateModules` marks the canonical
+	// key "bust next fetch", so the runtime's next fetch appends a
+	// one-shot `__ns_dev_nonce` query param that defeats OS-level HTTP
+	// caches). Never emit a path tag or version segment for freshness —
+	// the runtime treats the literal URL as module identity, so a tagged
+	// URL would create a SECOND module identity instead of busting the
+	// first one.
+	emitHmrModeBannerOnce();
 	moduleFetchCache.set(spec, url);
 	return Promise.resolve(url);
 }
 
 // Centralized safe dynamic import wrapper to guard anomalous specifiers
 export async function safeDynImport(spec: string): Promise<any> {
-	try {
-		const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
-		let finalSpec = spec;
-		if (!finalSpec || finalSpec === '@') {
-			finalSpec = (origin ? origin : '') + '/ns/m/__invalid_at__.mjs';
-		}
-		if (__NS_ENV_VERBOSE__) {
-			try {
-				console.log('[hmr-client][dyn-import]', 'spec=', spec, 'final=', finalSpec);
-			} catch {}
-		}
-		// Use native dynamic import
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore - dynamic import expression
-		return await import(finalSpec);
-	} catch (e) {
-		if (__NS_ENV_VERBOSE__) {
-			console.warn('[hmr-client][dyn-import][error]', spec, e);
-		}
-		// Best-effort diagnostics: fetch sanitized and raw sources and print a snippet around the failing frame
-		try {
-			await dumpDynImportDiagnostics(spec, e as any);
-		} catch {}
-		throw e;
+	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
+	let finalSpec = spec;
+	if (!finalSpec || finalSpec === '@') {
+		finalSpec = (origin ? origin : '') + '/ns/m/__invalid_at__.mjs';
 	}
-}
-
-// Extract a (url, line, column) triple from a V8 stack string
-function parseStackFrame(err: any): {
-	url?: string;
-	line?: number;
-	column?: number;
-} {
-	try {
-		const stack: string = (err && (err.stack || err.message)) || '';
-		// Match patterns like: at <anonymous> (http://host/path.js:123:45) OR http://host/path.js:123:45
-		const re = /(https?:[^\s)]+):(\d+):(\d+)/;
-		const m = stack.match(re);
-		if (m) {
-			return {
-				url: m[1],
-				line: Number(m[2] || '0'),
-				column: Number(m[3] || '0'),
-			};
-		}
-	} catch {}
-	return {};
-}
-
-async function dumpDynImportDiagnostics(spec: string, err: any) {
-	try {
-		const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl) || '';
-		const target = spec || '';
-		const { url: uFromStack, line, column } = parseStackFrame(err);
-		const url = uFromStack || target;
-		if (!/^https?:\/\//.test(url)) return;
-		const addParam = (u: string, k: string, v = '1') => u + (u.includes('?') ? '&' : '?') + `${k}=${v}`;
-		const urlsToTry = [url];
-		if (/(\/ns\/(asm|sfc))/.test(url)) urlsToTry.push(addParam(url, 'raw'));
-		const results: Array<{ which: string; text?: string; hash?: string }> = [];
-		for (const u of urlsToTry) {
-			try {
-				const res = await fetch(u as any, { method: 'GET' as any });
-				const text = await res.text();
-				const hash = res.headers?.get?.('X-NS-Source-Hash') || undefined;
-				results.push({ which: u === url ? 'sanitized' : 'raw', text, hash });
-			} catch {}
-		}
-		const locInfo = line && line > 0 ? ` at ${url}:${line}:${column || 0}` : '';
-		try {
-			console.warn('[hmr-client][dyn-import][diagnostics]', `error${locInfo}`);
-		} catch {}
-		for (const r of results) {
-			if (!r.text) continue;
-			const lines = r.text.split('\n');
-			let ctx = '';
-			if (line && line > 0) {
-				const start = Math.max(1, line - 3),
-					end = Math.min(lines.length, line + 3);
-				for (let i = start; i <= end; i++) {
-					const mark = i === line ? '>' : ' ';
-					const ln = String(i).padStart(4, ' ');
-					ctx += `${mark}${ln}: ${lines[i - 1]}\n`;
-				}
-			} else {
-				ctx = lines.slice(0, 20).join('\n');
-			}
-			try {
-				console.warn(`[hmr-client][dyn-import][${r.which}]`, r.hash ? `(hash ${r.hash})` : '', '\n' + ctx);
-			} catch {}
-		}
-	} catch {}
+	// Use native dynamic import. The /* @vite-ignore */ matters: this file
+	// is served through Vite's transform pipeline on device (the vite
+	// package is a file: dependency resolved from dist), and without it
+	// Vite's import-analysis warns it "cannot be analyzed" on every boot.
+	// The spec is always a full runtime URL — nothing for Vite to resolve.
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore - dynamic import expression
+	return await import(/* @vite-ignore */ finalSpec);
 }
 
 // Normalize import specifiers for HTTP-only ESM runtime
@@ -321,84 +451,10 @@ export function normalizeSpec(raw: string): string {
 	}
 	if (spec === '@') {
 		// Map anomalous '@' sentinel to a safe stub module path.
-		if (__NS_ENV_VERBOSE__) console.warn('[hmr-normalize] mapping anomalous "@" to stub module');
 		try {
 			hmrMetrics.invalidAtSpec = (hmrMetrics.invalidAtSpec || 0) + 1;
 		} catch {}
 		return '/__invalid_at__.mjs';
 	}
 	return spec;
-}
-
-export function attachDiagnosticsToFrame(frame: any) {
-	if (!__NS_ENV_VERBOSE__ || !frame) return;
-	try {
-		if ((frame as any).__ns_diag_attached__) return;
-		(frame as any).__ns_diag_attached__ = true;
-		const safeOn = (v: any, evt: string, cb: Function) => {
-			try {
-				v?.on?.(evt as any, cb as any);
-			} catch {}
-		};
-		const logEvt = (name: string) => (args: any) => {
-			try {
-				const page = (args && (args.object?.currentPage || args.object?._currentEntry?.resolvedPage)) || args?.object || null;
-				const pageCtor = String(page?.constructor?.name || '').replace(/^_+/, '');
-				const tag = (page as any)?.__ns_hmr_tag || (page as any)?.__ns_diag_tag;
-				console.log('[diag][frame]', name, {
-					frameCtor: frame?.constructor?.name,
-					pageCtor,
-					tag,
-					backstackDepth: (frame as any)?._backStack?.length || 0,
-				});
-			} catch {}
-		};
-		safeOn(frame, 'navigatingTo', logEvt('navigatingTo'));
-		safeOn(frame, 'navigatedTo', logEvt('navigatedTo'));
-		safeOn(frame, 'navigatingFrom', logEvt('navigatingFrom'));
-		safeOn(frame, 'navigatedFrom', logEvt('navigatedFrom'));
-		safeOn(frame, 'loaded', () => {
-			try {
-				console.log('[diag][frame] loaded', { ctor: frame?.constructor?.name });
-			} catch {}
-		});
-		safeOn(frame, 'unloaded', () => {
-			try {
-				console.log('[diag][frame] unloaded', {
-					ctor: frame?.constructor?.name,
-				});
-			} catch {}
-		});
-	} catch {}
-}
-
-export function logUiSnapshot(reason: string) {
-	try {
-		const g: any = globalThis as any;
-		const F = getCore('Frame') || g.Frame;
-		const App = getCore('Application') || g.Application;
-		const top = F?.topmost?.();
-		const rootView = App?.getRootView ? App.getRootView() : undefined;
-		const page = top?.currentPage || top?._currentEntry?.resolvedPage || null;
-		const info = {
-			reason,
-			placeholderActive: !!(g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__ || g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__),
-			activityReady: !!(App?.android && (App.android.foregroundActivity || App.android.startActivity)),
-			topFrame: top
-				? {
-						ctor: top.constructor?.name,
-						backstack: (top as any)?._backStack?.length || 0,
-					}
-				: null,
-			rootView: rootView ? { ctor: rootView.constructor?.name } : null,
-			currentPage: page
-				? {
-						ctor: page.constructor?.name,
-						tag: (page as any)?.__ns_hmr_tag || (page as any)?.__ns_diag_tag,
-						title: (page as any)?.title,
-					}
-				: null,
-		};
-		console.log('[diag][ui]', info);
-	} catch {}
 }

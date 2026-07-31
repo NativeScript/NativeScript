@@ -20,11 +20,13 @@ export function dynamicImportPlugin() {
 
 					// 2. Replace __vitePreload with simple implementation
 					if (chunk.code.includes('__vitePreload')) {
-						const vitePreloadStart = chunk.code.indexOf('const __vitePreload = function preload');
+						// Vite emits `const` or `var` depending on the output target.
+						const declMatch = /(?:const|var)\s+__vitePreload\s*=\s*function preload/.exec(chunk.code);
+						const vitePreloadStart = declMatch ? declMatch.index : -1;
 						if (vitePreloadStart !== -1) {
 							// Find the matching closing brace by counting braces
 							let braceCount = 0;
-							let functionStart = chunk.code.indexOf('{', vitePreloadStart);
+							const functionStart = chunk.code.indexOf('{', vitePreloadStart);
 							let i = functionStart;
 
 							while (i < chunk.code.length) {
@@ -37,10 +39,13 @@ export function dynamicImportPlugin() {
 										const before = chunk.code.substring(0, vitePreloadStart);
 										const after = chunk.code.substring(functionEnd);
 
-										// Simple implementation that just calls baseModule()
+										// Simple implementation that just calls baseModule().
+										// Log the stack when present — a bare Error stringifies to
+										// message-only, which hides WHICH module failed and turns
+										// dev-session triage into guesswork.
 										const replacement = `const __vitePreload = function preload(baseModule, deps, importerUrl) {
       return baseModule().catch(err => {
-        console.error("Dynamic import error:", err);
+        console.error("Dynamic import error:", err && err.stack ? err.stack : err);
         throw err;
       });
     }`;

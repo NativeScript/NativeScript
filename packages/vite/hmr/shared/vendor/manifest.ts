@@ -1,11 +1,14 @@
 import type { Plugin, ViteDevServer } from 'vite';
 import * as esbuild from 'esbuild';
-import { readFile } from 'fs/promises';
 import path from 'path';
-import { readFileSync } from 'fs';
 import { createHash } from 'crypto';
-import { createRequire } from 'node:module';
-import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
+import { registerVendorManifest, clearVendorManifest, getVendorManifest, getVendorRuntimeModule } from './registry.js';
+import { collectVendorModules } from './manifest-collect.js';
+import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
+import type { Platform } from '../../../helpers/platform-types.js';
+import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
+import { getGlobalDefines } from '../../../helpers/global-defines.js';
+import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createNodeBuiltinPolyfillEsbuildPlugin, createOptionalDependencyStubEsbuildPlugin, createNativeAddonStubEsbuildPlugin } from './vendor-esbuild-plugins.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -56,50 +59,6 @@ export const SERVER_MANIFEST_PATH = '/@nativescript/vendor-manifest.json';
 export const DEFAULT_VENDOR_FILENAME = 'ns-vendor.mjs';
 export const DEFAULT_MANIFEST_FILENAME = 'ns-vendor-manifest.json';
 
-// Do not force-include @nativescript/core in the dev vendor bundle.
-// Keeping core out of vendor avoids duplicate side-effect registrations (e.g.,
-// com.tns.FragmentClass, com.tns.NativeScriptActivity) across bundle.mjs and vendor.
-// Reserved for any future always-include packages; keep empty by default so
-// framework-specific tooling like @angular/compiler are only pulled in when
-// the corresponding framework is actually used.
-const ALWAYS_INCLUDE = new Set<string>([]);
-const ALWAYS_EXCLUDE = new Set<string>([
-	'@nativescript/android',
-	'@nativescript/ios',
-	'@nativescript/types',
-	'@nativescript/webpack',
-	// Angular browser animations are not used in NativeScript; excluding reduces
-	// memory pressure and avoids bringing partial declarations into vendor.
-	'@angular/animations',
-	'@angular/platform-browser/animations',
-	// Not needed at runtime with linked partials; reduce vendor size/memory.
-	'@angular/platform-browser-dynamic',
-	// Native add-on helpers pulled by ws or others; exclude in NS dev vendor
-	'bufferutil',
-	'utf-8-validate',
-	'node-gyp-build',
-	'bufferutil',
-	'utf-8-validate',
-	'node-gyp-build',
-	'@babel/core',
-	'@babel/helper-plugin-utils',
-	'@babel/generator',
-	'@babel/helper-string-parser',
-	'@babel/helper-validator-identifier',
-	'@babel/parser',
-	'@babel/plugin-syntax-typescript',
-	'@babel/plugin-transform-typescript',
-	'@babel/types',
-	// Heavy dependency not needed in vendor dev bundle; fetch via HTTP loader instead
-	'rxjs',
-	'nativescript',
-	'typescript',
-	'ts-node',
-	'vue-tsc',
-	'ws',
-	'@types/node',
-]);
-
 const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js'];
 
 export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plugin {
@@ -147,15 +106,47 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 		clearVendorManifest();
 	};
 
+	// Manifest registration without the esbuild payload build. The dev serve
+	// process only needs the manifest (module ids + aliases) for the import
+	// map and vendor-routing decisions — the payload itself is deps-backed
+	// (see getVendorRuntimeModule). The full build stays lazy, reached only
+	// through the fallback serving path or the build-process virtual modules.
+	const ensureManifestRegistered = () => {
+		if (getVendorManifest()) return;
+		const collected = collectVendorModules(options.projectRoot, options.platform, options.flavor);
+		const hash = createHash('sha1').update(JSON.stringify(collected.entries)).digest('hex');
+		registerVendorManifest(buildManifest(collected.entries, hash));
+	};
+
 	const respondWithVendor = async (_server: ViteDevServer, req: any, res: any) => {
 		try {
-			const result = await ensureResult('server');
 			if (req.url === SERVER_VENDOR_PATH) {
+				// ONE node_modules payload: when the deps bundle is active, the
+				// vendor module is a thin view over /ns/deps-bundle.mjs.
+				const depsBacked = getVendorRuntimeModule();
+				if (depsBacked !== null) {
+					res.setHeader('Content-Type', 'application/javascript');
+					res.end(depsBacked);
+					return true;
+				}
+				// No deps bundle (build failed or NS_DEPS_PER_MODULE=1): serve a
+				// view over the SAME `/ns/m/node_modules/<pkg>` URLs the import
+				// map targets, so the registry and import-side resolution share
+				// one realm. Never a second standalone payload — that realm
+				// split is exactly what the deps bundle design forbids.
+				ensureManifestRegistered();
 				res.setHeader('Content-Type', 'application/javascript');
-				res.end(result.code);
+				res.end(createHttpVendorRuntimeModule(getVendorManifest()));
 				return true;
 			}
 			if (req.url === SERVER_MANIFEST_PATH) {
+				const registered = getVendorManifest();
+				if (registered) {
+					res.setHeader('Content-Type', 'application/json');
+					res.end(JSON.stringify(registered, null, 2));
+					return true;
+				}
+				const result = await ensureResult('server');
 				res.setHeader('Content-Type', 'application/json');
 				res.end(JSON.stringify(result.manifest, null, 2));
 				return true;
@@ -176,7 +167,11 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 		configResolved() {},
 
 		async configureServer(server) {
-			await ensureResult('server-start');
+			try {
+				ensureManifestRegistered();
+			} catch (error) {
+				console.error('[vendor] failed to register vendor manifest at server start', error);
+			}
 
 			server.middlewares.use(async (req, res, next) => {
 				if (req.url === SERVER_VENDOR_PATH || req.url === SERVER_MANIFEST_PATH) {
@@ -196,9 +191,11 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 					return;
 				}
 				resetCache();
-				ensureResult('package.json change').catch((error) => {
-					console.error('[vendor] failed to regenerate vendor bundle', error);
-				});
+				try {
+					ensureManifestRegistered();
+				} catch (error) {
+					console.error('[vendor] failed to regenerate vendor manifest', error);
+				}
 			});
 		},
 
@@ -219,18 +216,17 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 		async load(id) {
 			if (id === VENDOR_MANIFEST_VIRTUAL_ID) {
 				const result = await ensureResult('load-manifest');
-				return `export default ${JSON.stringify(result.manifest)};`;
+				return {
+					code: `export default ${JSON.stringify(result.manifest)};`,
+					moduleType: 'js',
+				};
 			}
 			if (id === VENDOR_BUNDLE_VIRTUAL_ID) {
 				const result = await ensureResult('load-bundle');
-				// Return a single self-contained module that includes both the vendor module map
-				// and the vendor manifest to avoid extra imports that can influence chunking.
-				// - result.code exports `__nsVendorModuleMap`
-				// - we append an inline manifest export
-				return `${result.code}
-export const vendorManifest = ${JSON.stringify(result.manifest)};
-export default vendorManifest;
-`;
+				return {
+					code: createVendorBundleRuntimeModule(result),
+					moduleType: 'js',
+				};
 			}
 			return null;
 		},
@@ -266,10 +262,81 @@ export default vendorManifest;
 
 async function generateVendorBundle(options: GenerateVendorOptions): Promise<VendorBundleResult> {
 	const { projectRoot, platform, mode, flavor } = options;
-	const entries = collectVendorModules(projectRoot, platform, flavor);
-	const entryCode = createVendorEntry(entries);
+	const collected = collectVendorModules(projectRoot, platform, flavor);
+	const entryCode = createVendorEntry(collected.entries);
+
+	// Externalize @nativescript/core and its subpaths in the vendor bundle so
+	// vendored packages (e.g. @nativescript-community/ui-material-bottomsheet)
+	// do NOT bring their own copy of core with them. The iOS import map maps
+	// `@nativescript/core` → `/ns/core` (the core bridge) at runtime, and the
+	// bridge delegates to the canonical Application/View/etc. already set up
+	// by bundle.mjs via installCoreAliasesEarly + the globalThis.Application
+	// seed. Without this externalization, vendor.mjs bundles a second copy of
+	// iOSApplication/View/LayoutBase — the second iosApp never receives the
+	// iOS launch event (bundle.mjs's iosApp registered first as
+	// UIApplication.delegate), so Application.getRootView() on it returns
+	// undefined, and any vendor-internal code that reads .getRootView() or
+	// checks `instanceof View` against bundle's classes fails under HMR.
+	const nsCoreExternalPlugin: esbuild.Plugin = {
+		name: 'ns-core-external',
+		setup(build) {
+			build.onResolve({ filter: /^@nativescript\/core(?:\/.*)?$/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}));
+		},
+	};
+
+	// Externalize the `solid-js` root specifier for the Solid flavor so
+	// vendor-bundled packages (e.g. `@nativescript-community/solid-js`,
+	// `solid-navigation`, transitively `solid-js/universal` and
+	// `solid-js/store`) don't bake their own copy of solid-js into
+	// vendor.mjs. The dev server's import map (see `import-map.ts`)
+	// redirects bare `solid-js` to the same `/ns/m/node_modules/solid-js/...`
+	// URL that Vite's alias produces for user code and `@solid-refresh`,
+	// so V8 dedupes the three import paths down to a single module
+	// instance — one `Owner` module-local, one reactive graph, one
+	// `$DEVCOMP`/`$PROXY` symbol identity across the whole app.
+	//
+	// Important: scope this to the EXACT bare `solid-js` specifier. Subpaths
+	// like `solid-js/store`, `solid-js/universal`, `solid-js/web` stay
+	// bundleable so vendor packages that import them keep working out of
+	// the box; those subpaths still go through the unified solid-js
+	// runtime via their own `import 'solid-js'` statements (which we just
+	// externalized).
+	const nsSolidJsExternalPlugin: esbuild.Plugin = {
+		name: 'ns-solid-js-external',
+		setup(build) {
+			build.onResolve({ filter: /^solid-js$/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}));
+		},
+	};
 
 	const plugins: esbuild.Plugin[] = [
+		// Mark @nativescript/core external BEFORE other plugins so esbuild never
+		// tries to read/transform core's source files. See comment above.
+		nsCoreExternalPlugin,
+		// Stub legacy webpack-loader-prefixed requires (dead NS 6/7 branches in
+		// plugins) BEFORE resolution — a single `loader!./x` specifier would
+		// otherwise hard-fail the whole bundle. See the plugin for details.
+		createWebpackLoaderStubEsbuildPlugin(),
+		createOptionalDependencyStubEsbuildPlugin(options.projectRoot),
+		// Stub compiled `.node` addons (fsevents & co.) — unloadable by esbuild and
+		// unrunnable on device; a throwing stub preserves optional-dep semantics.
+		createNativeAddonStubEsbuildPlugin(),
+		// Bundle installed npm polyfills for node-builtin names (buffer, events,
+		// ...) instead of leaving bare externals the device cannot resolve.
+		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot),
+		// For the Solid flavor, externalize `solid-js` so vendor.mjs and the
+		// HTTP-served `@solid-refresh` / user code converge on one runtime
+		// realm. See `nsSolidJsExternalPlugin`'s definition for the full
+		// duplicate-instance rationale.
+		...(flavor === 'solid' ? [nsSolidJsExternalPlugin] : []),
+		// Apply NativeClass transformer to convert @NativeClass decorated classes to ES5 IIFE pattern.
+		// This MUST run before other plugins to ensure proper transformation.
+		createNativeClassEsbuildPlugin(platform as Platform),
 		// Resolve virtual modules and Angular shims used by the vendor entry.
 		createVendorEsbuildPlugin(projectRoot),
 	];
@@ -280,6 +347,20 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	if (flavor === 'angular') {
 		plugins.push(angularLinkerEsbuildPlugin(projectRoot));
 	}
+	// Solid packages (e.g. solid-navigation) may ship raw .jsx/.tsx source
+	// files instead of pre-compiled .js. esbuild's default JSX transform
+	// targets React (React.createElement), which crashes at runtime with
+	// "React is not defined". Add a plugin that compiles .jsx/.tsx through
+	// babel-preset-solid so the vendor bundle gets proper Solid output.
+	if (flavor === 'solid') {
+		plugins.push(createSolidJsxEsbuildPlugin(projectRoot));
+	}
+	// Registered last so the framework-specific passes above own their files
+	// first (esbuild stops at the first onLoad that returns a result). Applies
+	// to every flavor: any vendored dependency (e.g. highlight.js) may ship
+	// `\p{…}` regexes that NativeScript's non-ICU V8 cannot compile, which would
+	// otherwise abort the entire vendor.mjs compile. See the plugin for details.
+	plugins.push(createUnicodeRegexEsbuildPlugin(projectRoot));
 
 	const buildResult = await esbuild.build({
 		stdin: {
@@ -300,200 +381,180 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		// that Rollup warns it "cannot interpret due to the position of the comment".
 		// This preserves license text while preventing noisy warnings.
 		legalComments: 'eof',
-		conditions: ['module', 'import', platform, mode],
+		// NativeScript is always a client environment — never server-side. The conditions
+		// must include 'browser' so packages with conditional exports (e.g.,
+		// @tanstack/router-core/isServer) resolve to client-side variants.
+		//
+		// 'development'/'production' (mode) is intentionally excluded: esbuild resolves
+		// conditions in the order they appear in the package.json exports object, and
+		// many packages list 'development' before 'browser'. Including it would cause
+		// environment-ambiguous stubs (e.g., isServer = undefined) to win over the
+		// correct client-side value (isServer = false). The 'import' condition already
+		// provides the correct ESM entry points, and process.env.NODE_ENV (set via
+		// define below) handles dev/prod branching at runtime.
+		//
+		// This aligns with the non-HMR Vite build: ['module', 'react-native', 'import', 'browser', 'default'].
+		conditions: ['module', 'react-native', 'import', 'browser', 'default'],
 		mainFields: ['module', 'browser', 'main'],
 		resolveExtensions: resolveExtensionsForPlatform(platform),
 		loader: {
 			'.css': 'text',
 			'.json': 'json',
 		},
-		define: {
-			'process.env.NODE_ENV': JSON.stringify(mode),
-		},
+		// Mirror Vite's main-bundle DefinePlugin in the vendor esbuild build.
+		//
+		// esbuild's `define` requires every value to be a JS expression
+		// expressed as a string (the same constraint Vite normalises away).
+		// `getGlobalDefines()` returns a few raw `boolean` values for
+		// historical reasons (e.g. `__COMMONJS__: false`,
+		// `__UI_USE_XML_PARSER__: true`), so coerce any non-string entries
+		// through `JSON.stringify` before handing the table to esbuild.
+		define: (() => {
+			const raw = getGlobalDefines({
+				platform,
+				targetMode: mode,
+				verbose: !!options.verbose,
+				flavor: flavor ?? '',
+				isCI: !!process.env.CI,
+			}) as Record<string, unknown>;
+			const out: Record<string, string> = {};
+			for (const [key, value] of Object.entries(raw)) {
+				out[key] = typeof value === 'string' ? value : JSON.stringify(value);
+			}
+			// Belt-and-suspenders: keep the original NODE_ENV define explicit so
+			// future changes to `getGlobalDefines()` can't silently drop it.
+			out['process.env.NODE_ENV'] = JSON.stringify(mode);
+			// webpack-HMR idiom carried by ESM-published packages — a FREE
+			// `module.hot` reference is a ReferenceError in the ESM bundle the
+			// moment it evaluates (see the matching define in deps-bundle.ts).
+			out['module.hot'] = 'undefined';
+			return out;
+		})(),
 		plugins,
-		external: ['fs', 'fs/promises', 'path', 'url', 'module', 'node:fs', 'node:fs/promises', 'node:path', 'node:url', 'node:module', 'assert', 'process', 'v8', 'util'],
+		// Externalize ALL Node built-in modules. The vendor bundle runs on the
+		// NativeScript device runtime, not Node, so any Node API reference must
+		// be external. Using both bare and 'node:' prefixed forms.
+		external: [
+			'assert',
+			'async_hooks',
+			'buffer',
+			'child_process',
+			'cluster',
+			'console',
+			'constants',
+			'crypto',
+			'dgram',
+			'diagnostics_channel',
+			'dns',
+			'domain',
+			'events',
+			'fs',
+			'fs/promises',
+			'http',
+			'http2',
+			'https',
+			'inspector',
+			'module',
+			'net',
+			'os',
+			'path',
+			'path/posix',
+			'path/win32',
+			'perf_hooks',
+			'process',
+			'punycode',
+			'querystring',
+			'readline',
+			'repl',
+			'stream',
+			'stream/web',
+			'stream/promises',
+			'string_decoder',
+			'sys',
+			'timers',
+			'timers/promises',
+			'tls',
+			'trace_events',
+			'tty',
+			'url',
+			'util',
+			'v8',
+			'vm',
+			'wasi',
+			'worker_threads',
+			'zlib',
+			// node: prefixed variants
+			'node:assert',
+			'node:async_hooks',
+			'node:buffer',
+			'node:child_process',
+			'node:cluster',
+			'node:console',
+			'node:constants',
+			'node:crypto',
+			'node:dgram',
+			'node:diagnostics_channel',
+			'node:dns',
+			'node:domain',
+			'node:events',
+			'node:fs',
+			'node:fs/promises',
+			'node:http',
+			'node:http2',
+			'node:https',
+			'node:inspector',
+			'node:module',
+			'node:net',
+			'node:os',
+			'node:path',
+			'node:path/posix',
+			'node:path/win32',
+			'node:perf_hooks',
+			'node:process',
+			'node:punycode',
+			'node:querystring',
+			'node:readline',
+			'node:repl',
+			'node:stream',
+			'node:stream/web',
+			'node:stream/promises',
+			'node:string_decoder',
+			'node:sys',
+			'node:timers',
+			'node:timers/promises',
+			'node:tls',
+			'node:trace_events',
+			'node:tty',
+			'node:url',
+			'node:util',
+			'node:v8',
+			'node:vm',
+			'node:wasi',
+			'node:worker_threads',
+			'node:zlib',
+		],
 	});
 
 	if (!buildResult.outputFiles?.length) {
 		throw new Error('Vendor bundle generation produced no output');
 	}
 
-	const vendorCode = buildResult.outputFiles[0].text;
+	const rawVendorCode = buildResult.outputFiles[0].text;
+
+	// Prepend platform polyfills so they run BEFORE any vendor module code.
+	// This ensures globals like AbortController and self are available when
+	// frameworks (TanStack Router, etc.) first execute inside the bundle.
+	const polyfillPrelude = generatePlatformPolyfills();
+	const vendorCode = polyfillPrelude + rawVendorCode;
+
 	const hash = createHash('sha1').update(vendorCode).digest('hex');
-	const manifest = buildManifest(entries, hash);
+	const manifest = buildManifest(collected.entries, hash);
 
 	return {
 		code: vendorCode,
 		manifest,
-		entries,
+		entries: collected.entries,
 	};
-}
-
-function collectVendorModules(projectRoot: string, platform: string, flavor?: string): string[] {
-	const packageJsonPath = path.resolve(projectRoot, 'package.json');
-	const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-	const projectRequire = createRequire(packageJsonPath);
-
-	const vendor = new Set<string>();
-	const visited = new Set<string>();
-	const queue: string[] = [];
-
-	const isPackageRootSpecifier = (name: string): boolean => {
-		if (!name) return false;
-		if (name.startsWith('@')) {
-			// Scoped: @scope/name is root; anything deeper is subpath
-			const parts = name.split('/');
-			return parts.length === 2;
-		}
-		// Unscoped: no slash means root; any slash means subpath
-		return !name.includes('/');
-	};
-
-	const isAngularFlavor = flavor === 'angular';
-	const addCandidate = (name: string) => {
-		if (!name || shouldSkipDependency(name)) {
-			return;
-		}
-		// Avoid pulling Angular compiler/runtime into the dev vendor bundle when
-		// the current project flavor is not Angular (for example, solid). This
-		// prevents esbuild from trying to bundle @angular/compiler and its Babel
-		// toolchain, which requires Node built-ins like fs/path/url.
-		if (!isAngularFlavor && (name === '@angular/compiler' || name.startsWith('@angular/'))) {
-			return;
-		}
-		const isRoot = isPackageRootSpecifier(name);
-		if (!visited.has(name)) {
-			visited.add(name);
-		}
-		vendor.add(name);
-		// Only traverse peer deps for package roots; subpaths should not attempt package.json resolution
-		if (isRoot) {
-			queue.push(name);
-		}
-	};
-
-	const addDeps = (deps: Record<string, unknown> | undefined) => {
-		if (!deps) {
-			return;
-		}
-		for (const name of Object.keys(deps)) {
-			addCandidate(name);
-		}
-	};
-
-	addDeps(pkg.dependencies);
-	addDeps(pkg.optionalDependencies);
-
-	for (const name of ALWAYS_INCLUDE) {
-		addCandidate(name);
-	}
-
-	// Ensure Android Activity proxy is present for SBG scanning in dev/HMR
-	// and non-HMR builds alike: explicitly include the side-effect module
-	// that registers `com.tns.NativeScriptActivity`.
-	if (platform === 'android') {
-		addCandidate('@nativescript/core/ui/frame/activity.android');
-	}
-
-	if (pkg.dependencies?.['nativescript-vue'] && pkg.devDependencies?.vue) {
-		addCandidate('vue');
-	}
-
-	if (pkg.dependencies?.['@nativescript/angular']) {
-		if (pkg.dependencies?.['@angular/core']) {
-			addCandidate('@angular/core');
-		}
-		if (pkg.dependencies?.['@angular/common']) {
-			addCandidate('@angular/common');
-		}
-		// RxJS is large and not required inside the vendor bundle for dev HMR.
-		// Avoid bundling to reduce memory pressure; let app import via HTTP loader.
-	}
-
-	if (pkg.dependencies?.['react-nativescript']) {
-		if (pkg.dependencies?.react) {
-			addCandidate('react');
-		}
-		if (pkg.dependencies?.['react-dom']) {
-			addCandidate('react-dom');
-		}
-	}
-
-	parseEnvList(process.env.NS_VENDOR_INCLUDE).forEach(addCandidate);
-
-	const projectDeps = {
-		dependencies: new Set(Object.keys(pkg.dependencies ?? {})),
-		optional: new Set(Object.keys(pkg.optionalDependencies ?? {})),
-		dev: new Set(Object.keys(pkg.devDependencies ?? {})),
-	};
-
-	while (queue.length) {
-		const specifier = queue.shift()!;
-		const dependencyPkg = readDependencyPackageJson(specifier, projectRequire);
-		if (!dependencyPkg) {
-			continue;
-		}
-
-		const peerDependencies = Object.keys(dependencyPkg.peerDependencies ?? {});
-		for (const peer of peerDependencies) {
-			if (shouldSkipDependency(peer)) {
-				continue;
-			}
-			if (projectDeps.dependencies.has(peer) || projectDeps.optional.has(peer) || projectDeps.dev.has(peer)) {
-				addCandidate(peer);
-			}
-		}
-	}
-
-	parseEnvList(process.env.NS_VENDOR_EXCLUDE).forEach((name) => {
-		vendor.delete(name);
-	});
-
-	return Array.from(vendor).sort();
-}
-
-function shouldSkipDependency(name: string): boolean {
-	if (!name) {
-		return true;
-	}
-	if (ALWAYS_EXCLUDE.has(name)) {
-		return true;
-	}
-	if (name.startsWith('.')) {
-		return true;
-	}
-	if (name.startsWith('file:')) {
-		return true;
-	}
-	if (name.startsWith('workspace:')) {
-		return true;
-	}
-	if (name.startsWith('link:')) {
-		return true;
-	}
-	return false;
-}
-
-function readDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>) {
-	try {
-		const packageJsonPath = projectRequire.resolve(`${specifier}/package.json`);
-		return JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-	} catch (error) {
-		if (process.env.VITE_DEBUG_LOGS) {
-			console.warn(`[vendor] unable to resolve ${specifier} package.json`, error);
-		}
-		return null;
-	}
-}
-
-function parseEnvList(value: string | undefined): string[] {
-	if (!value) {
-		return [];
-	}
-	return value
-		.split(',')
-		.map((token) => token.trim())
-		.filter(Boolean);
 }
 
 function createVendorEntry(entries: string[]): string {
@@ -502,11 +563,69 @@ function createVendorEntry(entries: string[]): string {
 `;
 	}
 
-	const imports = entries.map((specifier, index) => `import * as __nsVendor_${index} from ${JSON.stringify(specifier)};`).join('\n');
+	// Emit a side-effect-only import FIRST for each entry, then the namespace
+	// import we actually expose through `__nsVendorModuleMap`. Per the ESM
+	// spec, `import "pkg";` (no clause) guarantees module body evaluation, and
+	// esbuild treats these as DCE-immune even when the package declares
+	// `"sideEffects": false`. Without this, packages whose top-level
+	// statements install runtime patches (e.g. `@nativescript-community/text`
+	// monkey-patching `TextBase.prototype.setTextDecorationAndTransform` via
+	// `overrideSpanAndFormattedString()` invoked from
+	// `@nativescript-community/ui-label/index-common.js` line 12) can have
+	// their bodies elided by esbuild — exports stay resolvable via the
+	// namespace, but the runtime patches never fire, producing line-height /
+	// letter-spacing / formatted-text rendering divergence between HMR
+	// (vendor.mjs via HTTP) and no-HMR (single Rolldown bundle that inlines
+	// everything anyway). This affects any NS plugin that relies on top-level
+	// side-effects to wire up renderer behavior.
+	const sideEffectImports = entries.map((specifier) => `import ${JSON.stringify(specifier)};`).join('\n');
+	const namespaceImports = entries.map((specifier, index) => `import * as __nsVendor_${index} from ${JSON.stringify(specifier)};`).join('\n');
 
 	const modules = entries.map((specifier, index) => `${JSON.stringify(specifier)}: __nsVendor_${index}`).join(',\n  ');
 
-	return `${imports}\n\nexport const __nsVendorModuleMap = {\n  ${modules}\n};\n`;
+	return `${sideEffectImports}\n\n${namespaceImports}\n\nexport const __nsVendorModuleMap = {\n  ${modules}\n};\n`;
+}
+
+export function createVendorBundleRuntimeModule(result: VendorBundleResult): string {
+	return `${result.code}
+export const vendorManifest = ${JSON.stringify(result.manifest)};
+export default vendorManifest;
+`;
+}
+
+/**
+ * Dev-session `/@nativescript/vendor.mjs` for sessions WITHOUT a deps bundle
+ * (esbuild failure or `NS_DEPS_PER_MODULE=1`): a thin view whose namespace
+ * imports go through the same `/ns/m/node_modules/<pkg>` URLs the device
+ * import map targets. Per-module serving keys module identity by URL, so the
+ * registry entries `installVendorBootstrap` creates from this map are the
+ * SAME instances import-side resolution produces — one realm, no standalone
+ * vendor payload. `@nativescript/core` stays a bare import (import map →
+ * `/ns/core` bridge realm).
+ */
+export function createHttpVendorRuntimeModule(manifest: VendorManifest | null): string {
+	const specs = Object.keys(manifest?.modules ?? {}).filter((spec) => spec !== '@nativescript/core' && !spec.startsWith('@nativescript/core/'));
+	const includeCore = !!manifest?.modules?.['@nativescript/core'];
+	const lines: string[] = [];
+	lines.push('/* /@nativescript/vendor.mjs — HTTP-backed vendor view (per-module mode) */');
+	if (includeCore) {
+		lines.push(`import * as __ns_core__ from "@nativescript/core";`);
+	}
+	specs.forEach((spec, index) => {
+		lines.push(`import * as __nsVendor_${index} from ${JSON.stringify(`/ns/m/node_modules/${spec}`)};`);
+	});
+	lines.push('export const __nsVendorModuleMap = {');
+	if (includeCore) {
+		lines.push(`  ${JSON.stringify('@nativescript/core')}: __ns_core__,`);
+	}
+	specs.forEach((spec, index) => {
+		lines.push(`  ${JSON.stringify(spec)}: __nsVendor_${index},`);
+	});
+	lines.push('};');
+	lines.push(`export const vendorManifest = ${JSON.stringify(manifest ?? {})};`);
+	lines.push('export default vendorManifest;');
+	lines.push('');
+	return lines.join('\n');
 }
 
 function resolveExtensionsForPlatform(platform: string): string[] {
@@ -573,333 +692,6 @@ function createSbgVendorAssetCode(platform: string): string {
 	lines.push('export const __nsVendorModuleMap = {};\nexport default {};\n');
 	return lines.join('\n');
 }
-
-function createVendorEsbuildPlugin(projectRoot: string): esbuild.Plugin {
-	return {
-		name: 'ns-vendor-resolver',
-		setup(build) {
-			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			build.onResolve({ filter: /^~\/package\.json$/ }, () => ({
-				path: path.resolve(projectRoot, 'package.json'),
-			}));
-
-			build.onResolve({ filter: /^module$/ }, () => ({
-				path: 'ns-vendor-module-shim',
-				namespace: 'ns-vendor',
-			}));
-
-			build.onLoad({ filter: /^ns-vendor-module-shim$/, namespace: 'ns-vendor' }, () => ({
-				contents: vendorModuleShim,
-				loader: 'js',
-			}));
-
-			// Stub Angular animations in vendor to avoid bundling browser-only code.
-			// Provide named exports expected by @nativescript/angular to satisfy esbuild.
-			const PB_ANIMATIONS_ID = 'ns-animations-pb-shim';
-			const ANIMATIONS_BROWSER_ID = 'ns-animations-browser-shim';
-			const ANIMATIONS_ID = 'ns-animations-noop';
-			// @angular/platform-browser/animations -> provide concrete named stubs
-			build.onResolve({ filter: /^@angular\/platform-browser\/animations(?:\/.*)?$/ }, (args) => {
-				if (debug) {
-					try {
-						console.log('[vendor] map', args.path, '->', PB_ANIMATIONS_ID);
-					} catch {}
-				}
-				return { path: PB_ANIMATIONS_ID, namespace: 'ns-vendor' };
-			});
-			build.onLoad({ filter: new RegExp(`^${PB_ANIMATIONS_ID}$`), namespace: 'ns-vendor' }, () => ({
-				contents: [
-					'export default {};',
-					// Commonly imported symbols by @nativescript/angular
-					'export class AnimationBuilder {};',
-					'export const \u0275BrowserAnimationBuilder = class {};',
-					'export const \u0275AnimationEngine = class {};',
-					'export const \u0275AnimationRendererFactory = class {};',
-					'export const \u0275WebAnimationsStyleNormalizer = class {};',
-					// Typical platform-browser/animations APIs exported; safe no-ops
-					'export class BrowserAnimationsModule {};',
-					'export class NoopAnimationsModule {};',
-					'export const provideAnimations = (..._args) => [];',
-					'export const provideNoopAnimations = (..._args) => [];',
-					// Marker used by some Angular internals
-					'export const ANIMATION_MODULE_TYPE = void 0;',
-				].join('\n'),
-				loader: 'js',
-			}));
-			// @angular/animations/browser -> provide ɵ* engine/renderer/style normalizer stubs
-			build.onResolve({ filter: /^@angular\/animations\/browser(?:\/.*)?$/ }, (args) => {
-				if (debug) {
-					try {
-						console.log('[vendor] map', args.path, '->', ANIMATIONS_BROWSER_ID);
-					} catch {}
-				}
-				return { path: ANIMATIONS_BROWSER_ID, namespace: 'ns-vendor' };
-			});
-			build.onLoad({ filter: new RegExp(`^${ANIMATIONS_BROWSER_ID}$`), namespace: 'ns-vendor' }, () => ({
-				contents: [
-					'export default {};',
-					'export class AnimationDriver {};',
-					'export const \u0275AnimationRendererFactory = class {};',
-					'export const \u0275AnimationStyleNormalizer = class {};',
-					'export const \u0275WebAnimationsStyleNormalizer = class {};',
-					'export const \u0275AnimationEngine = class {};',
-					// Convenience alias if any consumers import non-ɵ name
-					'export const AnimationStyleNormalizer = \u0275AnimationStyleNormalizer;',
-				].join('\n'),
-				loader: 'js',
-			}));
-
-			// @angular/animations -> broad no-op surface
-			build.onResolve(
-				// Keep generic mapping for @angular/animations base; /browser is handled above
-				{ filter: /^@angular\/animations(?:$|\/)$/ },
-				(args) => {
-					if (debug) {
-						try {
-							console.log('[vendor] map', args.path, '->', ANIMATIONS_ID);
-						} catch {}
-					}
-					return { path: ANIMATIONS_ID, namespace: 'ns-vendor' };
-				},
-			);
-			build.onLoad({ filter: new RegExp(`^${ANIMATIONS_ID}$`), namespace: 'ns-vendor' }, () => ({
-				contents: [
-					'export default {};',
-					// Provide names sometimes (incorrectly) imported from @angular/animations by wrappers
-					'export class AnimationBuilder {};',
-					'export const \u0275BrowserAnimationBuilder = class {};',
-					'export const \u0275AnimationEngine = class {};',
-					'export const \u0275AnimationRendererFactory = class {};',
-					'export const \u0275WebAnimationsStyleNormalizer = class {};',
-					'export const ANIMATION_MODULE_TYPE = void 0;',
-					// Export a few common tokens as harmless stubs
-					'export const animate = (..._a) => ({});',
-					'export const state = (..._a) => ({});',
-					'export const style = (..._a) => ({});',
-					'export const transition = (..._a) => ({});',
-					'export const trigger = (..._a) => ({});',
-					'export const sequence = (..._a) => ({});',
-					'export const group = (..._a) => ({});',
-					'export const query = (..._a) => ({});',
-					'export const stagger = (..._a) => ({});',
-					'export const keyframes = (..._a) => ({});',
-				].join('\n'),
-				loader: 'js',
-			}));
-		},
-	};
-}
-
-/**
- * Minimal esbuild plugin to run Angular linker (Babel) over partial-compiled
- * Angular packages in node_modules. This converts ɵɵngDeclare* calls into
- * ɵɵdefine* so runtime doesn't require the JIT compiler.
- */
-function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
-	// Lazily resolve Babel and Angular linker from the project to avoid hard deps
-	let babel: typeof import('@babel/core') | null = null;
-	let createLinker: any = null;
-
-	async function ensureDeps() {
-		if (babel && createLinker) return;
-		try {
-			const req = createRequire(projectRoot + '/package.json');
-			// Resolve from the application project first
-			const babelPath = req.resolve('@babel/core');
-			const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
-			babel = (await import(babelPath)) as any;
-			const linkerMod = await import(linkerPath);
-			createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
-		} catch {
-			// As a fallback, try local resolution (hoisted installs)
-			try {
-				babel = (await import('@babel/core')) as any;
-			} catch {}
-			try {
-				const linkerMod = await import('@angular/compiler-cli/linker/babel');
-				createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
-			} catch {}
-		}
-	}
-
-	// Restrict to Angular framework packages to minimize esbuild memory usage.
-	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$/;
-
-	return {
-		name: 'ns-angular-linker',
-		async setup(build) {
-			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			await ensureDeps();
-			if (!babel || !createLinker) {
-				// Nothing to do if deps unavailable
-				return;
-			}
-			build.onLoad({ filter: FILTER }, async (args) => {
-				try {
-					const source = await readFile(args.path, 'utf8');
-					// Fast-path: only run linker when partial declarations are present
-					if (!(source.includes('\u0275\u0275ngDeclare') || source.includes('ɵɵngDeclare'))) {
-						return { contents: source, loader: 'js' };
-					}
-					const plugin = createLinker({
-						// Link everything the filter captures; plugin will no-op otherwise
-						// shouldLink is inferred by plugin when left unset for Babel version
-						sourceMapping: false,
-					});
-					if (debug) {
-						try {
-							console.log('[ns-angular-linker][vendor] linking', args.path);
-						} catch {}
-					}
-					const result = await (babel as any).transformAsync(source, {
-						filename: args.path,
-						configFile: false,
-						babelrc: false,
-						sourceMaps: false,
-						compact: false,
-						plugins: [plugin],
-					});
-					return {
-						contents: (result && result.code) || source,
-						loader: 'js',
-					};
-				} catch (e) {
-					// On any failure, return original source to avoid breaking the build
-					return { contents: await readFile(args.path, 'utf8'), loader: 'js' };
-				}
-			});
-		},
-	};
-}
-
-const vendorModuleShim = `
-const g = globalThis;
-const BACKSLASH = String.fromCharCode(92);
-
-function toForwardSlashes(input) {
-  return String(input ?? '').split(BACKSLASH).join('/');
-}
-
-function getNativeScriptRequire() {
-  const nsRequire = typeof g.require === "function" ? g.require : null;
-  if (nsRequire) {
-    return nsRequire;
-  }
-  const legacy = g.__nsRequire;
-  if (typeof legacy === "function") {
-    return legacy;
-  }
-  return null;
-}
-
-function getDocumentsPath() {
-  const cached = g.__NS_DOCUMENTS_PATH__;
-  if (typeof cached === "string" && cached.length) {
-    return toForwardSlashes(cached);
-  }
-  try {
-    const core = g.require ? g.require("@nativescript/core") : null;
-    const docsFolder = core?.knownFolders?.documents?.();
-    const docPath = docsFolder?.path;
-    if (docPath) {
-      const normalized = toForwardSlashes(docPath);
-      g.__NS_DOCUMENTS_PATH__ = normalized;
-      return normalized;
-    }
-  } catch (_err) {
-    // ignore - fallback to raw specifier
-  }
-  return null;
-}
-
-function collapseSegments(input) {
-  const segments = [];
-  const parts = input.split('/');
-  for (const part of parts) {
-    if (!part || part === ".") {
-      continue;
-    }
-    if (part === "..") {
-      if (segments.length && segments[segments.length - 1] !== "..") {
-        segments.pop();
-        continue;
-      }
-    }
-    segments.push(part);
-  }
-  const leadingSlash = input.startsWith('/');
-  return (leadingSlash ? '/' : '') + segments.join('/');
-}
-
-function normalizeSpecifier(spec) {
-  let value = String(spec ?? "");
-  value = toForwardSlashes(value);
-  const docsPath = getDocumentsPath();
-  if (value.startsWith("__NSDOC__/")) {
-    if (docsPath) {
-      value = docsPath + '/' + value.slice("__NSDOC__/".length);
-    } else {
-      value = value.slice("__NSDOC__/".length);
-    }
-  }
-  if (value.startsWith("~/") && docsPath) {
-    value = docsPath + '/' + value.slice(2);
-  }
-  if (value.startsWith("file://")) {
-    const stripped = value.slice("file://".length);
-    value = stripped.startsWith('/') ? stripped : '/' + stripped;
-  }
-  if (value.includes("/../") || value.includes("/./")) {
-    value = collapseSegments(value);
-  }
-  return value;
-}
-
-export function createRequire(_url) {
-  const nsRequire = getNativeScriptRequire();
-  if (!nsRequire) {
-    return function () {
-      throw new Error("NativeScript require() is not available in this context");
-    };
-  }
-  const req = function (id) {
-    const normalizedId = normalizeSpecifier(id);
-    if (
-      normalizedId.includes("../data/patch.json") ||
-      normalizedId.includes("css-tree/lib/data/patch.json")
-    ) {
-      return {
-        atrules: {},
-        properties: {},
-        types: {},
-      };
-    }
-    if (normalizedId.includes("mdn-data/")) {
-      return {};
-    }
-    if (
-      normalizedId.endsWith("/package.json") ||
-      normalizedId.includes("../package.json")
-    ) {
-      return { version: "0.0.0" };
-    }
-    if (normalizedId.endsWith(".json")) {
-      return {};
-    }
-    return nsRequire(normalizedId);
-  };
-  req.resolve = nsRequire.resolve
-    ? function (id) {
-        return nsRequire.resolve(id);
-      }
-    : function (id) {
-        return id;
-      };
-  return req;
-}
-
-export default { createRequire };
-`;
 
 function stripIndexSuffix(specifier: string): string {
 	return specifier.replace(/\/(?:(?:index)(?:\.[^.\/]+)?)$/, '');

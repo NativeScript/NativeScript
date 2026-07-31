@@ -44,24 +44,17 @@ npx nativescript-vite init
 
 This will:
 
-- Generate a `vite.config.ts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper from `@nativescript/vite`.
-- Add (or update) the following npm scripts in your app `package.json`:
-	- `dev:ios`
-	- `dev:android`
-	- `dev:server:ios`
-	- `dev:server:android`
-	- `ios`
-	- `android`
-- Add the devDependencies `concurrently` and `wait-on`.
+- Generate a `vite.config.ts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper subpath from `@nativescript/vite`.
 - Add the dependency `@valor/nativescript-websockets`.
 - Append `.ns-vite-build` to `.gitignore` if it is not already present.
 
-After running `init`, you now have two ways to work with Vite:
+After running `init`, you have two ways to work with Vite:
 
-1. HMR workflow
+1. HMR workflow (default — the CLI starts the dev server for you)
 
 ```bash
-npm run dev:ios
+ns debug ios
+ns debug android
 ```
 
 2. Standard dev workflow (non-HMR)
@@ -71,17 +64,73 @@ ns debug ios --no-hmr
 ns debug android --no-hmr
 ```
 
+### Android: automatic `adb reverse`
+
+For Android HMR the CLI automatically runs `adb reverse tcp:5173 tcp:5173`
+(using the SDK-resolved adb, scoped to the deploy target, after the device is
+ready) so the device reaches the dev server through the ADB tunnel at
+`127.0.0.1:5173`. Relevant opt-outs:
+
+- `NS_HMR_NO_ADB_REVERSE=1` — skip the tunnel and use `10.0.2.2`.
+- `NS_HMR_PREFER_LAN_HOST=1` — physical device over Wi-Fi; emit the host's LAN IP.
+- `NS_HMR_HOST=<host[:port]>` — point the device at an explicit origin (CI / tunnels).
+
+## Custom HMR sessions
+
+A NativeScript Vite HMR session may use custom server and staging settings:
+
+| Environment variable | Purpose | Default |
+| --- | --- | --- |
+| `NS_HMR_PORT` | Vite server port used by the generated device HTTP and websocket URLs (the CLI reverses and probes this port) | `5173` |
+| `NS_VITE_DIST_DIR` | Project-relative staging directory used for Vite output before the NativeScript CLI copies it into the platform app | `.ns-vite-build` |
+
+Leave both unset for the standard single-session workflow.
+
+### Running two platforms at once
+
+The CLI runs **one dev server per port**. To run iOS and Android HMR
+simultaneously for the same app, give each its own port and staging dir so the
+servers and their platform-specific bundles don't collide:
+
+```bash
+# Terminal 1: iOS
+NS_HMR_PORT=5173 NS_VITE_DIST_DIR=.ns-vite-build/ios ns debug ios
+
+# Terminal 2: Android
+NS_HMR_PORT=5174 NS_VITE_DIST_DIR=.ns-vite-build/android ns debug android
+```
+
+The environment settings only need to be visible to the `ns` process — the CLI
+propagates them to the dev server it spawns. The inline environment syntax
+above is for POSIX shells; use the equivalent assignment on Windows.
+
+### Advanced: running `vite serve` yourself
+
+The dev server is just `vite serve -- --env.<platform> --env.hmr`. You can run
+it standalone for diagnostics, but do **not** run it alongside `ns run`/`ns debug`
+for the same platform — both would try to bind the same port. CLI-managed is the
+supported default.
+
 ## Usage
 
 1) Create `vite.config.ts`:
 
 ```ts
 import { defineConfig, mergeConfig, UserConfig } from 'vite';
-import { typescriptConfig } from '@nativescript/vite';
+import { typescriptConfig } from '@nativescript/vite/typescript';
 
 export default defineConfig(({ mode }): UserConfig => {
 	return mergeConfig(typescriptConfig({ mode }), {});
 });
+```
+
+Framework-specific configs should be imported from their matching subpaths to avoid loading unrelated framework tooling:
+
+```ts
+import { angularConfig } from '@nativescript/vite/angular';
+import { reactConfig } from '@nativescript/vite/react';
+import { solidConfig } from '@nativescript/vite/solid';
+import { vueConfig } from '@nativescript/vite/vue';
 ```
 
 2) Update `nativescript.config.ts`:

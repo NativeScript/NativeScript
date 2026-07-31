@@ -15,11 +15,6 @@ interface PackageJson {
 	[key: string]: any;
 }
 
-const DEV_DEPS = {
-	concurrently: '^9.0.0',
-	'wait-on': '^9.0.0',
-} as const;
-
 const RUNTIME_DEPS = {
 	'@valor/nativescript-websockets': '^2.0.2',
 } as const;
@@ -37,25 +32,10 @@ function writePackageJson(pkg: PackageJson) {
 
 function ensureDependencies(pkg: PackageJson) {
 	pkg.dependencies = pkg.dependencies ?? {};
-	pkg.devDependencies = pkg.devDependencies ?? {};
-
-	for (const [name, version] of Object.entries(DEV_DEPS)) {
-		pkg.devDependencies[name] = version;
-	}
 
 	for (const [name, version] of Object.entries(RUNTIME_DEPS)) {
 		pkg.dependencies[name] = version;
 	}
-}
-
-function ensureScripts(pkg: PackageJson) {
-	pkg.scripts = pkg.scripts ?? {};
-	pkg.scripts['dev:ios'] = "concurrently -k -n vite,ns 'npm run dev:server:ios' 'wait-on tcp:5173 && npm run ios'";
-	pkg.scripts['dev:android'] = "concurrently -k -n vite,ns 'npm run dev:server:android' 'wait-on tcp:5173 && npm run android'";
-	pkg.scripts['dev:server:ios'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.ios --env.hmr';
-	pkg.scripts['dev:server:android'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.android --env.hmr';
-	pkg.scripts['ios'] = 'VITE_DEBUG_LOGS=1 ns debug ios';
-	pkg.scripts['android'] = 'VITE_DEBUG_LOGS=1 ns debug android';
 }
 
 function ensureGitignore() {
@@ -86,33 +66,33 @@ function getFlavorImportAndConfig(flavor: string): { importLine: string; configE
 	switch (flavor) {
 		case 'angular':
 			return {
-				importLine: "import { angularConfig } from '@nativescript/vite';",
+				importLine: "import { angularConfig } from '@nativescript/vite/angular';",
 				configExpr: 'angularConfig({ mode })',
 			};
 		case 'react':
 			return {
-				importLine: "import { reactConfig } from '@nativescript/vite';",
+				importLine: "import { reactConfig } from '@nativescript/vite/react';",
 				configExpr: 'reactConfig({ mode })',
 			};
 		case 'solid':
 			return {
-				importLine: "import { solidConfig } from '@nativescript/vite';",
+				importLine: "import { solidConfig } from '@nativescript/vite/solid';",
 				configExpr: 'solidConfig({ mode })',
 			};
 		case 'vue':
 			return {
-				importLine: "import { vueConfig } from '@nativescript/vite';",
+				importLine: "import { vueConfig } from '@nativescript/vite/vue';",
 				configExpr: 'vueConfig({ mode })',
 			};
 		case 'typescript':
 			return {
-				importLine: "import { typescriptConfig } from '@nativescript/vite';",
+				importLine: "import { typescriptConfig } from '@nativescript/vite/typescript';",
 				configExpr: 'typescriptConfig({ mode })',
 			};
 		case 'javascript':
 		default:
 			return {
-				importLine: "import { javascriptConfig } from '@nativescript/vite';",
+				importLine: "import { javascriptConfig } from '@nativescript/vite/javascript';",
 				configExpr: 'javascriptConfig({ mode })',
 			};
 	}
@@ -133,7 +113,6 @@ function ensureViteConfig() {
 export async function runInit() {
 	const pkg = readPackageJson();
 	ensureDependencies(pkg);
-	ensureScripts(pkg);
 	writePackageJson(pkg);
 	ensureGitignore();
 	ensureViteConfig();

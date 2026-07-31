@@ -1,0 +1,32 @@
+{
+	"extends": "../../.eslintrc.json",
+	"rules": {},
+	"ignorePatterns": ["!**/*", "**/node_modules/**/*", "**/dist/**/*", "**/*.timestamp*", "docs/**/*"],
+	"overrides": [
+		{
+			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+			"parserOptions": {
+				"project": ["packages/vite/tsconfig.*?.json"]
+			},
+			"rules": {}
+		},
+		{
+			"files": ["*.ts", "*.tsx"],
+			"rules": {
+				"@typescript-eslint/no-extra-semi": "off",
+				"@typescript-eslint/no-non-null-assertion": "off",
+				"@typescript-eslint/no-empty-object-type": "off",
+				"@typescript-eslint/no-unsafe-function-type": "off",
+				"@typescript-eslint/no-wrapper-object-types": "off",
+				"@typescript-eslint/no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTernary": true }],
+				"no-constant-condition": ["error", { "checkLoops": false }]
+			}
+		},
+		{
+			"files": ["*.js", "*.jsx"],
+			"rules": {
+				"@typescript-eslint/no-extra-semi": "off"
+			}
+		}
+	]
+}
