@@ -103,9 +103,81 @@ function getTsConfigPaths(debugViteLogs: boolean = false) {
 	}
 }
 
-// Function to create TypeScript aliases with platform support
+// Resolve a tsconfig wildcard match to a concrete file on disk, applying
+// NativeScript platform-specific (`.android` / `.ios`) and directory-index rules.
+// Shared by the resolveId plugin below. Returns the resolved absolute path,
+// or the joined path unchanged when nothing matched (so Vite can keep resolving).
+function resolveTsConfigWildcard(resolvedDestination: string, subpath: string | undefined, platform: string, verbose?: boolean): string {
+	const fullPath = subpath ? path.join(resolvedDestination, subpath) : resolvedDestination;
+
+	// Check if this resolves to a directory, and if so, try to find index files
+	if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+		// Try platform-specific index files first
+		const platformIndexPatterns = [`index.${platform}.ts`, `index.${platform}.js`, `index.${platform}.mjs`];
+		for (const indexFile of platformIndexPatterns) {
+			const indexPath = path.join(fullPath, indexFile);
+			if (fs.existsSync(indexPath)) {
+				if (verbose) {
+					console.log(`📁 Found platform-specific directory index: ${indexPath}`);
+				}
+				return indexPath;
+			}
+		}
+
+		// Try standard index files
+		const indexPatterns = ['index.ts', 'index.js', 'index.mjs'];
+		for (const indexFile of indexPatterns) {
+			const indexPath = path.join(fullPath, indexFile);
+			if (fs.existsSync(indexPath)) {
+				if (verbose) {
+					console.log(`📁 Found directory index: ${indexPath}`);
+				}
+				return indexPath;
+			}
+		}
+	}
+
+	// If not a directory or no index found, try platform-specific resolution
+	const extensions = ['.ts', '.js', '.mjs'];
+	for (const ext of extensions) {
+		const basePath = fullPath + ext;
+
+		// Try platform-specific file first
+		const platformPath = fullPath + `.${platform}` + ext;
+		if (fs.existsSync(platformPath)) {
+			if (verbose) {
+				console.log(`📁 Found platform-specific file: ${platformPath}`);
+			}
+			return platformPath;
+		}
+
+		// Try base file
+		if (fs.existsSync(basePath)) {
+			if (verbose) {
+				console.log(`📁 Found base file: ${basePath}`);
+			}
+			return basePath;
+		}
+	}
+
+	return fullPath;
+}
+
+// A tsconfig wildcard rule: a matcher regex (with a single capture group for the
+// subpath) plus the resolved destination directory it maps onto.
+export type TsConfigWildcardRule = {
+	find: RegExp;
+	resolvedDestination: string;
+};
+
+// Function to create TypeScript aliases with platform support.
+// Exact (non-wildcard) tsconfig paths become plain string-replacement aliases
+// (safe for Vite 8 / Rolldown). Wildcard paths require fs/platform lookups, so
+// they are returned separately as `wildcardRules` and applied by
+// `tsConfigPathsResolverPlugin` instead of as function-replacement aliases.
 function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: string; verbose?: boolean }) {
 	const aliases = [];
+	const wildcardRules: TsConfigWildcardRule[] = [];
 
 	// Process patterns in order: wildcards first, then exact matches
 	const sortedPatterns = Object.entries(opts.paths).sort(([a], [b]) => {
@@ -132,66 +204,11 @@ function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: st
 				//   `📁 Creating wildcard alias: ${aliasKey} -> ${resolvedDestination}`,
 				// );
 
-				aliases.push({
+				// Emit a resolveId rule (handled by tsConfigPathsResolverPlugin) rather
+				// than a function-replacement alias, which Vite 8 / Rolldown rejects.
+				wildcardRules.push({
 					find: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/(.*))?$`),
-					replacement: (match, subpath) => {
-						const fullPath = subpath ? path.join(resolvedDestination, subpath) : resolvedDestination;
-						if (opts.verbose) {
-							console.log(`📁 TypeScript wildcard alias: ${match} -> ${fullPath}`);
-						}
-
-						// Check if this resolves to a directory, and if so, try to find index files
-						if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
-							// Try platform-specific index files first
-							const platformIndexPatterns = [`index.${opts.platform}.ts`, `index.${opts.platform}.js`, `index.${opts.platform}.mjs`];
-							for (const indexFile of platformIndexPatterns) {
-								const indexPath = path.join(fullPath, indexFile);
-								if (fs.existsSync(indexPath)) {
-									if (opts.verbose) {
-										console.log(`📁 Found platform-specific directory index: ${indexPath}`);
-									}
-									return indexPath;
-								}
-							}
-
-							// Try standard index files
-							const indexPatterns = ['index.ts', 'index.js', 'index.mjs'];
-							for (const indexFile of indexPatterns) {
-								const indexPath = path.join(fullPath, indexFile);
-								if (fs.existsSync(indexPath)) {
-									if (opts.verbose) {
-										console.log(`📁 Found directory index: ${indexPath}`);
-									}
-									return indexPath;
-								}
-							}
-						}
-
-						// If not a directory or no index found, try platform-specific resolution
-						const extensions = ['.ts', '.js', '.mjs'];
-						for (const ext of extensions) {
-							const basePath = fullPath + ext;
-
-							// Try platform-specific file first
-							const platformPath = fullPath + `.${opts.platform}` + ext;
-							if (fs.existsSync(platformPath)) {
-								if (opts.verbose) {
-									console.log(`📁 Found platform-specific file: ${platformPath}`);
-								}
-								return platformPath;
-							}
-
-							// Try base file
-							if (fs.existsSync(basePath)) {
-								if (opts.verbose) {
-									console.log(`📁 Found base file: ${basePath}`);
-								}
-								return basePath;
-							}
-						}
-
-						return fullPath;
-					},
+					resolvedDestination,
 				});
 			} else {
 				// Handle exact matches (like "@scope/anything/anywhere")
@@ -211,7 +228,7 @@ function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: st
 		}
 	}
 
-	return aliases;
+	return { aliases, wildcardRules };
 }
 
 // Get TypeScript path configuration
@@ -245,7 +262,7 @@ export const getTsConfigData = (options: TsConfigOptions) => {
 		}
 	}
 
-	const aliases = createTsConfigAliases({
+	const { aliases, wildcardRules } = createTsConfigAliases({
 		paths: cachedConfig.paths,
 		baseUrl: cachedConfig.baseUrl,
 		platform: options.platform,
@@ -255,10 +272,53 @@ export const getTsConfigData = (options: TsConfigOptions) => {
 	if (aliases.length > 0 && verbose) {
 		console.log('📁 Created TypeScript path aliases:', aliases.length);
 	}
+	if (wildcardRules.length > 0 && verbose) {
+		console.log('📁 Created TypeScript wildcard path rules:', wildcardRules.length);
+	}
 
 	return {
 		paths: cachedConfig.paths,
 		baseUrl: cachedConfig.baseUrl,
 		aliases,
+		wildcardRules,
 	};
 };
+
+/**
+ * Vite/Rollup/Rolldown plugin that applies tsconfig wildcard `paths` mappings.
+ *
+ * Wildcard mappings need fs-based platform-specific (`.android`/`.ios`) and
+ * directory-index resolution, which previously lived in a function-replacement
+ * `resolve.alias` entry. Vite 8 / Rolldown's native `ViteAlias` plugin only
+ * accepts string replacements and throws on function replacements, so the same
+ * logic is provided here as a `resolveId` hook. This is behaviour-compatible with
+ * the previous alias on Vite 7 / Rollup as well.
+ */
+export function tsConfigPathsResolverPlugin(opts: { wildcardRules: TsConfigWildcardRule[]; platform: string; verbose?: boolean }) {
+	const { wildcardRules, platform, verbose } = opts;
+	return {
+		name: 'ns-tsconfig-paths-resolver',
+		enforce: 'pre' as const,
+		resolveId(id: string) {
+			if (!wildcardRules.length) return null;
+			// Only handle bare/aliased specifiers, not absolute paths or virtual ids.
+			if (id.startsWith('\0') || path.isAbsolute(id)) return null;
+			for (const rule of wildcardRules) {
+				const match = rule.find.exec(id);
+				if (!match) continue;
+				const subpath = match[1];
+				const resolved = resolveTsConfigWildcard(rule.resolvedDestination, subpath, platform, verbose);
+				if (verbose) {
+					console.log(`📁 TypeScript wildcard alias: ${id} -> ${resolved}`);
+				}
+				// Only claim the id when it maps to an existing file; otherwise let
+				// other resolvers/extensions try (mirrors the alias fall-through).
+				if (fs.existsSync(resolved)) {
+					return resolved;
+				}
+				return null;
+			}
+			return null;
+		},
+	};
+}
