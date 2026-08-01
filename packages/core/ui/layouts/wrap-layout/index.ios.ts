@@ -1,5 +1,6 @@
 ﻿import { WrapLayoutBase } from './wrap-layout-common';
 import { View } from '../../core/view';
+import { IOSHelper } from '../../core/view/view-helper';
 import { layout } from '../../../utils';
 
 export * from './wrap-layout-common';
@@ -121,7 +122,8 @@ export class WrapLayout extends WrapLayoutBase {
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
 		super.onLayout(left, top, right, bottom);
 
-		const insets = this.getSafeAreaInsets();
+		// Skip safe-area insets when an iOS-managed ScrollView ancestor already applies them (avoids double-counting).
+		const insets = IOSHelper.hasIOSManagedInsetAncestor(this) ? { left: 0, top: 0, right: 0, bottom: 0 } : this.getSafeAreaInsets();
 		const isVertical = this.orientation === 'vertical';
 		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;

@@ -179,17 +179,24 @@ export class ScrollView extends ScrollViewBase {
 			return;
 		}
 
-		const insets = this.getSafeAreaInsets();
+		if (SDK_VERSION > 10) {
+			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
+			// 0=automatic, 1=scrollableAxes, 2=never, 3=always
+			const behavior = this.iosContentInsetAdjustmentBehavior;
+			let nativeBehavior = 2; // .never (preserves prior default)
+			if (behavior === 'automatic') nativeBehavior = 0;
+			else if (behavior === 'scrollableAxes') nativeBehavior = 1;
+			else if (behavior === 'always') nativeBehavior = 3;
+			this.nativeViewProtected.contentInsetAdjustmentBehavior = nativeBehavior;
+		}
+
+		// When iOS adjusts content insets itself, don't also subtract safe-area insets here —
+		// doing both makes contentSize track the dynamic navbar height and causes scroll drift with large titles.
+		const useIOSInsetAdjustment = SDK_VERSION > 10 && this.iosContentInsetAdjustmentBehavior !== 'never';
+		const insets = useIOSInsetAdjustment ? { left: 0, top: 0, right: 0, bottom: 0 } : this.getSafeAreaInsets();
 
 		let scrollWidth = right - left - insets.right - insets.left;
 		let scrollHeight = bottom - top - insets.bottom - insets.top;
-
-		if (SDK_VERSION > 10) {
-			// Disable automatic adjustment of scroll view insets
-			// Consider exposing this as property with all 4 modes
-			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
-			this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
-		}
 
 		let scrollInsetWidth = scrollWidth + insets.left + insets.right;
 		let scrollInsetHeight = scrollHeight + insets.top + insets.bottom;

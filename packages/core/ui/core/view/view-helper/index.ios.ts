@@ -368,6 +368,26 @@ export class IOSHelper {
 		return CGRectMake(left, top, width, height);
 	}
 
+	/**
+	 * Returns `true` when an ancestor ScrollView has `iosContentInsetAdjustmentBehavior`
+	 * other than `'never'`, meaning iOS applies safe-area insets via `adjustedContentInset`.
+	 * Layouts should then skip their own safe-area subtraction in `onLayout` to avoid
+	 * double-counting the insets on nested content.
+	 *
+	 * Duck-types on the property name to avoid a circular import of ScrollView.
+	 * The property defaults to `'never'`, so this returns `false` unless explicitly opted in.
+	 */
+	static hasIOSManagedInsetAncestor(view: View): boolean {
+		let p: any = view.parent;
+		while (p) {
+			if (typeof p.iosContentInsetAdjustmentBehavior === 'string' && p.iosContentInsetAdjustmentBehavior !== 'never') {
+				return true;
+			}
+			p = p.parent;
+		}
+		return false;
+	}
+
 	static shrinkToSafeArea(view: View, frame: CGRect): CGRect {
 		const insets = view.getSafeAreaInsets();
 		if (insets.left || insets.top) {
