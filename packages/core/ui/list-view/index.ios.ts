@@ -1,5 +1,5 @@
 import { ItemEventData, SearchEventData, ItemsSource } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty } from './list-view-common';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty, iosSearchInsetBehaviorProperty, ListViewSearchInsetBehavior } from './list-view-common';
 import { CoreTypes } from '../../core-types';
 import { View, type KeyedTemplate, type Template } from '../core/view';
 import { Length } from '../styling/length-shared';
@@ -545,17 +545,49 @@ export class ListView extends ListViewBase {
 		// 7. Ensure search bar is properly sized and prevent content inset issues
 		this._searchController.searchBar.sizeToFit();
 
-		// 8. Disable automatic content inset adjustment that can cause spacing issues
-		if (this.nativeViewProtected.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
-			// iOS 11+ - prevent automatic content inset adjustments
-			this.nativeViewProtected.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-		} else {
-			// iOS 10 and below - disable automatic content inset
-			this.nativeViewProtected.automaticallyAdjustsScrollIndicatorInsets = false;
-		}
+		// 8. Pick a sensible content-inset-adjustment behavior.
+		// - If `iosSearchInsetBehavior` was set explicitly, honor it.
+		// - Otherwise auto-detect:
+		//     - When the search controller is presented via `navigationItem.searchController`
+		//       (i.e., we're inside a UINavigationController), use Automatic so UIKit reserves
+		//       space for the navigation bar / large title and the table doesn't render under it.
+		//     - When the search bar is used as `tableHeaderView` (no enclosing nav controller),
+		//       use Never so the header view doesn't double-inset.
+		const explicit = this.iosSearchInsetBehavior;
+		const usingNavItem = !!(viewController && SDK_VERSION >= 11.0 && viewController.navigationItem && viewController.navigationItem.searchController === this._searchController);
+		const resolved: ListViewSearchInsetBehavior = explicit ?? (usingNavItem ? 'automatic' : 'never');
+		this._applyContentInsetBehavior(resolved);
 
 		if (Trace.isEnabled()) {
-			Trace.write(`ListView: UISearchController setup complete with searchAutoHide: ${this.searchAutoHide}`, Trace.categories.Debug);
+			Trace.write(`ListView: UISearchController setup complete with searchAutoHide: ${this.searchAutoHide}, insetBehavior: ${resolved}`, Trace.categories.Debug);
+		}
+	}
+
+	private _applyContentInsetBehavior(value: ListViewSearchInsetBehavior) {
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+		if (nativeView.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
+			let mapped: UIScrollViewContentInsetAdjustmentBehavior;
+			switch (value) {
+				case 'scrollableAxes':
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.ScrollableAxes;
+					break;
+				case 'never':
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.Never;
+					break;
+				case 'always':
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.Always;
+					break;
+				case 'automatic':
+				default:
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+			}
+			nativeView.contentInsetAdjustmentBehavior = mapped;
+		} else {
+			// iOS 10 and below
+			nativeView.automaticallyAdjustsScrollIndicatorInsets = value === 'automatic' || value === 'always';
 		}
 	}
 
@@ -1121,6 +1153,14 @@ export class ListView extends ListViewBase {
 			this._setupSearchController();
 		} else {
 			this._cleanupSearchController();
+		}
+	}
+
+	[iosSearchInsetBehaviorProperty.setNative](value: ListViewSearchInsetBehavior) {
+		// Only apply live if the search controller is already set up. If not, the value
+		// will be picked up by _setupSearchController() when it runs.
+		if (this.showSearch && this._searchController) {
+			this._applyContentInsetBehavior(value);
 		}
 	}
 
