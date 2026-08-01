@@ -56,7 +56,7 @@
 		"@angular-devkit/build-angular": "^20.0.0",
 		"@babel/helpers": ">=7.26.10",
 		"@types/css": "0.0.38",
-		"@types/jest": "29.5.4",
+		"@types/jest": "29.5.14",
 		"@types/loader-utils": "2.0.6",
 		"@types/sax": "1.2.7",
 		"@types/terser-webpack-plugin": "5.2.0",
