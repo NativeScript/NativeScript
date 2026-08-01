@@ -197,6 +197,9 @@ export class Style extends Observable {
 	public paddingTop: CoreTypes.LengthType;
 	public paddingRight: CoreTypes.LengthType;
 	public paddingBottom: CoreTypes.LengthType;
+	public gap: string | CoreTypes.LengthType;
+	public rowGap: CoreTypes.LengthType;
+	public columnGap: CoreTypes.LengthType;
 	public horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 	public verticalAlignment: CoreTypes.VerticalAlignmentType;
 

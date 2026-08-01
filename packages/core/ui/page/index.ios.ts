@@ -2,7 +2,7 @@ import { isAccessibilityServiceEnabled } from '../../application';
 import type { Frame } from '../frame';
 import { BackstackEntry, NavigationType } from '../frame/frame-interfaces';
 import { View, IOSHelper } from '../core/view';
-import { PageBase, actionBarHiddenProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from './page-common';
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils/layout-helper';
@@ -189,13 +189,13 @@ class UIViewControllerImpl extends UIViewController {
 							// only consider when interactive transitions are not enabled
 							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
-							if (SDK_VERSION >= 26) {
+							if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
 								navigationController.interactiveContentPopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
 							}
 						}
 					} else {
 						navigationController.interactivePopGestureRecognizer.enabled = false;
-						if (SDK_VERSION >= 26) {
+						if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
 							navigationController.interactiveContentPopGestureRecognizer.enabled = false;
 						}
 					}
@@ -570,8 +570,6 @@ export class Page extends PageBase {
 	}
 
 	[actionBarHiddenProperty.setNative](value: boolean) {
-		this._updateEnableSwipeBackNavigation(value);
-
 		// Invalidate all inner controller.
 		invalidateTopmostController(this.viewController);
 
@@ -580,6 +578,10 @@ export class Page extends PageBase {
 			// Update nav-bar visibility with disabled animations
 			frame._updateActionBar(this, true);
 		}
+	}
+
+	[enableSwipeBackNavigationProperty.setNative](value: boolean) {
+		this._updateEnableSwipeBackNavigation(value);
 	}
 
 	public accessibilityScreenChanged(refocus = false): void {

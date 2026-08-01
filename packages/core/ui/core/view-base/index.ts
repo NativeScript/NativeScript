@@ -551,6 +551,8 @@ export abstract class ViewBase extends Observable {
 	public effectiveBorderRightWidth: number;
 	public effectiveBorderBottomWidth: number;
 	public effectiveBorderLeftWidth: number;
+	public effectiveRowGap: number;
+	public effectiveColumnGap: number;
 
 	/**
 	 * @private
@@ -1578,6 +1580,8 @@ ViewBase.prototype.effectiveBorderTopWidth = 0;
 ViewBase.prototype.effectiveBorderRightWidth = 0;
 ViewBase.prototype.effectiveBorderBottomWidth = 0;
 ViewBase.prototype.effectiveBorderLeftWidth = 0;
+ViewBase.prototype.effectiveRowGap = 0;
+ViewBase.prototype.effectiveColumnGap = 0;
 ViewBase.prototype._isViewBase = true;
 ViewBase.prototype.recycleNativeView = 'never';
 ViewBase.prototype.reusable = false;

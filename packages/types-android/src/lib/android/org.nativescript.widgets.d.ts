@@ -369,6 +369,12 @@
                 public getAlignContent(): number;
                 public setAlignContent(value: number);
 
+                public getRowGap(): number;
+                public setRowGap(value: number);
+
+                public getColumnGap(): number;
+                public setColumnGap(value: number);
+
                 public static FLEX_DIRECTION_ROW: number;
                 public static FLEX_DIRECTION_ROW_REVERSE: number;
                 public static FLEX_DIRECTION_COLUMN: number;
