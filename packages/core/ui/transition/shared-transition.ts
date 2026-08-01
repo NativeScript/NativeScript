@@ -117,6 +117,27 @@ export interface SharedTransitionInteractiveOptions {
 				/** Smallest scale applied at maximum drag distance. Default 0.5. */
 				minScale?: number;
 		  };
+	/**
+	 * (iOS only) Drop shadow rendered behind the destination view during the
+	 * interactive dismiss — gives the view a sense of depth/elevation as it
+	 * morphs back toward the source (Apple Music–style).
+	 *
+	 * - `true` applies sensible defaults
+	 *   (color black, opacity 0.3, radius 30, offset (0, 8)).
+	 * - Pass an object to customize any field.
+	 * - Omit / `false` to skip.
+	 */
+	shadow?: boolean | SharedTransitionInteractiveDismissShadow;
+}
+export interface SharedTransitionInteractiveDismissShadow {
+	/** Hex / named color string or `Color` instance. Default `'#000'`. */
+	color?: string | { ios?: any /* UIColor */ };
+	/** 0–1. Default `0.3`. */
+	opacity?: number;
+	/** Blur radius in points. Default `30`. */
+	radius?: number;
+	/** Offset in points. Default `{ x: 0, y: 8 }`. */
+	offset?: { x?: number; y?: number };
 }
 export interface SharedTransitionConfig {
 	/**
@@ -181,6 +202,11 @@ class SharedTransitionObservable extends Observable {
 }
 let sharedTransitionEvents: SharedTransitionObservable;
 let currentStack: Array<SharedTransitionState>;
+// Detached NS subtrees (e.g. a TabView's iosBottomAccessory) that aren't reachable
+// from a page via the NS view tree, but whose tagged views should still participate
+// in shared transitions. Registered by their owning component; queried alongside
+// the source page in getSharedElements.
+let externalRoots: Array<ViewBase>;
 /**
  * Shared Element Transitions (preview)
  * Allows you to auto animate between shared elements on two different screesn to create smooth navigational experiences.
@@ -305,6 +331,37 @@ export class SharedTransition {
 		}
 	}
 	/**
+	 * Register an NS view subtree that should be searched for sharedTransitionTag
+	 * elements in addition to the source page. Use this for views that are attached
+	 * to the native UI but aren't reachable from the page via the NS view tree —
+	 * for example, a TabView's `iosBottomAccessory`. The root and any of its
+	 * descendants with a `sharedTransitionTag` will then participate in transitions
+	 * originating from any page.
+	 *
+	 * Registration is idempotent. Pair with `unregisterExternalRoot` on teardown
+	 * to avoid leaking detached views into future transitions.
+	 */
+	static registerExternalRoot(root: ViewBase): void {
+		if (!root) return;
+		if (!externalRoots) {
+			externalRoots = [];
+		}
+		if (!externalRoots.includes(root)) {
+			externalRoots.push(root);
+		}
+	}
+	/**
+	 * Remove a previously registered external root. No-op if the root wasn't
+	 * registered.
+	 */
+	static unregisterExternalRoot(root: ViewBase): void {
+		if (!root || !externalRoots) return;
+		const i = externalRoots.indexOf(root);
+		if (i > -1) {
+			externalRoots.splice(i, 1);
+		}
+	}
+	/**
 	 * Gather view collections based on sharedTransitionTag details.
 	 * @param fromPage Page moving away from
 	 * @param toPage Page moving to
@@ -321,16 +378,31 @@ export class SharedTransition {
 		// 1. Presented view: gather all sharedTransitionTag views
 		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
+		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
 
-		// 2. Presenting view: gather all sharedTransitionTag views
+		// 2. Presenting view: gather all sharedTransitionTag views — and also any
+		// tagged views inside external roots (detached subtrees registered by
+		// components like TabView's iosBottomAccessory). External roots persist
+		// across page navigations, so their views only join the transition when
+		// their tag *also* exists on the destination — they participate as
+		// matched shared elements, never as orphans that would fade out.
 		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+		if (externalRoots?.length) {
+			for (const root of externalRoots) {
+				const extra = <Array<View>>querySelectorAll(root, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+				for (const v of extra) {
+					if (!presentedTags.includes(v.sharedTransitionTag)) continue;
+					if (presentingSharedElements.includes(v)) continue;
+					presentingSharedElements.push(v);
+				}
+			}
+		}
 		// console.log(
 		// 	'presenting sharedTransitionTags:',
 		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
 		// );
 
 		// 3. only handle sharedTransitionTag on presenting which match presented
-		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
 		return {
 			sharedElements: presentingSharedElements.filter((v) => presentedTags.includes(v.sharedTransitionTag)),
 			presented: presentedSharedElements,
