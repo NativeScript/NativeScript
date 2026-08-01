@@ -386,6 +386,15 @@ export class IOSHelper {
 
 	static expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
 		const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
+		// When the view is in a detached NS subtree (e.g. a view passed to TabView's
+		// `iosBottomAccessory`, which is attached to UIKit but has no NS parent), there is
+		// no viewController/scrollView ancestor to derive safe-area bounds from. In that
+		// case `safeArea` and `fullscreen` are null and `getPositionFromFrame(null)` would
+		// throw `Cannot read properties of null (reading 'origin')`. Return the frame as-is
+		// since "expand beyond safe area" is meaningless without a reference rect.
+		if (!availableSpace || !availableSpace.safeArea || !availableSpace.fullscreen) {
+			return frame;
+		}
 		const safeArea = availableSpace.safeArea;
 		const fullscreen = availableSpace.fullscreen;
 		const inWindow = availableSpace.inWindow;
@@ -438,10 +447,17 @@ export class IOSHelper {
 				parent = parent.parent as View;
 			}
 
-			if (parent.nativeViewProtected instanceof UIScrollView) {
-				scrollView = parent.nativeViewProtected;
-			} else if (parent.viewController) {
-				viewControllerView = parent.viewController.view;
+			// `parent` may be null here when `view` is part of a detached NS subtree (e.g. a
+			// view passed to TabView's `iosBottomAccessory`, which is attached to UIKit's
+			// `UITabAccessory.contentView` but never added to an NS parent). Without this
+			// guard, the next line throws "Cannot read properties of undefined (reading
+			// 'nativeViewProtected')" and the entire layout pass aborts.
+			if (parent) {
+				if (parent.nativeViewProtected instanceof UIScrollView) {
+					scrollView = parent.nativeViewProtected;
+				} else if (parent.viewController) {
+					viewControllerView = parent.viewController.view;
+				}
 			}
 		}
 
