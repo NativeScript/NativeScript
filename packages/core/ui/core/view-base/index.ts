@@ -338,6 +338,14 @@ export abstract class ViewBase extends Observable {
 	private _style: Style;
 	private _isLoaded: boolean;
 
+	/**
+	 * if _setupAsRootView is called it means it is not supposed to be
+	 * added to a parent. However parent can be set before for the purpose
+	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
+	 * is not called in _setupAsRootView
+	 */
+	private _isRootView = false;
+
 	private _effectivePaddingTop: number = null;
 	private _effectivePaddingRight: number = null;
 	private _effectivePaddingBottom: number = null;
@@ -1156,17 +1164,10 @@ export abstract class ViewBase extends Observable {
 		// }
 	}
 
-	/**
-	 * if _setupAsRootView is called it means it is not supposed to be
-	 * added to a parent. However parent can be set before for the purpose
-	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
-	 * is not called in _setupAsRootView
-	 */
-	mIsRootView = false;
 	_setupAsRootView(context: any): void {
-		this.mIsRootView = true;
+		this._isRootView = true;
 		this._setupUI(context);
-		this.mIsRootView = false;
+		this._isRootView = false;
 	}
 
 	/**
@@ -1179,7 +1180,7 @@ export abstract class ViewBase extends Observable {
 			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
-				if (!this.mIsRootView && this.parent && !this._isAddedToNativeVisualTree) {
+				if (!this._isRootView && this.parent && !this._isAddedToNativeVisualTree) {
 					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
@@ -1237,7 +1238,7 @@ export abstract class ViewBase extends Observable {
 
 		this.setNativeView(nativeView);
 
-		if (!this.mIsRootView && this.parent) {
+		if (!this._isRootView && this.parent) {
 			const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
