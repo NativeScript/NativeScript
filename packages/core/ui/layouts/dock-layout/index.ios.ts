@@ -1,6 +1,5 @@
 import { DockLayoutBase } from './dock-layout-common';
 import { View } from '../../core/view';
-import { IOSHelper } from '../../core/view/view-helper';
 import { layout } from '../../../utils';
 
 export * from './dock-layout-common';
@@ -84,8 +83,7 @@ export class DockLayout extends DockLayoutBase {
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
 		super.onLayout(left, top, right, bottom);
 
-		// Skip safe-area insets when an iOS-managed ScrollView ancestor already applies them (avoids double-counting).
-		const insets = IOSHelper.hasIOSManagedInsetAncestor(this) ? { left: 0, top: 0, right: 0, bottom: 0 } : this.getSafeAreaInsets();
+		const insets = this.getSafeAreaInsets();
 		const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth + insets.left + insets.right;
 		const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth + insets.top + insets.bottom;
 

@@ -1,6 +1,5 @@
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, FlexboxLayoutBase, FlexBasisPercent, orderProperty, flexGrowProperty, flexShrinkProperty, flexWrapBeforeProperty, alignSelfProperty } from './flexbox-layout-common';
 import { View } from '../../core/view';
-import { IOSHelper } from '../../core/view/view-helper';
 import { Position } from '../../core/view/view-interfaces';
 import { layout } from '../../../utils';
 import { CoreTypes } from '../../../core-types';
@@ -983,8 +982,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number) {
-		// Skip safe-area insets when an iOS-managed ScrollView ancestor already applies them (avoids double-counting).
-		const insets = IOSHelper.hasIOSManagedInsetAncestor(this) ? { left: 0, top: 0, right: 0, bottom: 0 } : this.getSafeAreaInsets();
+		const insets = this.getSafeAreaInsets();
 		let isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
 
 		switch (this.flexDirection) {

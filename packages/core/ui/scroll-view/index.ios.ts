@@ -1,5 +1,5 @@
 import { ScrollEventData } from '.';
-import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty } from './scroll-view-common';
+import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty, iosContentInsetAdjustmentBehaviorProperty } from './scroll-view-common';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { View } from '../core/view';
@@ -49,6 +49,9 @@ export class ScrollView extends ScrollViewBase {
 		super.initNativeView();
 		this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
 		this._setNativeClipToBounds();
+		// UIKit defaults to `automatic` while the property defaults to `never`, and
+		// setNative only runs for non-default values — so apply it up front.
+		this.updateContentInsetAdjustmentBehavior(this.iosContentInsetAdjustmentBehavior);
 	}
 
 	public disposeNativeView() {
@@ -92,6 +95,22 @@ export class ScrollView extends ScrollViewBase {
 		}
 	}
 
+	protected updateContentInsetAdjustmentBehavior(value: 'never' | 'automatic' | 'scrollableAxes' | 'always') {
+		if (!this.nativeViewProtected || SDK_VERSION <= 10) {
+			return;
+		}
+		// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
+		let behavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+		if (value === 'automatic') {
+			behavior = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+		} else if (value === 'scrollableAxes') {
+			behavior = UIScrollViewContentInsetAdjustmentBehavior.ScrollableAxes;
+		} else if (value === 'always') {
+			behavior = UIScrollViewContentInsetAdjustmentBehavior.Always;
+		}
+		this.nativeViewProtected.contentInsetAdjustmentBehavior = behavior;
+	}
+
 	get horizontalOffset(): number {
 		return this.nativeViewProtected ? this.nativeViewProtected.contentOffset.x : 0;
 	}
@@ -128,6 +147,10 @@ export class ScrollView extends ScrollViewBase {
 	}
 	[scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
 		this.updateScrollBarVisibility(value);
+	}
+
+	[iosContentInsetAdjustmentBehaviorProperty.setNative](value: 'never' | 'automatic' | 'scrollableAxes' | 'always') {
+		this.updateContentInsetAdjustmentBehavior(value);
 	}
 
 	public scrollToVerticalOffset(value: number, animated: boolean) {
@@ -177,17 +200,6 @@ export class ScrollView extends ScrollViewBase {
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
 		if (!this.nativeViewProtected) {
 			return;
-		}
-
-		if (SDK_VERSION > 10) {
-			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
-			// 0=automatic, 1=scrollableAxes, 2=never, 3=always
-			const behavior = this.iosContentInsetAdjustmentBehavior;
-			let nativeBehavior = 2; // .never (preserves prior default)
-			if (behavior === 'automatic') nativeBehavior = 0;
-			else if (behavior === 'scrollableAxes') nativeBehavior = 1;
-			else if (behavior === 'always') nativeBehavior = 3;
-			this.nativeViewProtected.contentInsetAdjustmentBehavior = nativeBehavior;
 		}
 
 		// When iOS adjusts content insets itself, don't also subtract safe-area insets here —

@@ -371,8 +371,8 @@ export class IOSHelper {
 	/**
 	 * Returns `true` when an ancestor ScrollView has `iosContentInsetAdjustmentBehavior`
 	 * other than `'never'`, meaning iOS applies safe-area insets via `adjustedContentInset`.
-	 * Layouts should then skip their own safe-area subtraction in `onLayout` to avoid
-	 * double-counting the insets on nested content.
+	 * `View.getSafeAreaInsets` returns empty insets in that case so nested content
+	 * doesn't double-count them.
 	 *
 	 * Duck-types on the property name to avoid a circular import of ScrollView.
 	 * The property defaults to `'never'`, so this returns `false` unless explicitly opted in.
