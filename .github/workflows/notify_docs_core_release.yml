@@ -1,0 +1,45 @@
+name: 'notify docs on core release'
+
+# When a @nativescript/core release tag is pushed (Nx releaseTag pattern
+# "{version}-core", e.g. "9.0.21-core"), notify NativeScript/docs so it
+# regenerates the API reference for the new version.
+#
+# Requires the DOCS_DISPATCH_TOKEN secret: a fine-grained PAT (or classic PAT
+# with repo scope) that has contents read/write on NativeScript/docs.
+#
+# Note: tags pushed by other workflows using the default GITHUB_TOKEN do not
+# trigger this workflow (GitHub suppresses recursive workflow runs). Tags
+# pushed by maintainers or with a PAT/deploy key trigger it normally.
+
+on:
+  push:
+    tags:
+      - '[0-9]*-core'
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG%-core}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # skip prereleases (e.g. 9.1.0-alpha.11-core)
+          if [[ "$VERSION" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Trigger docs API regeneration
+        if: steps.version.outputs.prerelease == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_DISPATCH_TOKEN }}
+        run: |
+          gh api repos/NativeScript/docs/dispatches \
+            -f event_type=core-release \
+            -f 'client_payload[version]=${{ steps.version.outputs.version }}'
