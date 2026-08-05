@@ -14,6 +14,15 @@ export SKIP_PACK=true
 ./build.android.sh
 ./build.ios.sh
 
+# Windows widgets — requires PowerShell and the Windows SDK (Windows host only).
+# Skipped automatically on macOS/Linux CI; run build.windows.ps1 directly on Windows.
+if command -v powershell.exe >/dev/null 2>&1; then
+  echo "Build Windows widgets"
+  powershell.exe -ExecutionPolicy Bypass -File ./build.windows.ps1 "$1"
+else
+  echo "Skipping Windows build (powershell.exe not available)"
+fi
+
 echo "Copy NPM artifacts"
 cp .npmignore README.md package.json dist/package
 cp ../../LICENSE dist/package

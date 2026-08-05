@@ -272,6 +272,15 @@ export class iOSApplication extends ApplicationCommon {
 	 */
 	shouldDelayLaunchEvent: boolean;
 }
+export class WindowsApplication extends ApplicationCommon {
+
+	getRootView(): View;
+
+	run(entry?: string | NavigationEntry): void;
+
+	getNativeApplication(): Microsoft.UI.Xaml.Application;
+
+}
 
 export const VALID_FONT_SCALES: number[];
 export function getCurrentFontScale(): number;

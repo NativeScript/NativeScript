@@ -53,6 +53,11 @@ export declare class Color {
 	ios: any /* UIColor */;
 
 	/**
+	 * Gets the Windows-specific Color value representation. This is a read-only property.
+	 */
+	windows: any /* Windows.UI.Color */;
+
+	/**
 	 * Specifies whether this Color is equal to the Color parameter.
 	 * @param value The Color to test.
 	 */

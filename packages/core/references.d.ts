@@ -8,3 +8,7 @@
 /// <reference path="./platforms/ios/typings/objc!MaterialComponents.d.ts" />
 /// <reference path="./platforms/ios/typings/objc!NativeScriptUtils.d.ts" />
 /// <reference path="./global-types.d.ts" />
+/// <reference path="../types-minimal/src/lib/windows/windows.d.ts" />
+/// <reference path="../types-minimal/src/lib/windows/microsoft.ui.d.ts" />
+/// <reference path="../types-minimal/src/lib/windows/winrt-helpers.d.ts" />
+/// <reference path="../types-minimal/src/lib/windows/NativeScript.Widgets.d.ts" />
