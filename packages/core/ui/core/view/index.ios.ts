@@ -342,6 +342,11 @@ export class View extends ViewCommon {
 		if (this.iosIgnoreSafeArea) {
 			return insets;
 		}
+		// An iOS-managed ScrollView ancestor already applies safe-area insets via
+		// adjustedContentInset; subtracting them here too would double-count them.
+		if (IOSHelper.hasIOSManagedInsetAncestor(this)) {
+			return insets;
+		}
 		if (safeAreaInsets) {
 			insets.left = layout.round(layout.toDevicePixels(safeAreaInsets.left));
 			insets.top = layout.round(layout.toDevicePixels(safeAreaInsets.top));
