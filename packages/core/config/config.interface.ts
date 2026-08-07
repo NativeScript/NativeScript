@@ -10,6 +10,12 @@ interface IConfigPlatform {
 	 * This can be very useful in production environments when you don't want your app to just crash if a developer forgot to guard against an unexpected JS level exception.
 	 */
 	discardUncaughtJsExceptions?: boolean;
+	/**
+	 * Custom runtime package name.
+	 * Override the npm package name of the NativeScript runtime used for this platform.
+	 * For example, "@nativescript/ios-hermes"
+	 */
+	runtimePackageName?: string;
 }
 
 interface IOSSPMPackageBase {
