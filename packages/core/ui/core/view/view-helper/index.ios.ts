@@ -406,6 +406,11 @@ export class IOSHelper {
 
 	static expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
 		const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
+		// Detached NS subtrees (e.g. TabView's `iosBottomAccessory`) have no safe-area
+		// reference rects to expand against; leave the frame as-is.
+		if (!availableSpace || !availableSpace.safeArea || !availableSpace.fullscreen) {
+			return frame;
+		}
 		const safeArea = availableSpace.safeArea;
 		const fullscreen = availableSpace.fullscreen;
 		const inWindow = availableSpace.inWindow;
@@ -458,10 +463,14 @@ export class IOSHelper {
 				parent = parent.parent as View;
 			}
 
-			if (parent.nativeViewProtected instanceof UIScrollView) {
-				scrollView = parent.nativeViewProtected;
-			} else if (parent.viewController) {
-				viewControllerView = parent.viewController.view;
+			// `parent` is null when `view` is attached to UIKit but has no NS parent
+			// (e.g. TabView's `iosBottomAccessory` hosted in UITabAccessory.contentView).
+			if (parent) {
+				if (parent.nativeViewProtected instanceof UIScrollView) {
+					scrollView = parent.nativeViewProtected;
+				} else if (parent.viewController) {
+					viewControllerView = parent.viewController.view;
+				}
 			}
 		}
 
