@@ -430,10 +430,6 @@ A typical module should have the following structure:
 3. export variables and functions
 4. export class declarations
 
-<!--
-For more information see [this file](https://github.com/telerik/xPlatCore/blob/master/JS/BCL/CreateNewModule.md)
--->
-
 ## File naming
 Use lower case for file names. Use a dash to separate different words.
 
