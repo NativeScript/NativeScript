@@ -8,7 +8,7 @@
 ## Declaration and implementation files
 There are several major scenarios when writing modules:
 
-### The module implementation contains pure JavaScript code ONLY and does not depend on native APIs. In this case the entire logic is executed on the JS Virtual Machine side and the TNS Runtime is not involved.
+### The module implementation contains pure JavaScript code ONLY and does not depend on native APIs. In this case the entire logic is executed on the JS Virtual Machine side and the NS Runtime is not involved.
 
 _Example:_ [matrix module](tns-core-modules/matrix)
 

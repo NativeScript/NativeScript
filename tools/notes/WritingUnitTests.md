@@ -1,88 +1,48 @@
-# Writing Unit Tests for NativeScript Core Modules
+# Writing Unit Tests
 
-Unit tests for NativeScript Modules are written and executed with a custom lightweight test-runner and assertion framework.
-The purpose of this document is to get you familiar with it so that you can unit-test your contributions to the NativeScript framework.
+Unit tests are standard `*.spec.ts` files colocated with the source they cover, throughout the packages in this workspace (e.g. `packages/core/xml/index.spec.ts` next to `packages/core/xml/index.ts`). They are written with [Vitest](https://vitest.dev) and run per package through Nx.
 
-# Run Unit Tests Project
+## Running Tests
 
-Refer to the [development-workflow guide](DevelopmentWorkflow.md) for instructions on how to set up your repo and get it ready for development.
-After the setup, navigate to the `tests` project and run it. It will execute all the tests and output the results in the console.
+Refer to the [development-workflow guide](DevelopmentWorkflow.md) for repo setup. Then run a package's test target:
 
 ```bash
-cd tests
+npx nx run core:test
 
-tns run android
-# or
-tns run ios
+# watch mode
+npx nx run core:test --watch
+
+# isolate tests by describe/it name
+npx nx run core:test -t 'XmlParser'
 ```
 
-# Test Modules
+Packages with a `test` target (such as `core` and `vite`) each define their Vitest configuration in their own `vite.config.ts` / `vitest.config.ts`.
 
-All unit tests are organized into test modules(bundles).
-By default, the test app will run all the tests from all registered test modules. This happens in [`runTests()`](/tests/app/app/mainPage.ts#L26-L28) method in the main page of the test-app. By modifying this method, you can configure the app to:
+## Writing Tests
 
-* **Execute only the tests from a specific test module**:
-
-```typescript
-function runTests() {
-    setTimeout(() => tests.runAll('HTTP'), 10);
-}
-``` 
-
-* **Execute single test from a specific test module**:
+Use the standard Vitest API — `describe`, `it`/`test`, `expect`, `beforeEach`, `vi` for mocking. Globals are enabled, so imports from `vitest` are optional:
 
 ```typescript
-function runTests() {
-    setTimeout(() => tests.runAll('HTTP.test_getJSON'), 10);
-}
-``` 
+import { Observable } from '.';
 
-## Register Test Module
-Test modules are organized in separate files and are registered in the [`tests/app/testRunner.ts`](tests/app/testRunner.ts) file:
+describe('Observable', () => {
+	it('notifies a listener once', () => {
+		const observable = new Observable();
+		let callCount = 0;
 
-```typescript
-import * as httpTests from "./http/http-tests";
-allTests["HTTP"] = httpTests;
+		observable.once('test', () => callCount++);
+		observable.notify({ eventName: 'test', object: observable });
+		observable.notify({ eventName: 'test', object: observable });
+
+		expect(callCount).toBe(1);
+	});
+});
 ```
 
-## Writing Test Module
-The test modules are actually TypeScript modules which export unit tests and hooks as functions following this convention:
+Async tests are plain `async` functions — return or await your promises and assert on the results.
 
-* All exported functions with a `test` prefix are unit-tests.
-* The `setUpModule()` hook is called once - before all the tests in the module.
-* The `setUp()` hook is called before each test.
-* The `tearDown()` hook called after each test.
-* The `tearDownModule()` hook is called once - after all the tests in the module.
+## Test Environment
 
-# Asserting
-A test will fail if assert is not satisfied or if an error is thrown during execution.
-There is a large set of asserting functions available in the [`tests/app/TKUnit.ts`](tests/app/TKUnit.ts) module. We recommend using those in your tests.
+Tests run in Node, not on a device. `packages/core/vitest.setup.ts` stubs the NativeScript platform globals (`__IOS__`, `__ANDROID__`, `__UNIT_TEST__`, minimal `NSObject`-style mocks, etc.) so core modules can load, but real iOS/Android APIs are not available. If your test needs more of the native surface, extend the mocks in that setup file.
 
-```typescript
-import * as TKUnit from "../tk-unit";
-
-export function testSomethingWorksFast() {
-    let arr = [1, 2, 3];
-    
-    TKUnit.assertNotNull(arr, "Array should be defined");
-    TKUnit.assertTrue(arr[2] > 2, "arr[2] is not big enough")
-    TKUnit.assertEqual(arr.length, 3, "Array length should be 3");
-}
-```
-
-# Async Tests
-
-Unit tests can accept a single argument - a done callback. The test framework will wait for the `done()` callback to be called (or the test to timeout) before moving on.
-Passing an `Error` to the `done()` callback will cause the test to fail:
-
-```typescript
-export function test_getJSON(done) {
-    http.getJSON("https://http-echo.nativescript.org/get").then(
-        (result) => { done(); }, // success
-        (error) => { done(error); }); // fail
-};
-```
-
-# Misc
-
-When looking into the code of the existing tests, you might encounter strange comments looking like this `// >> animation-chaining`. These are markers for code snippets generated in the docs documentation. They are not related to testing so you don't need to add any of those in your tests.
+Behavior that depends on the actual native runtime belongs in the e2e suite instead — see the `apps/automated` app and the [development-workflow guide](DevelopmentWorkflow.md#running-the-e2e-test-apps).
