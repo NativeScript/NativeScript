@@ -1,9 +1,6 @@
----
-name: ts-minimal-comments
-description: Rules for formatting and reducing TypeScript code comments. Use whenever writing or editing TypeScript code in this repository.
----
+# Code Comments
 
-# TypeScript Minimal Comments
+Rules for formatting and reducing TypeScript code comments in this repository.
 
 ## JSDoc Standards
 

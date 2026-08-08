@@ -1,11 +1,6 @@
----
-name: core-platform-modules
-description: Conventions for the platform-split module structure in packages/core (.ios.ts/.android.ts files, -common.ts bases, handwritten .d.ts declarations). Use when adding or modifying any module in packages/core.
----
-
 # Core Platform Modules
 
-Modules in `packages/core` split per platform by filename suffix. The bundler resolves the suffix at build time, so `foo.ios.ts` and `foo.android.ts` are two implementations of the same module.
+Modules in `packages/core` split per platform by filename suffix. The bundler resolves the suffix at build time, so `foo.ios.ts` and `foo.android.ts` are two implementations of the same module. See [CreateNewModule.md](CreateNewModule.md) for a walkthrough of creating a module from scratch.
 
 ## File Anatomy
 

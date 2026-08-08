@@ -5,7 +5,7 @@ description: How to run and write unit tests in this workspace (Vitest, colocate
 
 # Unit Testing
 
-Tests are `*.spec.ts` files colocated with the source they cover, written with Vitest and run per package through Nx. See [WritingUnitTests.md](../../../tools/notes/WritingUnitTests.md) for the full guide.
+Tests are `*.spec.ts` files colocated with the source they cover, written with Vitest and run per package through Nx. See [WritingUnitTests.md](./references/WritingUnitTests.md) for the full guide.
 
 ## Running
 
