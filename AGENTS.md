@@ -27,6 +27,16 @@ This is the source code for NativeScript — `@nativescript/core` and related pa
 - [Contributing / Commit Guidelines](tools/notes/CONTRIBUTING.md): commit message format used to generate changelogs.
 - [Writing Unit Tests](tools/notes/WritingUnitTests.md): expectations for test coverage with changes.
 
+## Agent Skills
+
+Repository skills live in `.agent/skills/<skill-name>/SKILL.md` — each is a focused instruction set for one kind of task, with YAML frontmatter (`name`, `description`). Before starting a task a skill's description covers, read that SKILL.md and follow it. (`.claude/skills` is a symlink to `.agent/skills` so Claude Code discovers them automatically.)
+
+- [ts-minimal-comments](.agent/skills/ts-minimal-comments/SKILL.md) — comment rules for all TypeScript edits.
+- [core-platform-modules](.agent/skills/core-platform-modules/SKILL.md) — required reading before touching `packages/core` modules.
+- [unit-testing](.agent/skills/unit-testing/SKILL.md) — running and writing Vitest specs.
+
+To add a skill: create `.agent/skills/<kebab-case-name>/SKILL.md` with `name` and `description` frontmatter (the description states *when* to use it — that is what triggers loading), keep the body short and rule-shaped, and list it here.
+
 ## Platform-Specific Code
 
 `packages/core` uses filename suffixes to split implementations per platform; the bundler picks the right file at build time:
