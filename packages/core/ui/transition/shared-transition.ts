@@ -121,6 +121,7 @@ export interface SharedTransitionInteractiveOptions {
 	 * (iOS only) Drop shadow rendered behind the destination view during the
 	 * interactive dismiss — gives the view a sense of depth/elevation as it
 	 * morphs back toward the source (Apple Music–style).
+	 * Note: This feature will be brought to Android in a future release.
 	 *
 	 * - `true` applies sensible defaults
 	 *   (color black, opacity 0.3, radius 30, offset (0, 8)).
@@ -205,8 +206,9 @@ let currentStack: Array<SharedTransitionState>;
 // Detached NS subtrees (e.g. a TabView's iosBottomAccessory) that aren't reachable
 // from a page via the NS view tree, but whose tagged views should still participate
 // in shared transitions. Registered by their owning component; queried alongside
-// the source page in getSharedElements.
-let externalRoots: Array<ViewBase>;
+// the source page in getSharedElements. Held weakly so an unregistered-but-forgotten
+// root doesn't pin its subtree; dead refs are pruned on query.
+let externalRoots: Array<WeakRef<ViewBase>>;
 /**
  * Shared Element Transitions (preview)
  * Allows you to auto animate between shared elements on two different screesn to create smooth navigational experiences.
@@ -346,8 +348,8 @@ export class SharedTransition {
 		if (!externalRoots) {
 			externalRoots = [];
 		}
-		if (!externalRoots.includes(root)) {
-			externalRoots.push(root);
+		if (!externalRoots.some((ref) => ref.deref() === root)) {
+			externalRoots.push(new WeakRef(root));
 		}
 	}
 	/**
@@ -356,10 +358,10 @@ export class SharedTransition {
 	 */
 	static unregisterExternalRoot(root: ViewBase): void {
 		if (!root || !externalRoots) return;
-		const i = externalRoots.indexOf(root);
-		if (i > -1) {
-			externalRoots.splice(i, 1);
-		}
+		externalRoots = externalRoots.filter((ref) => {
+			const view = ref.deref();
+			return view && view !== root;
+		});
 	}
 	/**
 	 * Gather view collections based on sharedTransitionTag details.
@@ -388,7 +390,10 @@ export class SharedTransition {
 		// matched shared elements, never as orphans that would fade out.
 		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 		if (externalRoots?.length) {
-			for (const root of externalRoots) {
+			externalRoots = externalRoots.filter((ref) => ref.deref());
+			for (const ref of externalRoots) {
+				const root = ref.deref();
+				if (!root) continue;
 				const extra = <Array<View>>querySelectorAll(root, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 				for (const v of extra) {
 					if (!presentedTags.includes(v.sharedTransitionTag)) continue;
