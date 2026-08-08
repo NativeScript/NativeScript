@@ -4,10 +4,118 @@ import { isNumber } from '../../utils/types';
 import { Screen } from '../../platform';
 import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { ios as iOSUtils } from '../../utils/native-helper';
+import { Color } from '../../color';
 
 interface PlatformTransitionInteractiveState extends TransitionInteractiveState {
 	transitionContext?: UIViewControllerContextTransitioning;
 	propertyAnimator?: UIViewPropertyAnimator;
+}
+
+/**
+ * Apply a drop shadow behind the destination view during an interactive
+ * dismiss so it looks elevated above the source (Apple Music–style).
+ *
+ * Shadow + rounded corners can't coexist on the same CALayer on iOS — both
+ * `masksToBounds = true` and `layer.mask` clip the shadow as part of the
+ * compositing pipeline. So the shadow lives on a SIBLING CALayer inserted
+ * below the modal's layer in its superlayer (the same pattern NS uses for
+ * box-shadow via `outerShadowContainerLayer`). The modal keeps its own
+ * `cornerRadius` + `masksToBounds` so subviews still clip to the rounded
+ * shape.
+ *
+ * Because the shadow layer is a sibling (not a child), it doesn't inherit
+ * the modal's transform automatically — `syncInteractiveDismissShadow`
+ * mirrors transform/position/bounds during the drag.
+ *
+ * Falsy `shadowConfig` is a no-op.
+ */
+export function applyInteractiveDismissShadow(presentedView: any, shadowConfig: any): void {
+	if (!presentedView?.layer || !shadowConfig) return;
+	const layer = presentedView.layer;
+	const superlayer = layer.superlayer;
+	if (!superlayer) return;
+	const bounds = layer.bounds;
+	if (bounds.size.width <= 0 || bounds.size.height <= 0) return;
+	// Idempotent.
+	if ((presentedView as any).__sharedTransitionShadowLayer) return;
+	const cfg = shadowConfig === true ? {} : shadowConfig;
+	const colorInput = cfg.color ?? '#000';
+	let cgColor: any;
+	try {
+		const nsColor = typeof colorInput === 'string' ? new Color(colorInput) : colorInput;
+		cgColor = (nsColor as any).ios?.CGColor || (nsColor as any).CGColor || UIColor.blackColor.CGColor;
+	} catch (_) {
+		cgColor = UIColor.blackColor.CGColor;
+	}
+	const opacity = isNumber(cfg.opacity) ? cfg.opacity : 0.3;
+	const radius = isNumber(cfg.radius) ? cfg.radius : 30;
+	const offsetX = isNumber(cfg.offset?.x) ? cfg.offset.x : 0;
+	const offsetY = isNumber(cfg.offset?.y) ? cfg.offset.y : 8;
+	const cornerRadius = layer.cornerRadius || 0;
+	const roundedRectPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(0, 0, bounds.size.width, bounds.size.height), cornerRadius).CGPath;
+
+	const shadowLayer = CALayer.layer();
+	// Match the modal's geometry so shadow tracks 1:1.
+	shadowLayer.anchorPoint = layer.anchorPoint;
+	shadowLayer.bounds = bounds;
+	shadowLayer.position = layer.position;
+	shadowLayer.transform = layer.transform;
+	shadowLayer.shadowColor = cgColor;
+	shadowLayer.shadowOpacity = opacity;
+	shadowLayer.shadowRadius = radius;
+	shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
+	// Explicit shadowPath = shadow renders from this shape outward;
+	// the layer itself stays fully transparent.
+	shadowLayer.shadowPath = roundedRectPath;
+
+	CATransaction.begin();
+	CATransaction.setDisableActions(true);
+	superlayer.insertSublayerBelow(shadowLayer, layer);
+	CATransaction.commit();
+
+	(presentedView as any).__sharedTransitionShadowLayer = shadowLayer;
+}
+
+/**
+ * Mirror the modal layer's geometry onto the sibling shadow layer so the
+ * shadow tracks the interactive drag. Called from the gesture handlers
+ * after the modal's state has been updated (either via direct transform
+ * in morph mode, or via `interactiveController.updateInteractiveTransition`
+ * for the non-morph modal/page case driven by UIViewPropertyAnimator).
+ *
+ * Reads the layer's **presentation** values when an animation is in flight
+ * — model values would point at the animation's end state and snap the
+ * shadow there. Falls back to model values when no animation is running.
+ */
+export function syncInteractiveDismissShadow(presentedView: any): void {
+	const shadowLayer = (presentedView as any)?.__sharedTransitionShadowLayer;
+	if (!shadowLayer || !presentedView?.layer) return;
+	const layer = presentedView.layer;
+	const pres = typeof layer.presentationLayer === 'function' ? layer.presentationLayer() : null;
+	const src = pres || layer;
+	const b = src.bounds;
+	CATransaction.begin();
+	CATransaction.setDisableActions(true);
+	shadowLayer.bounds = b;
+	shadowLayer.position = src.position;
+	shadowLayer.anchorPoint = src.anchorPoint;
+	shadowLayer.transform = src.transform;
+	shadowLayer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(0, 0, b.size.width, b.size.height), src.cornerRadius || 0).CGPath;
+	CATransaction.commit();
+}
+
+/**
+ * Remove the sibling shadow layer. Safe to call repeatedly / when no
+ * shadow was applied.
+ */
+export function removeInteractiveDismissShadow(presentedView: any): void {
+	const shadowLayer = (presentedView as any)?.__sharedTransitionShadowLayer;
+	if (!shadowLayer) return;
+	CATransaction.begin();
+	CATransaction.setDisableActions(true);
+	shadowLayer.removeFromSuperlayer();
+	CATransaction.commit();
+	(presentedView as any).__sharedTransitionShadowLayer = null;
 }
 
 export class SharedTransitionHelper {
@@ -159,86 +267,105 @@ export class SharedTransitionHelper {
 					};
 
 					const positionIndependentTags = async () => {
-						// independent tags
-						for (const tag in pageEndTags) {
-							// only handle if independent (otherwise it's shared between both pages and handled above)
-							if (!sharedElementTags.includes(tag)) {
-								// only consider start when there's a matching end
-								const pageStartIndependentProps = pageStart?.sharedTransitionTags ? pageStart?.sharedTransitionTags[tag] : null;
-								// console.log('start:', tag, pageStartIndependentProps);
-								const pageEndProps = pageEndTags[tag];
-								let independentView = presenting.find((v) => v.sharedTransitionTag === tag);
-								let isPresented = false;
+						// "Independent" tags appear on only one of the two pages (or were
+						// explicitly enumerated in pageEnd.sharedTransitionTags). We auto-discover
+						// them so authors don't have to enumerate every tag manually:
+						//   - source-only (orphan on presenting): fade *out* on present, fade
+						//     back in on dismiss. e.g., a "FEATURED ALBUM" label on a hero card
+						//     that has no counterpart on the destination page.
+						//   - destination-only (orphan on presented): fade *in* on present, fade
+						//     back out on dismiss. e.g., metadata that only exists on the detail
+						//     page.
+						// Authors can override per-tag via pageStart / pageEnd `sharedTransitionTags`
+						// (e.g. add `y: -20` to slide while fading), or opt a view out entirely
+						// with `sharedTransitionIgnore`.
+						const orphanTags: Array<string> = [];
+						const seenOrphan = new Set<string>();
+						const addOrphan = (tag: string) => {
+							if (!tag || seenOrphan.has(tag) || sharedElementTags.includes(tag)) return;
+							seenOrphan.add(tag);
+							orphanTags.push(tag);
+						};
+						for (const v of presenting) addOrphan(v.sharedTransitionTag);
+						for (const v of presented) addOrphan(v.sharedTransitionTag);
+						// Tags the user listed in pageEnd.sharedTransitionTags but that don't
+						// match a real view are silently skipped further down — keep them in
+						// the iteration so per-tag config still applies to existing orphans.
+						for (const tag in pageEndTags) addOrphan(tag);
+
+						for (const tag of orphanTags) {
+							const pageStartIndependentProps = pageStart?.sharedTransitionTags ? pageStart?.sharedTransitionTags[tag] : null;
+							const pageEndProps = pageEndTags[tag];
+							let independentView = presenting.find((v) => v.sharedTransitionTag === tag);
+							let isPresented = false;
+							if (!independentView) {
+								independentView = presented.find((v) => v.sharedTransitionTag === tag);
 								if (!independentView) {
-									independentView = presented.find((v) => v.sharedTransitionTag === tag);
-									if (!independentView) {
-										break;
-									}
-									isPresented = true;
+									// Tag declared in config but no matching view; skip (don't
+									// break — later tags might still resolve).
+									continue;
 								}
-								const independentSharedElement: UIView = independentView.ios;
-
-								if (pageEndProps?.callback) {
-									await pageEndProps?.callback(independentView, 'present');
-								}
-
-								// let snapshot: UIImageView;
-								// if (isPresented) {
-								// 	snapshot = UIImageView.alloc().init();
-								// } else {
-								const snapshot = UIImageView.alloc().initWithImage(iOSUtils.snapshotView(independentSharedElement, Screen.mainScreen.scale));
-								// }
-
-								if (independentSharedElement instanceof UIImageView) {
-									// in case the image is loaded async, we need to update the snapshot when it changes
-									// todo: remove listener on transition end
-									// if (isPresented) {
-									// 	independentView.on('imageSourceChange', () => {
-									// 		snapshot.image = iOSNativeHelper.snapshotView(independentSharedElement, Screen.mainScreen.scale);
-									// 		snapshot.tintColor = independentSharedElement.tintColor;
-									// 	});
-									// }
-
-									snapshot.tintColor = independentSharedElement.tintColor;
-									snapshot.contentMode = independentSharedElement.contentMode;
-								}
-								snapshot.clipsToBounds = true;
-
-								const startFrame = independentSharedElement.convertRectToView(independentSharedElement.bounds, transitionContext.containerView);
-								const startFrameRect = getRectFromProps(pageStartIndependentProps);
-								// adjust for any specified start positions
-								const startFrameAdjusted = CGRectMake(startFrame.origin.x + startFrameRect.x, startFrame.origin.y + startFrameRect.y, startFrame.size.width, startFrame.size.height);
-								// console.log('startFrameAdjusted:', tag, iOSNativeHelper.printCGRect(startFrameAdjusted));
-								// if (pageStartIndependentProps?.scale) {
-								// 	snapshot.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(startFrameAdjusted.origin.x, startFrameAdjusted.origin.y), CGAffineTransformMakeScale(pageStartIndependentProps.scale.x, pageStartIndependentProps.scale.y))
-								// } else {
-								snapshot.frame = startFrame; //startFrameAdjusted;
-								// }
-								if (SharedTransition.DEBUG) {
-									console.log('---> ', independentView.sharedTransitionTag, ' frame:', iOSUtils.printCGRect(snapshot.frame));
-								}
-
-								const endFrameRect = getRectFromProps(pageEndProps);
-
-								const endFrame = CGRectMake(startFrame.origin.x + endFrameRect.x, startFrame.origin.y + endFrameRect.y, startFrame.size.width, startFrame.size.height);
-								// console.log('endFrame:', tag, iOSNativeHelper.printCGRect(endFrame));
-								transition.sharedElements.independent.push({
-									view: independentView,
-									isPresented,
-									startFrame,
-									snapshot,
-									endFrame,
-									startTransform: independentSharedElement.transform,
-									scale: pageEndProps.scale,
-									startOpacity: independentView.opacity,
-									endOpacity: isNumber(pageEndProps.opacity) ? pageEndProps.opacity : 0,
-									propertiesToMatch: pageEndProps?.propertiesToMatch,
-									zIndex: isNumber(pageEndProps?.zIndex) ? pageEndProps.zIndex : 0,
-								});
-
-								// Native alpha; see comment in positionSharedTags.
-								independentSharedElement.alpha = 0;
+								isPresented = true;
 							}
+							const independentSharedElement: UIView = independentView.ios;
+
+							if (pageEndProps?.callback) {
+								await pageEndProps?.callback(independentView, 'present');
+							}
+
+							const snapshot = UIImageView.alloc().initWithImage(iOSUtils.snapshotView(independentSharedElement, Screen.mainScreen.scale));
+
+							if (independentSharedElement instanceof UIImageView) {
+								snapshot.tintColor = independentSharedElement.tintColor;
+								snapshot.contentMode = independentSharedElement.contentMode;
+							}
+							snapshot.clipsToBounds = true;
+							// Copy layer properties (cornerRadius, borderWidth/Color)
+							// from the source view so the snapshot renders with the
+							// same rounded corners. Without this, source-side
+							// thumbnails/buttons appear with sharp square corners
+							// during a non-morph interactive dismiss — the snapshot
+							// is what the user sees through the dismissing modal,
+							// and its layer is freshly created with cornerRadius 0.
+							iOSUtils.copyLayerProperties(snapshot, independentSharedElement, pageEndProps?.propertiesToMatch as any);
+
+							const startFrame = independentSharedElement.convertRectToView(independentSharedElement.bounds, transitionContext.containerView);
+							snapshot.frame = startFrame;
+							if (SharedTransition.DEBUG) {
+								console.log('---> ', independentView.sharedTransitionTag, ' frame:', iOSUtils.printCGRect(snapshot.frame));
+							}
+
+							const endFrameRect = getRectFromProps(pageEndProps);
+							const endFrame = CGRectMake(startFrame.origin.x + (endFrameRect.x || 0), startFrame.origin.y + (endFrameRect.y || 0), startFrame.size.width, startFrame.size.height);
+
+							// Opacity defaults are side-aware: source-only orphans fade out (1 → 0),
+							// destination-only orphans fade in (0 → 1). The values are read back
+							// during dismiss as `endOpacity → startOpacity` so the return phase is
+							// automatically symmetric. Author-supplied opacity always wins.
+							const startOpacity = isNumber(pageStartIndependentProps?.opacity) ? pageStartIndependentProps.opacity : isPresented ? 0 : independentView.opacity;
+							const endOpacity = isNumber(pageEndProps?.opacity) ? pageEndProps.opacity : isPresented ? independentView.opacity : 0;
+
+							// Snapshot's initial visible alpha. Default UIImageView alpha is 1;
+							// destination-only orphans need to start at 0 so the fade-in is
+							// visible, hence we always set it explicitly.
+							snapshot.alpha = startOpacity;
+
+							transition.sharedElements.independent.push({
+								view: independentView,
+								isPresented,
+								startFrame,
+								snapshot,
+								endFrame,
+								startTransform: independentSharedElement.transform,
+								scale: pageEndProps?.scale,
+								startOpacity,
+								endOpacity,
+								propertiesToMatch: pageEndProps?.propertiesToMatch,
+								zIndex: isNumber(pageEndProps?.zIndex) ? pageEndProps.zIndex : 0,
+							});
+
+							// Native alpha; see comment in positionSharedTags.
+							independentSharedElement.alpha = 0;
 						}
 					};
 
@@ -247,7 +374,7 @@ export class SharedTransitionHelper {
 					await positionIndependentTags();
 					// combine to order by zIndex and add to transition context
 					const snapshotData = transition.sharedElements.presenting.concat(transition.sharedElements.independent);
-					snapshotData.sort((a, b) => (a.zIndex > b.zIndex ? 1 : -1));
+					snapshotData.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
 					if (SharedTransition.DEBUG) {
 						console.log(
 							`zIndex settings:`,
@@ -484,7 +611,7 @@ export class SharedTransitionHelper {
 
 					// combine to order by zIndex and add to transition context
 					const snapshotData = transition.sharedElements.presenting.concat(transition.sharedElements.independent);
-					snapshotData.sort((a, b) => (a.zIndex > b.zIndex ? 1 : -1));
+					snapshotData.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
 					if (SharedTransition.DEBUG) {
 						console.log(
 							`zIndex settings:`,
@@ -682,6 +809,13 @@ export class SharedTransitionHelper {
 				}
 				break;
 		}
+		// Apply the dismiss shadow here, not from the gesture handler. UIKit
+		// reparents the presented view into the transition containerView as
+		// part of starting the interactive transition; applying earlier would
+		// attach the shadow to the now-orphaned old superlayer.
+		if (state.interactive?.dismiss?.shadow && state.instance?.presented?.view) {
+			applyInteractiveDismissShadow(state.instance.presented.view, state.interactive.dismiss.shadow);
+		}
 	}
 
 	static interactiveUpdate(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType, percent: number) {
@@ -719,6 +853,15 @@ export class SharedTransitionHelper {
 					p.snapshot.alpha = p.endOpacity;
 					interactiveState.transitionContext.containerView.addSubview(p.snapshot);
 				}
+				// Re-mount independent (orphan) snapshots so they're available to
+				// animate alongside the gesture. They were removed in present cleanup
+				// but the records (including their snapshots) live on transition.sharedElements.
+				// Source-only orphans were left at alpha 0 since present; their snapshots
+				// pick up where the present animation left off (endOpacity).
+				for (const ind of state.instance.sharedElements.independent) {
+					ind.snapshot.alpha = ind.endOpacity;
+					interactiveState.transitionContext.containerView.addSubview(ind.snapshot);
+				}
 				// Hide every source-side shared element (including duplicates that share
 				// a sharedTransitionTag in sister lists) so the user only sees the
 				// animating snapshot — not the snapshot AND the real source element
@@ -738,6 +881,17 @@ export class SharedTransitionHelper {
 						iOSUtils.copyLayerProperties(p.snapshot, p.view.ios, p.propertiesToMatch as any);
 
 						p.snapshot.alpha = 1;
+					}
+					// Animate orphan snapshots back toward their start state alongside
+					// the rest of the dismiss. For source-only orphans this is the
+					// fade-back-in that mirrors the fade-out of present.
+					for (const ind of state.instance.sharedElements.independent) {
+						ind.snapshot.alpha = ind.startOpacity;
+						if (ind.scale) {
+							ind.snapshot.transform = ind.startTransform;
+						} else {
+							ind.snapshot.frame = ind.startFrame;
+						}
 					}
 					state.instance.presented.view.alpha = isNumber(state.pageReturn?.opacity) ? state.pageReturn?.opacity : 0;
 					state.instance.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, state.instance.presented.view.bounds.size.width, state.instance.presented.view.bounds.size.height);
@@ -845,6 +999,17 @@ export class SharedTransitionHelper {
 				for (const p of state.instance.sharedElements.presenting) {
 					p.snapshot.removeFromSuperview();
 				}
+				// Tear down orphan snapshots that interactiveUpdate re-mounted. The
+				// source-only orphans' view.alpha stays at 0 — we're returning to the
+				// presented (modal-on-top) state, so they should remain hidden until
+				// a real dismiss completes. Cancel/finish for the next dismiss owns
+				// the eventual restore.
+				for (const ind of state.instance.sharedElements.independent) {
+					ind.snapshot.removeFromSuperview();
+					// Reset snapshot alpha to its post-present end state so a subsequent
+					// interactiveUpdate picks up from the right place.
+					ind.snapshot.alpha = ind.endOpacity;
+				}
 				state.instance.presented.view.alpha = 1;
 				interactiveState.propertyAnimator = null;
 				interactiveState.added = false;
@@ -867,23 +1032,53 @@ export class SharedTransitionHelper {
 			// Morph mode finish — animate the destination view to the matching
 			// source element's frame and fade it out, then complete.
 			const view = state.instance.presented?.view;
-			const destTag = state.instance.sharedElements?.presented?.[0]?.view?.sharedTransitionTag;
+			const destPresented = state.instance.sharedElements?.presented?.[0];
+			const destTag = destPresented?.view?.sharedTransitionTag;
 			const matchingSource = state.instance.sharedElements?.presenting?.find?.((p) => p.view.sharedTransitionTag === destTag);
 			const srcIos = matchingSource?.view?.ios;
+			const destSharedIos = destPresented?.view?.ios as UIView | undefined;
 			const containerView = interactiveState.transitionContext?.containerView;
 			let targetTransform: any = null;
 			if (view && srcIos && containerView) {
-				const frameInContainer = srcIos.convertRectToView(srcIos.bounds, containerView);
+				const sourceFrame = srcIos.convertRectToView(srcIos.bounds, containerView);
 				const bounds = view.bounds;
-				if (bounds.size.width > 0 && bounds.size.height > 0) {
-					const targetScale = frameInContainer.size.width / bounds.size.width;
-					const targetCx = frameInContainer.origin.x + frameInContainer.size.width / 2;
-					const targetCy = frameInContainer.origin.y + frameInContainer.size.height / 2;
-					const currentCx = bounds.size.width / 2;
-					const currentCy = bounds.size.height / 2;
-					const tx = targetCx - currentCx;
-					const ty = targetCy - currentCy;
-					targetTransform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(tx, ty), CGAffineTransformMakeScale(targetScale, targetScale));
+				if (bounds.size.width > 0 && bounds.size.height > 0 && sourceFrame.size.width > 0 && sourceFrame.size.height > 0) {
+					// Anchor the modal's transform on the *internal* matched
+					// element (e.g. the album art inside the modal) so that the
+					// modal and the matched element converge along the same
+					// trajectory to the source thumbnail. Without this, the modal
+					// scales around its own center while the matched-element
+					// snapshot flies separately to source — making the two visibly
+					// drift apart mid-spring.
+					//
+					// Pick a uniform scale that takes the modal's matched element
+					// to the source's size. For square album art (both sides) this
+					// is exact; for slightly off-square sources (e.g. 360×380) we
+					// match width and let the small remainder be hidden by the
+					// fade-out.
+					const destSharedFrameInModal = destSharedIos ? destSharedIos.convertRectToView(destSharedIos.bounds, view) : null;
+					const sx = sourceFrame.size.width / bounds.size.width;
+					const sy = sourceFrame.size.height / bounds.size.height;
+					const targetCx = sourceFrame.origin.x + sourceFrame.size.width / 2;
+					const targetCy = sourceFrame.origin.y + sourceFrame.size.height / 2;
+					const modalCx = bounds.size.width / 2;
+					const modalCy = bounds.size.height / 2;
+					let tx: number;
+					let ty: number;
+					if (destSharedFrameInModal && destSharedFrameInModal.size.width > 0 && destSharedFrameInModal.size.height > 0) {
+						// Place the internal album art's center on the source's
+						// center. After scaling around modal center, internal art's
+						// visual center = modalCenter + (internalArtCenter - modalCenter) * scale + translation.
+						const internalCx = destSharedFrameInModal.origin.x + destSharedFrameInModal.size.width / 2;
+						const internalCy = destSharedFrameInModal.origin.y + destSharedFrameInModal.size.height / 2;
+						tx = targetCx - modalCx - (internalCx - modalCx) * sx;
+						ty = targetCy - modalCy - (internalCy - modalCy) * sy;
+					} else {
+						// Fallback: align modal center on source center.
+						tx = targetCx - modalCx;
+						ty = targetCy - modalCy;
+					}
+					targetTransform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(tx, ty), CGAffineTransformMakeScale(sx, sy));
 				}
 			}
 			// Build a snapshot fly-back for each shared element so the album
@@ -940,6 +1135,10 @@ export class SharedTransitionHelper {
 			for (const entry of sharedSnapshots as any[]) {
 				if (entry.srcSharedView) snapshottedSources.add(entry.srcSharedView);
 			}
+			// Source-only orphan views (album thumbnails, badges, etc.) were
+			// already restored to their opacity by the gesture handler at morph
+			// engagement, so we don't need fade-in snapshots here — they're
+			// already visible behind the morphing modal.
 			let didFinalize = false;
 			const finalize = () => {
 				if (didFinalize) return;
@@ -966,10 +1165,23 @@ export class SharedTransitionHelper {
 				for (const { snap } of sharedSnapshots) {
 					snap.removeFromSuperview();
 				}
+				// Independent (orphan) views were restored at gesture engagement,
+				// so they're already visible. Just tear down any leftover present-
+				// phase snapshots that weren't removed in present cleanup, and
+				// ensure alpha is set from NS opacity for safety in case the
+				// engagement code path was bypassed.
+				for (const independent of state.instance?.sharedElements?.independent || []) {
+					if (independent.view?.ios) {
+						independent.view.ios.alpha = independent.view.opacity;
+					}
+					independent.snapshot?.removeFromSuperview();
+				}
 				if (view) {
 					view.transform = CGAffineTransformIdentity;
 					view.alpha = 1;
 				}
+				// Remove the sibling shadow view if interactive engagement added one.
+				removeInteractiveDismissShadow(view);
 				SharedTransition.finishState(state.instance.id);
 				if (interactiveState.transitionContext) {
 					interactiveState.transitionContext.finishInteractiveTransition();
@@ -982,10 +1194,19 @@ export class SharedTransitionHelper {
 				});
 			};
 			if (view && targetTransform) {
+				const shadowViewToAnimate: any = (view as any).__sharedTransitionShadowView;
 				iOSUtils.animateWithSpring({
 					animations: () => {
 						view.transform = targetTransform;
 						view.alpha = 0;
+						// Drive the sibling shadow view through the same spring so it
+						// shrinks + translates with the modal as it morphs to the
+						// source. Also fade it out so it doesn't linger behind the
+						// finalizing snapshot.
+						if (shadowViewToAnimate) {
+							shadowViewToAnimate.transform = targetTransform;
+							shadowViewToAnimate.alpha = 0;
+						}
 						// Restore source-side element alphas IN PARALLEL with the
 						// destination's morph + fade — but skip sources that have
 						// a flying snapshot. Those are held at alpha 0 and
@@ -997,6 +1218,8 @@ export class SharedTransitionHelper {
 								v.ios.alpha = v.opacity;
 							}
 						}
+						// Source-only orphan views were already restored at
+						// engagement; nothing more to do for them here.
 						// Fly each shared-element snapshot to its source frame.
 						// Rides the same spring so the image lands precisely back
 						// at the source position as the destination view fades.
@@ -1040,6 +1263,18 @@ export class SharedTransitionHelper {
 						presented.view.off('imageSourceChange', (presented as any).imageSourceChangeListener);
 						(presented as any).imageSourceChangeListener = null;
 					}
+				}
+				// Restore alpha on independent (orphan) source views and tear down
+				// their snapshots. Without this, source-only orphans (any non-matched
+				// sharedTransitionTag on the source page) stay at alpha 0 forever,
+				// leaving the page visibly blank where they used to be. The non-morph
+				// interactive path drives a propertyAnimator instead of running the
+				// dismiss snapshot/animation rig, so the standard cleanup doesn't run.
+				for (const ind of state.instance.sharedElements.independent) {
+					if (ind.view?.ios) {
+						ind.view.ios.alpha = ind.view.opacity;
+					}
+					ind.snapshot?.removeFromSuperview();
 				}
 
 				SharedTransition.finishState(state.instance.id);
