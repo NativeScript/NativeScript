@@ -30,7 +30,7 @@ describe('init helper', () => {
 		tempRoot = undefined;
 	});
 
-	it('adds dependencies, gitignore and vite.config.ts', async () => {
+	it('adds dependencies, gitignore and vite.config.mts', async () => {
 		const root = createTempProject();
 		tempRoot = root;
 		process.chdir(root);
@@ -45,8 +45,28 @@ describe('init helper', () => {
 			const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
 			expect(gitignore.split(/\r?\n/)).toContain('.ns-vite-build');
 
-			const viteConfigExists = fs.existsSync(path.join(root, 'vite.config.ts'));
+			const viteConfigExists = fs.existsSync(path.join(root, 'vite.config.mts'));
 			expect(viteConfigExists).toBe(true);
+		} finally {
+			process.chdir(cwd);
+			if (tempRoot && fs.existsSync(tempRoot)) {
+				fs.rmSync(tempRoot, { recursive: true, force: true });
+			}
+		}
+	});
+
+	it('does not scaffold vite.config.mts when a vite config already exists', async () => {
+		const root = createTempProject();
+		tempRoot = root;
+		process.chdir(root);
+		try {
+			const existing = 'export default {};\n';
+			fs.writeFileSync(path.join(root, 'vite.config.ts'), existing);
+
+			await runInitHelper();
+
+			expect(fs.existsSync(path.join(root, 'vite.config.mts'))).toBe(false);
+			expect(fs.readFileSync(path.join(root, 'vite.config.ts'), 'utf8')).toBe(existing);
 		} finally {
 			process.chdir(cwd);
 			if (tempRoot && fs.existsSync(tempRoot)) {

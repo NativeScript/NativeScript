@@ -100,10 +100,14 @@ function getFlavorImportAndConfig(flavor: string): { importLine: string; configE
 
 function ensureViteConfig() {
 	const root = getProjectRootPath();
-	const viteConfigPath = path.join(root, 'vite.config.ts');
-	if (fs.existsSync(viteConfigPath)) {
+	const existing = ['vite.config.mts', 'vite.config.ts', 'vite.config.mjs', 'vite.config.js', 'vite.config.cts', 'vite.config.cjs'].find((name) => fs.existsSync(path.join(root, name)));
+	if (existing) {
 		return;
 	}
+	// `.mts` keeps the config ESM regardless of the app package.json `type`,
+	// which NativeScript apps leave unset — a `.ts` config there is CJS-scoped
+	// and trips Vite's `configLoader: 'native'` forward-compat warning.
+	const viteConfigPath = path.join(root, 'vite.config.mts');
 	const flavor = resolveFlavor();
 	const { importLine, configExpr } = getFlavorImportAndConfig(flavor);
 	const contents = `import { defineConfig } from 'vite';\n${importLine};\n\nexport default defineConfig(({ mode }) => ${configExpr});\n`;

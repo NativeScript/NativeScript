@@ -44,7 +44,7 @@ npx nativescript-vite init
 
 This will:
 
-- Generate a `vite.config.ts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper subpath from `@nativescript/vite`.
+- Generate a `vite.config.mts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper subpath from `@nativescript/vite`.
 - Add the dependency `@valor/nativescript-websockets`.
 - Append `.ns-vite-build` to `.gitignore` if it is not already present.
 
@@ -113,7 +113,7 @@ supported default.
 
 ## Usage
 
-1) Create `vite.config.ts`:
+1) Create `vite.config.mts` (the `.mts` extension keeps the config ESM without setting `"type": "module"` in the app's package.json, avoiding Vite's `configLoader: 'native'` warning):
 
 ```ts
 import { defineConfig, mergeConfig, UserConfig } from 'vite';
@@ -141,7 +141,7 @@ import { NativeScriptConfig } from '@nativescript/core';
 export default {
 	// add these:
 	bundler: 'vite',
-	bundlerConfigPath: 'vite.config.ts',
+	bundlerConfigPath: 'vite.config.mts',
 } as NativeScriptConfig;
 ```
 

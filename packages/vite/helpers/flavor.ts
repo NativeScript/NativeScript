@@ -71,7 +71,7 @@ export function determineProjectFlavor(): string | false {
 
 	console.info(`
 		Could not determine project flavor.
-		Please use the matching <flavor>Config helper from '@nativescript/vite' in vite.config.ts to explicitly set the base config.
+		Please use the matching <flavor>Config helper from '@nativescript/vite' in your vite config to explicitly set the base config.
 	`);
 
 	return false;
