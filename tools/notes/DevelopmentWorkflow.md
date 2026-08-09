@@ -23,7 +23,7 @@ npm run setup
 
 ## Unit Testing
 
-### Run unit tests with jest with either option:
+### Run unit tests with Vitest with either option:
 
 A. Using convenient start menu:
 
