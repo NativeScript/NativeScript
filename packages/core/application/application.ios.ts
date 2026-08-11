@@ -702,7 +702,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			this.launchEventCalled = false;
 			if (!this.shouldDelayLaunchEvent) {
-				this.notifyAppStarted();
+				this.notifyAppStarted(notification);
 			}
 		} else {
 			// Scene-based app - window creation will happen in scene delegate
