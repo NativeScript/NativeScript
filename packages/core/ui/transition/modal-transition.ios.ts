@@ -58,7 +58,15 @@ export class ModalTransition extends Transition {
 	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
 		if (args?.ios?.view) {
 			const state = SharedTransition.getState(this.id);
-			const percent = state.interactive?.dismiss?.percentFormula ? state.interactive.dismiss.percentFormula(args) : args.deltaY / (args.ios.view.bounds.size.height / 2);
+			const morph = !!state.interactive?.dismiss?.morph;
+			const morphOptions = typeof state.interactive?.dismiss?.morph === 'object' ? state.interactive.dismiss.morph : null;
+			const viewH = args.ios.view.bounds.size.height;
+			const dist = Math.hypot(args.deltaX, args.deltaY);
+			const morphPercent = dist / viewH;
+			// 1:1 with finger movement (SwiftUI default). Dragging across the full
+			// view height corresponds to percent = 1. Halving the divisor — the
+			// previous default — made the modal run twice as fast as the finger.
+			const percent = state.interactive?.dismiss?.percentFormula ? state.interactive.dismiss.percentFormula(args) : morph ? morphPercent : args.deltaY / viewH;
 			if (SharedTransition.DEBUG) {
 				console.log('Interactive dismissal percentage:', percent);
 			}
@@ -73,10 +81,16 @@ export class ModalTransition extends Transition {
 					}
 					break;
 				case GestureStateTypes.changed:
-					if (percent < 1) {
-						if (this.interactiveController) {
-							this.interactiveController.updateInteractiveTransition(percent);
+					if (morph) {
+						const presentedView = this.presented?.view;
+						if (presentedView) {
+							const minScale = morphOptions?.minScale ?? 0.5;
+							const scale = Math.max(minScale, 1 - dist / viewH);
+							presentedView.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(args.deltaX, args.deltaY), CGAffineTransformMakeScale(scale, scale));
 						}
+					}
+					if (percent < 1 && this.interactiveController) {
+						this.interactiveController.updateInteractiveTransition(percent);
 					}
 					break;
 				case GestureStateTypes.cancelled:
