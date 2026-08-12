@@ -10,3 +10,13 @@ export class SharedTransitionHelper {
 	static interactiveCancel(state: SharedTransitionState, interactiveState: TransitionInteractiveState, type: TransitionNavigationType): void {}
 	static interactiveFinish(state: SharedTransitionState, interactiveState: TransitionInteractiveState, type: TransitionNavigationType): void {}
 }
+
+export function applyInteractiveDismissShadow(_presentedView: any, _shadow: any): void {
+	// iOS-only
+}
+export function syncInteractiveDismissShadow(_presentedView: any): void {
+	// iOS-only
+}
+export function removeInteractiveDismissShadow(_presentedView: any): void {
+	// iOS-only
+}

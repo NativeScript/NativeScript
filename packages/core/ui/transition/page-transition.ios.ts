@@ -5,7 +5,7 @@ import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../..
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 import { ios as iOSUtils } from '../../utils/native-helper';
 import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
-import { SharedTransitionHelper } from './shared-transition-helper';
+import { SharedTransitionHelper, removeInteractiveDismissShadow, syncInteractiveDismissShadow } from './shared-transition-helper';
 
 function _findInnerScroll(view: UIView | undefined | null): UIScrollView | null {
 	// Walk the destination's view subtree breadth-first looking for the first
@@ -200,13 +200,33 @@ export class PageTransition extends Transition {
 						const matchingSource = sources.find?.((v: any) => v?.sharedTransitionTag === destTag) || sources[0];
 						const srcIos = matchingSource?.ios;
 						const destView = this.presented?.view;
+						const destSharedIos = presented?.view?.ios;
 						if (srcIos && destView) {
 							const f = srcIos.convertRectToView(srcIos.bounds, destView);
 							const bounds = destView.bounds;
 							if (bounds.size.width > 0 && bounds.size.height > 0 && f.size.width > 0) {
-								const scaleT = f.size.width / bounds.size.width;
-								const txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2;
-								const tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2;
+								// Uniform scale during drag — feels grabbed/proportional
+								// rather than squished. The release spring switches to
+								// non-uniform scale + anchored translation in interactiveFinish
+								// so the modal's matched element lands exactly on the source.
+								const scaleT = Math.min(f.size.width / bounds.size.width, f.size.height / bounds.size.height);
+								// Anchor on the modal's internal matched element so the
+								// modal and the matched element snapshot converge on the
+								// source thumbnail along the same trajectory, instead of
+								// the modal drifting toward a center-of-modal target while
+								// the matched snapshot heads to the source.
+								let txT: number;
+								let tyT: number;
+								const sharedFrameInModal = destSharedIos ? destSharedIos.convertRectToView(destSharedIos.bounds, destView) : null;
+								if (sharedFrameInModal && sharedFrameInModal.size.width > 0 && sharedFrameInModal.size.height > 0) {
+									const internalCx = sharedFrameInModal.origin.x + sharedFrameInModal.size.width / 2;
+									const internalCy = sharedFrameInModal.origin.y + sharedFrameInModal.size.height / 2;
+									txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2 - (internalCx - bounds.size.width / 2) * scaleT;
+									tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2 - (internalCy - bounds.size.height / 2) * scaleT;
+								} else {
+									txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2;
+									tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2;
+								}
 								this._morphTarget = { scale: scaleT, tx: txT, ty: tyT };
 							}
 						}
@@ -215,6 +235,33 @@ export class PageTransition extends Transition {
 						for (const v of sources) {
 							if (v?.ios) v.ios.alpha = 0;
 						}
+						// Reveal source-only orphan views (e.g. other album thumbnails,
+						// section headers' info) so the source page looks intact behind
+						// the morphing modal. They were hidden during present; without
+						// restoring them now, the user sees blank spots through the
+						// shrinking modal where artwork/text should be.
+						//
+						// We also re-apply each view's NS background to nudge UIKit into
+						// re-displaying the layer with its corner-radius mask. Without
+						// this, some plugin-backed image views (e.g. SDAnimatedImageView)
+						// render their cached content with square corners during the
+						// transition's compositor pass even though the layer's
+						// cornerRadius/masksToBounds are still set correctly.
+						for (const ind of stateNow.instance?.sharedElements?.independent || []) {
+							if (!ind.isPresented && ind.view?.ios) {
+								ind.view.ios.alpha = ind.view.opacity;
+								const v: any = ind.view;
+								if (typeof v._redrawNativeBackground === 'function') {
+									try {
+										v._redrawNativeBackground(v.style?.backgroundInternal);
+									} catch (_) {}
+								}
+								ind.view.ios.layer?.setNeedsDisplay?.();
+							}
+						}
+						// Dismiss shadow is applied from SharedTransitionHelper.interactiveStart
+						// (it runs after UIKit has reparented the presented view into the
+						// transition's containerView).
 					}
 				}
 				if (this._gesturePhase !== 'active') return;
@@ -250,6 +297,11 @@ export class PageTransition extends Transition {
 				if (percent < 1 && this.interactiveController) {
 					this.interactiveController.updateInteractiveTransition(percent);
 				}
+				// Mirror the destination's current visual state onto the sibling
+				// shadow layer. Done for both morph (direct transform) and non-morph
+				// (UIViewPropertyAnimator-driven) — sync reads the presentation
+				// layer so it works for both.
+				syncInteractiveDismissShadow(this.presented?.view);
 				break;
 			case GestureStateTypes.cancelled:
 			case GestureStateTypes.ended: {
@@ -279,6 +331,11 @@ export class PageTransition extends Transition {
 						});
 						this.interactiveController.cancelInteractiveTransition();
 					}
+					// Always restore the modal's layer state we touched to render
+					// the dismiss shadow — on cancel (view is being kept) AND on
+					// finish (the same NS view instance may be reused on the next
+					// presentation, so leaked layer state stacks across dismissals).
+					removeInteractiveDismissShadow(this.presented?.view);
 				} else if (morph) {
 					// Fallback: UIKit didn't engage. Reset the morph transform so the
 					// destination doesn't stay stuck.
