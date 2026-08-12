@@ -59,6 +59,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public sectioned: boolean;
 	public showSearch: boolean;
 	public searchAutoHide: boolean;
+	public iosSearchInsetBehavior: ListViewSearchInsetBehavior;
 
 	get separatorColor(): Color {
 		return this.style.separatorColor;
@@ -357,3 +358,20 @@ export const searchAutoHideProperty = new Property<ListViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 searchAutoHideProperty.register(ListViewBase);
+
+/**
+ * Controls the underlying UIScrollView's content inset adjustment behavior
+ * when `showSearch` is enabled (iOS only).
+ *
+ * Defaults to `'automatic'`, which lets UIKit reserve top space for the
+ * navigation bar / large title when the UISearchController is hosted on
+ * `navigationItem.searchController`, and reserve bottom space for the
+ * keyboard/UISearchTab. Set to `'never'` to opt out (matches the prior
+ * behavior used when the search bar is the table's `tableHeaderView` and
+ * there is no enclosing UINavigationController).
+ */
+export type ListViewSearchInsetBehavior = 'automatic' | 'scrollableAxes' | 'never' | 'always';
+export const iosSearchInsetBehaviorProperty = new Property<ListViewBase, ListViewSearchInsetBehavior>({
+	name: 'iosSearchInsetBehavior',
+});
+iosSearchInsetBehaviorProperty.register(ListViewBase);
