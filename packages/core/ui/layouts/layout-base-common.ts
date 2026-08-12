@@ -51,9 +51,12 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
 	public insertChild(child: View, atIndex: number): boolean {
 		if (atIndex > -1) {
+			// A re-attached child keeps its scope, so inheriting it won't re-match its css state
+			const isReattached = child._styleScope === this._styleScope;
 			this._subViews.splice(atIndex, 0, child);
 			this._addView(child, atIndex);
 			this._registerLayoutChild(child);
+			this._invalidateSiblingCssState(isReattached ? atIndex : atIndex + 1, atIndex + 2);
 			return true;
 		}
 		return false;
@@ -67,6 +70,27 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		if (index > -1) {
 			this._subViews.splice(index, 1);
 			this._unregisterLayoutChild(child);
+			this._invalidateSiblingCssState(index, index + 1);
+		}
+	}
+
+	// Sibling combinator matches are cached and never re-queried on tree changes.
+	// Appending changes no predecessor, so addChild skips invalidation.
+	private _invalidateSiblingCssState(fromIndex: number, adjacentEndIndex: number): void {
+		const scope = this._styleScope;
+		if (!scope) {
+			return;
+		}
+
+		const general = scope.hasSiblingCombinatorSelectors;
+		if (!general && !scope.hasAdjacentCombinatorSelectors) {
+			return;
+		}
+
+		// '+' only affects views whose direct predecessor changed
+		const end = Math.min(general ? this._subViews.length : adjacentEndIndex, this._subViews.length);
+		for (let i = fromIndex; i < end; i++) {
+			this._subViews[i]._onCssStateChange();
 		}
 	}
 
