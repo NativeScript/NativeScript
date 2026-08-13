@@ -22,6 +22,9 @@
 		"**/platforms/ios/**",
 		"platforms/android/**",
 		"!platforms/android/core.aar",
+		"platforms/windows/**",
+		"plugin.props",
+		"plugin.targets",
 		"**/package.json"
 	],
 	"keywords": [
@@ -75,7 +78,8 @@
 	"nativescript": {
 		"platforms": {
 			"ios": "6.0.0",
-			"android": "6.0.0"
+			"android": "6.0.0",
+			"windows": "9.1.0"
 		},
 		"hooks": [
 			{

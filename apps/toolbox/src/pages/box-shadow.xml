@@ -1,9 +1,8 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" navigatedTo="navigatedTo" class="page">
     <Page.actionBar>
         <ActionBar title="Box Shadow" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
-
     <GridLayout rows="*, auto, *" class="box-shadow-demo">
         <StackLayout backgroundColor="#ededed" row="0" id="boxShadowDemo">
             <!-- layouts -->

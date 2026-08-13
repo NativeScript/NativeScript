@@ -61,11 +61,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	if (
 		hasDependency('@nativescript/ios') ||
 		hasDependency('@nativescript/visionos') ||
-		hasDependency('@nativescript/android')
+		hasDependency('@nativescript/android') ||
+		hasDependency('@nativescript/windows')
 	) {
 		const iosVersion = getDependencyVersion('@nativescript/ios');
 		const visionosVersion = getDependencyVersion('@nativescript/visionos');
 		const androidVersion = getDependencyVersion('@nativescript/android');
+		const windowsVersion = getDependencyVersion('@nativescript/windows');
 
 		if (platform === 'ios') {
 			const iosResolved =
@@ -99,6 +101,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				androidVersion ??
 				undefined;
 			if (isVersionGteConsideringPrerelease(androidResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'windows') {
+			const windowsResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/windows',
+					'9.0.0',
+				) ??
+				windowsVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(windowsResolved, '9.0.0')) {
 				useSourceMapFiles();
 			} else {
 				env.commonjs = true;
@@ -191,8 +206,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
 		const sourceMapAbsolutePath = getProjectFilePath(
-			`./${
-				env.buildPath ?? 'platforms'
+			`./${env.buildPath ?? 'platforms'
 			}/${platform}-sourceMaps/[file].map[query]`,
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
@@ -442,8 +456,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const tsConfigPath = getProjectTSConfigPath();
 	const configFile = tsConfigPath
 		? {
-				configFile: tsConfigPath,
-			}
+			configFile: tsConfigPath,
+		}
 		: undefined;
 
 	// set up ts support
@@ -535,7 +549,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 										return require.resolve(platformRequest, {
 											paths: [baseDir],
 										});
-									} catch {}
+									} catch { }
 
 									if (existsSync(extPath)) {
 										console.log(`resolving "${id}" to "${platformRequest}"`);
@@ -659,10 +673,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				__IOS__: platform === 'ios',
 				__VISIONOS__: platform === 'visionos',
 				__APPLE__: platform === 'ios' || platform === 'visionos',
+				__WINDOWS__: platform === 'windows',
 				/* for compat only */ 'global.isAndroid': platform === 'android',
 				/* for compat only */ 'global.isIOS':
 					platform === 'ios' || platform === 'visionos',
 				/* for compat only */ 'global.isVisionOS': platform === 'visionos',
+				/* for compat only */ 'global.isWindows': platform === 'windows',
 				process: 'global.process',
 			},
 		] as any,
@@ -707,8 +723,8 @@ function shouldIncludeInspectorModules(): boolean {
 	const coreVersion = getDependencyVersion('@nativescript/core');
 
 	if (coreVersion && satisfies(coreVersion, '>=8.7.0')) {
-		return platform === 'ios' || platform === 'android';
+		return platform === 'ios' || platform === 'android' || platform === 'windows';
 	}
 
-	return platform === 'ios';
+	return platform === 'ios' || platform === 'windows';
 }

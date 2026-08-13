@@ -63,3 +63,8 @@ vite.config.*.timestamp*
 vitest.config.*.timestamp*
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+/packages/ui-mobile-base/windows/widgets-cpp/NativeSc.B6D1F2A0
+/packages/ui-mobile-base/windows/widgets-cpp/obj
+/packages/ui-mobile-base/windows/widgets-cpp/x64/Debug
+/packages/ui-mobile-base/windows/widgets-cpp/x64/Release
+/packages/ui-mobile-base/windows/widgets-cpp/ARM64

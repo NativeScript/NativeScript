@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <ApplicationManifest Condition="'$(ApplicationManifest)' == '' and Exists('$(MSBuildThisFileDirectory)app.manifest')">$(MSBuildThisFileDirectory)app.manifest</ApplicationManifest>
+  </PropertyGroup>
+</Project>
