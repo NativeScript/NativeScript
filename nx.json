@@ -107,15 +107,15 @@
 				}
 			}
 		},
-		"@nx/vite:test": {
-			"cache": true,
-			"inputs": ["default", "^production"]
-		},
 		"nx-release-publish": {
 			"dependsOn": ["build"],
 			"options": {
 				"packageRoot": "{workspaceRoot}/dist/packages/{projectName}"
 			}
+		},
+		"@nx/vitest:test": {
+			"cache": true,
+			"inputs": ["default", "^production"]
 		}
 	},
 	"useDaemonProcess": false,
