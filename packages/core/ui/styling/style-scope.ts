@@ -944,6 +944,24 @@ export class StyleScope {
 	}
 
 	/**
+	 * True when any selector in the scope contains an adjacent sibling ('+') combinator.
+	 */
+	get hasAdjacentCombinatorSelectors(): boolean {
+		this.ensureSelectors();
+
+		return this._selectorScope ? this._selectorScope.hasAdjacentCombinatorSelectors : false;
+	}
+
+	/**
+	 * True when any selector in the scope contains a general sibling ('~') combinator.
+	 */
+	get hasSiblingCombinatorSelectors(): boolean {
+		this.ensureSelectors();
+
+		return this._selectorScope ? this._selectorScope.hasSiblingCombinatorSelectors : false;
+	}
+
+	/**
 	 * Increase the application CSS selector version.
 	 */
 	public _increaseApplicationCssSelectorVersion(): void {
