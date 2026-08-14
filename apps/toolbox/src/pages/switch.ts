@@ -7,8 +7,4 @@ export function navigatingTo(args: EventData) {
 	page.bindingContext = new SwitchModel();
 }
 
-export class SwitchModel extends Observable {
-	constructor() {
-		super();
-	}
-}
+export class SwitchModel extends Observable {}
