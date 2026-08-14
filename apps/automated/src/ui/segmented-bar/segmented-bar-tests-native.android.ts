@@ -57,7 +57,7 @@ export var checkBackgroundColorUpdatedAfterItemSelected = function (bar: segment
 
 					isValid++;
 					break;
-				} else if (textView.getCurrentTextColor() !== bar.selectedTextColor) {
+				} else if (textView.getCurrentTextColor() !== bar.selectedTextColor.android) {
 					console.log('>>>>>>>>>>>>>>>>>>>>>>');
 					console.log('>>>>>>>>>>>>>>>>>>>>>>');
 					console.log('>>>>>>>>>>>>>>>>>>>>>> selectedTextColor');
