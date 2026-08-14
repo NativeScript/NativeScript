@@ -1,17 +1,12 @@
 import { existsSync } from 'fs';
 import path from 'path';
+import { normalizeModuleId } from './normalize-id.js';
 
 /**
- * Esbuild resolver plugin to support NativeScript platform-specific file resolution
- * during Vite's optimizeDeps pre-bundling and HMR dependency updates.
- *
- * Handles cases like:
- *   import './paymentMethod'      -> './paymentMethod.ios.js' | './paymentMethod.android.js' | './paymentMethod.js'
- *   import './gesturehandler'     -> './gesturehandler.ios.js' | './gesturehandler.android.js' | './gesturehandler.js'
- *   import './source.js'          -> './source.ios.js' (if present)
- *   import './dir'                -> './dir/index.ios.js' | './dir/index.js'
+ * Rolldown-compatible resolver plugin for NativeScript platform-specific file
+ * resolution during dependency optimization.
  */
-export function esbuildPlatformResolver(opts?: { platform: string; verbose?: boolean }) {
+export function optimizeDepsPlatformResolver(opts?: { platform: string; verbose?: boolean }) {
 	// Treat visionOS as iOS for file resolution
 	const currentPlatform = opts?.platform === 'visionos' ? 'ios' : opts?.platform;
 
@@ -65,30 +60,30 @@ export function esbuildPlatformResolver(opts?: { platform: string; verbose?: boo
 	}
 
 	return {
-		name: 'ns-esbuild-platform-resolver',
-		setup(build: any) {
-			// Only handle relative imports inside node_modules during optimizeDeps
-			build.onResolve({ filter: /^\.\.?\// }, (args: any) => {
-				// Limit to dependency optimization contexts to avoid clobbering app src resolution
-				// Esbuild passes resolveDir for the importing file's directory
-				const importerDir = args.resolveDir || path.dirname(args.importer || '');
-
-				// Heuristic: only apply inside node_modules to fix vendor packages
-				if (typeof args.importer === 'string' && args.importer.includes('node_modules')) {
-					const abs = path.resolve(importerDir, args.path);
-					const resolved = resolveWithPlatform(abs);
-					if (resolved) {
-						if (opts?.verbose) {
-							try {
-								const relImporter = args.importer?.split('node_modules').pop();
-								console.log(`ns-esbuild-resolver: ${relImporter ?? args.importer} -> ${args.path} => ${path.relative(process.cwd(), resolved)}`);
-							} catch {}
-						}
-						return { path: resolved };
-					}
-				}
+		name: 'ns-optimize-deps-platform-resolver',
+		resolveId(source: string, importer?: string) {
+			if (!source || !/^\.\.?\//.test(source)) {
 				return null;
-			});
+			}
+			if (typeof importer !== 'string' || !importer.includes('node_modules')) {
+				return null;
+			}
+			const importerDir = path.dirname(importer);
+			const abs = path.resolve(importerDir, source);
+			const resolved = resolveWithPlatform(abs);
+			if (!resolved) {
+				return null;
+			}
+			if (opts?.verbose) {
+				// Note: very verbose, even for verbose mode, but can uncomment this if needed for debugging resolution issues
+				// try {
+				// 	const relImporter = importer.split('node_modules').pop();
+				// 	console.log(`ns-optimize-deps-resolver: ${relImporter ?? importer} -> ${source} => ${path.relative(process.cwd(), resolved)}`);
+				// } catch {}
+			}
+			// Canonicalize separators/drive case so the prebundle graph dedupes
+			// platform files consistently on Windows. No-op on POSIX.
+			return normalizeModuleId(resolved);
 		},
 	} as any;
 }

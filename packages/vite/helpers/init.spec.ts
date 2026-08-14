@@ -30,7 +30,7 @@ describe('init helper', () => {
 		tempRoot = undefined;
 	});
 
-	it('adds scripts, dependencies, gitignore and vite.config.ts', async () => {
+	it('adds dependencies, gitignore and vite.config.mts', async () => {
 		const root = createTempProject();
 		tempRoot = root;
 		process.chdir(root);
@@ -40,22 +40,33 @@ describe('init helper', () => {
 			const pkgRaw = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 			const pkg = JSON.parse(pkgRaw);
 
-			expect(pkg.devDependencies).toHaveProperty('concurrently');
-			expect(pkg.devDependencies).toHaveProperty('wait-on');
 			expect(pkg.dependencies).toHaveProperty('@valor/nativescript-websockets');
-
-			expect(pkg.scripts['dev:ios']).toBeDefined();
-			expect(pkg.scripts['dev:android']).toBeDefined();
-			expect(pkg.scripts['dev:server:ios']).toBeDefined();
-			expect(pkg.scripts['dev:server:android']).toBeDefined();
-			expect(pkg.scripts['ios']).toBeDefined();
-			expect(pkg.scripts['android']).toBeDefined();
 
 			const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
 			expect(gitignore.split(/\r?\n/)).toContain('.ns-vite-build');
 
-			const viteConfigExists = fs.existsSync(path.join(root, 'vite.config.ts'));
+			const viteConfigExists = fs.existsSync(path.join(root, 'vite.config.mts'));
 			expect(viteConfigExists).toBe(true);
+		} finally {
+			process.chdir(cwd);
+			if (tempRoot && fs.existsSync(tempRoot)) {
+				fs.rmSync(tempRoot, { recursive: true, force: true });
+			}
+		}
+	});
+
+	it('does not scaffold vite.config.mts when a vite config already exists', async () => {
+		const root = createTempProject();
+		tempRoot = root;
+		process.chdir(root);
+		try {
+			const existing = 'export default {};\n';
+			fs.writeFileSync(path.join(root, 'vite.config.ts'), existing);
+
+			await runInitHelper();
+
+			expect(fs.existsSync(path.join(root, 'vite.config.mts'))).toBe(false);
+			expect(fs.readFileSync(path.join(root, 'vite.config.ts'), 'utf8')).toBe(existing);
 		} finally {
 			process.chdir(cwd);
 			if (tempRoot && fs.existsSync(tempRoot)) {

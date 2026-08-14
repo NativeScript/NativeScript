@@ -67,7 +67,7 @@ function test_releaseNativeObject_canBeCalledWithNativeObject_iOS() {
 	}))();
 	TKUnit.assertMatches(obj.description, /NSObject/, 'Object description should match!');
 
-	Utils.releaseNativeObject(obj);
+	Utils.releaseNativeObject(obj as any);
 
 	// Need to sleep to make the delayed release get executed
 	NSThread.sleepForTimeInterval(0);
@@ -78,7 +78,7 @@ function test_releaseNativeObject_canBeCalledWithNativeObject_Android() {
 	const obj = new java.lang.Object();
 	TKUnit.assertMatches(obj.toString(), /java.lang.Object/, 'Object description should match!');
 
-	Utils.releaseNativeObject(obj);
+	Utils.releaseNativeObject(obj as any);
 
 	TKUnit.assertThrowsRegExp(obj.toString.bind(obj), 'Should throw an error!', /Failed calling toString on a java\/lang\/Object instance/);
 }

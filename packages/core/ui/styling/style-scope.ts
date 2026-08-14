@@ -944,6 +944,24 @@ export class StyleScope {
 	}
 
 	/**
+	 * True when any selector in the scope contains an adjacent sibling ('+') combinator.
+	 */
+	get hasAdjacentCombinatorSelectors(): boolean {
+		this.ensureSelectors();
+
+		return this._selectorScope ? this._selectorScope.hasAdjacentCombinatorSelectors : false;
+	}
+
+	/**
+	 * True when any selector in the scope contains a general sibling ('~') combinator.
+	 */
+	get hasSiblingCombinatorSelectors(): boolean {
+		this.ensureSelectors();
+
+		return this._selectorScope ? this._selectorScope.hasSiblingCombinatorSelectors : false;
+	}
+
+	/**
 	 * Increase the application CSS selector version.
 	 */
 	public _increaseApplicationCssSelectorVersion(): void {
@@ -1119,7 +1137,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 	return importSourceParts.join(path.separator);
 }
 
-export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
+export const applyInlineStyle = profile('applyInlineStyle', function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle).selectors;
 

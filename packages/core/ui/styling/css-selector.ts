@@ -149,6 +149,8 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = 
 		cls.prototype.rarity = rarity;
 		cls.prototype.combinator = undefined;
 		cls.prototype.dynamic = dynamic;
+		cls.prototype.hasAdjacentCombinator = false;
+		cls.prototype.hasSiblingCombinator = false;
 
 		return cls;
 	};
@@ -160,6 +162,8 @@ function FunctionalPseudoClassProperties(specificity: Specificity, rarity: Rarit
 		cls.prototype.rarity = rarity;
 		cls.prototype.combinator = undefined;
 		cls.prototype.dynamic = false;
+		cls.prototype.hasAdjacentCombinator = false;
+		cls.prototype.hasSiblingCombinator = false;
 		cls.prototype.pseudoSelectorListType = pseudoSelectorListType;
 
 		return cls;
@@ -171,6 +175,14 @@ export abstract class SelectorBase {
 	 * Dynamic selectors depend on attributes and pseudo classes.
 	 */
 	public dynamic: boolean;
+	/**
+	 * Selector contains an adjacent sibling ('+') combinator, so its match depends on the direct previous sibling.
+	 */
+	public hasAdjacentCombinator: boolean;
+	/**
+	 * Selector contains a general sibling ('~') combinator, so its match depends on all previous siblings.
+	 */
+	public hasSiblingCombinator: boolean;
 	public abstract match(node: Node): boolean;
 	public abstract mayMatch(node: Node): boolean;
 	public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
@@ -430,6 +442,8 @@ export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector 
 		this.specificity = specificity;
 		// Functional pseudo-classes become dynamic based on selectors in selector list
 		this.dynamic = this.selectors.some((sel) => sel.dynamic);
+		this.hasAdjacentCombinator = this.selectors.some((sel) => sel.hasAdjacentCombinator);
+		this.hasSiblingCombinator = this.selectors.some((sel) => sel.hasSiblingCombinator);
 	}
 	public toString(): string {
 		return `:${this.cssPseudoClass}(${this.selectors.join(', ')})${wrap(this.combinator)}`;
@@ -492,6 +506,8 @@ export class SimpleSelectorSequence extends SimpleSelector {
 		this.specificity = selectors.reduce((sum, sel) => sel.specificity + sum, 0);
 		this.head = selectors.reduce((prev, curr) => (!prev || curr.rarity > prev.rarity ? curr : prev), null);
 		this.dynamic = selectors.some((sel) => sel.dynamic);
+		this.hasAdjacentCombinator = selectors.some((sel) => sel.hasAdjacentCombinator);
+		this.hasSiblingCombinator = selectors.some((sel) => sel.hasSiblingCombinator);
 	}
 	public toString(): string {
 		return `${this.selectors.join('')}${wrap(this.combinator)}`;
@@ -541,6 +557,8 @@ export class ComplexSelector extends SelectorCore {
 
 		this.specificity = 0;
 		this.dynamic = false;
+		this.hasAdjacentCombinator = false;
+		this.hasSiblingCombinator = false;
 
 		for (let i = selectors.length - 1; i >= 0; i--) {
 			const sel = selectors[i];
@@ -559,7 +577,10 @@ export class ComplexSelector extends SelectorCore {
 					currentGroup.push(siblingsToGroup);
 					break;
 				case Combinator.adjacent:
+					this.hasAdjacentCombinator = true;
+					break;
 				case Combinator.sibling:
+					this.hasSiblingCombinator = true;
 					break;
 				default:
 					throw new Error(`Unsupported combinator "${sel.combinator}" for selector ${sel}.`);
@@ -569,6 +590,14 @@ export class ComplexSelector extends SelectorCore {
 
 			if (sel.dynamic) {
 				this.dynamic = true;
+			}
+
+			if (sel.hasAdjacentCombinator) {
+				this.hasAdjacentCombinator = true;
+			}
+
+			if (sel.hasSiblingCombinator) {
+				this.hasSiblingCombinator = true;
 			}
 
 			siblingsToGroup.push(sel);
@@ -1053,6 +1082,15 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 
 	public position: number = 0;
 
+	/**
+	 * True when any selector in the scope contains an adjacent sibling ('+') combinator.
+	 */
+	public hasAdjacentCombinatorSelectors = false;
+	/**
+	 * True when any selector in the scope contains a general sibling ('~') combinator.
+	 */
+	public hasSiblingCombinatorSelectors = false;
+
 	getSelectorCandidates(node: T) {
 		const { cssClasses, id, cssType } = node;
 		const candidates: SelectorCore[] = [];
@@ -1090,6 +1128,14 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	}
 
 	private makeDocSelector(sel: SelectorCore): SelectorCore {
+		if (sel.hasAdjacentCombinator) {
+			this.hasAdjacentCombinatorSelectors = true;
+		}
+
+		if (sel.hasSiblingCombinator) {
+			this.hasSiblingCombinatorSelectors = true;
+		}
+
 		sel.pos = this.position++;
 
 		return sel;
@@ -1160,6 +1206,19 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		if (lastMediaSelectorScope) {
 			this.position = lastMediaSelectorScope.position;
 			lastMediaSelectorScope = null;
+		}
+
+		// Media query scopes are queried through this scope, so their combinator flags roll up
+		if (this.mediaQuerySelectorScopes) {
+			for (const selectorScope of this.mediaQuerySelectorScopes) {
+				if (selectorScope.hasAdjacentCombinatorSelectors) {
+					this.hasAdjacentCombinatorSelectors = true;
+				}
+
+				if (selectorScope.hasSiblingCombinatorSelectors) {
+					this.hasSiblingCombinatorSelectors = true;
+				}
+			}
 		}
 	}
 

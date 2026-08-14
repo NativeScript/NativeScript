@@ -279,6 +279,62 @@ describe('css-selector', () => {
 		//expect(rule.selectors[0].specificity).toEqual(0);
 	});
 
+	describe('sibling combinator flags', () => {
+		it('adjacent combinator sets hasAdjacentCombinator', () => {
+			const sel = createSelector('.spaced > * + *');
+			expect(sel.hasAdjacentCombinator).toBe(true);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it('general sibling combinator sets hasSiblingCombinator', () => {
+			const sel = createSelector('.spaced > * ~ *');
+			expect(sel.hasSiblingCombinator).toBe(true);
+			expect(sel.hasAdjacentCombinator).toBe(false);
+		});
+
+		it('selector without sibling combinators sets neither flag', () => {
+			const sel = createSelector('.spaced > .child');
+			expect(sel.hasAdjacentCombinator).toBe(false);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it(':is() selector list propagates combinator flags', () => {
+			const sel = createSelector(':is(.a + .b)');
+			expect(sel.hasAdjacentCombinator).toBe(true);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it('compound selector propagates combinator flags of functional pseudo-class', () => {
+			const sel = createSelector('.list :is(.a ~ .b).c');
+			expect(sel.hasSiblingCombinator).toBe(true);
+		});
+
+		it('scope accumulates combinator flags from rulesets', () => {
+			const { selectorScope } = create(`
+				.a { color: red; }
+				.spaced > * + * { margin-top: 8; }
+			`);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(true);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(false);
+		});
+
+		it('scope without sibling combinators keeps flags false', () => {
+			const { selectorScope } = create(`.a { color: red; }`);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(false);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(false);
+		});
+
+		it('scope rolls up combinator flags from media query rules', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: 10000) {
+					.spaced > * ~ * { margin-top: 8; }
+				}
+			`);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(true);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(false);
+		});
+	});
+
 	it('attribute selector with case-insensitive flag matches repeatedly', () => {
 		const rule = createOne(`button[testAttr='VaLuE' i] { color: red; }`);
 		const matching = { cssType: 'button', testAttr: 'vAlUe' };
