@@ -2,7 +2,6 @@ import path from 'path';
 import { __dirname } from './project.js';
 
 export const aliasCssTree = [
-	// Node.js built-ins and mdn-data polyfills for css-tree
 	{
 		find: 'module',
 		replacement: path.resolve(__dirname, '../polyfills/module.js'),

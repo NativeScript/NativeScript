@@ -3,9 +3,11 @@ import path from 'path';
 import alias from '@rollup/plugin-alias';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { getProjectRootPath } from '../helpers/project.js';
+import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
 import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
+import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
+import { findSolidPackagesShippingJsx } from '../hmr/frameworks/solid/build/solid-jsx-deps.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,9 +15,14 @@ const __dirname = dirname(__filename);
 const projectRoot = getProjectRootPath();
 const solidPath = path.resolve(projectRoot, 'node_modules/solid-js');
 
-const prod = !!process.env.production;
+// Built-in JSX runtime shim — maps automatic JSX transform's jsx() to
+// Solid's createComponent() without pulling in the web renderer (solid-js/h).
+const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'solid-jsx-runtime.js');
 
-const plugins = [
+// Build the Solid plugin stack for a given build kind. `prod` is derived from
+// Vite's `mode` inside the factory (NOT a non-standard `process.env.production`),
+// so a production build resolves Solid's prod bundles and disables dev/hot.
+const buildSolidPlugins = (prod: boolean) => [
 	{
 		...alias({
 			entries: {
@@ -24,6 +31,10 @@ const plugins = [
 				// Alias solid-js modules to proper locations
 				'solid-js/universal': resolve(solidPath, `universal/dist/${prod ? 'universal' : 'dev'}.js`),
 				'solid-js/store': resolve(solidPath, `store/dist/${prod ? 'store' : 'dev'}.js`),
+				// Automatic JSX transform runtime — must come before the catch-all
+				// 'solid-js' entry to avoid prefix-matching to solid-js/dist/dev.js
+				'solid-js/jsx-runtime': jsxRuntimeShimPath,
+				'solid-js/jsx-dev-runtime': jsxRuntimeShimPath,
 				'solid-js': resolve(solidPath, `dist/${prod ? 'solid' : 'dev'}.js`),
 			},
 		}),
@@ -33,8 +44,18 @@ const plugins = [
 	solid({
 		// Configure for development
 		dev: !prod,
-		// Enable HMR for development
-		hot: !prod,
+		// solid-refresh's `import.meta.hot`-based component HMR is intentionally
+		// left OFF. NativeScript drives HMR through its own dev-server runtime,
+		// and solid-refresh additionally rewrites `export function Foo()` into a
+		// non-hoisted `export const Foo = _$$component(...)`. That breaks the
+		// canonical TanStack Router file-route pattern —
+		// `export const Route = createFileRoute('/')({ component: App })`
+		// declared above `function App() {}` — which then throws
+		// "Cannot access 'App' before initialization" (a TDZ error) during module
+		// evaluation and aborts the dev session. Solid dev mode (`dev`) stays on
+		// for reactivity warnings; module-level HMR still works via the
+		// NativeScript runtime.
+		hot: false,
 		// Configure solid compiler options for NativeScript
 		solid: {
 			// Use universal instead of dom for NativeScript compatibility
@@ -46,8 +67,40 @@ const plugins = [
 	}),
 ];
 
-export const solidConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
-		plugins,
+export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
+	const prod = mode !== 'development';
+	const projectRoot = getProjectRootPath();
+	const monorepoRoot = findMonorepoWorkspaceRoot(projectRoot);
+	// Any Solid library that ships `.jsx`/`.tsx` files in its published
+	// output (e.g. `solid-navigation`'s `dist/src/*.jsx`) MUST bypass
+	// Vite's depscanner. The depscanner concatenates the package into
+	// `node_modules/.vite/deps/<pkg>.js` with the JSX preserved, then
+	// `vite:import-analysis` hits the first JSX expression and aborts the
+	// dev server with `Failed to parse source for import analysis…`. The
+	// `vite-plugin-solid` `transform` hook only runs on ids ending in
+	// `.jsx`/`.tsx`, so it never sees the pre-bundled `.js` to fix it.
+	// Excluding these packages routes them through the normal serve
+	// pipeline, where the original `.jsx` ids match the Solid plugin's
+	// filter. See `hmr/frameworks/solid/build/solid-jsx-deps.ts` for the detection rules.
+	const solidJsxPackages = findSolidPackagesShippingJsx(projectRoot, monorepoRoot);
+	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
+		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...buildSolidPlugins(prod)],
+		optimizeDeps: {
+			// Defense-in-depth: keep `module` / `node:module` out of the
+			// depscanner's pre-bundle set even if a downstream config swaps
+			// out the base `optimizeDeps.exclude`. The root rationale (and the
+			// canonical exclude list) lives in `configuration/base.ts`; see
+			// the comment above `optimizeDepsExclude` there for the full
+			// css-tree → createRequire → HMR rewrite chain that necessitates
+			// this. Vite's `mergeConfig` concatenates `exclude` arrays, so
+			// duplicating these here is harmless.
+			//
+			// Also exclude our own Solid HMR runtime helper. If the depscanner
+			// pre-bundles `@nativescript/vite/solid-bootstrap`, the device's /ns/m
+			// loader serves the bare specifier (which the package `exports`
+			// subpath map doesn't resolve there) and 404s. Excluding it routes
+			// the import through normal resolution → the real file is served.
+			exclude: ['module', 'node:module', '@nativescript/vite/solid-bootstrap', ...solidJsxPackages],
+		},
 	});
 };

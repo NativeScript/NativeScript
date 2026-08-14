@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { createHash } from 'crypto';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import * as path from 'path';
@@ -10,10 +10,18 @@ vi.mock('../../../helpers/vendor-rewrite.js', () => {
 	};
 });
 
+// vueServerStrategy.handleHotUpdate owns `prologue + its tail`. Mock the shared
+// prologue so the handler tests isolate the migrated Vue SFC tail without the
+// full HMR pipeline; the prologue itself is covered by websocket-hot-update.spec.ts.
+vi.mock('../../../server/websocket-hot-update.js', () => ({
+	runHotUpdatePrologue: vi.fn(),
+}));
+
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
-import { vueServerStrategy } from './strategy.js';
+import { purgeVueTransformCachesForHotUpdate, vueServerStrategy } from './strategy.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
-import type { FrameworkProcessFileContext, FrameworkRegistryContext } from '../../../server/framework-strategy.js';
+import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext } from '../../../server/framework-strategy.js';
 
 type ProcessHelpers = NonNullable<FrameworkProcessFileContext['helpers']>;
 type RegistryHelpers = NonNullable<FrameworkRegistryContext['helpers']>;
@@ -64,14 +72,18 @@ export default {};
 		expect(post).not.toMatch(/__hmrId/);
 	});
 
-	it('ensures SFC imports are versioned', () => {
+	it('canonicalizes SFC imports (strips versioned segments, keeps URLs stable)', () => {
 		const code = `
 import View from "/ns/sfc/components/View.vue";
-const lazy = import("/ns/sfc/components/View.vue");
+const lazy = import("http://localhost:5173/ns/sfc/42/components/Other.vue");
 `;
-		const versioned = vueServerStrategy.ensureVersionedImports(code, 'http://localhost:5173', 42);
-		expect(versioned).toContain('/ns/sfc/42/components/View.vue');
-		expect(versioned.match(/\/ns\/sfc\/42/g)?.length).toBe(2);
+		const canonical = vueServerStrategy.canonicalizeFrameworkImports!(code, 'http://localhost:5173');
+		// Already-canonical imports pass through unchanged; versioned
+		// forms collapse — SFC module identity IS the URL, and freshness is
+		// eviction-driven (a versioned URL would mint a second module realm).
+		expect(canonical).toContain('from "/ns/sfc/components/View.vue"');
+		expect(canonical).toContain('import("/ns/sfc/components/Other.vue")');
+		expect(canonical).not.toMatch(/\/ns\/sfc\/\d+\//);
 	});
 
 	it('delegates vendor rewrite to helper', () => {
@@ -196,5 +208,202 @@ const lazy = import("/ns/sfc/components/View.vue");
 		} finally {
 			rmSync(tmpRoot, { recursive: true, force: true });
 		}
+	});
+
+	// ── Vue's dev HTTP surface + device config ────────────────────────────
+	it('registerRoutes mounts the three Vue SFC endpoints', () => {
+		const handlers: Array<(...a: any[]) => unknown> = [];
+		const server = { middlewares: { use: (fn: any) => handlers.push(fn) } } as unknown as FrameworkRouteContext['server'];
+
+		expect(typeof vueServerStrategy.registerRoutes).toBe('function');
+		vueServerStrategy.registerRoutes!({
+			server,
+			wss: null,
+			verbose: false,
+			appVirtualWithSlash: '/app/',
+			sfcFileMap: new Map(),
+			depFileMap: new Map(),
+			getGraphVersion: () => 0,
+			getStrategy: () => vueServerStrategy,
+		});
+
+		// registerSfcHandlers mounts exactly /ns/sfc, /ns/sfc-meta, /ns/asm.
+		expect(handlers).toHaveLength(3);
+	});
+
+	it('importMapEntries pins nativescript-vue + vue to the deps-bundle HTTP shims (order preserved)', () => {
+		const entries = vueServerStrategy.importMapEntries!('http://localhost:5173');
+		expect(entries).toEqual({ 'nativescript-vue': 'http://localhost:5173/ns/m/node_modules/nativescript-vue', vue: 'http://localhost:5173/ns/m/node_modules/vue' });
+		// Insertion order must stay stable so the served import-map JSON is
+		// byte-identical.
+		expect(Object.keys(entries)).toEqual(['nativescript-vue', 'vue']);
+	});
+
+	it('supplies no volatilePatterns — SFC freshness is eviction-driven', () => {
+		expect(vueServerStrategy.volatilePatterns).toBeUndefined();
+	});
+});
+
+describe('vueServerStrategy.handleHotUpdate', () => {
+	beforeEach(() => {
+		vi.mocked(runHotUpdatePrologue).mockReset();
+	});
+
+	function makeDeps() {
+		const client = { readyState: 1, OPEN: 1, send: vi.fn() };
+		const moduleGraph = { version: 7, upsert: vi.fn() };
+		const deps = {
+			strategy: vueServerStrategy,
+			verbose: false,
+			wss: { clients: new Set([client]) },
+			moduleGraph,
+			sfcFileMap: new Map<string, string>(),
+			depFileMap: new Map<string, string>(),
+			isSocketClientOpen: (c: any) => !!c && c.readyState === 1,
+			shouldRemapImport: () => false,
+		} as any;
+		return { deps, client, moduleGraph };
+	}
+
+	function makeServer() {
+		return {
+			config: { root: '/proj' },
+			transformRequest: vi.fn(async () => ({ code: 'const x = 1; export default {};' })),
+		} as any;
+	}
+
+	it('re-transforms a changed .vue SFC, upserts the graph, and broadcasts a metadata-only registry update', async () => {
+		const emitSummary = vi.fn();
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({
+			root: '/proj',
+			updateRel: '/app/Home.vue',
+			metrics: { tAfterFramework: 0 } as any,
+			emitSummary,
+		} as any);
+
+		const { deps, client, moduleGraph } = makeDeps();
+		const server = makeServer();
+		const ctx = { file: '/proj/app/Home.vue', server } as any;
+
+		const result = await vueServerStrategy.handleHotUpdate!(ctx, deps);
+
+		expect(runHotUpdatePrologue).toHaveBeenCalledWith(ctx, deps);
+		expect(server.transformRequest).toHaveBeenCalledWith('/app/Home.vue');
+		expect(moduleGraph.upsert).toHaveBeenCalledTimes(1);
+		expect(moduleGraph.upsert.mock.calls[0][0]).toBe('/app/Home.vue');
+
+		// The SFC registers itself in the file map under the deterministic md5 name.
+		const expectedFileName = `sfc-${createHash('md5').update('/app/Home.vue').digest('hex').slice(0, 8)}.mjs`;
+		expect(deps.sfcFileMap.get('/app/Home.vue')).toBe(expectedFileName);
+
+		// HTTP-only mode: exactly one metadata-only registry-update frame, no code push.
+		expect(client.send).toHaveBeenCalledTimes(1);
+		const payload = JSON.parse(client.send.mock.calls[0][0]);
+		expect(payload).toMatchObject({
+			type: 'ns:vue-sfc-registry-update',
+			path: '/app/Home.vue',
+			fileName: expectedFileName,
+			version: 7,
+		});
+
+		expect(emitSummary).toHaveBeenCalledTimes(1);
+		// Returns an empty array so Vite skips its own default HMR for the SFC.
+		expect(result).toEqual([]);
+	});
+
+	it('ignores non-.vue files (returns before transforming, broadcasting, or emitting a summary)', async () => {
+		const emitSummary = vi.fn();
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({
+			root: '/proj',
+			updateRel: '/app/styles.ts',
+			metrics: { tAfterFramework: 0 } as any,
+			emitSummary,
+		} as any);
+
+		const { deps, client, moduleGraph } = makeDeps();
+		const server = makeServer();
+		await vueServerStrategy.handleHotUpdate!({ file: '/proj/app/styles.ts', server } as any, deps);
+
+		expect(server.transformRequest).not.toHaveBeenCalled();
+		expect(moduleGraph.upsert).not.toHaveBeenCalled();
+		expect(client.send).not.toHaveBeenCalled();
+		expect(emitSummary).not.toHaveBeenCalled();
+	});
+
+	it('is a no-op when the prologue fully handled the change (null)', async () => {
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue(null as any);
+		const { deps, client, moduleGraph } = makeDeps();
+		const server = makeServer();
+		await vueServerStrategy.handleHotUpdate!({ file: '/proj/app/Home.vue', server } as any, deps);
+
+		expect(server.transformRequest).not.toHaveBeenCalled();
+		expect(moduleGraph.upsert).not.toHaveBeenCalled();
+		expect(client.send).not.toHaveBeenCalled();
+	});
+});
+
+describe('purgeVueTransformCachesForHotUpdate', () => {
+	function makeCacheMocks(importers: Array<{ id: string; importers?: any[] }> = []) {
+		const rootModule = { id: '/src/test2.ts', file: '/proj/src/test2.ts', importers };
+		const moduleGraph = {
+			getModulesByFile: vi.fn(() => new Set([rootModule])),
+			onFileChange: vi.fn(),
+			invalidateModule: vi.fn(),
+		};
+		const sharedTransformRequest = {
+			invalidateMany: vi.fn(),
+			clear: vi.fn(),
+		};
+		return { rootModule, moduleGraph, sharedTransformRequest };
+	}
+
+	it('purges shared transform cache + Vite module graph for a changed .ts dep (the test2.ts repro)', () => {
+		const homeImporter = { id: '/src/components/Home.vue', importers: [] };
+		const { moduleGraph, sharedTransformRequest } = makeCacheMocks([homeImporter]);
+
+		purgeVueTransformCachesForHotUpdate({
+			file: '/proj/src/test2.ts',
+			server: { config: { root: '/proj' }, moduleGraph },
+			sharedTransformRequest,
+		});
+
+		expect(moduleGraph.onFileChange).toHaveBeenCalledWith('/proj/src/test2.ts');
+		expect(moduleGraph.invalidateModule).toHaveBeenCalled();
+		expect(sharedTransformRequest.invalidateMany).toHaveBeenCalledTimes(1);
+		const urls = Array.from(sharedTransformRequest.invalidateMany.mock.calls[0][0] as Set<string>);
+		// Changed file: project-relative, with and without the script extension
+		// (the /ns/m handler probes multiple extension candidates per spec).
+		expect(urls).toContain('/src/test2.ts');
+		expect(urls).toContain('/src/test2');
+		// Transitive importer (the SFC boundary) is purged too.
+		expect(urls).toContain('/src/components/Home.vue');
+		// Sledgehammer to catch extension-fallback cache keys targeted purge misses.
+		expect(sharedTransformRequest.clear).toHaveBeenCalledTimes(1);
+	});
+
+	it('soft-fails without a sharedTransformRequest runner', () => {
+		const { moduleGraph } = makeCacheMocks();
+		expect(() =>
+			purgeVueTransformCachesForHotUpdate({
+				file: '/proj/src/test2.ts',
+				server: { config: { root: '/proj' }, moduleGraph },
+				sharedTransformRequest: null,
+			}),
+		).not.toThrow();
+		expect(moduleGraph.onFileChange).toHaveBeenCalled();
+	});
+
+	it('excludes node_modules importers from the transitive purge', () => {
+		const vendorImporter = { id: '/proj/node_modules/some-lib/index.js', importers: [] };
+		const { moduleGraph, sharedTransformRequest } = makeCacheMocks([vendorImporter]);
+
+		purgeVueTransformCachesForHotUpdate({
+			file: '/proj/src/test2.ts',
+			server: { config: { root: '/proj' }, moduleGraph },
+			sharedTransformRequest,
+		});
+
+		const urls = Array.from(sharedTransformRequest.invalidateMany.mock.calls[0][0] as Set<string>);
+		expect(urls.some((u) => u.includes('node_modules'))).toBe(false);
 	});
 });

@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import type { Plugin } from 'vite';
 import { getProjectFilePath, getProjectRootPath } from './project.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 let tsConfigPath: string;
 
@@ -28,7 +30,7 @@ function getTsConfigPaths(debugViteLogs: boolean = false) {
 			} catch (parseError) {
 				// Clean up JSONC
 				if (debugViteLogs) console.log('📁 Cleaning JSONC for:', configPath);
-				let cleanContent = tsConfigContent
+				const cleanContent = tsConfigContent
 					.replace(/\/\/.*$/gm, '')
 					.replace(/\/\*[\s\S]*?\*\//g, '')
 					.replace(/,(\s*[}\]])/g, '$1');
@@ -103,17 +105,77 @@ function getTsConfigPaths(debugViteLogs: boolean = false) {
 	}
 }
 
-// Function to create TypeScript aliases with platform support
-function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: string; verbose?: boolean }) {
-	const aliases = [];
+type TsConfigResolverEntry =
+	| {
+			type: 'exact';
+			pattern: string;
+			resolvedDestination: string;
+	  }
+	| {
+			type: 'wildcard';
+			pattern: string;
+			regex: RegExp;
+			resolvedDestination: string;
+	  };
 
-	// Process patterns in order: wildcards first, then exact matches
+function resolveTsConfigPath(fullPath: string, platform: string, verbose?: boolean, debugId?: string): string {
+	if (verbose && debugId) {
+		console.log(`📁 TypeScript path candidate: ${debugId} -> ${fullPath}`);
+	}
+
+	if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+		const platformIndexPatterns = [`index.${platform}.ts`, `index.${platform}.js`, `index.${platform}.mjs`];
+		for (const indexFile of platformIndexPatterns) {
+			const indexPath = path.join(fullPath, indexFile);
+			if (fs.existsSync(indexPath)) {
+				if (verbose) {
+					console.log(`📁 Found platform-specific directory index: ${indexPath}`);
+				}
+				return indexPath;
+			}
+		}
+
+		for (const indexFile of ['index.ts', 'index.js', 'index.mjs']) {
+			const indexPath = path.join(fullPath, indexFile);
+			if (fs.existsSync(indexPath)) {
+				if (verbose) {
+					console.log(`📁 Found directory index: ${indexPath}`);
+				}
+				return indexPath;
+			}
+		}
+	}
+
+	for (const ext of ['.ts', '.js', '.mjs']) {
+		const platformPath = `${fullPath}.${platform}${ext}`;
+		if (fs.existsSync(platformPath)) {
+			if (verbose) {
+				console.log(`📁 Found platform-specific file: ${platformPath}`);
+			}
+			return platformPath;
+		}
+
+		const basePath = `${fullPath}${ext}`;
+		if (fs.existsSync(basePath)) {
+			if (verbose) {
+				console.log(`📁 Found base file: ${basePath}`);
+			}
+			return basePath;
+		}
+	}
+
+	return fullPath;
+}
+
+function createTsConfigResolvers(opts: { paths: any; baseUrl: string; platform: string; verbose?: boolean }) {
+	const resolvers: TsConfigResolverEntry[] = [];
+
+	// Match TypeScript precedence: exact aliases before wildcard fallbacks.
 	const sortedPatterns = Object.entries(opts.paths).sort(([a], [b]) => {
-		// Wildcards (with *) come first
 		const aHasWildcard = a.includes('*');
 		const bHasWildcard = b.includes('*');
-		if (aHasWildcard && !bHasWildcard) return -1;
-		if (!aHasWildcard && bHasWildcard) return 1;
+		if (aHasWildcard && !bHasWildcard) return 1;
+		if (!aHasWildcard && bHasWildcard) return -1;
 		// Within same type, longer patterns first (more specific)
 		return b.length - a.length;
 	});
@@ -121,97 +183,199 @@ function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: st
 	for (const [pattern, destinations] of sortedPatterns) {
 		if (Array.isArray(destinations) && destinations.length > 0) {
 			if (pattern.includes('*')) {
-				// Handle wildcard patterns (like "@scope/plugins/*")
 				const aliasKey = pattern.replace(/\/\*$/, '');
-				const destination = destinations[0].replace(/\/\*$/, '');
-
-				// Check if destination is already absolute (resolved by tsconfig chain)
+				// Values passed through path.resolve() contain backslashes on Windows.
+				// Do not leave a literal wildcard in a filesystem lookup path.
+				const destination = destinations[0].replace(/[\\/]\*$/, '');
 				const resolvedDestination = path.isAbsolute(destination) ? destination : path.resolve(projectRoot, opts.baseUrl, destination);
-
-				// console.log(
-				//   `📁 Creating wildcard alias: ${aliasKey} -> ${resolvedDestination}`,
-				// );
-
-				aliases.push({
-					find: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/(.*))?$`),
-					replacement: (match, subpath) => {
-						const fullPath = subpath ? path.join(resolvedDestination, subpath) : resolvedDestination;
-						if (opts.verbose) {
-							console.log(`📁 TypeScript wildcard alias: ${match} -> ${fullPath}`);
-						}
-
-						// Check if this resolves to a directory, and if so, try to find index files
-						if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
-							// Try platform-specific index files first
-							const platformIndexPatterns = [`index.${opts.platform}.ts`, `index.${opts.platform}.js`, `index.${opts.platform}.mjs`];
-							for (const indexFile of platformIndexPatterns) {
-								const indexPath = path.join(fullPath, indexFile);
-								if (fs.existsSync(indexPath)) {
-									if (opts.verbose) {
-										console.log(`📁 Found platform-specific directory index: ${indexPath}`);
-									}
-									return indexPath;
-								}
-							}
-
-							// Try standard index files
-							const indexPatterns = ['index.ts', 'index.js', 'index.mjs'];
-							for (const indexFile of indexPatterns) {
-								const indexPath = path.join(fullPath, indexFile);
-								if (fs.existsSync(indexPath)) {
-									if (opts.verbose) {
-										console.log(`📁 Found directory index: ${indexPath}`);
-									}
-									return indexPath;
-								}
-							}
-						}
-
-						// If not a directory or no index found, try platform-specific resolution
-						const extensions = ['.ts', '.js', '.mjs'];
-						for (const ext of extensions) {
-							const basePath = fullPath + ext;
-
-							// Try platform-specific file first
-							const platformPath = fullPath + `.${opts.platform}` + ext;
-							if (fs.existsSync(platformPath)) {
-								if (opts.verbose) {
-									console.log(`📁 Found platform-specific file: ${platformPath}`);
-								}
-								return platformPath;
-							}
-
-							// Try base file
-							if (fs.existsSync(basePath)) {
-								if (opts.verbose) {
-									console.log(`📁 Found base file: ${basePath}`);
-								}
-								return basePath;
-							}
-						}
-
-						return fullPath;
-					},
+				resolvers.push({
+					type: 'wildcard',
+					pattern,
+					regex: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(.*)$`),
+					resolvedDestination,
 				});
 			} else {
-				// Handle exact matches (like "@scope/anything/anywhere")
-				// Use regex to ensure exact match only
-
-				// Check if destination is already absolute (resolved by tsconfig chain)
 				const resolvedDestination = path.isAbsolute(destinations[0]) ? destinations[0] : path.resolve(projectRoot, opts.baseUrl, destinations[0]);
 				if (opts.verbose) {
 					console.log(`📁 Creating exact alias: ${pattern} -> ${resolvedDestination}`);
 				}
 
-				aliases.push({
-					find: new RegExp(`^${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
-					replacement: resolvedDestination,
+				resolvers.push({
+					type: 'exact',
+					pattern,
+					resolvedDestination,
 				});
 			}
 		}
 	}
 
-	return aliases;
+	return resolvers;
+}
+
+/**
+ * Absolute directory roots that the project's tsconfig `paths` aliases point at.
+ *
+ * Used to scope HMR to configured shared libraries in a monorepo: a file only
+ * triggers an update if it lives under the app source dir or one of these
+ * alias roots. When an alias targets a file (e.g. `@org/lib -> libs/lib/src/index.ts`)
+ * the file's directory is returned so sibling source files in that library are
+ * also in scope. Wildcard aliases (`@org/* -> libs/*`) contribute their resolved
+ * base directory (`libs`).
+ */
+export function getTsConfigAliasRoots(opts: { paths?: Record<string, string[]>; baseUrl?: string }): string[] {
+	if (!opts?.paths) return [];
+	const resolvers = createTsConfigResolvers({ paths: opts.paths, baseUrl: opts.baseUrl || '.', platform: '' });
+	const roots: string[] = [];
+	for (const resolver of resolvers) {
+		let dest = resolver.resolvedDestination;
+		if (!dest) continue;
+		if (path.extname(dest)) {
+			dest = path.dirname(dest);
+		}
+		roots.push(dest);
+	}
+	return roots;
+}
+
+export function createTsConfigSpecifierResolver(opts: { paths: Record<string, string[]>; baseUrl: string; platform: string; verbose?: boolean }): ((source: string) => string | null) | undefined {
+	const resolvers = createTsConfigResolvers(opts);
+	if (!resolvers.length) {
+		return undefined;
+	}
+
+	// Per-resolver caches.
+	//
+	// Hot-path note: the Vite plugin wrapper is `enforce: 'pre'`, so this resolver
+	// is invoked for every `resolveId` call in the build — including thousands of
+	// relative imports (`./foo`), absolute paths, virtual modules (`\0…`), and bare
+	// node_modules specifiers (`rxjs`, `@angular/core`, …) that can never match a
+	// tsconfig `paths` entry. Memoizing both the no-match outcome and the
+	// per-`fullPath` filesystem walk turns repeated lookups from
+	// `O(N regexes + ~12 fs syscalls)` into a single `Set.has` / `Map.get`.
+	//
+	// Cache validity: `paths` / `baseUrl` are baked into the closure at creation,
+	// so the regex set never changes for the lifetime of this resolver. The
+	// filesystem cache assumes overlapping platform/extension files (e.g. adding a
+	// new `foo.ios.ts` next to `foo.ts`) won't appear mid-watch; if that ever
+	// bites, invalidate via Vite's `watchChange` hook instead of widening these
+	// caches.
+	const noMatchCache = new Set<string>();
+	const fsResolveCache = new Map<string, string>();
+	const cachedResolveTsConfigPath = (fullPath: string, debugId?: string): string => {
+		const cached = fsResolveCache.get(fullPath);
+		if (cached !== undefined) {
+			return cached;
+		}
+		// Canonicalize the resolved id (forward slashes + uppercase Windows drive).
+		// path.join/string-concat inside resolveTsConfigPath emit backslashes on
+		// Windows; without this a tsconfig-aliased file would land in Rolldown's
+		// graph under a different id than the same file reached via Vite's
+		// forward-slash resolution. No-op on POSIX. See normalize-id.ts.
+		const resolved = normalizeModuleId(resolveTsConfigPath(fullPath, opts.platform, opts.verbose, debugId));
+		fsResolveCache.set(fullPath, resolved);
+		return resolved;
+	};
+
+	return (source: string): string | null => {
+		if (source === '~/package.json') {
+			return null;
+		}
+
+		// Early reject for specifier shapes that can never match a tsconfig
+		// `paths` entry. Skipping them here avoids walking every resolver
+		// regex on the hot path.
+		//   46 = '.'  → relative imports (`./foo`, `../bar`)
+		//   47 = '/'  → already-absolute paths (no alias would start with /)
+		//    0 = '\0' → Vite/Rolldown virtual modules
+		const firstChar = source.charCodeAt(0);
+		if (firstChar === 46 || firstChar === 47 || firstChar === 0) {
+			return null;
+		}
+		// URL-style specifiers (`http:`, `file:`, `data:`, `node:fs`, …) and
+		// Windows drive letters (`C:\…`). None of these can match a path
+		// alias, and `:` isn't a valid character in npm package names or
+		// tsconfig path patterns we'd ever want to alias.
+		if (source.includes(':')) {
+			return null;
+		}
+
+		if (noMatchCache.has(source)) {
+			return null;
+		}
+
+		for (const resolver of resolvers) {
+			if (resolver.type === 'exact') {
+				if (source !== resolver.pattern) {
+					continue;
+				}
+				return cachedResolveTsConfigPath(resolver.resolvedDestination, source);
+			}
+
+			const match = resolver.regex.exec(source);
+			if (!match) {
+				continue;
+			}
+			const subpath = match[1];
+			const fullPath = subpath ? path.join(resolver.resolvedDestination, subpath) : resolver.resolvedDestination;
+			return cachedResolveTsConfigPath(fullPath, source);
+		}
+
+		noMatchCache.add(source);
+		return null;
+	};
+}
+
+/**
+ * Vite `resolveId` plugin that maps tsconfig `paths` aliases to absolute module
+ * ids. Thin wrapper over `createTsConfigSpecifierResolver`.
+ */
+export function createTsConfigPathsResolver(opts: { paths: Record<string, string[]>; baseUrl: string; platform: string; verbose?: boolean }): Plugin | undefined {
+	const resolve = createTsConfigSpecifierResolver(opts);
+	if (!resolve) {
+		return undefined;
+	}
+	return {
+		name: 'ns-tsconfig-paths-resolver',
+		enforce: 'pre',
+		resolveId(source) {
+			return resolve(source);
+		},
+	};
+}
+
+// --- Project-level alias resolution for non-Vite consumers (HMR SFC routes) ---
+//
+// The HMR Vue SFC assembler/server rewrite `.vue` imports with their own regex
+// and read SFC source straight from disk, bypassing Vite's resolver — so they
+// were blind to tsconfig `paths` aliases (`@present/...`, `@app`, …) and 500'd
+// on any aliased `.vue` import. These helpers give those routes the SAME alias
+// resolution the build uses, memoized once per process.
+let _projectAliasResolver: ((source: string) => string | null) | null | undefined;
+
+export function resolveProjectTsAlias(spec: string): string | null {
+	if (_projectAliasResolver === undefined) {
+		try {
+			const tsConfig = getTsConfigData({ platform: '' });
+			_projectAliasResolver = createTsConfigSpecifierResolver({ paths: tsConfig.paths, baseUrl: tsConfig.baseUrl, platform: '' }) ?? null;
+		} catch {
+			_projectAliasResolver = null;
+		}
+	}
+	return _projectAliasResolver ? _projectAliasResolver(spec) : null;
+}
+
+/**
+ * Resolve an aliased specifier to a POSIX, project-root-relative path
+ * (`@present/components/ui/BasePage.vue` → `/src/presentation/components/ui/BasePage.vue`) —
+ * the form the HMR SFC routes use as their on-disk `base`. Returns `null` when
+ * the alias doesn't match or resolves outside the project root.
+ */
+export function resolveProjectTsAliasRelative(spec: string, projectRoot: string): string | null {
+	const abs = resolveProjectTsAlias(spec);
+	if (!abs) return null;
+	const rel = path.relative(projectRoot, abs);
+	if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+	return '/' + rel.split(path.sep).join('/');
 }
 
 // Get TypeScript path configuration
@@ -245,20 +409,8 @@ export const getTsConfigData = (options: TsConfigOptions) => {
 		}
 	}
 
-	const aliases = createTsConfigAliases({
-		paths: cachedConfig.paths,
-		baseUrl: cachedConfig.baseUrl,
-		platform: options.platform,
-		verbose,
-	});
-
-	if (aliases.length > 0 && verbose) {
-		console.log('📁 Created TypeScript path aliases:', aliases.length);
-	}
-
 	return {
 		paths: cachedConfig.paths,
 		baseUrl: cachedConfig.baseUrl,
-		aliases,
 	};
 };
