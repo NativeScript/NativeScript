@@ -242,7 +242,10 @@ global.Experimental = function (target: Object, key?: string | symbol, descripto
 		return target;
 	}
 };
-const modules: Map<string, { moduleId: string; loader: ModuleLoader }> = new Map<string, { moduleId: string; loader: ModuleLoader }>();
+// Persist the module registry Map on globalThis so that if this file is
+// re-evaluated in a secondary realm (HTTP ESM during Vite HMR), the
+// existing modules registered by the primary bundle are preserved.
+const modules: Map<string, { moduleId: string; loader: ModuleLoader }> = (global as any).__nsModuleRegistry || ((global as any).__nsModuleRegistry = new Map<string, { moduleId: string; loader: ModuleLoader }>());
 
 // console.log(`globals/index, __COMMONJS__:`, __COMMONJS__);
 global.loadModule = function loadModule(name: string): any {

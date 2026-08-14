@@ -1,0 +1,230 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@analogjs/vite-plugin-angular', () => ({
+	default: vi.fn(() => []),
+}));
+
+vi.mock('./base.js', () => ({
+	baseConfig: vi.fn(() => ({})),
+}));
+
+vi.mock('../hmr/frameworks/angular/build/angular-linker.js', () => ({
+	angularLinkerVitePlugin: vi.fn(() => ({ name: 'mock-angular-linker-pre' })),
+	angularLinkerVitePluginPost: vi.fn(() => ({ name: 'mock-angular-linker-post' })),
+}));
+
+vi.mock('../helpers/cli-flags.js', () => ({
+	getCliFlags: vi.fn(() => ({})),
+}));
+
+import { angularConfig } from './angular.js';
+
+function normalizePath(filePath: string): string {
+	return filePath.replace(/\\/g, '/');
+}
+
+function getAngularPlugins(): any[] {
+	const config = angularConfig({ mode: 'development' });
+	return ((config.plugins as any[]) || []).flat().filter(Boolean);
+}
+
+function getAngularTemplateDepsPlugin() {
+	const plugins = getAngularPlugins();
+	const plugin = plugins.find((entry) => entry?.name === 'angular-template-deps');
+	if (!plugin) {
+		throw new Error('angular-template-deps plugin not found');
+	}
+	return plugin as {
+		transform?: (this: { addWatchFile: (filePath: string) => void }, code: string, id: string) => null;
+		watchChange?: (id: string, change: { event: string }) => void;
+		shouldTransformCachedModule?: (options: { id: string }) => boolean | null;
+		buildStart?: () => void;
+	};
+}
+
+function createComponentFixture() {
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-angular-template-watch-'));
+	const componentPath = path.join(tempDir, 'example.component.ts');
+	const templatePath = path.join(tempDir, 'example.component.html');
+	const stylePath = path.join(tempDir, 'example.component.css');
+
+	fs.writeFileSync(templatePath, '<Label text="Hello"></Label>');
+	fs.writeFileSync(stylePath, '.example { color: red; }');
+	fs.writeFileSync(componentPath, ["import { Component } from '@angular/core';", '', '@Component({', "  templateUrl: './example.component.html',", "  styleUrls: ['./example.component.css']", '})', 'export class ExampleComponent {}'].join('\n'));
+
+	return {
+		tempDir,
+		componentPath,
+		templatePath,
+		stylePath,
+		componentCode: fs.readFileSync(componentPath, 'utf8'),
+	};
+}
+
+function createCommentedStyleUrlsFixture() {
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-angular-template-watch-cmt-'));
+	const componentPath = path.join(tempDir, 'commented.component.ts');
+	const templatePath = path.join(tempDir, 'commented.component.html');
+	const stylePath = path.join(tempDir, 'commented.component.scss');
+
+	fs.writeFileSync(templatePath, '<Label text="Hello"></Label>');
+	fs.writeFileSync(componentPath, ["import { Component } from '@angular/core';", '', '@Component({', "  selector: 'app-commented',", "  templateUrl: './commented.component.html',", "  // styleUrls: ['./commented.component.scss'],", "  /* styleUrl: './commented.component.scss', */", '})', 'export class CommentedComponent {}'].join('\n'));
+
+	return {
+		tempDir,
+		componentPath,
+		templatePath,
+		stylePath,
+		componentCode: fs.readFileSync(componentPath, 'utf8'),
+	};
+}
+
+function createWorkspaceComponentFixture() {
+	const tempDir = fs.mkdtempSync(path.join(process.cwd(), '.tmp-ns-angular-template-watch-'));
+	const componentPath = path.join(tempDir, 'example.component.ts');
+	const templatePath = path.join(tempDir, 'example.component.html');
+	const stylePath = path.join(tempDir, 'example.component.css');
+
+	fs.writeFileSync(templatePath, '<Label text="Hello"></Label>');
+	fs.writeFileSync(stylePath, '.example { color: red; }');
+	fs.writeFileSync(componentPath, ["import { Component } from '@angular/core';", '', '@Component({', "  templateUrl: './example.component.html',", "  styleUrls: ['./example.component.css']", '})', 'export class ExampleComponent {}'].join('\n'));
+
+	return {
+		tempDir,
+		componentPath,
+		templatePath,
+		stylePath,
+		componentCode: fs.readFileSync(componentPath, 'utf8'),
+		componentVirtualId: `/${normalizePath(path.relative(process.cwd(), componentPath))}`,
+	};
+}
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
+
+describe('angular-template-deps watch invalidation', () => {
+	it('registers external template and stylesheet dependencies', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createComponentFixture();
+		const watchedFiles: string[] = [];
+
+		try {
+			plugin.transform?.call(
+				{
+					addWatchFile(filePath: string) {
+						watchedFiles.push(normalizePath(filePath));
+					},
+				},
+				fixture.componentCode,
+				fixture.componentPath,
+			);
+
+			expect(watchedFiles).toEqual(expect.arrayContaining([normalizePath(fixture.templatePath), normalizePath(fixture.stylePath)]));
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it.each([
+		['template', 'templatePath'],
+		['style', 'stylePath'],
+	])('invalidates the component transform cache when the %s asset changes during dev serve', (_label, changedAssetKey) => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createComponentFixture();
+
+		try {
+			plugin.transform?.call(
+				{
+					addWatchFile() {},
+				},
+				fixture.componentCode,
+				fixture.componentPath,
+			);
+
+			plugin.watchChange?.(fixture[changedAssetKey as 'templatePath' | 'stylePath'], { event: 'update' });
+
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBe(true);
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBeNull();
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('falls back to same-stem component invalidation when an html asset changes before tracking', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createComponentFixture();
+
+		try {
+			plugin.watchChange?.(fixture.templatePath, { event: 'update' });
+
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBe(true);
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBeNull();
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('does not register watch entries for commented-out styleUrls / styleUrl declarations', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createCommentedStyleUrlsFixture();
+		const watchedFiles: string[] = [];
+
+		try {
+			plugin.transform?.call(
+				{
+					addWatchFile(filePath: string) {
+						watchedFiles.push(normalizePath(filePath));
+					},
+				},
+				fixture.componentCode,
+				fixture.componentPath,
+			);
+
+			expect(watchedFiles).toContain(normalizePath(fixture.templatePath));
+			expect(watchedFiles).not.toContain(normalizePath(fixture.stylePath));
+			expect(watchedFiles.some((f) => f.endsWith('.scss'))).toBe(false);
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('matches absolute watcher paths with project-relative transform ids during serve', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createWorkspaceComponentFixture();
+
+		try {
+			plugin.transform?.call(
+				{
+					addWatchFile() {},
+				},
+				fixture.componentCode,
+				fixture.componentPath,
+			);
+
+			plugin.watchChange?.(fixture.templatePath, { event: 'update' });
+
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentVirtualId })).toBe(true);
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentVirtualId })).toBeNull();
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('does not instrument components with Windows-form node_modules ids', () => {
+		const plugins = getAngularPlugins();
+		const discover = plugins.find((plugin) => plugin?.name === 'ns-component-hmr-register');
+		const inject = plugins.find((plugin) => plugin?.name === 'ns-component-hmr-register-post');
+		if (!discover || !inject) {
+			throw new Error('component registration plugins not found');
+		}
+		const windowsNodeModulesId = 'C:\\repo\\node_modules\\component-pkg\\example.component.ts';
+
+		discover.transform?.('@Component({})\nexport class ExampleComponent {}', windowsNodeModulesId);
+
+		expect(inject.transform?.('export class ExampleComponent {}', windowsNodeModulesId)).toBeNull();
+	});
+});

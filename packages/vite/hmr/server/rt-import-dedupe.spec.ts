@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { __test_processCodeForDevice as transform } from './websocket';
+import { processCodeForDevice as transform } from './websocket-device-transform.js';
 
 // Helper: run the sanitizer and return code
 function run(code: string) {

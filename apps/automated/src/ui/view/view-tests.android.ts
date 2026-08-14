@@ -191,8 +191,8 @@ export function test_events_tearDownUIAndRemovedFromNativeVisualTree_AreRaised_W
 		TKUnit.assertNull(btn._context);
 		TKUnit.assertNull(stack._context);
 
-		const btnNativeParent = isIOS ? nativeBtn.superview : nativeBtn.getParent();
-		const stackNativeParent = isIOS ? nativeStack.superview : nativeStack.getParent();
+		const btnNativeParent = isIOS ? (nativeBtn as unknown as UIView).superview : (nativeBtn as android.view.View).getParent();
+		const stackNativeParent = isIOS ? (nativeStack as unknown as UIView).superview : (nativeStack as android.view.View).getParent();
 
 		TKUnit.assertNull(btnNativeParent, 'button NativeParent should be null');
 		TKUnit.assertNull(stackNativeParent, 'stack NativeParent should be null');

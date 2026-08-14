@@ -1,9 +1,34 @@
 import ts from 'typescript';
-// We retain the advanced transformer for future enhancement but perform a safer
-// localized textual + AST-assisted downlevel here to avoid edge corruption of
-// computed property names (e.g. ['frame-in']).
-// import nativeClassTransformer from '../transformers/NativeClass/index.js';
+// This is the active NativeClass transform: a localized textual + AST-assisted
+// downlevel that avoids edge corruption of computed property names (e.g.
+// ['frame-in']). It is the single production implementation in this package.
 import { getCliFlags } from './cli-flags.js';
+import type { Platform } from './platform-types.js';
+
+/**
+ * Opt-in: skip the NativeClass ES5 downlevel entirely and let the iOS runtime handle plain
+ * ES `class X extends NativeBase {}` declarations natively (the runtime registers the
+ * Objective-C class lazily via new.target and also provides a global no-op `NativeClass`
+ * decorator, so decorated sources keep working without any build-time rewriting).
+ *
+ * Enabled via `--env.nativeESClasses` or the NS_NATIVE_ES_CLASSES environment variable
+ * (set NS_NATIVE_ES_CLASSES=0/false to force-disable). Android continues to require the
+ * ES5 downlevel (the Static Binding Generator relies on it), so this never applies to
+ * Android targets.
+ */
+export function isNativeESClassesEnabled(platform?: Platform): boolean {
+	if (platform === 'android') return false;
+	const envValue = process.env.NS_NATIVE_ES_CLASSES;
+	if (envValue !== undefined) {
+		return envValue !== '0' && envValue.toLowerCase() !== 'false';
+	}
+	try {
+		const flags = getCliFlags();
+		return !!flags.nativeESClasses;
+	} catch (e) {
+		return false;
+	}
+}
 
 /**
  * Apply the NativeClass transformer to a source string. Returns null if no change performed.
@@ -11,14 +36,19 @@ import { getCliFlags } from './cli-flags.js';
 export function transformNativeClassSource(code: string, fileName: string) {
 	// Avoid transforming platform-specific sources for the non-target platform.
 	// Example: don't run Android-specific transforms on iOS builds and vice versa.
+	let platform: Platform | undefined;
 	try {
 		const flags = getCliFlags();
-		const platform: 'android' | 'ios' | 'visionos' | undefined = flags.android ? 'android' : 'ios';
+		platform = flags.android ? 'android' : 'ios';
 		if (fileName.includes('.android.') && platform !== 'android') return null;
 		if ((fileName.includes('.ios.') || fileName.includes('.visionos.')) && platform === 'android') return null;
 	} catch (e) {
 		// If cli flags cannot be read for any reason, fall back to original behavior.
 	}
+
+	// Native ES class mode (Apple targets only): leave sources untouched - the runtime
+	// understands ES classes extending native types and the NativeClass decorator itself.
+	if (isNativeESClassesEnabled(platform)) return null;
 
 	// If this is JS and we see a __decorate* call that references NativeClass, strip it safely.
 	const isJS = /\.(js|mjs|cjs)$/.test(fileName);
@@ -73,7 +103,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 	// Match @NativeClass (optionally with args, multi-line) not preceded by another decorator line capturing stacked sequences.
 	// We'll place the marker right before the class declaration start to simplify slicing.
 	const DECORATOR_BLOCK_RE = /(^|\n)((?:\s*@[\w$][^\n]*\n)*)\s*@NativeClass(?:\([\s\S]*?\))?\s*(?=\n(?:\s*@[\w$][^\n]*\n)*\s*(?:export\s+)?class\s)/g;
-	let working = code.replace(DECORATOR_BLOCK_RE, (full, prefix, stacked) => {
+	const working = code.replace(DECORATOR_BLOCK_RE, (full, prefix, stacked) => {
 		// Keep other decorators, inject marker after them.
 		return `${prefix || '\n'}${stacked || ''}/*__NativeClass__*/`;
 	});
@@ -103,16 +133,11 @@ export function transformNativeClassSource(code: string, fileName: string) {
 								useDefineForClassFields: false,
 							},
 						})
-						.outputText.replace(/Object\.defineProperty\(([^,]+),\s*(["'`][^"'`]+["'`]|[A-Za-z_$][A-Za-z0-9_$]*),\s*{([^}]*)}\)/g, (m, obj, key, body) => {
-							if (/enumerable:\s*false/.test(body)) {
-								body = body.replace(/enumerable:\s*false/, 'enumerable: true');
-							}
-							return `Object.defineProperty(${obj}, ${key}, {${body}})`;
-						});
+						.outputText.replace(/enumerable:\s*false/g, 'enumerable: true');
 					let cleaned = down.replace(/export \{\};?\s*$/m, '');
 					if (hadExport) {
 						const name = (node as ts.ClassDeclaration).name?.text;
-						if (name && !new RegExp(`export\s*{\s*${name}\s*}`, 'm').test(cleaned)) {
+						if (name && !new RegExp(`export\\s*\\{\\s*${name}\\s*\\}`, 'm').test(cleaned)) {
 							cleaned += `\nexport { ${name} };\n`;
 						}
 					}

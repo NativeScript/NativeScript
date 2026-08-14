@@ -18,14 +18,14 @@ class RemovalTrackingGridLayout extends GridLayout {
 
 	// this trick wont work on android anymore as removeRows
 	// is done in one call and does not go through _onRowRemoved
-	public _onRowRemoved(itemSpec: ItemSpec, index: number) {
+	public _onRowRemoved(itemSpec: Parameters<GridLayout['_onRowRemoved']>[0], index: number) {
 		this.removedRows++;
 		super._onRowRemoved(itemSpec, index);
 	}
 
 	// this trick wont work on android anymore as removeColumns
 	// is done in one call and does not go through _onColumnRemoved
-	public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
+	public _onColumnRemoved(itemSpec: Parameters<GridLayout['_onColumnRemoved']>[0], index: number) {
 		this.removedCols++;
 		super._onColumnRemoved(itemSpec, index);
 	}
@@ -368,14 +368,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 	private getGridLayoutRowActualLength(view: GridLayout, index: number) {
 		if (__ANDROID__) {
-			return Math.round(layoutHelper.dp(view.nativeViewProtected.getRowActualLength(index)));
+			return Math.round(layoutHelper.dp((view.nativeViewProtected as any).getRowActualLength(index)));
 		} else {
 			return view.getRows()[index].actualLength;
 		}
 	}
 	private getGridLayoutColumnActualLength(view: GridLayout, index: number) {
 		if (__ANDROID__) {
-			return Math.round(layoutHelper.dp(view.nativeViewProtected.getColumnActualLength(index)));
+			return Math.round(layoutHelper.dp((view.nativeViewProtected as any).getColumnActualLength(index)));
 		} else {
 			return view.getColumns()[index].actualLength;
 		}

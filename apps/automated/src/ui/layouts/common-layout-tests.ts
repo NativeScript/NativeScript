@@ -1,7 +1,16 @@
 ﻿import * as TKUnit from '../../tk-unit';
 import * as layoutHelper from './layout-helper';
-import * as testModule from '../../ui-test';
-import { LayoutBase, unsetValue, PercentLength, Device, platformNames } from '@nativescript/core';
+import { View, unsetValue, PercentLength, Device, platformNames } from '@nativescript/core';
+
+type LayoutLike = View & {
+	addChild(view: View): void;
+	removeChildren(): void;
+};
+
+type LayoutTestLike = {
+	testView: LayoutLike;
+	waitUntilTestElementLayoutIsValid(timeoutSec?: number): void;
+};
 
 function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
 	var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
@@ -12,7 +21,7 @@ function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.
 	return lp;
 }
 
-export function percent_support_nativeLayoutParams_are_correct(test: testModule.UITest<LayoutBase>) {
+export function percent_support_nativeLayoutParams_are_correct(test: LayoutTestLike) {
 	if (Device.os !== platformNames.android) {
 		return;
 	}
@@ -29,7 +38,7 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
 
 	test.waitUntilTestElementLayoutIsValid();
 
-	let lp = getNativeLayoutParams(btn.nativeViewProtected);
+	let lp = getNativeLayoutParams(btn.nativeViewProtected as any);
 	TKUnit.assertEqual(lp.width, 100, 'width');
 	TKUnit.assertEqual(lp.widthPercent, -1, 'widthPercent');
 	TKUnit.assertEqual(lp.height, 100, 'height');
@@ -72,8 +81,8 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
 	TKUnit.assertEqual(lp.bottomMarginPercent, -1, 'bottomMarginPercent');
 }
 
-export function percent_support_children_test(test: testModule.UITest<LayoutBase>) {
-	let layout: LayoutBase = test.testView;
+export function percent_support_children_test(test: LayoutTestLike) {
+	let layout = test.testView;
 	layout.removeChildren();
 	layout.width = { value: 200, unit: 'px' };
 	layout.height = { value: 200, unit: 'px' };

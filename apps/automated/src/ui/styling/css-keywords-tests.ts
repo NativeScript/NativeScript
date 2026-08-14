@@ -14,7 +14,7 @@ export var test_value_after_initial = function () {
 
 	btn.backgroundColor = new Color('#0000FF');
 	TKUnit.assertEqual(btn.backgroundColor.hex, '#0000FF', 'backgroundColor property');
-	btn.backgroundColor = 'initial';
+	(btn as any).backgroundColor = 'initial';
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
@@ -46,7 +46,7 @@ export var test_value_after_unset = function () {
 
 	btn.backgroundColor = new Color('#0000FF');
 	TKUnit.assertEqual(btn.backgroundColor.hex, '#0000FF', 'backgroundColor property');
-	btn.backgroundColor = 'unset';
+	(btn as any).backgroundColor = 'unset';
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
@@ -78,7 +78,7 @@ export var test_value_after_revert = function () {
 
 	btn.backgroundColor = new Color('#0000FF');
 	TKUnit.assertEqual(btn.backgroundColor.hex, '#0000FF', 'backgroundColor property');
-	btn.backgroundColor = 'revert';
+	(btn as any).backgroundColor = 'revert';
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
@@ -111,7 +111,7 @@ export var test_value_after_inherit = function () {
 
 	btn.backgroundColor = new Color('#0000FF');
 	TKUnit.assertEqual(btn.backgroundColor.hex, '#0000FF', 'backgroundColor property');
-	btn.backgroundColor = 'inherit';
+	(btn as any).backgroundColor = 'inherit';
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 

@@ -62,6 +62,14 @@ module.exports = {
           script: 'nx debug apps-toolbox android',
           description: '⚆  Run Android  🤖'
         },
+        devios: {
+          script: 'nx debug apps-toolbox ios -c=hmr',
+          description: '⚆  Dev iOS  ' 
+        },
+        devandroid: {
+          script: 'nx debug apps-toolbox android -c=hmr',
+          description: '⚆  Dev Android  🤖' 
+        }
       },
       "...UI...": {
         script: `npx cowsay "Tons of ui samples to prove out core behavior and validate github issue fixes ☑️"`,
@@ -128,6 +136,29 @@ module.exports = {
 				test: {
 					script: 'nx test webpack5',
 					description: '@nativescript/webpack(5): Unit tests'
+				},
+			},
+			// @nativescript/vite
+			vite: {
+				build: {
+					script: 'nx build vite',
+					description: '@nativescript/vite: Build'
+				},
+				test: {
+					script: 'nx test vite',
+					description: '@nativescript/vite: Unit tests'
+				},
+				lint: {
+					script: 'nx lint vite',
+					description: '@nativescript/vite: Lint'
+				},
+				verify: {
+					script: 'nx run-many --targets=lint,test,build --projects=vite',
+					description: '@nativescript/vite: Lint + unit tests + build'
+				},
+				e2e: {
+					script: 'node packages/vite/e2e/run.mjs',
+					description: '@nativescript/vite: Cross-flavor e2e HMR gate (requires ns-apple-music apps repo)'
 				},
 			},
     },

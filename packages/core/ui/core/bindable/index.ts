@@ -576,7 +576,8 @@ export class Binding {
 					indexAsInt--;
 				}
 			} else if (types.isString(index)) {
-				while (result && result.typeName !== index) {
+				const normalizedIndex = index.toLowerCase();
+				while (result && result.typeName !== index && result.cssType !== normalizedIndex) {
 					result = result.parent;
 				}
 			}

@@ -1,4 +1,4 @@
-import { Observable, Dialogs, DialogStrings, View, EventData, SearchEventData } from '@nativescript/core';
+import { Observable, Dialogs, DialogStrings, View, EventData, SearchEventData, Color } from '@nativescript/core';
 import { getItemCallbacks } from '../split-view/split-view-root';
 type CountryListType = Array<{ title: string; items: Array<{ name: string; code: string; flag: string; isVisible?: boolean }> }>;
 export class ListPageModelSticky extends Observable {
@@ -1392,7 +1392,7 @@ export class ListPageModelSticky extends Observable {
 	}
 
 	itemLoading(args: EventData): void {
-		(args.object as View).backgroundColor = 'transparent';
+		(args.object as View).backgroundColor = new Color('transparent');
 	}
 
 	onSearchTextChange(evt: SearchEventData): void {

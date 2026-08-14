@@ -1,8 +1,11 @@
-const vitePreloadDeclaration = 'const __vitePreload = function preload';
+// Vite emits `const` or `var` for the preload declaration depending on the output target.
+const vitePreloadDeclaration = /(?:const|var)\s+__vitePreload\s*=\s*function preload/;
 const vitePreloadPreamble = /^const scriptRel =[\s\S]*;\s*const assetsURL =[\s\S]*;\s*const seen = \{\};\s*$/;
+// Log the stack when present — a bare Error stringifies to message-only,
+// which hides WHICH module failed and turns dev-session triage into guesswork.
 const nativePreloadImplementation = `const __vitePreload = function preload(baseModule, deps, importerUrl) {
       return baseModule().catch(err => {
-        console.error("Dynamic import error:", err);
+        console.error("Dynamic import error:", err && err.stack ? err.stack : err);
         throw err;
       });
     }`;
@@ -29,10 +32,11 @@ function findClosingBrace(code: string, declarationStart: number) {
 }
 
 function simplifyVitePreload(code: string) {
-	const declarationStart = code.indexOf(vitePreloadDeclaration);
-	if (declarationStart === -1) {
+	const declarationMatch = vitePreloadDeclaration.exec(code);
+	if (!declarationMatch) {
 		return code;
 	}
+	const declarationStart = declarationMatch.index;
 
 	const functionEnd = findClosingBrace(code, declarationStart);
 	if (functionEnd === -1) {
