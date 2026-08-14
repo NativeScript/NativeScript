@@ -1,10 +1,15 @@
-﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from '.';
+﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition } from '.';
 import { View, AddChildFromBuilder, AddArrayFromBuilder, CSSType } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Property, CoercibleProperty, InheritedCssProperty } from '../core/properties';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
+
+export interface SelectedIndexChangedEventData extends EventData {
+	oldIndex: number;
+	newIndex: number;
+}
 
 @CSSType('SegmentedBarItem')
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
