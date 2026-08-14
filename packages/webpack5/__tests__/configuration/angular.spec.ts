@@ -1,6 +1,7 @@
 import Config from 'webpack-chain';
 
 import { default as angular } from '../../src/configuration/angular';
+import * as dependenciesHelpers from '../../src/helpers/dependencies';
 import { init } from '../../src';
 
 jest.mock(
@@ -17,18 +18,24 @@ jest.mock(
 			AngularWebpackPlugin,
 		};
 	},
-	{ virtual: true }
+	{ virtual: true },
 );
 
 describe('angular configuration', () => {
 	const platforms = ['ios', 'android'];
+	const originalGetDependencyVersion = dependenciesHelpers.getDependencyVersion;
 	let fsExistsSyncSpy: jest.SpiedFunction<any>;
+	let getDependencyVersionSpy: jest.SpiedFunction<any>;
 	let polyfillsPath: string | boolean = false;
 
 	beforeAll(() => {
 		const fs = require('fs');
 		const original = fs.existsSync;
 		fsExistsSyncSpy = jest.spyOn(fs, 'existsSync');
+		getDependencyVersionSpy = jest.spyOn(
+			dependenciesHelpers,
+			'getDependencyVersion',
+		);
 
 		fsExistsSyncSpy.mockImplementation((path) => {
 			if (path === '__jest__/tsconfig.json') {
@@ -41,10 +48,19 @@ describe('angular configuration', () => {
 
 			return original.call(fs, path);
 		});
+
+		getDependencyVersionSpy.mockImplementation((name: string) => {
+			if (name === '@angular-devkit/build-angular') {
+				return '21.0.0';
+			}
+
+			return originalGetDependencyVersion(name);
+		});
 	});
 
 	afterAll(() => {
 		fsExistsSyncSpy.mockRestore();
+		getDependencyVersionSpy.mockRestore();
 	});
 
 	for (let platform of platforms) {
@@ -79,24 +95,22 @@ describe('angular configuration', () => {
 	});
 
 	describe('@angular-devkit/build-angular backwards compatible', () => {
-		beforeAll(() => {
-			jest.mock('@angular-devkit/build-angular/package.json', () => ({
-				version: '14.0.0',
-			}));
-		});
-
-		afterAll(() => {
-			jest.unmock('@angular-devkit/build-angular/package.json');
-		});
-
 		it('sets scriptTarget for version <15', () => {
-			const config = angular(new Config());
-			expect(
-				config.module
-					.rule('angular-webpack-loader')
-					.use('webpack-loader')
-					.get('options')
-			).toMatchSnapshot();
+			getDependencyVersionSpy.withImplementation(
+				(name: string) =>
+					name === '@angular-devkit/build-angular'
+						? '14.0.0'
+						: originalGetDependencyVersion(name),
+				() => {
+					const config = angular(new Config());
+					expect(
+						config.module
+							.rule('angular-webpack-loader')
+							.use('webpack-loader')
+							.get('options'),
+					).toMatchSnapshot();
+				},
+			);
 		});
 	});
 });
