@@ -373,7 +373,7 @@ export function test_page_backgroundColor() {
 		TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, 'page backgroundColor is wrong');
 	} else {
 		const whiteColor = new Color('white');
-		TKUnit.assertEqual(page.nativeViewProtected.getBackground().getColor(), whiteColor.android, 'page default backgroundColor should be white');
+		TKUnit.assertEqual((page.nativeViewProtected as any).getBackground().getColor(), whiteColor.android, 'page default backgroundColor should be white');
 	}
 }
 

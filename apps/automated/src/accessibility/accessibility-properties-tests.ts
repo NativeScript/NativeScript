@@ -16,9 +16,9 @@ export function test_iosAccessibilityAdjustsFontSize_property() {
 		layout.style.iosAccessibilityAdjustsFontSize = false;
 		layout.style.fontScaleInternal = deviceFontScaleMock;
 
-		const nativeFontSize = testView.nativeTextViewProtected.font.pointSize;
+		const nativeFontSize = (testView.nativeTextViewProtected as unknown as TNSLabel).font.pointSize;
 		layout.style.iosAccessibilityAdjustsFontSize = true;
-		const nativeFontSizeWithAdjust = testView.nativeTextViewProtected.font.pointSize;
+		const nativeFontSizeWithAdjust = (testView.nativeTextViewProtected as unknown as TNSLabel).font.pointSize;
 
 		TKUnit.assertEqual(nativeFontSize, testView.style.fontInternal.fontSize, 'View font size was scaled even though iosAccessibilityAdjustsFontSize is disabled');
 		TKUnit.assertEqual(nativeFontSizeWithAdjust, testView.style.fontInternal.fontSize * deviceFontScaleMock, 'View font size was not scaled even though iosAccessibilityAdjustsFontSize is enabled');
@@ -41,7 +41,7 @@ export function test_iosAccessibilityMinFontScale_property() {
 
 		testView.style.iosAccessibilityMinFontScale = 2.0;
 
-		const nativeFontSize = testView.nativeTextViewProtected.font.pointSize;
+		const nativeFontSize = (testView.nativeTextViewProtected as unknown as TNSLabel).font.pointSize;
 		const expectedNativeFontSize = testView.style.fontInternal.fontSize * testView.style.iosAccessibilityMinFontScale;
 		TKUnit.assertEqual(nativeFontSize, expectedNativeFontSize, 'View font size scaling does not respect iosAccessibilityMinFontScale');
 	}
@@ -63,7 +63,7 @@ export function test_iosAccessibilityMaxFontScale_property() {
 
 		testView.style.iosAccessibilityMaxFontScale = 2.0;
 
-		const nativeFontSize = testView.nativeTextViewProtected.font.pointSize;
+		const nativeFontSize = (testView.nativeTextViewProtected as unknown as TNSLabel).font.pointSize;
 		const expectedNativeFontSize = testView.style.fontInternal.fontSize * testView.style.iosAccessibilityMaxFontScale;
 		TKUnit.assertEqual(nativeFontSize, expectedNativeFontSize, 'View font size scaling does not respect iosAccessibilityMaxFontScale');
 	}
