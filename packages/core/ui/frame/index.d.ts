@@ -47,11 +47,6 @@ export class Frame extends FrameBase {
 	_originalBackground?: any;
 
 	/**
-	 * @private
-	 */
-	_saveFragmentsState?();
-
-	/**
 	 * Gets a frame by id.
 	 */
 	static getFrameById(id: string): Frame;
@@ -174,13 +169,13 @@ export class Frame extends FrameBase {
 	 *
 	 * @nsProperty
 	 */
-	iosNavigationBarClass: any;
+	iosNavigationBarClass?: any;
 	/**
 	 * Specify a custom UIToolbar class (iOS only)
 	 *
 	 * @nsProperty
 	 */
-	iosToolBarClass: any;
+	iosToolbarClass?: any;
 
 	//@private
 	/**
@@ -269,6 +264,14 @@ export class Frame extends FrameBase {
 	 * @private
 	 */
 	_removeFromFrameStack();
+	/**
+	 * @private
+	 */
+	_restoreTransitionState?();
+	/**
+	 * @private
+	 */
+	_saveFragmentsState?();
 	//@endprivate
 
 	/**
@@ -456,7 +459,8 @@ export interface NavigationTransition {
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
  */
 export interface AndroidFrame extends Observable {
-	frameId?: any;
+	frameId: number;
+	owner: Frame;
 
 	/**
 	 * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
@@ -488,19 +492,6 @@ export interface AndroidFrame extends Observable {
 	 * @param page The Page instance to search for.
 	 */
 	fragmentForPage(entry: BackstackEntry): any;
-
-	// common properties
-	_resolvedPage?: Page;
-	_currentEntry?: BackstackEntry;
-	_executingContext?: NavigationContext;
-	_inheritStyles?(page: Page): void;
-	isLoaded?: boolean;
-	_styleScope?: any;
-	_addView?(view: View): void;
-	nativeViewProtected?: any /* android.view.View */;
-	_originalBackground?: any /* android.graphics.drawable.Drawable */;
-	backgroundColor?: any;
-	owner?: any;
 }
 
 export interface AndroidActivityCallbacks {

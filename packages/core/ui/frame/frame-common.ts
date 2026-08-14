@@ -12,7 +12,7 @@ import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
-import { NavigationData } from '.';
+import { Frame as FrameDefinition, NavigationData } from '.';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame, NavigationData } from './frame-interfaces';
@@ -35,7 +35,7 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 }
 
 @CSSType('Frame')
-export class FrameBase extends CustomLayoutView {
+export class FrameBase extends CustomLayoutView implements FrameDefinition {
 	public static navigatingToEvent = 'navigatingTo';
 	public static navigatedToEvent = 'navigatedTo';
 
@@ -351,9 +351,9 @@ export class FrameBase extends CustomLayoutView {
 			return;
 		}
 
+		// Entry is undefined for a goBack() queued before performGoBack populates it.
 		const entry = this._navigationQueue[0].entry;
-		const currentNavigationPage = entry.resolvedPage;
-		if (page !== currentNavigationPage) {
+		if (entry && page !== entry.resolvedPage) {
 			// If the page is not the one that requested navigation - skip it.
 			return;
 		}

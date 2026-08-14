@@ -1,64 +1,70 @@
-// Fix NativeScript dynamic imports by transforming paths and simplifying __vitePreload
-// Vite auto adds __vitePreload which includes browser APIs we don't need.
-// Note: ideally build.modulePreload = false in build settings would fix this
-// by simply removing the existence of __vitePreload in the bundle.
-// However, this appears to be a known Vite issue: https://github.com/vitejs/vite/issues/13952
-// Keep issue in mind for future Vite updates as may be able to remove this eventually.
-export function dynamicImportPlugin() {
-	return {
-		name: 'nativescript-dynamic-import-fix',
-		generateBundle(options, bundle) {
-			for (const [fileName, chunk] of Object.entries(bundle) as any) {
-				if (chunk.type === 'chunk') {
-					let hasChanges = false;
-
-					// 1. Transform all relative import paths from ./ to ~/
-					if (chunk.code.includes("import('./")) {
-						chunk.code = chunk.code.replace(/import\(['"]\.\/([^'"]*)['"]\)/g, "import('~/$1')");
-						hasChanges = true;
-					}
-
-					// 2. Replace __vitePreload with simple implementation
-					if (chunk.code.includes('__vitePreload')) {
-						const vitePreloadStart = chunk.code.indexOf('const __vitePreload = function preload');
-						if (vitePreloadStart !== -1) {
-							// Find the matching closing brace by counting braces
-							let braceCount = 0;
-							let functionStart = chunk.code.indexOf('{', vitePreloadStart);
-							let i = functionStart;
-
-							while (i < chunk.code.length) {
-								if (chunk.code[i] === '{') braceCount++;
-								else if (chunk.code[i] === '}') {
-									braceCount--;
-									if (braceCount === 0) {
-										// Found the end of the function
-										const functionEnd = i + 1;
-										const before = chunk.code.substring(0, vitePreloadStart);
-										const after = chunk.code.substring(functionEnd);
-
-										// Simple implementation that just calls baseModule()
-										const replacement = `const __vitePreload = function preload(baseModule, deps, importerUrl) {
+const vitePreloadDeclaration = 'const __vitePreload = function preload';
+const vitePreloadPreamble = /^const scriptRel =[\s\S]*;\s*const assetsURL =[\s\S]*;\s*const seen = \{\};\s*$/;
+const nativePreloadImplementation = `const __vitePreload = function preload(baseModule, deps, importerUrl) {
       return baseModule().catch(err => {
         console.error("Dynamic import error:", err);
         throw err;
       });
     }`;
-										chunk.code = before + replacement + after;
-										hasChanges = true;
-										break;
-									}
-								}
-								i++;
-							}
-						}
-					}
 
-					//   if (hasChanges) {
-					//     console.log(
-					//       `Fixed NativeScript dynamic imports in: ${fileName}`,
-					//     );
-					//   }
+function findClosingBrace(code: string, declarationStart: number) {
+	const functionStart = code.indexOf('{', declarationStart);
+	if (functionStart === -1) {
+		return -1;
+	}
+
+	let braceCount = 0;
+	for (let i = functionStart; i < code.length; i++) {
+		if (code[i] === '{') {
+			braceCount++;
+		} else if (code[i] === '}') {
+			braceCount--;
+			if (braceCount === 0) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
+}
+
+function simplifyVitePreload(code: string) {
+	const declarationStart = code.indexOf(vitePreloadDeclaration);
+	if (declarationStart === -1) {
+		return code;
+	}
+
+	const functionEnd = findClosingBrace(code, declarationStart);
+	if (functionEnd === -1) {
+		return code;
+	}
+
+	// Vite emits these browser-only declarations immediately before
+	// __vitePreload. Remove them with the function because scriptRel probes the DOM
+	// as soon as a development bundle is evaluated.
+	const codeBeforeDeclaration = code.slice(0, declarationStart);
+	const possiblePreambleStart = codeBeforeDeclaration.lastIndexOf('const scriptRel =');
+	const possiblePreamble = codeBeforeDeclaration.slice(possiblePreambleStart);
+	const replacementStart = possiblePreambleStart !== -1 && vitePreloadPreamble.test(possiblePreamble) ? possiblePreambleStart : declarationStart;
+
+	return code.slice(0, replacementStart) + nativePreloadImplementation + code.slice(functionEnd + 1);
+}
+
+export function transformDynamicImports(code: string) {
+	const withNativeImportPaths = code.replace(/import\(['"]\.\/([^'"]*)['"]\)/g, "import('~/$1')");
+	return simplifyVitePreload(withNativeImportPaths);
+}
+
+// Fix NativeScript dynamic imports by transforming paths and simplifying __vitePreload.
+// Vite still emits its browser preload helper when modulePreload is disabled:
+// https://github.com/vitejs/vite/issues/13952
+export function dynamicImportPlugin() {
+	return {
+		name: 'nativescript-dynamic-import-fix',
+		generateBundle(_options, bundle) {
+			for (const chunk of Object.values(bundle) as any) {
+				if (chunk.type === 'chunk') {
+					chunk.code = transformDynamicImports(chunk.code);
 				}
 			}
 		},

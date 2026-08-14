@@ -1,3 +1,42 @@
+## 9.0.20 (2026-05-27)
+
+### 🩹 Fixes
+
+- **android:** Removed invalid default padding conversion ([90f834138](https://github.com/NativeScript/NativeScript/commit/90f834138))
+
+### ❤️ Thank You
+
+- Dimitris - Rafail Katsampas @CatchABus
+
+## 9.0.19 (2026-05-27)
+
+### 🚀 Features
+
+- **ios:** option to delay the launch event until the app becomes active ([#9906](https://github.com/NativeScript/NativeScript/pull/9906))
+
+### 🩹 Fixes
+
+- **core:** complete `sideEffects` declarations for inspector modules, network requests in devtools ([#11229](https://github.com/NativeScript/NativeScript/pull/11229))
+- **android:** nested frame restoration step ([#11226](https://github.com/NativeScript/NativeScript/pull/11226))
+- **ios:** improve TabView handling around more navigation controller ([#11225](https://github.com/NativeScript/NativeScript/pull/11225))
+- **android:** apply accessibility CSS classes and font scale on init ([#11224](https://github.com/NativeScript/NativeScript/pull/11224))
+- **core:** prevent exponential traversal in _dialogClosed and _onRootViewReset ([#11220](https://github.com/NativeScript/NativeScript/pull/11220))
+- **ios:** layout validity status during layout changed event ([#11218](https://github.com/NativeScript/NativeScript/pull/11218))
+- **android:** correct TabView fragment manager resolution ([#11217](https://github.com/NativeScript/NativeScript/pull/11217))
+- **ios:** enableSwipeBackNavigation on ios 26+ ([#11211](https://github.com/NativeScript/NativeScript/pull/11211))
+
+### 🔥 Performance
+
+- **core:** reduce padding native setter calls ([#11216](https://github.com/NativeScript/NativeScript/pull/11216))
+
+### ❤️ Thank You
+
+- Copilot @Copilot
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- Osei Fortune @triniwiz
+- Owen Carey @owenthcarey
+
 ## 9.0.18 (2026-03-30)
 
 ### 🩹 Fixes

@@ -867,8 +867,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			"backgroundBitmap: " + this.backgroundBitmap + "; " +
 			"backgroundRepeat: " + this.backgroundRepeat + "; " +
 			"backgroundPosition: " + this.backgroundPosition + "; " +
-			"backgroundSize: " + this.backgroundSize + "; "
-			;
+			"backgroundSize: " + this.backgroundSize + "; ";
 	}
 
 	@Override
@@ -879,13 +878,13 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 	}
 
 	@Override
-	public void setDrawable(Drawable asyncDrawable) {
-		drawable = asyncDrawable;
+	public Drawable getDrawable() {
+		return drawable;
 	}
 
 	@Override
-	public Drawable getDrawable() {
-		return drawable;
+	public void setDrawable(Drawable value) {
+		drawable = value;
 	}
 
 

@@ -30,8 +30,8 @@
         `npm run test-watch`
     - It is highly recommended during the development to use
 
-        `npm run test [android|ios]` along with `tns run [android|ios]`. This command will use already installed app on the device.
-        For example: Open terminal1 and run: `tns run android` and open new terminal2 and run: `npm run test android`
+        `npm run test [android|ios]` along with `ns run [android|ios]`. This command will use already installed app on the device.
+        For example: Open terminal1 and run: `ns run android` and open new terminal2 and run: `npm run test android`
 3. Debug test.
     - Run:
 

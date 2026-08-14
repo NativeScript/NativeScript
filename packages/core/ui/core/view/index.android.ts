@@ -2,14 +2,14 @@ import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../../styling/style-properties';
+import { directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
-import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, maxWidthProperty, maxHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
 
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
@@ -989,6 +989,20 @@ export class View extends ViewCommon {
 		return false;
 	}
 
+	public override _setDefaultPaddings(insets: android.graphics.Rect): void {
+		if (insets) {
+			this._defaultPaddingTop = insets.top;
+			this._defaultPaddingRight = insets.right;
+			this._defaultPaddingBottom = insets.bottom;
+			this._defaultPaddingLeft = insets.left;
+		} else {
+			this._defaultPaddingTop = 0;
+			this._defaultPaddingRight = 0;
+			this._defaultPaddingBottom = 0;
+			this._defaultPaddingLeft = 0;
+		}
+	}
+
 	public getLocationInWindow(): Point {
 		if (!this.nativeViewProtected || !this.nativeViewProtected.getWindowToken()) {
 			return undefined;
@@ -1682,16 +1696,10 @@ export class View extends ViewCommon {
 			const nativeView = this.nativeViewProtected;
 			nativeView.setBackground(value);
 
-			const style = this.style;
-			const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
-			const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
-			const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
-			const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
-
 			if (this._isPaddingRelative) {
-				nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
+				nativeView.setPaddingRelative(this.effectivePaddingLeft, this.effectivePaddingTop, this.effectivePaddingRight, this.effectivePaddingBottom);
 			} else {
-				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+				nativeView.setPadding(this.effectivePaddingLeft, this.effectivePaddingTop, this.effectivePaddingRight, this.effectivePaddingBottom);
 			}
 		}
 	}
@@ -1798,7 +1806,7 @@ export class ContainerView extends View {
 
 	constructor() {
 		super();
-		this.androidOverflowEdge = 'none';
+		this.androidOverflowEdge = 'ignore';
 	}
 }
 
@@ -1990,5 +1998,27 @@ createNativePercentLengthProperty({
 	setter: '_setMinHeightNative',
 	get setPixels() {
 		return org.nativescript.widgets.ViewHelper.setMinHeight;
+	},
+});
+
+createNativePercentLengthProperty({
+	setter: maxWidthProperty.setNative,
+	auto: -1, // -1 means unconstrained (no maximum).
+	get setPixels() {
+		return org.nativescript.widgets.ViewHelper.setMaxWidth;
+	},
+	get setPercent() {
+		return org.nativescript.widgets.ViewHelper.setMaxWidthPercent;
+	},
+});
+
+createNativePercentLengthProperty({
+	setter: maxHeightProperty.setNative,
+	auto: -1, // -1 means unconstrained (no maximum).
+	get setPixels() {
+		return org.nativescript.widgets.ViewHelper.setMaxHeight;
+	},
+	get setPercent() {
+		return org.nativescript.widgets.ViewHelper.setMaxHeightPercent;
 	},
 });

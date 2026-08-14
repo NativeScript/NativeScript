@@ -459,7 +459,7 @@ try {
             var request = new Request(input, init);
 
             if (request.signal && request.signal.aborted) {
-                return reject(new exports.DOMException("Aborted", "AbortError"));
+                return reject(new DOMException("Aborted", "AbortError"));
             }
 
             var xhr = new XMLHttpRequest();
@@ -491,7 +491,7 @@ try {
             };
 
             xhr.onabort = function () {
-                reject(new exports.DOMException("Aborted", "AbortError"));
+                reject(new DOMException("Aborted", "AbortError"));
             };
 
             xhr.open(request.method, request.url, true);

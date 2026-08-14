@@ -10,7 +10,7 @@ export type SharedTransitionTagPropertiesToMatch = {
 	 */
 	layer?: Array<string>;
 };
-export type SharedElementSettings = { view: View; startFrame: any; endFrame?: any; startOpacity?: number; endOpacity?: number; scale?: { x?: number; y?: number }; zIndex?: number; startTransform?: any; snapshot?: any; propertiesToMatch?: SharedTransitionTagPropertiesToMatch };
+export type SharedElementSettings = { view: View; startFrame: any; endFrame?: any; startOpacity?: number; endOpacity?: number; scale?: { x?: number; y?: number }; zIndex?: number; startTransform?: any; snapshot?: any; propertiesToMatch?: SharedTransitionTagPropertiesToMatch; imageSourceChangeListener?: (args: any) => void };
 export type TransitionNavigationType = 'page' | 'modal';
 export interface TransitionInteractiveState {
 	started?: false;
@@ -34,6 +34,7 @@ export declare class Transition {
 		presenting?: Array<SharedElementSettings>;
 		// independent sharedTransitionTags which are part of the shared transition but only on one page
 		independent?: Array<SharedElementSettings & { isPresented?: boolean }>;
+		_allPresentingViews?: Array<View>;
 	};
 	static AndroidTransitionType?: { enter?: string; exit?: string; popEnter?: string; popExit?: string };
 	constructor(duration?: number, nativeCurve?: any /* UIViewAnimationCurve | string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator */);

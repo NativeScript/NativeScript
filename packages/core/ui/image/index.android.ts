@@ -33,9 +33,22 @@ function initializeImageLoadedListener() {
 			return global.__native(this);
 		}
 
-		onImageLoaded(success: boolean): void {
+		public handlesImageUpdate(): boolean {
+			return true;
+		}
+
+		onImageLoaded(bitmapOrDrawable: android.graphics.Bitmap | android.graphics.drawable.Drawable): void {
 			const owner = this.owner;
 			if (owner) {
+				owner.imageSource = new ImageSource(bitmapOrDrawable);
+				owner.isLoading = false;
+			}
+		}
+
+		public onImageLoadingError(e: java.lang.Exception): void {
+			const owner = this.owner;
+			if (owner) {
+				owner.imageSource = null;
 				owner.isLoading = false;
 			}
 		}
@@ -45,7 +58,7 @@ function initializeImageLoadedListener() {
 }
 
 export class Image extends ImageBase {
-	nativeViewProtected: org.nativescript.widgets.ImageView;
+	declare nativeViewProtected: org.nativescript.widgets.ImageView;
 
 	public useCache = true;
 
@@ -86,7 +99,6 @@ export class Image extends ImageBase {
 
 		if (!value) {
 			imageView.setUri(null, 0, 0, false, false, true);
-
 			return;
 		}
 

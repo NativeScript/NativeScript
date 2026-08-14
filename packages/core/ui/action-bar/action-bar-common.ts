@@ -29,7 +29,6 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 	public effectiveContentInsetRight: number;
 
 	disposeNativeView() {
-		this._actionItems = null;
 		super.disposeNativeView();
 	}
 

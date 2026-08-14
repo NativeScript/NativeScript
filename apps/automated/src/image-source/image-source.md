@@ -8,18 +8,18 @@ previous_url: /ApiReference/image-source/HOW-TO
 # Image source
 Using the image source requires the image-source module.
 ```TypeScript
-import * as imageSource from "tns-core-modules/image-source";
+import * as imageSource from "@nativescript/core/image-source";
 ```
 ```JavaScript
-var imageSource = require("tns-core-modules/image-source");
+var imageSource = require("@nativescript/core/image-source");
 ```
 The pre-required `imageSource` module is used throughout the following code snippets.
 We also use fs module defined as follows:
 ```TypeScript
-import * as fs from "tns-core-modules/file-system";
+import * as fs from "@nativescript/core/file-system";
 ```
 ```JavaScript
-var fs = require("tns-core-modules/file-system");
+var fs = require("@nativescript/core/file-system");
 ```
 
 ## Loading and saving images

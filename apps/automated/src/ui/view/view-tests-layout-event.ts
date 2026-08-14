@@ -18,6 +18,23 @@ export function test_event_LayoutChanged_GetActualSize() {
 	helper.do_PageTest_WithStackLayout_AndButton(test);
 }
 
+export function test_event_LayoutChanged_IsLayoutValid() {
+	const test = function (views: Array<View>) {
+		let buttonLayoutChanged = false;
+		let expectedValidResult;
+
+		views[1].on(View.layoutChangedEvent, (args) => {
+			expectedValidResult = (args.object as View).isLayoutValid;
+			buttonLayoutChanged = true;
+		});
+
+		TKUnit.waitUntilReady(() => buttonLayoutChanged, 5);
+		TKUnit.assertFalse(expectedValidResult);
+	};
+
+	helper.do_PageTest_WithStackLayout_AndButton(test);
+}
+
 export function test_event_LayoutChanged_Listeners() {
 	const test = function (views: Array<View>) {
 		let buttonLayoutChanged = false;

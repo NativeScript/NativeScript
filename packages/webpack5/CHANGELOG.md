@@ -1,3 +1,41 @@
+## 5.0.38 (2026-07-22)
+
+This was a version bump only for webpack5 to align it with other projects, there were no code changes.
+
+## 5.0.37 (2026-07-21)
+
+This was a version bump only for webpack5 to align it with other projects, there were no code changes.
+
+## 5.0.36 (2026-07-08)
+
+### 🩹 Fixes
+
+- **webpack:** restore source map files and always respect env.sourceMap ([#11303](https://github.com/NativeScript/NativeScript/pull/11303))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 5.0.35 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** inline sourcemaps ([#11188](https://github.com/NativeScript/NativeScript/pull/11188))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 5.0.34 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** resolve source map path with proper encoding ([#11180](https://github.com/NativeScript/NativeScript/pull/11180))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 5.0.33 (2026-03-30)
 
 ### 🩹 Fixes

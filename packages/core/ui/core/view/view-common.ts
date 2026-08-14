@@ -72,6 +72,23 @@ type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; option
 // TODO: remove once we fully switch to the new event system
 const warnedEvent = new Set<string>();
 
+// Resolves a max-width/max-height style value to an effective device-pixel constraint.
+// 'auto' (the default) or an unresolvable percent (parent size unknown) means "no maximum",
+// represented as Infinity so that Math.min(measured, effectiveMax) becomes a no-op.
+function resolveEffectiveMax(value: CoreTypes.PercentLengthType, availableSize: number): number {
+	if (value == null || value === 'auto') {
+		return Number.POSITIVE_INFINITY;
+	}
+	// A percent cannot be resolved when the parent size is unspecified (availableSize < 0);
+	// treat it as unconstrained rather than collapsing the view to ~0.
+	if (typeof value === 'object' && (value as CoreTypes.LengthPercentUnit).unit === '%' && availableSize < 0) {
+		return Number.POSITIVE_INFINITY;
+	}
+	const resolved = PercentLength.toDevicePixels(value, Number.POSITIVE_INFINITY, availableSize);
+	// Safety net for any other unresolved/bogus negative result.
+	return resolved < 0 ? Number.POSITIVE_INFINITY : resolved;
+}
+
 export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
@@ -128,7 +145,6 @@ export abstract class ViewCommon extends ViewBase {
 	private _measuredWidth: number;
 	private _measuredHeight: number;
 
-	protected _isLayoutValid: boolean;
 	private _cssType: string;
 
 	private _localAnimations: Set<Animation>;
@@ -766,6 +782,20 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.minHeight = value;
 	}
 
+	get maxWidth(): CoreTypes.PercentLengthType {
+		return this.style.maxWidth;
+	}
+	set maxWidth(value: CoreTypes.PercentLengthType) {
+		this.style.maxWidth = value;
+	}
+
+	get maxHeight(): CoreTypes.PercentLengthType {
+		return this.style.maxHeight;
+	}
+	set maxHeight(value: CoreTypes.PercentLengthType) {
+		this.style.maxHeight = value;
+	}
+
 	get width(): CoreTypes.PercentLengthType {
 		return this.style.width;
 	}
@@ -1009,7 +1039,7 @@ export abstract class ViewCommon extends ViewBase {
 	//END Style property shortcuts
 
 	get isLayoutValid(): boolean {
-		return this._isLayoutValid;
+		return false;
 	}
 
 	get cssType(): string {
@@ -1070,11 +1100,6 @@ export abstract class ViewCommon extends ViewBase {
 		}
 	}
 
-	public requestLayout(): void {
-		this._isLayoutValid = false;
-		super.requestLayout();
-	}
-
 	public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
 	public abstract onLayout(left: number, top: number, right: number, bottom: number): void;
 	public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
@@ -1111,7 +1136,6 @@ export abstract class ViewCommon extends ViewBase {
 	 * Returns two booleans - the first if "boundsChanged" the second is "sizeChanged".
 	 */
 	_setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean; sizeChanged: boolean } {
-		this._isLayoutValid = true;
 		const boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
 		const sizeChanged: boolean = this._oldRight - this._oldLeft !== right - left || this._oldBottom - this._oldTop !== bottom - top;
 		this._oldLeft = left;
@@ -1232,12 +1256,14 @@ export abstract class ViewCommon extends ViewBase {
 		const availableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
 
 		this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, availableWidth);
+		this.effectiveMaxWidth = resolveEffectiveMax(style.maxWidth, availableWidth);
 		this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, availableWidth);
 		this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, availableWidth);
 
 		const availableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
 
 		this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, availableHeight);
+		this.effectiveMaxHeight = resolveEffectiveMax(style.maxHeight, availableHeight);
 		this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, availableHeight);
 		this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, availableHeight);
 	}

@@ -175,6 +175,48 @@ class X extends NSObject {}
 		});
 	});
 
+	describe('after a preceding transformer updates the source file', () => {
+		// Simulates transformers like Angular's Ivy transform, which rebuild the
+		// source file via factory.updateSourceFile() on files containing Angular
+		// decorators. The updated SourceFile node is flagged Synthesized; the
+		// NativeClass transformer must still process its original statements.
+		const updateSourceFileTransformer: ts.TransformerFactory<ts.SourceFile> =
+			(context) => (sourceFile) =>
+				context.factory.updateSourceFile(sourceFile, [
+					...sourceFile.statements,
+				]);
+
+		function transformAfterUpdate(input: string): string {
+			return ts.transpileModule(input, {
+				compilerOptions: {
+					module: ts.ModuleKind.ESNext,
+					target: ts.ScriptTarget.ES2022,
+					experimentalDecorators: true,
+					emitDecoratorMetadata: false,
+					useDefineForClassFields: false,
+				},
+				transformers: {
+					before: [
+						updateSourceFileTransformer,
+						nativeClassTransformer as ts.TransformerFactory<ts.SourceFile>,
+					],
+				},
+			}).outputText;
+		}
+
+		it('downlevels @NativeClass() on a synthesized (updated) source file', () => {
+			const output = transformAfterUpdate(`
+@NativeClass()
+class Foo extends NSObject {}
+`);
+
+			expect(output).toContain('var Foo =');
+			expect(output).toContain('__extends(Foo, _super)');
+			expect(output).not.toContain('NativeClass');
+			expect(countClassDeclarations(output)).toBe(0);
+		});
+	});
+
 	describe('nested scopes', () => {
 		it('downlevels @NativeClass() class declared inside a function body', () => {
 			const output = transform(`

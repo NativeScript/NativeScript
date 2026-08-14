@@ -154,6 +154,10 @@ export class GridLayout extends GridLayoutBase {
 		measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
 		measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
+		// Check against our maximum sizes (Infinity when unconstrained)
+		measureWidth = Math.min(measureWidth, this.effectiveMaxWidth);
+		measureHeight = Math.min(measureHeight, this.effectiveMaxHeight);
+
 		const widthSizeAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
 		const heightSizeAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 

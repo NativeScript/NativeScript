@@ -2,7 +2,7 @@ import { isAccessibilityServiceEnabled } from '../../application';
 import type { Frame } from '../frame';
 import { BackstackEntry, NavigationType } from '../frame/frame-interfaces';
 import { View, IOSHelper } from '../core/view';
-import { PageBase, actionBarHiddenProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from './page-common';
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils/layout-helper';
@@ -185,13 +185,24 @@ class UIViewControllerImpl extends UIViewController {
 					// Workaround for disabled backswipe on second custom native transition
 					if (frame.canGoBack()) {
 						const transitionState = SharedTransition.getState(owner.transitionId);
-						if (!transitionState?.interactive) {
+						if (transitionState?.interactive) {
+							// A custom interactive dismiss is wired up (shared transition with
+							// pan gesture). Disable iOS' built-in edge pan so it can't race the
+							// custom recognizer and run the standard non-interactive pop.
+							navigationController.interactivePopGestureRecognizer.enabled = false;
+						} else {
 							// only consider when interactive transitions are not enabled
 							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+							if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
+								navigationController.interactiveContentPopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+							}
 						}
 					} else {
 						navigationController.interactivePopGestureRecognizer.enabled = false;
+						if (SDK_VERSION >= 26 && navigationController.interactiveContentPopGestureRecognizer) {
+							navigationController.interactiveContentPopGestureRecognizer.enabled = false;
+						}
 					}
 				}
 			}
@@ -462,10 +473,16 @@ export class Page extends PageBase {
 
 	public _updateEnableSwipeBackNavigation(enabled: boolean) {
 		const navController = this._ios.navigationController;
-		if (this.frame && navController && navController.interactivePopGestureRecognizer) {
+		if (this.frame && navController) {
 			// Make sure we don't set true if cannot go back
 			enabled = enabled && this.frame.canGoBack();
-			navController.interactivePopGestureRecognizer.enabled = enabled;
+			if (navController.interactivePopGestureRecognizer) {
+				navController.interactivePopGestureRecognizer.enabled = enabled;
+			}
+
+			if (SDK_VERSION >= 26 && navController.interactiveContentPopGestureRecognizer) {
+				navController.interactiveContentPopGestureRecognizer.enabled = enabled;
+			}
 		}
 	}
 
@@ -563,8 +580,6 @@ export class Page extends PageBase {
 	}
 
 	[actionBarHiddenProperty.setNative](value: boolean) {
-		this._updateEnableSwipeBackNavigation(value);
-
 		// Invalidate all inner controller.
 		invalidateTopmostController(this.viewController);
 
@@ -573,6 +588,10 @@ export class Page extends PageBase {
 			// Update nav-bar visibility with disabled animations
 			frame._updateActionBar(this, true);
 		}
+	}
+
+	[enableSwipeBackNavigationProperty.setNative](value: boolean) {
+		this._updateEnableSwipeBackNavigation(value);
 	}
 
 	public accessibilityScreenChanged(refocus = false): void {

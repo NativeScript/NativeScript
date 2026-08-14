@@ -488,13 +488,15 @@ export function getTransformedText(text: string, textTransform: CoreTypes.TextTr
 		return '';
 	}
 
+	// Use the NSString localized properties to get localized transformations.
+	// This will respect the locale set by native apis or the localize plugins.
 	switch (textTransform) {
 		case 'uppercase':
-			return NSStringFromNSAttributedString(text).uppercaseString;
+			return NSStringFromNSAttributedString(text).localizedUppercaseString;
 		case 'lowercase':
-			return NSStringFromNSAttributedString(text).lowercaseString;
+			return NSStringFromNSAttributedString(text).localizedLowercaseString;
 		case 'capitalize':
-			return NSStringFromNSAttributedString(text).capitalizedString;
+			return NSStringFromNSAttributedString(text).localizedCapitalizedString;
 		default:
 			return text;
 	}

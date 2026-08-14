@@ -279,6 +279,87 @@ describe('css-selector', () => {
 		//expect(rule.selectors[0].specificity).toEqual(0);
 	});
 
+	describe('sibling combinator flags', () => {
+		it('adjacent combinator sets hasAdjacentCombinator', () => {
+			const sel = createSelector('.spaced > * + *');
+			expect(sel.hasAdjacentCombinator).toBe(true);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it('general sibling combinator sets hasSiblingCombinator', () => {
+			const sel = createSelector('.spaced > * ~ *');
+			expect(sel.hasSiblingCombinator).toBe(true);
+			expect(sel.hasAdjacentCombinator).toBe(false);
+		});
+
+		it('selector without sibling combinators sets neither flag', () => {
+			const sel = createSelector('.spaced > .child');
+			expect(sel.hasAdjacentCombinator).toBe(false);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it(':is() selector list propagates combinator flags', () => {
+			const sel = createSelector(':is(.a + .b)');
+			expect(sel.hasAdjacentCombinator).toBe(true);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it('compound selector propagates combinator flags of functional pseudo-class', () => {
+			const sel = createSelector('.list :is(.a ~ .b).c');
+			expect(sel.hasSiblingCombinator).toBe(true);
+		});
+
+		it('scope accumulates combinator flags from rulesets', () => {
+			const { selectorScope } = create(`
+				.a { color: red; }
+				.spaced > * + * { margin-top: 8; }
+			`);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(true);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(false);
+		});
+
+		it('scope without sibling combinators keeps flags false', () => {
+			const { selectorScope } = create(`.a { color: red; }`);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(false);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(false);
+		});
+
+		it('scope rolls up combinator flags from media query rules', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: 10000) {
+					.spaced > * ~ * { margin-top: 8; }
+				}
+			`);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(true);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(false);
+		});
+	});
+
+	it('attribute selector with case-insensitive flag matches repeatedly', () => {
+		const rule = createOne(`button[testAttr='VaLuE' i] { color: red; }`);
+		const matching = { cssType: 'button', testAttr: 'vAlUe' };
+		const nonMatching = { cssType: 'button', testAttr: 'other' };
+
+		// Run multiple times to ensure matching does not depend on per-match state
+		for (let i = 0; i < 3; i++) {
+			expect(rule.selectors[0].match(matching)).toBe(true);
+			expect(rule.selectors[0].match(nonMatching)).toBe(false);
+		}
+	});
+
+	it('query returns selectors sorted by specificity then position', () => {
+		const { selectorScope } = create(`
+	        button { color: red; }
+	        .login { color: blue; }
+	        button.login { color: green; }
+	        #main { color: yellow; }
+	    `);
+
+		const { selectors } = selectorScope.query({ cssType: 'button', id: 'main', cssClasses: new Set(['login']) });
+		expect(selectors.length).toBe(4);
+		expect(selectors.map((sel) => sel.toString().trim())).toEqual(['button', '.login', 'button.login', '#main']);
+	});
+
 	describe('media queries', () => {
 		const { widthDIPs } = Screen.mainScreen;
 

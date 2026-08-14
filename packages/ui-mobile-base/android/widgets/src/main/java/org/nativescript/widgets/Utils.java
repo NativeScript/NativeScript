@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -725,6 +726,42 @@ public class Utils {
 				});
 			}
 		});
+	}
+
+	public static String stringToUpperCase(final String value) {
+		if (value == null || value.isEmpty()) {
+			return value;
+		}
+		return value.toUpperCase(Locale.getDefault());
+	}
+
+	public static String stringToLowerCase(final String value) {
+		if (value == null || value.isEmpty()) {
+			return value;
+		}
+		return value.toLowerCase(Locale.getDefault());
+	}
+
+	public static String capitalizeString(final String value) {
+		if (value == null || value.isEmpty()) {
+			return value;
+		}
+
+		final char[] buffer = value.toLowerCase(Locale.getDefault()).toCharArray();
+		boolean capitalizeNext = true;
+
+		for (int i = 0; i < buffer.length; i++) {
+			final char ch = buffer[i];
+
+			// Capitalize characters when located after numbers, whitespace, and punctuation marks but not apostrophe
+			if (!Character.isLetter(ch) && ch != '\'') {
+				capitalizeNext = true;
+			} else if (capitalizeNext) {
+				buffer[i] = Character.toTitleCase(ch);
+				capitalizeNext = false;
+			}
+		}
+		return new String(buffer);
 	}
 
 	/**

@@ -112,6 +112,7 @@ export class Style extends Observable {
 	 */
 	public fontScaleInternal: number;
 	public backgroundInternal: Background;
+	public paddingInternal: string;
 
 	public rotate: number;
 	public rotateX: number;
@@ -182,6 +183,8 @@ export class Style extends Observable {
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;
+	public maxWidth: CoreTypes.PercentLengthType;
+	public maxHeight: CoreTypes.PercentLengthType;
 	public width: CoreTypes.PercentLengthType;
 	public height: CoreTypes.PercentLengthType;
 	public margin: string | CoreTypes.PercentLengthType;
@@ -194,6 +197,9 @@ export class Style extends Observable {
 	public paddingTop: CoreTypes.LengthType;
 	public paddingRight: CoreTypes.LengthType;
 	public paddingBottom: CoreTypes.LengthType;
+	public gap: string | CoreTypes.LengthType;
+	public rowGap: CoreTypes.LengthType;
+	public columnGap: CoreTypes.LengthType;
 	public horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 	public verticalAlignment: CoreTypes.VerticalAlignmentType;
 

@@ -24,7 +24,7 @@ jobs:
     runs-on: warp-macos-15-arm64-6x
 
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # - name: ActionDebugger By Warpbuild
       #   uses: Warpbuilds/action-debugger@v1.3

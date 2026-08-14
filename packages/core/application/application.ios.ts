@@ -6,7 +6,7 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
-import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
+import { ApplicationCommon, SceneEvents } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import type { iOSApplication as IiOSApplication } from './application';
@@ -125,6 +125,16 @@ function supportsMultipleScenes(): boolean {
 		return false;
 	}
 	return UIApplication.sharedApplication?.supportsMultipleScenes;
+}
+
+/**
+ * Number of times the JS runtime has been soft-rebooted in this process via
+ * NativeScriptRuntime.reloadApplication / restartWithConfig. 0 on first boot.
+ * Provided as a global by the iOS runtime (v9+); older runtimes report 0.
+ */
+function getRuntimeReloadCount(): number {
+	const runtime = (globalThis as any).NativeScriptRuntime;
+	return runtime && typeof runtime.reloadCount === 'number' ? runtime.reloadCount : 0;
 }
 
 @NativeClass
@@ -269,6 +279,13 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	private _notificationObservers: NotificationObserver[] = [];
 
+	// Strong references to delegates recreated after an in-process soft reboot
+	// (NativeScriptRuntime.reloadApplication). UIApplication.delegate is an
+	// `assign` property and UIScene keeps its own reference to the delegate we
+	// replace, so without these the fresh instances would be deallocated.
+	private _softRebootAppDelegate: UIApplicationDelegate;
+	private _softRebootSceneDelegates = new Map<UIScene, UIWindowSceneDelegate>();
+
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
 	displayedLink: CADisplayLink;
@@ -282,8 +299,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		super();
 
 		this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions.bind(this));
-		this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive.bind(this));
-		this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
 		this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
 		this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
 		this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
@@ -295,6 +310,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			this.addNotificationObserver('UISceneWillEnterForegroundNotification', this.sceneWillEnterForeground.bind(this));
 			this.addNotificationObserver('UISceneDidEnterBackgroundNotification', this.sceneDidEnterBackground.bind(this));
 			this.addNotificationObserver('UISceneDidDisconnectNotification', this.sceneDidDisconnect.bind(this));
+		} else {
+			// For scene-based apps, the below are not needed as they are handled by the scene notifications
+			this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive.bind(this));
+			this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
 		}
 	}
 
@@ -323,6 +342,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private runAsEmbeddedApp() {
+		this._reattachNativeDelegatesAfterSoftReboot();
+
 		// TODO: this rootView should be held alive until rootController dismissViewController is called.
 		const rootView = this.createRootView(this._rootView, true);
 		if (!rootView) {
@@ -331,19 +352,57 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this._rootView = rootView;
 		setRootView(rootView);
 		// Attach to the existing iOS app
-		const window = getWindow() as UIWindow;
+		let window = getWindow() as UIWindow;
+
+		if (!window) {
+			// In-process soft reboot with OTAs.
+			// Original UIWindow is deallocated when the old JS isolate is torn down.
+			// Recreate a window bound to the active UIWindowScene so the
+			// root has somewhere to attach.
+			const app = UIApplication.sharedApplication;
+			const all = app && app.connectedScenes ? app.connectedScenes.allObjects : null;
+			let targetScene: UIWindowScene;
+			if (all) {
+				for (let i = 0; i < all.count; i++) {
+					const s = all.objectAtIndex(i) as UIWindowScene;
+					// Only UIWindowScene exposes `windows`; prefer a foreground-active one.
+					if (s && typeof s.windows !== 'undefined') {
+						targetScene = s;
+						if (s.activationState === UISceneActivationState.ForegroundActive) {
+							break;
+						}
+					}
+				}
+			}
+			if (targetScene) {
+				window = UIWindow.alloc().initWithWindowScene(targetScene);
+				this._setWindowForScene(window, targetScene);
+				this._setupWindowForScene?.(window, targetScene);
+
+				// If the scene's delegate was recreated after a soft reboot, point it
+				// at the new window so `scene.delegate.window` queries resolve.
+				const freshSceneDelegate = this._softRebootSceneDelegates.get(targetScene);
+				if (freshSceneDelegate) {
+					freshSceneDelegate.window = window;
+				}
+			}
+		}
 
 		if (!window) {
 			return;
 		}
 
+		// May be null on a freshly recreated window — expected; the replace-root
+		// path below sets it. Only the embedder path needs an existing controller.
 		const rootController = window.rootViewController;
-		if (!rootController) {
+		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+
+		// Embed into host app requires an existing root view controller
+		if (embedderDelegate && !rootController) {
 			return;
 		}
 
 		const controller = this.getViewController(rootView);
-		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 
 		rootView._setupAsRootView({});
 
@@ -360,15 +419,80 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		});
 
 		if (embedderDelegate) {
+			// Embed into host app.
+			// present over the host's existing root view controller.
 			this.setViewControllerView(rootView);
 			embedderDelegate.presentNativeScriptApp(controller);
 		} else {
-			const visibleVC = iosUtils.getVisibleViewController(rootController);
-			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
+			// No embedder delegate = NativeScript owns the UIApplication.
+			// Attach the root to the window.
+			this.setViewControllerView(rootView);
+			this.setWindowRootView(window, rootView);
 		}
 
 		this.initRootView(rootView);
 		this.notifyAppStarted();
+	}
+
+	/**
+	 * After an in-process soft reboot (NativeScriptRuntime.reloadApplication /
+	 * restartWithConfig), the Objective-C delegate classes created by the
+	 * previous JS isolate still exist and UIKit keeps dispatching to their
+	 * now-inert instances: their method callbacks bail out because the isolate
+	 * that implemented them is gone. Notification-center observers are
+	 * re-registered by the new isolate, but delegate-based dispatch (custom
+	 * UIApplicationDelegate methods like push-token/openURL callbacks, and the
+	 * UIScene delegates used by scene-lifecycle apps) stays pinned to the old
+	 * bundle. Recreate those delegates from this bundle's classes and re-point
+	 * UIKit at them.
+	 */
+	private _reattachNativeDelegatesAfterSoftReboot(): void {
+		if (getRuntimeReloadCount() <= 0) {
+			// First boot: UIApplicationMain (or the host app) set up delegates.
+			return;
+		}
+
+		if (isEmbedded()) {
+			// The host app owns the UIApplication delegate; never touch it.
+			return;
+		}
+
+		const app = UIApplication.sharedApplication;
+		if (!app) {
+			return;
+		}
+
+		// Fresh application delegate from the new bundle. Assigning `delegate`
+		// does not retain (unlike the UIApplicationMain launch path), so keep a
+		// strong reference ourselves.
+		this.delegate ??= Responder as any;
+		const freshDelegate = (<any>this.delegate).new() as UIApplicationDelegate;
+		this._softRebootAppDelegate = freshDelegate;
+		app.delegate = freshDelegate;
+
+		// Re-point already-connected scenes at fresh scene delegates so scene
+		// lifecycle and user-implemented scene delegate methods (shortcuts,
+		// openURLContexts, userActivity continuation, etc.) reach this isolate.
+		// Newly connecting scenes are covered by the fresh application delegate's
+		// applicationConfigurationForConnectingSceneSessionOptions, which returns
+		// this bundle's SceneDelegate class.
+		if (this.supportsScenes()) {
+			this._softRebootSceneDelegates.clear();
+			const scenes = app.connectedScenes?.allObjects;
+			for (let i = 0; scenes && i < scenes.count; i++) {
+				const scene = scenes.objectAtIndex(i);
+				if (!(scene instanceof UIWindowScene)) {
+					continue;
+				}
+				const freshSceneDelegate = SceneDelegate.new() as UIWindowSceneDelegate;
+				scene.delegate = freshSceneDelegate;
+				this._softRebootSceneDelegates.set(scene, freshSceneDelegate);
+			}
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`Reattached application delegate${this._softRebootSceneDelegates.size ? ` and ${this._softRebootSceneDelegates.size} scene delegate(s)` : ''} after soft reboot (reloadCount: ${getRuntimeReloadCount()})`, Trace.categories.NativeLifecycle);
+		}
 	}
 
 	private getViewController(rootView: View): UIViewController {
@@ -700,7 +824,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			this.launchEventCalled = false;
 			if (!this.shouldDelayLaunchEvent) {
-				this.notifyAppStarted();
+				this.notifyAppStarted(notification);
 			}
 		} else {
 			// Scene-based app - window creation will happen in scene delegate
@@ -1666,7 +1790,7 @@ export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnab
 }
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
-export function ensureClasses() {
+export function ensureA11yClasses() {
 	if (accessibilityServiceObservable) {
 		return;
 	}
@@ -1674,9 +1798,6 @@ export function ensureClasses() {
 	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
-
-	// Initialize SDK version CSS class once
-	initializeSdkVersionClass(Application.getRootView());
 }
 
 export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
@@ -1757,7 +1878,7 @@ function applyFontScaleToRootViews(): void {
 }
 
 export function initAccessibilityCssHelper(): void {
-	ensureClasses();
+	ensureA11yClasses();
 	updateCurrentHelperClasses(applyRootCssClass);
 	applyFontScaleToRootViews();
 

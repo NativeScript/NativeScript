@@ -39,7 +39,11 @@
 				"@typescript-eslint/no-this-alias": "warn",
 				"@typescript-eslint/no-namespace": "off",
 				"@typescript-eslint/no-inferrable-types": "off",
-				"@typescript-eslint/no-extra-semi": "error",
+				"@typescript-eslint/no-empty-object-type": "off",
+				"@typescript-eslint/no-unsafe-function-type": "off",
+				"@typescript-eslint/no-wrapper-object-types": "off",
+				"@typescript-eslint/no-unsafe-declaration-merging": "off",
+				"@typescript-eslint/no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTernary": true }],
 				"no-extra-semi": "off"
 			}
 		},
@@ -47,7 +51,6 @@
 			"files": ["*.js", "*.jsx"],
 			"extends": ["plugin:@nx/javascript"],
 			"rules": {
-				"@typescript-eslint/no-extra-semi": "error",
 				"no-extra-semi": "off"
 			}
 		},

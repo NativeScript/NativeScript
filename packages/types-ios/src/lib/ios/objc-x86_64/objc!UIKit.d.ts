@@ -41058,8 +41058,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 */
 	setNeedsUpdateProperties(): void;
 
-	setPassThroughParent(passThroughParent: boolean): void;
-
 	shouldUpdateFocusInContext(context: UIFocusUpdateContext): boolean;
 
 	sizeThatFits(size: CGSize): CGSize;

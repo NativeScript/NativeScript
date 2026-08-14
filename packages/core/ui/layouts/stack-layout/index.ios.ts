@@ -83,6 +83,10 @@ export class StackLayout extends StackLayoutBase {
 		measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
 		measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
+		// Check against our maximum sizes (Infinity when unconstrained)
+		measureWidth = Math.min(measureWidth, this.effectiveMaxWidth);
+		measureHeight = Math.min(measureHeight, this.effectiveMaxHeight);
+
 		this._totalLength = isVertical ? measureHeight : measureWidth;
 
 		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);

@@ -113,7 +113,8 @@ export class Switch extends SwitchBase {
 			super._onCheckedPropertyChanged(newValue);
 
 			if (this.offBackgroundColor) {
-				const nextColor = !newValue ? this.offBackgroundColor : this.backgroundColor instanceof Color ? this.backgroundColor : new Color(this.backgroundColor);
+				const bg = this.backgroundColor;
+				const nextColor = !newValue ? this.offBackgroundColor : bg instanceof Color ? bg : Color.fromIosColor(bg);
 
 				// On iOS 26+, coordinate with the system's switch animation:
 				// delay applying track color until the toggle animation finishes to avoid a janky mid-animation recolor.

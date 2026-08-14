@@ -368,6 +368,26 @@ export class IOSHelper {
 		return CGRectMake(left, top, width, height);
 	}
 
+	/**
+	 * Returns `true` when an ancestor ScrollView has `iosContentInsetAdjustmentBehavior`
+	 * other than `'never'`, meaning iOS applies safe-area insets via `adjustedContentInset`.
+	 * `View.getSafeAreaInsets` returns empty insets in that case so nested content
+	 * doesn't double-count them.
+	 *
+	 * Duck-types on the property name to avoid a circular import of ScrollView.
+	 * The property defaults to `'never'`, so this returns `false` unless explicitly opted in.
+	 */
+	static hasIOSManagedInsetAncestor(view: View): boolean {
+		let p: any = view.parent;
+		while (p) {
+			if (typeof p.iosContentInsetAdjustmentBehavior === 'string' && p.iosContentInsetAdjustmentBehavior !== 'never') {
+				return true;
+			}
+			p = p.parent;
+		}
+		return false;
+	}
+
 	static shrinkToSafeArea(view: View, frame: CGRect): CGRect {
 		const insets = view.getSafeAreaInsets();
 		if (insets.left || insets.top) {
@@ -386,6 +406,11 @@ export class IOSHelper {
 
 	static expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
 		const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
+		// Detached NS subtrees (e.g. TabView's `iosBottomAccessory`) have no safe-area
+		// reference rects to expand against; leave the frame as-is.
+		if (!availableSpace || !availableSpace.safeArea || !availableSpace.fullscreen) {
+			return frame;
+		}
 		const safeArea = availableSpace.safeArea;
 		const fullscreen = availableSpace.fullscreen;
 		const inWindow = availableSpace.inWindow;
@@ -438,10 +463,14 @@ export class IOSHelper {
 				parent = parent.parent as View;
 			}
 
-			if (parent.nativeViewProtected instanceof UIScrollView) {
-				scrollView = parent.nativeViewProtected;
-			} else if (parent.viewController) {
-				viewControllerView = parent.viewController.view;
+			// `parent` is null when `view` is attached to UIKit but has no NS parent
+			// (e.g. TabView's `iosBottomAccessory` hosted in UITabAccessory.contentView).
+			if (parent) {
+				if (parent.nativeViewProtected instanceof UIScrollView) {
+					scrollView = parent.nativeViewProtected;
+				} else if (parent.viewController) {
+					viewControllerView = parent.viewController.view;
+				}
 			}
 		}
 

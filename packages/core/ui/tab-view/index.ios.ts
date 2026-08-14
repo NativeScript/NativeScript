@@ -12,6 +12,7 @@ import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
+import { SharedTransition } from '../transition/shared-transition';
 import { layout } from '../../utils/layout-helper';
 import { FONT_PREFIX, isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
 import { SDK_VERSION } from '../../utils/constants';
@@ -134,6 +135,14 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
 		const owner = this._owner?.deref();
 		if (owner) {
+			// iOS lazily initializes moreNavigationController (e.g. on first access of
+			// topViewController, or on first tap of the More tab) and can clear the
+			// delegate we set in setViewControllers. Re-assert it whenever any tab is
+			// selected so moreNav push/pop callbacks for tabs >= 5 still reach us.
+			const moreNav = tabBarController.moreNavigationController;
+			if (moreNav && owner.moreNavigationControllerDelegate && moreNav.delegate !== owner.moreNavigationControllerDelegate) {
+				moreNav.delegate = owner.moreNavigationControllerDelegate;
+			}
 			owner._onViewControllerShown(tabBarController, viewController);
 		}
 	}
@@ -175,6 +184,12 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		const owner = this._owner?.deref();
 		if (owner) {
 			owner._onViewControllerShown(navigationController.tabBarController, viewController);
+
+			// The cascade above may have just attached a queued Page to a Frame whose
+			// Frame.onLoaded only fired post-animation. iOS won't re-layout on its own
+			// after the push completes — trigger one so the late attachment becomes visible.
+			viewController?.view?.setNeedsLayout();
+			viewController?.view?.layoutIfNeeded();
 		}
 	}
 }
@@ -230,6 +245,7 @@ export class TabViewItem extends TabViewItemBase {
 
 	public disposeNativeView() {
 		this.__controller = undefined;
+		this.canBeLoaded = false;
 		this.setNativeView(undefined);
 	}
 
@@ -303,9 +319,8 @@ export class TabViewItem extends TabViewItemBase {
 export class TabView extends TabViewBase {
 	public viewController: UITabBarControllerImpl;
 	public items: TabViewItem[];
-
+	public moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _delegate: UITabBarControllerDelegateImpl;
-	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};
 	private _bottomAccessoryNsView: View;
 	private _ios: UITabBarControllerImpl;
@@ -327,12 +342,12 @@ export class TabView extends TabViewBase {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
-		this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
+		this.moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
 	}
 
 	disposeNativeView() {
 		this._delegate = null;
-		this._moreNavigationControllerDelegate = null;
+		this.moreNavigationControllerDelegate = null;
 		this.viewController = null;
 		this._ios = null;
 		super.disposeNativeView();
@@ -552,7 +567,7 @@ export class TabView extends TabViewBase {
 				}
 
 				tabs.push(tab);
-				(<TabViewItemDefinition>item).canBeLoaded = true;
+				item.canBeLoaded = true;
 			});
 
 			try {
@@ -578,7 +593,7 @@ export class TabView extends TabViewBase {
 
 				controller.tabBarItem = tabBarItem;
 				controllers.push(controller);
-				(<TabViewItemDefinition>item).canBeLoaded = true;
+				item.canBeLoaded = true;
 			});
 
 			if (SDK_VERSION >= 15) {
@@ -590,7 +605,9 @@ export class TabView extends TabViewBase {
 		}
 
 		// When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
-		this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
+		if (this._ios.moreNavigationController) {
+			this._ios.moreNavigationController.delegate = this.moreNavigationControllerDelegate;
+		}
 	}
 
 	private _getIconRenderingMode(): UIImageRenderingMode {
@@ -817,6 +834,9 @@ export class TabView extends TabViewBase {
 			setAccessory(null);
 			// Tear down previously managed NS view
 			if (this._bottomAccessoryNsView) {
+				// Unregister from SharedTransition before teardown so it isn't
+				// queried in subsequent transitions.
+				SharedTransition.unregisterExternalRoot(this._bottomAccessoryNsView);
 				// Do not remove from a parent; we didn't add it to the NS view tree.
 				try {
 					this._bottomAccessoryNsView._tearDownUI(true);
@@ -891,6 +911,11 @@ export class TabView extends TabViewBase {
 		}
 		// Keep references for later teardown
 		this._bottomAccessoryNsView = nsView;
+		// Expose the accessory's NS subtree to shared transitions. Tagged views
+		// inside the accessory (e.g. a "now playing" mini-player's artwork) can
+		// then participate in transitions that originate from any page, even
+		// though the accessory isn't reachable via the page's NS view tree.
+		SharedTransition.registerExternalRoot(nsView);
 	}
 }
 
