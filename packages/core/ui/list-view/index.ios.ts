@@ -26,6 +26,7 @@ const infinity = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 interface ViewItemIndex {
 	_listViewItemIndex?: number;
+	_listViewSectionIndex?: number;
 }
 
 type ItemView = View & ViewItemIndex;
@@ -172,7 +173,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 				// from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
 				const width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
 				const rowHeight = owner._effectiveRowHeight;
-				const cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
+				const cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row, indexPath.section);
 				cellView.iosOverflowSafeAreaEnabled = false;
 				View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
 			}
@@ -232,7 +233,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 			return tableView.estimatedRowHeight;
 		}
 
-		let height = owner.getHeight(indexPath.row);
+		let height = owner.getHeight(indexPath.row, indexPath.section);
 		if (height === undefined) {
 			// in iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated: this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
 			const template = owner.sectioned ? owner._getItemTemplateInSection(indexPath.section, indexPath.row) : owner._getItemTemplate(indexPath.row);
@@ -437,7 +438,8 @@ export class ListView extends ListViewBase {
 	// tslint:disable-next-line
 	private _dataSource;
 	private _delegate;
-	private _heights: Array<number>;
+	// Measured row heights indexed [section][row]; non-sectioned lists use section 0.
+	private _heights: Array<Array<number>>;
 	private _preparingCell: boolean;
 	private _isDataDirty: boolean;
 	private _map: Map<ListViewCell, ItemView>;
@@ -453,7 +455,7 @@ export class ListView extends ListViewBase {
 		super();
 		this._map = new Map<ListViewCell, ItemView>();
 		this._headerMap = new Map<ListViewHeaderCell, View>();
-		this._heights = new Array<number>();
+		this._heights = new Array<Array<number>>();
 	}
 
 	createNativeView() {
@@ -727,12 +729,15 @@ export class ListView extends ListViewBase {
 		return indexes.some((visIndex) => visIndex.row === itemIndex);
 	}
 
-	public getHeight(index: number): number {
-		return this._heights[index];
+	public getHeight(index: number, section = 0): number {
+		return this._heights[section]?.[index];
 	}
 
-	public setHeight(index: number, value: number): void {
-		this._heights[index] = value;
+	public setHeight(index: number, value: number, section = 0): void {
+		if (!this._heights[section]) {
+			this._heights[section] = new Array<number>();
+		}
+		this._heights[section][index] = value;
 	}
 
 	public _onRowHeightPropertyChanged(oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
@@ -790,7 +795,7 @@ export class ListView extends ListViewBase {
 
 		this._map.forEach((childView, listViewCell) => {
 			const rowHeight = this._effectiveRowHeight;
-			const cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
+			const cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex, childView._listViewSectionIndex ?? 0);
 			if (cellHeight) {
 				const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
 				childView.iosOverflowSafeAreaEnabled = false;
@@ -811,7 +816,7 @@ export class ListView extends ListViewBase {
 			const heightMeasureSpec: number = rowHeight >= 0 ? layout.makeMeasureSpec(rowHeight, layout.EXACTLY) : infinity;
 			const measuredSize = View.measureChild(this, cellView, this.widthMeasureSpec, heightMeasureSpec);
 			const height = measuredSize.measuredHeight;
-			this.setHeight(indexPath.row, height);
+			this.setHeight(indexPath.row, height, indexPath.section);
 
 			return height;
 		}
@@ -856,7 +861,7 @@ export class ListView extends ListViewBase {
 			if (this.sectioned) {
 				this._prepareItemInSection(view, indexPath.section, indexPath.row);
 				view._listViewItemIndex = indexPath.row; // Keep row index for compatibility
-				(view as any)._listViewSectionIndex = indexPath.section;
+				view._listViewSectionIndex = indexPath.section;
 			} else {
 				this._prepareItem(view, indexPath.row);
 				view._listViewItemIndex = indexPath.row;
@@ -889,6 +894,7 @@ export class ListView extends ListViewBase {
 		this._preparingCell = true;
 		view.parent._removeView(view);
 		view._listViewItemIndex = undefined;
+		view._listViewSectionIndex = undefined;
 		this._preparingCell = preparing;
 		this._map.delete(cell);
 	}
