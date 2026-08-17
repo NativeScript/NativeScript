@@ -207,6 +207,11 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 					throw new Error(`TabViewItem must have a view.`);
 				}
 
+				// A view can only have one parent, and _addView throws if it already has one.
+				if (item.parent && item.parent !== this) {
+					item.parent._removeView(item);
+				}
+
 				this._addView(item);
 			});
 		}
