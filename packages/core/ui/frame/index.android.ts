@@ -16,7 +16,7 @@ import { getAppMainEntry } from '../../application/helpers-common';
 import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData } from '../../application/application-interfaces';
 import { Application } from '../../application/application';
 import { isEmbedded, setEmbeddedView } from '../embedding';
-import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
+import { CALLBACKS, detachFragmentCallbacks, FRAMEID, framesCache, removeFragmentIfAdded, setFragmentCallbacks } from './frame-helper-for-android';
 import { SDK_VERSION } from '../../utils';
 
 export * from './frame-common';
@@ -459,8 +459,18 @@ export class Frame extends FrameBase {
 	public _removeEntry(removed: BackstackEntry): void {
 		super._removeEntry(removed);
 
-		if (removed.fragment) {
+		const fragment = removed.fragment;
+		if (fragment) {
 			_clearEntry(removed);
+
+			// The entry is gone now - its page was torn down and resolvedPage cleared - but the
+			// fragment can still be sitting in the FragmentManager: navigation only evicts fragments
+			// sharing the frame's current container, so anything left over from an activity
+			// recreation or a frame reset survives. Cut it loose here, or the FragmentManager keeps
+			// driving it through the lifecycle against a dead entry.
+			detachFragmentCallbacks(fragment);
+			removeFragmentIfAdded(fragment);
+
 			removed.fragment = null;
 		}
 
