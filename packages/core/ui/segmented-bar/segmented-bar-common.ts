@@ -84,7 +84,13 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 
 		if (newItems) {
 			for (let i = 0, count = newItems.length; i < count; i++) {
-				this._addView(newItems[i]);
+				const item = newItems[i];
+				// A view can only have one parent, and _addView throws if it already has one.
+				if (item.parent && item.parent !== this) {
+					item.parent._removeView(item);
+				}
+
+				this._addView(item);
 			}
 		}
 	}
