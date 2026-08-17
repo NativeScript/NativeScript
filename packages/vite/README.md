@@ -66,10 +66,10 @@ ns debug android --no-hmr
 
 ### Android: automatic `adb reverse`
 
-For Android HMR the CLI automatically runs `adb reverse tcp:5173 tcp:5173`
-(using the SDK-resolved adb, scoped to the deploy target, after the device is
-ready) so the device reaches the dev server through the ADB tunnel at
-`127.0.0.1:5173`. Relevant opt-outs:
+For Android HMR the CLI automatically runs `adb reverse tcp:<port> tcp:<port>`
+for the session's dev-server port (using the SDK-resolved adb, scoped to the
+deploy target, after the device is ready) so the device reaches the dev server
+through the ADB tunnel at `127.0.0.1:<port>`. Relevant opt-outs:
 
 - `NS_HMR_NO_ADB_REVERSE=1` — skip the tunnel and use `10.0.2.2`.
 - `NS_HMR_PREFER_LAN_HOST=1` — physical device over Wi-Fi; emit the host's LAN IP.
@@ -77,20 +77,40 @@ ready) so the device reaches the dev server through the ADB tunnel at
 
 ## Custom HMR sessions
 
-A NativeScript Vite HMR session may use custom server and staging settings:
+The CLI picks the dev-server settings for each session on its own:
+
+- **Port** — the first free port at or above `NS_HMR_PORT` (default `5173`),
+  the same way `vite` moves off a busy port. Whatever it picks is baked into
+  the device URLs, bound by the dev server and (on Android) tunnelled with
+  `adb reverse`, so all three always agree.
+- **Staging directory** — `.ns-vite-build/<platform>`, so iOS and Android
+  builds never overwrite each other's output.
+
+Both can still be pinned explicitly:
 
 | Environment variable | Purpose | Default |
 | --- | --- | --- |
-| `NS_HMR_PORT` | Vite server port used by the generated device HTTP and websocket URLs (the CLI reverses and probes this port) | `5173` |
-| `NS_VITE_DIST_DIR` | Project-relative staging directory used for Vite output before the NativeScript CLI copies it into the platform app | `.ns-vite-build` |
+| `NS_HMR_PORT` | Preferred Vite dev-server port; the CLI moves to the next free port when it is taken | `5173` |
+| `NS_HMR_STRICT_PORT` | Fail instead of moving when `NS_HMR_PORT` is taken (Vite's `strictPort`) — for tunnels / CI that forward a fixed port | unset |
+| `NS_VITE_DIST_DIR` | Project-relative staging directory used for Vite output before the NativeScript CLI copies it into the platform app | `.ns-vite-build/<platform>` |
 
-Leave both unset for the standard single-session workflow.
+The environment settings only need to be visible to the `ns` process — the CLI
+propagates them (and the values it picks) to the dev server it spawns.
 
 ### Running two platforms at once
 
-The CLI runs **one dev server per port**. To run iOS and Android HMR
-simultaneously for the same app, give each its own port and staging dir so the
-servers and their platform-specific bundles don't collide:
+Start both; nothing to configure:
+
+```bash
+# Terminal 1
+ns debug ios       # dev server on 5173
+
+# Terminal 2
+ns debug android   # 5173 is busy → dev server on 5174
+```
+
+Each session gets its own port and staging directory. Older CLIs that don't
+pick ports need them set by hand per terminal:
 
 ```bash
 # Terminal 1: iOS
@@ -100,9 +120,8 @@ NS_HMR_PORT=5173 NS_VITE_DIST_DIR=.ns-vite-build/ios ns debug ios
 NS_HMR_PORT=5174 NS_VITE_DIST_DIR=.ns-vite-build/android ns debug android
 ```
 
-The environment settings only need to be visible to the `ns` process — the CLI
-propagates them to the dev server it spawns. The inline environment syntax
-above is for POSIX shells; use the equivalent assignment on Windows.
+The inline environment syntax above is for POSIX shells; use the equivalent
+assignment on Windows.
 
 ### Advanced: running `vite serve` yourself
 

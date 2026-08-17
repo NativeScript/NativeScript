@@ -455,7 +455,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// host devices are told to use is decided separately by
 					// `resolveDeviceReachableHost`. `NS_HMR_HOST` overrides.
 					host: process.env.NS_HMR_HOST || '0.0.0.0',
-					// Use the configured stable port so multiple platform sessions can coexist.
+					// The CLI picks a free port per platform session and hands
+					// it in as `NS_HMR_PORT`; that same port is baked into
+					// `bundle.mjs` and tunnelled with `adb reverse`, so Vite
+					// must not silently move off it — bind it or fail loudly.
 					port: hmrPort,
 					strictPort: true,
 					https: useHttps
