@@ -213,6 +213,36 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		}, 'Binding TabView to a TabViewItem with null view should throw.');
 	};
 
+	public test_SettingTheSameItemsToAnotherTabView_DoesNotThrow = function () {
+		var tabView = this.testView;
+		var items = this._createItems(2);
+		tabView.items = items;
+		this.waitUntilTestElementIsLoaded();
+
+		var secondTabView = new tabViewModule.TabView();
+		secondTabView.items = items;
+
+		items.forEach((item, i) => TKUnit.assertEqual(item.parent, secondTabView, `Item ${i} should be parented to the TabView it was last assigned to.`));
+	};
+
+	public test_SettingTheItemsOfATornDownTabViewToANewOne_DoesNotThrow = function () {
+		var tabView = this.testView;
+		var items = this._createItems(2);
+		tabView.items = items;
+		this.waitUntilTestElementIsLoaded();
+
+		// Detaching the TabView tears it down, but its items still point at it.
+		this.testPage.content = null;
+
+		var secondTabView = new tabViewModule.TabView();
+		secondTabView.items = items;
+		this.testPage.content = secondTabView;
+		TKUnit.waitUntilReady(() => secondTabView.isLoaded, 1);
+
+		items.forEach((item, i) => TKUnit.assertEqual(item.parent, secondTabView, `Item ${i} should be parented to the TabView it was last assigned to.`));
+		TKUnit.assertEqual(tabViewTestsNative.getNativeTabCount(secondTabView), items.length, 'Native tabs should be created for the TabView the items were re-assigned to.');
+	};
+
 	public testWhenSelectingATabNativelySelectedIndexIsUpdatedProperly = function () {
 		var tabView = this.testView;
 		tabView.items = this._createItems(2);

@@ -274,6 +274,39 @@ export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
 	});
 }
 
+export function test_SettingTheSameItemsToAnotherSegmentedBar_DoesNotThrow() {
+	const items = _createItems(3);
+	const firstBar = _createSegmentedBar();
+
+	buildUIAndRunTest(firstBar, function (views: Array<View>) {
+		firstBar.items = items;
+
+		const secondBar = _createSegmentedBar();
+		secondBar.items = items;
+
+		items.forEach((item, i) => TKUnit.assertEqual(item.parent, secondBar, `Item ${i} should be parented to the SegmentedBar it was last assigned to.`));
+	});
+}
+
+export function test_SettingTheItemsOfATornDownSegmentedBarToANewOne_DoesNotThrow() {
+	const items = _createItems(3);
+	const firstBar = _createSegmentedBar();
+
+	buildUIAndRunTest(firstBar, function (views: Array<View>) {
+		firstBar.items = items;
+	});
+
+	// The test above leaves the page without content, so firstBar is torn down while its items still point at it.
+	const secondBar = _createSegmentedBar();
+
+	buildUIAndRunTest(secondBar, function (views: Array<View>) {
+		secondBar.items = items;
+
+		items.forEach((item, i) => TKUnit.assertEqual(item.parent, secondBar, `Item ${i} should be parented to the SegmentedBar it was last assigned to.`));
+		TKUnit.assertEqual(segmentedBarTestsNative.getNativeItemsCount(secondBar), items.length, 'Native items should be created for the SegmentedBar the items were re-assigned to.');
+	});
+}
+
 /*export function testBackgroundColorUpdatedAfterItemSelected() {
     let segmentedBar = new segmentedBarModule.SegmentedBar();
 	let item1 = new segmentedBarModule.SegmentedBarItem();
