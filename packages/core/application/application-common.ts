@@ -227,6 +227,15 @@ export class ApplicationCommon {
 			const rootView = this.getRootView();
 			this.livesync(rootView, context);
 		};
+
+		// Isolate-preserving reload remounts the current entry without a new runtime.
+		global.__onApplicationReload = () => {
+			const entry = getAppMainEntry();
+			if (!entry) {
+				return;
+			}
+			this.resetRootView(entry);
+		};
 	}
 
 	/**
