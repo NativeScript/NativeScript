@@ -116,17 +116,6 @@ export function setAppMainEntry(entry: any /* NavigationEntry */) {
 	_appMainEntry = entry;
 }
 
-// Aids avoiding circular dependencies by allowing the application event listeners to be toggled
-let _toggleApplicationEventListenersHandler: (toAdd: boolean, callback: (args: any) => void) => void;
-export function toggleApplicationEventListeners(toAdd: boolean, callback: (args: any) => void) {
-	if (_toggleApplicationEventListenersHandler) {
-		_toggleApplicationEventListenersHandler(toAdd, callback);
-	}
-}
-export function setToggleApplicationEventListenersCallback(callback: (toAdd: boolean, callback: (args: any) => void) => void) {
-	_toggleApplicationEventListenersHandler = callback;
-}
-
 // Aids avoiding circular dependencies by allowing the application properties to be retrieved
 type ApplicationPropertyValues = { orientation: 'portrait' | 'landscape' | 'unknown'; systemAppearance: 'dark' | 'light' | null };
 let _applicationPropertiesCallback: () => ApplicationPropertyValues;
