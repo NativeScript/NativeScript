@@ -710,7 +710,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			// Only the strategy that owns routes (Vue) registers them via
 			// `registerRoutes`; SFC/assembler endpoints are inherently Vue-only
 			// (see websocket-sfc.ts).
-			strategy.registerRoutes?.({
+			await strategy.registerRoutes?.({
 				server,
 				wss,
 				verbose,

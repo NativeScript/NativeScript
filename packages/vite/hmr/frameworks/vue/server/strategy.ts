@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as PAT from '../../../server/constants.js';
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
-import { registerSfcHandlers } from './websocket-sfc.js';
 import { getProjectAppPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
@@ -573,7 +572,8 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 	// The SFC dev endpoints are inherently Vue-only, so Vue owns registering
 	// them (and contributing its import-map + volatile-pattern entries) rather
 	// than the shared server modules branching on flavor.
-	registerRoutes(ctx: FrameworkRouteContext) {
+	async registerRoutes(ctx: FrameworkRouteContext) {
+		const { registerSfcHandlers } = await import('./websocket-sfc.js');
 		registerSfcHandlers(ctx.server, {
 			verbose: ctx.verbose,
 			appVirtualWithSlash: ctx.appVirtualWithSlash,
