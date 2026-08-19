@@ -233,7 +233,7 @@ export interface FrameworkServerStrategy {
 	 * Register framework-owned dev HTTP endpoints (Vue: `/ns/sfc*`). Defaults to
 	 * no-op for frameworks without extra routes.
 	 */
-	registerRoutes?(ctx: FrameworkRouteContext): void;
+	registerRoutes?(ctx: FrameworkRouteContext): void | Promise<void>;
 
 	/**
 	 * Extra import-map entries for this framework (e.g. Vue → `vue` /

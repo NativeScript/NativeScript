@@ -211,12 +211,12 @@ const lazy = import("http://localhost:5173/ns/sfc/42/components/Other.vue");
 	});
 
 	// ── Vue's dev HTTP surface + device config ────────────────────────────
-	it('registerRoutes mounts the three Vue SFC endpoints', () => {
+	it('registerRoutes mounts the three Vue SFC endpoints', async () => {
 		const handlers: Array<(...a: any[]) => unknown> = [];
 		const server = { middlewares: { use: (fn: any) => handlers.push(fn) } } as unknown as FrameworkRouteContext['server'];
 
 		expect(typeof vueServerStrategy.registerRoutes).toBe('function');
-		vueServerStrategy.registerRoutes!({
+		await vueServerStrategy.registerRoutes!({
 			server,
 			wss: null,
 			verbose: false,
