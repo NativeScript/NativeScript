@@ -118,10 +118,9 @@ export function registerNsEntryRoutes(server: ViteDevServer, options: RegisterNs
 				}
 			} catch {}
 			const verSeg = urlObj.pathname.replace(/^\/ns\/entry\/?/, '');
-			// Resolve app main entry to an absolute path-like key used by /ns/m
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			// A JavaScript MIME is required: the runtime refuses to evaluate a
+			// module response that carries none.
+			setDeviceModuleHeaders(res);
 			const ver = /^[0-9]+$/.test(verSeg) ? verSeg : String(getGraphVersion() || 0);
 			const origin = getServerOrigin(server) || `${urlObj.protocol}//${urlObj.host}`;
 			// Resolve app main entry to an absolute path-like key used by /ns/m

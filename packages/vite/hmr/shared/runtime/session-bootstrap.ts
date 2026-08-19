@@ -252,9 +252,9 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			trace.importMap = { ok: true, ms: Date.now() - tImap };
 		}
 
-		// Session globals + arm the cold-boot gate (runloop pump between
-		// synchronous fetches). `setDevBootComplete(false)` is a no-op on
-		// a fresh realm but matters for re-bootstrapped sessions.
+		// Session globals. `setDevBootComplete` only exists on runtimes that
+		// still let the client arm their cold-boot gate; current runtimes derive
+		// that window natively and expose no such member.
 		applyDevSessionGlobals(session);
 		try {
 			runtimeApi.setDevBootComplete?.(false);

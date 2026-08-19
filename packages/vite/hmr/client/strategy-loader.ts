@@ -71,9 +71,26 @@ export const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
 const CLIENT_STRATEGY_FLAVORS = new Set(['vue', 'angular', 'solid', 'typescript', 'react']);
 let CLIENT_STRATEGY: FrameworkClientStrategy | undefined;
 
+// The strategy module's URL, absolute and dot-segment free. The runtime keys
+// its module registry by the specifier it is handed, so a `../` specifier from
+// a dev-served module would register the strategy under a non-canonical URL
+// (`…/hmr/client/../frameworks/…`) — a second identity next to the canonical
+// one, fetched outside the async graph walk. Resolving against
+// `import.meta.url` here hands the loader the canonical URL up front.
+function resolveClientStrategyUrl(flavor: string): string {
+	const relative = `../frameworks/${flavor}/client/strategy.js`;
+	try {
+		const base = import.meta.url;
+		if (typeof base === 'string' && /^https?:\/\//.test(base)) {
+			return new URL(relative, base).href;
+		}
+	} catch {}
+	return relative;
+}
+
 export const CLIENT_STRATEGY_READY: Promise<void> =
 	TARGET_FLAVOR && CLIENT_STRATEGY_FLAVORS.has(TARGET_FLAVOR)
-		? import(`../frameworks/${TARGET_FLAVOR}/client/strategy.js`)
+		? import(/* @vite-ignore */ resolveClientStrategyUrl(TARGET_FLAVOR))
 				.then((mod: any) => {
 					CLIENT_STRATEGY = mod && mod[`${TARGET_FLAVOR}ClientStrategy`];
 					if (VERBOSE) console.log('[hmr-client] client strategy loaded for flavor:', TARGET_FLAVOR);
