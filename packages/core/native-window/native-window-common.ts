@@ -325,7 +325,7 @@ export abstract class NativeWindow extends Observable {
 	_notifyEvent(eventName: NativeWindowEventName): void {
 		this.notify(<NativeWindowEventData>{
 			eventName,
-			window: this as any,
+			window: this,
 			object: this,
 		});
 	}
@@ -334,7 +334,6 @@ export abstract class NativeWindow extends Observable {
 	 * @internal – called when the window is being torn down.
 	 */
 	_destroy(): void {
-		this._notifyEvent(NativeWindowEvents.close);
 		if (this._rootView) {
 			this._rootView._onRootViewReset();
 			this._rootView = null;

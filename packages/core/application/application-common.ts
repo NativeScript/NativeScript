@@ -56,7 +56,7 @@ export const SceneEvents = {
 	sceneDidEnterBackground: 'sceneDidEnterBackground',
 	/** @deprecated Use `NativeWindowEvents.sceneDidDisconnect` instead. */
 	sceneDidDisconnect: 'sceneDidDisconnect',
-	/** @deprecated Use `NativeWindowEvents.sceneContentSetup` instead. */
+	/** @deprecated Use the Application 'windowOpen' event and NativeWindow.setContent() instead. */
 	sceneContentSetup: 'sceneContentSetup',
 };
 

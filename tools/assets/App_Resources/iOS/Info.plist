@@ -60,5 +60,6 @@
 			<string>UIWindowSceneSessionRoleApplication</string>
 			<key>UIApplicationSupportsMultipleScenes</key>
 			<true/>
+		</dict>
 	</dict>
 </plist>

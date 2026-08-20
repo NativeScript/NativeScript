@@ -1118,7 +1118,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 		// If primary was removed, promote next window
 		if (nativeWindow.isPrimary && this._windows.length > 0) {
-			(this._windows[0] as any)._isPrimary = true;
+			this._windows[0]._setIsPrimary(true);
 			const promotedWindow = this._windows[0].iosWindow?.window;
 			if (promotedWindow) {
 				setiOSWindow(promotedWindow);
@@ -1130,7 +1130,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 * @internal - Get all registered NativeWindows.
 	 */
 	_getWindows(): NativeWindow[] {
-		return this._windows;
+		return [...this._windows];
 	}
 
 	/**

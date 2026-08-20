@@ -92,7 +92,7 @@ export interface WindowOpenEventData extends EventData {
  */
 export interface WindowCloseEventData extends EventData {
 	/** The NativeWindow that was closed. */
-	window?: NativeWindow;
+	window: NativeWindow;
 }
 
 /**

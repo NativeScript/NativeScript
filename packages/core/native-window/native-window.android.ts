@@ -2,6 +2,7 @@ import type { View } from '../ui/core/view';
 import { CoreTypes } from '../core-types';
 import { SDK_VERSION } from '../utils/constants';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { CALLBACKS } from '../ui/frame/frame-helper-for-android';
 import { NativeWindow } from './native-window-common';
 
 /**
@@ -40,7 +41,7 @@ export class AndroidNativeWindow extends NativeWindow {
 			throw new Error('NativeWindow: Activity is no longer available.');
 		}
 
-		const callbacks: AndroidActivityCallbacks = (activity as any)['_callbacks'];
+		const callbacks: AndroidActivityCallbacks = (activity as any)[CALLBACKS];
 		if (!callbacks) {
 			throw new Error('NativeWindow: Cannot find activity callbacks.');
 		}
