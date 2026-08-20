@@ -2,7 +2,7 @@
 import type { AndroidAccessibilityEvent } from '../accessibility/accessibility-common';
 import type { View } from '../ui/core/view';
 import type { Page } from '../ui/page';
-import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from './application-interfaces';
+import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData, SceneOpenURLContextsEventData, SceneContinueUserActivityEventData, ScenePerformActionForShortcutItemEventData } from './application-interfaces';
 import type { NativeWindow, WindowOpenOptions } from '../native-window';
 
 export * from './application-common';
@@ -45,6 +45,9 @@ type IOSApplicationOn = ApplicationCommon['on'] & {
 	(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 };
 
 export class AndroidApplication extends ApplicationCommon {

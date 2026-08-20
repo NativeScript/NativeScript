@@ -53,6 +53,12 @@ export const NativeWindowEvents = {
 	sceneDidEnterBackground: 'sceneDidEnterBackground',
 	/** Fired when the scene has disconnected (iOS only). */
 	sceneDidDisconnect: 'sceneDidDisconnect',
+	/** Fired when the scene is asked to open one or more URLs (iOS only). */
+	sceneOpenURLContexts: 'sceneOpenURLContexts',
+	/** Fired when the scene is asked to continue a handoff/universal link activity (iOS only). */
+	sceneContinueUserActivity: 'sceneContinueUserActivity',
+	/** Fired when a home screen quick action is directed at the scene (iOS only). */
+	scenePerformActionForShortcutItem: 'scenePerformActionForShortcutItem',
 
 	// Android activity lifecycle events
 	/** Fired when the activity is created (Android only). */

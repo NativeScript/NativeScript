@@ -263,3 +263,56 @@ export interface SceneEventData extends ApplicationEventData {
 	 */
 	userInfo?: NSDictionary<any, any>;
 }
+
+/**
+ * iOS event data for the `sceneOpenURLContexts` event, raised when a scene is asked to open URLs.
+ *
+ * Replaces the `applicationOpenURLOptions` app delegate callback, which UIKit no longer
+ * calls once the app adopts scenes. Handlers registered through
+ * `Application.ios.addDelegateHandler('applicationOpenURLOptions', ...)` still run, once per context.
+ */
+export interface SceneOpenURLContextsEventData extends SceneEventData {
+	/**
+	 * The URL contexts to open. A single delivery may carry more than one URL.
+	 */
+	urlContexts: NSSet<UIOpenURLContext>;
+}
+
+/**
+ * iOS event data for the `sceneContinueUserActivity` event, raised for Handoff and
+ * universal links directed at a scene.
+ *
+ * Replaces the `applicationContinueUserActivityRestorationHandler` app delegate callback,
+ * which UIKit no longer calls once the app adopts scenes.
+ */
+export interface SceneContinueUserActivityEventData extends SceneEventData {
+	/**
+	 * The activity to continue.
+	 */
+	userActivity: NSUserActivity;
+}
+
+/**
+ * iOS event data for the `scenePerformActionForShortcutItem` event, raised when a home
+ * screen quick action targets a scene.
+ *
+ * Replaces the `applicationPerformActionForShortcutItemCompletionHandler` app delegate
+ * callback, which UIKit no longer calls once the app adopts scenes.
+ */
+export interface ScenePerformActionForShortcutItemEventData extends SceneEventData {
+	/**
+	 * The quick action the user selected.
+	 */
+	shortcutItem: UIApplicationShortcutItem;
+
+	/**
+	 * Reports back to iOS whether the action was handled. Only the first call is delivered;
+	 * later ones are ignored.
+	 *
+	 * Unless a legacy `applicationPerformActionForShortcutItemCompletionHandler` handler is
+	 * registered — in which case that handler owns the result — the action is reported as
+	 * unhandled as soon as the listeners return, so a listener that wants to report otherwise
+	 * must call this before returning.
+	 */
+	completionHandler: (handled: boolean) => void;
+}

@@ -2,7 +2,7 @@ import { Observable } from '../data/observable';
 import type { CoreTypes } from '../core-types';
 import type { View } from '../ui/core/view';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
-import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from '../application/application-interfaces';
+import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData, SceneOpenURLContextsEventData, SceneContinueUserActivityEventData, ScenePerformActionForShortcutItemEventData } from '../application/application-interfaces';
 import type { NativeWindowEventData, WindowBaseEventData, WindowLayoutDirectionChangedEventData, WindowOrientationChangedEventData, WindowSystemAppearanceChangedEventData } from './native-window-interfaces';
 
 export * from './native-window-interfaces';
@@ -161,6 +161,9 @@ export abstract class WindowBase extends Observable {
 	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	on(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	on(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 
 	/**
 	 * Adds a listener for the specified event name.
@@ -202,6 +205,9 @@ export abstract class WindowBase extends Observable {
 	once(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	once(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	once(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	once(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	once(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	once(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 
 	/**
 	 * Adds a listener for the specified event name that is removed as soon as it is raised
@@ -237,6 +243,9 @@ export abstract class WindowBase extends Observable {
 	off(event: 'sceneWillEnterForeground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
 	off(event: 'sceneDidEnterBackground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
 	off(event: 'sceneDidDisconnect', callback?: (args: SceneEventData) => void, thisArg?: any): void;
+	off(event: 'sceneOpenURLContexts', callback?: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	off(event: 'sceneContinueUserActivity', callback?: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	off(event: 'scenePerformActionForShortcutItem', callback?: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 
 	/**
 	 * Removes a listener for the specified event name. Omitting the callback removes every
@@ -339,6 +348,9 @@ export abstract class NativeWindow extends WindowBase {
 	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	on(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	on(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 	on(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 
 	once(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
@@ -370,6 +382,9 @@ export abstract class NativeWindow extends WindowBase {
 	once(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	once(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
 	once(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	once(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	once(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	once(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 	once(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 
 	off(event: 'contentLoaded', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
@@ -401,5 +416,8 @@ export abstract class NativeWindow extends WindowBase {
 	off(event: 'sceneWillEnterForeground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
 	off(event: 'sceneDidEnterBackground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
 	off(event: 'sceneDidDisconnect', callback?: (args: SceneEventData) => void, thisArg?: any): void;
+	off(event: 'sceneOpenURLContexts', callback?: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
+	off(event: 'sceneContinueUserActivity', callback?: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
+	off(event: 'scenePerformActionForShortcutItem', callback?: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
 	off(eventName: string, callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
 }
