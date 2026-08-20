@@ -12,32 +12,17 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData } from './application-interfaces';
-import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
-import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
+import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
+import { getAppMainEntry, getAutoSystemAppearanceChanged, isAppInBackground, setAppInBackground, setAppMainEntry, setAutoSystemAppearanceChanged } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
-import type { NativeWindow, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowOpenEventData, WindowOpenOptions } from '../native-window';
+import type { NativeWindow, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowLayoutDirectionChangedEventData, WindowOpenEventData, WindowOpenOptions, WindowOrientationChangedEventData, WindowSystemAppearanceChangedEventData } from '../native-window';
 import type { WindowBase, WindowRole } from '../native-window/window-base';
-import { WindowEvents } from '../native-window/native-window-interfaces';
+import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 
-// prettier-ignore
-const ORIENTATION_CSS_CLASSES = [
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.portrait}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.landscape}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.unknown}`,
-];
-
-// prettier-ignore
-const SYSTEM_APPEARANCE_CSS_CLASSES = [
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.light}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
-];
-
-// prettier-ignore
-const LAYOUT_DIRECTION_CSS_CLASSES = [
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.ltr}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.rtl}`,
-];
+const ORIENTATION_CSS_CLASSES = CSSUtils.ORIENTATION_CSS_CLASSES;
+const SYSTEM_APPEARANCE_CSS_CLASSES = CSSUtils.SYSTEM_APPEARANCE_CSS_CLASSES;
+const LAYOUT_DIRECTION_CSS_CLASSES = CSSUtils.LAYOUT_DIRECTION_CSS_CLASSES;
 
 const globalEvents = getNativeScriptGlobals().events;
 
@@ -246,7 +231,13 @@ export class ApplicationCommon {
 	/**
 	 * Boolean to enable/disable systemAppearanceChanged
 	 */
-	public autoSystemAppearanceChanged = true;
+	public get autoSystemAppearanceChanged(): boolean {
+		return getAutoSystemAppearanceChanged();
+	}
+
+	public set autoSystemAppearanceChanged(value: boolean) {
+		setAutoSystemAppearanceChanged(value);
+	}
 
 	/**
 	 * @internal - should not be constructed by the user.
@@ -341,6 +332,28 @@ export class ApplicationCommon {
 		rootView.cssClasses.delete(cssClass);
 	}
 
+	/**
+	 * Same as {@link applyCssClass}, minus the system class list: window-scoped classes
+	 * must not leak into it, because it seeds every window's root view.
+	 */
+	private applyWindowScopedCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
+		if (rootView.cssClasses.has(newCssClass)) {
+			return;
+		}
+
+		cssClasses.forEach((cssClass) => rootView.cssClasses.delete(cssClass));
+		rootView.cssClasses.add(newCssClass);
+		this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
+	}
+
+	/**
+	 * The modal registry is process-wide, so only the modals presented over this root
+	 * view may follow its window-scoped classes.
+	 */
+	private getOwnedModalViews(rootView: View): View[] {
+		return (<Array<View>>rootView._getRootModalViews()).filter((modalView) => modalView._getRootModalHost() === rootView);
+	}
+
 	private increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 		const styleScope: StyleScope = rootView._styleScope ?? (rootView as Frame)?.currentPage?._styleScope;
 
@@ -349,12 +362,12 @@ export class ApplicationCommon {
 		}
 	}
 
-	private setRootViewCSSClasses(rootView: View): void {
+	private setRootViewCSSClasses(rootView: View, window?: NativeWindow): void {
 		const platform = Device.os.toLowerCase();
 		const deviceType = Device.deviceType.toLowerCase();
-		const orientation = this.orientation();
-		const systemAppearance = this.systemAppearance();
-		const layoutDirection = this.layoutDirection();
+		const orientation = window ? window.orientation() : this.orientation();
+		const systemAppearance = window ? window.systemAppearance() : this.systemAppearance();
+		const layoutDirection = window ? window.layoutDirection() : this.layoutDirection();
 
 		if (platform) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
@@ -370,21 +383,23 @@ export class ApplicationCommon {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
 		}
 
-		if (orientation) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${orientation}`);
-		}
-
-		if (systemAppearance) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${systemAppearance}`);
-		}
-
-		if (layoutDirection) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${layoutDirection}`);
-		}
-
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
+
+		// Two windows can disagree on these, so they never reach the process-wide
+		// system class list — see CSSUtils.WINDOW_SCOPED_CSS_CLASSES.
+		if (orientation) {
+			rootView.cssClasses.add(`${CSSUtils.CLASS_PREFIX}${orientation}`);
+		}
+
+		if (systemAppearance) {
+			rootView.cssClasses.add(`${CSSUtils.CLASS_PREFIX}${systemAppearance}`);
+		}
+
+		if (layoutDirection) {
+			rootView.cssClasses.add(`${CSSUtils.CLASS_PREFIX}${layoutDirection}`);
+		}
 
 		this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
 		rootView._onCssStateChange();
@@ -491,6 +506,10 @@ export class ApplicationCommon {
 	_registerWindow(nativeWindow: NativeWindow): void {
 		this._windows.push(nativeWindow);
 
+		if (nativeWindow.isPrimary) {
+			this.trackPrimaryWindowTraits(nativeWindow);
+		}
+
 		this._onWindowRegistered(nativeWindow);
 
 		this.notify({
@@ -519,6 +538,8 @@ export class ApplicationCommon {
 			nativeWindow._setIsPrimary(false);
 
 			const promoted = this.getWindows().find((nw) => nw.state === 'attached');
+			this.trackPrimaryWindowTraits(promoted);
+
 			if (promoted) {
 				promoted._setIsPrimary(true);
 				this._onPrimaryWindowPromoted(promoted);
@@ -547,6 +568,86 @@ export class ApplicationCommon {
 	 */
 	protected _onPrimaryWindowPromoted(nativeWindow: NativeWindow): void {
 		// noop
+	}
+
+	// --- Primary window traits ---
+
+	private _traitsWindow: NativeWindow | null = null;
+
+	/**
+	 * Points the application-level orientation, appearance and layout direction at the
+	 * primary window, which owns those values now that each window has its own.
+	 */
+	private trackPrimaryWindowTraits(nativeWindow: NativeWindow | undefined): void {
+		const target = nativeWindow ?? null;
+		if (this._traitsWindow === target) {
+			return;
+		}
+
+		const previous = this._traitsWindow;
+		if (previous) {
+			previous.off(NativeWindowEvents.orientationChanged, this.onWindowOrientationChanged, this);
+			previous.off(NativeWindowEvents.systemAppearanceChanged, this.onWindowSystemAppearanceChanged, this);
+			previous.off(NativeWindowEvents.layoutDirectionChanged, this.onWindowLayoutDirectionChanged, this);
+		}
+
+		this._traitsWindow = target;
+
+		if (!target) {
+			return;
+		}
+
+		target.on(NativeWindowEvents.orientationChanged, this.onWindowOrientationChanged, this);
+		target.on(NativeWindowEvents.systemAppearanceChanged, this.onWindowSystemAppearanceChanged, this);
+		target.on(NativeWindowEvents.layoutDirectionChanged, this.onWindowLayoutDirectionChanged, this);
+
+		this.syncTraitsFromWindow(target);
+	}
+
+	/**
+	 * Adopts the window's values. The very first window seeds them quietly — there is no
+	 * previous application state for it to differ from — while a later promotion raises
+	 * the change events, because app code observed the outgoing window's values.
+	 */
+	private syncTraitsFromWindow(nativeWindow: NativeWindow): void {
+		const orientation = nativeWindow.orientation();
+		if (orientation) {
+			if (this._orientation === undefined) {
+				this._orientation = orientation;
+			} else {
+				this.setOrientation(orientation);
+			}
+		}
+
+		const systemAppearance = nativeWindow.systemAppearance();
+		if (systemAppearance) {
+			if (this._systemAppearance === undefined) {
+				this._systemAppearance = systemAppearance;
+			} else {
+				this.setSystemAppearance(systemAppearance);
+			}
+		}
+
+		const layoutDirection = nativeWindow.layoutDirection();
+		if (layoutDirection) {
+			if (this._layoutDirection === undefined) {
+				this._layoutDirection = layoutDirection;
+			} else {
+				this.setLayoutDirection(layoutDirection);
+			}
+		}
+	}
+
+	private onWindowOrientationChanged(data: WindowOrientationChangedEventData): void {
+		this.setOrientation(data.newValue);
+	}
+
+	private onWindowSystemAppearanceChanged(data: WindowSystemAppearanceChangedEventData): void {
+		this.setSystemAppearance(data.newValue);
+	}
+
+	private onWindowLayoutDirectionChanged(data: WindowLayoutDirectionChangedEventData): void {
+		this.setLayoutDirection(data.newValue);
 	}
 
 	/**
@@ -709,10 +810,15 @@ export class ApplicationCommon {
 		// rest of implementation is platform specific
 	}
 
-	initRootView(rootView: View) {
-		this.setRootViewCSSClasses(rootView);
+	/**
+	 * @param window the window the root view belongs to. Supplies the window-scoped CSS
+	 * classes; without it they come from the primary window.
+	 */
+	initRootView(rootView: View, window?: NativeWindow) {
+		this.setRootViewCSSClasses(rootView, window);
 		readyInitAccessibilityCssHelper();
 		readyInitFontScale();
+		applyAccessibilityCssToRoot(rootView);
 		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
@@ -815,8 +921,11 @@ export class ApplicationCommon {
 		});
 	}
 
+	/**
+	 * @deprecated Use Application.primaryWindow?.orientation() - or the NativeWindow of the relevant view - instead. Continues to reflect the primary window.
+	 */
 	orientation(): 'portrait' | 'landscape' | 'unknown' {
-		return (this._orientation ??= this.getOrientation());
+		return this.primaryWindow?.orientation() ?? (this._orientation ??= this.getOrientation());
 	}
 
 	orientationChanged(rootView: View, newOrientation: 'portrait' | 'landscape' | 'unknown'): void {
@@ -825,11 +934,10 @@ export class ApplicationCommon {
 		}
 
 		const newOrientationCssClass = `${CSSUtils.CLASS_PREFIX}${newOrientation}`;
-		this.applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, true);
+		this.applyWindowScopedCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 
-		const rootModalViews = <Array<View>>rootView._getRootModalViews();
-		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, true);
+		this.getOwnedModalViews(rootView).forEach((rootModalView) => {
+			this.applyWindowScopedCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 
 			// Trigger state change for root modal view classes and media queries
 			rootModalView._onCssStateChange();
@@ -868,16 +976,18 @@ export class ApplicationCommon {
 		});
 	}
 
+	/**
+	 * @deprecated Use Application.primaryWindow?.systemAppearance() - or the NativeWindow of the relevant view - instead. Continues to reflect the primary window.
+	 */
 	systemAppearance(): 'dark' | 'light' | null {
-		// return cached value, or get it from the platform specific override
-		return (this._systemAppearance ??= this.getSystemAppearance());
+		return this.primaryWindow?.systemAppearance() ?? (this._systemAppearance ??= this.getSystemAppearance());
 	}
 
 	/**
 	 * enable/disable systemAppearanceChanged
 	 */
 	setAutoSystemAppearanceChanged(value: boolean): void {
-		this.autoSystemAppearanceChanged = value;
+		setAutoSystemAppearanceChanged(value);
 	}
 
 	/**
@@ -891,11 +1001,10 @@ export class ApplicationCommon {
 		}
 
 		const newSystemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${newSystemAppearance}`;
-		this.applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, true);
+		this.applyWindowScopedCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 
-		const rootModalViews = rootView._getRootModalViews();
-		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView as View, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, true);
+		this.getOwnedModalViews(rootView).forEach((rootModalView) => {
+			this.applyWindowScopedCssClass(rootModalView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 
 			// Trigger state change for root modal view classes and media queries
 			rootModalView._onCssStateChange();
@@ -925,9 +1034,11 @@ export class ApplicationCommon {
 		});
 	}
 
+	/**
+	 * @deprecated Use Application.primaryWindow?.layoutDirection() - or the NativeWindow of the relevant view - instead. Continues to reflect the primary window.
+	 */
 	layoutDirection(): CoreTypes.LayoutDirectionType | null {
-		// return cached value, or get it from the platform specific override
-		return (this._layoutDirection ??= this.getLayoutDirection());
+		return this.primaryWindow?.layoutDirection() ?? (this._layoutDirection ??= this.getLayoutDirection());
 	}
 
 	/**
@@ -941,11 +1052,10 @@ export class ApplicationCommon {
 		}
 
 		const newLayoutDirectionCssClass = `${CSSUtils.CLASS_PREFIX}${newLayoutDirection}`;
-		this.applyCssClass(rootView, LAYOUT_DIRECTION_CSS_CLASSES, newLayoutDirectionCssClass, true);
+		this.applyWindowScopedCssClass(rootView, LAYOUT_DIRECTION_CSS_CLASSES, newLayoutDirectionCssClass);
 
-		const rootModalViews = rootView._getRootModalViews();
-		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView as View, LAYOUT_DIRECTION_CSS_CLASSES, newLayoutDirectionCssClass, true);
+		this.getOwnedModalViews(rootView).forEach((rootModalView) => {
+			this.applyWindowScopedCssClass(rootModalView, LAYOUT_DIRECTION_CSS_CLASSES, newLayoutDirectionCssClass);
 
 			// Trigger state change for root modal view classes and media queries
 			rootModalView._onCssStateChange();

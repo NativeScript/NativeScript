@@ -439,7 +439,7 @@ export abstract class ViewBase extends Observable {
 	public defaultVisualState: string = 'normal';
 
 	public _domId: number;
-	public _context: any /* android.content.Context */;
+	public _context: any; /* android.content.Context */
 	public _isAddedToNativeVisualTree: boolean;
 	/* "ui/styling/style-scope" */ public _cssState: CssState = new CssState(new WeakRef(this));
 	public _styleScope: StyleScope;
@@ -1615,6 +1615,9 @@ export const classNameProperty = new Property<ViewBase, string>({
 
 		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
 		const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// Window-scoped classes are absent from the system class list, so they have to be
+		// carried over by hand or a root view would lose them on every className change.
+		const windowScopedCssClasses = shouldAddModalRootViewCssClasses || shouldAddRootViewCssClasses ? CSSUtils.WINDOW_SCOPED_CSS_CLASSES.filter((c) => cssClasses.has(c)) : [];
 
 		cssClasses.clear();
 
@@ -1626,6 +1629,10 @@ export const classNameProperty = new Property<ViewBase, string>({
 
 		for (let i = 0, length = rootViewsCssClasses.length; i < length; i++) {
 			cssClasses.add(rootViewsCssClasses[i]);
+		}
+
+		for (let i = 0, length = windowScopedCssClasses.length; i < length; i++) {
+			cssClasses.add(windowScopedCssClasses[i]);
 		}
 
 		if (typeof newValue === 'string' && newValue !== '') {

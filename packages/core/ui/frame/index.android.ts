@@ -1143,8 +1143,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		if (!nativeWindow && isEmbedded()) {
 			// When embedded, the host owns the activity and may never install our lifecycle
 			// callbacks, so this is the only place the window can come into existence.
-			nativeWindow = new AndroidNativeWindow(activity, AndroidNativeWindow.newWindowId(), Application.android._getWindows().length === 0, 'embedded');
-			Application.android._registerWindow(nativeWindow);
+			const embeddedWindow = new AndroidNativeWindow(activity, AndroidNativeWindow.newWindowId(), Application.android._getWindows().length === 0, 'embedded');
+			Application.android._registerWindow(embeddedWindow);
+			embeddedWindow._registerConfigurationCallbacks();
+			nativeWindow = embeddedWindow;
 		}
 
 		if (!rootView && fireLaunchEvent && nativeWindow) {
@@ -1184,7 +1186,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		this._rootView = rootView;
 
 		// sets root classes once rootView is ready...
-		Application.initRootView(rootView);
+		Application.initRootView(rootView, nativeWindow);
 
 		nativeWindow?._adoptRootView(rootView);
 	}

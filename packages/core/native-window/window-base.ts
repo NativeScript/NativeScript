@@ -1,5 +1,5 @@
 import { Observable } from '../data/observable';
-import type { NativeWindowEventName, WindowBaseEventData } from './native-window-interfaces';
+import type { NativeWindowEventName, WindowBaseEventData, WindowLayoutDirectionChangedEventData, WindowOrientationChangedEventData, WindowSystemAppearanceChangedEventData } from './native-window-interfaces';
 import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from '../application/application-interfaces';
 
 /**
@@ -95,6 +95,9 @@ export abstract class WindowBase extends Observable {
 	on(event: 'attached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
 	on(event: 'detached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
 	on(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
+	on(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
+	on(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;

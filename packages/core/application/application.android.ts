@@ -116,6 +116,7 @@ function initNativeScriptLifecycleCallbacks() {
 				Application.android._registerWindow(nativeWindow);
 			}
 
+			nativeWindow._registerConfigurationCallbacks();
 			nativeWindow._notifyEvent(NativeWindowEvents.attached);
 
 			this.notifyActivityCreated(activity, savedInstanceState, nativeWindow);
@@ -550,9 +551,14 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
-		this.setOrientation(this.getOrientationValue(configuration));
-		this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
-		this.setLayoutDirection(this.getLayoutDirectionValue(configuration));
+		// The application context reports the app-wide configuration, which a window on a
+		// second display or in split-screen does not necessarily share, so the primary
+		// window is asked first. Each window tracks its own through its activity.
+		const primaryWindow = this.primaryWindow;
+
+		this.setOrientation(primaryWindow?.orientation() ?? this.getOrientationValue(configuration));
+		this.setSystemAppearance(primaryWindow?.systemAppearance() ?? this.getSystemAppearanceValue(configuration));
+		this.setLayoutDirection(primaryWindow?.layoutDirection() ?? this.getLayoutDirectionValue(configuration));
 	}
 
 	getNativeApplication() {

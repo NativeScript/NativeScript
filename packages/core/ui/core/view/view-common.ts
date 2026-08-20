@@ -263,6 +263,22 @@ export abstract class ViewCommon extends ViewBase {
 		return _rootModalViews;
 	}
 
+	public _getRootModalHost(): ViewBase {
+		let view: ViewBase = this;
+
+		while (view) {
+			// A modal root has no parent, so the chain continues through the view it was
+			// presented over; nested modals therefore resolve to the same window root.
+			const next = view.parent ?? (<ViewCommon>view)._modalParent;
+			if (!next) {
+				break;
+			}
+			view = next;
+		}
+
+		return view;
+	}
+
 	public _onLivesync(context?: ModuleContext): boolean {
 		if (Trace.isEnabled()) {
 			Trace.write(`${this}._onLivesync(${JSON.stringify(context)})`, Trace.categories.Livesync);
@@ -484,6 +500,17 @@ export abstract class ViewCommon extends ViewBase {
 		this.cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
 		const modalRootViewCssClasses = CSSUtils.getSystemCssClasses();
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
+
+		// Orientation/appearance/direction are not in the system class list because they
+		// differ per window, so they are inherited from the root this modal opens over.
+		const host = parent._getRootModalHost();
+		if (host) {
+			CSSUtils.WINDOW_SCOPED_CSS_CLASSES.forEach((c) => {
+				if (host.cssClasses.has(c)) {
+					this.cssClasses.add(c);
+				}
+			});
+		}
 
 		parent._modal = this;
 		this.style.fontScaleInternal = getFontScale();

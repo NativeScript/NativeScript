@@ -7,32 +7,18 @@ import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
-import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
+import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { SDK_VERSION } from '../utils/constants';
-import type { NativeWindowEventData } from './native-window-interfaces';
+import type { NativeWindowEventData, NativeWindowEventName, WindowLayoutDirectionChangedEventData, WindowOrientationChangedEventData, WindowSystemAppearanceChangedEventData } from './native-window-interfaces';
 import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from '../application/application-interfaces';
 import { NativeWindowEvents } from './native-window-interfaces';
+import { getAutoSystemAppearanceChanged } from '../application/helpers-common';
 import type { WindowRole } from './window-base';
 import { WindowBase } from './window-base';
 
-// prettier-ignore
-const ORIENTATION_CSS_CLASSES = [
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.portrait}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.landscape}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.unknown}`,
-];
-
-// prettier-ignore
-const SYSTEM_APPEARANCE_CSS_CLASSES = [
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.light}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
-];
-
-// prettier-ignore
-const LAYOUT_DIRECTION_CSS_CLASSES = [
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.ltr}`,
-	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.rtl}`,
-];
+const ORIENTATION_CSS_CLASSES = CSSUtils.ORIENTATION_CSS_CLASSES;
+const SYSTEM_APPEARANCE_CSS_CLASSES = CSSUtils.SYSTEM_APPEARANCE_CSS_CLASSES;
+const LAYOUT_DIRECTION_CSS_CLASSES = CSSUtils.LAYOUT_DIRECTION_CSS_CLASSES;
 
 /**
  * Cross-platform NativeWindow base class.
@@ -113,23 +99,68 @@ export abstract class NativeWindow extends WindowBase {
 
 	/**
 	 * Get the current orientation of this window.
+	 *
+	 * Read from the native surface while the window is attached; a detached window
+	 * reports the last value it saw.
+	 *
+	 * A read that catches a change the platform has not reported yet goes through
+	 * {@link _setOrientation}, so the change is never swallowed by the reading.
 	 */
 	orientation(): 'portrait' | 'landscape' | 'unknown' {
-		return (this._orientation ??= this._getOrientation());
+		if (this.state === 'attached') {
+			const value = this._getOrientation();
+			if (this._orientation === undefined) {
+				this._orientation = value;
+			} else if (this._orientation !== value) {
+				this._setOrientation(value);
+			}
+		}
+
+		return this._orientation;
 	}
 
 	/**
 	 * Get the current system appearance of this window.
+	 *
+	 * Read from the native surface while the window is attached; a detached window
+	 * reports the last value it saw.
+	 *
+	 * A read that catches a change the platform has not reported yet goes through
+	 * {@link _setSystemAppearance}, so the change is never swallowed by the reading.
 	 */
 	systemAppearance(): 'light' | 'dark' | null {
-		return (this._systemAppearance ??= this._getSystemAppearance());
+		if (this.state === 'attached') {
+			const value = this._getSystemAppearance();
+			if (this._systemAppearance === undefined) {
+				this._systemAppearance = value;
+			} else if (this._systemAppearance !== value && value !== null) {
+				this._setSystemAppearance(value);
+			}
+		}
+
+		return this._systemAppearance;
 	}
 
 	/**
 	 * Get the current layout direction of this window.
+	 *
+	 * Read from the native surface while the window is attached; a detached window
+	 * reports the last value it saw.
+	 *
+	 * A read that catches a change the platform has not reported yet goes through
+	 * {@link _setLayoutDirection}, so the change is never swallowed by the reading.
 	 */
 	layoutDirection(): CoreTypes.LayoutDirectionType | null {
-		return (this._layoutDirection ??= this._getLayoutDirection());
+		if (this.state === 'attached') {
+			const value = this._getLayoutDirection();
+			if (this._layoutDirection === undefined) {
+				this._layoutDirection = value;
+			} else if (this._layoutDirection !== value && value !== null) {
+				this._setLayoutDirection(value);
+			}
+		}
+
+		return this._layoutDirection;
 	}
 
 	// --- Typed event overloads ---
@@ -145,6 +176,9 @@ export abstract class NativeWindow extends WindowBase {
 	on(event: 'attached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'detached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
+	on(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
+	on(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
@@ -183,14 +217,12 @@ export abstract class NativeWindow extends WindowBase {
 		this._setRootViewCSSClasses(rootView);
 		readyInitAccessibilityCssHelper();
 		readyInitFontScale();
+		applyAccessibilityCssToRoot(rootView);
 	}
 
 	private _setRootViewCSSClasses(rootView: View): void {
 		const platform = Device.os.toLowerCase();
 		const deviceType = Device.deviceType.toLowerCase();
-		const orientationValue = this.orientation();
-		const appearanceValue = this.systemAppearance();
-		const directionValue = this.layoutDirection();
 
 		if (platform) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
@@ -206,21 +238,27 @@ export abstract class NativeWindow extends WindowBase {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
 		}
 
-		if (orientationValue) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${orientationValue}`);
-		}
-
-		if (appearanceValue) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${appearanceValue}`);
-		}
-
-		if (directionValue) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${directionValue}`);
-		}
-
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
+
+		// Two windows can disagree on these, so they never reach the process-wide
+		// system class list — see CSSUtils.WINDOW_SCOPED_CSS_CLASSES.
+		const orientationValue = this.orientation();
+		const appearanceValue = this.systemAppearance();
+		const directionValue = this.layoutDirection();
+
+		if (orientationValue) {
+			rootView.cssClasses.add(`${CSSUtils.CLASS_PREFIX}${orientationValue}`);
+		}
+
+		if (appearanceValue) {
+			rootView.cssClasses.add(`${CSSUtils.CLASS_PREFIX}${appearanceValue}`);
+		}
+
+		if (directionValue) {
+			rootView.cssClasses.add(`${CSSUtils.CLASS_PREFIX}${directionValue}`);
+		}
 
 		this._increaseStyleScopeVersion(rootView);
 		rootView._onCssStateChange();
@@ -245,6 +283,7 @@ export abstract class NativeWindow extends WindowBase {
 			const cssClass = `${CSSUtils.CLASS_PREFIX}${value}`;
 			this._applyCssClass(this._rootView, ORIENTATION_CSS_CLASSES, cssClass);
 		}
+		this._notifyValueChanged(NativeWindowEvents.orientationChanged, value);
 	}
 
 	/**
@@ -255,10 +294,13 @@ export abstract class NativeWindow extends WindowBase {
 			return;
 		}
 		this._systemAppearance = value;
-		if (this._rootView) {
+		// `Application.autoSystemAppearanceChanged` opts out of the CSS classes only —
+		// the event still fires so apps driving their own theming can react to it.
+		if (this._rootView && getAutoSystemAppearanceChanged()) {
 			const cssClass = `${CSSUtils.CLASS_PREFIX}${value}`;
 			this._applyCssClass(this._rootView, SYSTEM_APPEARANCE_CSS_CLASSES, cssClass);
 		}
+		this._notifyValueChanged(NativeWindowEvents.systemAppearanceChanged, value);
 	}
 
 	/**
@@ -273,25 +315,36 @@ export abstract class NativeWindow extends WindowBase {
 			const cssClass = `${CSSUtils.CLASS_PREFIX}${value}`;
 			this._applyCssClass(this._rootView, LAYOUT_DIRECTION_CSS_CLASSES, cssClass);
 		}
+		this._notifyValueChanged(NativeWindowEvents.layoutDirectionChanged, value);
 	}
 
 	// --- Internal helpers ---
 
+	private _notifyValueChanged(eventName: NativeWindowEventName, newValue: unknown): void {
+		this.notify({
+			eventName,
+			object: this,
+			window: this,
+			newValue,
+		});
+	}
+
 	private _applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 		if (!rootView.cssClasses.has(newCssClass)) {
-			cssClasses.forEach((cssClass) => {
-				CSSUtils.removeSystemCssClass(cssClass);
-				rootView.cssClasses.delete(cssClass);
-			});
-			CSSUtils.pushToSystemCssClasses(newCssClass);
+			cssClasses.forEach((cssClass) => rootView.cssClasses.delete(cssClass));
 			rootView.cssClasses.add(newCssClass);
 			this._increaseStyleScopeVersion(rootView);
 			rootView._onCssStateChange();
 		}
 
-		// Apply to modal views
+		// The modal registry is process-wide, so only the modals presented over this
+		// window's root view may follow it.
 		const rootModalViews = <Array<View>>rootView._getRootModalViews();
 		rootModalViews.forEach((modalView) => {
+			if (modalView._getRootModalHost() !== rootView) {
+				return;
+			}
+
 			if (!modalView.cssClasses.has(newCssClass)) {
 				cssClasses.forEach((cssClass) => modalView.cssClasses.delete(cssClass));
 				modalView.cssClasses.add(newCssClass);
@@ -314,6 +367,12 @@ export abstract class NativeWindow extends WindowBase {
 	 * to it keeps working once a surface re-attaches.
 	 */
 	_detach(): void {
+		// Take a final reading while the surface can still answer and the root view is
+		// still up: from here on these are what the window reports.
+		this.orientation();
+		this.systemAppearance();
+		this.layoutDirection();
+
 		if (this._rootView) {
 			if (this._rootView.isLoaded) {
 				this._rootView.callUnloaded();
@@ -321,11 +380,6 @@ export abstract class NativeWindow extends WindowBase {
 			this._rootView._tearDownUI(true);
 			this._rootView._onRootViewReset();
 		}
-
-		// These traits belong to the native surface, so a re-attached window has to read them again.
-		this._orientation = null;
-		this._systemAppearance = null;
-		this._layoutDirection = null;
 
 		this._setState('detached');
 		this._notifyEvent(NativeWindowEvents.detached);

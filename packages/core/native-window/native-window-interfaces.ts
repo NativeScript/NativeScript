@@ -1,3 +1,4 @@
+import type { CoreTypes } from '../core-types';
 import type { EventData } from '../data/observable';
 import type { View } from '../ui/core/view';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
@@ -33,6 +34,12 @@ export const NativeWindowEvents = {
 	displayed: 'displayed',
 	/** Fired when the root view content is set or changed. */
 	contentLoaded: 'contentLoaded',
+	/** Fired when the orientation of this window changes. */
+	orientationChanged: 'orientationChanged',
+	/** Fired when the system appearance of this window changes between light and dark. */
+	systemAppearanceChanged: 'systemAppearanceChanged',
+	/** Fired when the layout direction of this window changes between ltr and rtl. */
+	layoutDirectionChanged: 'layoutDirectionChanged',
 
 	// iOS scene lifecycle events
 	/** Fired when the scene is about to connect (iOS only). */
@@ -101,6 +108,30 @@ export interface WindowBaseEventData extends EventData {
 export interface NativeWindowEventData extends WindowBaseEventData {
 	/** The NativeWindow that emitted the event. */
 	window: NativeWindow;
+}
+
+/**
+ * Event data for the `orientationChanged` event of a NativeWindow.
+ */
+export interface WindowOrientationChangedEventData extends NativeWindowEventData {
+	/** The orientation the window is now in. */
+	newValue: 'portrait' | 'landscape' | 'unknown';
+}
+
+/**
+ * Event data for the `systemAppearanceChanged` event of a NativeWindow.
+ */
+export interface WindowSystemAppearanceChangedEventData extends NativeWindowEventData {
+	/** The system appearance the window is now showing. */
+	newValue: 'light' | 'dark';
+}
+
+/**
+ * Event data for the `layoutDirectionChanged` event of a NativeWindow.
+ */
+export interface WindowLayoutDirectionChangedEventData extends NativeWindowEventData {
+	/** The layout direction the window is now using. */
+	newValue: CoreTypes.LayoutDirectionType;
 }
 
 /**

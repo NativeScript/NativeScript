@@ -954,6 +954,13 @@ export abstract class View extends ViewCommon {
 	 */
 	_getRootModalViews(): Array<ViewBase>;
 
+	/**
+	 * Internal method:
+	 * Walks up the view tree — through the presenting view of any modal on the way —
+	 * to the root this view ultimately lives under, which is the root view of its window.
+	 */
+	_getRootModalHost(): ViewBase;
+
 	_eachLayoutView(callback: (View) => void): void;
 
 	/**

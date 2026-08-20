@@ -465,10 +465,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 */
 	_onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
 
-	// The window the app-level root view state mirrors, and the root view currently
-	// carrying the app-level trait collection listeners.
+	// The window whose root view the app-level root view state mirrors.
 	private _mirroredWindow: NativeWindow;
-	private _appTraitListenerView: View;
 
 	private _notificationObservers: NotificationObserver[] = [];
 
@@ -1128,9 +1126,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private didChangeStatusBarOrientation(notification: NSNotification) {
-		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
-		const newOrientation = this.getOrientationValue(statusBarOrientation);
-		this.setOrientation(newOrientation);
+		// The notification is app-wide, but scenes rotate independently, so every attached
+		// window is refreshed from its own scene.
+		for (const nativeWindow of this._windows) {
+			if (nativeWindow.state !== 'attached') {
+				continue;
+			}
+
+			const orientation = nativeWindow.ios?.scene?.interfaceOrientation ?? UIApplication.sharedApplication.statusBarOrientation;
+			nativeWindow._setOrientation(this.getOrientationValue(orientation));
+		}
 	}
 
 	// --- App-level root view mirror ---
@@ -1162,43 +1167,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 
-		const previous = this._appTraitListenerView;
-		if (previous && previous !== rootView) {
-			previous.off(IOSHelper.traitCollectionColorAppearanceChangedEvent, this.onRootViewColorAppearanceChanged, this);
-			previous.off(IOSHelper.traitCollectionLayoutDirectionChangedEvent, this.onRootViewLayoutDirectionChanged, this);
-			this._appTraitListenerView = null;
-		}
-
 		this._rootView = rootView;
 		setRootView(rootView);
-		this.initRootView(rootView);
-
-		if (this._appTraitListenerView !== rootView) {
-			rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, this.onRootViewColorAppearanceChanged, this);
-			rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, this.onRootViewLayoutDirectionChanged, this);
-			this._appTraitListenerView = rootView;
-		}
-	}
-
-	private onRootViewColorAppearanceChanged(): void {
-		const controller = this.rootViewController();
-		if (!controller) {
-			return;
-		}
-		this.setSystemAppearance(this.getSystemAppearanceValue(controller.traitCollection.userInterfaceStyle));
-	}
-
-	private onRootViewLayoutDirectionChanged(): void {
-		const controller = this.rootViewController();
-		if (!controller) {
-			return;
-		}
-		this.setLayoutDirection(this.getLayoutDirectionValue(controller.traitCollection.layoutDirection));
-	}
-
-	private rootViewController(): UIViewController {
-		const rootView = this._rootView;
-		return rootView ? ((rootView.viewController || rootView.ios) as UIViewController) : null;
+		this.initRootView(rootView, this._mirroredWindow);
 	}
 
 	// --- NativeWindow registry ---

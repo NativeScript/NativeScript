@@ -12,6 +12,8 @@ import type { WindowRole } from './window-base';
  */
 export class AndroidNativeWindow extends NativeWindow {
 	private _activity: WeakRef<androidx.appcompat.app.AppCompatActivity>;
+	private _componentCallbacks: android.content.ComponentCallbacks2;
+	private _componentCallbacksActivity: WeakRef<androidx.appcompat.app.AppCompatActivity>;
 
 	constructor(activity: androidx.appcompat.app.AppCompatActivity, id?: string, isPrimary = false, role: WindowRole = 'application') {
 		super(id, isPrimary, role);
@@ -24,6 +26,58 @@ export class AndroidNativeWindow extends NativeWindow {
 	_reattach(activity: androidx.appcompat.app.AppCompatActivity): void {
 		this._activity = new WeakRef(activity);
 		this._setState('attached');
+	}
+
+	/**
+	 * @internal – observe the activity's own configuration.
+	 *
+	 * Registered on the activity rather than the application context: in multi-window
+	 * and multi-display setups each activity gets its own configuration, and only these
+	 * callbacks report the one this window actually renders with.
+	 */
+	_registerConfigurationCallbacks(): void {
+		const activity = this.activity;
+		if (!activity || this._componentCallbacks) {
+			return;
+		}
+
+		const callbacks = new android.content.ComponentCallbacks2({
+			onLowMemory(): void {
+				// Handled application-wide.
+			},
+			onTrimMemory(level: number): void {
+				// Handled application-wide.
+			},
+			onConfigurationChanged: (newConfiguration: android.content.res.Configuration): void => {
+				this._setOrientation(this._getOrientationValue(newConfiguration));
+				this._setSystemAppearance(this._getSystemAppearanceValue(newConfiguration));
+				this._setLayoutDirection(this._getLayoutDirectionValue(newConfiguration));
+			},
+		});
+
+		activity.registerComponentCallbacks(callbacks);
+		this._componentCallbacks = callbacks;
+		this._componentCallbacksActivity = new WeakRef(activity);
+	}
+
+	/**
+	 * @internal – drop the configuration callbacks, so a recreated activity does not
+	 * leave the previous one registered.
+	 */
+	_unregisterConfigurationCallbacks(): void {
+		const callbacks = this._componentCallbacks;
+		if (!callbacks) {
+			return;
+		}
+
+		this._componentCallbacks = null;
+		this._componentCallbacksActivity?.deref()?.unregisterComponentCallbacks(callbacks);
+		this._componentCallbacksActivity = null;
+	}
+
+	_detach(): void {
+		this._unregisterConfigurationCallbacks();
+		super._detach();
 	}
 
 	/**
@@ -137,6 +191,7 @@ export class AndroidNativeWindow extends NativeWindow {
 	}
 
 	protected _onDestroy(): void {
+		this._unregisterConfigurationCallbacks();
 		super._onDestroy();
 		this._activity = null;
 	}
