@@ -12,9 +12,17 @@ import { NativeWindow } from './native-window-common';
 export class AndroidNativeWindow extends NativeWindow {
 	private _activity: WeakRef<androidx.appcompat.app.AppCompatActivity>;
 
-	constructor(activity: androidx.appcompat.app.AppCompatActivity, id: string, isPrimary = false) {
+	constructor(activity: androidx.appcompat.app.AppCompatActivity, id?: string, isPrimary = false) {
 		super(id, isPrimary);
 		this._activity = new WeakRef(activity);
+	}
+
+	/**
+	 * @internal – bind a recreated activity to this window session after a detach.
+	 */
+	_reattach(activity: androidx.appcompat.app.AppCompatActivity): void {
+		this._activity = new WeakRef(activity);
+		this._setState('attached');
 	}
 
 	/**
@@ -127,18 +135,16 @@ export class AndroidNativeWindow extends NativeWindow {
 		}
 	}
 
-	/**
-	 * @internal
-	 */
-	_destroy(): void {
-		super._destroy();
+	protected _onDestroy(): void {
+		super._onDestroy();
 		this._activity = null;
 	}
 
 	/**
-	 * Gets a stable identifier from an Activity.
+	 * Mints a window identity. Android has no stable activity id, so the value is kept
+	 * in the activity saved state to survive recreation (rotation, theme change).
 	 */
-	static getActivityId(activity: androidx.appcompat.app.AppCompatActivity): string {
-		return `activity-${activity.hashCode()}`;
+	static newWindowId(): string {
+		return `window-${java.util.UUID.randomUUID().toString()}`;
 	}
 }

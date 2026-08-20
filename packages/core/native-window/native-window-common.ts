@@ -125,6 +125,8 @@ export abstract class NativeWindow extends WindowBase {
 	on(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'attached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'detached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
@@ -289,11 +291,35 @@ export abstract class NativeWindow extends WindowBase {
 	}
 
 	/**
-	 * @internal – called when the window is being torn down.
+	 * @internal – the native surface went away but the window session lives on.
+	 *
+	 * The window stays registered and keeps its listeners, so app code that subscribed
+	 * to it keeps working once a surface re-attaches.
 	 */
-	_destroy(): void {
-		super._destroy();
+	_detach(): void {
 		if (this._rootView) {
+			if (this._rootView.isLoaded) {
+				this._rootView.callUnloaded();
+			}
+			this._rootView._tearDownUI(true);
+			this._rootView._onRootViewReset();
+		}
+
+		// These traits belong to the native surface, so a re-attached window has to read them again.
+		this._orientation = null;
+		this._systemAppearance = null;
+		this._layoutDirection = null;
+
+		this._setState('detached');
+		this._notifyEvent(NativeWindowEvents.detached);
+	}
+
+	protected _onDestroy(): void {
+		super._onDestroy();
+		if (this._rootView) {
+			if (this._rootView.isLoaded) {
+				this._rootView.callUnloaded();
+			}
 			this._rootView._onRootViewReset();
 			this._rootView = null;
 		}

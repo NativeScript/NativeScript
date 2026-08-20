@@ -2,6 +2,7 @@ import type { View } from '../ui/core/view';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { CoreTypes } from '../core-types';
+import { Trace } from '../trace';
 import { NativeWindow } from './native-window-common';
 import { NativeWindowEvents } from './native-window-interfaces';
 
@@ -13,10 +14,32 @@ export class IOSNativeWindow extends NativeWindow {
 	private _scene: UIWindowScene;
 	private _window: UIWindow;
 
-	constructor(scene: UIWindowScene, window: UIWindow, id: string, isPrimary = false) {
+	/**
+	 * @internal – set while a scene session destruction request is in flight, so the
+	 * following scene disconnect is read as a close rather than a detach.
+	 */
+	_closeRequested = false;
+
+	/**
+	 * @internal – whether the id comes from a scene session identity. Without one the
+	 * window cannot be matched to a reconnecting session or to a discarded one.
+	 */
+	_hasSessionIdentity: boolean;
+
+	constructor(scene: UIWindowScene, window: UIWindow, id?: string, isPrimary = false) {
 		super(id, isPrimary);
+		this._hasSessionIdentity = !!id;
 		this._scene = scene;
 		this._window = window;
+	}
+
+	/**
+	 * @internal – bind a new scene/window pair to this window session after a detach.
+	 */
+	_reattach(scene: UIWindowScene, uiWindow: UIWindow): void {
+		this._scene = scene;
+		this._window = uiWindow;
+		this._setState('attached');
 	}
 
 	get ios() {
@@ -69,8 +92,10 @@ export class IOSNativeWindow extends NativeWindow {
 
 		const app = UIApplication.sharedApplication;
 		if (app.requestSceneSessionDestructionOptionsErrorHandler) {
+			this._closeRequested = true;
 			app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
 				if (error) {
+					this._closeRequested = false;
 					console.log('NativeWindow: Error destroying scene session:', error.localizedDescription);
 				}
 			});
@@ -173,43 +198,33 @@ export class IOSNativeWindow extends NativeWindow {
 		}
 	}
 
-	/**
-	 * @internal
-	 */
-	_destroy(): void {
-		// Remove trait collection listeners from root view before destroying
+	protected _onDestroy(): void {
+		// The trait collection listeners live on the root view, so they have to go
+		// before the base drops the reference to it.
 		if (this._rootView) {
 			this._rootView.off(IOSHelper.traitCollectionColorAppearanceChangedEvent);
 			this._rootView.off(IOSHelper.traitCollectionLayoutDirectionChangedEvent);
 		}
-		super._destroy();
+		super._onDestroy();
 		this._scene = null;
 		this._window = null;
 	}
 
 	/**
-	 * Gets the stable scene identifier.
+	 * The window identity of a scene: the session persistent identifier, which iOS keeps
+	 * across a disconnect and hands back when it reconnects the same session.
+	 *
+	 * Returns `undefined` when the scene carries no session identity — such a window gets
+	 * a minted id and will not be recognised on reconnect.
 	 */
-	static getSceneId(scene: UIWindowScene): string {
-		try {
-			if (!scene) {
-				return 'unknown';
-			}
-			const session = scene.session;
-			const persistentId = session?.persistentIdentifier;
-			if (persistentId) {
-				return `${persistentId}`;
-			}
-			if (scene.hash != null) {
-				return `${scene.hash}`;
-			}
-			const desc = scene.description;
-			if (desc) {
-				return `${desc}`;
-			}
-		} catch {
-			// ignore
+	static getSceneId(scene: UIWindowScene): string | undefined {
+		const persistentIdentifier = scene?.session?.persistentIdentifier;
+		if (persistentIdentifier) {
+			return `${persistentIdentifier}`;
 		}
-		return 'unknown';
+
+		Trace.write('NativeWindow: scene has no session persistentIdentifier; window identity will not survive a reconnect.', Trace.categories.NativeLifecycle, Trace.messageType.error);
+
+		return undefined;
 	}
 }

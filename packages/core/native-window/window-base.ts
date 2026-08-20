@@ -92,6 +92,8 @@ export abstract class WindowBase extends Observable {
 	on(event: 'background', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
 	on(event: 'foreground', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
 	on(event: 'close', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'attached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'detached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
 	on(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
@@ -127,9 +129,21 @@ export abstract class WindowBase extends Observable {
 	}
 
 	/**
-	 * @internal – called when the window is being torn down.
+	 * @internal – ends the window session for good.
+	 *
+	 * Listeners stay live through the whole teardown and are dropped last, so handlers
+	 * registered on this instance can still observe `close` yet never outlive the window.
 	 */
 	_destroy(): void {
-		this._state = 'closed';
+		this._setState('closed');
+		this._onDestroy();
+		this._clearEventListeners();
+	}
+
+	/**
+	 * Teardown hook for subclasses. Runs while the listeners are still registered.
+	 */
+	protected _onDestroy(): void {
+		// noop
 	}
 }

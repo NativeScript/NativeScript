@@ -193,8 +193,7 @@ if (supportsScenes()) {
 
 	// scene session destruction handling
 	(Responder.prototype as UIApplicationDelegate).applicationDidDiscardSceneSessions = function (application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
-		// Note: we could emit an event here if needed
-		// console.log('Scene sessions discarded:', sceneSessions.count);
+		Application.ios._onSceneSessionsDiscarded(sceneSessions);
 	};
 }
 
@@ -236,12 +235,24 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			this._window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
-		const isPrimary = isFirstScene || !Application.ios.primaryWindow;
 		const nativeWindowId = IOSNativeWindow.getSceneId(windowScene);
+		const knownWindow = nativeWindowId ? (Application.ios._getWindowById(nativeWindowId) as IOSNativeWindow) : undefined;
+		let nativeWindow: IOSNativeWindow;
 
-		// Create NativeWindow and register it
-		const nativeWindow = new IOSNativeWindow(windowScene, this._window, nativeWindowId, isPrimary);
-		Application.ios._registerWindow(nativeWindow);
+		if (knownWindow?.state === 'detached') {
+			// iOS reconnected a session we already have a window for: the same window
+			// instance carries on, keeping its listeners and identity.
+			nativeWindow = knownWindow;
+			nativeWindow._reattach(windowScene, this._window);
+		} else {
+			const isPrimary = isFirstScene || !Application.ios.primaryWindow;
+			nativeWindow = new IOSNativeWindow(windowScene, this._window, nativeWindowId, isPrimary);
+			Application.ios._registerWindow(nativeWindow);
+		}
+
+		const isPrimary = nativeWindow.isPrimary;
+
+		nativeWindow._notifyEvent(NativeWindowEvents.attached);
 
 		if (isPrimary) {
 			// For primary, also set the legacy global window reference
@@ -403,7 +414,15 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		const windowScene = scene as UIWindowScene;
 		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 		if (nativeWindow) {
-			nativeWindow._notifyEvent(NativeWindowEvents.close);
+			// A disconnect only ends the window session when the app asked for it —
+			// otherwise iOS may reconnect the same session later. A window with no session
+			// identity is the exception: a reconnect could never be matched back to it.
+			const isClosing = nativeWindow._closeRequested || !nativeWindow._hasSessionIdentity;
+
+			if (isClosing) {
+				nativeWindow._notifyEvent(NativeWindowEvents.close);
+			}
+
 			// Emit sceneDidDisconnect on NativeWindow
 			nativeWindow.notify({
 				eventName: NativeWindowEvents.sceneDidDisconnect,
@@ -411,7 +430,12 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 				window: nativeWindow,
 				scene: windowScene,
 			} as SceneEventData);
-			Application.ios._unregisterWindow(nativeWindow);
+
+			if (isClosing) {
+				Application.ios._unregisterWindow(nativeWindow);
+			} else {
+				nativeWindow._detach();
+			}
 		}
 
 		Application.ios.notify({
@@ -1126,15 +1150,48 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			object: this,
 			window: nativeWindow,
 		});
-		nativeWindow._destroy();
 
-		// If primary was removed, promote next window
-		if (nativeWindow.isPrimary && this._windows.length > 0) {
-			this._windows[0]._setIsPrimary(true);
-			const promotedWindow = this._windows[0].ios?.uiWindow;
-			if (promotedWindow) {
-				setiOSWindow(promotedWindow);
+		// If primary was removed, promote the next window that can actually host content
+		if (nativeWindow.isPrimary) {
+			nativeWindow._setIsPrimary(false);
+
+			const promoted = this.getWindows().find((nw) => nw.state === 'attached');
+			if (promoted) {
+				promoted._setIsPrimary(true);
+				const promotedWindow = promoted.ios?.uiWindow;
+				if (promotedWindow) {
+					setiOSWindow(promotedWindow);
+				}
+				this.notify({
+					eventName: WindowEvents.primaryWindowChanged,
+					object: this,
+					window: promoted,
+				});
 			}
+		}
+
+		nativeWindow._destroy();
+	}
+
+	/**
+	 * @internal - iOS reports discarded sessions for windows this JS context may never
+	 * have seen (they can arrive on a later launch), so unknown ids are ignored.
+	 */
+	_onSceneSessionsDiscarded(sessions: NSSet<UISceneSession>): void {
+		const all = sessions?.allObjects;
+		if (!all) {
+			return;
+		}
+
+		for (let i = 0; i < all.count; i++) {
+			const persistentIdentifier = all.objectAtIndex(i)?.persistentIdentifier;
+			const nativeWindow = persistentIdentifier ? this._windows.find((nw) => nw.id === `${persistentIdentifier}`) : undefined;
+			if (!nativeWindow) {
+				continue;
+			}
+
+			nativeWindow._notifyEvent(NativeWindowEvents.close);
+			this._unregisterWindow(nativeWindow);
 		}
 	}
 

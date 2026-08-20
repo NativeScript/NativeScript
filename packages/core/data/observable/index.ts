@@ -267,6 +267,16 @@ export class Observable {
 	}
 
 	/**
+	 * Removes every listener registered on this instance.
+	 * @internal
+	 */
+	public _clearEventListeners(): void {
+		for (const eventName in this._observers) {
+			delete this._observers[eventName];
+		}
+	}
+
+	/**
 	 * Please avoid using the static event-handling APIs as they will be removed
 	 * in future.
 	 * @deprecated

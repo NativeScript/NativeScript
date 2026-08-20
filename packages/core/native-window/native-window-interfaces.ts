@@ -14,8 +14,19 @@ export const NativeWindowEvents = {
 	background: 'background',
 	/** Fired when the window enters the foreground. */
 	foreground: 'foreground',
-	/** Fired when the window is being closed/destroyed. */
+	/**
+	 * Fired when the window session ends for good. Fires at most once per window;
+	 * every listener on the window is dropped right after it is dispatched.
+	 */
 	close: 'close',
+	/** Fired when a native surface is bound to the window, both on first connect and on every re-attach. */
+	attached: 'attached',
+	/**
+	 * Fired when the native surface goes away while the window session stays alive
+	 * (iOS scene disconnect, Android activity recreation). The window stays registered
+	 * and keeps its listeners, so the same instance is reused when `attached` fires again.
+	 */
+	detached: 'detached',
 	/** Fired after the window content has been displayed for the first time. */
 	displayed: 'displayed',
 	/** Fired when the root view content is set or changed. */
@@ -70,6 +81,8 @@ export const WindowEvents = {
 	windowOpen: 'windowOpen',
 	/** Fired on Application when a NativeWindow is closed/destroyed. */
 	windowClose: 'windowClose',
+	/** Fired on Application when another window takes over the primary role. */
+	primaryWindowChanged: 'primaryWindowChanged',
 } as const;
 
 /**
@@ -101,6 +114,14 @@ export interface WindowOpenEventData extends EventData {
  */
 export interface WindowCloseEventData extends EventData {
 	/** The NativeWindow that was closed. */
+	window: NativeWindow;
+}
+
+/**
+ * Event data fired on Application when the primary window changes.
+ */
+export interface PrimaryWindowChangedEventData extends EventData {
+	/** The NativeWindow that is now primary. */
 	window: NativeWindow;
 }
 

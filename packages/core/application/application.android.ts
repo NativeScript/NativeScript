@@ -54,6 +54,8 @@ import lazy from '../utils/lazy';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
 
+const WINDOW_ID_EXTRA = 'com.tns.activity.windowId';
+
 let NativeScriptLifecycleCallbacks_: typeof NativeScriptLifecycleCallbacks;
 function initNativeScriptLifecycleCallbacks() {
 	if (NativeScriptLifecycleCallbacks_) {
@@ -83,10 +85,22 @@ function initNativeScriptLifecycleCallbacks() {
 			}
 
 			// Create and register NativeWindow for this activity
-			const isPrimary = Application.android._getWindows().length === 0;
-			const nativeWindowId = AndroidNativeWindow.getActivityId(activity);
-			const nativeWindow = new AndroidNativeWindow(activity, nativeWindowId, isPrimary);
-			Application.android._registerWindow(nativeWindow);
+			const savedWindowId = savedInstanceState?.getString(WINDOW_ID_EXTRA);
+			const knownWindow = savedWindowId ? (Application.android._getWindowById(savedWindowId) as AndroidNativeWindow) : undefined;
+			let nativeWindow: AndroidNativeWindow;
+
+			if (knownWindow?.state === 'detached') {
+				// The activity was recreated (rotation, theme change): the same window
+				// instance carries on, keeping its listeners and identity.
+				knownWindow._reattach(activity);
+				nativeWindow = knownWindow;
+			} else {
+				const isPrimary = Application.android._getWindows().length === 0;
+				nativeWindow = new AndroidNativeWindow(activity, savedWindowId || AndroidNativeWindow.newWindowId(), isPrimary);
+				Application.android._registerWindow(nativeWindow);
+			}
+
+			nativeWindow._notifyEvent(NativeWindowEvents.attached);
 
 			this.notifyActivityCreated(activity, savedInstanceState, nativeWindow);
 
@@ -115,10 +129,16 @@ function initNativeScriptLifecycleCallbacks() {
 				}
 			}
 
-			// Unregister NativeWindow for this activity
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
-				nativeWindow._notifyEvent(NativeWindowEvents.close);
+				// A destroyed activity only ends the window session when it is finishing —
+				// otherwise Android is recreating it and the same window is reused.
+				const isClosing = activity.isFinishing();
+
+				if (isClosing) {
+					nativeWindow._notifyEvent(NativeWindowEvents.close);
+				}
+
 				// Emit activityDestroyed on NativeWindow
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityDestroyed,
@@ -126,7 +146,12 @@ function initNativeScriptLifecycleCallbacks() {
 					window: nativeWindow,
 					activity,
 				} as AndroidActivityEventData);
-				Application.android._unregisterWindow(nativeWindow);
+
+				if (isClosing) {
+					Application.android._unregisterWindow(nativeWindow);
+				} else {
+					nativeWindow._detach();
+				}
 			}
 
 			Application.android.notify({
@@ -135,6 +160,16 @@ function initNativeScriptLifecycleCallbacks() {
 				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
+
+			// This callback runs for every activity in the process, not just NativeScript ones,
+			// so an empty registry here means the app really has no window left.
+			if (activity.isFinishing() && Application.android._getWindows().length === 0) {
+				Application.android.notify({
+					eventName: Application.exitEvent,
+					object: Application.android,
+					android: activity,
+				});
+			}
 
 			// TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
 			gc();
@@ -206,6 +241,9 @@ function initNativeScriptLifecycleCallbacks() {
 			// Emit on NativeWindow first
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
+				// Carries the window identity across activity recreation.
+				bundle.putString(WINDOW_ID_EXTRA, nativeWindow.id);
+
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.saveActivityState,
 					object: nativeWindow,
@@ -664,12 +702,23 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			object: this,
 			window: nativeWindow,
 		});
-		nativeWindow._destroy();
 
-		// If primary was removed, promote next window
-		if (nativeWindow.isPrimary && this._windows.length > 0) {
-			this._windows[0]._setIsPrimary(true);
+		// If primary was removed, promote the next window that can actually host content
+		if (nativeWindow.isPrimary) {
+			nativeWindow._setIsPrimary(false);
+
+			const promoted = this.getWindows().find((nw) => nw.state === 'attached');
+			if (promoted) {
+				promoted._setIsPrimary(true);
+				this.notify({
+					eventName: WindowEvents.primaryWindowChanged,
+					object: this,
+					window: promoted,
+				});
+			}
 		}
+
+		nativeWindow._destroy();
 	}
 
 	/**

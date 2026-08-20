@@ -16,7 +16,7 @@ import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessib
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
-import type { WindowCloseEventData, WindowOpenEventData } from '../native-window';
+import type { PrimaryWindowChangedEventData, WindowCloseEventData, WindowOpenEventData } from '../native-window';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -103,6 +103,9 @@ interface ApplicationEvents {
 
 	/**
 	 * This event is raised when the Application is about to exit.
+	 *
+	 * On Android it is raised when the last window closes; the process may stay alive.
+	 * On iOS it is raised when the process itself terminates.
 	 */
 	on(event: 'exit', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
@@ -143,6 +146,7 @@ interface ApplicationEvents {
 
 	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;
 	on(event: 'windowClose', callback: (args: WindowCloseEventData) => void, thisArg?: any): void;
+	on(event: 'primaryWindowChanged', callback: (args: PrimaryWindowChangedEventData) => void, thisArg?: any): void;
 }
 
 export class ApplicationCommon {
@@ -152,6 +156,10 @@ export class ApplicationCommon {
 	readonly backgroundEvent = 'background';
 	readonly foregroundEvent = 'foreground';
 	readonly resumeEvent = 'resume';
+	/**
+	 * On Android, raised when the last window closes; the process may stay alive.
+	 * On iOS, raised when the process itself terminates.
+	 */
 	readonly exitEvent = 'exit';
 	readonly lowMemoryEvent = 'lowMemory';
 	readonly uncaughtErrorEvent = 'uncaughtError';
