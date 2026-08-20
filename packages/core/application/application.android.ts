@@ -575,6 +575,10 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			const nativeApp = this.getNativeApplication();
 			this.init(nativeApp);
 		}
+
+		// The activity lifecycle callbacks are registered but no activity has been created yet,
+		// so this always precedes the first `windowOpen`.
+		this.notifyReady();
 	}
 
 	get startActivity() {

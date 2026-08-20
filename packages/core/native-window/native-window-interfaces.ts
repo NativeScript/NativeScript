@@ -1,4 +1,6 @@
 import type { EventData } from '../data/observable';
+import type { View } from '../ui/core/view';
+import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { NativeWindow } from './native-window-common';
 import type { WindowBase } from './window-base';
 
@@ -135,4 +137,32 @@ export interface WindowOpenOptions {
 	 * On Android: added as intent extras.
 	 */
 	data?: Record<string, any>;
+}
+
+/**
+ * Supplies the UI for a window that needs content. Called once per window that needs it.
+ *
+ * Return a `View`, a `NavigationEntry` or a module name to set the window content,
+ * `null` to take ownership and set the content asynchronously later, or `undefined`
+ * to fall back to the application main entry.
+ */
+export type WindowContentResolver = (request: WindowContentRequest) => View | NavigationEntry | string | null | undefined;
+
+/**
+ * Describes the window asking for content.
+ */
+export interface WindowContentRequest {
+	/** The window that needs content. */
+	window: NativeWindow;
+	/** Whether the window is the application's primary window. */
+	isPrimary: boolean;
+	/** NSUserActivity.userInfo on iOS, intent extras on Android. */
+	data?: Record<string, any>;
+	ios?: {
+		connectionOptions?: UISceneConnectionOptions;
+	};
+	android?: {
+		intent?: android.content.Intent;
+		savedInstanceState?: android.os.Bundle;
+	};
 }

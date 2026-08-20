@@ -45,6 +45,12 @@ declare module globalThis {
 		 * @param callback wire up any global event handling inside the callback
 		 */
 		addEventWiring(callback: () => void): void;
+
+		/**
+		 * Marks the app as launched. Idempotent, and safe to call directly: not every launch
+		 * path raises the legacy `launch` event, so the subscription cannot be relied on.
+		 */
+		setLaunched(): void;
 	};
 	// var android: any;
 	function require(id: string): any;
@@ -165,39 +171,39 @@ interface NodeModule {
 }
 
 declare enum RequestContext {
-	'audio',
-	'beacon',
-	'cspreport',
-	'download',
-	'embed',
-	'eventsource',
-	'favicon',
-	'fetch',
-	'font',
-	'form',
-	'frame',
-	'hyperlink',
-	'iframe',
-	'image',
-	'imageset',
-	'import',
-	'internal',
-	'location',
-	'manifest',
-	'object',
-	'ping',
-	'plugin',
-	'prefetch',
-	'script',
-	'serviceworker',
-	'sharedworker',
-	'subresource',
-	'style',
-	'track',
-	'video',
-	'worker',
-	'xmlhttprequest',
-	'xslt',
+	audio,
+	beacon,
+	cspreport,
+	download,
+	embed,
+	eventsource,
+	favicon,
+	fetch,
+	font,
+	form,
+	frame,
+	hyperlink,
+	iframe,
+	image,
+	imageset,
+	import,
+	internal,
+	location,
+	manifest,
+	object,
+	ping,
+	plugin,
+	prefetch,
+	script,
+	serviceworker,
+	sharedworker,
+	subresource,
+	style,
+	track,
+	video,
+	worker,
+	xmlhttprequest,
+	xslt,
 }
 
 // Extend the lib.dom.d.ts Body interface with `formData`

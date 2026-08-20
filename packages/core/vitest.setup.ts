@@ -157,6 +157,7 @@ global.NativeScriptGlobals = {
 		notify: (args) => {},
 		hasListeners: (args) => {},
 	},
+	setLaunched: () => {},
 };
 
 global.CADisplayLink = function () {};

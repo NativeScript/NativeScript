@@ -16,7 +16,7 @@ import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessib
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
-import type { PrimaryWindowChangedEventData, WindowCloseEventData, WindowOpenEventData } from '../native-window';
+import type { NativeWindow, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowOpenEventData } from '../native-window';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -85,6 +85,11 @@ interface ApplicationEvents {
 	on(event: 'launch', callback: (args: LaunchEventData) => void, thisArg?: any): void;
 
 	/**
+	 * This event is raised once the JS context is initialized.
+	 */
+	on(event: 'ready', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+
+	/**
 	 * This event is raised after the application has performed most of its startup actions.
 	 * Its intent is to be suitable for measuring app startup times.
 	 * @experimental
@@ -150,7 +155,19 @@ interface ApplicationEvents {
 }
 
 export class ApplicationCommon {
+	/**
+	 * @deprecated Use the 'ready' event for application initialization and Application.setWindowContentResolver() to provide window UI. 'launch' continues to fire before the first window's content is created, and its 'root' property is still honored, for backwards compatibility. It will not fire for additional windows or for background launches.
+	 */
 	readonly launchEvent = 'launch';
+	/**
+	 * Raised once per JS context, as soon as the context is initialized. It is never deferred,
+	 * so it also fires on a background launch where no window is created.
+	 *
+	 * Guaranteed ordering: `ready` -> `windowOpen` -> raw connect/create events -> content
+	 * resolution (the legacy `launch` bridge runs here, for the first window only) ->
+	 * `contentLoaded` -> `activate`/`displayed`.
+	 */
+	readonly readyEvent = 'ready';
 	readonly suspendEvent = 'suspend';
 	readonly displayedEvent = 'displayed';
 	readonly backgroundEvent = 'background';
@@ -208,6 +225,10 @@ export class ApplicationCommon {
 	private _inBackground: boolean = false;
 	private _suspended: boolean = false;
 	private _cssFile = './app.css';
+	private _readyNotified = false;
+	private _appCssLoaded = false;
+	private _launchBridgeConsumed = false;
+	private _windowContentResolver: WindowContentResolver | null = null;
 
 	protected mainEntry: NavigationEntry;
 
@@ -388,8 +409,132 @@ export class ApplicationCommon {
 		return getAppMainEntry();
 	}
 
+	/**
+	 * Sets the callback that supplies the UI for windows that need content.
+	 * Pass `null` to remove a previously set resolver.
+	 */
+	setWindowContentResolver(resolver: WindowContentResolver | null): void {
+		this._windowContentResolver = resolver ?? null;
+	}
+
+	/**
+	 * @returns The callback currently supplying window content, if any.
+	 */
+	getWindowContentResolver(): WindowContentResolver | null {
+		return this._windowContentResolver;
+	}
+
+	/**
+	 * @internal - raises `ready` at most once per JS context.
+	 */
+	notifyReady(): void {
+		if (this._readyNotified) {
+			return;
+		}
+		this._readyNotified = true;
+		getNativeScriptGlobals().setLaunched();
+
+		this.notify(<ApplicationEventData>{
+			eventName: this.readyEvent,
+			object: this,
+			ios: this.ios,
+			android: this.android,
+		});
+	}
+
+	/**
+	 * @internal - produces the content for a window that has none.
+	 *
+	 * Resolution order: the window content resolver, then the legacy `launch` event
+	 * (offered to the first window that asks for content and to no other), then the
+	 * application main entry. A resolver or a `launch` handler returning `null` takes
+	 * ownership of the content, so nothing else is tried. A missing main entry leaves
+	 * the window empty instead of throwing, because content can still arrive later
+	 * through `run()`/`resetRootView()`.
+	 *
+	 * @param options.install `false` returns the resolved view instead of applying it,
+	 * for platform pipelines that install the root view on the native surface themselves.
+	 * @param options.launchData platform payload merged into the legacy `launch` event args.
+	 * @returns The resolved view, or `null` when no content was produced.
+	 */
+	_resolveWindowContent(window: NativeWindow, request: WindowContentRequest, options?: { install?: boolean; launchData?: any }): View | null {
+		const content = this.resolveWindowContent(request, options?.launchData);
+
+		if (content == null) {
+			return null;
+		}
+
+		if (options?.install === false) {
+			return this.buildContentView(content);
+		}
+
+		window.setContent(content);
+
+		return window.rootView;
+	}
+
+	private resolveWindowContent(request: WindowContentRequest, launchData?: any): View | NavigationEntry | string | null | undefined {
+		const launchBridgeAvailable = !this._launchBridgeConsumed;
+		this._launchBridgeConsumed = true;
+
+		const resolver = this._windowContentResolver;
+		if (resolver) {
+			const resolved = resolver(request);
+
+			// `null` means the resolver supplies the content itself; only `undefined` falls through.
+			if (resolved !== undefined) {
+				this._ensureAppCssLoaded();
+
+				return resolved;
+			}
+		}
+
+		if (launchBridgeAvailable) {
+			const root = this.notifyLaunch(launchData);
+
+			if (root === null) {
+				return null;
+			}
+
+			if (root) {
+				return root;
+			}
+		}
+
+		this._ensureAppCssLoaded();
+
+		const mainEntry = getAppMainEntry();
+
+		return mainEntry ? Builder.createViewFromEntry(mainEntry) : undefined;
+	}
+
+	private buildContentView(content: View | NavigationEntry | string): View {
+		if (typeof content === 'string') {
+			return Builder.createViewFromEntry({ moduleName: content });
+		}
+
+		const entry = content as NavigationEntry;
+
+		return entry.moduleName || entry.create ? Builder.createViewFromEntry(entry) : (content as View);
+	}
+
+	/**
+	 * Loads the app CSS once per JS context. On the legacy `launch` path this has to run
+	 * after the handlers, which are allowed to call `setCssFileName()`.
+	 */
+	private _ensureAppCssLoaded(): void {
+		if (this._appCssLoaded) {
+			return;
+		}
+		this._appCssLoaded = true;
+
+		this.loadAppCss();
+	}
+
 	@profile
 	protected notifyLaunch(additionalLanchEventData?: any): View | null {
+		this._launchBridgeConsumed = true;
+
 		const launchArgs: LaunchEventData = {
 			eventName: this.launchEvent,
 			object: this,
@@ -398,7 +543,7 @@ export class ApplicationCommon {
 			...additionalLanchEventData,
 		};
 		this.notify(launchArgs);
-		this.loadAppCss();
+		this._ensureAppCssLoaded();
 
 		return launchArgs.root;
 	}

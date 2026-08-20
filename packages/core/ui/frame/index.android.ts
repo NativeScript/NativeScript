@@ -8,7 +8,7 @@ import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
 import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from './fragment.transitions';
 import { profile } from '../../profiling';
-import { android as androidUtils } from '../../utils/native-helper';
+import { android as androidUtils, dataDeserialize } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
 import { ensureFragmentClass, fragmentClass } from './fragment';
 import { getAppMainEntry } from '../../application/helpers-common';
@@ -1131,12 +1131,39 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		const intent = activity.getIntent();
-		rootView = Application.createRootView(rootView, fireLaunchEvent, {
+		const launchData = {
 			// todo: deprecate in favor of args.intent?
 			android: intent,
 			intent,
 			savedInstanceState,
-		});
+		};
+
+		let nativeWindow = Application.android._getWindowForActivity(activity);
+
+		if (!nativeWindow && isEmbedded()) {
+			// When embedded, the host owns the activity and may never install our lifecycle
+			// callbacks, so this is the only place the window can come into existence.
+			nativeWindow = new AndroidNativeWindow(activity, AndroidNativeWindow.newWindowId(), Application.android._getWindows().length === 0, 'embedded');
+			Application.android._registerWindow(nativeWindow);
+		}
+
+		if (!rootView && fireLaunchEvent && nativeWindow) {
+			// This method installs the root view on the activity itself, so the resolved view is
+			// handed back rather than applied through NativeWindow.setContent(), which would
+			// re-enter here through resetActivityContent().
+			rootView = Application._resolveWindowContent(
+				nativeWindow,
+				{
+					window: nativeWindow,
+					isPrimary: nativeWindow.isPrimary,
+					data: dataDeserialize(intent?.getExtras()) ?? undefined,
+					android: { intent, savedInstanceState },
+				},
+				{ install: false, launchData },
+			);
+		} else {
+			rootView = Application.createRootView(rootView, fireLaunchEvent, launchData);
+		}
 
 		if (!rootView) {
 			// no root view created
@@ -1158,15 +1185,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 
 		// sets root classes once rootView is ready...
 		Application.initRootView(rootView);
-
-		let nativeWindow = Application.android._getWindowForActivity(activity);
-
-		if (!nativeWindow && isEmbedded()) {
-			// When embedded, the host owns the activity and may never install our lifecycle
-			// callbacks, so this is the only place the window can come into existence.
-			nativeWindow = new AndroidNativeWindow(activity, AndroidNativeWindow.newWindowId(), Application.android._getWindows().length === 0, 'embedded');
-			Application.android._registerWindow(nativeWindow);
-		}
 
 		nativeWindow?._adoptRootView(rootView);
 	}

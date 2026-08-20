@@ -5,7 +5,7 @@ import { IOSHelper } from '../ui/core/view/view-helper';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
-import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
+import { ios as iosUtils, dataSerialize, dataDeserialize } from '../utils/native-helper';
 import { ApplicationCommon } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
@@ -199,6 +199,21 @@ if (supportsScenes()) {
 	};
 }
 
+/**
+ * Reads the payload `openWindow()` put on the activating NSUserActivity.
+ */
+function getSceneConnectionData(connectionOptions: UISceneConnectionOptions): Record<string, any> | undefined {
+	const activities = connectionOptions?.userActivities;
+
+	if (!activities || activities.count === 0) {
+		return undefined;
+	}
+
+	const activity = activities.allObjects.objectAtIndex(0) as NSUserActivity;
+
+	return activity?.userInfo ? (dataDeserialize(activity.userInfo) as Record<string, any>) : undefined;
+}
+
 @NativeClass
 class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	static ObjCProtocols = [UIWindowSceneDelegate];
@@ -225,7 +240,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		}
 
 		const windowScene = scene as UIWindowScene;
-		const isFirstScene = Application.ios._getWindows().length === 0 && !Application.hasLaunched();
+		const isFirstScene = Application.ios._getWindows().length === 0;
 
 		this._scene = windowScene;
 
@@ -285,12 +300,15 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			this._window.makeKeyAndVisible();
 		}
 
-		// If this is the first scene, trigger app startup
-		if (isFirstScene) {
-			Application.ios._notifySceneAppStarted();
-		} else if (isPrimary && Application.ios.hasLaunched()) {
-			// Primary scene reconnecting after disconnect — restore content
-			(Application.ios as any).setWindowContent();
+		if (nativeWindow.role === 'application') {
+			// A re-attached window carries a torn down root view on a brand new UIWindow,
+			// so it needs its content resolved again just like a fresh one.
+			Application.ios._resolveWindowContent(nativeWindow, {
+				window: nativeWindow,
+				isPrimary,
+				data: getSceneConnectionData(connectionOptions),
+				ios: { connectionOptions },
+			});
 		}
 	}
 
@@ -455,7 +473,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
-	private launchEventCalled = false;
+	/** Set when a background launch defers the primary window's content until the app first becomes active. */
+	private _pendingWindowContentResolve: (() => void) | null;
 	private _sceneDelegate: UIWindowSceneDelegate;
 	/**
 	 * User-provided callback to intercept scene configuration.
@@ -487,6 +506,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	displayedLinkTarget: CADisplayLinkTarget;
 	displayedLink: CADisplayLink;
 
+	/**
+	 * @deprecated Has no effect. Application initialization is signalled by the 'ready' event, which is never deferred.
+	 */
 	shouldDelayLaunchEvent = false;
 
 	/**
@@ -564,6 +586,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private runAsEmbeddedApp() {
+		this.notifyReady();
+
 		this._reattachNativeDelegatesAfterSoftReboot();
 
 		// TODO: this rootView should be held alive until rootController dismissViewController is called.
@@ -930,7 +954,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
-		this.launchEventCalled = true;
 		const root = this.notifyLaunch({
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
@@ -942,11 +965,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		} else {
 			setiOSWindow(this.window);
 		}
-	}
-
-	// Public method for scene-based app startup
-	_notifySceneAppStarted() {
-		this.notifyAppStarted();
 	}
 
 	public _onLivesync(context?: ModuleContext): void {
@@ -1020,6 +1038,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				}
 			}
 		}
+
+		// Must precede every window registration below and every scene connect that follows.
+		this.notifyReady();
+
 		this.setMaxRefreshRate();
 
 		// Only set up window if NOT using scene-based lifecycle
@@ -1043,9 +1065,26 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				nativeWindow._notifyEvent(NativeWindowEvents.attached);
 			}
 
-			this.launchEventCalled = false;
-			if (!this.shouldDelayLaunchEvent) {
-				this.notifyAppStarted(notification);
+			const primaryWindow = this.primaryWindow;
+			const resolveContent = () =>
+				this._resolveWindowContent(
+					primaryWindow,
+					{
+						window: primaryWindow,
+						isPrimary: true,
+					},
+					{
+						launchData: {
+							ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
+						},
+					},
+				);
+
+			if (UIApplication.sharedApplication.applicationState === UIApplicationState.Background) {
+				// A background launch has no UI to build yet, so content waits for the first activation.
+				this._pendingWindowContentResolve = resolveContent;
+			} else {
+				resolveContent();
 			}
 		} else {
 			// Scene-based app - window creation will happen in scene delegate
@@ -1054,8 +1093,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	@profile
 	private didBecomeActive(notification: NSNotification) {
-		if (!this.launchEventCalled) {
-			this.notifyAppStarted(notification);
+		const pendingWindowContentResolve = this._pendingWindowContentResolve;
+		if (pendingWindowContentResolve) {
+			this._pendingWindowContentResolve = null;
+			pendingWindowContentResolve();
 		}
 
 		// Only handle lifecycle here when NOT using scenes
