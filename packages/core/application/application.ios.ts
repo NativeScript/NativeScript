@@ -15,6 +15,7 @@ import { IOSNativeWindow } from '../native-window/native-window.ios';
 import { NativeWindow } from '../native-window/native-window-common';
 import type { WindowBase, WindowRole } from '../native-window/window-base';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
+import type { NativeWindowEventData } from '../native-window/native-window-interfaces';
 import {
 	AccessibilityServiceEnabledPropName,
 	CommonA11YServiceEnabledObservable,
@@ -97,6 +98,7 @@ class CADisplayLinkTarget extends NSObject {
 			object: owner,
 			ios: UIApplication.sharedApplication,
 		});
+		owner.primaryWindow?._notifyEvent(NativeWindowEvents.displayed);
 		owner.displayedLinkTarget = null;
 		owner.displayedLink = null;
 	}
@@ -467,6 +469,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	// NativeWindow registry
 	private _windows: IOSNativeWindow[] = [];
 
+	// The window the app-level root view state mirrors, and the root view currently
+	// carrying the app-level trait collection listeners.
+	private _mirroredWindow: NativeWindow;
+	private _appTraitListenerView: View;
+
 	private _notificationObservers: NotificationObserver[] = [];
 
 	// Strong references to delegates recreated after an in-process soft reboot
@@ -629,35 +636,18 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 
-		const controller = this.getViewController(rootView);
-
-		rootView._setupAsRootView({});
-
-		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
-			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
-			this.setSystemAppearance(newSystemAppearance);
-		});
-
-		rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, () => {
-			const layoutDirection = controller.traitCollection.layoutDirection;
-			const newLayoutDirection = this.getLayoutDirectionValue(layoutDirection);
-			this.setLayoutDirection(newLayoutDirection);
-		});
-
-		if (embedderDelegate) {
-			// Embed into host app.
-			// present over the host's existing root view controller.
-			this.setViewControllerView(rootView);
-			embedderDelegate.presentNativeScriptApp(controller);
-		} else {
-			// No embedder delegate = NativeScript owns the UIApplication.
-			// Attach the root to the window.
-			this.setViewControllerView(rootView);
-			this.setWindowRootView(window, rootView);
+		let hostWindow = this.primaryWindow as IOSNativeWindow;
+		if (!hostWindow) {
+			// Only an embedder delegate makes this window a guest: without one NativeScript
+			// owns the UIApplication and the window has to attach its own content.
+			const role: WindowRole = embedderDelegate ? 'embedded' : 'application';
+			hostWindow = new IOSNativeWindow(window.windowScene ?? undefined, window, 'embedded-main', true, role);
+			this._registerWindow(hostWindow);
+			hostWindow._notifyEvent(NativeWindowEvents.attached);
 		}
 
-		this.initRootView(rootView);
+		hostWindow.setContent(rootView);
+
 		this.notifyAppStarted();
 	}
 
@@ -975,15 +965,27 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private setWindowContent(view?: View): void {
+		const rootView = this.createRootView(view);
+		const primaryWindow = this.primaryWindow;
+
+		if (primaryWindow) {
+			primaryWindow.setContent(rootView);
+			return;
+		}
+
+		this.setWindowContentFallback(rootView);
+	}
+
+	/**
+	 * Attaches content to the raw `UIWindow`. Every launch path registers a primary
+	 * NativeWindow, so this only runs when no window is left to own the content.
+	 */
+	private setWindowContentFallback(rootView: View): void {
 		if (this._rootView) {
-			// if we already have a root view, we reset it.
 			this._rootView._onRootViewReset();
 		}
-		const rootView = this.createRootView(view);
-		const controller = this.getViewController(rootView);
 
-		this._rootView = rootView;
-		setRootView(rootView);
+		const controller = this.getViewController(rootView);
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
@@ -991,7 +993,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.setViewControllerView(rootView);
 
 		const win = this.window;
-
 		const haveController = win.rootViewController !== null;
 		win.rootViewController = controller;
 
@@ -999,20 +1000,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			win.makeKeyAndVisible();
 		}
 
-		this.initRootView(rootView);
-
-		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
-			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
-
-			this.setSystemAppearance(newSystemAppearance);
-		});
-
-		rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, () => {
-			const layoutDirection = controller.traitCollection.layoutDirection;
-			const newLayoutDirection = this.getLayoutDirectionValue(layoutDirection);
-			this.setLayoutDirection(newLayoutDirection);
-		});
+		this.adoptRootView(rootView);
 	}
 
 	// Observers
@@ -1047,6 +1035,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			if (!__VISIONOS__) {
 				this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			}
+
+			if (!this.primaryWindow) {
+				const nativeWindow = new IOSNativeWindow(undefined, this.window, 'main', true, 'application');
+				this._registerWindow(nativeWindow);
+				nativeWindow._notifyEvent(NativeWindowEvents.attached);
 			}
 
 			this.launchEventCalled = false;
@@ -1123,6 +1117,74 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.setOrientation(newOrientation);
 	}
 
+	// --- App-level root view mirror ---
+
+	/**
+	 * Keeps the app-level root view state (`getRootView()`, the global root view and the
+	 * `initRootView` event) following whatever the primary window shows.
+	 */
+	private mirrorPrimaryWindow(nativeWindow: NativeWindow): void {
+		if (this._mirroredWindow === nativeWindow) {
+			return;
+		}
+
+		this._mirroredWindow?.off(NativeWindowEvents.contentLoaded, this.onPrimaryWindowContentLoaded, this);
+		this._mirroredWindow = nativeWindow;
+		nativeWindow.on(NativeWindowEvents.contentLoaded, this.onPrimaryWindowContentLoaded, this);
+
+		if (nativeWindow.rootView && nativeWindow.rootView !== this._rootView) {
+			this.adoptRootView(nativeWindow.rootView);
+		}
+	}
+
+	private onPrimaryWindowContentLoaded(data: NativeWindowEventData): void {
+		this.adoptRootView(data.window.rootView);
+	}
+
+	private adoptRootView(rootView: View): void {
+		if (!rootView) {
+			return;
+		}
+
+		const previous = this._appTraitListenerView;
+		if (previous && previous !== rootView) {
+			previous.off(IOSHelper.traitCollectionColorAppearanceChangedEvent, this.onRootViewColorAppearanceChanged, this);
+			previous.off(IOSHelper.traitCollectionLayoutDirectionChangedEvent, this.onRootViewLayoutDirectionChanged, this);
+			this._appTraitListenerView = null;
+		}
+
+		this._rootView = rootView;
+		setRootView(rootView);
+		this.initRootView(rootView);
+
+		if (this._appTraitListenerView !== rootView) {
+			rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, this.onRootViewColorAppearanceChanged, this);
+			rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, this.onRootViewLayoutDirectionChanged, this);
+			this._appTraitListenerView = rootView;
+		}
+	}
+
+	private onRootViewColorAppearanceChanged(): void {
+		const controller = this.rootViewController();
+		if (!controller) {
+			return;
+		}
+		this.setSystemAppearance(this.getSystemAppearanceValue(controller.traitCollection.userInterfaceStyle));
+	}
+
+	private onRootViewLayoutDirectionChanged(): void {
+		const controller = this.rootViewController();
+		if (!controller) {
+			return;
+		}
+		this.setLayoutDirection(this.getLayoutDirectionValue(controller.traitCollection.layoutDirection));
+	}
+
+	private rootViewController(): UIViewController {
+		const rootView = this._rootView;
+		return rootView ? ((rootView.viewController || rootView.ios) as UIViewController) : null;
+	}
+
 	// --- NativeWindow registry ---
 
 	/**
@@ -1130,6 +1192,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 */
 	_registerWindow(nativeWindow: IOSNativeWindow): void {
 		this._windows.push(nativeWindow);
+
+		if (nativeWindow.isPrimary) {
+			this.mirrorPrimaryWindow(nativeWindow);
+		}
+
 		this.notify({
 			eventName: WindowEvents.windowOpen,
 			object: this,
@@ -1162,6 +1229,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				if (promotedWindow) {
 					setiOSWindow(promotedWindow);
 				}
+				this.mirrorPrimaryWindow(promoted);
 				this.notify({
 					eventName: WindowEvents.primaryWindowChanged,
 					object: this,

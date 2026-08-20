@@ -5,13 +5,14 @@ import { CoreTypes } from '../core-types';
 import { Trace } from '../trace';
 import { NativeWindow } from './native-window-common';
 import { NativeWindowEvents } from './native-window-interfaces';
+import type { WindowRole } from './window-base';
 
 /**
  * iOS implementation of NativeWindow.
- * Wraps a UIWindowScene + UIWindow pair.
+ * Wraps a UIWindow and, when the app is scene-based, the UIWindowScene hosting it.
  */
 export class IOSNativeWindow extends NativeWindow {
-	private _scene: UIWindowScene;
+	private _scene: UIWindowScene | undefined;
 	private _window: UIWindow;
 
 	/**
@@ -26,8 +27,8 @@ export class IOSNativeWindow extends NativeWindow {
 	 */
 	_hasSessionIdentity: boolean;
 
-	constructor(scene: UIWindowScene, window: UIWindow, id?: string, isPrimary = false) {
-		super(id, isPrimary);
+	constructor(scene: UIWindowScene | undefined, window: UIWindow, id?: string, isPrimary = false, role: WindowRole = 'application') {
+		super(id, isPrimary, role);
 		this._hasSessionIdentity = !!id;
 		this._scene = scene;
 		this._window = window;
@@ -56,11 +57,17 @@ export class IOSNativeWindow extends NativeWindow {
 		const controller = this._getViewController(view);
 		this._setViewControllerView(view);
 
-		const haveController = this._window.rootViewController !== null;
-		this._window.rootViewController = controller;
+		if (this.role === 'embedded') {
+			// The host app owns this UIWindow: its rootViewController and key/visible state
+			// are not ours to change, so the content is handed over as a view controller.
+			NativeScriptEmbedder.sharedInstance().delegate?.presentNativeScriptApp(controller);
+		} else {
+			const haveController = this._window.rootViewController !== null;
+			this._window.rootViewController = controller;
 
-		if (!haveController) {
-			this._window.makeKeyAndVisible();
+			if (!haveController) {
+				this._window.makeKeyAndVisible();
+			}
 		}
 
 		// Listen for trait collection changes per-window
