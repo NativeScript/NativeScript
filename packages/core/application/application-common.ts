@@ -168,6 +168,11 @@ export class ApplicationCommon {
 	 * `contentLoaded` -> `activate`/`displayed`.
 	 */
 	readonly readyEvent = 'ready';
+	/**
+	 * Reflects whole-app state: with multiple windows it is raised once the app itself is
+	 * no longer in the foreground, not when an individual window backgrounds. Listen on a
+	 * NativeWindow for per-window state.
+	 */
 	readonly suspendEvent = 'suspend';
 	readonly displayedEvent = 'displayed';
 	readonly backgroundEvent = 'background';

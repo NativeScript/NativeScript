@@ -333,19 +333,9 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			scene: windowScene,
 		} as SceneEventData);
 
-		// If this is the primary scene, trigger traditional app lifecycle
-		if (nativeWindow?.isPrimary) {
-			const additionalData = {
-				ios: UIApplication.sharedApplication,
-				scene: scene,
-			};
-			Application.ios.setInBackground(false, additionalData);
-			Application.ios.setSuspended(false, additionalData);
-
-			const rootView = nativeWindow.rootView;
-			if (rootView && !rootView.isLoaded) {
-				rootView.callLoaded();
-			}
+		const rootView = nativeWindow?.rootView;
+		if (rootView && !rootView.isLoaded) {
+			rootView.callLoaded();
 		}
 	}
 
@@ -414,19 +404,9 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			scene: windowScene,
 		} as SceneEventData);
 
-		// If this is the primary scene, trigger traditional app lifecycle
-		if (nativeWindow?.isPrimary) {
-			const additionalData = {
-				ios: UIApplication.sharedApplication,
-				scene: scene,
-			};
-			Application.ios.setInBackground(true, additionalData);
-			Application.ios.setSuspended(true, additionalData);
-
-			const rootView = nativeWindow.rootView;
-			if (rootView && rootView.isLoaded) {
-				rootView.callUnloaded();
-			}
+		const rootView = nativeWindow?.rootView;
+		if (rootView && rootView.isLoaded) {
+			rootView.callUnloaded();
 		}
 	}
 
@@ -1099,15 +1079,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			pendingWindowContentResolve();
 		}
 
-		// Only handle lifecycle here when NOT using scenes
-		// (scene lifecycle is handled by SceneDelegate methods)
-		if (!this.supportsScenes()) {
-			const additionalData = {
-				ios: UIApplication.sharedApplication,
-			};
-			this.setInBackground(false, additionalData);
-			this.setSuspended(false, additionalData);
+		const additionalData = {
+			ios: UIApplication.sharedApplication,
+		};
+		this.setInBackground(false, additionalData);
+		this.setSuspended(false, additionalData);
 
+		// In scene mode the root view belongs to a window, so the scene delegate loads it.
+		if (!this.supportsScenes()) {
 			const rootView = this._rootView;
 			if (rootView && !rootView.isLoaded) {
 				rootView.callLoaded();
@@ -1116,14 +1095,13 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private didEnterBackground(notification: NSNotification) {
-		// Only handle lifecycle here when NOT using scenes
-		if (!this.supportsScenes()) {
-			const additionalData = {
-				ios: UIApplication.sharedApplication,
-			};
-			this.setInBackground(true, additionalData);
-			this.setSuspended(true, additionalData);
+		const additionalData = {
+			ios: UIApplication.sharedApplication,
+		};
+		this.setInBackground(true, additionalData);
+		this.setSuspended(true, additionalData);
 
+		if (!this.supportsScenes()) {
 			const rootView = this._rootView;
 			if (rootView && rootView.isLoaded) {
 				rootView.callUnloaded();
