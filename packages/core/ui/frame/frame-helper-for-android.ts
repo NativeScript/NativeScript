@@ -6,8 +6,8 @@ import { getNativeApp } from '../../application/helpers-common';
 import { Color } from '../../color';
 import type { Page } from '../page';
 import type { ExpandedEntry } from './fragment.transitions.android';
-export const FRAMEID = '_frameId';
-export const CALLBACKS = '_callbacks';
+import { CALLBACKS, FRAMEID } from './frame-constants';
+export { CALLBACKS, FRAMEID };
 export const framesCache = new Array<WeakRef<AndroidFrame>>();
 
 export interface AndroidFragmentCallbacks {

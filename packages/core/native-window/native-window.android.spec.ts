@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CoreTypes } from '../core-types';
 
-// `frame-helper-for-android` pulls in `fragment.transitions.android`, which the iOS-flavoured
-// vitest resolver cannot load. Only the CALLBACKS key is used by the module under test.
-vi.mock('../ui/frame/frame-helper-for-android', () => ({
-	CALLBACKS: '_callbacks',
-}));
-
 import { AndroidNativeWindow } from './native-window.android';
 import { NativeWindowEvents } from './native-window-interfaces';
 

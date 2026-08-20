@@ -1,8 +1,8 @@
 import type { View } from '../ui/core/view';
 import { CoreTypes } from '../core-types';
 import { SDK_VERSION } from '../utils/constants';
-import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
-import { CALLBACKS } from '../ui/frame/frame-helper-for-android';
+import type { AndroidActivityCallbacks } from '../ui/frame/frame-common';
+import { CALLBACKS } from '../ui/frame/frame-constants';
 import { NativeWindow } from './native-window-common';
 import type { WindowRole } from './window-base';
 
