@@ -16,7 +16,9 @@ import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessib
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
-import type { NativeWindow, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowOpenEventData } from '../native-window';
+import type { NativeWindow, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowOpenEventData, WindowOpenOptions } from '../native-window';
+import type { WindowBase, WindowRole } from '../native-window/window-base';
+import { WindowEvents } from '../native-window/native-window-interfaces';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -194,6 +196,9 @@ export class ApplicationCommon {
 	readonly loadAppCssEvent = 'loadAppCss';
 	readonly cssChangedEvent = 'cssChanged';
 	readonly initRootViewEvent = 'initRootView';
+	readonly windowOpenEvent = WindowEvents.windowOpen;
+	readonly windowCloseEvent = WindowEvents.windowClose;
+	readonly primaryWindowChangedEvent = WindowEvents.primaryWindowChanged;
 
 	// Expose statically for backwards compat on AndroidApplication.on etc.
 	/**
@@ -427,6 +432,121 @@ export class ApplicationCommon {
 	 */
 	getWindowContentResolver(): WindowContentResolver | null {
 		return this._windowContentResolver;
+	}
+
+	// --- NativeWindow registry ---
+
+	protected _windows: NativeWindow[] = [];
+
+	/**
+	 * Get the primary NativeWindow.
+	 */
+	get primaryWindow(): NativeWindow | undefined {
+		return this._windows.find((nw) => nw.isPrimary);
+	}
+
+	/**
+	 * Get the active windows, filtered by role.
+	 *
+	 * Defaults to the view-carrying app windows (`application` and `embedded`).
+	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
+	 */
+	getWindows(role: 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[] {
+		if (role === 'all') {
+			return [...this._windows];
+		}
+		const roles: WindowRole[] = role ? (Array.isArray(role) ? role : [role]) : ['application', 'embedded'];
+		return this._windows.filter((nw) => roles.indexOf(nw.role) !== -1);
+	}
+
+	/**
+	 * Get a registered NativeWindow by its id.
+	 */
+	getWindowById(id: string): NativeWindow | undefined {
+		return this._windows.find((nw) => nw.id === id);
+	}
+
+	/**
+	 * Opens a new window.
+	 *
+	 * @param options Options for the new window, including data to hand to it.
+	 */
+	openWindow(options?: WindowOpenOptions): void {
+		throw new Error('openWindow() is not supported on this platform.');
+	}
+
+	/**
+	 * @internal - Get all registered NativeWindows, whatever their role.
+	 */
+	_getWindows(): NativeWindow[] {
+		return [...this._windows];
+	}
+
+	/**
+	 * @internal - Register a NativeWindow created by the platform lifecycle.
+	 */
+	_registerWindow(nativeWindow: NativeWindow): void {
+		this._windows.push(nativeWindow);
+
+		this._onWindowRegistered(nativeWindow);
+
+		this.notify({
+			eventName: this.windowOpenEvent,
+			object: this,
+			window: nativeWindow,
+		});
+	}
+
+	/**
+	 * @internal - Unregister a NativeWindow when its native surface is gone for good.
+	 */
+	_unregisterWindow(nativeWindow: NativeWindow): void {
+		const idx = this._windows.indexOf(nativeWindow);
+		if (idx >= 0) {
+			this._windows.splice(idx, 1);
+		}
+		this.notify({
+			eventName: this.windowCloseEvent,
+			object: this,
+			window: nativeWindow,
+		});
+
+		// If primary was removed, promote the next window that can actually host content
+		if (nativeWindow.isPrimary) {
+			nativeWindow._setIsPrimary(false);
+
+			const promoted = this.getWindows().find((nw) => nw.state === 'attached');
+			if (promoted) {
+				promoted._setIsPrimary(true);
+				this._onPrimaryWindowPromoted(promoted);
+				this.notify({
+					eventName: this.primaryWindowChangedEvent,
+					object: this,
+					window: promoted,
+				});
+			}
+		}
+
+		nativeWindow._destroy();
+	}
+
+	/**
+	 * Hook for platform-specific bookkeeping right after a window joins the registry,
+	 * before `windowOpen` is raised.
+	 */
+	protected _onWindowRegistered(nativeWindow: NativeWindow): void {
+		// noop
+	}
+
+	/**
+	 * Hook for platform-specific bookkeeping right after a window takes over the primary
+	 * role, before `primaryWindowChanged` is raised.
+	 */
+	protected _onPrimaryWindowPromoted(nativeWindow: NativeWindow): void {
+		// noop
 	}
 
 	/**

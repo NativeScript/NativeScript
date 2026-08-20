@@ -1,8 +1,7 @@
 ﻿import { ApplicationCommon } from './application-common';
 import { FontScaleCategory } from '../accessibility/font-scale-common';
 import type { NativeWindow } from '../native-window/native-window-common';
-import type { WindowBase, WindowRole } from '../native-window/window-base';
-import type { WindowOpenEventData, WindowCloseEventData } from '../native-window/native-window-interfaces';
+import type { WindowOpenEventData, WindowCloseEventData, WindowOpenOptions } from '../native-window/native-window-interfaces';
 
 export * from './application-common';
 export * from './application-interfaces';
@@ -127,29 +126,17 @@ export class AndroidApplication extends ApplicationCommon {
 	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): NativeWindow | undefined;
 
 	/**
-	 * @internal - Get all registered NativeWindows.
-	 */
-	_getWindows(): NativeWindow[];
-
-	/**
-	 * @internal - Register a NativeWindow.
-	 */
-	_registerWindow(nativeWindow: NativeWindow): void;
-
-	/**
-	 * Get the primary NativeWindow.
-	 */
-	get primaryWindow(): NativeWindow | undefined;
-
-	/**
-	 * Get the active windows, filtered by role.
+	 * Opens a new window by launching the start activity into its own task.
 	 *
-	 * Defaults to the view-carrying app windows (`application` and `embedded`).
-	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
+	 * @param options Options for the new window. `options.data` is put on the launch
+	 * intent as extras and surfaces as the window's `data`.
+	 *
+	 * @experimental Whether a second window actually appears depends on the activity's
+	 * `launchMode` in AndroidManifest.xml (an activity that is `singleTask`/`singleInstance`
+	 * is brought forward instead of duplicated) and on how the OEM's recents implementation
+	 * treats new documents.
 	 */
-	getWindows(role: 'all'): WindowBase[];
-	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
-	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
+	openWindow(options?: WindowOpenOptions): void;
 }
 
 export class iOSApplication extends ApplicationCommon {
@@ -219,10 +206,12 @@ export class iOSApplication extends ApplicationCommon {
 	isUsingSceneLifecycle(): boolean;
 
 	/**
-	 * Opens a new window with the specified data.
-	 * @param data The data to pass to the new window.
+	 * Opens a new window (scene).
+	 *
+	 * @param options Options for the new window. `options.data` is serialized into the
+	 * activating scene's `NSUserActivity.userInfo`.
 	 */
-	openWindow(data: Record<any, any>): void;
+	openWindow(options?: WindowOpenOptions): void;
 
 	/**
 	 * Closes a secondary window/scene.
@@ -307,21 +296,6 @@ export class iOSApplication extends ApplicationCommon {
 
 	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;
 	on(event: 'windowClose', callback: (args: WindowCloseEventData) => void, thisArg?: any): void;
-
-	/**
-	 * Get the primary NativeWindow.
-	 */
-	get primaryWindow(): NativeWindow | undefined;
-
-	/**
-	 * Get the active windows, filtered by role.
-	 *
-	 * Defaults to the view-carrying app windows (`application` and `embedded`).
-	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
-	 */
-	getWindows(role: 'all'): WindowBase[];
-	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
-	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
 
 	/**
 	 * Flag to be set when the launch event should be delayed until the application has become active.

@@ -404,11 +404,11 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	onCreateNewScene() {
-		Application.ios.openWindow({ id: 'newSceneBasic' });
+		Application.ios.openWindow({ data: { id: 'newSceneBasic' } });
 	}
 
 	onCreateNewSceneAlt() {
-		Application.ios.openWindow({ id: 'newSceneAlt' });
+		Application.ios.openWindow({ data: { id: 'newSceneAlt' } });
 	}
 
 	onRefreshSceneInfo() {

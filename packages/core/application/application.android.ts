@@ -4,15 +4,15 @@ import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import { isEmbedded } from '../ui/embedding';
 import { SDK_VERSION } from '../utils/constants';
-import { android as androidUtils } from '../utils';
+import { android as androidUtils, dataSerialize } from '../utils';
 import { ApplicationCommon } from './application-common';
 import type { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import { AndroidNativeWindow } from '../native-window/native-window.android';
 import { NativeWindow } from '../native-window/native-window-common';
-import type { WindowBase, WindowRole } from '../native-window/window-base';
-import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
+import { NativeWindowEvents } from '../native-window/native-window-interfaces';
+import type { WindowOpenOptions } from '../native-window/native-window-interfaces';
 import {
 	CommonA11YServiceEnabledObservable,
 	SharedA11YObservable,
@@ -57,6 +57,19 @@ declare class NativeScriptLifecycleCallbacks extends android.app.Application.Act
 
 const WINDOW_ID_EXTRA = 'com.tns.activity.windowId';
 
+let multiWindowWarned = false;
+
+function warnMultiWindowIsExperimental(): void {
+	if (multiWindowWarned) {
+		return;
+	}
+	multiWindowWarned = true;
+
+	const message = 'Application.android.openWindow() is experimental: whether a new window opens depends on the activity launchMode declared in AndroidManifest.xml and on the device recents behavior.';
+	Trace.write(message, Trace.categories.Debug, Trace.messageType.warn);
+	console.warn(message);
+}
+
 let NativeScriptLifecycleCallbacks_: typeof NativeScriptLifecycleCallbacks;
 function initNativeScriptLifecycleCallbacks() {
 	if (NativeScriptLifecycleCallbacks_) {
@@ -87,7 +100,7 @@ function initNativeScriptLifecycleCallbacks() {
 
 			// Create and register NativeWindow for this activity
 			const savedWindowId = savedInstanceState?.getString(WINDOW_ID_EXTRA);
-			const knownWindow = savedWindowId ? (Application.android._getWindowById(savedWindowId) as AndroidNativeWindow) : undefined;
+			const knownWindow = savedWindowId ? (Application.android.getWindowById(savedWindowId) as AndroidNativeWindow) : undefined;
 			let nativeWindow: AndroidNativeWindow;
 
 			if (knownWindow?.state === 'detached') {
@@ -682,95 +695,55 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	// --- NativeWindow registry ---
-	private _windows: AndroidNativeWindow[] = [];
-
-	/**
-	 * @internal - Register a NativeWindow created by the lifecycle callbacks.
-	 */
-	_registerWindow(nativeWindow: AndroidNativeWindow): void {
-		this._windows.push(nativeWindow);
-		this.notify({
-			eventName: WindowEvents.windowOpen,
-			object: this,
-			window: nativeWindow,
-		});
-	}
-
-	/**
-	 * @internal - Unregister a NativeWindow when its activity is destroyed.
-	 */
-	_unregisterWindow(nativeWindow: AndroidNativeWindow): void {
-		const idx = this._windows.indexOf(nativeWindow);
-		if (idx >= 0) {
-			this._windows.splice(idx, 1);
-		}
-		this.notify({
-			eventName: WindowEvents.windowClose,
-			object: this,
-			window: nativeWindow,
-		});
-
-		// If primary was removed, promote the next window that can actually host content
-		if (nativeWindow.isPrimary) {
-			nativeWindow._setIsPrimary(false);
-
-			const promoted = this.getWindows().find((nw) => nw.state === 'attached');
-			if (promoted) {
-				promoted._setIsPrimary(true);
-				this.notify({
-					eventName: WindowEvents.primaryWindowChanged,
-					object: this,
-					window: promoted,
-				});
-			}
-		}
-
-		nativeWindow._destroy();
-	}
-
-	/**
-	 * @internal - Get all registered NativeWindows.
-	 */
-	_getWindows(): NativeWindow[] {
-		return [...this._windows];
-	}
 
 	/**
 	 * @internal - Get a NativeWindow by its activity.
 	 */
 	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): AndroidNativeWindow | undefined {
-		return this._windows.find((nw) => nw.activity === activity);
+		return this._windows.find((nw) => nw.android?.activity === activity) as AndroidNativeWindow | undefined;
 	}
 
-	/**
-	 * @internal - Get a NativeWindow by its id.
-	 */
-	_getWindowById(id: string): NativeWindow | undefined {
-		return this._windows.find((nw) => nw.id === id);
-	}
+	// --- Multi-window support ---
 
 	/**
-	 * Get the primary NativeWindow.
-	 */
-	get primaryWindow(): NativeWindow | undefined {
-		return this._windows.find((nw) => nw.isPrimary);
-	}
-
-	/**
-	 * Get the active windows, filtered by role.
+	 * Opens a new window by launching the start activity into its own task.
 	 *
-	 * Defaults to the view-carrying app windows (`application` and `embedded`).
-	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
+	 * @param options Options for the new window. `options.data` is put on the launch
+	 * intent as extras and surfaces as the window's `data`.
+	 *
+	 * @experimental Whether a second window actually appears depends on the activity's
+	 * `launchMode` in AndroidManifest.xml (an activity that is `singleTask`/`singleInstance`
+	 * is brought forward instead of duplicated) and on how the OEM's recents implementation
+	 * treats new documents.
 	 */
-	getWindows(role: 'all'): WindowBase[];
-	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
-	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
-	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[] {
-		if (role === 'all') {
-			return [...this._windows];
+	openWindow(options?: WindowOpenOptions): void {
+		warnMultiWindowIsExperimental();
+
+		const context = this.context ?? this.getNativeApplication();
+		const intent = new android.content.Intent();
+		const startActivity = this.startActivity;
+
+		if (startActivity) {
+			intent.setClass(context, startActivity.getClass());
+		} else {
+			intent.setClassName(context, 'org.nativescript.NativeScriptActivity');
 		}
-		const roles: WindowRole[] = role ? (Array.isArray(role) ? role : [role]) : ['application', 'embedded'];
-		return this._windows.filter((nw) => roles.indexOf(nw.role) !== -1);
+
+		intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK | android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+		const data = options?.data;
+		if (data) {
+			for (const key of Object.keys(data)) {
+				intent.putExtra(key, dataSerialize(data[key], true));
+			}
+		}
+
+		const launcher = this.foregroundActivity ?? startActivity;
+		if (launcher) {
+			launcher.startActivity(intent);
+		} else {
+			context.startActivity(intent);
+		}
 	}
 
 	getRootView(): View {

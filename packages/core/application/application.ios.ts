@@ -13,9 +13,9 @@ import type { iOSApplication as IiOSApplication } from './application';
 import { Trace } from '../trace';
 import { IOSNativeWindow } from '../native-window/native-window.ios';
 import { NativeWindow } from '../native-window/native-window-common';
-import type { WindowBase, WindowRole } from '../native-window/window-base';
-import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
-import type { NativeWindowEventData } from '../native-window/native-window-interfaces';
+import type { WindowRole } from '../native-window/window-base';
+import { NativeWindowEvents } from '../native-window/native-window-interfaces';
+import type { NativeWindowEventData, WindowOpenOptions } from '../native-window/native-window-interfaces';
 import {
 	AccessibilityServiceEnabledPropName,
 	CommonA11YServiceEnabledObservable,
@@ -253,7 +253,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		}
 
 		const nativeWindowId = IOSNativeWindow.getSceneId(windowScene);
-		const knownWindow = nativeWindowId ? (Application.ios._getWindowById(nativeWindowId) as IOSNativeWindow) : undefined;
+		const knownWindow = nativeWindowId ? (Application.ios.getWindowById(nativeWindowId) as IOSNativeWindow) : undefined;
 		let nativeWindow: IOSNativeWindow;
 
 		if (knownWindow?.state === 'detached') {
@@ -464,9 +464,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 * @internal
 	 */
 	_onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
-
-	// NativeWindow registry
-	private _windows: IOSNativeWindow[] = [];
 
 	// The window the app-level root view state mirrors, and the root view currently
 	// carrying the app-level trait collection listeners.
@@ -1207,60 +1204,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	// --- NativeWindow registry ---
 
 	/**
-	 * @internal - Register a NativeWindow created by the SceneDelegate.
-	 */
-	_registerWindow(nativeWindow: IOSNativeWindow): void {
-		this._windows.push(nativeWindow);
-
-		if (nativeWindow.isPrimary) {
-			this.mirrorPrimaryWindow(nativeWindow);
-		}
-
-		this.notify({
-			eventName: WindowEvents.windowOpen,
-			object: this,
-			window: nativeWindow,
-		});
-	}
-
-	/**
-	 * @internal - Unregister a NativeWindow when its scene disconnects.
-	 */
-	_unregisterWindow(nativeWindow: IOSNativeWindow): void {
-		const idx = this._windows.indexOf(nativeWindow);
-		if (idx >= 0) {
-			this._windows.splice(idx, 1);
-		}
-		this.notify({
-			eventName: WindowEvents.windowClose,
-			object: this,
-			window: nativeWindow,
-		});
-
-		// If primary was removed, promote the next window that can actually host content
-		if (nativeWindow.isPrimary) {
-			nativeWindow._setIsPrimary(false);
-
-			const promoted = this.getWindows().find((nw) => nw.state === 'attached');
-			if (promoted) {
-				promoted._setIsPrimary(true);
-				const promotedWindow = promoted.ios?.uiWindow;
-				if (promotedWindow) {
-					setiOSWindow(promotedWindow);
-				}
-				this.mirrorPrimaryWindow(promoted);
-				this.notify({
-					eventName: WindowEvents.primaryWindowChanged,
-					object: this,
-					window: promoted,
-				});
-			}
-		}
-
-		nativeWindow._destroy();
-	}
-
-	/**
 	 * @internal - iOS reports discarded sessions for windows this JS context may never
 	 * have seen (they can arrive on a later launch), so unknown ids are ignored.
 	 */
@@ -1272,7 +1215,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 		for (let i = 0; i < all.count; i++) {
 			const persistentIdentifier = all.objectAtIndex(i)?.persistentIdentifier;
-			const nativeWindow = persistentIdentifier ? this._windows.find((nw) => nw.id === `${persistentIdentifier}`) : undefined;
+			const nativeWindow = persistentIdentifier ? this.getWindowById(`${persistentIdentifier}`) : undefined;
 			if (!nativeWindow) {
 				continue;
 			}
@@ -1283,50 +1226,24 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	/**
-	 * @internal - Get all registered NativeWindows.
-	 */
-	_getWindows(): NativeWindow[] {
-		return [...this._windows];
-	}
-
-	/**
 	 * @internal - Get a NativeWindow by its scene.
 	 */
 	_getWindowForScene(scene: UIWindowScene): IOSNativeWindow | undefined {
-		return this._windows.find((nw) => nw.ios?.scene === scene);
+		return this._windows.find((nw) => nw.ios?.scene === scene) as IOSNativeWindow | undefined;
 	}
 
-	/**
-	 * @internal - Get a NativeWindow by its id.
-	 */
-	_getWindowById(id: string): NativeWindow | undefined {
-		return this._windows.find((nw) => nw.id === id);
-	}
-
-	// --- Public NativeWindow API ---
-
-	/**
-	 * Get the primary NativeWindow.
-	 */
-	get primaryWindow(): NativeWindow | undefined {
-		return this._windows.find((nw) => nw.isPrimary);
-	}
-
-	/**
-	 * Get the active windows, filtered by role.
-	 *
-	 * Defaults to the view-carrying app windows (`application` and `embedded`).
-	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
-	 */
-	getWindows(role: 'all'): WindowBase[];
-	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
-	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
-	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[] {
-		if (role === 'all') {
-			return [...this._windows];
+	protected _onWindowRegistered(nativeWindow: NativeWindow): void {
+		if (nativeWindow.isPrimary) {
+			this.mirrorPrimaryWindow(nativeWindow);
 		}
-		const roles: WindowRole[] = role ? (Array.isArray(role) ? role : [role]) : ['application', 'embedded'];
-		return this._windows.filter((nw) => roles.indexOf(nw.role) !== -1);
+	}
+
+	protected _onPrimaryWindowPromoted(nativeWindow: NativeWindow): void {
+		const promotedWindow = nativeWindow.ios?.uiWindow;
+		if (promotedWindow) {
+			setiOSWindow(promotedWindow);
+		}
+		this.mirrorPrimaryWindow(nativeWindow);
 	}
 
 	/**
@@ -1378,10 +1295,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 */
 
 	/**
-	 * Opens a new window with the specified data.
-	 * @param data The data to pass to the new window.
+	 * Opens a new window (scene).
+	 *
+	 * @param options Options for the new window. `options.data` is serialized into the
+	 * activating scene's `NSUserActivity.userInfo`.
 	 */
-	openWindow(data: Record<any, any>) {
+	openWindow(options?: WindowOpenOptions) {
 		if (!supportsMultipleScenes()) {
 			console.log('Cannot create a new scene - not supported on this device.');
 			return;
@@ -1398,16 +1317,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					request = UISceneSessionActivationRequest.requestWithRole(UIWindowSceneSessionRoleApplication);
 
 					const activity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
-					activity.userInfo = dataSerialize(data);
+					activity.userInfo = dataSerialize(options?.data ?? {});
 					request.userActivity = activity;
 
-					const options = UISceneActivationRequestOptions.new();
+					const activationOptions = UISceneActivationRequestOptions.new();
 					const primary = this.primaryWindow;
 					if (primary?.ios?.scene) {
-						options.requestingScene = primary.ios.scene;
+						activationOptions.requestingScene = primary.ios.scene;
 					}
 
-					request.options = options;
+					request.options = activationOptions;
 				} catch (roleError) {
 					console.log('Error creating request:', roleError);
 					return;
@@ -1422,9 +1341,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 						}
 
 						if (error.localizedDescription.includes('role') && error.localizedDescription.includes('nil')) {
-							this.createSceneWithLegacyAPI(data);
+							this.createSceneWithLegacyAPI(options?.data);
 						} else if (error.domain === 'FBSWorkspaceErrorDomain' && error.code === 2) {
-							this.createSceneWithLegacyAPI(data);
+							this.createSceneWithLegacyAPI(options?.data);
 						}
 					}
 				});
@@ -1561,7 +1480,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 		// String id lookup
 		if (typeof target === 'string') {
-			const found = this._getWindowById(target);
+			const found = this.getWindowById(target);
 			if (found) {
 				return found.ios?.scene || null;
 			}
@@ -1576,7 +1495,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		return null;
 	}
 
-	private createSceneWithLegacyAPI(data: Record<any, any>) {
+	private createSceneWithLegacyAPI(data?: Record<string, any>) {
 		const windowScene = this.window?.windowScene;
 
 		if (!windowScene) {
@@ -1585,7 +1504,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 		// Create user activity for the new scene
 		const userActivity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
-		userActivity.userInfo = dataSerialize(data);
+		userActivity.userInfo = dataSerialize(data ?? {});
 
 		// Use the legacy API
 		const options = UISceneActivationRequestOptions.new();
