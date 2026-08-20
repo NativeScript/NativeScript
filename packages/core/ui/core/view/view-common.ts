@@ -31,6 +31,7 @@ import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
 import { CoreTypes, Trace } from '../../styling/styling-shared';
+import type { NativeWindow } from '../../../native-window';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -141,6 +142,14 @@ export abstract class ViewCommon extends ViewBase {
 	protected _closeModalCallback: Function;
 	public _manager: any;
 	public _modalParent?: ViewCommon;
+	/**
+	 * @internal – the window this view is the root view of. Only ever set on a window's
+	 * root view; every other view resolves its window by walking up to that root.
+	 *
+	 * Kept on the view instead of in a window-side registry so the lookup needs no runtime
+	 * dependency on the native-window module.
+	 */
+	public _nativeWindow?: NativeWindow;
 	/**
 	 * The ShowModalOptions this view is currently presented with (set in
 	 * _showNativeModalView, cleared on close). Lets tooling re-present the
@@ -277,6 +286,18 @@ export abstract class ViewCommon extends ViewBase {
 		}
 
 		return view;
+	}
+
+	/**
+	 * The window currently hosting this view, or `undefined` when the view is not part of
+	 * any window's view tree — including a view whose window has been closed.
+	 *
+	 * Resolved on every call by walking up to the root view — through the presenting view
+	 * of any modal on the way — so a view re-parented into another window's tree reports
+	 * the window it moved to.
+	 */
+	public getNativeWindow(): NativeWindow | undefined {
+		return (<ViewCommon>this._getRootModalHost())?._nativeWindow ?? undefined;
 	}
 
 	public _onLivesync(context?: ModuleContext): boolean {

@@ -275,6 +275,9 @@ export abstract class NativeWindow extends WindowBase {
 	 * Replaces any content set earlier, tears the previous root view down and raises
 	 * `contentLoaded`.
 	 *
+	 * A view that is already the root of another window is released from it first — that
+	 * window's `rootView` becomes null — while the view itself is left intact.
+	 *
 	 * @param content A View, a NavigationEntry, or the name of a module to load.
 	 */
 	setContent(content: View | NavigationEntry | string): void;

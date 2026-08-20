@@ -7,6 +7,7 @@ import { NativeWindow } from './native-window-common';
 import { NativeWindowEvents } from './native-window-interfaces';
 import { WindowBase } from './window-base';
 import type { WindowRole } from './window-base';
+import { LayoutBaseCommon } from '../ui/layouts/layout-base-common';
 
 /**
  * Stand-in for a root view. A real `View` cannot be used here: `_setupAsRootView()`
@@ -15,6 +16,7 @@ import type { WindowRole } from './window-base';
 function createFakeView() {
 	return {
 		cssClasses: new Set<string>(),
+		style: {} as Record<string, unknown>,
 		isLoaded: false,
 		_styleScope: null,
 		unloadedCount: 0,
@@ -38,7 +40,20 @@ function createFakeView() {
 		_getRootModalViews() {
 			return [];
 		},
+		_nativeWindow: null as NativeWindow | null,
 	};
+}
+
+/**
+ * A real view, for anything exercising the view side of the window lookup.
+ * `LayoutBaseCommon` is the lightest concrete `ViewCommon` that can be built under vitest.
+ */
+function createRealView(): LayoutBaseCommon {
+	return new LayoutBaseCommon();
+}
+
+function asChild(view: LayoutBaseCommon): View {
+	return view as unknown as View;
 }
 
 type FakeView = ReturnType<typeof createFakeView>;
@@ -53,8 +68,13 @@ class TestWindow extends NativeWindow {
 	directionValue: CoreTypes.LayoutDirectionType | null = CoreTypes.LayoutDirection.ltr;
 
 	nativeContent: View[] = [];
+	releasedViews: View[] = [];
 	closeCalls = 0;
 	destroyHookRan = false;
+
+	protected _onReleaseRootView(rootView: View): void {
+		this.releasedViews.push(rootView);
+	}
 
 	protected _setNativeContent(view: View): void {
 		this.nativeContent.push(view);
@@ -386,5 +406,191 @@ describe('NativeWindow trait readings', () => {
 		expect(window.systemAppearance()).toBe('dark');
 		expect(window.layoutDirection()).toBe(CoreTypes.LayoutDirection.rtl);
 		expect(window.orientation()).toBe('portrait');
+	});
+});
+
+describe('NativeWindow root view hand-off', () => {
+	it('takes the view over from the window that held it, leaving that window empty', () => {
+		const windowA = new TestWindow();
+		const windowB = new TestWindow();
+		const view = createFakeView();
+
+		windowA.setContent(asView(view));
+		windowB.setContent(asView(view));
+
+		expect(windowA.rootView).toBeNull();
+		expect(windowB.rootView).toBe(asView(view));
+		expect(view._nativeWindow).toBe(windowB);
+	});
+
+	it('leaves the moved view loaded and intact - it is being moved, not destroyed', () => {
+		const windowA = new TestWindow();
+		const windowB = new TestWindow();
+		const view = createFakeView();
+
+		windowA.setContent(asView(view));
+		view.isLoaded = true;
+
+		windowB.setContent(asView(view));
+
+		expect(view.isLoaded).toBe(true);
+		expect(view.unloadedCount).toBe(0);
+		expect(view.tearDownCount).toBe(0);
+		expect(view.resetCount).toBe(0);
+	});
+
+	it('runs the platform release hook on the departing window only', () => {
+		const windowA = new TestWindow();
+		const windowB = new TestWindow();
+		const view = createFakeView();
+
+		windowA.setContent(asView(view));
+		windowB.setContent(asView(view));
+
+		expect(windowA.releasedViews).toEqual([asView(view)]);
+		expect(windowB.releasedViews).toEqual([]);
+	});
+
+	it('releases on adoption too', () => {
+		const windowA = new TestWindow();
+		const windowB = new TestWindow();
+		const view = createFakeView();
+
+		windowA._adoptRootView(asView(view));
+		windowB._adoptRootView(asView(view));
+
+		expect(windowA.rootView).toBeNull();
+		expect(windowA.releasedViews).toEqual([asView(view)]);
+		expect(windowB.rootView).toBe(asView(view));
+	});
+
+	it('does not release a window from its own root view when the same view is set again', () => {
+		const window = new TestWindow();
+		const view = createFakeView();
+
+		window.setContent(asView(view));
+		window.setContent(asView(view));
+
+		expect(window.releasedViews).toEqual([]);
+		expect(window.rootView).toBe(asView(view));
+		expect(view._nativeWindow).toBe(window);
+	});
+
+	it('drops the back-reference of the root view it replaces', () => {
+		const window = new TestWindow();
+		const first = createFakeView();
+		const second = createFakeView();
+
+		window.setContent(asView(first));
+		window.setContent(asView(second));
+
+		expect(first._nativeWindow).toBeNull();
+		expect(second._nativeWindow).toBe(window);
+	});
+
+	it('_releaseRootView does nothing on a window with no root view', () => {
+		const window = new TestWindow();
+
+		window._releaseRootView();
+
+		expect(window.rootView).toBeUndefined();
+		expect(window.releasedViews).toEqual([]);
+	});
+});
+
+describe('View.getNativeWindow', () => {
+	it('is undefined for a view that belongs to no tree', () => {
+		expect(createRealView().getNativeWindow()).toBeUndefined();
+	});
+
+	it('resolves the window from any depth of the tree', () => {
+		const window = new TestWindow();
+		const root = createRealView();
+		const child = createRealView();
+		const grandChild = createRealView();
+		root.addChild(asChild(child));
+		child.addChild(asChild(grandChild));
+
+		window._adoptRootView(asChild(root));
+
+		expect(root.getNativeWindow()).toBe(window);
+		expect(child.getNativeWindow()).toBe(window);
+		expect(grandChild.getNativeWindow()).toBe(window);
+	});
+
+	it('resolves through a modal and through a modal nested in it', () => {
+		const window = new TestWindow();
+		const root = createRealView();
+		window._adoptRootView(asChild(root));
+
+		const modal = createRealView();
+		modal._modalParent = root;
+		const modalChild = createRealView();
+		modal.addChild(asChild(modalChild));
+
+		const nestedModal = createRealView();
+		nestedModal._modalParent = modal;
+
+		expect(modal.getNativeWindow()).toBe(window);
+		expect(modalChild.getNativeWindow()).toBe(window);
+		expect(nestedModal.getNativeWindow()).toBe(window);
+	});
+
+	it('follows a view re-parented into another window tree', () => {
+		const windowA = new TestWindow();
+		const windowB = new TestWindow();
+		const rootA = createRealView();
+		const rootB = createRealView();
+		const moved = createRealView();
+		rootA.addChild(asChild(moved));
+		windowA._adoptRootView(asChild(rootA));
+		windowB._adoptRootView(asChild(rootB));
+
+		expect(moved.getNativeWindow()).toBe(windowA);
+
+		rootA.removeChild(asChild(moved));
+		rootB.addChild(asChild(moved));
+
+		expect(moved.getNativeWindow()).toBe(windowB);
+	});
+
+	it('still resolves while the window is detached - the session is alive', () => {
+		const window = new TestWindow();
+		const root = createRealView();
+		const child = createRealView();
+		root.addChild(asChild(child));
+		window._adoptRootView(asChild(root));
+
+		window._detach();
+
+		expect(window.state).toBe('detached');
+		expect(child.getNativeWindow()).toBe(window);
+	});
+
+	it('is undefined once the window is closed', () => {
+		const window = new TestWindow();
+		const root = createRealView();
+		const child = createRealView();
+		root.addChild(asChild(child));
+		window._adoptRootView(asChild(root));
+
+		window._destroy();
+
+		expect(child.getNativeWindow()).toBeUndefined();
+		expect(root.getNativeWindow()).toBeUndefined();
+	});
+
+	it('reports the new owner after another window takes the root view over', () => {
+		const windowA = new TestWindow();
+		const windowB = new TestWindow();
+		const root = createRealView();
+		const child = createRealView();
+		root.addChild(asChild(child));
+
+		windowA._adoptRootView(asChild(root));
+		windowB._adoptRootView(asChild(root));
+
+		expect(windowA.rootView).toBeNull();
+		expect(child.getNativeWindow()).toBe(windowB);
 	});
 });

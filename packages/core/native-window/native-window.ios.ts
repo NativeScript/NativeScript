@@ -205,6 +205,19 @@ export class IOSNativeWindow extends NativeWindow {
 		}
 	}
 
+	protected _onReleaseRootView(rootView: View): void {
+		rootView.off(IOSHelper.traitCollectionColorAppearanceChangedEvent);
+		rootView.off(IOSHelper.traitCollectionLayoutDirectionChangedEvent);
+
+		// An embedded window belongs to the host app, so its rootViewController is not ours
+		// to clear — `_setNativeContent` never set it in the first place.
+		if (this.role !== 'embedded' && this._window?.rootViewController) {
+			// The controller's view is moving into another window's hierarchy; leaving it
+			// installed here has UIKit holding a controller it no longer hosts.
+			this._window.rootViewController = null;
+		}
+	}
+
 	protected _onDestroy(): void {
 		// The trait collection listeners live on the root view, so they have to go
 		// before the base drops the reference to it.

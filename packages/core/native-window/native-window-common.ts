@@ -68,7 +68,7 @@ export abstract class NativeWindow extends WindowBase {
 			previousRootView._onRootViewReset();
 		}
 
-		this._rootView = view;
+		this._takeRootView(view);
 		this._applyRootViewSettings(view);
 		this._setNativeContent(view);
 
@@ -87,9 +87,53 @@ export abstract class NativeWindow extends WindowBase {
 			return;
 		}
 
-		this._rootView = view;
+		this._takeRootView(view);
 
 		this._notifyEvent(NativeWindowEvents.contentLoaded);
+	}
+
+	/**
+	 * @internal – give up the root view without tearing it down.
+	 *
+	 * Called when another window takes the view over: the view is being moved, not
+	 * destroyed, so — unlike {@link _onDestroy} — nothing here unloads, resets or tears
+	 * down the view. It stays loaded and usable in its new window.
+	 */
+	_releaseRootView(): void {
+		const rootView = this._rootView;
+		if (!rootView) {
+			return;
+		}
+
+		this._onReleaseRootView(rootView);
+
+		rootView._nativeWindow = null;
+		this._rootView = null;
+	}
+
+	/**
+	 * Platform hook: unhook the released view from the native surface. The view itself
+	 * must survive — it is on its way into another window.
+	 */
+	protected _onReleaseRootView(rootView: View): void {
+		// noop
+	}
+
+	/**
+	 * Becomes the owner of `view`, releasing it from whichever window held it before.
+	 */
+	private _takeRootView(view: View): void {
+		const currentOwner = view._nativeWindow;
+		if (currentOwner && currentOwner !== this) {
+			currentOwner._releaseRootView();
+		}
+
+		if (this._rootView && this._rootView !== view) {
+			this._rootView._nativeWindow = null;
+		}
+
+		this._rootView = view;
+		view._nativeWindow = this;
 	}
 
 	/**
@@ -367,7 +411,8 @@ export abstract class NativeWindow extends WindowBase {
 	 * @internal – the native surface went away but the window session lives on.
 	 *
 	 * The window stays registered and keeps its listeners, so app code that subscribed
-	 * to it keeps working once a surface re-attaches.
+	 * to it keeps working once a surface re-attaches. The root view keeps pointing back at
+	 * this window for the same reason — it is still this window's content.
 	 */
 	_detach(): void {
 		// Take a final reading while the surface can still answer and the root view is
@@ -395,6 +440,7 @@ export abstract class NativeWindow extends WindowBase {
 				this._rootView.callUnloaded();
 			}
 			this._rootView._onRootViewReset();
+			this._rootView._nativeWindow = null;
 			this._rootView = null;
 		}
 	}
