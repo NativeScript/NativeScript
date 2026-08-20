@@ -736,16 +736,17 @@ if (SDK_VERSION >= 33) {
 				return;
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
 			const args = <AndroidActivityBackPressedEventData>{
 				eventName: NativeWindowEvents.activityBackPressed,
 				object: Application,
 				android: Application.android,
+				window: nativeWindow,
 				activity: activity,
 				cancel: false,
 			};
 
 			// Emit on NativeWindow first
-			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow.notify({
 					...args,
@@ -753,7 +754,6 @@ if (SDK_VERSION >= 33) {
 				} as AndroidActivityBackPressedEventData);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify(args);
 
 			if (args.cancel) {
@@ -863,15 +863,16 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		if (intent && intent.getAction()) {
+			const nativeWindow = Application.android._getWindowForActivity(activity);
 			const newIntentArgs = <AndroidActivityNewIntentEventData>{
 				eventName: NativeWindowEvents.activityNewIntent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 				intent,
 			};
 
 			// Emit on NativeWindow first
-			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow.notify({
 					...newIntentArgs,
@@ -879,7 +880,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 				} as AndroidActivityNewIntentEventData);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify(newIntentArgs);
 		}
 
@@ -906,15 +906,16 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		superFunc.call(activity, intent);
 		superSetIntentFunc.call(activity, intent);
 
+		const nativeWindow = Application.android._getWindowForActivity(activity);
 		const newIntentArgs = <AndroidActivityNewIntentEventData>{
 			eventName: NativeWindowEvents.activityNewIntent,
 			object: Application.android,
+			window: nativeWindow,
 			activity,
 			intent,
 		};
 
 		// Emit on NativeWindow first
-		const nativeWindow = Application.android._getWindowForActivity(activity);
 		if (nativeWindow) {
 			nativeWindow.notify({
 				...newIntentArgs,
@@ -922,7 +923,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			} as AndroidActivityNewIntentEventData);
 		}
 
-		// @deprecated - Bridge to Application.android for backward compat
 		Application.android.notify(newIntentArgs);
 	}
 
@@ -1011,16 +1011,17 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write('NativeScriptActivity.onBackPressed;', Trace.categories.NativeLifecycle);
 		}
 
+		const nativeWindow = Application.android._getWindowForActivity(activity);
 		const args = <AndroidActivityBackPressedEventData>{
 			eventName: NativeWindowEvents.activityBackPressed,
 			object: Application,
 			android: Application.android,
+			window: nativeWindow,
 			activity: activity,
 			cancel: false,
 		};
 
 		// Emit on NativeWindow first
-		const nativeWindow = Application.android._getWindowForActivity(activity);
 		if (nativeWindow) {
 			nativeWindow.notify({
 				...args,
@@ -1028,7 +1029,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			} as AndroidActivityBackPressedEventData);
 		}
 
-		// @deprecated - Bridge to Application.android for backward compat
 		Application.android.notify(args);
 		if (args.cancel) {
 			return;
@@ -1061,10 +1061,12 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write('NativeScriptActivity.onRequestPermissionsResult;', Trace.categories.NativeLifecycle);
 		}
 
+		const nativeWindow = Application.android._getWindowForActivity(activity);
 		const permArgs = <AndroidActivityRequestPermissionsEventData>{
 			eventName: NativeWindowEvents.activityRequestPermissions,
 			object: Application,
 			android: Application.android,
+			window: nativeWindow,
 			activity: activity,
 			requestCode: requestCode,
 			permissions: permissions,
@@ -1072,7 +1074,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		};
 
 		// Emit on NativeWindow first
-		const nativeWindow = Application.android._getWindowForActivity(activity);
 		if (nativeWindow) {
 			nativeWindow.notify({
 				...permArgs,
@@ -1080,7 +1081,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			} as AndroidActivityRequestPermissionsEventData);
 		}
 
-		// @deprecated - Bridge to Application.android for backward compat
 		Application.android.notify(permArgs);
 	}
 
@@ -1091,10 +1091,12 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, Trace.categories.NativeLifecycle);
 		}
 
+		const nativeWindow = Application.android._getWindowForActivity(activity);
 		const resultArgs = <AndroidActivityResultEventData>{
 			eventName: NativeWindowEvents.activityResult,
 			object: Application,
 			android: Application.android,
+			window: nativeWindow,
 			activity: activity,
 			requestCode: requestCode,
 			resultCode: resultCode,
@@ -1102,7 +1104,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		};
 
 		// Emit on NativeWindow first
-		const nativeWindow = Application.android._getWindowForActivity(activity);
 		if (nativeWindow) {
 			nativeWindow.notify({
 				...resultArgs,
@@ -1110,7 +1111,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			} as AndroidActivityResultEventData);
 		}
 
-		// @deprecated - Bridge to Application.android for backward compat
 		Application.android.notify(resultArgs);
 	}
 

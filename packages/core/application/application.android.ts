@@ -122,15 +122,16 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityDestroyed,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 				} as AndroidActivityEventData);
 				Application.android._unregisterWindow(nativeWindow);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityDestroyedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 
@@ -156,14 +157,15 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityPaused,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 				} as AndroidActivityEventData);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityPausedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -180,6 +182,7 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityResumed,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 				} as AndroidActivityEventData);
 			}
@@ -187,10 +190,10 @@ function initNativeScriptLifecycleCallbacks() {
 			// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
 			// This is done to ensure proper timing for the event to be raised
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityResumedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -205,15 +208,16 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.saveActivityState,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 					bundle,
 				} as AndroidActivityBundleEventData);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.saveActivityStateEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 				bundle,
 			} as AndroidActivityBundleEventData);
@@ -239,14 +243,15 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityStarted,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 				} as AndroidActivityEventData);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityStartedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -270,14 +275,15 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityStopped,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 				} as AndroidActivityEventData);
 			}
 
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityStoppedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -301,14 +307,15 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow.notify({
 					eventName: NativeWindowEvents.activityCreated,
 					object: nativeWindow,
+					window: nativeWindow,
 					activity,
 					bundle,
 				} as AndroidActivityBundleEventData);
 			}
-			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityCreatedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 				bundle,
 			} as AndroidActivityBundleEventData);

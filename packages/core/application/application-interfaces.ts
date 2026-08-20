@@ -1,6 +1,7 @@
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
 import type { CoreTypes } from '../core-types';
+import type { NativeWindow } from '../native-window/native-window-common';
 
 /**
  * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -144,6 +145,11 @@ export interface AndroidActivityEventData {
 	activity: androidx.appcompat.app.AppCompatActivity;
 
 	/**
+	 * The NativeWindow the activity belongs to, when one is registered for it.
+	 */
+	window?: NativeWindow;
+
+	/**
 	 * The name of the event.
 	 */
 	eventName: string;
@@ -240,7 +246,12 @@ export interface SceneEventData extends ApplicationEventData {
 	/**
 	 * The UIWindow associated with this scene (if applicable).
 	 */
-	window?: UIWindow;
+	uiWindow?: UIWindow;
+
+	/**
+	 * The NativeWindow the scene belongs to, when one is registered for it.
+	 */
+	window?: NativeWindow;
 
 	/**
 	 * Scene connection options (for sceneWillConnect event).

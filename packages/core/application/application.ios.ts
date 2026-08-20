@@ -251,17 +251,18 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		nativeWindow.notify({
 			eventName: NativeWindowEvents.sceneWillConnect,
 			object: nativeWindow,
+			window: nativeWindow,
 			scene: windowScene,
-			window: this._window,
+			uiWindow: this._window,
 			connectionOptions: connectionOptions,
 		} as SceneEventData);
 
-		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
 			eventName: NativeWindowEvents.sceneWillConnect,
 			object: Application.ios,
+			window: nativeWindow,
 			scene: windowScene,
-			window: this._window,
+			uiWindow: this._window,
 			connectionOptions: connectionOptions,
 		} as SceneEventData);
 
@@ -280,22 +281,24 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	}
 
 	sceneDidBecomeActive(scene: UIScene): void {
-		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.activate);
 			// Emit sceneDidActivate on NativeWindow
 			nativeWindow.notify({
 				eventName: NativeWindowEvents.sceneDidActivate,
 				object: nativeWindow,
-				scene: scene,
+				window: nativeWindow,
+				scene: windowScene,
 			} as SceneEventData);
 		}
 
-		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
 			eventName: NativeWindowEvents.sceneDidActivate,
 			object: Application.ios,
-			scene: scene,
+			window: nativeWindow,
+			scene: windowScene,
 		} as SceneEventData);
 
 		// If this is the primary scene, trigger traditional app lifecycle
@@ -315,62 +318,68 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	}
 
 	sceneWillResignActive(scene: UIScene): void {
-		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
 			// Emit sceneWillResignActive on NativeWindow
 			nativeWindow.notify({
 				eventName: NativeWindowEvents.sceneWillResignActive,
 				object: nativeWindow,
-				scene: scene,
+				window: nativeWindow,
+				scene: windowScene,
 			} as SceneEventData);
 		}
 
-		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
 			eventName: NativeWindowEvents.sceneWillResignActive,
 			object: Application.ios,
-			scene: scene,
+			window: nativeWindow,
+			scene: windowScene,
 		} as SceneEventData);
 	}
 
 	sceneWillEnterForeground(scene: UIScene): void {
-		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.foreground);
 			// Emit sceneWillEnterForeground on NativeWindow
 			nativeWindow.notify({
 				eventName: NativeWindowEvents.sceneWillEnterForeground,
 				object: nativeWindow,
-				scene: scene,
+				window: nativeWindow,
+				scene: windowScene,
 			} as SceneEventData);
 		}
 
-		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
 			eventName: NativeWindowEvents.sceneWillEnterForeground,
 			object: Application.ios,
-			scene: scene,
+			window: nativeWindow,
+			scene: windowScene,
 		} as SceneEventData);
 	}
 
 	sceneDidEnterBackground(scene: UIScene): void {
-		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.background);
 			// Emit sceneDidEnterBackground on NativeWindow
 			nativeWindow.notify({
 				eventName: NativeWindowEvents.sceneDidEnterBackground,
 				object: nativeWindow,
-				scene: scene,
+				window: nativeWindow,
+				scene: windowScene,
 			} as SceneEventData);
 		}
 
-		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
 			eventName: NativeWindowEvents.sceneDidEnterBackground,
 			object: Application.ios,
-			scene: scene,
+			window: nativeWindow,
+			scene: windowScene,
 		} as SceneEventData);
 
 		// If this is the primary scene, trigger traditional app lifecycle
@@ -390,23 +399,25 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	}
 
 	sceneDidDisconnect(scene: UIScene): void {
-		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.close);
 			// Emit sceneDidDisconnect on NativeWindow
 			nativeWindow.notify({
 				eventName: NativeWindowEvents.sceneDidDisconnect,
 				object: nativeWindow,
-				scene: scene,
+				window: nativeWindow,
+				scene: windowScene,
 			} as SceneEventData);
 			Application.ios._unregisterWindow(nativeWindow);
 		}
 
-		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
 			eventName: NativeWindowEvents.sceneDidDisconnect,
 			object: Application.ios,
-			scene: scene,
+			window: nativeWindow,
+			scene: windowScene,
 		} as SceneEventData);
 	}
 }

@@ -9,94 +9,28 @@ export * from './application-interfaces';
 export const Application: ApplicationCommon;
 
 export class AndroidApplication extends ApplicationCommon {
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityCreatedEvent = 'activityCreated';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityDestroyedEvent = 'activityDestroyed';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityStartedEvent = 'activityStarted';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityPausedEvent = 'activityPaused';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityResumedEvent = 'activityResumed';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityStoppedEvent = 'activityStopped';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly saveActivityStateEvent = 'saveActivityState';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityResultEvent = 'activityResult';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityBackPressedEvent = 'activityBackPressed';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityNewIntentEvent = 'activityNewIntent';
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityDestroyedEvent = AndroidApplication.activityDestroyedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityStartedEvent = AndroidApplication.activityStartedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityPausedEvent = AndroidApplication.activityPausedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityResumedEvent = AndroidApplication.activityResumedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityStoppedEvent = AndroidApplication.activityStoppedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly saveActivityStateEvent = AndroidApplication.saveActivityStateEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityResultEvent = AndroidApplication.activityResultEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
 
 	getNativeApplication(): android.app.Application;
@@ -171,49 +105,16 @@ export class AndroidApplication extends ApplicationCommon {
 	 */
 	getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[];
 
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
 
 	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;
@@ -381,29 +282,11 @@ export class iOSApplication extends ApplicationCommon {
 	 */
 	onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
 
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	/**
-	 * @deprecated Listen on a NativeWindow instance instead.
-	 */
 	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
 
 	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;

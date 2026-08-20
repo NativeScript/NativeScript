@@ -200,7 +200,7 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	private setupSceneContent(nativeWindow: NativeWindow, args: SceneEventData) {
-		if (!args.scene || !args.window || !__APPLE__) return;
+		if (!args.scene || !args.uiWindow || !__APPLE__) return;
 
 		// Skip the primary scene (it already has content)
 		if (nativeWindow === Application.ios.primaryWindow) return;
@@ -215,10 +215,10 @@ export class MultipleScenesModel extends Observable {
 			let page: Page;
 			switch (nsViewId) {
 				case 'newSceneBasic':
-					page = this._createPageForScene(args.scene, args.window);
+					page = this._createPageForScene(args.scene, args.uiWindow);
 					break;
 				case 'newSceneAlt':
-					page = this._createAltPageForScene(args.scene, args.window);
+					page = this._createAltPageForScene(args.scene, args.uiWindow);
 					break;
 				// Note: can implement any number of other scene views
 			}
