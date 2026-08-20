@@ -259,6 +259,19 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// builds, we keep bare specifiers so production bundlers inline core
 			// the normal way.
 			//
+			// Pre-configure invariant. bundle.mjs is a local ES module entry, so
+			// its static import graph is fetched and keyed by the runtime BEFORE
+			// its body runs `configureLoader` (session-bootstrap). Unconfigured,
+			// the runtime keys an HTTP module by its URL verbatim (fragment
+			// stripped, nothing else). Every URL reachable from this entry's
+			// static graph must therefore be canonical on its own — absolute,
+			// query-free, resolvable without the import map — or the same module
+			// requested after configuration lands under a second registry key
+			// and evaluates twice. The /ns/core bridge URLs satisfy this
+			// (`buildCoreUrl` emits no query, and the bridge shims import only
+			// `/ns/core-bundle.mjs`); anything served through /ns/m must be
+			// reached from the dev session, after configuration.
+			//
 			// Routes through `resolveDeviceReachableOrigin` so the URL baked
 			// into the bundle is something the DEVICE can reach: wildcard
 			// binds (`0.0.0.0`) and Android loopback get remapped to a real

@@ -14,10 +14,12 @@
  *   Trailing-slash prefix entries cover subpath imports
  *     (e.g. @nativescript/tanstack-router/solid) for every package.
  *
- * The runtime's NormalizeViteSpecifier() extracts bare package names from
- * Vite-rewritten paths (e.g. /node_modules/.vite/deps/solid-js.js → solid-js),
- * then looks them up in this map. This ensures ALL imports — regardless of
- * how Vite rewrites them — resolve through a single deterministic path.
+ * The runtime matches map keys literally: it reverse-engineers none of Vite's
+ * rewrites (`/node_modules/.vite/deps/solid-js.js?v=…`, `/@id/…`, `/@fs/…`).
+ * Every specifier form that reaches the device must therefore either be a key
+ * in this map or be rewritten by the server before it is served — the /ns/m
+ * pipeline (`processCodeForDevice`) turns prebundled-dep paths back into bare
+ * ids and resolves package-internal paths to full `/ns/m/node_modules/…` URLs.
  */
 
 import type { VendorManifest } from '../shared/vendor/manifest.js';

@@ -444,6 +444,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				postcssImport,
 			}),
 		},
+		// The dev server serves ES modules to the device, never HTML. Vite's
+		// default 'spa' app type answers unknown paths with index.html when one
+		// exists, and the runtime's module loader now rejects any non-JavaScript
+		// MIME outright — 'custom' drops those HTML middlewares so a bad module
+		// path fails as a plain 404 that names the URL.
+		...(isDevMode ? { appType: 'custom' as const } : {}),
 		// Development server configuration for HMR
 		server: isDevMode
 			? {
