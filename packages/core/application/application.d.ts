@@ -1,12 +1,51 @@
 ﻿import { ApplicationCommon } from './application-common';
-import { FontScaleCategory } from '../accessibility/font-scale-common';
-import type { NativeWindow } from '../native-window/native-window-common';
-import type { WindowOpenEventData, WindowCloseEventData, WindowOpenOptions } from '../native-window/native-window-interfaces';
+import type { AndroidAccessibilityEvent } from '../accessibility/accessibility-common';
+import type { View } from '../ui/core/view';
+import type { Page } from '../ui/page';
+import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from './application-interfaces';
+import type { NativeWindow, WindowOpenOptions } from '../native-window';
 
 export * from './application-common';
 export * from './application-interfaces';
 
 export const Application: ApplicationCommon;
+
+/**
+ * The Application `on` overloads, widened with the Android activity bridges.
+ *
+ * An intersection rather than method overloads: overriding `on` as a method would replace
+ * the inherited {@link ApplicationCommon} overloads instead of adding to them, hiding every
+ * app-level event from `Application.android.on()`.
+ */
+type AndroidApplicationOn = ApplicationCommon['on'] & {
+	(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
+	(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+};
+
+/**
+ * The Application `on` overloads, widened with the iOS scene bridges.
+ *
+ * An intersection rather than method overloads: overriding `on` as a method would replace
+ * the inherited {@link ApplicationCommon} overloads instead of adding to them, hiding every
+ * app-level event from `Application.ios.on()`.
+ */
+type IOSApplicationOn = ApplicationCommon['on'] & {
+	(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+};
 
 export class AndroidApplication extends ApplicationCommon {
 	static readonly activityCreatedEvent = 'activityCreated';
@@ -21,17 +60,19 @@ export class AndroidApplication extends ApplicationCommon {
 	static readonly activityNewIntentEvent = 'activityNewIntent';
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
-	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
-	readonly activityDestroyedEvent = AndroidApplication.activityDestroyedEvent;
-	readonly activityStartedEvent = AndroidApplication.activityStartedEvent;
-	readonly activityPausedEvent = AndroidApplication.activityPausedEvent;
-	readonly activityResumedEvent = AndroidApplication.activityResumedEvent;
-	readonly activityStoppedEvent = AndroidApplication.activityStoppedEvent;
-	readonly saveActivityStateEvent = AndroidApplication.saveActivityStateEvent;
-	readonly activityResultEvent = AndroidApplication.activityResultEvent;
-	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
-	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
-	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
+	readonly activityCreatedEvent = 'activityCreated';
+	readonly activityDestroyedEvent = 'activityDestroyed';
+	readonly activityStartedEvent = 'activityStarted';
+	readonly activityPausedEvent = 'activityPaused';
+	readonly activityResumedEvent = 'activityResumed';
+	readonly activityStoppedEvent = 'activityStopped';
+	readonly saveActivityStateEvent = 'saveActivityState';
+	readonly activityResultEvent = 'activityResult';
+	readonly activityBackPressedEvent = 'activityBackPressed';
+	readonly activityNewIntentEvent = 'activityNewIntent';
+	readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
+
+	on: AndroidApplicationOn;
 
 	getNativeApplication(): android.app.Application;
 
@@ -82,9 +123,10 @@ export class AndroidApplication extends ApplicationCommon {
 	 * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#registerReceiver%28android.content.BroadcastReceiver,%20android.content.IntentFilter%29'
 	 * @param intentFilter A string containing the intent filter.
 	 * @param onReceiveCallback A callback function that will be called each time the receiver receives a broadcast.
+	 * @param flags Any combination of `RECEIVER_VISIBLE_TO_INSTANT_APPS` (1), `RECEIVER_EXPORTED` (2) and `RECEIVER_NOT_EXPORTED` (4). Defaults to `RECEIVER_EXPORTED`. Only honored from API 26 onwards.
 	 * @return A function that can be called to unregister the receiver.
 	 */
-	registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): () => void;
+	registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags?: number): () => void;
 
 	/**
 	 * Unregister a previously registered BroadcastReceiver.
@@ -98,27 +140,12 @@ export class AndroidApplication extends ApplicationCommon {
 	 * @param intentFilter A string containing the intent filter.
 	 * @deprecated Use `getRegisteredBroadcastReceivers` instead.
 	 */
-	getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver;
+	getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined;
 	/**
 	 * Get all registered BroadcastReceivers for a specific intent filter.
 	 * @param intentFilter a string containing the intent filter
 	 */
 	getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[];
-
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-
-	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;
-	on(event: 'windowClose', callback: (args: WindowCloseEventData) => void, thisArg?: any): void;
 
 	/**
 	 * @internal - Get a NativeWindow by its activity.
@@ -140,6 +167,8 @@ export class AndroidApplication extends ApplicationCommon {
 }
 
 export class iOSApplication extends ApplicationCommon {
+	on: IOSApplicationOn;
+
 	/**
 	 * The root view controller for the application.
 	 */
@@ -216,9 +245,9 @@ export class iOSApplication extends ApplicationCommon {
 	/**
 	 * Closes a secondary window/scene.
 	 * If no target is provided, attempts to close a non-primary active scene.
-	 * @param target Optional target to resolve the scene to close. Can be a View, UIWindow, UIWindowScene, or a string scene identifier.
+	 * @param target Optional target to resolve the window to close. Can be a NativeWindow, a View, a UIWindow, a UIWindowScene, or a string scene identifier.
 	 */
-	closeWindow(target?: View | UIWindow | UIWindowScene | string): void;
+	closeWindow(target?: NativeWindow | View | UIWindow | UIWindowScene | string): void;
 
 	/**
 	 * Gets all windows for the application.
@@ -287,19 +316,8 @@ export class iOSApplication extends ApplicationCommon {
 	 */
 	onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
 
-	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-
-	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;
-	on(event: 'windowClose', callback: (args: WindowCloseEventData) => void, thisArg?: any): void;
-
 	/**
-	 * Flag to be set when the launch event should be delayed until the application has become active.
-	 * This is useful when you want to process notifications or data in the background without creating the UI.
+	 * @deprecated Has no effect. Application initialization is signalled by the 'ready' event, which is never deferred.
 	 */
 	shouldDelayLaunchEvent: boolean;
 }

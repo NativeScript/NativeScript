@@ -16,8 +16,7 @@ import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInit
 import { getAppMainEntry, getAutoSystemAppearanceChanged, isAppInBackground, setAppInBackground, setAppMainEntry, setAutoSystemAppearanceChanged } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
-import type { NativeWindow, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowLayoutDirectionChangedEventData, WindowOpenEventData, WindowOpenOptions, WindowOrientationChangedEventData, WindowSystemAppearanceChangedEventData } from '../native-window';
-import type { WindowBase, WindowRole } from '../native-window/window-base';
+import type { NativeWindow, PrimaryWindowChangedEventData, WindowBase, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowLayoutDirectionChangedEventData, WindowOpenEventData, WindowOpenOptions, WindowOrientationChangedEventData, WindowRole, WindowSystemAppearanceChangedEventData } from '../native-window';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 
 const ORIENTATION_CSS_CLASSES = CSSUtils.ORIENTATION_CSS_CLASSES;

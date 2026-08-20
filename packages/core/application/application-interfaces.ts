@@ -1,7 +1,7 @@
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
 import type { CoreTypes } from '../core-types';
-import type { NativeWindow } from '../native-window/native-window-common';
+import type { NativeWindow } from '../native-window';
 
 /**
  * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.

@@ -2,8 +2,7 @@ import type { CoreTypes } from '../core-types';
 import type { EventData } from '../data/observable';
 import type { View } from '../ui/core/view';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
-import type { NativeWindow } from './native-window-common';
-import type { WindowBase } from './window-base';
+import type { NativeWindow, WindowBase } from '.';
 
 /**
  * Events emitted by a NativeWindow instance.
