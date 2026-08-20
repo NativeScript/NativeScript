@@ -1,569 +1,406 @@
-import { Observable, EventData, Page, Application, StackLayout, Label, Button, Dialogs, View, Color, NativeWindowEvents, SceneEventData, Utils, WindowEvents, WindowOpenEventData, WindowCloseEventData, NativeWindow } from '@nativescript/core';
+import { Application, Button, Color, Dialogs, EventData, isAndroid, isIOS, Label, NativeWindowEvents, Observable, Page, StackLayout, WindowEvents } from '@nativescript/core';
+import type { NativeWindow, NativeWindowEventData, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowOpenEventData } from '@nativescript/core';
 
-let page: Page;
 let viewModel: MultipleScenesModel;
 
 export function navigatingTo(args: EventData) {
-	page = <Page>args.object;
+	installWindowContentResolver();
 	viewModel = new MultipleScenesModel();
-	page.bindingContext = viewModel;
+	(<Page>args.object).bindingContext = viewModel;
 }
 
 export function navigatingFrom(args: EventData) {
-	if (viewModel) {
-		viewModel.destroy();
-		viewModel = undefined;
+	viewModel?.destroy();
+	viewModel = undefined;
+}
+
+/**
+ * The demo can open two different kinds of window. The kind is chosen when the window is
+ * requested and travels to the new window as `openWindow({ data })`.
+ */
+type DemoWindowKind = 'newSceneBasic' | 'newSceneAlt';
+
+const DEMO_WINDOW_KINDS: Record<DemoWindowKind, { title: string; background: string; accent: string; titleColor: string }> = {
+	newSceneBasic: { title: 'Basic demo window', background: '#cdffdb', accent: '#ff4444', titleColor: '#1c4d2e' },
+	newSceneAlt: { title: 'Alternate demo window', background: '#65adf1', accent: '#006ead', titleColor: '#00305c' },
+};
+
+/** Per-window events the demo mirrors into its log and its live window list. */
+const TRACKED_WINDOW_EVENTS: string[] = [NativeWindowEvents.attached, NativeWindowEvents.detached, NativeWindowEvents.activate, NativeWindowEvents.deactivate, NativeWindowEvents.background, NativeWindowEvents.foreground, NativeWindowEvents.contentLoaded, NativeWindowEvents.displayed, NativeWindowEvents.close, NativeWindowEvents.orientationChanged, NativeWindowEvents.systemAppearanceChanged, NativeWindowEvents.layoutDirectionChanged];
+
+// --- Window content ---
+
+let contentResolverInstalled = false;
+
+function installWindowContentResolver() {
+	if (contentResolverInstalled) {
+		return;
 	}
+	contentResolverInstalled = true;
+
+	// The resolver stays installed for the rest of the process: a window that detaches and
+	// re-attaches (iOS scene reconnect, Android activity recreation) asks for its content
+	// again, long after this page may have been navigated away from.
+	Application.setWindowContentResolver(resolveWindowContent);
+}
+
+function resolveWindowContent(request: WindowContentRequest): Page | undefined {
+	// `data` is exactly what openWindow({ data }) was called with, carried across by the
+	// platform: NSUserActivity.userInfo on iOS, intent extras on Android.
+	const kind = request.data?.kind as DemoWindowKind;
+
+	// Returning undefined hands the window back to the default main-entry behaviour, which
+	// is what every window this demo did not open should get - the primary window, a cold
+	// start, or a window the system restored on its own.
+	if (request.isPrimary || !DEMO_WINDOW_KINDS[kind]) {
+		return undefined;
+	}
+
+	viewModel?.logEvent(`content resolved for ${request.window.id} (${kind})`);
+
+	return createDemoWindowPage(kind, request.window);
+}
+
+/**
+ * Views built in plain code are only reachable through the closures that created them, so
+ * an unreferenced button can be collected while its window is still on screen and stop
+ * responding to taps. Holding the buttons here keeps them alive for the window's lifetime.
+ */
+const liveCloseButtons = new Set<Button>();
+
+function createDemoWindowPage(kind: DemoWindowKind, window: NativeWindow): Page {
+	const style = DEMO_WINDOW_KINDS[kind];
+
+	const page = new Page();
+	page.backgroundColor = new Color(style.background);
+
+	const layout = new StackLayout();
+	layout.padding = 32;
+	page.content = layout;
+
+	const title = new Label();
+	title.text = style.title;
+	title.fontSize = 32;
+	title.fontWeight = 'bold';
+	title.color = new Color(style.titleColor);
+	title.textAlignment = 'center';
+	title.textWrap = true;
+	title.marginBottom = 24;
+	layout.addChild(title);
+
+	const identity = new Label();
+	identity.text = `id: ${window.id}\nrole: ${window.role}\n${describeNativeSurface(window)}`;
+	identity.fontSize = 18;
+	identity.textAlignment = 'center';
+	identity.textWrap = true;
+	identity.marginBottom = 16;
+	layout.addChild(identity);
+
+	const traits = new Label();
+	traits.fontSize = 18;
+	traits.textAlignment = 'center';
+	traits.textWrap = true;
+	traits.marginBottom = 28;
+	const refreshTraits = () => {
+		traits.text = describeWindowTraits(window);
+	};
+	refreshTraits();
+	// Each window reports its own traits, so rotating or theming one window updates only it.
+	// No unsubscribe is needed: the framework drops every listener on a window right after
+	// its `close` event.
+	for (const eventName of [NativeWindowEvents.orientationChanged, NativeWindowEvents.systemAppearanceChanged, NativeWindowEvents.layoutDirectionChanged, NativeWindowEvents.attached, NativeWindowEvents.detached]) {
+		window.on(eventName, refreshTraits);
+	}
+	layout.addChild(traits);
+
+	const closeButton = new Button();
+	closeButton.text = 'Close this window';
+	closeButton.fontSize = 22;
+	closeButton.fontWeight = 'bold';
+	closeButton.backgroundColor = new Color(style.accent);
+	closeButton.color = new Color('white');
+	closeButton.borderRadius = 8;
+	closeButton.padding = 16;
+	closeButton.width = 300;
+	closeButton.horizontalAlignment = 'center';
+	closeButton.on('tap', () => window.close());
+	liveCloseButtons.add(closeButton);
+	window.on(NativeWindowEvents.close, () => liveCloseButtons.delete(closeButton));
+	layout.addChild(closeButton);
+
+	return page;
+}
+
+// --- Window description helpers ---
+
+function describeNativeSurface(window: NativeWindow): string {
+	if (window.ios) {
+		const scene = window.ios.scene;
+		return scene ? `scene: ${scene.session.persistentIdentifier}` : 'no scene (pre-scene lifecycle)';
+	}
+
+	if (window.android) {
+		const activity = window.android.activity;
+		return `activity: ${activity.getClass().getSimpleName()}@${activity.hashCode()}`;
+	}
+
+	return 'no native surface attached';
+}
+
+function describeWindowTraits(window: NativeWindow): string {
+	return [window.isPrimary ? 'primary' : 'secondary', window.orientation(), window.systemAppearance() ?? 'appearance unknown', window.layoutDirection() ?? 'direction unknown'].join(' · ');
+}
+
+// --- Capability detection ---
+
+interface MultiWindowCapability {
+	canOpenWindows: boolean;
+	status: string;
+	note: string;
+	showIosSceneSetup: boolean;
+}
+
+/**
+ * Multi-window is a device/configuration capability, not a platform one: an iPhone and an
+ * iPad run the same iOS build but only one of them can show two scenes.
+ */
+function detectMultiWindowCapability(): MultiWindowCapability {
+	if (isIOS) {
+		if (!Application.ios.supportsScenes()) {
+			return {
+				canOpenWindows: false,
+				status: 'Scene lifecycle is off - the app is running the pre-scene UIApplication lifecycle.',
+				note: 'Per-window events below still work, but there can only ever be one window.',
+				showIosSceneSetup: true,
+			};
+		}
+
+		if (!Application.ios.supportsMultipleScenes()) {
+			return {
+				canOpenWindows: false,
+				status: 'Scene lifecycle is on, but this device allows only one scene at a time.',
+				note: 'UIApplication.supportsMultipleScenes is false - either the device is an iPhone or UIApplicationSupportsMultipleScenes is missing from Info.plist. Try an iPad.',
+				showIosSceneSetup: false,
+			};
+		}
+
+		return {
+			canOpenWindows: true,
+			status: 'Scene lifecycle is on and this device allows multiple scenes.',
+			note: 'Each new window is a UIWindowScene. Use Split View or Stage Manager to see them side by side.',
+			showIosSceneSetup: false,
+		};
+	}
+
+	if (isAndroid) {
+		return {
+			canOpenWindows: true,
+			status: 'Windows map to activities launched into their own task.',
+			note: 'Application.openWindow() is experimental on Android and logs a warning the first time it runs: whether a second window really appears depends on the activity launchMode in AndroidManifest.xml and on how the device treats new documents in recents. Split screen or a desktop/foldable mode shows both.',
+			showIosSceneSetup: false,
+		};
+	}
+
+	return {
+		canOpenWindows: false,
+		status: 'Multi-window is not available on this platform.',
+		note: '',
+		showIosSceneSetup: false,
+	};
+}
+
+interface WindowRow {
+	id: string;
+	summary: string;
+	traits: string;
+	native: string;
+	canClose: boolean;
+	requestClose: () => void;
 }
 
 export class MultipleScenesModel extends Observable {
-	private _sceneCount = 0;
-	private _isMultiSceneSupported = false;
-	private _currentWindows: any[] = [];
-	private _sceneEvents: string[] = [];
-	private _windowOpenHandler: (args: WindowOpenEventData) => void;
-	private _windowCloseHandler: (args: WindowCloseEventData) => void;
-	private _sceneEventHandlers: Map<string, (args: SceneEventData) => void> = new Map();
+	private _capability = detectMultiWindowCapability();
+	private _windows: WindowRow[] = [];
+	private _events: string[] = [];
+	private _trackedWindows = new Map<string, { window: NativeWindow; handler: (args: NativeWindowEventData) => void }>();
+
+	private _onWindowOpen = (args: WindowOpenEventData) => {
+		this.logEvent(`windowOpen: ${args.window.id}`);
+		this.trackWindow(args.window);
+		this.refreshWindows();
+	};
+
+	private _onWindowClose = (args: WindowCloseEventData) => {
+		this.logEvent(`windowClose: ${args.window.id}`);
+		this.refreshWindows();
+	};
+
+	private _onPrimaryWindowChanged = (args: PrimaryWindowChangedEventData) => {
+		this.logEvent(`primaryWindowChanged: ${args.window.id}`);
+		this.refreshWindows();
+	};
 
 	constructor() {
 		super();
-		this.checkSceneSupport();
-		this.setupSceneEventListeners();
-		this.updateSceneInfo();
-		this.checkSceneDelegateRegistration();
-	}
 
-	get sceneCount(): number {
-		return this._sceneCount;
-	}
+		Application.on(WindowEvents.windowOpen, this._onWindowOpen);
+		Application.on(WindowEvents.windowClose, this._onWindowClose);
+		Application.on(WindowEvents.primaryWindowChanged, this._onPrimaryWindowChanged);
 
-	get isMultiSceneSupported(): boolean {
-		return this._isMultiSceneSupported;
-	}
-
-	get currentWindows(): any[] {
-		return this._currentWindows;
-	}
-
-	get sceneEvents(): string[] {
-		return this._sceneEvents;
-	}
-
-	get canCreateNewScene(): boolean {
-		return this._isMultiSceneSupported && __APPLE__;
-	}
-
-	get statusText(): string {
-		if (!__APPLE__) {
-			return 'Scene support is only available on iOS';
-		}
-		if (!this._isMultiSceneSupported) {
-			return 'Multi-scene support not enabled. Add scene configuration to Info.plist';
+		for (const window of Application.getWindows()) {
+			this.trackWindow(window);
 		}
 
-		// Check which API is available
-		let apiInfo = '';
-		try {
-			if (typeof UIApplication !== 'undefined') {
-				const app = UIApplication.sharedApplication;
-				if (typeof app.activateSceneSessionForRequestErrorHandler === 'function') {
-					apiInfo = ' (iOS 17+ API available)';
-				} else if (typeof app.requestSceneSessionActivationUserActivityOptionsErrorHandler === 'function') {
-					apiInfo = ' (iOS 13-16 API available)';
-				}
-			}
-		} catch (e) {
-			// Ignore errors in API detection
-		}
-
-		return `Multi-scene support enabled. ${this._sceneCount} scene(s) active${apiInfo}`;
-	}
-
-	private checkSceneSupport() {
-		if (__APPLE__) {
-			try {
-				// Check if the supportsScenes method exists and call it
-				if (typeof Application.ios.supportsScenes === 'function') {
-					this._isMultiSceneSupported = Application.ios.supportsScenes();
-				} else {
-					// Fallback: check for scene manifest in bundle
-					this._isMultiSceneSupported = false;
-					try {
-						const bundle = NSBundle.mainBundle;
-						const sceneManifest = bundle.objectForInfoDictionaryKey('UIApplicationSceneManifest');
-						this._isMultiSceneSupported = !!sceneManifest;
-					} catch (e) {
-						console.log('Error checking scene manifest:', e);
-					}
-				}
-				console.log('Scene support check:', this._isMultiSceneSupported);
-			} catch (error) {
-				console.log('Error checking scene support:', error);
-				this._isMultiSceneSupported = false;
-			}
-		}
-		this.notifyPropertyChange('isMultiSceneSupported', this._isMultiSceneSupported);
-		this.notifyPropertyChange('canCreateNewScene', this.canCreateNewScene);
-		this.notifyPropertyChange('statusText', this.statusText);
-	}
-
-	private setupSceneEventListeners() {
-		if (!__APPLE__) return;
-
-		// Listen for window open/close on Application
-		this._windowOpenHandler = (args: WindowOpenEventData) => {
-			const nativeWindow = args.window;
-			if (!nativeWindow) return;
-			this.addSceneEvent(`Window opened: ${nativeWindow.id}`);
-			this.registerNativeWindowListeners(nativeWindow);
-			this.updateSceneInfo();
-		};
-		this._windowCloseHandler = (args: WindowCloseEventData) => {
-			const nativeWindow = args.window;
-			if (!nativeWindow) return;
-			this.addSceneEvent(`Window closed: ${nativeWindow.id}`);
-			this.updateSceneInfo();
-		};
-		Application.ios.on(WindowEvents.windowOpen, this._windowOpenHandler);
-		Application.ios.on(WindowEvents.windowClose, this._windowCloseHandler);
-
-		// Register listeners on existing windows
-		for (const nativeWindow of Application.ios.getWindows()) {
-			this.registerNativeWindowListeners(nativeWindow);
-		}
-	}
-
-	private registerNativeWindowListeners(nativeWindow: NativeWindow) {
-		const events = [
-			{ name: NativeWindowEvents.sceneWillConnect, label: 'Scene Will Connect' },
-			{ name: NativeWindowEvents.sceneDidActivate, label: 'Scene Did Activate' },
-			{ name: NativeWindowEvents.sceneWillResignActive, label: 'Scene Will Resign Active' },
-			{ name: NativeWindowEvents.sceneWillEnterForeground, label: 'Scene Will Enter Foreground' },
-			{ name: NativeWindowEvents.sceneDidEnterBackground, label: 'Scene Did Enter Background' },
-			{ name: NativeWindowEvents.sceneDidDisconnect, label: 'Scene Did Disconnect' },
-		];
-
-		for (const event of events) {
-			const handler = (args: SceneEventData) => {
-				this.addSceneEvent(`${event.label}: Window ${nativeWindow.id}`);
-				this.updateSceneInfo();
-
-				// Set up content for new scenes when they connect
-				if (event.name === NativeWindowEvents.sceneWillConnect) {
-					this.setupSceneContent(nativeWindow, args);
-				}
-			};
-			const handlerKey = `${nativeWindow.id}:${event.name}`;
-			this._sceneEventHandlers.set(handlerKey, handler);
-			nativeWindow.on(event.name, handler as any);
-		}
-	}
-
-	private unregisterNativeWindowListeners(nativeWindow: NativeWindow) {
-		const events = [NativeWindowEvents.sceneWillConnect, NativeWindowEvents.sceneDidActivate, NativeWindowEvents.sceneWillResignActive, NativeWindowEvents.sceneWillEnterForeground, NativeWindowEvents.sceneDidEnterBackground, NativeWindowEvents.sceneDidDisconnect];
-
-		for (const eventName of events) {
-			const handlerKey = `${nativeWindow.id}:${eventName}`;
-			const handler = this._sceneEventHandlers.get(handlerKey);
-			if (handler) {
-				nativeWindow.off(eventName, handler);
-				this._sceneEventHandlers.delete(handlerKey);
-			}
-		}
+		this.refreshWindows();
 	}
 
 	destroy() {
-		if (!__APPLE__) return;
+		Application.off(WindowEvents.windowOpen, this._onWindowOpen);
+		Application.off(WindowEvents.windowClose, this._onWindowClose);
+		Application.off(WindowEvents.primaryWindowChanged, this._onPrimaryWindowChanged);
 
-		// Unregister window open/close listeners
-		if (this._windowOpenHandler) {
-			Application.ios.off(WindowEvents.windowOpen, this._windowOpenHandler);
-		}
-		if (this._windowCloseHandler) {
-			Application.ios.off(WindowEvents.windowClose, this._windowCloseHandler);
-		}
-
-		// Unregister all NativeWindow listeners
-		for (const nativeWindow of Application.ios.getWindows()) {
-			this.unregisterNativeWindowListeners(nativeWindow);
-		}
-		this._sceneEventHandlers.clear();
-	}
-
-	private getSceneDescription(scene: UIWindowScene): string {
-		if (!scene) return 'Unknown';
-		return `Scene ${this.getSceneId(scene)}`;
-	}
-
-	private getSceneId(scene: UIWindowScene): string {
-		return scene?.hash ? `${scene?.hash}` : scene?.description || 'Unknown';
-	}
-
-	private setupSceneContent(nativeWindow: NativeWindow, args: SceneEventData) {
-		if (!args.scene || !args.uiWindow || !__APPLE__) return;
-
-		// Skip the primary scene (it already has content)
-		if (nativeWindow === Application.ios.primaryWindow) return;
-
-		try {
-			let nsViewId: string;
-			if (args.connectionOptions?.userActivities?.count > 0) {
-				const activity = args.connectionOptions.userActivities.allObjects.objectAtIndex(0) as NSUserActivity;
-				nsViewId = Utils.dataDeserialize(activity.userInfo).id;
+		for (const { window, handler } of this._trackedWindows.values()) {
+			for (const eventName of TRACKED_WINDOW_EVENTS) {
+				window.off(eventName, handler);
 			}
-			console.log('--- Open scene for nsViewId:', nsViewId);
-			let page: Page;
-			switch (nsViewId) {
-				case 'newSceneBasic':
-					page = this._createPageForScene(args.scene, args.uiWindow);
-					break;
-				case 'newSceneAlt':
-					page = this._createAltPageForScene(args.scene, args.uiWindow);
-					break;
-				// Note: can implement any number of other scene views
-			}
-
-			if (page) {
-				console.log('setContent for window:', nativeWindow.id);
-				nativeWindow.setContent(page);
-				this.addSceneEvent(`Content successfully set for window: ${nativeWindow.id}`);
-			}
-		} catch (error) {
-			this.addSceneEvent(`Error setting up scene content: ${error.message}`);
 		}
+		this._trackedWindows.clear();
 	}
 
-	/**
-	 * Note: When creating UI's with plain core, buttons will be garbage collected if not referenced.
-	 * Particularly when opening many new scenes.
-	 * If the button is GC'd by the system, the taps will no longer function.
-	 * This is more related to iOS delegates getting GC'd than anything.
-	 * Most flavors circumvent things like that because their components are retained.
-	 * We circumvent the core demo (xml ui) issue but just retaining a map of the created UI buttons.
-	 */
-	private _closeButtons = new Map<string, Button>();
-	private _createPageForScene(scene: UIWindowScene, window: UIWindow): Page {
-		const page = new Page();
-		page.backgroundColor = new Color('#cdffdb');
-		// Create a simple layout for the new scene
-		const layout = new StackLayout();
-		layout.padding = 32;
-
-		page.content = layout;
-
-		// Add title
-		const title = new Label();
-		title.text = 'New NativeScript Scene';
-		title.fontSize = 35;
-		title.fontWeight = 'bold';
-		title.textAlignment = 'center';
-		title.marginBottom = 30;
-		layout.addChild(title);
-
-		// Add scene info
-		const sceneInfo = new Label();
-		sceneInfo.text = `Scene ID: ${scene.hash || 'Unknown'}\nWindow: ${window.description || 'Unknown'}`;
-		sceneInfo.fontSize = 22;
-		sceneInfo.textAlignment = 'center';
-		sceneInfo.marginBottom = 25;
-		layout.addChild(sceneInfo);
-
-		// Add close button
-		const closeButton = new Button();
-		const sceneId = this.getSceneId(scene);
-		closeButton.id = sceneId;
-		console.log('scene assigning id to button:', closeButton.id);
-		closeButton.text = 'Close This Scene';
-		closeButton.fontSize = 22;
-		closeButton.fontWeight = 'bold';
-		closeButton.backgroundColor = new Color('#ff4444');
-		closeButton.color = new Color('white');
-		closeButton.borderRadius = 8;
-		closeButton.padding = 16;
-		closeButton.width = 300;
-		closeButton.horizontalAlignment = 'center';
-		closeButton.on('tap', this._closeScene.bind(this));
-		// retain the close button so we don't lose the tap (iOS delegate binding)
-		this._closeButtons.set(sceneId, closeButton);
-		layout.addChild(closeButton);
-
-		return page;
+	get statusText(): string {
+		return this._capability.status;
 	}
 
-	private _createAltPageForScene(scene: UIWindowScene, window: UIWindow): Page {
-		const page = new Page();
-		page.backgroundColor = new Color('#65ADF1');
-		// Create a simple layout for the new scene
-		const layout = new StackLayout();
-		layout.padding = 32;
-
-		page.content = layout;
-
-		// Add title
-		const title = new Label();
-		title.text = 'New Alternate NativeScript Scene';
-		title.fontSize = 35;
-		title.color = new Color('blue');
-		title.fontWeight = 'bold';
-		title.textAlignment = 'center';
-		title.marginBottom = 35;
-		layout.addChild(title);
-
-		// Add scene info
-		const sceneInfo = new Label();
-		sceneInfo.text = `Scene ID: ${scene.hash || 'Unknown'}\nWindow: ${window.description || 'Unknown'}`;
-		sceneInfo.fontSize = 24;
-		sceneInfo.textAlignment = 'center';
-		sceneInfo.marginBottom = 32;
-		layout.addChild(sceneInfo);
-
-		// Add close button
-		const closeButton = new Button();
-		const sceneId = this.getSceneId(scene);
-		closeButton.id = sceneId;
-		console.log('scene assigning id to button:', closeButton.id);
-		closeButton.text = 'Close This Scene';
-		closeButton.fontSize = 25;
-		closeButton.fontWeight = 'bold';
-		closeButton.backgroundColor = new Color('#006ead');
-		closeButton.color = new Color('white');
-		closeButton.borderRadius = 8;
-		closeButton.padding = 16;
-		closeButton.width = 350;
-		closeButton.horizontalAlignment = 'center';
-		closeButton.on('tap', this._closeScene.bind(this));
-		// retain the close button so we don't lose the tap (iOS delegate binding)
-		this._closeButtons.set(sceneId, closeButton);
-		layout.addChild(closeButton);
-
-		return page;
+	get capabilityNote(): string {
+		return this._capability.note;
 	}
 
-	private _closeScene(args: EventData) {
-		const btn = args.object as Button;
-		console.log('closing scene from button tap');
-		// Let core resolve the scene from the view/window context
-		Application.ios.closeWindow(btn);
+	get canOpenWindows(): boolean {
+		return this._capability.canOpenWindows;
 	}
 
-	private getSceneAPIInfo(): string {
-		if (!__APPLE__) return 'Not iOS';
-
-		try {
-			if (typeof UIApplication !== 'undefined') {
-				const app = UIApplication.sharedApplication;
-
-				if (typeof app.activateSceneSessionForRequestErrorHandler === 'function') {
-					return `iOS ${Utils.SDK_VERSION} - Modern API (iOS 17+) available`;
-				} else if (typeof app.requestSceneSessionActivationUserActivityOptionsErrorHandler === 'function') {
-					return `iOS ${Utils.SDK_VERSION} - Legacy API (iOS 13-16) available`;
-				} else {
-					return `iOS ${Utils.SDK_VERSION} - No scene activation API available`;
-				}
-			}
-		} catch (e) {
-			return `Error detecting API: ${e.message}`;
-		}
-
-		return 'Unknown API status';
+	get showIosSceneSetup(): boolean {
+		return this._capability.showIosSceneSetup;
 	}
 
-	private addSceneEvent(event: string) {
-		const timestamp = new Date().toLocaleTimeString();
-		const evt = `${timestamp}: ${event}`;
-		this._sceneEvents.unshift(evt);
-		console.log(evt);
-
-		// Keep only last 20 events
-		if (this._sceneEvents.length > 20) {
-			this._sceneEvents = this._sceneEvents.slice(0, 20);
-		}
-
-		this.notifyPropertyChange('sceneEvents', this._sceneEvents);
+	get windowCount(): number {
+		return this._windows.length;
 	}
 
-	private updateSceneInfo() {
-		if (__APPLE__ && this._isMultiSceneSupported) {
-			try {
-				const windows = Application.ios.getWindows() || [];
-				this._currentWindows = windows;
-				this._sceneCount = windows.length;
-			} catch (error) {
-				console.log('Error getting scene info:', error);
-				this._sceneCount = 0;
-				this._currentWindows = [];
-			}
-		} else {
-			this._sceneCount = 1; // Traditional single window
-			this._currentWindows = [];
-		}
-
-		this.notifyPropertyChange('sceneCount', this._sceneCount);
-		this.notifyPropertyChange('currentWindows', this._currentWindows);
-		this.notifyPropertyChange('statusText', this.statusText);
+	get windows(): WindowRow[] {
+		return this._windows;
 	}
 
-	onCreateNewScene() {
-		Application.ios.openWindow({ data: { id: 'newSceneBasic' } });
+	get events(): string[] {
+		return this._events;
 	}
 
-	onCreateNewSceneAlt() {
-		Application.ios.openWindow({ data: { id: 'newSceneAlt' } });
+	onOpenBasicWindow() {
+		this.openWindow('newSceneBasic');
 	}
 
-	onRefreshSceneInfo() {
-		this.updateSceneInfo();
-		this.addSceneEvent('Scene info refreshed');
+	onOpenAltWindow() {
+		this.openWindow('newSceneAlt');
+	}
+
+	onRefresh() {
+		this.refreshWindows();
+		this.logEvent('window list refreshed');
 	}
 
 	onClearEvents() {
-		this._sceneEvents = [];
-		this.notifyPropertyChange('sceneEvents', this._sceneEvents);
+		this._events = [];
+		this.notifyPropertyChange('events', this._events);
 	}
 
-	onShowSceneDetails() {
-		if (!__APPLE__) {
-			Dialogs.alert({
-				title: 'Scene Details',
-				message: 'Scene functionality is only available on iOS 13+',
-				okButtonText: 'OK',
-			});
+	onShowDetails() {
+		const lines = [this._capability.status, ''];
+
+		for (const window of Application.getWindows()) {
+			lines.push(`${window.id} · ${window.role} · ${window.state}`);
+			lines.push(`  ${describeWindowTraits(window)}`);
+			lines.push(`  ${describeNativeSurface(window)}`);
+			lines.push(`  root view: ${window.rootView ?? 'none'}`);
+		}
+
+		// getWindows() defaults to the view-carrying roles; 'all' also reports surfaces such
+		// as CarPlay or an external display, which host no NativeScript view tree.
+		const otherSurfaces = Application.getWindows('all').filter((surface) => surface.role !== 'application' && surface.role !== 'embedded');
+		if (otherSurfaces.length) {
+			lines.push('', 'Other surfaces:');
+			for (const surface of otherSurfaces) {
+				lines.push(`${surface.id} · ${surface.role} · ${surface.state}`);
+			}
+		}
+
+		Dialogs.alert({
+			title: 'Window details',
+			message: lines.join('\n'),
+			okButtonText: 'OK',
+		});
+	}
+
+	logEvent(event: string) {
+		const entry = `${new Date().toLocaleTimeString()}: ${event}`;
+		console.log(entry);
+
+		this._events = [entry, ...this._events].slice(0, 30);
+		this.notifyPropertyChange('events', this._events);
+	}
+
+	private openWindow(kind: DemoWindowKind) {
+		this.logEvent(`openWindow requested (${kind})`);
+		// The payload is handed to the new window's content request on both platforms.
+		Application.openWindow({ data: { kind } });
+	}
+
+	private trackWindow(window: NativeWindow) {
+		if (this._trackedWindows.has(window.id)) {
 			return;
 		}
 
-		const apiInfo = this.getSceneAPIInfo();
-		const sceneInfo = this.getSceneAPIInfo(); // Using getSceneAPIInfo for now
+		const handler = (args: NativeWindowEventData) => {
+			this.logEvent(`${args.eventName}: ${window.id}`);
 
-		// Add SceneDelegate registration info
-		let delegateInfo = '\n--- SceneDelegate Status ---\n';
-		if (typeof global.SceneDelegate !== 'undefined') {
-			delegateInfo += '✅ SceneDelegate: Registered globally\n';
-		} else {
-			delegateInfo += '❌ SceneDelegate: NOT registered\n';
-		}
+			if (args.eventName === NativeWindowEvents.close) {
+				// The framework clears a window's listeners right after `close`, so only the
+				// demo's own reference has to go, otherwise the list would keep showing it.
+				this._trackedWindows.delete(window.id);
+			}
 
-		if (typeof UIWindowSceneDelegate !== 'undefined') {
-			delegateInfo += '✅ UIWindowSceneDelegate: Available\n';
-		} else {
-			delegateInfo += '❌ UIWindowSceneDelegate: Not available\n';
-		}
-
-		const fullDetails = `${sceneInfo}\n\n${apiInfo}${delegateInfo}`;
-
-		// Show in alert dialog
-		const alertOptions = {
-			title: 'Scene & API Details',
-			message: fullDetails,
-			okButtonText: 'OK',
+			this.refreshWindows();
 		};
 
-		Dialogs.alert(alertOptions);
-	}
-	onTestSceneAPI() {
-		const apiInfo = this.getSceneAPIInfo();
-		this.addSceneEvent(`API Test: ${apiInfo}`);
-
-		// Also log current scene/window counts
-		this.addSceneEvent(`Current state: ${this._currentWindows.length} windows`);
-
-		// Add device and system info
-		try {
-			const device = UIDevice.currentDevice;
-			this.addSceneEvent(`Device: ${device.model} (${device.systemName} ${device.systemVersion})`);
-
-			// Check if this is iPad (more likely to support multiple scenes)
-			if (device.userInterfaceIdiom === UIUserInterfaceIdiom.Pad) {
-				this.addSceneEvent('📱 iPad detected - better scene support expected');
-			} else {
-				this.addSceneEvent('📱 iPhone detected - limited scene support');
-			}
-		} catch (e) {
-			this.addSceneEvent('Could not get device info');
+		for (const eventName of TRACKED_WINDOW_EVENTS) {
+			window.on(eventName, handler);
 		}
+
+		this._trackedWindows.set(window.id, { window, handler });
 	}
 
-	private checkSceneDelegateRegistration() {
-		if (!__APPLE__) {
+	private refreshWindows() {
+		this._windows = Application.getWindows().map((window) => ({
+			id: window.id,
+			summary: `${window.id} · ${window.role} · ${window.state}`,
+			traits: describeWindowTraits(window),
+			native: describeNativeSurface(window),
+			canClose: !window.isPrimary && window.state !== 'closed',
+			requestClose: () => this.closeWindow(window.id),
+		}));
+
+		this.notifyPropertyChange('windows', this._windows);
+		this.notifyPropertyChange('windowCount', this._windows.length);
+	}
+
+	private closeWindow(id: string) {
+		const window = Application.getWindowById(id);
+
+		if (!window) {
+			this.logEvent(`no window registered with id ${id}`);
 			return;
 		}
 
-		this.addSceneEvent('Checking SceneDelegate registration...');
-
-		// Check if SceneDelegate is available globally
-		if (typeof global.SceneDelegate !== 'undefined') {
-			this.addSceneEvent('✅ SceneDelegate is registered globally');
-		} else {
-			this.addSceneEvent('❌ SceneDelegate NOT found in global scope!');
-		}
-
-		// Check if UIWindowSceneDelegate is available
-		if (typeof UIWindowSceneDelegate !== 'undefined') {
-			this.addSceneEvent('✅ UIWindowSceneDelegate protocol available');
-		} else {
-			this.addSceneEvent('❌ UIWindowSceneDelegate protocol not available');
-		}
+		this.logEvent(`close requested for ${id}`);
+		window.close();
 	}
-
-	// private closeScene(scene: UIWindowScene) {
-	// 	if (!scene || !__APPLE__) return;
-
-	// 	try {
-	// 		this.addSceneEvent(`Attempting to close scene: ${this.getSceneDescription(scene)}`);
-
-	// 		// Get the scene session
-	// 		const session = scene.session;
-	// 		if (session) {
-	// 			// Check if this is the primary scene (typically can't be closed)
-	// 			const isPrimaryScene = Application.ios.getPrimaryScene() === scene;
-	// 			const sceneId = this.getSceneId(scene);
-	// 			console.log('isPrimaryScene:', isPrimaryScene, 'sceneId:', sceneId);
-
-	// 			if (isPrimaryScene) {
-	// 				this.addSceneEvent(`⚠️  This appears to be the primary scene`);
-	// 				this.addSceneEvent(`💡 Primary scenes typically cannot be closed programmatically`);
-	// 				return;
-	// 			} else {
-	// 				this.addSceneEvent(`✅ This appears to be a secondary scene - closure should work`);
-	// 			}
-
-	// 			// Try the correct iOS API for scene destruction
-	// 			const app = UIApplication.sharedApplication;
-
-	// 			if (app.requestSceneSessionDestructionOptionsErrorHandler) {
-	// 				this.addSceneEvent(`📞 Calling scene destruction API...`);
-	// 				app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
-	// 					if (error) {
-	// 						console.log('scene destroy error:', error);
-	// 						this.addSceneEvent(`❌ Scene destruction failed: ${error.localizedDescription}`);
-	// 						this.addSceneEvent(`📋 Error details - Domain: ${error.domain}, Code: ${error.code}`);
-
-	// 						// Provide specific guidance based on error
-	// 						if (error.localizedDescription.includes('primary') || error.code === 1) {
-	// 							this.addSceneEvent(`💡 Cannot close primary scene - this is iOS system behavior`);
-	// 							this.addSceneEvent(`ℹ️  Only secondary scenes can be closed via API`);
-	// 						} else if (error.code === 22 || error.domain.includes('FBSWorkspace')) {
-	// 							this.addSceneEvent(`💡 System declined scene destruction request`);
-	// 							this.addSceneEvent(`🔄 This may be due to system resource management`);
-	// 						} else {
-	// 							this.addSceneEvent(`🔍 Unexpected error - scene destruction may not be fully supported`);
-	// 						}
-
-	// 						this.addSceneEvent(`🖱️  Alternative: Use system UI to close (app switcher or split-screen controls)`);
-	// 					} else {
-	// 						this._closeButtons.delete(sceneId);
-	// 						this.addSceneEvent(`✅ Scene destruction request accepted`);
-	// 						this.addSceneEvent(`⏳ Scene should close within a few seconds...`);
-	// 					}
-	// 				});
-	// 			} else {
-	// 				this.addSceneEvent(`❌ Scene destruction API not available`);
-	// 				this.addSceneEvent(`📱 This iOS version/configuration may not support programmatic scene closure`);
-	// 			}
-	// 		} else {
-	// 			this.addSceneEvent('❌ Error: Could not find scene session to close');
-	// 		}
-	// 	} catch (error) {
-	// 		this.addSceneEvent(`❌ Error closing scene: ${error.message}`);
-	// 	}
-	// }
 }
