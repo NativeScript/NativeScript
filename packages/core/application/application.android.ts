@@ -689,7 +689,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
-		return this._registeredReceivers[intentFilter]?.[0].receiver;
+		return this._registeredReceivers[intentFilter]?.[0]?.receiver;
 	}
 
 	public getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[] {
