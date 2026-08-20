@@ -16,6 +16,7 @@ import { getAppMainEntry } from '../../application/helpers-common';
 import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData } from '../../application/application-interfaces';
 import { Application } from '../../application/application';
 import { NativeWindowEvents } from '../../native-window/native-window-interfaces';
+import { AndroidNativeWindow } from '../../native-window/native-window.android';
 import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
 import { SDK_VERSION } from '../../utils';
@@ -1101,7 +1102,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		Application.android.notify(resultArgs);
 	}
 
-	public resetActivityContent(activity: androidx.appcompat.app.AppCompatActivity): void {
+	public resetActivityContent(activity: androidx.appcompat.app.AppCompatActivity, view?: View): void {
 		if (this._rootView) {
 			const manager = this._rootView._getFragmentManager();
 			manager.executePendingTransactions();
@@ -1112,7 +1113,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 		// Delete previously cached root view in order to recreate it.
 		this._rootView = null;
-		this.setActivityContent(activity, null, false);
+		this.setActivityContent(activity, null, false, view);
 		this._rootView.callLoaded();
 	}
 
@@ -1121,8 +1122,9 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 	// 2. Application revived after Activity is destroyed. this._rootView should have been restored by id in onCreate.
 	// 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
 	// 4. resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
-	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean): void {
-		let rootView = this._rootView;
+	// 5. NativeWindow.setContent - the caller supplies the view, so nothing is resolved from the main entry.
+	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean, view?: View): void {
+		let rootView = view ?? this._rootView;
 
 		if (Trace.isEnabled()) {
 			Trace.write(`Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
@@ -1156,6 +1158,17 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 
 		// sets root classes once rootView is ready...
 		Application.initRootView(rootView);
+
+		let nativeWindow = Application.android._getWindowForActivity(activity);
+
+		if (!nativeWindow && isEmbedded()) {
+			// When embedded, the host owns the activity and may never install our lifecycle
+			// callbacks, so this is the only place the window can come into existence.
+			nativeWindow = new AndroidNativeWindow(activity, AndroidNativeWindow.newWindowId(), Application.android._getWindows().length === 0, 'embedded');
+			Application.android._registerWindow(nativeWindow);
+		}
+
+		nativeWindow?._adoptRootView(rootView);
 	}
 }
 

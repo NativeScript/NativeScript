@@ -2,6 +2,7 @@ import { CoreTypes } from '../core-types';
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { isEmbedded } from '../ui/embedding';
 import { SDK_VERSION } from '../utils/constants';
 import { android as androidUtils } from '../utils';
 import { ApplicationCommon } from './application-common';
@@ -96,7 +97,9 @@ function initNativeScriptLifecycleCallbacks() {
 				nativeWindow = knownWindow;
 			} else {
 				const isPrimary = Application.android._getWindows().length === 0;
-				nativeWindow = new AndroidNativeWindow(activity, savedWindowId || AndroidNativeWindow.newWindowId(), isPrimary);
+				// The role is fixed at creation because it is immutable, and deciding it later would
+				// mean either a second window for this activity or a window with the wrong role.
+				nativeWindow = new AndroidNativeWindow(activity, savedWindowId || AndroidNativeWindow.newWindowId(), isPrimary, isEmbedded() ? 'embedded' : 'application');
 				Application.android._registerWindow(nativeWindow);
 			}
 

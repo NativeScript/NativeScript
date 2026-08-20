@@ -90,6 +90,23 @@ export abstract class NativeWindow extends WindowBase {
 	}
 
 	/**
+	 * @internal – take ownership of a root view the platform pipeline built and attached itself.
+	 *
+	 * The pipeline already ran `_setupAsRootView` and `Application.initRootView` on this view and
+	 * installed it on the native surface, so neither `_applyRootViewSettings` nor `_setNativeContent`
+	 * may run here — both would redo that work.
+	 */
+	_adoptRootView(view: View): void {
+		if (!view || this._rootView === view) {
+			return;
+		}
+
+		this._rootView = view;
+
+		this._notifyEvent(NativeWindowEvents.contentLoaded);
+	}
+
+	/**
 	 * Platform-specific: apply the view to the native window surface.
 	 */
 	protected abstract _setNativeContent(view: View): void;

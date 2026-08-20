@@ -127,6 +127,16 @@ export class AndroidApplication extends ApplicationCommon {
 	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): NativeWindow | undefined;
 
 	/**
+	 * @internal - Get all registered NativeWindows.
+	 */
+	_getWindows(): NativeWindow[];
+
+	/**
+	 * @internal - Register a NativeWindow.
+	 */
+	_registerWindow(nativeWindow: NativeWindow): void;
+
+	/**
 	 * Get the primary NativeWindow.
 	 */
 	get primaryWindow(): NativeWindow | undefined;

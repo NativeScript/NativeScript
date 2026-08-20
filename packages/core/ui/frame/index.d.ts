@@ -496,7 +496,7 @@ export interface AndroidFrame extends Observable {
 
 export interface AndroidActivityCallbacks {
 	getRootView(): View;
-	resetActivityContent(activity: any): void;
+	resetActivityContent(activity: any, view?: View): void;
 
 	onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function): void;
 	onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;

@@ -4,6 +4,7 @@ import { SDK_VERSION } from '../utils/constants';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import { CALLBACKS } from '../ui/frame/frame-helper-for-android';
 import { NativeWindow } from './native-window-common';
+import type { WindowRole } from './window-base';
 
 /**
  * Android implementation of NativeWindow.
@@ -12,8 +13,8 @@ import { NativeWindow } from './native-window-common';
 export class AndroidNativeWindow extends NativeWindow {
 	private _activity: WeakRef<androidx.appcompat.app.AppCompatActivity>;
 
-	constructor(activity: androidx.appcompat.app.AppCompatActivity, id?: string, isPrimary = false) {
-		super(id, isPrimary);
+	constructor(activity: androidx.appcompat.app.AppCompatActivity, id?: string, isPrimary = false, role: WindowRole = 'application') {
+		super(id, isPrimary, role);
 		this._activity = new WeakRef(activity);
 	}
 
@@ -53,7 +54,7 @@ export class AndroidNativeWindow extends NativeWindow {
 		if (!callbacks) {
 			throw new Error('NativeWindow: Cannot find activity callbacks.');
 		}
-		callbacks.resetActivityContent(activity);
+		callbacks.resetActivityContent(activity, view);
 	}
 
 	/**
