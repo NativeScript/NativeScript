@@ -14,11 +14,11 @@ export function dataDeserialize(nativeData?: any): any;
  */
 export function isRealDevice(): boolean;
 
-type NativeWindow = android.view.Window | UIWindow;
+type PlatformWindow = android.view.Window | UIWindow;
 /**
  * Get the UIWindow or android.view.Window of the app
  */
-export function getWindow<T extends NativeWindow>(): T;
+export function getWindow<T extends PlatformWindow>(): T;
 
 /**
  * Utilities related to Android.

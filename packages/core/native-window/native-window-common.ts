@@ -1,4 +1,3 @@
-import { Observable } from '../data/observable';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
 import { Device } from '../platform';
@@ -10,9 +9,11 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { SDK_VERSION } from '../utils/constants';
-import type { NativeWindowEventData, NativeWindowEventName } from './native-window-interfaces';
-import { NativeWindowEvents } from './native-window-interfaces';
+import type { NativeWindowEventData } from './native-window-interfaces';
 import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from '../application/application-interfaces';
+import { NativeWindowEvents } from './native-window-interfaces';
+import type { WindowRole } from './window-base';
+import { WindowBase } from './window-base';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -33,8 +34,6 @@ const LAYOUT_DIRECTION_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.rtl}`,
 ];
 
-let _windowIdCounter = 0;
-
 /**
  * Cross-platform NativeWindow base class.
  *
@@ -43,33 +42,14 @@ let _windowIdCounter = 0;
  *
  * Platform-specific subclasses implement the abstract methods.
  */
-export abstract class NativeWindow extends Observable {
-	private _id: string;
-	private _isPrimary: boolean;
+export abstract class NativeWindow extends WindowBase {
 	protected _rootView: View;
 	protected _orientation: 'portrait' | 'landscape' | 'unknown';
 	protected _systemAppearance: 'dark' | 'light' | null;
 	protected _layoutDirection: CoreTypes.LayoutDirectionType | null;
 
-	constructor(id?: string, isPrimary = false) {
-		super();
-		this._id = id || `window-${++_windowIdCounter}`;
-		this._isPrimary = isPrimary;
-	}
-
-	get id(): string {
-		return this._id;
-	}
-
-	get isPrimary(): boolean {
-		return this._isPrimary;
-	}
-
-	/**
-	 * @internal - used by the Application to promote a window to primary.
-	 */
-	_setIsPrimary(value: boolean): void {
-		this._isPrimary = value;
+	constructor(id?: string, isPrimary = false, role: WindowRole = 'application') {
+		super(id, isPrimary, role);
 	}
 
 	get rootView(): View {
@@ -115,11 +95,6 @@ export abstract class NativeWindow extends Observable {
 	protected abstract _setNativeContent(view: View): void;
 
 	/**
-	 * Close this window.
-	 */
-	abstract close(): void;
-
-	/**
 	 * Get the current orientation of this window.
 	 */
 	orientation(): 'portrait' | 'landscape' | 'unknown' {
@@ -140,23 +115,17 @@ export abstract class NativeWindow extends Observable {
 		return (this._layoutDirection ??= this._getLayoutDirection());
 	}
 
-	get iosWindow(): { readonly scene: UIWindowScene; readonly window: UIWindow } | undefined {
-		return undefined;
-	}
-
-	get androidWindow(): { readonly activity: androidx.appcompat.app.AppCompatActivity } | undefined {
-		return undefined;
-	}
-
 	// --- Typed event overloads ---
 
+	// The whole set is repeated here: TypeScript only accepts an override whose overloads
+	// cover every overload of the base signature.
+	on(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'activate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'deactivate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
@@ -239,7 +208,7 @@ export abstract class NativeWindow extends Observable {
 
 		if (Trace.isEnabled()) {
 			const rootCssClasses = Array.from(rootView.cssClasses);
-			Trace.write(`NativeWindow [${this._id}] Setting root css classes: ${rootCssClasses.join(' ')}`, Trace.categories.Style);
+			Trace.write(`NativeWindow [${this.id}] Setting root css classes: ${rootCssClasses.join(' ')}`, Trace.categories.Style);
 		}
 	}
 
@@ -320,20 +289,10 @@ export abstract class NativeWindow extends Observable {
 	}
 
 	/**
-	 * @internal – emit a NativeWindow lifecycle event.
-	 */
-	_notifyEvent(eventName: NativeWindowEventName): void {
-		this.notify(<NativeWindowEventData>{
-			eventName,
-			window: this,
-			object: this,
-		});
-	}
-
-	/**
 	 * @internal – called when the window is being torn down.
 	 */
 	_destroy(): void {
+		super._destroy();
 		if (this._rootView) {
 			this._rootView._onRootViewReset();
 			this._rootView = null;

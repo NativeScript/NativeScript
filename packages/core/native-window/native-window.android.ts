@@ -24,7 +24,7 @@ export class AndroidNativeWindow extends NativeWindow {
 		return this._activity?.deref();
 	}
 
-	get androidWindow() {
+	get android() {
 		const activity = this.activity;
 		if (!activity) {
 			return undefined;

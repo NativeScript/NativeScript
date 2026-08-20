@@ -1,0 +1,135 @@
+import { Observable } from '../data/observable';
+import type { NativeWindowEventName, WindowBaseEventData } from './native-window-interfaces';
+import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from '../application/application-interfaces';
+
+/**
+ * The purpose a window surface serves.
+ *
+ * - `application` – a regular app window (iOS application scene, Android activity).
+ * - `embedded` – a window hosted inside another app or container.
+ * - `carplay` – a CarPlay template scene.
+ * - `externalDisplay` – an external/secondary display scene.
+ */
+export type WindowRole = 'application' | 'embedded' | 'carplay' | 'externalDisplay';
+
+/**
+ * The lifecycle state of a window surface.
+ *
+ * - `attached` – connected to a live native surface.
+ * - `detached` – the native surface went away but the window may be reconnected.
+ * - `closed` – permanently torn down.
+ */
+export type WindowState = 'attached' | 'detached' | 'closed';
+
+let _windowIdCounter = 0;
+
+/**
+ * Cross-platform base for any window surface.
+ *
+ * Carries identity, role, state, lifecycle events and the native accessors.
+ * Surfaces that host a NativeScript view tree extend {@link NativeWindow} instead.
+ */
+export abstract class WindowBase extends Observable {
+	private _id: string;
+	private _role: WindowRole;
+	private _state: WindowState = 'attached';
+	private _isPrimary: boolean;
+
+	constructor(id?: string, isPrimary = false, role: WindowRole = 'application') {
+		super();
+		this._id = id || `window-${++_windowIdCounter}`;
+		this._isPrimary = isPrimary;
+		this._role = role;
+	}
+
+	get id(): string {
+		return this._id;
+	}
+
+	get role(): WindowRole {
+		return this._role;
+	}
+
+	get state(): WindowState {
+		return this._state;
+	}
+
+	get isPrimary(): boolean {
+		return this._isPrimary;
+	}
+
+	/**
+	 * @internal - used by the Application to promote a window to primary.
+	 */
+	_setIsPrimary(value: boolean): void {
+		this._isPrimary = value;
+	}
+
+	/**
+	 * @internal
+	 */
+	_setState(value: WindowState): void {
+		this._state = value;
+	}
+
+	get ios(): { readonly scene?: UIWindowScene; readonly uiWindow: UIWindow } | undefined {
+		return undefined;
+	}
+
+	get android(): { readonly activity: androidx.appcompat.app.AppCompatActivity } | undefined {
+		return undefined;
+	}
+
+	/**
+	 * Close this window.
+	 */
+	abstract close(): void;
+
+	// --- Typed event overloads ---
+
+	on(event: 'activate', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'deactivate', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'background', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'foreground', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'close', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
+	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: any) => void, thisArg?: any): void {
+		super.on(eventName, callback, thisArg);
+	}
+
+	/**
+	 * @internal – emit a window lifecycle event.
+	 */
+	_notifyEvent(eventName: NativeWindowEventName): void {
+		this.notify(<WindowBaseEventData>{
+			eventName,
+			window: this,
+			object: this,
+		});
+	}
+
+	/**
+	 * @internal – called when the window is being torn down.
+	 */
+	_destroy(): void {
+		this._state = 'closed';
+	}
+}

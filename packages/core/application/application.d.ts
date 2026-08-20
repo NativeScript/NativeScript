@@ -1,6 +1,7 @@
 ﻿import { ApplicationCommon } from './application-common';
 import { FontScaleCategory } from '../accessibility/font-scale-common';
 import type { NativeWindow } from '../native-window/native-window-common';
+import type { WindowBase, WindowRole } from '../native-window/window-base';
 import type { WindowOpenEventData, WindowCloseEventData } from '../native-window/native-window-interfaces';
 
 export * from './application-common';
@@ -131,9 +132,14 @@ export class AndroidApplication extends ApplicationCommon {
 	get primaryWindow(): NativeWindow | undefined;
 
 	/**
-	 * Get all active NativeWindows.
+	 * Get the active windows, filtered by role.
+	 *
+	 * Defaults to the view-carrying app windows (`application` and `embedded`).
+	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
 	 */
-	getWindows(): NativeWindow[];
+	getWindows(role: 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
 }
 
 export class iOSApplication extends ApplicationCommon {
@@ -235,13 +241,13 @@ export class iOSApplication extends ApplicationCommon {
 
 	/**
 	 * Gets the primary window for the application.
-	 * @deprecated Use `primaryWindow?.iosWindow?.window` instead.
+	 * @deprecated Use `primaryWindow?.ios?.uiWindow` instead.
 	 */
 	getPrimaryWindow(): UIWindow;
 
 	/**
 	 * Gets the primary scene for the application.
-	 * @deprecated Use `primaryWindow?.iosWindow?.scene` instead.
+	 * @deprecated Use `primaryWindow?.ios?.scene` instead.
 	 */
 	getPrimaryScene(): UIWindowScene | null;
 
@@ -298,9 +304,14 @@ export class iOSApplication extends ApplicationCommon {
 	get primaryWindow(): NativeWindow | undefined;
 
 	/**
-	 * Get all active NativeWindows.
+	 * Get the active windows, filtered by role.
+	 *
+	 * Defaults to the view-carrying app windows (`application` and `embedded`).
+	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
 	 */
-	getWindows(): NativeWindow[];
+	getWindows(role: 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
 
 	/**
 	 * Flag to be set when the launch event should be delayed until the application has become active.

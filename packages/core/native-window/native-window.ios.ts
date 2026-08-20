@@ -19,10 +19,10 @@ export class IOSNativeWindow extends NativeWindow {
 		this._window = window;
 	}
 
-	get iosWindow() {
+	get ios() {
 		return {
 			scene: this._scene,
-			window: this._window,
+			uiWindow: this._window,
 		};
 	}
 

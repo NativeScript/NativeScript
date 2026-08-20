@@ -1,5 +1,6 @@
 import type { EventData } from '../data/observable';
 import type { NativeWindow } from './native-window-common';
+import type { WindowBase } from './window-base';
 
 /**
  * Events emitted by a NativeWindow instance.
@@ -72,9 +73,17 @@ export const WindowEvents = {
 } as const;
 
 /**
+ * Base event data for window surface events.
+ */
+export interface WindowBaseEventData extends EventData {
+	/** The window that emitted the event. */
+	window: WindowBase;
+}
+
+/**
  * Base event data for NativeWindow events.
  */
-export interface NativeWindowEventData extends EventData {
+export interface NativeWindowEventData extends WindowBaseEventData {
 	/** The NativeWindow that emitted the event. */
 	window: NativeWindow;
 }

@@ -13,6 +13,7 @@ import type { iOSApplication as IiOSApplication } from './application';
 import { Trace } from '../trace';
 import { IOSNativeWindow } from '../native-window/native-window.ios';
 import { NativeWindow } from '../native-window/native-window-common';
+import type { WindowBase, WindowRole } from '../native-window/window-base';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 import {
 	AccessibilityServiceEnabledPropName,
@@ -1130,7 +1131,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// If primary was removed, promote next window
 		if (nativeWindow.isPrimary && this._windows.length > 0) {
 			this._windows[0]._setIsPrimary(true);
-			const promotedWindow = this._windows[0].iosWindow?.window;
+			const promotedWindow = this._windows[0].ios?.uiWindow;
 			if (promotedWindow) {
 				setiOSWindow(promotedWindow);
 			}
@@ -1148,7 +1149,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 * @internal - Get a NativeWindow by its scene.
 	 */
 	_getWindowForScene(scene: UIWindowScene): IOSNativeWindow | undefined {
-		return this._windows.find((nw) => nw.iosWindow?.scene === scene);
+		return this._windows.find((nw) => nw.ios?.scene === scene);
 	}
 
 	/**
@@ -1168,10 +1169,20 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	/**
-	 * Get all active NativeWindows.
+	 * Get the active windows, filtered by role.
+	 *
+	 * Defaults to the view-carrying app windows (`application` and `embedded`).
+	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
 	 */
-	getWindows(): NativeWindow[] {
-		return [...this._windows];
+	getWindows(role: 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[] {
+		if (role === 'all') {
+			return [...this._windows];
+		}
+		const roles: WindowRole[] = role ? (Array.isArray(role) ? role : [role]) : ['application', 'embedded'];
+		return this._windows.filter((nw) => roles.indexOf(nw.role) !== -1);
 	}
 
 	/**
@@ -1248,8 +1259,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 					const options = UISceneActivationRequestOptions.new();
 					const primary = this.primaryWindow;
-					if (primary?.iosWindow?.scene) {
-						options.requestingScene = primary.iosWindow.scene;
+					if (primary?.ios?.scene) {
+						options.requestingScene = primary.ios.scene;
 					}
 
 					request.options = options;
@@ -1322,14 +1333,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 * @deprecated Use `getWindows()` instead.
 	 */
 	getAllWindows(): UIWindow[] {
-		return this._windows.map((nw) => nw.iosWindow?.window).filter(Boolean) as UIWindow[];
+		return this._windows.map((nw) => nw.ios?.uiWindow).filter(Boolean) as UIWindow[];
 	}
 
 	/**
 	 * @deprecated Use `getWindows()` instead.
 	 */
 	getAllScenes(): UIScene[] {
-		return this._windows.map((nw) => nw.iosWindow?.scene).filter(Boolean) as UIScene[];
+		return this._windows.map((nw) => nw.ios?.scene).filter(Boolean) as UIScene[];
 	}
 
 	/**
@@ -1340,21 +1351,21 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	/**
-	 * @deprecated Use `primaryWindow?.iosWindow?.window` instead.
+	 * @deprecated Use `primaryWindow?.ios?.uiWindow` instead.
 	 */
 	getPrimaryWindow(): UIWindow {
 		const primary = this.primaryWindow;
-		if (primary?.iosWindow?.window) {
-			return primary.iosWindow.window;
+		if (primary?.ios?.uiWindow) {
+			return primary.ios.uiWindow;
 		}
 		return getiOSWindow();
 	}
 
 	/**
-	 * @deprecated Use `primaryWindow?.iosWindow?.scene` instead.
+	 * @deprecated Use `primaryWindow?.ios?.scene` instead.
 	 */
 	getPrimaryScene(): UIWindowScene | null {
-		return this.primaryWindow?.iosWindow?.scene || null;
+		return this.primaryWindow?.ios?.scene || null;
 	}
 
 	// Scene lifecycle management
@@ -1386,7 +1397,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (!target) {
 			// Try to pick a non-primary window's scene
 			const nonPrimary = this._windows.filter((nw) => !nw.isPrimary);
-			return nonPrimary[0]?.iosWindow?.scene || this.primaryWindow?.iosWindow?.scene || null;
+			return nonPrimary[0]?.ios?.scene || this.primaryWindow?.ios?.scene || null;
 		}
 		if (target && typeof target === 'object') {
 			// UIWindowScene
@@ -1408,11 +1419,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (typeof target === 'string') {
 			const found = this._getWindowById(target);
 			if (found) {
-				return found.iosWindow?.scene || null;
+				return found.ios?.scene || null;
 			}
 			// Try matching among known scenes
 			for (const nw of this._windows) {
-				const scene = nw.iosWindow?.scene;
+				const scene = nw.ios?.scene;
 				if (scene && IOSNativeWindow.getSceneId(scene) === target) {
 					return scene;
 				}

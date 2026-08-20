@@ -10,6 +10,7 @@ import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import { AndroidNativeWindow } from '../native-window/native-window.android';
 import { NativeWindow } from '../native-window/native-window-common';
+import type { WindowBase, WindowRole } from '../native-window/window-base';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 import {
 	CommonA11YServiceEnabledObservable,
@@ -700,10 +701,20 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	/**
-	 * Get all active NativeWindows.
+	 * Get the active windows, filtered by role.
+	 *
+	 * Defaults to the view-carrying app windows (`application` and `embedded`).
+	 * Pass `'all'` to include every registered surface, including ones that carry no view tree.
 	 */
-	getWindows(): NativeWindow[] {
-		return [...this._windows];
+	getWindows(role: 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[]): NativeWindow[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[];
+	getWindows(role?: WindowRole | WindowRole[] | 'all'): WindowBase[] {
+		if (role === 'all') {
+			return [...this._windows];
+		}
+		const roles: WindowRole[] = role ? (Array.isArray(role) ? role : [role]) : ['application', 'embedded'];
+		return this._windows.filter((nw) => roles.indexOf(nw.role) !== -1);
 	}
 
 	getRootView(): View {
