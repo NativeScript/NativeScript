@@ -6,8 +6,10 @@ interface IConfigPlatform {
 	 */
 	id?: string;
 	/**
-	 * Discard any uncaught JS exceptions
-	 * This can be very useful in production environments when you don't want your app to just crash if a developer forgot to guard against an unexpected JS level exception.
+	 * @deprecated Since runtime 9.1 uncaught JS errors no longer crash the app by default, so this flag is
+	 * no longer needed; remove it, or set the top-level `uncaughtErrorPolicy` instead.
+	 * The CLI copies a `true` value here to the top level of the emitted `package.json`, where it is still
+	 * honored exactly like the top-level `discardUncaughtJsExceptions`.
 	 */
 	discardUncaughtJsExceptions?: boolean;
 	/**
@@ -243,6 +245,19 @@ interface ISecurityConfig {
 
 type BundlerType = 'webpack' | 'vite';
 
+/**
+ * What the runtime does with an uncaught JS error or unhandled promise rejection once no
+ * `globalThis` `error` / `unhandledrejection` listener has called `preventDefault()` on it.
+ *
+ * - `'report'` - log the error, fire `Application.uncaughtErrorEvent` and keep the app running.
+ * - `'throw'` - after reporting, rethrow the error natively. An error thrown while a native
+ *   caller is on the stack is rethrown synchronously at that boundary (a native try/catch
+ *   around the call can handle it); errors from timers, microtasks and rejections are thrown
+ *   from a clean frame on the runtime loop. The app terminates only if nothing catches it,
+ *   in which case crash reporters capture it with the JavaScript stack attached.
+ */
+export type UncaughtErrorPolicy = 'report' | 'throw';
+
 export interface NativeScriptConfig {
 	/**
 	 * App's bundle id
@@ -301,6 +316,28 @@ export interface NativeScriptConfig {
 	 * Show visual error display when an uncaught JS exception occurs.
 	 */
 	showErrorDisplay?: boolean;
+	/**
+	 * Policy for uncaught JS errors and unhandled promise rejections that no listener handled.
+	 * Default: `'report'` - the app keeps running.
+	 *
+	 * Requires runtime 9.1+ (iOS and Android); older runtimes ignore the key and crash on
+	 * uncaught errors as before. Read only from the top level of the config - a value nested
+	 * under `ios` / `android` has no effect.
+	 *
+	 * To handle individual errors instead, add a `globalThis` listener and cancel the event:
+	 * `globalThis.addEventListener('unhandledrejection', (e) => e.preventDefault())`.
+	 */
+	uncaughtErrorPolicy?: UncaughtErrorPolicy;
+	/**
+	 * @deprecated Since runtime 9.1 uncaught JS errors no longer crash the app by default, so this flag is
+	 * no longer needed. Remove it, or use `uncaughtErrorPolicy`.
+	 *
+	 * Still honored while deprecated, with a one-time runtime warning: `true` routes uncaught errors to
+	 * `Application.discardedErrorEvent` (instead of `uncaughtErrorEvent`), skips the fatal log and
+	 * suppresses `uncaughtErrorPolicy: 'throw'`. `false` is ignored - it does NOT restore the old
+	 * crash-on-uncaught behavior; set `uncaughtErrorPolicy: 'throw'` for that.
+	 */
+	discardUncaughtJsExceptions?: boolean;
 	/**
 	 * iOS specific configurations
 	 * Various iOS specific configurations including iOS runtime flags.
