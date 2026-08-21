@@ -260,8 +260,8 @@ export abstract class WindowBase extends Observable {
  * Wraps a platform window (iOS UIWindowScene + UIWindow, Android Activity) and owns the
  * per-window root view, its CSS classes and its lifecycle events. Instances are created by
  * the framework as the platform connects surfaces; reach them through
- * `Application.primaryWindow`, `Application.getWindows()` or `Application.getWindowById()`,
- * and use `ios` / `android` to get at the native objects.
+ * `Application.activeWindow`, `Application.primaryWindow`, `Application.getWindows()` or
+ * `Application.getWindowById()`, and use `ios` / `android` to get at the native objects.
  */
 export abstract class NativeWindow extends WindowBase {
 	/**

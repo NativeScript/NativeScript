@@ -13,10 +13,10 @@ import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData, SceneOpenURLContextsEventData, SceneContinueUserActivityEventData, ScenePerformActionForShortcutItemEventData } from './application-interfaces';
 import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
-import { getAppMainEntry, getAutoSystemAppearanceChanged, isAppInBackground, setAppInBackground, setAppMainEntry, setAutoSystemAppearanceChanged } from './helpers-common';
+import { getActiveWindow, getAppMainEntry, getAutoSystemAppearanceChanged, isAppInBackground, setActiveWindow, setAppInBackground, setAppMainEntry, setAutoSystemAppearanceChanged } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
-import type { NativeWindow, PrimaryWindowChangedEventData, WindowBase, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowLayoutDirectionChangedEventData, WindowOpenEventData, WindowOpenOptions, WindowOrientationChangedEventData, WindowRole, WindowSystemAppearanceChangedEventData } from '../native-window';
+import type { NativeWindow, NativeWindowEventData, PrimaryWindowChangedEventData, WindowBase, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowLayoutDirectionChangedEventData, WindowOpenEventData, WindowOpenOptions, WindowOrientationChangedEventData, WindowRole, WindowSystemAppearanceChangedEventData } from '../native-window';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 
 const ORIENTATION_CSS_CLASSES = CSSUtils.ORIENTATION_CSS_CLASSES;
@@ -464,6 +464,21 @@ export class ApplicationCommon {
 	}
 
 	/**
+	 * Get the NativeWindow the user is currently interacting with - the one that activated most
+	 * recently and is still attached. Falls back to the primary window while no window holds
+	 * activation, which is the case before the first window activates and on a platform that
+	 * never raises `activate`.
+	 */
+	get activeWindow(): NativeWindow | undefined {
+		const active = getActiveWindow();
+		if (active && active.state === 'attached' && this._windows.indexOf(active) !== -1) {
+			return active;
+		}
+
+		return this.primaryWindow;
+	}
+
+	/**
 	 * Get the active windows, filtered by role.
 	 *
 	 * Defaults to the view-carrying app windows (`application` and `embedded`).
@@ -509,6 +524,9 @@ export class ApplicationCommon {
 	_registerWindow(nativeWindow: NativeWindow): void {
 		this._windows.push(nativeWindow);
 
+		// A closing window drops its own listeners, so this is never explicitly removed.
+		nativeWindow.on(NativeWindowEvents.activate, this.onWindowActivated, this);
+
 		if (nativeWindow.isPrimary) {
 			this.trackPrimaryWindowTraits(nativeWindow);
 		}
@@ -530,6 +548,11 @@ export class ApplicationCommon {
 		if (idx >= 0) {
 			this._windows.splice(idx, 1);
 		}
+
+		if (getActiveWindow() === nativeWindow) {
+			setActiveWindow(undefined);
+		}
+
 		this.notify({
 			eventName: this.windowCloseEvent,
 			object: this,
@@ -639,6 +662,10 @@ export class ApplicationCommon {
 				this.setLayoutDirection(layoutDirection);
 			}
 		}
+	}
+
+	private onWindowActivated(data: NativeWindowEventData): void {
+		setActiveWindow(data.window);
 	}
 
 	private onWindowOrientationChanged(data: WindowOrientationChangedEventData): void {

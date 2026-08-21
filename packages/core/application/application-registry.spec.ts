@@ -6,6 +6,8 @@ import { NativeWindow } from '../native-window/native-window-common';
 import { WindowBase } from '../native-window/window-base';
 import type { WindowRole } from '../native-window/window-base';
 import { ApplicationCommon } from './application-common';
+import { NativeWindowEvents } from '../native-window/native-window-interfaces';
+import { setActiveWindow } from './helpers-common';
 
 /**
  * `vitest.setup.ts` installs a `NativeScriptGlobals` whose event methods are no-ops, and
@@ -102,10 +104,12 @@ describe('ApplicationCommon window registry', () => {
 		installApplicationEventBus();
 		app = new TestApplication();
 		events = [];
+		setActiveWindow(undefined);
 	});
 
 	afterEach(() => {
 		installApplicationEventBus();
+		setActiveWindow(undefined);
 	});
 
 	function record(...eventNames: string[]): Array<{ eventName: string; window: WindowBase }> {
@@ -275,6 +279,45 @@ describe('ApplicationCommon window registry', () => {
 
 			expect(events).toEqual(['windowClose']);
 			expect(app.primaryWindow).toBe(primary);
+		});
+	});
+
+	describe('activeWindow', () => {
+		let primary: TestWindow;
+		let secondary: TestWindow;
+
+		beforeEach(() => {
+			primary = new TestWindow('primary', true).withContent();
+			secondary = new TestWindow('secondary').withContent();
+			app._registerWindow(primary);
+			app._registerWindow(secondary);
+		});
+
+		it('falls back to the primary window before anything activates', () => {
+			expect(app.activeWindow).toBe(primary);
+		});
+
+		it('follows the window that activated most recently', () => {
+			secondary._notifyEvent(NativeWindowEvents.activate);
+			expect(app.activeWindow).toBe(secondary);
+
+			primary._notifyEvent(NativeWindowEvents.activate);
+			expect(app.activeWindow).toBe(primary);
+		});
+
+		it('falls back to the primary window once the active one closes', () => {
+			secondary._notifyEvent(NativeWindowEvents.activate);
+
+			app._unregisterWindow(secondary);
+
+			expect(app.activeWindow).toBe(primary);
+		});
+
+		it('falls back to the primary window while the active one is detached', () => {
+			secondary._notifyEvent(NativeWindowEvents.activate);
+			secondary._detach();
+
+			expect(app.activeWindow).toBe(primary);
 		});
 	});
 });

@@ -1,6 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { FrameBase } from './frame-common';
-import { frameStack, _pushInFrameStack } from './frame-stack';
+import { frameStack, topmostForWindow, _pushInFrameStack } from './frame-stack';
+import { setActiveWindow } from '../../application/helpers-common';
+import type { NativeWindow } from '../../native-window';
 import type { BackstackEntry } from './frame-interfaces';
 import { NavigationType } from './frame-interfaces';
 
@@ -124,5 +126,128 @@ describe('FrameBase.goBack', () => {
 		expect(FrameBase.goBack(only)).toBe(false);
 
 		expect(frameStack).toEqual([only]);
+	});
+});
+
+/**
+ * Window doubles: `topmost()` only ever compares window references, so a bare object is
+ * enough and keeps the real window lifecycle out of these tests.
+ */
+function createWindow(id: string): NativeWindow {
+	return { id } as unknown as NativeWindow;
+}
+
+function createFrameInWindow(window: NativeWindow | undefined): FrameBase {
+	const frame = new FrameBase();
+	frame._nativeWindow = window;
+	_pushInFrameStack(frame);
+
+	return frame;
+}
+
+describe('topmostForWindow', () => {
+	afterEach(() => {
+		frameStack.splice(0).forEach((frame) => (frame._isInFrameStack = false));
+	});
+
+	it('returns the frame highest in the stack that belongs to the window', () => {
+		const window = createWindow('a');
+		const other = createWindow('b');
+		const first = createFrameInWindow(window);
+		const second = createFrameInWindow(window);
+		createFrameInWindow(other);
+
+		expect(topmostForWindow(window)).toBe(second);
+		expect(first._isInFrameStack).toBe(true);
+	});
+
+	it('returns undefined when the window hosts no frame in the stack', () => {
+		createFrameInWindow(createWindow('a'));
+
+		expect(topmostForWindow(createWindow('b'))).toBeUndefined();
+	});
+});
+
+describe('FrameBase.topmost', () => {
+	afterEach(() => {
+		frameStack.splice(0).forEach((frame) => (frame._isInFrameStack = false));
+		setActiveWindow(undefined);
+	});
+
+	it("returns the given window's frame while another window sits at the top of the stack", () => {
+		const window = createWindow('a');
+		const scoped = createFrameInWindow(window);
+		const other = createFrameInWindow(createWindow('b'));
+
+		expect(FrameBase.topmost(window)).toBe(scoped);
+		expect(FrameBase.topmost()).toBe(other);
+	});
+
+	it('scopes to the active window when no window is given', () => {
+		const active = createWindow('a');
+		const scoped = createFrameInWindow(active);
+		createFrameInWindow(createWindow('b'));
+		setActiveWindow(active);
+
+		expect(FrameBase.topmost()).toBe(scoped);
+	});
+
+	it('falls back to the topmost frame of the stack when the window hosts none', () => {
+		const other = createFrameInWindow(createWindow('b'));
+
+		expect(FrameBase.topmost(createWindow('a'))).toBe(other);
+	});
+
+	it('returns the frame highest in the stack while it belongs to no window', () => {
+		setActiveWindow(createWindow('a'));
+		createFrameInWindow(undefined);
+		const unattached = createFrameInWindow(undefined);
+
+		expect(FrameBase.topmost()).toBe(unattached);
+	});
+
+	it('returns an unattached top frame in a single-window arrangement', () => {
+		const window = createWindow('a');
+		createFrameInWindow(window);
+		const unattached = createFrameInWindow(undefined);
+		setActiveWindow(window);
+
+		expect(FrameBase.topmost()).toBe(unattached);
+	});
+
+	it('returns an unattached top frame even to a caller scoped to a window that hosts one', () => {
+		const window = createWindow('a');
+		const hosted = createFrameInWindow(window);
+		const unattached = createFrameInWindow(undefined);
+
+		expect(FrameBase.topmost(window)).toBe(unattached);
+		expect(topmostForWindow(window)).toBe(hosted);
+	});
+
+	it('matches the unscoped topmost when every frame belongs to the same window', () => {
+		const window = createWindow('a');
+		createFrameInWindow(window);
+		const last = createFrameInWindow(window);
+		setActiveWindow(window);
+
+		expect(FrameBase.topmost()).toBe(last);
+		expect(FrameBase.topmost()).toBe(frameStack[frameStack.length - 1]);
+	});
+
+	it('returns undefined when the stack is empty', () => {
+		setActiveWindow(createWindow('a'));
+
+		expect(FrameBase.topmost()).toBeUndefined();
+	});
+
+	it("leaves the stack alone when the active window's frame cannot go back and is not the last entry", () => {
+		const active = createWindow('a');
+		const scoped = createFrameInWindow(active);
+		const other = createFrameInWindow(createWindow('b'));
+		setActiveWindow(active);
+
+		expect(FrameBase.goBack()).toBe(false);
+
+		expect(frameStack).toEqual([scoped, other]);
 	});
 });
