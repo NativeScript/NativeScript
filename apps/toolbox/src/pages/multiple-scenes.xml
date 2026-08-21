@@ -112,8 +112,8 @@
 
                 <StackLayout class="m-b-10">
                     <Label text="Android" class="body font-weight-bold"/>
-                    <Label text="• Windows are activities in their own task, so results depend on launchMode and the device's recents behaviour." class="caption m-l-15" textWrap="true"/>
-                    <Label text="• Use split screen, a foldable, or desktop mode to see two at once." class="caption m-l-15" textWrap="true"/>
+                    <Label text="• Windows are activities in their own task. The activity's launchMode in AndroidManifest.xml must be singleInstancePerTask (or standard); the template default singleTask reuses the existing activity and nothing opens." class="caption m-l-15" textWrap="true"/>
+                    <Label text="• On a phone the new window covers this one; open recents to see both. Put the app in split screen first and the new window opens in the other pane. Foldables and desktop windowing show them side by side." class="caption m-l-15" textWrap="true"/>
                 </StackLayout>
 
                 <StackLayout>

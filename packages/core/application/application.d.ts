@@ -161,10 +161,13 @@ export class AndroidApplication extends ApplicationCommon {
 	 * @param options Options for the new window. `options.data` is put on the launch
 	 * intent as extras and surfaces as the window's `data`.
 	 *
-	 * @experimental Whether a second window actually appears depends on the activity's
-	 * `launchMode` in AndroidManifest.xml (an activity that is `singleTask`/`singleInstance`
-	 * is brought forward instead of duplicated) and on how the OEM's recents implementation
-	 * treats new documents.
+	 * @experimental The start activity's `launchMode` in AndroidManifest.xml decides whether a
+	 * second instance can exist at all: `singleTask` (the app template default) and
+	 * `singleInstance` route the intent to the existing activity's `onNewIntent` instead of
+	 * creating one. Use `singleInstancePerTask` (API 31+) to keep single-task behavior for
+	 * launcher and deep-link starts while allowing additional windows, or `standard`.
+	 * When the app is already in split-screen, the new window opens in the adjacent pane;
+	 * otherwise it covers the current one and both show in recents.
 	 */
 	openWindow(options?: WindowOpenOptions): void;
 }

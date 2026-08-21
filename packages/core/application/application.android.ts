@@ -65,7 +65,7 @@ function warnMultiWindowIsExperimental(): void {
 	}
 	multiWindowWarned = true;
 
-	const message = 'Application.android.openWindow() is experimental: whether a new window opens depends on the activity launchMode declared in AndroidManifest.xml and on the device recents behavior.';
+	const message = 'Application.android.openWindow() is experimental. The start activity must not use launchMode="singleTask" (the app template default) or "singleInstance" in AndroidManifest.xml, or Android hands the launch intent to the existing activity instead of opening a second one; use "singleInstancePerTask" (API 31+) or "standard".';
 	Trace.write(message, Trace.categories.Debug, Trace.messageType.warn);
 	console.warn(message);
 }
@@ -717,10 +717,13 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	 * @param options Options for the new window. `options.data` is put on the launch
 	 * intent as extras and surfaces as the window's `data`.
 	 *
-	 * @experimental Whether a second window actually appears depends on the activity's
-	 * `launchMode` in AndroidManifest.xml (an activity that is `singleTask`/`singleInstance`
-	 * is brought forward instead of duplicated) and on how the OEM's recents implementation
-	 * treats new documents.
+	 * @experimental The start activity's `launchMode` in AndroidManifest.xml decides whether a
+	 * second instance can exist at all: `singleTask` (the app template default) and
+	 * `singleInstance` route the intent to the existing activity's `onNewIntent` instead of
+	 * creating one. `singleInstancePerTask` (API 31+) keeps single-task behavior for launcher
+	 * and deep-link starts while still allowing the `MULTIPLE_TASK`/`NEW_DOCUMENT` launch used
+	 * here; `standard` also works. When the app is already in split-screen, the new window
+	 * opens in the adjacent pane; otherwise it covers the current one and both show in recents.
 	 */
 	openWindow(options?: WindowOpenOptions): void {
 		warnMultiWindowIsExperimental();
@@ -735,7 +738,13 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			intent.setClassName(context, 'org.nativescript.NativeScriptActivity');
 		}
 
-		intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK | android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+		let flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK | android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+
+		const launcher = this.foregroundActivity ?? startActivity;
+		if (SDK_VERSION >= 24 && launcher?.isInMultiWindowMode()) {
+			flags |= android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
+		}
+		intent.setFlags(flags);
 
 		const data = options?.data;
 		if (data) {
@@ -744,7 +753,6 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			}
 		}
 
-		const launcher = this.foregroundActivity ?? startActivity;
 		if (launcher) {
 			launcher.startActivity(intent);
 		} else {

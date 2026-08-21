@@ -196,7 +196,7 @@ function detectMultiWindowCapability(): MultiWindowCapability {
 		return {
 			canOpenWindows: true,
 			status: 'Windows map to activities launched into their own task.',
-			note: 'Application.openWindow() is experimental on Android and logs a warning the first time it runs: whether a second window really appears depends on the activity launchMode in AndroidManifest.xml and on how the device treats new documents in recents. Split screen or a desktop/foldable mode shows both.',
+			note: 'Application.openWindow() is experimental on Android. The activity launchMode in AndroidManifest.xml must allow a second instance (singleInstancePerTask or standard; the template default singleTask does not). Each window is its own task: on a phone the new one covers this one and both appear in recents; split screen, desktop windowing or a foldable shows them side by side.',
 			showIosSceneSetup: false,
 		};
 	}
