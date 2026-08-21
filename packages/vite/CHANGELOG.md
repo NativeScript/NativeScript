@@ -1,3 +1,33 @@
+## 8.0.0-rc.0 (2026-08-21)
+
+### 🚀 Features
+
+- **vite:** align the dev boot with 9.1 runtime contract ([#11355](https://github.com/NativeScript/NativeScript/pull/11355))
+- **vite:** allow auto port availability selection ([#11351](https://github.com/NativeScript/NativeScript/pull/11351))
+- ⚠️  **vite:** add Vite 8 HMR engine with ns:runtime ([d601d0d11](https://github.com/NativeScript/NativeScript/commit/d601d0d11))
+- vite improvements ([5360522b9](https://github.com/NativeScript/NativeScript/commit/5360522b9))
+- NativeClass transformer now supports ts-patch and ts-loader ([#10952](https://github.com/NativeScript/NativeScript/pull/10952))
+- @nativescript/vite ([#10948](https://github.com/NativeScript/NativeScript/pull/10948))
+
+### 🩹 Fixes
+
+- **vite:** lazy-load Vue SFC compiler ([#11354](https://github.com/NativeScript/NativeScript/pull/11354))
+- **vite:** remove browser preload probe from native bundles ([#11311](https://github.com/NativeScript/NativeScript/pull/11311))
+- **vite:** fix windows path separator for static copy targets ([#11048](https://github.com/NativeScript/NativeScript/pull/11048))
+- **vite:** __dirname windows compat ([#11046](https://github.com/NativeScript/NativeScript/pull/11046))
+- **vite:** init handling ([1c6c38d19](https://github.com/NativeScript/NativeScript/commit/1c6c38d19))
+
+### ⚠️  Breaking Changes
+
+- **vite:** add Vite 8 HMR engine with ns:runtime  ([d601d0d11](https://github.com/NativeScript/NativeScript/commit/d601d0d11))
+
+### ❤️ Thank You
+
+- Adrien Foulon @Tofandel
+- farfromrefuge
+- Nathan Walker
+- Tanner Linsley
+
 ## 2.0.3 (2026-04-12)
 
 ### Fixes
