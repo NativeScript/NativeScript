@@ -9,8 +9,13 @@ on:
       - '*-*'
   workflow_dispatch:
     inputs:
+      version:
+        description: "Exact version to release (e.g. 8.0.0-rc.0). Overrides release-type/preid; npm dist-tag is derived from it (8.0.0-rc.0 -> rc, 8.0.0 -> latest)"
+        required: false
+        type: string
+        default: ""
       release-type:
-        description: "Version bump (patch/minor/major publish to npm 'latest'; prerelease uses 'preid')"
+        description: "Version bump when 'version' is empty (patch/minor/major publish to npm 'latest'; prerelease uses 'preid')"
         required: false
         type: choice
         options:
@@ -20,7 +25,7 @@ on:
           - major
         default: prerelease
       preid:
-        description: "Prerelease identifier (used only when release-type=prerelease; also becomes the npm dist-tag, e.g. next | canary)"
+        description: "Prerelease identifier (used only when release-type=prerelease and 'version' is empty; also becomes the npm dist-tag, e.g. next | canary)"
         required: false
         type: string
         default: next
@@ -89,23 +94,49 @@ jobs:
       - name: Resolve release context
         id: ctx
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_RELEASE_TYPE: ${{ inputs['release-type'] }}
+          INPUT_PREID: ${{ inputs.preid }}
+          INPUT_SCOPE: ${{ inputs['release-group'] }}
+          INPUT_DRY_RUN: ${{ inputs['dry-run'] }}
         run: |
           set -euo pipefail
 
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-            release_type="${{ inputs['release-type'] }}"
-            preid="${{ inputs['preid'] }}"
-            scope="${{ inputs['release-group'] }}"
-            dry_run="${{ inputs['dry-run'] }}"
+            version="${INPUT_VERSION}"
+            release_type="${INPUT_RELEASE_TYPE}"
+            preid="${INPUT_PREID}"
+            scope="${INPUT_SCOPE}"
+            dry_run="${INPUT_DRY_RUN}"
             mode="dispatch"
 
-            # npm dist-tag follows release type: prerelease -> preid, stable -> latest
-            if [[ "$release_type" == "prerelease" ]]; then
-              dist_tag="$preid"
+            if [[ -n "$version" ]]; then
+              specifier="$version"
+              release_type=""
+              preid=""
+              if [[ "$version" == *-* ]]; then
+                # npm dist-tag is the alphabetic prerelease label (8.0.0-rc.0 -> rc); purely numeric labels fall back to next.
+                prerelease="${version#*-}"
+                dist_tag="${prerelease%%.*}"
+                if [[ "$dist_tag" =~ ^[0-9]+$ ]]; then
+                  dist_tag="next"
+                fi
+              else
+                dist_tag="latest"
+              fi
             else
-              dist_tag="latest"
+              specifier="$release_type"
+              # npm dist-tag follows release type: prerelease -> preid, stable -> latest
+              if [[ "$release_type" == "prerelease" ]]; then
+                dist_tag="$preid"
+              else
+                preid=""
+                dist_tag="latest"
+              fi
             fi
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            specifier=""
             release_type=""
             preid=""
             dist_tag=""
@@ -113,6 +144,7 @@ jobs:
             dry_run="false"
             mode="tag"
           else
+            specifier="prerelease"
             release_type="prerelease"
             preid="next"
             dist_tag="next"
@@ -122,6 +154,7 @@ jobs:
           fi
 
           echo "mode=${mode}" >> "$GITHUB_OUTPUT"
+          echo "specifier=${specifier}" >> "$GITHUB_OUTPUT"
           echo "release_type=${release_type}" >> "$GITHUB_OUTPUT"
           echo "preid=${preid}" >> "$GITHUB_OUTPUT"
           echo "dist_tag=${dist_tag}" >> "$GITHUB_OUTPUT"
@@ -222,6 +255,7 @@ jobs:
       # Orchestrated release: bumps versions, generates changelogs, commits + tags in one shot.
       # The orchestrator does not accept --git-* flags (config-driven only); push is handled in the next step.
       # --skip-publish keeps publishing as a separate step below so the OIDC token-clearing logic still runs.
+      # A project with no prior release tag gets its changelog from its first commit (release.changelog.automaticFromRef in nx.json).
       - name: nx release version + changelog (dispatch)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && !inputs.dry-run }}
         shell: bash
@@ -234,13 +268,13 @@ jobs:
             projects_arg=(--projects "$scope")
           fi
 
-          release_type="${{ steps.ctx.outputs.release_type }}"
+          preid="${{ steps.ctx.outputs.preid }}"
           preid_arg=()
-          if [[ "$release_type" == "prerelease" ]]; then
-            preid_arg=(--preid "${{ steps.ctx.outputs.preid }}")
+          if [[ -n "$preid" ]]; then
+            preid_arg=(--preid "$preid")
           fi
 
-          npx nx release "$release_type" \
+          npx nx release "${{ steps.ctx.outputs.specifier }}" \
             "${preid_arg[@]}" \
             "${projects_arg[@]}" \
             --skip-publish \
@@ -262,13 +296,13 @@ jobs:
             projects_arg=(--projects "$scope")
           fi
 
-          release_type="${{ steps.ctx.outputs.release_type }}"
+          preid="${{ steps.ctx.outputs.preid }}"
           preid_arg=()
-          if [[ "$release_type" == "prerelease" ]]; then
-            preid_arg=(--preid "${{ steps.ctx.outputs.preid }}")
+          if [[ -n "$preid" ]]; then
+            preid_arg=(--preid "$preid")
           fi
 
-          npx nx release "$release_type" \
+          npx nx release "${{ steps.ctx.outputs.specifier }}" \
             "${preid_arg[@]}" \
             "${projects_arg[@]}" \
             --skip-publish \
@@ -447,6 +481,7 @@ jobs:
 
           echo "Nx Release completed."
           echo "- mode: ${mode}"
+          echo "- specifier: '${{ steps.ctx.outputs.specifier }}'"
           echo "- release-type: '${{ steps.ctx.outputs.release_type }}'"
           echo "- preid: '${{ steps.ctx.outputs.preid }}'"
           echo "- dist-tag: ${{ steps.ctx.outputs.mode == 'tag' && steps.taginfo.outputs.dist_tag || steps.ctx.outputs.dist_tag }}"

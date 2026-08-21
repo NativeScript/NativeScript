@@ -125,8 +125,12 @@
 	"release": {
 		"projects": ["packages/*", "!packages/ui-mobile-base", "!packages/types-minimal", "!packages/winter-tc", "!packages/types", "!packages/types-ios", "!packages/types-android"],
 		"projectsRelationship": "independent",
+		"version": {
+			"updateDependents": "never"
+		},
 		"changelog": {
 			"workspaceChangelog": false,
+			"automaticFromRef": true,
 			"projectChangelogs": {
 				"renderOptions": {
 					"authors": true,
