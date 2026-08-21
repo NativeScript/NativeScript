@@ -779,7 +779,7 @@ if (SDK_VERSION >= 33) {
 
 					// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
 					if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
-						callSuper = view instanceof Frame ? !Frame.goBack() : true;
+						callSuper = view instanceof Frame ? !Frame.goBack(view) : true;
 					}
 				}
 			}
@@ -1035,7 +1035,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 
 		// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
 		if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
-			callSuper = view instanceof Frame ? !Frame.goBack() : true;
+			callSuper = view instanceof Frame ? !Frame.goBack(view) : true;
 		}
 
 		if (callSuper) {

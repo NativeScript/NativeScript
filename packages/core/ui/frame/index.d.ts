@@ -58,9 +58,10 @@ export class Frame extends FrameBase {
 
 	/**
 	 * Navigates back using the navigation hierarchy (if any). Updates the Frame stack as needed.
-	 * This method will start from the topmost Frame and will recursively search for an instance that has the canGoBack operation available.
+	 * This method will start from the given Frame and will recursively search its ancestors for an instance that has the canGoBack operation available.
+	 * @param frame The Frame to navigate back. Defaults to the topmost Frame; pass one to scope the back navigation to that Frame's hierarchy.
 	 */
-	static goBack();
+	static goBack(frame?: Frame);
 
 	/**
 	 * @private

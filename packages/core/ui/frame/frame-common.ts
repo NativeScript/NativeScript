@@ -68,8 +68,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 		return frameStackTopmost();
 	}
 
-	static goBack(): boolean {
-		const top = FrameBase.topmost();
+	static goBack(frame?: FrameBase): boolean {
+		const top = frame ?? FrameBase.topmost();
 		if (top && top.canGoBack()) {
 			top.goBack();
 
@@ -93,7 +93,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 			}
 		}
 
-		if (frameStack.length > 1) {
+		// Popping is only valid for the frame at the top of the stack - an explicitly passed frame may sit lower.
+		if (frameStack.length > 1 && frameStackTopmost() === top) {
 			top._popFromFrameStack();
 		}
 
