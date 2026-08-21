@@ -779,7 +779,9 @@ export class View extends ViewCommon {
 	}
 
 	public onBackPressed(): boolean {
-		const topmostFrame = topmost();
+		// Scoped to this view's own window rather than the active one: a back press can reach a
+		// window that is not the one the user last activated.
+		const topmostFrame = topmost(this.getNativeWindow());
 
 		// Delegate back navigation handling to the topmost Frame
 		// when it's a child of the current View.

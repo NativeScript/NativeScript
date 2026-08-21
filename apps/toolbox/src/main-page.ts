@@ -41,7 +41,7 @@ function setupSceneEvents() {
 			// Listen to scene events
 			Application.on(SceneEvents.sceneWillConnect, (args: SceneEventData) => {
 				console.log('New scene connecting:', args.scene);
-				console.log('Window:', args.window);
+				console.log('Window:', args.uiWindow);
 				console.log('Connection options:', args.connectionOptions);
 			});
 

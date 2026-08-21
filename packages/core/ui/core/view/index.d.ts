@@ -10,6 +10,7 @@ import { InheritedProperty, Property } from '../properties';
 import { ShowModalOptions, ViewBase } from '../view-base';
 import { GlassEffectType, ViewCommon } from './view-common';
 import type { Point, ShownModallyData, Size } from './view-interfaces';
+import type { NativeWindow } from '../../../native-window';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -953,6 +954,30 @@ export abstract class View extends ViewCommon {
 	 * Gets all modal views of the current view.
 	 */
 	_getRootModalViews(): Array<ViewBase>;
+
+	/**
+	 * Internal method:
+	 * Walks up the view tree — through the presenting view of any modal on the way —
+	 * to the root this view ultimately lives under, which is the root view of its window.
+	 */
+	_getRootModalHost(): ViewBase;
+
+	/**
+	 * Internal property:
+	 * The window this view is the root view of. Only ever set on a window's root view;
+	 * use `getNativeWindow()` to resolve the window of any other view.
+	 */
+	_nativeWindow?: NativeWindow;
+
+	/**
+	 * The window currently hosting this view, or `undefined` when the view is not part of
+	 * any window's view tree — including a view whose window has been closed.
+	 *
+	 * Resolved on every call by walking up to the root view — through the presenting view
+	 * of any modal on the way — so a view re-parented into another window's tree reports
+	 * the window it moved to.
+	 */
+	getNativeWindow(): NativeWindow | undefined;
 
 	_eachLayoutView(callback: (View) => void): void;
 

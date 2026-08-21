@@ -8,13 +8,15 @@ import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
 import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from './fragment.transitions';
 import { profile } from '../../profiling';
-import { android as androidUtils } from '../../utils/native-helper';
+import { android as androidUtils, dataDeserialize } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
 import { ensureFragmentClass, fragmentClass } from './fragment';
 import { getAppMainEntry } from '../../application/helpers-common';
 
 import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData } from '../../application/application-interfaces';
 import { Application } from '../../application/application';
+import { NativeWindowEvents } from '../../native-window/native-window-interfaces';
+import { AndroidNativeWindow } from '../../native-window/native-window.android';
 import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
 import { SDK_VERSION } from '../../utils';
@@ -735,13 +737,23 @@ if (SDK_VERSION >= 33) {
 				return;
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
 			const args = <AndroidActivityBackPressedEventData>{
-				eventName: 'activityBackPressed',
+				eventName: NativeWindowEvents.activityBackPressed,
 				object: Application,
 				android: Application.android,
+				window: nativeWindow,
 				activity: activity,
 				cancel: false,
 			};
+
+			// Emit on NativeWindow first
+			if (nativeWindow) {
+				nativeWindow.notify({
+					...args,
+					object: nativeWindow,
+				} as AndroidActivityBackPressedEventData);
+			}
 
 			Application.android.notify(args);
 
@@ -757,7 +769,7 @@ if (SDK_VERSION >= 33) {
 
 				if (view) {
 					const viewArgs = <AndroidActivityBackPressedEventData>{
-						eventName: 'activityBackPressed',
+						eventName: NativeWindowEvents.activityBackPressed,
 						object: view,
 						activity: activity,
 						cancel: false,
@@ -767,7 +779,7 @@ if (SDK_VERSION >= 33) {
 
 					// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
 					if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
-						callSuper = view instanceof Frame ? !Frame.goBack() : true;
+						callSuper = view instanceof Frame ? !Frame.goBack(view) : true;
 					}
 				}
 			}
@@ -852,12 +864,24 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		if (intent && intent.getAction()) {
-			Application.android.notify(<AndroidActivityNewIntentEventData>{
-				eventName: Application.AndroidApplication.activityNewIntentEvent,
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			const newIntentArgs = <AndroidActivityNewIntentEventData>{
+				eventName: NativeWindowEvents.activityNewIntent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 				intent,
-			});
+			};
+
+			// Emit on NativeWindow first
+			if (nativeWindow) {
+				nativeWindow.notify({
+					...newIntentArgs,
+					object: nativeWindow,
+				} as AndroidActivityNewIntentEventData);
+			}
+
+			Application.android.notify(newIntentArgs);
 		}
 
 		this.setActivityContent(activity, savedInstanceState, true);
@@ -883,12 +907,24 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		superFunc.call(activity, intent);
 		superSetIntentFunc.call(activity, intent);
 
-		Application.android.notify(<AndroidActivityNewIntentEventData>{
-			eventName: Application.AndroidApplication.activityNewIntentEvent,
+		const nativeWindow = Application.android._getWindowForActivity(activity);
+		const newIntentArgs = <AndroidActivityNewIntentEventData>{
+			eventName: NativeWindowEvents.activityNewIntent,
 			object: Application.android,
+			window: nativeWindow,
 			activity,
 			intent,
-		});
+		};
+
+		// Emit on NativeWindow first
+		if (nativeWindow) {
+			nativeWindow.notify({
+				...newIntentArgs,
+				object: nativeWindow,
+			} as AndroidActivityNewIntentEventData);
+		}
+
+		Application.android.notify(newIntentArgs);
 	}
 
 	@profile
@@ -952,19 +988,6 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			if (rootView) {
 				rootView._tearDownUI(true);
 			}
-
-			// this may happen when the user changes the system theme
-			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
-			// as a result, launchEvent will never be called
-			// possible alternative: always fire launchEvent and exitEvent, but pass extra flags to make it clear what kind of launch/destroy is happening
-			if (activity.isFinishing()) {
-				const exitArgs = {
-					eventName: Application.exitEvent,
-					object: Application.android,
-					android: activity,
-				};
-				Application.notify(exitArgs);
-			}
 		} finally {
 			superFunc.call(activity);
 		}
@@ -976,13 +999,24 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write('NativeScriptActivity.onBackPressed;', Trace.categories.NativeLifecycle);
 		}
 
+		const nativeWindow = Application.android._getWindowForActivity(activity);
 		const args = <AndroidActivityBackPressedEventData>{
-			eventName: 'activityBackPressed',
+			eventName: NativeWindowEvents.activityBackPressed,
 			object: Application,
 			android: Application.android,
+			window: nativeWindow,
 			activity: activity,
 			cancel: false,
 		};
+
+		// Emit on NativeWindow first
+		if (nativeWindow) {
+			nativeWindow.notify({
+				...args,
+				object: nativeWindow,
+			} as AndroidActivityBackPressedEventData);
+		}
+
 		Application.android.notify(args);
 		if (args.cancel) {
 			return;
@@ -992,7 +1026,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		let callSuper = false;
 
 		const viewArgs = <AndroidActivityBackPressedEventData>{
-			eventName: 'activityBackPressed',
+			eventName: NativeWindowEvents.activityBackPressed,
 			object: view,
 			activity: activity,
 			cancel: false,
@@ -1001,7 +1035,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 
 		// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
 		if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
-			callSuper = view instanceof Frame ? !Frame.goBack() : true;
+			callSuper = view instanceof Frame ? !Frame.goBack(view) : true;
 		}
 
 		if (callSuper) {
@@ -1015,15 +1049,27 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write('NativeScriptActivity.onRequestPermissionsResult;', Trace.categories.NativeLifecycle);
 		}
 
-		Application.android.notify(<AndroidActivityRequestPermissionsEventData>{
-			eventName: 'activityRequestPermissions',
+		const nativeWindow = Application.android._getWindowForActivity(activity);
+		const permArgs = <AndroidActivityRequestPermissionsEventData>{
+			eventName: NativeWindowEvents.activityRequestPermissions,
 			object: Application,
 			android: Application.android,
+			window: nativeWindow,
 			activity: activity,
 			requestCode: requestCode,
 			permissions: permissions,
 			grantResults: grantResults,
-		});
+		};
+
+		// Emit on NativeWindow first
+		if (nativeWindow) {
+			nativeWindow.notify({
+				...permArgs,
+				object: nativeWindow,
+			} as AndroidActivityRequestPermissionsEventData);
+		}
+
+		Application.android.notify(permArgs);
 	}
 
 	@profile
@@ -1033,18 +1079,30 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, Trace.categories.NativeLifecycle);
 		}
 
-		Application.android.notify(<AndroidActivityResultEventData>{
-			eventName: 'activityResult',
+		const nativeWindow = Application.android._getWindowForActivity(activity);
+		const resultArgs = <AndroidActivityResultEventData>{
+			eventName: NativeWindowEvents.activityResult,
 			object: Application,
 			android: Application.android,
+			window: nativeWindow,
 			activity: activity,
 			requestCode: requestCode,
 			resultCode: resultCode,
 			intent: data,
-		});
+		};
+
+		// Emit on NativeWindow first
+		if (nativeWindow) {
+			nativeWindow.notify({
+				...resultArgs,
+				object: nativeWindow,
+			} as AndroidActivityResultEventData);
+		}
+
+		Application.android.notify(resultArgs);
 	}
 
-	public resetActivityContent(activity: androidx.appcompat.app.AppCompatActivity): void {
+	public resetActivityContent(activity: androidx.appcompat.app.AppCompatActivity, view?: View): void {
 		if (this._rootView) {
 			const manager = this._rootView._getFragmentManager();
 			manager.executePendingTransactions();
@@ -1055,7 +1113,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 		// Delete previously cached root view in order to recreate it.
 		this._rootView = null;
-		this.setActivityContent(activity, null, false);
+		this.setActivityContent(activity, null, false, view);
 		this._rootView.callLoaded();
 	}
 
@@ -1064,20 +1122,50 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 	// 2. Application revived after Activity is destroyed. this._rootView should have been restored by id in onCreate.
 	// 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
 	// 4. resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
-	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean): void {
-		let rootView = this._rootView;
+	// 5. NativeWindow.setContent - the caller supplies the view, so nothing is resolved from the main entry.
+	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean, view?: View): void {
+		let rootView = view ?? this._rootView;
 
 		if (Trace.isEnabled()) {
 			Trace.write(`Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
 		}
 
 		const intent = activity.getIntent();
-		rootView = Application.createRootView(rootView, fireLaunchEvent, {
+		const launchData = {
 			// todo: deprecate in favor of args.intent?
 			android: intent,
 			intent,
 			savedInstanceState,
-		});
+		};
+
+		let nativeWindow = Application.android._getWindowForActivity(activity);
+
+		if (!nativeWindow && isEmbedded()) {
+			// When embedded, the host owns the activity and may never install our lifecycle
+			// callbacks, so this is the only place the window can come into existence.
+			const embeddedWindow = new AndroidNativeWindow(activity, AndroidNativeWindow.newWindowId(), Application.android._getWindows().length === 0, 'embedded');
+			Application.android._registerWindow(embeddedWindow);
+			embeddedWindow._registerConfigurationCallbacks();
+			nativeWindow = embeddedWindow;
+		}
+
+		if (!rootView && fireLaunchEvent && nativeWindow) {
+			// This method installs the root view on the activity itself, so the resolved view is
+			// handed back rather than applied through NativeWindow.setContent(), which would
+			// re-enter here through resetActivityContent().
+			rootView = Application._resolveWindowContent(
+				nativeWindow,
+				{
+					window: nativeWindow,
+					isPrimary: nativeWindow.isPrimary,
+					data: dataDeserialize(intent?.getExtras()) ?? undefined,
+					android: { intent, savedInstanceState },
+				},
+				{ install: false, launchData },
+			);
+		} else {
+			rootView = Application.createRootView(rootView, fireLaunchEvent, launchData);
+		}
 
 		if (!rootView) {
 			// no root view created
@@ -1098,7 +1186,9 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		this._rootView = rootView;
 
 		// sets root classes once rootView is ready...
-		Application.initRootView(rootView);
+		Application.initRootView(rootView, nativeWindow);
+
+		nativeWindow?._adoptRootView(rootView);
 	}
 }
 

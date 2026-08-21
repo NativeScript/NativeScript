@@ -157,6 +157,7 @@ global.NativeScriptGlobals = {
 		notify: (args) => {},
 		hasListeners: (args) => {},
 	},
+	setLaunched: () => {},
 };
 
 global.CADisplayLink = function () {};
@@ -185,6 +186,9 @@ global.UIGestureRecognizer = function () {};
 global.UIGestureRecognizerDelegate = function () {};
 global.UIAdaptivePresentationControllerDelegate = function () {};
 global.UIPopoverPresentationControllerDelegate = function () {};
+global.UIAccessibilityIsVoiceOverRunning = () => false;
+global.UIContentSizeCategoryDidChangeNotification = 'UIContentSizeCategoryDidChangeNotification';
+global.UIContentSizeCategoryNewValueKey = 'UIContentSizeCategoryNewValueKey';
 global.UIContentSizeCategoryExtraSmall = 0.5;
 global.UIContentSizeCategorySmall = 0.7;
 global.UIContentSizeCategoryMedium = 0.85;

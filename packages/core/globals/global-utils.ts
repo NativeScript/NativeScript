@@ -15,7 +15,7 @@ export class NativeScriptGlobalState {
 	constructor() {
 		// console.log('creating NativeScriptGlobals...')
 		this.events = new Observable();
-		this._setLaunched = this._setLaunchedFn.bind(this);
+		this._setLaunched = () => this.setLaunched();
 		this.events.on('launch', this._setLaunched);
 		if (profilingLevel() > 0) {
 			this.events.on('displayed', () => {
@@ -58,11 +58,17 @@ export class NativeScriptGlobalState {
 		}
 	}
 
-	private _setLaunchedFn() {
-		// console.log('NativeScriptGlobals launch fired!');
+	/**
+	 * Marks the app as launched. Idempotent, and safe to call directly: not every launch
+	 * path raises the legacy `launch` event, so the subscription cannot be relied on.
+	 */
+	setLaunched() {
 		this.launched = true;
-		this.events.off('launch', this._setLaunched);
-		this._setLaunched = null;
+
+		if (this._setLaunched) {
+			this.events.off('launch', this._setLaunched);
+			this._setLaunched = null;
+		}
 	}
 }
 export function getNativeScriptGlobals() {
