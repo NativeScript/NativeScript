@@ -90,6 +90,7 @@ Useful globally available variables in your app:
 | `--env.report` | Generate bundle analysis report |
 | `--env.verbose` | Print verbose logs and internal config |
 | `--env.e2e` | Enable E2E mode (enables `testID` property) |
+| `--env.disableNativeClassTransformer` | Leave `@NativeClass` for the runtime (skip the bundler downlevel). Alias: `--env.disableNativeTransformer` |
 
 ## 📖 Documentation
 

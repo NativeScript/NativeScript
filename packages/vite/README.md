@@ -130,6 +130,9 @@ it standalone for diagnostics, but do **not** run it alongside `ns run`/`ns debu
 for the same platform — both would try to bind the same port. CLI-managed is the
 supported default.
 
+To leave `@NativeClass` for the runtime instead of downleveling it at build time,
+pass `--env.disableNativeClassTransformer` or set `NS_DISABLE_NATIVE_CLASS_TRANSFORMER=1`.
+
 ## Usage
 
 1) Create `vite.config.mts` (the `.mts` extension keeps the config ESM without setting `"type": "module"` in the app's package.json, avoiding Vite's `configLoader: 'native'` warning):

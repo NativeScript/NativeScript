@@ -22,6 +22,7 @@ import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import { CompatDefinePlugin } from '../plugins/CompatDefinePlugin';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
+import { isNativeClassTransformerDisabled } from '../helpers/nativeClassTransformer';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
 import {
@@ -139,15 +140,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		},
 		alias: {
 			// Mock mdn-data modules that css-tree tries to load
-			'mdn-data/css/properties.json': require.resolve(
-				'../polyfills/mdn-data-properties',
-			),
-			'mdn-data/css/syntaxes.json': require.resolve(
-				'../polyfills/mdn-data-syntaxes',
-			),
-			'mdn-data/css/at-rules.json': require.resolve(
-				'../polyfills/mdn-data-at-rules',
-			),
+			'mdn-data/css/properties.json':
+				require.resolve('../polyfills/mdn-data-properties'),
+			'mdn-data/css/syntaxes.json':
+				require.resolve('../polyfills/mdn-data-syntaxes'),
+			'mdn-data/css/at-rules.json':
+				require.resolve('../polyfills/mdn-data-at-rules'),
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
 			module: require.resolve('../polyfills/module'),
 		},
@@ -446,10 +444,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			}
 		: undefined;
 
+	const skipNativeClassTransformer = isNativeClassTransformerDisabled(env);
+
 	// set up ts support
-	config.module
-		.rule('ts')
-		.test([/\.ts$/])
+	const tsRule = config.module.rule('ts').test([/\.ts$/]);
+
+	tsRule
 		.use('ts-loader')
 		.loader('ts-loader')
 		.options({
@@ -464,19 +464,24 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			},
 			getCustomTransformers() {
 				return {
-					before: [require('../transformers/NativeClass').default],
+					before: skipNativeClassTransformer
+						? []
+						: [require('../transformers/NativeClass').default],
 				};
 			},
-		})
-		.end()
+		});
+
+	if (!skipNativeClassTransformer) {
 		// Ensure pre-loaders run BEFORE ts-loader (loaders execute right-to-left):
 		// order: [ts-loader, native-class-downlevel-loader, native-class-strip-loader]
 		// execution: strip -> downlevel -> ts-loader
-		.use('native-class-downlevel-loader')
-		.loader('native-class-downlevel-loader')
-		.end()
-		.use('native-class-strip-loader')
-		.loader('native-class-strip-loader');
+		tsRule
+			.use('native-class-downlevel-loader')
+			.loader('native-class-downlevel-loader')
+			.end()
+			.use('native-class-strip-loader')
+			.loader('native-class-strip-loader');
+	}
 
 	// Use Fork TS Checker to do type checking in a separate non-blocking process
 	config.when(hasDependency('typescript'), (config) => {

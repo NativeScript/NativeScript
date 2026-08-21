@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import ts from 'typescript';
-import { isNativeESClassesEnabled, transformNativeClassSource } from '../helpers/nativeclass-transform.js';
-import { postCleanupNativeClass } from '../helpers/nativeclass-transformer-plugin.js';
+import { isNativeClassTransformerDisabled, isNativeESClassesEnabled, transformNativeClassSource } from '../helpers/nativeclass-transform.js';
+import { createNativeClassTransformerPlugin, postCleanupNativeClass } from '../helpers/nativeclass-transformer-plugin.js';
 
 const SAMPLE_TS = `
 
@@ -346,6 +346,37 @@ export class FooImpl extends NSObject {
 		const sf = ts.createSourceFile('/check.js', code, ts.ScriptTarget.ES2017, true, ts.ScriptKind.JS);
 		const hasTopLevelReturn = sf.statements.some((s) => s.kind === ts.SyntaxKind.ReturnStatement);
 		expect(hasTopLevelReturn).toBe(false);
+	});
+
+	describe('disable NativeClass transformer (NS_DISABLE_NATIVE_CLASS_TRANSFORMER)', () => {
+		afterEach(() => {
+			delete process.env.NS_DISABLE_NATIVE_CLASS_TRANSFORMER;
+		});
+
+		it('is off by default so the transformer still runs', () => {
+			expect(isNativeClassTransformerDisabled()).toBe(false);
+			const res = transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ts');
+			expect(res).not.toBeNull();
+			expect(res?.code).not.toContain('@NativeClass');
+		});
+
+		it('skips the transform on every platform when enabled', () => {
+			process.env.NS_DISABLE_NATIVE_CLASS_TRANSFORMER = '1';
+			expect(isNativeClassTransformerDisabled()).toBe(true);
+			expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ts')).toBeNull();
+		});
+
+		it('can be force-disabled with 0/false', () => {
+			process.env.NS_DISABLE_NATIVE_CLASS_TRANSFORMER = '0';
+			expect(isNativeClassTransformerDisabled()).toBe(false);
+			process.env.NS_DISABLE_NATIVE_CLASS_TRANSFORMER = 'false';
+			expect(isNativeClassTransformerDisabled()).toBe(false);
+		});
+
+		it('does not register the Vite transformer plugins when disabled', () => {
+			process.env.NS_DISABLE_NATIVE_CLASS_TRANSFORMER = '1';
+			expect(createNativeClassTransformerPlugin()).toEqual([]);
+		});
 	});
 
 	describe('native ES class mode (NS_NATIVE_ES_CLASSES)', () => {

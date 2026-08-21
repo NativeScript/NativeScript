@@ -5,6 +5,32 @@ import ts from 'typescript';
 import { getCliFlags } from './cli-flags.js';
 import type { Platform } from './platform-types.js';
 
+function isTruthyFlagValue(value: unknown): boolean {
+	if (value === true) return true;
+	if (typeof value !== 'string') return false;
+	const normalized = value.toLowerCase();
+	return normalized !== '' && normalized !== '0' && normalized !== 'false';
+}
+
+/**
+ * Skip the NativeClass ES5 downlevel on every platform so the runtime can consume
+ * `@NativeClass` directly. Enabled via `--env.disableNativeClassTransformer`
+ * (alias: `--env.disableNativeTransformer`) or `NS_DISABLE_NATIVE_CLASS_TRANSFORMER`
+ * (set to `0`/`false` to force-disable).
+ */
+export function isNativeClassTransformerDisabled(): boolean {
+	const envValue = process.env.NS_DISABLE_NATIVE_CLASS_TRANSFORMER;
+	if (envValue !== undefined) {
+		return isTruthyFlagValue(envValue);
+	}
+	try {
+		const flags = getCliFlags();
+		return isTruthyFlagValue(flags.disableNativeClassTransformer) || isTruthyFlagValue(flags.disableNativeTransformer);
+	} catch (e) {
+		return false;
+	}
+}
+
 /**
  * Opt-in: skip the NativeClass ES5 downlevel entirely and let the iOS runtime handle plain
  * ES `class X extends NativeBase {}` declarations natively (the runtime registers the
@@ -20,14 +46,22 @@ export function isNativeESClassesEnabled(platform?: Platform): boolean {
 	if (platform === 'android') return false;
 	const envValue = process.env.NS_NATIVE_ES_CLASSES;
 	if (envValue !== undefined) {
-		return envValue !== '0' && envValue.toLowerCase() !== 'false';
+		return isTruthyFlagValue(envValue);
 	}
 	try {
 		const flags = getCliFlags();
-		return !!flags.nativeESClasses;
+		return isTruthyFlagValue(flags.nativeESClasses);
 	} catch (e) {
 		return false;
 	}
+}
+
+/**
+ * Returns true when NativeClass sources should be left untouched.
+ * @param platform Optional build platform used by the Apple-only native ES class mode.
+ */
+export function shouldSkipNativeClassTransform(platform?: Platform): boolean {
+	return isNativeClassTransformerDisabled() || isNativeESClassesEnabled(platform);
 }
 
 /**
@@ -46,9 +80,8 @@ export function transformNativeClassSource(code: string, fileName: string) {
 		// If cli flags cannot be read for any reason, fall back to original behavior.
 	}
 
-	// Native ES class mode (Apple targets only): leave sources untouched - the runtime
-	// understands ES classes extending native types and the NativeClass decorator itself.
-	if (isNativeESClassesEnabled(platform)) return null;
+	// Skip downlevel when the runtime should handle NativeClass.
+	if (shouldSkipNativeClassTransform(platform)) return null;
 
 	// If this is JS and we see a __decorate* call that references NativeClass, strip it safely.
 	const isJS = /\.(js|mjs|cjs)$/.test(fileName);

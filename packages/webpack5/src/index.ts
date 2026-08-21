@@ -53,6 +53,9 @@ export interface IWebpackEnv {
 	// enable commonjs modules (default: ES modules, esm)
 	commonjs?: boolean;
 
+	// skip NativeClass decorator downlevel so the runtime can consume @NativeClass
+	disableNativeClassTransformer?: boolean;
+
 	// misc
 	replace?: string[] | string;
 	watchNodeModules?: boolean;

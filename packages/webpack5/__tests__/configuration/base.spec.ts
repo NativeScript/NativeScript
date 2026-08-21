@@ -202,6 +202,39 @@ describe('base configuration', () => {
 		});
 	});
 
+	it('skips NativeClass transformer and loaders when disableNativeClassTransformer is set', () => {
+		init({
+			ios: true,
+			disableNativeClassTransformer: true,
+		});
+		const config = base(new Config());
+		const tsRule = config.module.rule('ts');
+
+		expect(tsRule.uses.has('native-class-downlevel-loader')).toBe(false);
+		expect(tsRule.uses.has('native-class-strip-loader')).toBe(false);
+
+		tsRule.use('ts-loader').tap((options) => {
+			expect(options.getCustomTransformers()).toEqual({ before: [] });
+			return options;
+		});
+	});
+
+	it('keeps NativeClass transformer and loaders enabled by default', () => {
+		init({
+			ios: true,
+		});
+		const config = base(new Config());
+		const tsRule = config.module.rule('ts');
+
+		expect(tsRule.uses.has('native-class-downlevel-loader')).toBe(true);
+		expect(tsRule.uses.has('native-class-strip-loader')).toBe(true);
+
+		tsRule.use('ts-loader').tap((options) => {
+			expect(options.getCustomTransformers().before.length).toBe(1);
+			return options;
+		});
+	});
+
 	it('supports --env.profile', () => {
 		init({
 			platform: 'ios',
