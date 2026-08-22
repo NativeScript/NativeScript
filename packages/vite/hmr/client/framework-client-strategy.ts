@@ -85,6 +85,40 @@ export interface FrameworkClientStrategy {
 	recordPayloadChanges?(changed: any[], graphVersion: number): void;
 
 	/**
+	 * Decide whether a changed module goes through the shared evict + re-import
+	 * queue in this realm. Return `false` for a module whose fresh body must
+	 * not evaluate here — a worker script only a worker isolate ever loaded,
+	 * a type-only module nothing imports. Declined ids are handed to
+	 * {@link applyUnqueuedChanges} instead. Defaults to `true`.
+	 */
+	shouldQueueReimport?(id: string): boolean;
+
+	/**
+	 * Apply the changed modules {@link shouldQueueReimport} declined, in the
+	 * same delta. Runs only after boot, for real edits, and only when at least
+	 * one id was declined.
+	 */
+	applyUnqueuedChanges?(ids: string[]): void | Promise<void>;
+
+	/**
+	 * A full graph arrived after boot with hashes that differ from the client's
+	 * mirror — a reconnect after a dev-server restart, or version drift. The
+	 * shared fallback re-imports every changed module piecemeal, outside any
+	 * accept/dispose sequencing. Return `true` to take over (Octane requests
+	 * one ordered graph reload instead); `changedIds` is the inferred set.
+	 */
+	handleGraphResync?(changedIds: string[]): boolean | Promise<boolean>;
+
+	/**
+	 * Runs once per queue drain, BEFORE the changed modules are evicted from
+	 * the runtime registry. The only point at which a framework can still reach
+	 * the module instances about to be replaced — their `hot.accept` callbacks
+	 * and `hot.dispose` registrations are reset when the fresh bodies evaluate
+	 * (Octane: Vite-parity accept/dispose sequencing).
+	 */
+	beforeBatchEvict?(drained: string[]): void;
+
+	/**
 	 * Post-process one freshly re-imported module during the queue drain
 	 * (TypeScript/React: refresh the bundled module registry so Builder /
 	 * `loadModule` resolves the NEW code-behind instead of the boot-bundle copy).
