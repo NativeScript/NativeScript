@@ -7,7 +7,7 @@ description: How a JS framework ships NativeScript Vite HMR support as its own p
 
 `@nativescript/vite` has built-in flavors for Angular, Vue, React, Solid, TypeScript and JavaScript. A **flavor** is what turns a saved file into a change on the device: a config helper that declares it, a server strategy that runs in the Vite process, and a client strategy the device evaluates next to the shared HMR client.
 
-Flavors are not limited to the built-ins. A framework — or a renderer, a router, anything that holds live objects between saves — can register a flavor from its own package, under its own npm scope, with no change to `@nativescript/vite`. This page is how. The worked example throughout is [`@nativescript-community/vite-octane`](https://github.com/NativeScript/octane/tree/main/packages/vite-octane), the Octane flavor: a community package built entirely on this API.
+Flavors are not limited to the built-ins. A framework — or a renderer, a router, anything that holds live objects between saves — can register a flavor from its own package, under its own npm scope, with no change to `@nativescript/vite`. This page is how. The worked example throughout is [`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane/tree/main/packages/vite-octane), the Octane flavor: a community package built entirely on this API.
 
 [[toc]]
 
@@ -238,4 +238,4 @@ On a device, five saves cover the matrix: a component, a plain dependency, a wor
 
 - `@nativescript/vite/framework` — `registerFrameworkFlavor`, `getFrameworkFlavor`, `baseConfig`, `getTypeCheckPlugins`, `typescriptServerStrategy`, `runHotUpdatePrologue`, `purgeTransformCachesForHotUpdate`, and the strategy types.
 - `@nativescript/vite/hmr/client/framework.js` — `getNsHotRegistry`, `graph`, `getGraphVersion`, `normalizeSpec`, `requestModuleFromServer`, `invalidateModulesByUrls`, `buildEvictionUrls`, `resolveHmrHttpOrigin`, `safeDynImport`, `getCore`, `ENV_VERBOSE`, `setUpdateStage`, `getOverlayApi`, `performResetRoot`, `getGlobalScope`, `readNsRuntimeDevHostApi`.
-- Worked example: [`@nativescript-community/vite-octane`](https://github.com/NativeScript/octane/tree/main/packages/vite-octane).
+- Worked example: [`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane/tree/main/packages/vite-octane).

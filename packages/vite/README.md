@@ -158,7 +158,7 @@ A framework can ship its own flavor — config helper, server strategy and devic
 client strategy — as a package, using `@nativescript/vite/framework` and
 `@nativescript/vite/hmr/client/framework.js`. `init` and flavor detection pick it up from a
 `nativescript.vite` declaration in that package's `package.json`. The Octane flavor,
-[`@nativescript-community/vite-octane`](https://github.com/NativeScript/octane), is built this way:
+[`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane), is built this way:
 
 ```ts
 import { octaneConfig } from '@nativescript-community/vite-octane';
