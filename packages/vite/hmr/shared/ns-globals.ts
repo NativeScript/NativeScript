@@ -66,6 +66,7 @@ declare global {
 	var __NS_HMR_REALM__: string | undefined;
 	var __NS_RT_REALM__: string | undefined;
 	var __NS_HMR_BROWSER_RUNTIME_TARGET_FLAVOR__: string | undefined;
+	var __NS_CLIENT_STRATEGY_URL__: string | undefined;
 	var __NS_HMR_GRAPH_VERSION__: number | undefined;
 	var __NS_HMR_IMPORT_NONCE__: number | undefined;
 
