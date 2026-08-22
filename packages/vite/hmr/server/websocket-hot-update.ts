@@ -216,11 +216,15 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 			for (const mod of graphTargets) {
 				if (!mod?.id) continue;
 				try {
+					const transformed = await server.transformRequest(mod.id);
+					const code = transformed?.code || '';
+					// Import analysis runs inside the transform, so the module's edges
+					// are current only after it — read before, a newly added import is
+					// missing from the graph until the NEXT save, and a client walking
+					// the reverse graph to find accepting importers never sees it.
 					const deps = Array.from(mod.importedModules || [])
 						.map((m) => (m.id || '').replace(/\?.*$/, ''))
 						.filter(Boolean);
-					const transformed = await server.transformRequest(mod.id);
-					const code = transformed?.code || '';
 					moduleGraph.upsert((mod.id || '').replace(/\?.*$/, ''), code, deps, {
 						emitDeltaOnInsert: true,
 						// Defer the delta broadcast until AFTER the framework

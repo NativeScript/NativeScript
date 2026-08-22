@@ -217,6 +217,8 @@ export function applyDelta(payload: any) {
 			if (VERBOSE) console.warn('[hmr][prefetch] failed', e);
 		}
 		const isAppMainEntryId = (value: string) => value.endsWith(APP_MAIN_ENTRY_SPEC);
+		const strategy = getClientStrategy();
+		const unqueued: string[] = [];
 		for (const id of realIds) {
 			// SFC registry update events trigger root resets for .vue files directly
 			if (/\.vue$/i.test(id)) {
@@ -236,7 +238,18 @@ export function applyDelta(payload: any) {
 					/* ignore */
 				}
 			}
+			if (strategy?.shouldQueueReimport?.(id) === false) {
+				unqueued.push(id);
+				continue;
+			}
 			changedQueue.push(id);
+		}
+		if (unqueued.length) {
+			try {
+				void strategy?.applyUnqueuedChanges?.(unqueued);
+			} catch (e) {
+				console.warn('[hmr][delta] applyUnqueuedChanges threw', (e as any)?.message ?? e);
+			}
 		}
 		if (changedQueue.length) processQueue();
 	}
@@ -294,6 +307,11 @@ export async function processQueue(): Promise<void> {
 				setUpdateOverlayStage('evicting', {
 					detail: drained.length === 1 ? `Invalidating ${drained[0]}` : `Invalidating ${drained.length} modules`,
 				});
+			}
+			try {
+				strategy?.beforeBatchEvict?.(drained);
+			} catch (e) {
+				console.warn('[hmr][queue] beforeBatchEvict threw', (e as any)?.message ?? e);
 			}
 			const evictUrls = buildEvictionUrls(drained);
 			const evicted = invalidateModulesByUrls(evictUrls);
@@ -383,6 +401,10 @@ export async function reimportInferredFullGraphChanges(prevGraph: Map<string, { 
 			if (id.endsWith(APP_MAIN_ENTRY_SPEC)) return false;
 			return true;
 		});
+		if (toReimport.length && (await getClientStrategy()?.handleGraphResync?.(toReimport))) {
+			if (VERBOSE) console.log('[hmr][full-graph] resync handled by the client strategy', toReimport.length);
+			return;
+		}
 		if (toReimport.length && VERBOSE) console.log('[hmr][full-graph] inferred changed modules; re-importing', toReimport);
 		// Evict the inferred changed set before re-importing.
 		// See `processQueue` for the architectural rationale; the

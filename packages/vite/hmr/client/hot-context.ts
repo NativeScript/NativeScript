@@ -27,6 +27,15 @@ type HotCallback = (...args: unknown[]) => unknown;
 interface HotModuleEntry {
 	data: Record<string, unknown>;
 	acceptCallbacks: HotCallback[];
+	/**
+	 * `hot.accept(dep | deps, cb)` registrations by the CURRENT evaluation,
+	 * keyed by the dependency's canonical hot key. Mirrored into the
+	 * registry-wide `depAcceptors` index so an update to the dependency can
+	 * find its acceptors without an import edge — the spawner of a Worker
+	 * accepts the worker script this way, and the graph carries no edge
+	 * between them.
+	 */
+	acceptDeps: Map<string, HotCallback>;
 	disposeCallbacks: HotCallback[];
 	pruneCallbacks: HotCallback[];
 	declined: boolean;
@@ -53,6 +62,25 @@ export interface NsHotRegistry {
 	runPrune(keys?: readonly string[]): number;
 	/** True when any module (or any module in the key subset) called `hot.decline()`. */
 	hasDeclined(keys?: readonly string[]): boolean;
+	/**
+	 * Accept callbacks registered by `key`'s CURRENT evaluation (a copy; an
+	 * argument-less `hot.accept()` contributes a no-op). They belong to the
+	 * module instance being replaced, so a framework strategy must read them
+	 * BEFORE eviction — `createHotContext` resets them the moment the fresh body
+	 * evaluates — and invoke them with the fresh namespace afterwards (Vite's
+	 * accept contract). A non-empty result is what makes a module a
+	 * self-accepting HMR boundary.
+	 */
+	getAcceptCallbacks(key: string): HotCallback[];
+	/**
+	 * Modules whose CURRENT evaluation accepts updates to `depKey` through the
+	 * dependency form of `hot.accept`. Each callback takes the array Vite
+	 * passes (`[freshNamespace]`, `[undefined]` when the dependency does not
+	 * evaluate in this realm). Same lifetime rule as `getAcceptCallbacks`.
+	 */
+	getDepAcceptors(depKey: string): Array<{ owner: string; callback: HotCallback }>;
+	/** True when `ownerKey`'s current evaluation accepts `depKey` via the dependency form. */
+	acceptsDep(ownerKey: string, depKey: string): boolean;
 	/** Fire `hot.on(event, cb)` listeners. Returns the number of listeners invoked. */
 	dispatchHotEvent(event: string, payload?: unknown): number;
 	listHotEventListeners(): Record<string, number>;
@@ -105,6 +133,27 @@ function canonicalHotKey(id: string): string {
 	return key;
 }
 
+/**
+ * Canonical hot key of a dependency specifier as written in `hot.accept` —
+ * relative to the owner module's key (`./embers`, `../util/x`) or already
+ * root-absolute (`/src/x`). Bare specifiers are not hot-acceptable (they are
+ * vendor modules) and yield ''.
+ */
+function resolveDepHotKey(ownerKey: string, specifier: string): string {
+	if (typeof specifier !== 'string' || !specifier) return '';
+	const spec = specifier.trim();
+	if (/^https?:\/\//i.test(spec) || spec.startsWith('/')) return canonicalHotKey(spec);
+	if (!spec.startsWith('.')) return '';
+	const base = ownerKey.slice(0, ownerKey.lastIndexOf('/') + 1) || '/';
+	const segments: string[] = base.split('/').filter(Boolean);
+	for (const part of spec.split('/')) {
+		if (part === '' || part === '.') continue;
+		if (part === '..') segments.pop();
+		else segments.push(part);
+	}
+	return canonicalHotKey('/' + segments.join('/'));
+}
+
 const VERBOSE: boolean = (() => {
 	try {
 		return globalThis.__NS_ENV_VERBOSE__ === true;
@@ -116,13 +165,15 @@ const VERBOSE: boolean = (() => {
 function createRegistry(): NsHotRegistry {
 	const modules = new Map<string, HotModuleEntry>();
 	const eventListeners = new Map<string, Set<HotCallback>>();
+	// depKey → owner keys whose current evaluation accepts it.
+	const depAcceptors = new Map<string, Set<string>>();
 	let sendToServer: ((event: string, data?: unknown) => void) | null = null;
 	let fullReloadHandler: ((message?: string) => void) | null = null;
 
 	const entryFor = (key: string): HotModuleEntry => {
 		let entry = modules.get(key);
 		if (!entry) {
-			entry = { data: {}, acceptCallbacks: [], disposeCallbacks: [], pruneCallbacks: [], declined: false };
+			entry = { data: {}, acceptCallbacks: [], acceptDeps: new Map(), disposeCallbacks: [], pruneCallbacks: [], declined: false };
 			modules.set(key, entry);
 		}
 		return entry;
@@ -153,14 +204,34 @@ function createRegistry(): NsHotRegistry {
 		return executed;
 	};
 
+	// A graph reload replaces what the app owns and nothing else. `@nativescript/core`
+	// (`/ns/core*`), the vendor bundle and per-file vendor modules (`/ns/m/node_modules/*`)
+	// evaluate once per process: core re-evaluated in place would mint a second
+	// `View` hierarchy the still-live native views fail `instanceof` against, and
+	// vendor re-evaluation would split every singleton a plugin keeps. The
+	// running dev client keeps its identity for the same reason.
+	const isAppOwnedModuleUrl = (url: string, origin: string): boolean => {
+		if (!url.startsWith(origin)) return false;
+		const path = url.slice(origin.length).replace(/[?#].*$/, '');
+		if (path.startsWith('/ns/m/')) return !path.startsWith('/ns/m/node_modules/');
+		return path.startsWith('/ns/sfc') || path.startsWith('/ns/asm');
+	};
+
 	const jsFullReload = (message?: string): void => {
 		const g: any = globalThis;
 		const entryUrl = typeof g.__NS_DEV_ENTRY_URL__ === 'string' ? g.__NS_DEV_ENTRY_URL__ : '';
 		if (!entryUrl) {
 			console.warn('[ns-hot] full reload requested but no dev entry URL is known', message || '');
+			registry.dispatchHotEvent('ns:full-reload-failed', { message: 'no dev entry URL is known' });
 			return;
 		}
 		registry.dispatchHotEvent('vite:beforeFullReload', { message: message || '' });
+		// Every app module is about to be replaced, so its `hot.dispose`
+		// registrations are due now — the in-process analogue of the page
+		// teardown a browser reload implies (an entry module uses this to
+		// unmount the root it created before the re-evaluated entry mounts a
+		// new one).
+		registry.runDispose();
 		try {
 			// Evict every same-origin module EXCEPT the dev-client modules (the
 			// running HMR client must keep its singleton identity) so the entry
@@ -180,7 +251,7 @@ function createRegistry(): NsHotRegistry {
 			const getUrls = dev?.getLoadedModuleUrls;
 			const invalidate = dev?.invalidateModules;
 			const list = typeof getUrls === 'function' ? getUrls() : [];
-			const evict = (Array.isArray(list) ? list : []).filter((u: unknown): u is string => typeof u === 'string' && u.startsWith(origin) && !u.includes('/__ns_dev__/') && !u.includes('/node_modules/@nativescript/vite/'));
+			const evict = (Array.isArray(list) ? list : []).filter((u: unknown): u is string => typeof u === 'string' && isAppOwnedModuleUrl(u, origin));
 			if (evict.length && typeof invalidate === 'function') {
 				invalidate(evict);
 			}
@@ -190,10 +261,16 @@ function createRegistry(): NsHotRegistry {
 		} catch (err) {
 			console.warn('[ns-hot] full reload eviction failed:', (err as any)?.message ?? err);
 		}
-		// Fire and forget — module re-evaluation drives the app reset.
-		void import(/* @vite-ignore */ entryUrl).catch((err) => {
-			console.warn('[ns-hot] full reload entry re-import failed:', (err as any)?.message ?? err);
-		});
+		// Module re-evaluation drives the app reset; the settled import is the
+		// only signal that the reloaded graph has finished evaluating.
+		void import(/* @vite-ignore */ entryUrl)
+			.then(() => {
+				registry.dispatchHotEvent('ns:full-reload-complete', { message: message || '' });
+			})
+			.catch((err) => {
+				console.warn('[ns-hot] full reload entry re-import failed:', (err as any)?.message ?? err);
+				registry.dispatchHotEvent('ns:full-reload-failed', { message: String((err as any)?.message ?? err) });
+			});
 	};
 
 	const registry: NsHotRegistry = {
@@ -204,6 +281,12 @@ function createRegistry(): NsHotRegistry {
 			// Fresh evaluation of the module: previous accept/dispose/prune
 			// registrations belong to the replaced instance. `data` persists.
 			entry.acceptCallbacks = [];
+			for (const depKey of entry.acceptDeps.keys()) {
+				const owners = depAcceptors.get(depKey);
+				owners?.delete(key);
+				if (owners && owners.size === 0) depAcceptors.delete(depKey);
+			}
+			entry.acceptDeps = new Map();
 			entry.disposeCallbacks = [];
 			entry.pruneCallbacks = [];
 			entry.declined = false;
@@ -230,7 +313,22 @@ function createRegistry(): NsHotRegistry {
 				},
 				accept(...args: unknown[]) {
 					const cb = args.find((a) => typeof a === 'function') as HotCallback | undefined;
-					entry.acceptCallbacks.push(cb || (() => {}));
+					const deps = typeof args[0] === 'string' ? [args[0]] : Array.isArray(args[0]) ? args[0] : null;
+					if (deps === null) {
+						entry.acceptCallbacks.push(cb || (() => {}));
+						return;
+					}
+					for (const dep of deps) {
+						const depKey = resolveDepHotKey(key, String(dep));
+						if (!depKey) continue;
+						entry.acceptDeps.set(depKey, cb || (() => {}));
+						let owners = depAcceptors.get(depKey);
+						if (!owners) {
+							owners = new Set();
+							depAcceptors.set(depKey, owners);
+						}
+						owners.add(key);
+					}
 				},
 				acceptExports(_exportNames: string[], cb?: HotCallback) {
 					entry.acceptCallbacks.push(cb || (() => {}));
@@ -290,6 +388,23 @@ function createRegistry(): NsHotRegistry {
 				if (modules.get(key)?.declined) return true;
 			}
 			return false;
+		},
+		getAcceptCallbacks(key: string): HotCallback[] {
+			const entry = modules.get(canonicalHotKey(String(key)));
+			return entry ? entry.acceptCallbacks.slice() : [];
+		},
+		getDepAcceptors(depKey: string) {
+			const owners = depAcceptors.get(canonicalHotKey(String(depKey)));
+			if (!owners) return [];
+			const out: Array<{ owner: string; callback: HotCallback }> = [];
+			for (const owner of owners) {
+				const callback = modules.get(owner)?.acceptDeps.get(canonicalHotKey(String(depKey)));
+				if (callback) out.push({ owner, callback });
+			}
+			return out;
+		},
+		acceptsDep(ownerKey: string, depKey: string): boolean {
+			return modules.get(canonicalHotKey(String(ownerKey)))?.acceptDeps.has(canonicalHotKey(String(depKey))) === true;
 		},
 		dispatchHotEvent(event: string, payload?: unknown): number {
 			const listeners = eventListeners.get(event);

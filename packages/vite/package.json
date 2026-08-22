@@ -59,6 +59,13 @@
 			"import": "./configuration/base.js",
 			"default": "./configuration/base.js"
 		},
+		"./framework": {
+			"types": "./framework.d.ts",
+			"import": "./framework.js",
+			"default": "./framework.js"
+		},
+		"./hmr/client/framework": "./hmr/client/framework.js",
+		"./hmr/client/framework.js": "./hmr/client/framework.js",
 		"./hmr/client/index.js": "./hmr/client/index.js",
 		"./hmr/client/hot-context": "./hmr/client/hot-context.js",
 		"./hmr/client/hot-context.js": "./hmr/client/hot-context.js",

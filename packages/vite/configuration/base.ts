@@ -120,7 +120,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	}
 
 	// Filtered logger to suppress noisy warnings
-	const filteredLogger = createFilteredViteLogger();
+	const filteredLogger = createFilteredViteLogger({ hmrActive });
 
 	// Create TypeScript aliases with platform support
 	const tsConfig = getTsConfigData({ platform, verbose });

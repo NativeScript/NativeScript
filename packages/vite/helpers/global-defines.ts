@@ -1,4 +1,5 @@
 import { getProjectAppPath, getProjectAppVirtualPath } from './utils.js';
+import { getClientStrategyDevicePath } from '../hmr/framework-flavors.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
 const APP_ROOT_VIRTUAL = getProjectAppVirtualPath();
@@ -93,6 +94,9 @@ export function getRuntimeSeedValues(opts: { platform?: string; isDevMode: boole
 		isIOS: values.__APPLE__,
 		// Runtime flavor for the raw-served HMR client's TARGET_FLAVOR resolution.
 		__NS_TARGET_FLAVOR__: opts.flavor,
+		// Device path of a registered (non built-in) flavor's client strategy;
+		// '' for built-ins, which the client resolves from its own package.
+		__NS_CLIENT_STRATEGY_URL__: getClientStrategyDevicePath(opts.flavor),
 		// App-root virtual path — every served-id → moduleName mapping (frame
 		// navigation targets, modal re-present matching) depends on this.
 		__NS_APP_ROOT_DIR__: APP_ROOT_DIR,
@@ -247,6 +251,7 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		__non_webpack_require__: 'globalThis.require',
 		__NS_ENV_VERBOSE__: JSON.stringify(values.__NS_ENV_VERBOSE__),
 		__NS_TARGET_FLAVOR__: JSON.stringify(opts.flavor),
+		__NS_CLIENT_STRATEGY_URL__: JSON.stringify(getClientStrategyDevicePath(opts.flavor)),
 		// whether to show the HMR in-progress overlay.
 		__NS_HMR_PROGRESS_OVERLAY_ENABLED__: JSON.stringify(isHmrProgressOverlayEnabled()),
 		__CSS_PARSER__: JSON.stringify(values.__CSS_PARSER__),

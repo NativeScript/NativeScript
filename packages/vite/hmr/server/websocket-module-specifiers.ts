@@ -6,6 +6,7 @@ import type { VendorManifest } from '../shared/vendor/manifest.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
 import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName, getPackageRuntimeInfo } from '../shared/package-classifier.js';
+import { getFlavorClientPackages } from '../framework-flavors.js';
 
 const ESM_FRAMEWORK_PACKAGE_ROOTS = new Set(['@nativescript/angular', 'nativescript-angular']);
 
@@ -110,7 +111,16 @@ export function isNativeScriptPluginModule(spec: string): boolean {
 function isBuildTimeOnlyPackageRoot(root: string): boolean {
 	if (!root) return false;
 	if (BUILD_TIME_ONLY_PACKAGE_ROOTS.has(root)) return true;
+	if (getFlavorClientPackages().has(root)) return true;
 	return BUILD_TIME_ONLY_PACKAGE_PREFIXES.some((prefix) => root.startsWith(prefix));
+}
+
+/** A registered flavor's client package is dev tooling the device loads per-module, like `@nativescript/vite`. */
+export function isFlavorClientPackageSpecifier(spec: string): boolean {
+	const cleaned = spec.replace(PAT.QUERY_PATTERN, '');
+	const normalized = normalizeNodeModulesSpecifier(cleaned) || cleaned.replace(/^\/+/, '');
+	const root = extractRootPackageName(normalized) || normalized;
+	return getFlavorClientPackages().has(root);
 }
 
 function isAllowedNativeScriptViteDeviceSubpath(spec: string): boolean {
@@ -146,6 +156,10 @@ export function getBlockedDeviceNodeModulesReason(spec: string): string | null {
 
 		const subpath = normalized.slice(pkgName.length).replace(/^\/+/, '');
 		return subpath ? `build-time NativeScript Vite module is not device-loadable: ${pkgName}/${subpath}` : 'build-time NativeScript Vite package root is not device-loadable';
+	}
+
+	if (getFlavorClientPackages().has(pkgName)) {
+		return null;
 	}
 
 	if (isBuildTimeOnlyPackageRoot(pkgName)) {

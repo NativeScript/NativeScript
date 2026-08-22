@@ -11,7 +11,7 @@ import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
+import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
@@ -352,9 +352,10 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				}
 			}
 			let code = transformed.code;
+			if (isWorkerEntryModuleId(spec)) code = ensureWorkerEntryGlobalsImport(code);
 			// Prepend guard to capture any URL-based require attempts
 			code = REQUIRE_GUARD_SNIPPET + code;
-			code = cleanCode(code, strategy);
+			code = cleanCode(code, strategy, isWorkerRealmRequest ? { workerRealm: true } : undefined);
 			// Library code (node_modules, monorepo core source, dist vite package)
 			// must skip the app-source passes inside processCodeForDevice (AST
 			// normalization, /ns/rt helper-alias injection). One classification

@@ -10,7 +10,7 @@ import type { Platform } from './platform-types.js';
 const require = createRequire(import.meta.url);
 
 export type PlatformType = Platform;
-type TypeCheckFlavor = 'typescript' | 'react' | 'solid' | 'vue' | 'angular' | 'javascript';
+export type TypeCheckFlavor = 'typescript' | 'react' | 'solid' | 'vue' | 'angular' | 'javascript';
 
 export type TypeCheckMode = 'off' | 'warn' | 'error';
 
