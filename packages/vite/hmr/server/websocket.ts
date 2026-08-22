@@ -13,6 +13,7 @@ import { angularServerStrategy } from '../frameworks/angular/server/strategy.js'
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { reactServerStrategy } from '../frameworks/react/server/strategy.js';
+import { getFrameworkFlavor } from '../framework-flavors.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
@@ -836,12 +837,11 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 
 /**
  * Build the server-side HMR WebSocket plugin for `flavor`, or `undefined` when
- * the flavor has no registered server strategy (e.g. `react`, which ships only
- * the client plugin today). Driven off `STRATEGY_REGISTRY`, so adding a flavor
- * is a one-line registry change — no per-flavor wrapper and no `getHMRPlugins`
- * switch arm.
+ * the flavor has no server strategy. Built-in flavors come from
+ * `STRATEGY_REGISTRY`; a framework shipped outside this package contributes
+ * its strategy through `registerFrameworkFlavor` (see `framework-flavors.ts`).
  */
 export function hmrWebSocketPluginForFlavor(flavor: string, opts: { verbose?: boolean }): Plugin | undefined {
-	const strategy = STRATEGY_REGISTRY.get(flavor);
+	const strategy = STRATEGY_REGISTRY.get(flavor) ?? getFrameworkFlavor(flavor)?.server;
 	return strategy ? createHmrWebSocketPlugin(opts, strategy) : undefined;
 }

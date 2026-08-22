@@ -1,5 +1,48 @@
-// import { defaultConfigs } from '..';
+import { existsSync, readFileSync } from 'node:fs';
+import * as path from 'node:path';
 import { getAllDependencies } from './utils.js';
+import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
+
+/**
+ * A flavor declared by a framework package in its own package.json:
+ *
+ *   "nativescript": { "vite": { "flavor": "octane", "config": { "import": "octaneConfig", "from": "@nativescript/vite-octane" } } }
+ *
+ * The dependency that carries it identifies the flavor for detection, and
+ * `config` tells `nativescript-vite init` which helper to scaffold.
+ */
+export interface DeclaredViteFlavor {
+	flavor: string;
+	package: string;
+	config?: { import: string; from: string };
+}
+
+function readDeclaredViteFlavor(dependency: string): DeclaredViteFlavor | null {
+	const projectRoot = getProjectRootPath();
+	const roots = [projectRoot, findMonorepoWorkspaceRoot(projectRoot)].filter((root): root is string => !!root);
+	for (const root of roots) {
+		const manifest = path.join(root, 'node_modules', dependency, 'package.json');
+		if (!existsSync(manifest)) continue;
+		try {
+			const vite = JSON.parse(readFileSync(manifest, 'utf8'))?.nativescript?.vite;
+			if (vite && typeof vite.flavor === 'string' && vite.flavor) {
+				const config = vite.config && typeof vite.config.import === 'string' && typeof vite.config.from === 'string' ? { import: vite.config.import, from: vite.config.from } : undefined;
+				return { flavor: vite.flavor, package: dependency, config };
+			}
+		} catch {}
+		return null;
+	}
+	return null;
+}
+
+/** The first installed dependency that declares a Vite flavor, if any. */
+export function findDeclaredViteFlavor(): DeclaredViteFlavor | null {
+	for (const dependency of getAllDependencies()) {
+		const declared = readDeclaredViteFlavor(dependency);
+		if (declared) return declared;
+	}
+	return null;
+}
 
 let targetFlavor: string;
 
@@ -57,6 +100,11 @@ export function determineProjectFlavor(): string | false {
 
 	if (dependencies.includes('svelte-native') || dependencies.includes('@nativescript-community/svelte-native')) {
 		return 'svelte';
+	}
+
+	const declared = findDeclaredViteFlavor();
+	if (declared) {
+		return declared.flavor;
 	}
 
 	// the order is important - angular, react, and svelte also include these deps

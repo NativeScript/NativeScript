@@ -15,7 +15,7 @@
  */
 
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
-import { ENV_VERBOSE } from './utils.js';
+import { ENV_VERBOSE, resolveHmrHttpOrigin } from './utils.js';
 import type { FrameworkClientStrategy } from './framework-client-strategy.js';
 
 const VERBOSE = ENV_VERBOSE;
@@ -71,6 +71,30 @@ export const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
 const CLIENT_STRATEGY_FLAVORS = new Set(['vue', 'angular', 'solid', 'typescript', 'react']);
 let CLIENT_STRATEGY: FrameworkClientStrategy | undefined;
 
+// A flavor registered from outside the package (`registerFrameworkFlavor`)
+// ships its client strategy in its own package; the dev server seeds that
+// module's device path so the loader never has to know the package.
+function resolveRegisteredClientStrategyUrl(): string | undefined {
+	let devicePath: unknown;
+	try {
+		devicePath = typeof __NS_CLIENT_STRATEGY_URL__ === 'string' ? __NS_CLIENT_STRATEGY_URL__ : undefined;
+	} catch {}
+	if (!devicePath) {
+		try {
+			devicePath = getGlobalScope().__NS_CLIENT_STRATEGY_URL__;
+		} catch {}
+	}
+	if (typeof devicePath !== 'string' || !devicePath) return undefined;
+	if (/^https?:\/\//.test(devicePath)) return devicePath;
+	const origin = resolveHmrHttpOrigin();
+	return origin ? origin + devicePath : devicePath;
+}
+
+function pickClientStrategyExport(mod: any, flavor: string): FrameworkClientStrategy | undefined {
+	const candidates = [mod?.default, mod?.clientStrategy, mod?.[`${flavor}ClientStrategy`]];
+	return candidates.find((candidate) => candidate && typeof candidate.install === 'function');
+}
+
 // The strategy module's URL, absolute and dot-segment free. The runtime keys
 // its module registry by the specifier it is handed, so a `../` specifier from
 // a dev-served module would register the strategy under a non-canonical URL
@@ -88,13 +112,24 @@ function resolveClientStrategyUrl(flavor: string): string {
 	return relative;
 }
 
+function clientStrategyModuleUrl(flavor: string): string | undefined {
+	if (CLIENT_STRATEGY_FLAVORS.has(flavor)) return resolveClientStrategyUrl(flavor);
+	return resolveRegisteredClientStrategyUrl();
+}
+
+const CLIENT_STRATEGY_URL = TARGET_FLAVOR ? clientStrategyModuleUrl(TARGET_FLAVOR) : undefined;
+
 export const CLIENT_STRATEGY_READY: Promise<void> =
-	TARGET_FLAVOR && CLIENT_STRATEGY_FLAVORS.has(TARGET_FLAVOR)
-		? import(/* @vite-ignore */ resolveClientStrategyUrl(TARGET_FLAVOR))
+	TARGET_FLAVOR && CLIENT_STRATEGY_URL
+		? import(/* @vite-ignore */ CLIENT_STRATEGY_URL)
 				.then((mod: any) => {
-					CLIENT_STRATEGY = mod && mod[`${TARGET_FLAVOR}ClientStrategy`];
+					CLIENT_STRATEGY = pickClientStrategyExport(mod, TARGET_FLAVOR);
+					if (!CLIENT_STRATEGY) {
+						console.warn(`[hmr-client] ${CLIENT_STRATEGY_URL} exports no client strategy for flavor "${TARGET_FLAVOR}" (expected default, clientStrategy or ${TARGET_FLAVOR}ClientStrategy)`);
+						return;
+					}
 					if (VERBOSE) console.log('[hmr-client] client strategy loaded for flavor:', TARGET_FLAVOR);
-					CLIENT_STRATEGY?.install();
+					CLIENT_STRATEGY.install();
 				})
 				.catch((err) => {
 					console.warn('[hmr-client] failed to load client strategy for', TARGET_FLAVOR, err);
