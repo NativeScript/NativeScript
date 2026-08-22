@@ -6,7 +6,7 @@ import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
 /**
  * A flavor declared by a framework package in its own package.json:
  *
- *   "nativescript": { "vite": { "flavor": "octane", "config": { "import": "octaneConfig", "from": "@nativescript/vite-octane" } } }
+ *   "nativescript": { "vite": { "flavor": "octane", "config": { "import": "octaneConfig", "from": "@nativescript-community/vite-octane" } } }
  *
  * The dependency that carries it identifies the flavor for detection, and
  * `config` tells `nativescript-vite init` which helper to scaffold.
