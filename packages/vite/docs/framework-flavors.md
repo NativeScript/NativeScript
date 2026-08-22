@@ -7,7 +7,7 @@ description: How a JS framework ships NativeScript Vite HMR support as its own p
 
 `@nativescript/vite` has built-in flavors for Angular, Vue, React, Solid, TypeScript and JavaScript. A **flavor** is what turns a saved file into a change on the device: a config helper that declares it, a server strategy that runs in the Vite process, and a client strategy the device evaluates next to the shared HMR client.
 
-Flavors are not limited to the built-ins. A framework — or a renderer, a router, anything that holds live objects between saves — can register a flavor from its own package, with no change to `@nativescript/vite`. This page is how. The worked example throughout is [`@nativescript/vite-octane`](https://github.com/NativeScript/octane/tree/main/packages/vite-octane), the Octane flavor, which is built entirely on this API.
+Flavors are not limited to the built-ins. A framework — or a renderer, a router, anything that holds live objects between saves — can register a flavor from its own package, under its own npm scope, with no change to `@nativescript/vite`. This page is how. The worked example throughout is [`@nativescript-community/vite-octane`](https://github.com/NativeScript/octane/tree/main/packages/vite-octane), the Octane flavor: a community package built entirely on this API.
 
 [[toc]]
 
@@ -19,7 +19,7 @@ import { registerFrameworkFlavor } from '@nativescript/vite/framework';
 registerFrameworkFlavor({
   flavor: 'octane',                           // the name, everywhere
   server: octaneServerStrategy,               // runs in the dev server
-  client: '@nativescript/vite-octane/client', // fetched and evaluated by the device
+  client: '@nativescript-community/vite-octane/client', // fetched and evaluated by the device
 });
 ```
 
@@ -48,7 +48,7 @@ Two rules shape the layout:
 
 ```json
 {
-  "name": "@nativescript/vite-octane",
+  "name": "@nativescript-community/vite-octane",
   "exports": {
     ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
     "./client": { "import": "./dist/client/strategy.js", "types": "./dist/client/strategy.d.ts" }
@@ -56,7 +56,7 @@ Two rules shape the layout:
   "nativescript": {
     "vite": {
       "flavor": "octane",
-      "config": { "import": "octaneConfig", "from": "@nativescript/vite-octane" }
+      "config": { "import": "octaneConfig", "from": "@nativescript-community/vite-octane" }
     }
   },
   "peerDependencies": { "@nativescript/vite": ">=8.0.0", "vite": "^8.0.0" }
@@ -67,7 +67,7 @@ With that in place, `npx nativescript-vite init` in an app that depends on the p
 
 ```ts
 import { defineConfig } from 'vite';
-import { octaneConfig } from '@nativescript/vite-octane';
+import { octaneConfig } from '@nativescript-community/vite-octane';
 
 export default defineConfig(({ mode }) => octaneConfig({ mode }));
 ```
@@ -81,7 +81,7 @@ import { baseConfig, getTypeCheckPlugins, registerFrameworkFlavor, type TypeChec
 import { octane, type OctanePluginOptions } from '@octanejs/vite-plugin';
 import { octaneServerStrategy } from './server/strategy.js';
 
-registerFrameworkFlavor({ flavor: 'octane', server: octaneServerStrategy, client: '@nativescript/vite-octane/client' });
+registerFrameworkFlavor({ flavor: 'octane', server: octaneServerStrategy, client: '@nativescript-community/vite-octane/client' });
 
 export interface OctaneConfigOptions extends TypeCheckControlOptions {
   octane?: OctanePluginOptions;
@@ -238,4 +238,4 @@ On a device, five saves cover the matrix: a component, a plain dependency, a wor
 
 - `@nativescript/vite/framework` — `registerFrameworkFlavor`, `getFrameworkFlavor`, `baseConfig`, `getTypeCheckPlugins`, `typescriptServerStrategy`, `runHotUpdatePrologue`, `purgeTransformCachesForHotUpdate`, and the strategy types.
 - `@nativescript/vite/hmr/client/framework.js` — `getNsHotRegistry`, `graph`, `getGraphVersion`, `normalizeSpec`, `requestModuleFromServer`, `invalidateModulesByUrls`, `buildEvictionUrls`, `resolveHmrHttpOrigin`, `safeDynImport`, `getCore`, `ENV_VERBOSE`, `setUpdateStage`, `getOverlayApi`, `performResetRoot`, `getGlobalScope`, `readNsRuntimeDevHostApi`.
-- Worked example: [`@nativescript/vite-octane`](https://github.com/NativeScript/octane/tree/main/packages/vite-octane).
+- Worked example: [`@nativescript-community/vite-octane`](https://github.com/NativeScript/octane/tree/main/packages/vite-octane).
