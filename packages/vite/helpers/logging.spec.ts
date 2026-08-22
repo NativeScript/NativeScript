@@ -162,3 +162,13 @@ describe('shouldSuppressViteWarning', () => {
 		});
 	});
 });
+
+describe('shouldSuppressViteInfo', () => {
+	it('drops the stock web-client HMR verdicts, which never apply to a device session', async () => {
+		const { shouldSuppressViteInfo } = await import('./logging.js');
+		expect(shouldSuppressViteInfo('page reload src/octane/driver.ts')).toBe(true);
+		expect(shouldSuppressViteInfo('hmr update /src/app.tsx')).toBe(true);
+		expect(shouldSuppressViteInfo('  VITE v8.2.2  ready in 1007 ms')).toBe(false);
+		expect(shouldSuppressViteInfo('server restarted.')).toBe(false);
+	});
+});
