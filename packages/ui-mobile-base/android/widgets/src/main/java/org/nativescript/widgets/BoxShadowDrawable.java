@@ -135,12 +135,6 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 				// apply insets that mimic offsets/spread to the shadowLayer
 				int inset = -spreadRadius;
-				Log.d(TAG, "Insets:"
-					+ "\n l: " + (inset + offsetX)
-					+ "\n t: " + (inset + offsetY)
-					+ "\n r: " + (inset - offsetX)
-					+ "\n b: " + (inset - offsetY)
-				);
 
 				int layerIndex = this.addLayer(shadowLayer);
 				this.setLayerInset(layerIndex,

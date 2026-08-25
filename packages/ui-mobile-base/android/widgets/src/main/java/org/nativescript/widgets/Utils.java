@@ -302,20 +302,14 @@ public class Utils {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
 		}
-		Log.d("BoxShadowDrawable", "drawBoxShadow");
 
 		Drawable background = view.getBackground();
 		Drawable wrappedBg;
 
 		if (background != null) {
-			Log.d("BoxShadowDrawable", "current background is: " + background.getClass().getName());
 
 			if (background instanceof BoxShadowDrawable) {
 				wrappedBg = ((BoxShadowDrawable) background).getWrappedDrawable();
-
-				if (wrappedBg != null) {
-					Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrappedBg.getClass().getName());
-				}
 			} else {
 				wrappedBg = background;
 			}
@@ -324,13 +318,9 @@ public class Utils {
 		}
 
 		// replace background
-		Log.d("BoxShadowDrawable", "replacing background with new BoxShadowDrawable...");
 		view.setBackground(new BoxShadowDrawable(wrappedBg, values));
 
 		background = view.getBackground();
-		if (background != null) {
-			Log.d("BoxShadowDrawable", "new background is: " + background.getClass().getName());
-		}
 
 		int count = 0;
 		while (view.getParent() != null && view.getParent() instanceof ViewGroup) {
