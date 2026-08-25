@@ -272,7 +272,9 @@ global.loadModule = function loadModule(name: string): any {
 	return null;
 };
 function registerOnGlobalContext(moduleName: string, exportName: string): void {
-	if (global[exportName]) {
+	// Check presence with `in`, never by reading the property — reading forces
+	// runtime-provided lazy globals (e.g. TextDecoder) to materialize eagerly.
+	if (exportName in global) {
 		// already registered
 		return;
 	}
@@ -296,12 +298,19 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 }
 
 export function installPolyfills(moduleName: string, exportNames: string[]) {
+	// Install only what the runtime doesn't already provide, checking with `in`
+	// so runtime-provided lazy globals aren't materialized by the check itself.
+	const missingNames = exportNames.filter((exportName) => !(exportName in global));
+	if (!missingNames.length) {
+		return;
+	}
+
 	const shouldInstallEagerly = global.__snapshot || !__COMMONJS__;
 	if (shouldInstallEagerly) {
 		const loadedModule = global.loadModule(moduleName);
-		installPolyfillsFromModule(loadedModule, exportNames as any);
+		installPolyfillsFromModule(loadedModule, missingNames as any);
 	} else {
-		exportNames.forEach((exportName) => registerOnGlobalContext(moduleName, exportName));
+		missingNames.forEach((exportName) => registerOnGlobalContext(moduleName, exportName));
 	}
 }
 
@@ -336,7 +345,9 @@ if (!global.NativeScriptHasPolyfilled) {
 	global.registerModule('subtle', () => subtleCryptoImpl);
 	installPolyfills('subtle', ['SubtleCrypto']);
 
-	global.crypto = new cryptoImpl.Crypto() as any;
+	if (!('crypto' in (global as object))) {
+		global.crypto = new cryptoImpl.Crypto() as any;
+	}
 
 	// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 	// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
