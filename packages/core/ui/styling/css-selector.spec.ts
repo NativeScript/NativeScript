@@ -347,6 +347,80 @@ describe('css-selector', () => {
 		}
 	});
 
+	describe('attribute selectors', () => {
+		class Widget {
+			public cssType = 'widget';
+			public cssClasses = new Set<string>();
+			private _text: string;
+			get text(): string {
+				return this._text;
+			}
+			set text(value: string) {
+				this._text = value;
+			}
+		}
+
+		it('does not match a node that does not know the attribute', () => {
+			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
+			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
+
+			expect(rule.selectors[0].accumulateChanges(<any>node, undefined)).toBe(false);
+		});
+
+		it('matches a node carrying the attribute', () => {
+			const rule = createOne(`.title[_ngcontent-c3] { color: red; }`);
+			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
+
+			expect(rule.selectors[0].accumulateChanges(<any>node, undefined)).toBe(true);
+		});
+
+		it('does not subscribe for attributes that cannot raise change events', () => {
+			const rule = createOne(`[_ngcontent-c3] { color: red; }`);
+			const node = { cssType: 'label', '_ngcontent-c3': '' };
+			const changes: Array<string> = [];
+
+			rule.selectors[0].accumulateChanges(
+				<any>node,
+				<any>{
+					addAttribute: (_n, attribute: string) => changes.push(attribute),
+					addPseudoClass: () => {},
+				},
+			);
+
+			expect(changes).toEqual([]);
+		});
+
+		it('subscribes for attributes backed by a property', () => {
+			const rule = createOne(`widget[text] { color: red; }`);
+			const node = new Widget();
+			node.text = 'hello';
+			const changes: Array<string> = [];
+
+			rule.selectors[0].accumulateChanges(
+				<any>node,
+				<any>{
+					addAttribute: (_n, attribute: string) => changes.push(attribute),
+					addPseudoClass: () => {},
+				},
+			);
+
+			expect(changes).toEqual(['text']);
+		});
+
+		it('matches a property backed attribute even when it is unset', () => {
+			const rule = createOne(`widget[text] { color: red; }`);
+
+			// The value can still be assigned later, and assigning it raises `textChange`.
+			const accumulator = <any>{ addAttribute: () => {}, addPseudoClass: () => {} };
+			expect(rule.selectors[0].accumulateChanges(<any>new Widget(), accumulator)).toBe(true);
+		});
+	});
+
+	it('strips the unsupported !important flag while parsing', () => {
+		const rule = createOne(`button { color: red !important; }`);
+		expect(rule.declarations).toEqual([{ property: 'color', value: 'red' }]);
+	});
+
 	it('query returns selectors sorted by specificity then position', () => {
 		const { selectorScope } = create(`
 	        button { color: red; }

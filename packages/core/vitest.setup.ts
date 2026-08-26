@@ -14,6 +14,8 @@ global.__IOS__ = true;
 global.__VISIONOS__ = false;
 global.__APPLE__ = true;
 global.__COMMONJS__ = false;
+// Injected by the bundler in a real app; the css-tree parser is the default.
+global.__CSS_PARSER__ = 'css-tree';
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
 global.NSBundle = {

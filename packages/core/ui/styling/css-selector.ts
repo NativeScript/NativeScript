@@ -2,6 +2,7 @@ import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataTyp
 import '../../globals';
 import { isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
+import { cleanupImportantFlags } from './css-utils';
 
 import * as ReworkCSS from '../../css';
 import { checkIfMediaQueryMatches } from '../../media-query-list';
@@ -72,13 +73,13 @@ const enum PseudoClassSelectorList {
 }
 
 enum Combinator {
-	'descendant' = ' ',
-	'child' = '>',
-	'adjacent' = '+',
-	'sibling' = '~',
+	descendant = ' ',
+	child = '>',
+	adjacent = '+',
+	sibling = '~',
 
 	// Not supported
-	'parent' = '<',
+	parent = '<',
 	'column-combinator' = '||',
 }
 
@@ -141,6 +142,48 @@ function getNodePreviousDirectSibling(node: Node): null | Node {
 	}
 
 	return node.parent.getChildAt(nodeIndex - 1);
+}
+
+/**
+ * Cache of "does this view type notify for that attribute", keyed by prototype.
+ *
+ * `<attribute>Change` events are only raised by registered properties, which are
+ * defined as accessors on a prototype. An attribute that is a plain value on the
+ * instance - Angular's `_ngcontent-*` markers, anything a renderer assigns
+ * directly - can never notify, so subscribing to its change event is pure
+ * overhead on every view the selector may match.
+ */
+const notifyingAttributes = new WeakMap<object, Map<string, boolean>>();
+
+function attributeNotifiesChanges(node: Node, attribute: string): boolean {
+	const prototype = Object.getPrototypeOf(node);
+	if (!prototype) {
+		return false;
+	}
+
+	let cache = notifyingAttributes.get(prototype);
+	if (cache) {
+		const cached = cache.get(attribute);
+		if (cached !== undefined) {
+			return cached;
+		}
+	} else {
+		cache = new Map<string, boolean>();
+		notifyingAttributes.set(prototype, cache);
+	}
+
+	let notifies = false;
+	for (let current = prototype; current; current = Object.getPrototypeOf(current)) {
+		const descriptor = Object.getOwnPropertyDescriptor(current, attribute);
+		if (descriptor) {
+			notifies = !!descriptor.set;
+			break;
+		}
+	}
+
+	cache.set(attribute, notifies);
+
+	return notifies;
 }
 
 function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false): ClassDecorator {
@@ -376,10 +419,20 @@ export class AttributeSelector extends SimpleSelector {
 		return false;
 	}
 	public mayMatch(node: Node): boolean {
-		return true;
+		// The attribute may still be assigned later, but only if the view knows about it:
+		// registered properties live on the prototype and anything a framework has already
+		// set is an own value. An attribute that is on neither can never start matching
+		// without the css state being invalidated anyway, and treating it as a permanent
+		// "maybe" keeps the selector - and a change subscription for it - on every view it
+		// will never match. Angular's per component `[_ngcontent-cN]` scoping makes that
+		// cost grow with the number of components in the app.
+		return this.attribute in node;
 	}
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		map.addAttribute(node, this.attribute);
+		// Only subscribe when the attribute can actually raise `<attribute>Change`.
+		if (attributeNotifiesChanges(node, this.attribute)) {
+			map.addAttribute(node, this.attribute);
+		}
 	}
 }
 
@@ -886,7 +939,12 @@ export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
 }
 
 function createDeclaration(decl: ReworkCSS.Declaration): any {
-	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
+	return {
+		property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(),
+		// Strip the (unsupported) `!important` flag once, here, instead of scanning
+		// every declaration again for every view the rule is applied to.
+		value: cleanupImportantFlags(decl.value, decl.property),
+	};
 }
 
 function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
@@ -1091,16 +1149,24 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	 */
 	public hasSiblingCombinatorSelectors = false;
 
-	getSelectorCandidates(node: T) {
+	getSelectorCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
 		const { cssClasses, id, cssType } = node;
-		const candidates: SelectorCore[] = [];
 
 		appendSelectorCandidates(candidates, this.universal);
-		appendSelectorCandidates(candidates, this.id[id]);
-		appendSelectorCandidates(candidates, this.type[cssType]);
+
+		if (id) {
+			appendSelectorCandidates(candidates, this.id[id]);
+		}
+
+		if (cssType) {
+			appendSelectorCandidates(candidates, this.type[cssType]);
+		}
 
 		if (cssClasses && cssClasses.size) {
-			cssClasses.forEach((c) => appendSelectorCandidates(candidates, this.class[c]));
+			const classSelectors = this.class;
+			for (const cssClass of cssClasses) {
+				appendSelectorCandidates(candidates, classSelectors[cssClass]);
+			}
 		}
 
 		return candidates;
@@ -1236,13 +1302,23 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
 
 				if (isMatchingAllQueries) {
-					const mediaQuerySelectors = selectorScope.getSelectorCandidates(node);
-					selectors.push(...mediaQuerySelectors);
+					selectorScope.getSelectorCandidates(node, selectors);
 				}
 			}
 		}
 
-		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
+		// Compact the candidates in place - a query runs for every view, so the
+		// intermediate array a filter() would allocate is worth avoiding.
+		let matched = 0;
+		for (let i = 0, length = selectors.length; i < length; i++) {
+			const selector = selectors[i];
+			if (selector.accumulateChanges(node, selectorsMatch)) {
+				selectors[matched++] = selector;
+			}
+		}
+		selectors.length = matched;
+
+		selectorsMatch.selectors = selectors.sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
 
 		return selectorsMatch;
 	}
@@ -1253,8 +1329,14 @@ interface ChangeAccumulator {
 	addPseudoClass(node: Node, pseudoClass: string): void;
 }
 
+/**
+ * Most views match no dynamic selector at all, so the change map is only
+ * materialized once something actually has to be tracked.
+ */
+const emptyChangeMap: ChangeMap<any> = new Map();
+
 export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
-	public changeMap: ChangeMap<T> = new Map<T, Changes>();
+	public changeMap: ChangeMap<T> = emptyChangeMap;
 	public selectors: SelectorCore[];
 
 	public addAttribute(node: T, attribute: string): void {
@@ -1274,9 +1356,14 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	}
 
 	public properties(node: T): Changes {
-		let set = this.changeMap.get(node);
+		let changeMap = this.changeMap;
+		if (changeMap === emptyChangeMap) {
+			this.changeMap = changeMap = new Map<T, Changes>();
+		}
+
+		let set = changeMap.get(node);
 		if (!set) {
-			this.changeMap.set(node, (set = {}));
+			changeMap.set(node, (set = {}));
 		}
 
 		return set;

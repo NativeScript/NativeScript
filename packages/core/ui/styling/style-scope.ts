@@ -16,7 +16,6 @@ import { Keyframes, KeyframeAnimationInfo, KeyframeAnimation } from '../animatio
 import { CssAnimationParser } from './css-animation-parser';
 import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
-import { cleanupImportantFlags } from './css-utils';
 import { cssTreeParse } from '../../css/css-tree-parser';
 import { CSS3Parser } from '../../css/CSS3Parser';
 import { CSSNativeScript } from '../../css/CSSNativeScript';
@@ -42,10 +41,12 @@ type KeyframesMap = Map<string, Keyframes[]>;
 let mergedApplicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
+let mergedApplicationCssSelectorsInvalid = false;
 
 let mergedApplicationCssKeyframes: Keyframes[] = [];
 let applicationCssKeyframes: Keyframes[] = [];
 const applicationAdditionalKeyframes: Keyframes[] = [];
+let mergedApplicationCssKeyframesInvalid = false;
 
 let applicationCssSelectorVersion = 0;
 
@@ -79,14 +80,54 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
+/**
+ * Frameworks register component stylesheets one at a time, so merging eagerly on
+ * every call is O(stylesheets * rules). Mark the merged list dirty instead and
+ * rebuild it the next time a style scope actually reads it.
+ */
 export function mergeCssSelectors(): void {
-	mergedApplicationCssSelectors = applicationCssSelectors.slice();
-	mergedApplicationCssSelectors.push(...applicationAdditionalSelectors);
+	mergedApplicationCssSelectorsInvalid = true;
 }
 
 export function mergeCssKeyframes(): void {
-	mergedApplicationCssKeyframes = applicationCssKeyframes.slice();
-	mergedApplicationCssKeyframes.push(...applicationAdditionalKeyframes);
+	mergedApplicationCssKeyframesInvalid = true;
+}
+
+function getMergedApplicationCssSelectors(): RuleSet[] {
+	if (mergedApplicationCssSelectorsInvalid) {
+		mergedApplicationCssSelectorsInvalid = false;
+		mergedApplicationCssSelectors = concatRuleSets(applicationCssSelectors, applicationAdditionalSelectors);
+	}
+
+	return mergedApplicationCssSelectors;
+}
+
+function getMergedApplicationCssKeyframes(): Keyframes[] {
+	if (mergedApplicationCssKeyframesInvalid) {
+		mergedApplicationCssKeyframesInvalid = false;
+		mergedApplicationCssKeyframes = concatRuleSets(applicationCssKeyframes, applicationAdditionalKeyframes);
+	}
+
+	return mergedApplicationCssKeyframes;
+}
+
+/**
+ * `push(...arr)` passes every element as an argument, which allocates and blows
+ * the stack once a stylesheet grows past the engine's argument limit.
+ */
+function concatRuleSets<T>(base: T[], additional: T[]): T[] {
+	const baseLength = base.length;
+	const merged: T[] = new Array(baseLength + additional.length);
+
+	for (let i = 0; i < baseLength; i++) {
+		merged[i] = base[i];
+	}
+
+	for (let i = 0, length = additional.length; i < length; i++) {
+		merged[baseLength + i] = additional[i];
+	}
+
+	return merged;
 }
 
 class CSSSource {
@@ -239,7 +280,7 @@ class CSSSource {
 	}
 
 	@profile
-	private async parseCSSAst() {
+	private parseCSSAst(): void {
 		if (this._source) {
 			if (__CSS_PARSER__ === 'css-tree') {
 				this._ast = cssTreeParse(this._source, this._file);
@@ -716,47 +757,82 @@ export class CssState {
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
-		const valuesToApply = {};
-		const cssExpsProperties = {};
+		// Both bags stay empty in the common case (nothing changed, no css expressions),
+		// so they are only allocated once there is something to put in them.
+		let valuesToApply: Record<string, unknown>;
+		let cssExpsProperties: Record<string, string>;
 
 		for (const property in newPropertyValues) {
-			const value = cleanupImportantFlags(newPropertyValues[property], property);
+			const value = newPropertyValues[property];
 
 			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
 
 			if (isCssExp) {
 				// we handle css exp separately because css vars must be evaluated first
+				if (!cssExpsProperties) {
+					cssExpsProperties = {};
+				}
 				cssExpsProperties[property] = value;
 				continue;
 			}
-			delete oldProperties[property];
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
+
+			// Consume the entry - whatever is left in oldProperties once every new
+			// value has been visited was removed and has to be unset.
+			const hadOldValue = property in oldProperties;
+			const unchanged = hadOldValue && oldProperties[property] === value;
+			if (hadOldValue) {
+				delete oldProperties[property];
 			}
+
 			if (isCssVariable(property)) {
+				// The scoped css-variables were just reset, so they always have to be re-registered.
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
 				continue;
+			}
+
+			if (unchanged) {
+				// Skip unchanged values
+				continue;
+			}
+
+			if (!valuesToApply) {
+				valuesToApply = {};
 			}
 			valuesToApply[property] = value;
 		}
 		//we need to parse CSS vars first before evaluating css expressions
 		for (const property in cssExpsProperties) {
-			delete oldProperties[property];
+			const hadOldValue = property in oldProperties;
+			const oldValue = hadOldValue ? oldProperties[property] : undefined;
+			if (hadOldValue) {
+				delete oldProperties[property];
+			}
+
 			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
-			}
-			if (value === unsetValue) {
-				delete newPropertyValues[property];
-			}
+
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
+				continue;
 			}
 
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			} else {
+				// Store the evaluated value so the next update can tell whether the
+				// expression still resolves to what is currently applied.
+				newPropertyValues[property] = value;
+			}
+
+			if (hadOldValue && oldValue === value) {
+				// Skip unchanged values
+				continue;
+			}
+
+			if (!valuesToApply) {
+				valuesToApply = {};
+			}
 			valuesToApply[property] = value;
 		}
 
@@ -856,7 +932,7 @@ export class StyleScope {
 
 	private _localCssSelectorsAppliedVersion = 0;
 	private _applicationCssSelectorsAppliedVersion = 0;
-	private _cssFiles: string[] = [];
+	private _cssFiles = new Set<string>();
 
 	get css(): string {
 		return this._css;
@@ -878,7 +954,7 @@ export class StyleScope {
 		if (!cssFileName) {
 			return;
 		}
-		this._cssFiles.push(cssFileName);
+		this._cssFiles.add(cssFileName);
 		currentScopeTag = cssFileName;
 
 		const cssFile = CSSSource.fromURI(cssFileName);
@@ -908,7 +984,7 @@ export class StyleScope {
 			return;
 		}
 		if (cssFileName) {
-			this._cssFiles.push(cssFileName);
+			this._cssFiles.add(cssFileName);
 			currentScopeTag = cssFileName;
 		}
 
@@ -980,13 +1056,36 @@ export class StyleScope {
 	private _createSelectors() {
 		const toMerge: RuleSet[] = [];
 		const toMergeKeyframes: Keyframes[] = [];
+		const cssFiles = this._cssFiles;
 
-		toMerge.push(...mergedApplicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
-		toMergeKeyframes.push(...mergedApplicationCssKeyframes.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
+		const applicationSelectors = getMergedApplicationCssSelectors();
+		for (let i = 0, length = applicationSelectors.length; i < length; i++) {
+			const ruleSet = applicationSelectors[i];
+			if (!ruleSet.scopedTag || cssFiles.has(ruleSet.scopedTag)) {
+				toMerge.push(ruleSet);
+			}
+		}
+
+		const applicationKeyframes = getMergedApplicationCssKeyframes();
+		for (let i = 0, length = applicationKeyframes.length; i < length; i++) {
+			const keyframe = applicationKeyframes[i];
+			if (!keyframe.scopedTag || cssFiles.has(keyframe.scopedTag)) {
+				toMergeKeyframes.push(keyframe);
+			}
+		}
+
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 
-		toMerge.push(...this._localCssSelectors);
-		toMergeKeyframes.push(...this._localCssKeyframes);
+		const localSelectors = this._localCssSelectors;
+		for (let i = 0, length = localSelectors.length; i < length; i++) {
+			toMerge.push(localSelectors[i]);
+		}
+
+		const localKeyframes = this._localCssKeyframes;
+		for (let i = 0, length = localKeyframes.length; i < length; i++) {
+			toMergeKeyframes.push(localKeyframes[i]);
+		}
+
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
 
 		if (toMerge.length > 0) {
