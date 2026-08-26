@@ -122,10 +122,11 @@ describe('CssState.setPropertyValues', () => {
 		expect(writes.count).toBe(0);
 	});
 
-	it('keeps a shorthand applied when an overlapping longhand stops matching', () => {
-		// Unsetting `margin-top` resets what `margin` had set, so the skip-unchanged
-		// path cannot be taken for values a removal can clear.
-		const { view } = styled('label { margin: 4; } label:highlighted { margin-top: 8; }');
+	it('keeps an unexpandable shorthand applied when an overlapping longhand stops matching', () => {
+		// A shorthand holding a css expression cannot be expanded while parsing, so it
+		// still shares style properties with its longhands. Unsetting `margin-top`
+		// resets what `margin` had set, and the skip-unchanged path cannot be taken.
+		const { view } = styled('label { --m: 4; margin: var(--m); } label:highlighted { margin-top: 8; }');
 		view._cssState.onLoaded();
 		expect(view.style.marginTop).toBe(4);
 
@@ -134,6 +135,54 @@ describe('CssState.setPropertyValues', () => {
 
 		view.deletePseudoClass('highlighted');
 		expect(view.style.marginTop).toBe(4);
+	});
+
+	it('expands shorthands so a later, more specific rule wins', () => {
+		const { view } = styled('label { margin: 1; } .a { margin-top: 8; } #x { margin: 4; }', 'a');
+		view.id = 'x';
+		view._cssState.onLoaded();
+
+		// #x is the most specific rule, so its shorthand overrides .a's longhand.
+		expect(view.style.marginTop).toBe(4);
+		expect(view.style.marginLeft).toBe(4);
+	});
+
+	it('lets a longhand override a shorthand from a less specific rule', () => {
+		const { view } = styled('#x { margin: 4; } label { margin-top: 1; } .a { margin-top: 8; }', 'a');
+		view.id = 'x';
+		view._cssState.onLoaded();
+
+		expect(view.style.marginTop).toBe(4);
+		expect(view.style.marginLeft).toBe(4);
+	});
+
+	it('does not re-apply an unchanged shorthand', () => {
+		const { view } = styled('label { margin: 4; }');
+		view._cssState.onLoaded();
+
+		// The expanded longhands are freshly parsed values, so the diff has to compare
+		// them with the property's own comparer rather than by identity.
+		const writes = countCssWrites(view, 'margin-top');
+		view._cssState.updateDynamicState();
+
+		expect(writes.count).toBe(0);
+	});
+
+	it('resolves a css variable inside a shorthand', () => {
+		// The value is only resolvable per view, so this shorthand cannot be expanded
+		// while parsing and has to survive as a shorthand declaration.
+		const { view } = styled('label { --m: 8; margin: var(--m); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.marginTop).toBe(8);
+		expect(view.style.marginLeft).toBe(8);
+	});
+
+	it('resolves a css calc expression inside a shorthand', () => {
+		const { view } = styled('label { padding: calc(2 + 3); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingTop).toBe(5);
 	});
 
 	it('ignores the unsupported !important flag', () => {

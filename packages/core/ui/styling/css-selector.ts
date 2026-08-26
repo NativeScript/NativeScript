@@ -1,6 +1,6 @@
 import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
-import { isCssVariable } from '../core/properties';
+import { _expandCssShorthand, isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
 
@@ -27,7 +27,11 @@ export interface Node {
 
 export interface Declaration {
 	property: string;
-	value: string;
+	/**
+	 * Usually the raw text from the stylesheet, but a shorthand is expanded while
+	 * parsing and its longhands carry the already-converted value.
+	 */
+	value: any;
 }
 
 export type ChangeMap<T extends Node> = Map<T, Changes>;
@@ -932,19 +936,40 @@ export class RuleSet {
 }
 
 export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
-	const declarations = astRule.declarations.filter(isDeclaration).map(createDeclaration);
+	const declarations: Declaration[] = [];
+	const nodes = astRule.declarations;
+
+	for (let i = 0, length = nodes.length; i < length; i++) {
+		const node = nodes[i];
+		if (isDeclaration(node)) {
+			appendDeclaration(declarations, node);
+		}
+	}
+
 	const selectors = astRule.selectors.map(createSelector);
 
 	return new RuleSet(selectors, declarations);
 }
 
-function createDeclaration(decl: ReworkCSS.Declaration): any {
-	return {
-		property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(),
-		// Strip the (unsupported) `!important` flag once, here, instead of scanning
-		// every declaration again for every view the rule is applied to.
-		value: cleanupImportantFlags(decl.value, decl.property),
-	};
+function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declaration): void {
+	const property = isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase();
+	// Strip the (unsupported) `!important` flag once, here, instead of scanning
+	// every declaration again for every view the rule is applied to.
+	const value = cleanupImportantFlags(decl.value, decl.property);
+
+	// A shorthand declaration is defined as declaring each of its longhands in its
+	// place, so expanding here keeps source order - and therefore the cascade -
+	// correct, and converts the value once instead of once per view per update.
+	const expanded = _expandCssShorthand(property, value);
+	if (expanded) {
+		for (let i = 0, length = expanded.length; i < length; i++) {
+			declarations.push({ property: expanded[i][0], value: expanded[i][1] });
+		}
+
+		return;
+	}
+
+	declarations.push({ property, value });
 }
 
 function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {

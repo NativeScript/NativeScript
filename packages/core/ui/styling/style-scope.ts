@@ -770,7 +770,9 @@ export class CssState {
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
 
-			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
+			// Expanded shorthands carry already-converted values, which can never be
+			// an expression.
+			const isCssExp = typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value));
 
 			if (isCssExp) {
 				// we handle css exp separately because css vars must be evaluated first
