@@ -1,4 +1,5 @@
 import { getGlobalScope } from './shared/runtime/global-scope.js';
+import { restyleRootAndModals } from './shared/runtime/restyle-roots.js';
 import { markDevBootComplete } from './shared/runtime/boot-complete.js';
 import { readNsRuntimeDevHostApi } from './shared/runtime/browser-runtime-contract.js';
 import { installWorkerConstructorTracking } from './shared/runtime/worker-tracking.js';
@@ -156,16 +157,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			const seenRoots = new Set<any>();
 			for (const candidate of candidates) {
 				try {
-					const rootView = candidate?.getRootView?.();
-					if (!rootView || seenRoots.has(rootView)) continue;
-					seenRoots.add(rootView);
-					if (typeof rootView._onCssStateChange === 'function') {
-						rootView._onCssStateChange();
-					} else {
-						const cls = rootView.className || '';
-						rootView.className = cls + ' ';
-						rootView.className = cls;
-					}
+					restyleRootAndModals(candidate?.getRootView?.(), seenRoots);
 				} catch {}
 			}
 		};

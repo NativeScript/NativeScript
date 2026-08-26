@@ -54,6 +54,73 @@ export function normalizeComponent(input: any, nameHint?: string): any {
 	return input;
 }
 
+/** The slice of a mounted Vue app the navigated-page reload needs. */
+export interface NavigatedPageHmrReloadHandle {
+	app: { unmount?: () => void; _context?: Record<string, any> };
+	/** The NativeScript Page hosting the mounted component. */
+	page: any;
+	/** Builds a fresh page from the current component definition (and installs a new reload on it). */
+	rebuild: () => any;
+}
+
+/**
+ * Install `appContext.reload` on a page mounted by `__nsNavigateUsingApp`.
+ *
+ * Vue routes an HMR `reload` of a parentless instance — which every navigated
+ * page mounted through this backend is — to `instance.appContext.reload()`.
+ * Vue's own DEV default for that hook re-renders into the app's root container,
+ * but here that container is the detached `NSVRoot` the page was mounted from,
+ * so the on-screen page never changes. The stock nativescript-vue `$navigateTo`
+ * installs its `reloadPage` for exactly this reason; this is that contract for
+ * the HMR navigation backend.
+ *
+ * The installed hook rebuilds the destination from the (HMR-mutated) component
+ * and `replacePage`s it into the frame, so the current entry is swapped in
+ * place and the backstack is untouched. A page that is not currently shown
+ * defers to its next `navigatedTo`; a page with no frame at all was already
+ * replaced or disposed, so its instance is stale and the hook stands down.
+ */
+export function installNavigatedPageHmrReload({ app, page, rebuild }: NavigatedPageHmrReloadHandle): boolean {
+	const ctx = app && app._context;
+	if (!ctx || !page) return false;
+	let pendingReturn = false;
+	ctx.reload = () => {
+		try {
+			const frame = page.frame;
+			if (!frame) return;
+			if (frame.currentPage !== page) {
+				if (pendingReturn) return;
+				pendingReturn = true;
+				try {
+					page.once('navigatedTo', () => {
+						pendingReturn = false;
+						try {
+							ctx.reload();
+						} catch {}
+					});
+				} catch {
+					pendingReturn = false;
+				}
+				return;
+			}
+			frame.replacePage({ create: () => rebuild(), animated: false } as any);
+			try {
+				// Release the replaced app once the fresh page is in, so its
+				// instance leaves Vue's HMR registry — otherwise every later
+				// reload also runs against the stale instance.
+				frame.once('navigatedTo', () => {
+					try {
+						app.unmount?.();
+					} catch {}
+				});
+			} catch {}
+		} catch (e) {
+			console.warn('[app-nav] HMR reload of navigated page failed', e);
+		}
+	};
+	return true;
+}
+
 // Deterministic navigation using the current Vue app instance rather than vendor-held rootApp.
 function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 	const g = getGlobalScope();
@@ -112,19 +179,20 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 		if (!nativeView) throw new Error('navigation mount did not yield a nativeView');
 		const P = getCore('Page');
 		const ctorName = String(nativeView?.constructor?.name || '').replace(/^_+/, '');
-		if (ctorName === 'Page' || /^Page(\$\d+)?$/.test(ctorName)) {
-			return nativeView;
-		}
-		if (typeof P === 'function') {
+		let page = nativeView;
+		if (!(ctorName === 'Page' || /^Page(\$\d+)?$/.test(ctorName)) && typeof P === 'function') {
 			const pg = new (P as any)();
 			(pg as any).content = nativeView;
 			// Hide default ActionBar for wrapped views to avoid double bars
 			try {
 				(pg as any).actionBarHidden = true;
 			} catch {}
-			return pg;
+			page = pg;
 		}
-		return nativeView; // fallback
+		try {
+			installNavigatedPageHmrReload({ app, page, rebuild: buildTarget });
+		} catch {}
+		return page;
 	};
 	let frame = opts && (opts as any).frame ? (opts as any).frame : getRootFrame();
 	if (!frame) {

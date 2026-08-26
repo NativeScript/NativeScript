@@ -33,6 +33,13 @@
  */
 import { resolveOverlayEnabled as resolveOverlayEnabledGate } from '../../../client/overlay-driver.js';
 
+/**
+ * Returned by the SFC update loader when Vue's HMR runtime already patched the
+ * live instances, so the caller must NOT swap the root view. Distinct from
+ * `null`, which means the update produced nothing to apply.
+ */
+export const APPLIED_IN_PLACE: unique symbol = Symbol('ns:sfc-applied-in-place');
+
 export type VueOverlayApiLike =
 	| {
 			setUpdateStage?: (stage: string, info?: { detail?: string; progress?: number | null }) => unknown;
@@ -90,6 +97,11 @@ export function buildSfcSkippedDetail(filePath: string | undefined): string {
 	if (!filePath || filePath === '<unknown>') return 'No SFC swap required';
 	return `Skipped ${filePath}`;
 }
+export function buildSfcInPlaceDetail(filePath: string | undefined, elapsedMs: number): string {
+	const ms = Number.isFinite(elapsedMs) && elapsedMs >= 0 ? Math.round(elapsedMs) : 0;
+	if (!filePath || filePath === '<unknown>') return `Patched in place in ${ms}ms`;
+	return `Patched ${filePath} in place in ${ms}ms`;
+}
 
 export function buildSfcFailedDetail(filePath: string | undefined): string {
 	if (!filePath || filePath === '<unknown>') return 'SFC update failed';
@@ -142,6 +154,13 @@ export async function driveVueSfcUpdateOverlay<TComponent>(run: VueSfcUpdateOver
 		return { completed: true, swapped: false, elapsedMs, error };
 	}
 
+	if (component === APPLIED_IN_PLACE) {
+		// The live instances were patched by Vue's HMR runtime — no root swap is
+		// wanted here, and reporting it as "skipped" would read as a no-op.
+		const elapsedMs = Math.max(0, now() - startedAt);
+		setStage(overlay, 'complete', buildSfcInPlaceDetail(filePath, elapsedMs));
+		return { completed: true, swapped: false, elapsedMs };
+	}
 	if (component == null) {
 		const elapsedMs = Math.max(0, now() - startedAt);
 		setStage(overlay, 'complete', buildSfcSkippedDetail(filePath));

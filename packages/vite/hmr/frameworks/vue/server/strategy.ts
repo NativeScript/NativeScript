@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import * as path from 'path';
 import * as PAT from '../../../server/constants.js';
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
@@ -11,6 +11,7 @@ import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginM
 import { ensureRoutesDefaultExport } from '../../../server/websocket-served-module-helpers.js';
 import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 import { createProcessSfcCode } from './sfc-transforms.js';
+import { classifySfcChange, seedSfcSignature, type SfcSignatureStore } from './sfc-change-kind.js';
 import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMessage } from '../../../shared/protocol.js';
 
 // The Vue SFC post-processor is owned here (not in the shared device-transform
@@ -162,6 +163,13 @@ async function processVueSfc(ctx: FrameworkProcessFileContext): Promise<void> {
 	}
 }
 
+/**
+ * Script-block signatures per SFC path, seeded by the startup registry walk and
+ * updated on every hot update. Drives the `rerenderOnly` flag — see
+ * `sfc-change-kind.ts` for why that distinction matters on a native runtime.
+ */
+const sfcScriptSignatures: SfcSignatureStore = new Map();
+
 function findVueFiles(dir: string, root: string, result: string[] = []): string[] {
 	const skipDirs = ['package.json', 'package-lock.json', 'node_modules', '.git', 'dist', '.ns-vite-build', '.DS_Store', 'hooks', 'platforms', 'App_Resources'];
 
@@ -209,7 +217,12 @@ export function purgeVueTransformCachesForHotUpdate(options: { file: string; ser
 async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void> {
 	const { server, sfcFileMap, depFileMap, wss, verbose, helpers } = ctx;
 	const root = server.config.root || process.cwd();
-	const vueFiles = findVueFiles(root, root);
+	// Scan the app source directory, not the whole project: a `.vue` file that
+	// lives outside it (fixtures, docs, demo snapshots) is not part of the app,
+	// and transforming it fails on imports that only resolve from `appPath`.
+	const appDir = path.join(root, getProjectAppPath());
+	const scanRoot = existsSync(appDir) ? appDir : root;
+	const vueFiles = findVueFiles(scanRoot, root);
 
 	if (!vueFiles.length) {
 		return;
@@ -218,6 +231,14 @@ async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void
 	for (const rel of vueFiles) {
 		const hash = shortHash(rel, helpers as FrameworkProcessFileContext['helpers']);
 		sfcFileMap.set(rel, `sfc-${hash}.mjs`);
+		// Seed the script signature so the FIRST edit of a session can still be
+		// classified as render-only; without a baseline it would fall back to a
+		// full reload, which is exactly the update a user is most likely to be
+		// watching a presented sheet for.
+		try {
+			const abs = path.join(root, rel.replace(/^\//, ''));
+			await seedSfcSignature(rel, readFileSync(abs, 'utf-8'), abs, sfcScriptSignatures);
+		} catch {}
 	}
 
 	const entries: VueSfcRegistryEntry[] = [];
@@ -511,6 +532,18 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 
 			const ts = Date.now();
 
+			// Did anything outside <template>/<style> change? When nothing did,
+			// the client patches live instances in place instead of remounting
+			// them — the only path that reaches a pushed page or a presented
+			// modal. See sfc-change-kind.ts.
+			let rerenderOnly = false;
+			try {
+				rerenderOnly = (await classifySfcChange(rel, readFileSync(file, 'utf-8'), file, sfcScriptSignatures)) === 'render-only';
+			} catch {
+				sfcScriptSignatures.delete(rel);
+			}
+			if (verbose) console.log(`[hmr-ws] ${rel} → ${rerenderOnly ? 'render-only (rerender)' : 'full (reload)'}`);
+
 			// FIRST: Send mapping-only registry update (no code)
 			const registryUpdateMsg: VueSfcRegistryUpdateMessage = {
 				type: 'ns:vue-sfc-registry-update',
@@ -518,6 +551,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 				fileName,
 				ts,
 				version: moduleGraph.version,
+				rerenderOnly,
 			};
 
 			wss.clients.forEach((client) => {

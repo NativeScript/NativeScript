@@ -220,9 +220,18 @@ function __nsBrowserRuntimeApplyCss(cssText) {
 			Application.addCss(cssText);
 			try {
 				const rootView = typeof Application.getRootView === 'function' ? Application.getRootView() : null;
-				if (rootView && typeof rootView._onCssStateChange === 'function') {
-					rootView._onCssStateChange();
-				}
+				// Inlined counterpart of shared/runtime/restyle-roots.ts: this
+				// function is serialized into the injected client, so it cannot
+				// import. A presented modal is its own root and would otherwise
+				// keep the stylesheet it was presented with.
+				const restyle = (v) => {
+					try {
+						if (v && typeof v._onCssStateChange === 'function') v._onCssStateChange();
+					} catch {}
+				};
+				restyle(rootView);
+				const modals = rootView && typeof rootView._getRootModalViews === 'function' ? rootView._getRootModalViews() || [] : [];
+				for (const modal of modals) restyle(modal);
 			} catch {}
 			return true;
 		}

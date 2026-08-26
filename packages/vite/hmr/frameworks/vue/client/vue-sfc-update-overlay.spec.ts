@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-import { buildSfcCompleteDetail, buildSfcFailedDetail, buildSfcLoadingDetail, buildSfcRemountDetail, buildSfcSkippedDetail, driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
+import { APPLIED_IN_PLACE, buildSfcCompleteDetail, buildSfcFailedDetail, buildSfcInPlaceDetail, buildSfcLoadingDetail, buildSfcRemountDetail, buildSfcSkippedDetail, driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
 
 describe('buildSfcLoadingDetail', () => {
 	it('returns the file-path form on the happy path', () => {
@@ -54,6 +54,21 @@ describe('buildSfcSkippedDetail', () => {
 	});
 });
 
+describe('buildSfcInPlaceDetail', () => {
+	it('names the file and how long the patch took', () => {
+		expect(buildSfcInPlaceDetail('/src/components/Home.vue', 12)).toBe('Patched /src/components/Home.vue in place in 12ms');
+	});
+
+	it('falls back when the path is unknown', () => {
+		expect(buildSfcInPlaceDetail(undefined, 8)).toBe('Patched in place in 8ms');
+	});
+
+	it('floors a nonsense duration to zero', () => {
+		expect(buildSfcInPlaceDetail('/src/A.vue', Number.NaN)).toBe('Patched /src/A.vue in place in 0ms');
+		expect(buildSfcInPlaceDetail('/src/A.vue', -5)).toBe('Patched /src/A.vue in place in 0ms');
+	});
+});
+
 describe('buildSfcFailedDetail', () => {
 	it('returns the file-path form on the happy path', () => {
 		expect(buildSfcFailedDetail('/src/components/Home.vue')).toBe('Update failed for /src/components/Home.vue');
@@ -104,6 +119,28 @@ describe('driveVueSfcUpdateOverlay', () => {
 		expect(applyComponent).toHaveBeenCalledTimes(1);
 		expect(stages.map((s) => s.stage)).toEqual(['evicting', 'reimporting', 'rebooting', 'complete']);
 		expect(stages[3]).toEqual({ stage: 'complete', detail: expect.stringMatching(/^Updated \/src\/components\/Home\.vue in \d+ms$/) });
+	});
+
+	it('reports an in-place patch instead of a skip, and never swaps the root', async () => {
+		const { stages, setUpdateStage } = makeStageRecorder();
+		const applyComponent = vi.fn(async () => {});
+		const result = await driveVueSfcUpdateOverlay(
+			{
+				filePath: '/src/screens/NowPlaying.vue',
+				loadComponent: async () => APPLIED_IN_PLACE,
+				applyComponent,
+			},
+			{
+				getOverlay: () => ({ setUpdateStage }),
+				overlayEnabled: true,
+				now: makeClock(),
+			},
+		);
+		expect(result.completed).toBe(true);
+		expect(result.swapped).toBe(false);
+		// Swapping the root here would dismiss the very sheet the patch just updated.
+		expect(applyComponent).not.toHaveBeenCalled();
+		expect(stages.at(-1)).toEqual({ stage: 'complete', detail: expect.stringMatching(/^Patched \/src\/screens\/NowPlaying\.vue in place in \d+ms$/) });
 	});
 
 	it("calls 'complete' with a skip detail when loadComponent returns null (no swap required)", async () => {

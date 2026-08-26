@@ -1,5 +1,6 @@
 import { getCore } from './utils.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { restyleRootAndModals } from '../shared/runtime/restyle-roots.js';
 
 const VERBOSE = !!getGlobalScope().__NS_ENV_VERBOSE__;
 
@@ -79,16 +80,10 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 			if (VERBOSE) console.info('[ns-hmr] CSS applied via addCss (additive fallback)');
 		}
 		// NS caches computed styles — re-trigger styling on the root
-		// (propagates to descendants via `eachDescendant`).
+		// (propagates to descendants via `eachDescendant`) and on every
+		// presented modal, which is a root of its own.
 		try {
-			const rootView = Application?.getRootView?.();
-			if (rootView && typeof rootView._onCssStateChange === 'function') {
-				rootView._onCssStateChange();
-			} else if (rootView) {
-				const cls = rootView.className || '';
-				rootView.className = cls + ' ';
-				rootView.className = cls;
-			}
+			restyleRootAndModals(Application?.getRootView?.());
 		} catch {}
 	} catch (e) {
 		console.warn('[ns-hmr] CSS apply failed:', e?.message || String(e));

@@ -148,6 +148,15 @@ export interface VueSfcRegistryUpdateMessage {
 	fileName: string;
 	ts: number;
 	version: number;
+	/**
+	 * Every script block in the SFC was byte-identical to the previous save, so
+	 * the client can patch live instances with `__VUE_HMR_RUNTIME__.rerender`
+	 * instead of `reload`. That is what lets the update reach a page pushed with
+	 * `$navigateTo` or a sheet shown with `$showModal`, neither of which
+	 * survives the remount `reload` performs on a parentless instance.
+	 * Absent means "assume not" — the client falls back to `reload`.
+	 */
+	rerenderOnly?: boolean;
 }
 
 // ──────────────────────────────────────────────────────────────────────────

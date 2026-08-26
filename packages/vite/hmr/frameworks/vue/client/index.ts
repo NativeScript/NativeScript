@@ -1,4 +1,5 @@
 import { getCore, getCurrentApp, graph, invalidateModulesByUrls, normalizeSpec, resolveHmrHttpOrigin, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
+import { APPLIED_IN_PLACE } from './vue-sfc-update-overlay.js';
 import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { resolveVendorModule } from '../../../shared/runtime/vendor-resolve.js';
 import { findSfcAncestors } from './dep-propagation.js';
@@ -517,19 +518,34 @@ function openHmrReplaceNavWindow(): () => void {
 
 /**
  * In-place Vue HMR. The assembled SFC stamps a stable `comp.__hmrId`, so Vue's
- * registerHMR has a record for every mounted instance. Calling the real
- * `__VUE_HMR_RUNTIME__.reload(id, newComp)` re-renders just those instances in
- * place — preserving the App.vue shell (drawer, nav, router), current route, and
- * scroll — instead of a whole-tree resetRootView. Returns false (→ resetRoot
- * fallback) when the real runtime is absent (stub/prod build), the component has
- * no id, or reload throws. A reload that matches no live instances is a no-op
- * (component not currently displayed); the caller treats that as handled.
+ * registerHMR has a record for every mounted instance, and the runtime can
+ * patch exactly those instances instead of replacing the whole root view.
+ *
+ * Which runtime entry point matters, and it is not a performance question.
+ * `reload` re-instantiates; for an instance with no parent Vue routes that to
+ * `appContext.reload()`, which tears down and rebuilds the hosted view. Every
+ * page pushed with `$navigateTo` and every sheet shown with `$showModal` is
+ * such a root, so a `reload` there costs a re-navigation at best and a
+ * dismissed sheet at worst. `rerender` swaps the render function on each live
+ * instance and updates it where it stands — parented or not.
+ *
+ * So when the server reports the save left every script block untouched
+ * (`rerenderOnly`), take `rerender`: the edit lands inside pushed pages and
+ * presented modals with nothing remounted. Anything that could have changed
+ * behavior still needs `reload`.
+ *
+ * Returns false (→ resetRoot fallback) when the real runtime is absent
+ * (stub/prod build), the component has no id, or the call throws. An update
+ * that matches no live instances is a no-op (component not currently
+ * displayed); the caller treats that as handled.
  */
-function tryInPlaceVueReload(comp: any): boolean {
+function tryInPlaceVueReload(comp: any, rerenderOnly = false): boolean {
 	try {
 		const rt: any = (getGlobalScope() as any).__VUE_HMR_RUNTIME__;
 		const id = comp && comp.__hmrId;
-		if (!rt || typeof rt.reload !== 'function' || !id) return false;
+		if (!rt || !id) return false;
+		const canRerender = rerenderOnly && typeof rt.rerender === 'function' && typeof comp.render === 'function';
+		if (!canRerender && typeof rt.reload !== 'function') return false;
 		// Vue queues the remount on its scheduler (microtask flush) — the
 		// Frame navigation happens inside that flush, not synchronously in
 		// reload(). Hold the replace-navigation window through the flush:
@@ -537,7 +553,8 @@ function tryInPlaceVueReload(comp: any): boolean {
 		// safety net when nextTick is unavailable.
 		const closeWindow = openHmrReplaceNavWindow();
 		try {
-			rt.reload(id, comp);
+			if (canRerender) rt.rerender(id, comp.render);
+			else rt.reload(id, comp);
 		} catch (e) {
 			closeWindow();
 			throw e;
@@ -549,10 +566,10 @@ function tryInPlaceVueReload(comp: any): boolean {
 			}
 		} catch {}
 		setTimeout(closeWindow, 500);
-		if (__NS_ENV_VERBOSE__) console.log('[hmr][vue] in-place reload', id);
+		if (__NS_ENV_VERBOSE__) console.log(`[hmr][vue] in-place ${canRerender ? 'rerender' : 'reload'}`, id);
 		return true;
 	} catch (e) {
-		if (__NS_ENV_VERBOSE__) console.warn('[hmr][vue] in-place reload failed; resetRoot fallback', e);
+		if (__NS_ENV_VERBOSE__) console.warn('[hmr][vue] in-place update failed; resetRoot fallback', e);
 		return false;
 	}
 }
@@ -576,8 +593,8 @@ export async function handleVueSfcRegistryUpdate(msg: any, graphVersion: number)
 				// Preferred path: patch the changed component's mounted instances in
 				// place (App.vue shell, route, scroll all survive). Returning null tells
 				// the overlay no resetRootView is needed.
-				if (tryInPlaceVueReload(comp)) {
-					return null;
+				if (tryInPlaceVueReload(comp, msg?.rerenderOnly === true)) {
+					return APPLIED_IN_PLACE;
 				}
 				// Fallback (real Vue HMR runtime unavailable): a child SFC with required
 				// props cannot be a standalone root — mounting it bare crashes (missing

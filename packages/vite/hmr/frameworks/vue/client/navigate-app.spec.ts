@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { installNavigatedPageHmrReload } from './navigate-app';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -50,5 +51,104 @@ describe('__nsNavigateUsingApp prop forwarding', () => {
 		// which broke <script setup> destinations. The normalizeComponent wrap
 		// must stay in place.
 		expect(navigateSrc).toMatch(/AppFactory\(normalizeComponent\(comp,/);
+	});
+});
+
+describe('installNavigatedPageHmrReload', () => {
+	function makeFrame(currentPage: any) {
+		const onceHandlers: Record<string, Array<() => void>> = {};
+		return {
+			currentPage,
+			replacePage: vi.fn(),
+			once: vi.fn((event: string, cb: () => void) => {
+				(onceHandlers[event] ||= []).push(cb);
+			}),
+			fire(event: string) {
+				const list = onceHandlers[event] || [];
+				onceHandlers[event] = [];
+				list.forEach((cb) => cb());
+			},
+		};
+	}
+
+	function makePage(frame: any) {
+		const onceHandlers: Array<() => void> = [];
+		return {
+			frame,
+			once: vi.fn((_event: string, cb: () => void) => {
+				onceHandlers.push(cb);
+			}),
+			fireNavigatedTo() {
+				const list = onceHandlers.splice(0);
+				list.forEach((cb) => cb());
+			},
+		};
+	}
+
+	it("overwrites the app context's reload (Vue's DEV default renders into the detached NSVRoot)", () => {
+		const ctx: Record<string, any> = { reload: () => 'vue-default' };
+		const app = { _context: ctx, unmount: vi.fn() };
+		const page = makePage(makeFrame(null));
+		expect(installNavigatedPageHmrReload({ app, page, rebuild: () => ({}) })).toBe(true);
+		expect(typeof ctx.reload).toBe('function');
+		expect(ctx.reload()).not.toBe('vue-default');
+	});
+
+	it('replaces the current entry with a rebuilt page and releases the old app after the swap', () => {
+		const ctx: Record<string, any> = {};
+		const app = { _context: ctx, unmount: vi.fn() };
+		const frame = makeFrame(null);
+		const page = makePage(frame);
+		frame.currentPage = page;
+		const freshPage = { fresh: true };
+		installNavigatedPageHmrReload({ app, page, rebuild: () => freshPage });
+
+		ctx.reload();
+
+		expect(frame.replacePage).toHaveBeenCalledTimes(1);
+		const entry = frame.replacePage.mock.calls[0][0];
+		expect(entry.animated).toBe(false);
+		expect(entry.create()).toBe(freshPage);
+		// old app released only once the fresh page is actually in place
+		expect(app.unmount).not.toHaveBeenCalled();
+		frame.fire('navigatedTo');
+		expect(app.unmount).toHaveBeenCalledTimes(1);
+	});
+
+	it('stands down for a page with no frame (already replaced or disposed)', () => {
+		const ctx: Record<string, any> = {};
+		const app = { _context: ctx, unmount: vi.fn() };
+		const rebuild = vi.fn();
+		const page = makePage(null);
+		installNavigatedPageHmrReload({ app, page, rebuild });
+
+		ctx.reload();
+
+		expect(rebuild).not.toHaveBeenCalled();
+		expect(page.once).not.toHaveBeenCalled();
+	});
+
+	it('defers a backstack page to its next navigatedTo, coalescing repeated reloads', () => {
+		const ctx: Record<string, any> = {};
+		const app = { _context: ctx, unmount: vi.fn() };
+		const frame = makeFrame({ someOtherPage: true });
+		const page = makePage(frame);
+		const freshPage = { fresh: true };
+		installNavigatedPageHmrReload({ app, page, rebuild: () => freshPage });
+
+		ctx.reload();
+		ctx.reload();
+		ctx.reload();
+		expect(page.once).toHaveBeenCalledTimes(1);
+		expect(frame.replacePage).not.toHaveBeenCalled();
+
+		// the user comes back to the page
+		frame.currentPage = page;
+		page.fireNavigatedTo();
+		expect(frame.replacePage).toHaveBeenCalledTimes(1);
+	});
+
+	it('refuses an app with no context', () => {
+		expect(installNavigatedPageHmrReload({ app: {} as any, page: {}, rebuild: () => ({}) })).toBe(false);
 	});
 });
