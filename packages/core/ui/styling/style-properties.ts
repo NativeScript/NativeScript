@@ -410,6 +410,25 @@ export const paddingInternalProperty = new CssProperty<Style, string>({
 });
 paddingInternalProperty.register(Style);
 
+const paddingSetNativeOverrides = new WeakMap<Function, boolean>();
+
+/**
+ * Whether a subclass overrides any of the per-side [padding*Property.setNative]
+ * handlers `coreProto` defines. An override owns padding application - the
+ * consolidated paddingInternal write must stand down, or it would apply padding
+ * around handlers designed to intercept it.
+ */
+export function _hasPaddingSetNativeOverrides(view: unknown, coreProto: object): boolean {
+	const constructor = (view as object).constructor;
+	let overrides = paddingSetNativeOverrides.get(constructor);
+	if (overrides === undefined) {
+		overrides = [paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty].some((property) => view[property.setNative] !== coreProto[property.setNative]);
+		paddingSetNativeOverrides.set(constructor, overrides);
+	}
+
+	return overrides;
+}
+
 const paddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'padding',
 	cssName: 'padding',

@@ -5,7 +5,7 @@ import { editableProperty, hintProperty, placeholderColorProperty, _updateCharac
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _hasPaddingSetNativeOverrides } from '../styling/style-properties';
 import { layout, isRealDevice } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 
@@ -360,10 +360,11 @@ export class TextView extends TextViewBaseCommon {
 		});
 	}
 
-	// The per-side handlers stage into _pendingPadding, which only exists while
-	// [paddingInternalProperty.setNative] runs - it drives them so subclass
-	// overrides participate, then commits all sides in one native write. A side
-	// whose override does not chain to super keeps its current native value.
+	// When no subclass overrides the per-side handlers, they stage into
+	// _pendingPadding - which only exists while [paddingInternalProperty.setNative]
+	// runs - and all sides commit in one native write. An override takes ownership:
+	// the consolidated write stands down and each side applies individually, so an
+	// override that does not chain to super suppresses that side entirely.
 	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
@@ -376,6 +377,15 @@ export class TextView extends TextViewBaseCommon {
 	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth),
+				right: inset.right,
+				bottom: inset.bottom,
+				left: inset.left,
+			});
 		}
 	}
 
@@ -389,6 +399,15 @@ export class TextView extends TextViewBaseCommon {
 	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: inset.top,
+				right: layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth),
+				bottom: inset.bottom,
+				left: inset.left,
+			});
 		}
 	}
 
@@ -402,6 +421,15 @@ export class TextView extends TextViewBaseCommon {
 	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth),
+				left: inset.left,
+			});
 		}
 	}
 
@@ -415,10 +443,23 @@ export class TextView extends TextViewBaseCommon {
 	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: inset.bottom,
+				left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth),
+			});
 		}
 	}
 
 	[paddingInternalProperty.setNative](_value: string) {
+		if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			// An override owns padding application; each side applies through its own handler.
+			return;
+		}
 		const nativeView = this.nativeTextViewProtected;
 		const inset = nativeView.textContainerInset;
 		this._pendingPadding = { top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left };

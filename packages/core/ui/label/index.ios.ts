@@ -1,6 +1,6 @@
 import { Label as LabelDefinition } from '.';
 import { Background } from '../styling/background';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _hasPaddingSetNativeOverrides } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
@@ -228,37 +228,78 @@ export class Label extends TextBase implements LabelDefinition {
 		});
 	}
 
-	// The per-side handlers stage into _pendingPadding, which only exists while
-	// [paddingInternalProperty.setNative] runs - it drives them so subclass
-	// overrides participate, then commits all sides in one native write. A side
-	// whose override does not chain to super keeps its current native value.
+	// When no subclass overrides the per-side handlers, they stage into
+	// _pendingPadding - which only exists while [paddingInternalProperty.setNative]
+	// runs - and all sides commit in one native write. An override takes ownership:
+	// the consolidated write stands down and each side applies individually, so an
+	// override that does not chain to super suppresses that side entirely.
 	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
 
 	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop);
+		} else if (_hasPaddingSetNativeOverrides(this, Label.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.padding;
+			nativeView.padding = new UIEdgeInsets({
+				top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
+				right: inset.right,
+				bottom: inset.bottom,
+				left: inset.left,
+			});
 		}
 	}
 
 	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight);
+		} else if (_hasPaddingSetNativeOverrides(this, Label.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.padding;
+			nativeView.padding = new UIEdgeInsets({
+				top: inset.top,
+				right: layout.toDeviceIndependentPixels(this.effectivePaddingRight),
+				bottom: inset.bottom,
+				left: inset.left,
+			});
 		}
 	}
 
 	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom);
+		} else if (_hasPaddingSetNativeOverrides(this, Label.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.padding;
+			nativeView.padding = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom),
+				left: inset.left,
+			});
 		}
 	}
 
 	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft);
+		} else if (_hasPaddingSetNativeOverrides(this, Label.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.padding;
+			nativeView.padding = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: inset.bottom,
+				left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft),
+			});
 		}
 	}
 
 	[paddingInternalProperty.setNative](_value: string) {
+		if (_hasPaddingSetNativeOverrides(this, Label.prototype)) {
+			// An override owns padding application; each side applies through its own handler.
+			return;
+		}
 		const nativeView = this.nativeTextViewProtected;
 		const padding = nativeView.padding;
 		this._pendingPadding = { top: padding.top, right: padding.right, bottom: padding.bottom, left: padding.left };

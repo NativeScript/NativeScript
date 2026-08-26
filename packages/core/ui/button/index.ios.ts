@@ -1,7 +1,7 @@
 import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _hasPaddingSetNativeOverrides } from '../styling/style-properties';
 import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
@@ -147,10 +147,11 @@ export class Button extends ButtonBase {
 		});
 	}
 
-	// The per-side handlers stage into _pendingPadding, which only exists while
-	// [paddingInternalProperty.setNative] runs - it drives them so subclass
-	// overrides participate, then commits all sides in one native write. A side
-	// whose override does not chain to super keeps its current native value.
+	// When no subclass overrides the per-side handlers, they stage into
+	// _pendingPadding - which only exists while [paddingInternalProperty.setNative]
+	// runs - and all sides commit in one native write. An override takes ownership:
+	// the consolidated write stands down and each side applies individually, so an
+	// override that does not chain to super suppresses that side entirely.
 	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
@@ -163,6 +164,15 @@ export class Button extends ButtonBase {
 	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, Button.prototype)) {
+			const nativeView = this.nativeViewProtected;
+			const inset = nativeView.contentEdgeInsets;
+			nativeView.contentEdgeInsets = new UIEdgeInsets({
+				top: layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth),
+				right: inset.right,
+				bottom: inset.bottom,
+				left: inset.left,
+			});
 		}
 	}
 
@@ -176,6 +186,15 @@ export class Button extends ButtonBase {
 	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, Button.prototype)) {
+			const nativeView = this.nativeViewProtected;
+			const inset = nativeView.contentEdgeInsets;
+			nativeView.contentEdgeInsets = new UIEdgeInsets({
+				top: inset.top,
+				right: layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth),
+				bottom: inset.bottom,
+				left: inset.left,
+			});
 		}
 	}
 
@@ -189,6 +208,15 @@ export class Button extends ButtonBase {
 	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, Button.prototype)) {
+			const nativeView = this.nativeViewProtected;
+			const inset = nativeView.contentEdgeInsets;
+			nativeView.contentEdgeInsets = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth),
+				left: inset.left,
+			});
 		}
 	}
 
@@ -202,10 +230,23 @@ export class Button extends ButtonBase {
 	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
 		if (this._pendingPadding) {
 			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, Button.prototype)) {
+			const nativeView = this.nativeViewProtected;
+			const inset = nativeView.contentEdgeInsets;
+			nativeView.contentEdgeInsets = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: inset.bottom,
+				left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth),
+			});
 		}
 	}
 
 	[paddingInternalProperty.setNative](_value: string) {
+		if (_hasPaddingSetNativeOverrides(this, Button.prototype)) {
+			// An override owns padding application; each side applies through its own handler.
+			return;
+		}
 		const nativeView = this.nativeViewProtected;
 		const inset = nativeView.contentEdgeInsets;
 		this._pendingPadding = { top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left };

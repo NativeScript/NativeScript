@@ -1,5 +1,5 @@
 import { LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty } from './layout-base-common';
-import { paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _hasPaddingSetNativeOverrides } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
 import { CoreTypes } from '../../core-types';
 
@@ -30,19 +30,23 @@ export class LayoutBase extends LayoutBaseCommon {
 		this.nativeViewProtected.setPassThroughParent(value);
 	}
 
-	// The per-side handlers stage into _pendingPadding, which only exists while
-	// [paddingInternalProperty.setNative] runs - it drives them so subclass
-	// overrides participate, then commits all sides in one native write. A side
-	// whose override does not chain to super keeps its current native value.
+	// When no subclass overrides the per-side handlers, they stage into
+	// _pendingPadding - which only exists while [paddingInternalProperty.setNative]
+	// runs - and all sides commit in one native write. An override takes ownership:
+	// the consolidated write stands down and each side applies individually, so an
+	// override that does not chain to super suppresses that side entirely.
 	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingTop, unit: 'px' };
 	}
 
-	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0);
 		if (this._pendingPadding) {
-			this._pendingPadding.top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
+			this._pendingPadding.top = padding;
+		} else if (_hasPaddingSetNativeOverrides(this, LayoutBase.prototype)) {
+			org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeViewProtected, padding);
 		}
 	}
 
@@ -50,9 +54,12 @@ export class LayoutBase extends LayoutBaseCommon {
 		return { value: this._defaultPaddingRight, unit: 'px' };
 	}
 
-	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0);
 		if (this._pendingPadding) {
-			this._pendingPadding.right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
+			this._pendingPadding.right = padding;
+		} else if (_hasPaddingSetNativeOverrides(this, LayoutBase.prototype)) {
+			org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeViewProtected, padding);
 		}
 	}
 
@@ -60,9 +67,12 @@ export class LayoutBase extends LayoutBaseCommon {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
 
-	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0);
 		if (this._pendingPadding) {
-			this._pendingPadding.bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
+			this._pendingPadding.bottom = padding;
+		} else if (_hasPaddingSetNativeOverrides(this, LayoutBase.prototype)) {
+			org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeViewProtected, padding);
 		}
 	}
 
@@ -70,13 +80,20 @@ export class LayoutBase extends LayoutBaseCommon {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
 
-	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0);
 		if (this._pendingPadding) {
-			this._pendingPadding.left = this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0);
+			this._pendingPadding.left = padding;
+		} else if (_hasPaddingSetNativeOverrides(this, LayoutBase.prototype)) {
+			org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeViewProtected, padding);
 		}
 	}
 
 	[paddingInternalProperty.setNative](_value: string) {
+		if (_hasPaddingSetNativeOverrides(this, LayoutBase.prototype)) {
+			// An override owns padding application; each side applies through its own handler.
+			return;
+		}
 		const nativeView = this.nativeViewProtected;
 		this._pendingPadding = { top: nativeView.getPaddingTop(), right: nativeView.getPaddingRight(), bottom: nativeView.getPaddingBottom(), left: nativeView.getPaddingLeft() };
 		(<any>this)[paddingTopProperty.setNative](this.style.paddingTop);
