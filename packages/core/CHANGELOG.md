@@ -1,3 +1,18 @@
+## 9.1.0-rc.2 (2026-08-26)
+
+### 🚀 Features
+
+- **core:** corner-shape css property for continuous corners on iOS ([#11365](https://github.com/NativeScript/NativeScript/pull/11365))
+
+### 🩹 Fixes
+
+- **core:** custom application delegate scene wiring and non-scene launch timing ([#11367](https://github.com/NativeScript/NativeScript/pull/11367))
+- **core:** keep function values intact when splitting css shorthands ([#11364](https://github.com/NativeScript/NativeScript/pull/11364))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 9.1.0-rc.1 (2026-08-26)
 
 ### 🔥 Performance
