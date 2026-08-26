@@ -1,3 +1,13 @@
+## 8.0.0-rc.1 (2026-08-26)
+
+### 🩹 Fixes
+
+- **vite:** hmr propagation improvements on css, modals, scripts ([86320ee62](https://github.com/NativeScript/NativeScript/commit/86320ee62))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.0-rc.0 (2026-08-21)
 
 ### 🚀 Features
