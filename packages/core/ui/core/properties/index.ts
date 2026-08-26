@@ -12,6 +12,7 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
+const cssShorthandPropertyNames = new Set<string>();
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -54,6 +55,15 @@ export function _getProperties(): Property<any, any>[] {
 
 export function _getStyleProperties(): CssProperty<any, any>[] {
 	return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
+}
+
+/**
+ * A shorthand writes several longhand properties, so unsetting one of the two
+ * can silently clear the other. Callers that diff css values need to know which
+ * names can overlap.
+ */
+export function isCssShorthandProperty(cssName: string): boolean {
+	return cssShorthandPropertyNames.has(cssName);
 }
 
 export function isCssVariable(property: string) {
@@ -1239,6 +1249,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
+		cssShorthandPropertyNames.add(options.cssName);
 
 		const converter = options.converter;
 

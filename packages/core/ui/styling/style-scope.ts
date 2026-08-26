@@ -1,7 +1,7 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssShorthandProperty, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
@@ -762,6 +762,11 @@ export class CssState {
 		let valuesToApply: Record<string, unknown>;
 		let cssExpsProperties: Record<string, string>;
 
+		// A shorthand and its longhands write the same style properties, so unsetting
+		// one of them can clear a value that is being skipped as unchanged. Remember
+		// whether any skipped value could be caught by that.
+		let skippedShorthand = false;
+
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
 
@@ -793,6 +798,7 @@ export class CssState {
 
 			if (unchanged) {
 				// Skip unchanged values
+				skippedShorthand = skippedShorthand || isCssShorthandProperty(property);
 				continue;
 			}
 
@@ -827,6 +833,7 @@ export class CssState {
 
 			if (hadOldValue && oldValue === value) {
 				// Skip unchanged values
+				skippedShorthand = skippedShorthand || isCssShorthandProperty(property);
 				continue;
 			}
 
@@ -834,6 +841,26 @@ export class CssState {
 				valuesToApply = {};
 			}
 			valuesToApply[property] = value;
+		}
+
+		// Whatever is left in oldProperties stopped matching and has to be unset.
+		let hasRemovedValues = false;
+		let removedShorthand = false;
+		for (const property in oldProperties) {
+			hasRemovedValues = true;
+			if (isCssShorthandProperty(property)) {
+				removedShorthand = true;
+				break;
+			}
+		}
+
+		// Unsetting a shorthand clears its longhands (and the other way around), so a
+		// value that was skipped as unchanged has to be written again afterwards.
+		if (hasRemovedValues && (removedShorthand || skippedShorthand)) {
+			valuesToApply = {};
+			for (const property in newPropertyValues) {
+				valuesToApply[property] = newPropertyValues[property];
+			}
 		}
 
 		// Unset removed values

@@ -122,6 +122,20 @@ describe('CssState.setPropertyValues', () => {
 		expect(writes.count).toBe(0);
 	});
 
+	it('keeps a shorthand applied when an overlapping longhand stops matching', () => {
+		// Unsetting `margin-top` resets what `margin` had set, so the skip-unchanged
+		// path cannot be taken for values a removal can clear.
+		const { view } = styled('label { margin: 4; } label:highlighted { margin-top: 8; }');
+		view._cssState.onLoaded();
+		expect(view.style.marginTop).toBe(4);
+
+		view.addPseudoClass('highlighted');
+		expect(view.style.marginTop).toBe(8);
+
+		view.deletePseudoClass('highlighted');
+		expect(view.style.marginTop).toBe(4);
+	});
+
 	it('ignores the unsupported !important flag', () => {
 		const { view } = styled('label { color: red !important; }');
 		view._cssState.onLoaded();
