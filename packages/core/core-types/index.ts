@@ -272,6 +272,14 @@ export namespace CoreTypes {
 		export const parse = makeParser<BackgroundRepeatType>(isValid);
 	}
 
+	export type CornerShapeType = 'round' | 'squircle';
+	export namespace CornerShape {
+		export const round: CornerShapeType = 'round';
+		export const squircle: CornerShapeType = 'squircle';
+		export const isValid = makeValidator<CornerShapeType>(round, squircle);
+		export const parse = makeParser<CornerShapeType>(isValid);
+	}
+
 	export namespace AnimationCurve {
 		export const ease = 'ease';
 		export const easeIn = 'easeIn';

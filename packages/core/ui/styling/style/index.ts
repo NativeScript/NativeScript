@@ -152,6 +152,13 @@ export class Style extends Observable {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
+	/**
+	 * The curve used to round the corners: 'round' (circular arcs, the default)
+	 * or 'squircle' (Apple's continuous corner curve). iOS only; Android always
+	 * renders circular corners.
+	 */
+	public cornerShape: CoreTypes.CornerShapeType;
+
 	public boxShadow: string | ShadowCSSValues[];
 
 	public direction: CoreTypes.LayoutDirectionType;
