@@ -12,6 +12,8 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
+const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
+const cssShorthandLonghands = new Map<string, string[]>();
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -54,6 +56,113 @@ export function _getProperties(): Property<any, any>[] {
 
 export function _getStyleProperties(): CssProperty<any, any>[] {
 	return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
+}
+
+/**
+ * Placeholder cascaded for each longhand of a shorthand that cannot be split while
+ * parsing - a single `var()` may substitute several longhands at once, so the
+ * shorthand is only parsed once its expression is resolved per view.
+ * @see https://drafts.csswg.org/css-variables/#variables-in-shorthands
+ */
+export class CssPendingSubstitution {
+	constructor(
+		public readonly shorthand: string,
+		public readonly value: string,
+	) {}
+
+	toString(): string {
+		return this.value;
+	}
+}
+
+export function _isCssPendingSubstitution(value: unknown): value is CssPendingSubstitution {
+	return value instanceof CssPendingSubstitution;
+}
+
+/**
+ * The longhands a shorthand expands into, probed from its converter on first use -
+ * the longhand properties a converter closes over are not initialized yet while
+ * the shorthand itself is being registered.
+ */
+function getCssShorthandLonghands(cssName: string): string[] | undefined {
+	const known = cssShorthandLonghands.get(cssName);
+	if (known) {
+		return known;
+	}
+
+	const converter = cssShorthandConverters.get(cssName);
+	if (!converter) {
+		return undefined;
+	}
+
+	try {
+		const probed = converter(unsetValue);
+		if (!probed?.length) {
+			return undefined;
+		}
+
+		const longhands: string[] = [];
+		for (let i = 0, length = probed.length; i < length; i++) {
+			longhands.push(probed[i][0].cssLocalName);
+		}
+
+		cssShorthandLonghands.set(cssName, longhands);
+
+		return longhands;
+	} catch (e) {
+		Trace.write(`Could not determine the longhands of shorthand [${cssName}]. ${e}`, Trace.categories.Style, Trace.messageType.warn);
+
+		return undefined;
+	}
+}
+
+/**
+ * One pending-substitution value per longhand of the shorthand, or `undefined`
+ * when the longhands cannot be determined.
+ */
+export function _pendingCssShorthandSubstitution(cssName: string, value: string): [string, CssPendingSubstitution][] | undefined {
+	const longhands = getCssShorthandLonghands(cssName);
+	if (!longhands) {
+		return undefined;
+	}
+
+	const pending = new CssPendingSubstitution(cssName, value);
+	const declarations: [string, CssPendingSubstitution][] = [];
+	for (let i = 0, length = longhands.length; i < length; i++) {
+		declarations.push([longhands[i], pending]);
+	}
+
+	return declarations;
+}
+
+/**
+ * Expand a shorthand declaration into its longhand declarations, or `undefined`
+ * when the property is not a shorthand, the value still has to be evaluated per
+ * view (`var()`/`calc()`), or it does not parse.
+ */
+export function _expandCssShorthand(cssName: string, value: string): [string, any][] | undefined {
+	const converter = cssShorthandConverters.get(cssName);
+	if (!converter) {
+		return undefined;
+	}
+
+	if (typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value))) {
+		return undefined;
+	}
+
+	try {
+		const converted = converter(value);
+		const expanded: [string, any][] = [];
+		for (let i = 0, length = converted.length; i < length; i++) {
+			expanded.push([converted[i][0].cssLocalName, converted[i][1]]);
+		}
+
+		return expanded;
+	} catch (e) {
+		Trace.write(`Failed to expand shorthand [${cssName}] with value [${value}]. ${e}`, Trace.categories.Style, Trace.messageType.warn);
+
+		return undefined;
+	}
 }
 
 export function isCssVariable(property: string) {
@@ -1227,7 +1336,6 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 	protected readonly cssValueDescriptor: PropertyDescriptor;
 	protected readonly localValueDescriptor: PropertyDescriptor;
-	protected readonly propertyBagDescriptor: PropertyDescriptor;
 
 	public readonly sourceKey: symbol;
 
@@ -1239,6 +1347,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
+		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
 
 		const converter = options.converter;
 
@@ -1286,16 +1395,6 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			set: setLocalValue,
 		};
 
-		this.propertyBagDescriptor = {
-			enumerable: false,
-			configurable: true,
-			set(value: string) {
-				converter(value).forEach(([property, value]) => {
-					this[property.cssLocalName] = value;
-				});
-			},
-		};
-
 		cssSymbolPropertyMap[key] = this;
 	}
 
@@ -1311,7 +1410,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
 
-		Object.defineProperty(cls.prototype.PropertyBag, this.cssLocalName, this.propertyBagDescriptor);
+		// Nothing is defined on `PropertyBag`: shorthands are expanded while parsing,
+		// and the var()/calc() ones that do reach the bag must stay unconverted.
 	}
 }
 

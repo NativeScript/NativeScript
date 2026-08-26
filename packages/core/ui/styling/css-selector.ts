@@ -1,7 +1,8 @@
 import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
-import { isCssVariable } from '../core/properties';
+import { _expandCssShorthand, _pendingCssShorthandSubstitution, isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
+import { cleanupImportantFlags } from './css-utils';
 
 import * as ReworkCSS from '../../css';
 import { checkIfMediaQueryMatches } from '../../media-query-list';
@@ -26,7 +27,8 @@ export interface Node {
 
 export interface Declaration {
 	property: string;
-	value: string;
+	/** Raw stylesheet text, except expanded shorthand longhands, which carry the converted value. */
+	value: any;
 }
 
 export type ChangeMap<T extends Node> = Map<T, Changes>;
@@ -72,13 +74,13 @@ const enum PseudoClassSelectorList {
 }
 
 enum Combinator {
-	'descendant' = ' ',
-	'child' = '>',
-	'adjacent' = '+',
-	'sibling' = '~',
+	descendant = ' ',
+	child = '>',
+	adjacent = '+',
+	sibling = '~',
 
 	// Not supported
-	'parent' = '<',
+	parent = '<',
 	'column-combinator' = '||',
 }
 
@@ -99,6 +101,16 @@ interface LookupSorter {
 	sortByClass(cssClass: string, sel: SelectorCore);
 	sortByType(cssType: string, sel: SelectorCore);
 	sortAsUniversal(sel: SelectorCore);
+}
+
+/**
+ * Rank of the stylesheet set a selector was indexed in. Specificity ties break on
+ * (tier, pos): the application and local indexes are built separately, so positions
+ * are only comparable within a tier.
+ */
+export const enum SelectorTier {
+	Application = 0,
+	Local = 1,
 }
 
 namespace Match {
@@ -143,6 +155,44 @@ function getNodePreviousDirectSibling(node: Node): null | Node {
 	return node.parent.getChildAt(nodeIndex - 1);
 }
 
+/**
+ * `<attribute>Change` is only raised by properties defined as prototype accessors;
+ * a plain instance value (e.g. Angular's `_ngcontent-*` markers) never notifies,
+ * so subscribing to its change event would be pure overhead.
+ */
+const notifyingAttributes = new WeakMap<object, Map<string, boolean>>();
+
+function attributeNotifiesChanges(node: Node, attribute: string): boolean {
+	const prototype = Object.getPrototypeOf(node);
+	if (!prototype) {
+		return false;
+	}
+
+	let cache = notifyingAttributes.get(prototype);
+	if (cache) {
+		const cached = cache.get(attribute);
+		if (cached !== undefined) {
+			return cached;
+		}
+	} else {
+		cache = new Map<string, boolean>();
+		notifyingAttributes.set(prototype, cache);
+	}
+
+	let notifies = false;
+	for (let current = prototype; current; current = Object.getPrototypeOf(current)) {
+		const descriptor = Object.getOwnPropertyDescriptor(current, attribute);
+		if (descriptor) {
+			notifies = !!descriptor.set;
+			break;
+		}
+	}
+
+	cache.set(attribute, notifies);
+
+	return notifies;
+}
+
 function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false): ClassDecorator {
 	return (cls) => {
 		cls.prototype.specificity = specificity;
@@ -151,6 +201,7 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = 
 		cls.prototype.dynamic = dynamic;
 		cls.prototype.hasAdjacentCombinator = false;
 		cls.prototype.hasSiblingCombinator = false;
+		cls.prototype.tier = SelectorTier.Application;
 
 		return cls;
 	};
@@ -191,6 +242,7 @@ export abstract class SelectorBase {
 @SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
 export abstract class SelectorCore extends SelectorBase {
 	public pos: number;
+	public tier: SelectorTier;
 	public specificity: number;
 	public rarity: Rarity;
 	public combinator: Combinator;
@@ -376,10 +428,15 @@ export class AttributeSelector extends SimpleSelector {
 		return false;
 	}
 	public mayMatch(node: Node): boolean {
-		return true;
+		// Registered properties live on the prototype and anything already assigned is
+		// an own value; an attribute on neither can never start matching without the
+		// css state being invalidated anyway.
+		return this.attribute in node;
 	}
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		map.addAttribute(node, this.attribute);
+		if (attributeNotifiesChanges(node, this.attribute)) {
+			map.addAttribute(node, this.attribute);
+		}
 	}
 }
 
@@ -879,14 +936,48 @@ export class RuleSet {
 }
 
 export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
-	const declarations = astRule.declarations.filter(isDeclaration).map(createDeclaration);
+	const declarations: Declaration[] = [];
+	const nodes = astRule.declarations;
+
+	for (let i = 0, length = nodes.length; i < length; i++) {
+		const node = nodes[i];
+		if (isDeclaration(node)) {
+			appendDeclaration(declarations, node);
+		}
+	}
+
 	const selectors = astRule.selectors.map(createSelector);
 
 	return new RuleSet(selectors, declarations);
 }
 
-function createDeclaration(decl: ReworkCSS.Declaration): any {
-	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
+function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declaration): void {
+	const property = isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase();
+	const value = cleanupImportantFlags(decl.value, decl.property);
+
+	// The cascade is defined on longhands: a shorthand declares each of its
+	// longhands in its place, so it is expanded here to keep source order meaningful.
+	const expanded = _expandCssShorthand(property, value);
+	if (expanded) {
+		for (let i = 0, length = expanded.length; i < length; i++) {
+			declarations.push({ property: expanded[i][0], value: expanded[i][1] });
+		}
+
+		return;
+	}
+
+	// A var()/calc() shorthand cannot be expanded yet - cascade one
+	// pending-substitution value per longhand instead.
+	const pending = _pendingCssShorthandSubstitution(property, value);
+	if (pending) {
+		for (let i = 0, length = pending.length; i < length; i++) {
+			declarations.push({ property: pending[i][0], value: pending[i][1] });
+		}
+
+		return;
+	}
+
+	declarations.push({ property, value });
 }
 
 function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
@@ -1081,6 +1172,7 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	private universal: SelectorCore[] = [];
 
 	public position: number = 0;
+	public tier: SelectorTier = SelectorTier.Application;
 
 	/**
 	 * True when any selector in the scope contains an adjacent sibling ('+') combinator.
@@ -1091,16 +1183,24 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	 */
 	public hasSiblingCombinatorSelectors = false;
 
-	getSelectorCandidates(node: T) {
+	getSelectorCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
 		const { cssClasses, id, cssType } = node;
-		const candidates: SelectorCore[] = [];
 
 		appendSelectorCandidates(candidates, this.universal);
-		appendSelectorCandidates(candidates, this.id[id]);
-		appendSelectorCandidates(candidates, this.type[cssType]);
+
+		if (id) {
+			appendSelectorCandidates(candidates, this.id[id]);
+		}
+
+		if (cssType) {
+			appendSelectorCandidates(candidates, this.type[cssType]);
+		}
 
 		if (cssClasses && cssClasses.size) {
-			cssClasses.forEach((c) => appendSelectorCandidates(candidates, this.class[c]));
+			const classSelectors = this.class;
+			for (const cssClass of cssClasses) {
+				appendSelectorCandidates(candidates, classSelectors[cssClass]);
+			}
 		}
 
 		return candidates;
@@ -1137,6 +1237,7 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 		}
 
 		sel.pos = this.position++;
+		sel.tier = this.tier;
 
 		return sel;
 	}
@@ -1145,10 +1246,11 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
 	private _mediaQueryString: string | string[];
 
-	constructor(mediaQueryString: string | string[]) {
+	constructor(mediaQueryString: string | string[], tier: SelectorTier) {
 		super();
 
 		this._mediaQueryString = mediaQueryString;
+		this.tier = tier;
 	}
 
 	get mediaQueryString(): string | string[] {
@@ -1159,14 +1261,23 @@ export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
 export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	private mediaQuerySelectorScopes: MediaQuerySelectorScope<T>[];
 
-	constructor(rulesets: RuleSet[]) {
+	constructor(rulesets: RuleSet[], tier: SelectorTier = SelectorTier.Application) {
 		super();
 
+		this.tier = tier;
 		this.lookupRulesets(rulesets);
 	}
 
+	/**
+	 * Index rulesets added after this scope was built; the rules already indexed
+	 * keep their positions.
+	 */
+	public appendRulesets(rulesets: RuleSet[], from: number): void {
+		this.lookupRulesets(rulesets, from);
+	}
+
 	private createMediaQuerySelectorScope(mediaQueryString: string | string[]): MediaQuerySelectorScope<T> {
-		const selectorScope = new MediaQuerySelectorScope(mediaQueryString);
+		const selectorScope = new MediaQuerySelectorScope(mediaQueryString, this.tier);
 		selectorScope.position = this.position;
 
 		if (this.mediaQuerySelectorScopes) {
@@ -1178,10 +1289,10 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		return selectorScope;
 	}
 
-	private lookupRulesets(rulesets: RuleSet[]) {
+	private lookupRulesets(rulesets: RuleSet[], from = 0) {
 		let lastMediaSelectorScope: MediaQuerySelectorScope<T>;
 
-		for (let i = 0, length = rulesets.length; i < length; i++) {
+		for (let i = from, length = rulesets.length; i < length; i++) {
 			const ruleset = rulesets[i];
 
 			if (lastMediaSelectorScope && lastMediaSelectorScope.mediaQueryString !== ruleset.mediaQueryString) {
@@ -1222,9 +1333,12 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		}
 	}
 
-	query(node: T): SelectorsMatch<T> {
-		const selectorsMatch = new SelectorsMatch<T>();
-		const selectors = this.getSelectorCandidates(node);
+	/**
+	 * Append every selector that could match the node, matching media query scopes
+	 * included, for `matchSelectorCandidates` to resolve.
+	 */
+	public collectCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
+		this.getSelectorCandidates(node, candidates);
 
 		// Validate media queries and include their selectors if needed
 		if (this.mediaQuerySelectorScopes) {
@@ -1236,16 +1350,52 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
 
 				if (isMatchingAllQueries) {
-					const mediaQuerySelectors = selectorScope.getSelectorCandidates(node);
-					selectors.push(...mediaQuerySelectors);
+					selectorScope.getSelectorCandidates(node, candidates);
 				}
 			}
 		}
 
-		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
-
-		return selectorsMatch;
+		return candidates;
 	}
+
+	query(node: T): SelectorsMatch<T> {
+		return matchSelectorCandidates(node, this.collectCandidates(node));
+	}
+}
+
+/** Cascade order: specificity, then source order - (tier, position) across stylesheets. */
+function compareSelectors(a: SelectorCore, b: SelectorCore): number {
+	return a.specificity - b.specificity || a.tier - b.tier || a.pos - b.pos;
+}
+
+/**
+ * Resolve collected candidates against a node, compacting the array in place.
+ * `scopedTags` filters out rules registered on behalf of a stylesheet this scope
+ * never loaded; pass it only when such rules exist - it costs a lookup per candidate.
+ */
+export function matchSelectorCandidates<T extends Node>(node: T, candidates: SelectorCore[], scopedTags?: Set<string>): SelectorsMatch<T> {
+	const selectorsMatch = new SelectorsMatch<T>();
+
+	let matched = 0;
+	for (let i = 0, length = candidates.length; i < length; i++) {
+		const selector = candidates[i];
+
+		if (scopedTags) {
+			const scopedTag = selector.ruleset?.scopedTag;
+			if (scopedTag && !scopedTags.has(scopedTag)) {
+				continue;
+			}
+		}
+
+		if (selector.accumulateChanges(node, selectorsMatch)) {
+			candidates[matched++] = selector;
+		}
+	}
+	candidates.length = matched;
+
+	selectorsMatch.selectors = candidates.sort(compareSelectors);
+
+	return selectorsMatch;
 }
 
 interface ChangeAccumulator {
@@ -1253,8 +1403,11 @@ interface ChangeAccumulator {
 	addPseudoClass(node: Node, pseudoClass: string): void;
 }
 
+/** Shared by matches that track nothing; a real map is materialized on first write. */
+const emptyChangeMap: ChangeMap<any> = new Map();
+
 export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
-	public changeMap: ChangeMap<T> = new Map<T, Changes>();
+	public changeMap: ChangeMap<T> = emptyChangeMap;
 	public selectors: SelectorCore[];
 
 	public addAttribute(node: T, attribute: string): void {
@@ -1274,9 +1427,14 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	}
 
 	public properties(node: T): Changes {
-		let set = this.changeMap.get(node);
+		let changeMap = this.changeMap;
+		if (changeMap === emptyChangeMap) {
+			this.changeMap = changeMap = new Map<T, Changes>();
+		}
+
+		let set = changeMap.get(node);
 		if (!set) {
-			this.changeMap.set(node, (set = {}));
+			changeMap.set(node, (set = {}));
 		}
 
 		return set;
@@ -1301,4 +1459,5 @@ export const CSSHelper = {
 	StyleSheetSelectorScope,
 	fromAstNode,
 	SelectorsMatch,
+	matchSelectorCandidates,
 };

@@ -1,11 +1,11 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssShorthand, _isCssPendingSubstitution, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, matchMediaQueryString } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, Changes, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates } from './css-selector';
 import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -16,7 +16,6 @@ import { Keyframes, KeyframeAnimationInfo, KeyframeAnimation } from '../animatio
 import { CssAnimationParser } from './css-animation-parser';
 import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
-import { cleanupImportantFlags } from './css-utils';
 import { cssTreeParse } from '../../css/css-tree-parser';
 import { CSS3Parser } from '../../css/CSS3Parser';
 import { CSSNativeScript } from '../../css/CSSNativeScript';
@@ -42,12 +41,26 @@ type KeyframesMap = Map<string, Keyframes[]>;
 let mergedApplicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
+let mergedApplicationCssSelectorsInvalid = false;
 
 let mergedApplicationCssKeyframes: Keyframes[] = [];
 let applicationCssKeyframes: Keyframes[] = [];
 const applicationAdditionalKeyframes: Keyframes[] = [];
+let mergedApplicationCssKeyframesInvalid = false;
 
 let applicationCssSelectorVersion = 0;
+
+/**
+ * Shared index over the application stylesheets, built once for all style scopes.
+ * Tagged rules stay in it and are filtered out at match time - see `matchSelectorCandidates`.
+ */
+let applicationSelectorScope: StyleSheetSelectorScope<any> = null;
+let applicationSelectorScopeVersion = -1;
+let applicationSelectorScopeRuleCount = 0;
+let applicationSelectorsHaveScopedTags = false;
+/** Bumped when the application rules change in a way an append cannot express. */
+let applicationSelectorsResetVersion = 0;
+let applicationSelectorScopeResetVersion = -1;
 
 const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
@@ -56,6 +69,31 @@ const animationsSymbol = Symbol('animations');
 const kebabCasePattern = /-([a-z])/g;
 const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
+
+/**
+ * Parse a pending-substitution shorthand once its expression has been evaluated
+ * against the view; a value that does not survive evaluation leaves its longhands unset.
+ */
+function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitution): Record<string, unknown> {
+	const value = evaluateCssExpressions(view, pending.shorthand, pending.value);
+	if (value === unsetValue) {
+		return CssState.emptyPropertyBag;
+	}
+
+	const expanded = _expandCssShorthand(pending.shorthand, value);
+	if (!expanded) {
+		Trace.write(`Failed to expand shorthand [${pending.shorthand}] resolved to [${value}] for ${view}.`, Trace.categories.Style, Trace.messageType.warn);
+
+		return CssState.emptyPropertyBag;
+	}
+
+	const resolved: Record<string, unknown> = {};
+	for (let i = 0, length = expanded.length; i < length; i++) {
+		resolved[expanded[i][0]] = expanded[i][1];
+	}
+
+	return resolved;
+}
 
 /**
  * Evaluate css-variable and css-calc expressions
@@ -79,14 +117,80 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
+/**
+ * Only marks the merged list dirty - it is rebuilt on next read, since frameworks
+ * register stylesheets one call at a time.
+ */
 export function mergeCssSelectors(): void {
-	mergedApplicationCssSelectors = applicationCssSelectors.slice();
-	mergedApplicationCssSelectors.push(...applicationAdditionalSelectors);
+	mergedApplicationCssSelectorsInvalid = true;
 }
 
 export function mergeCssKeyframes(): void {
-	mergedApplicationCssKeyframes = applicationCssKeyframes.slice();
-	mergedApplicationCssKeyframes.push(...applicationAdditionalKeyframes);
+	mergedApplicationCssKeyframesInvalid = true;
+}
+
+function getMergedApplicationCssSelectors(): RuleSet[] {
+	if (mergedApplicationCssSelectorsInvalid) {
+		mergedApplicationCssSelectorsInvalid = false;
+		mergedApplicationCssSelectors = concatRuleSets(applicationCssSelectors, applicationAdditionalSelectors);
+	}
+
+	return mergedApplicationCssSelectors;
+}
+
+function getMergedApplicationCssKeyframes(): Keyframes[] {
+	if (mergedApplicationCssKeyframesInvalid) {
+		mergedApplicationCssKeyframesInvalid = false;
+		mergedApplicationCssKeyframes = concatRuleSets(applicationCssKeyframes, applicationAdditionalKeyframes);
+	}
+
+	return mergedApplicationCssKeyframes;
+}
+
+function getApplicationSelectorScope(): StyleSheetSelectorScope<any> {
+	if (applicationSelectorScopeVersion === applicationCssSelectorVersion) {
+		return applicationSelectorScope;
+	}
+
+	const rulesets = getMergedApplicationCssSelectors();
+	const canAppend = applicationSelectorScope && applicationSelectorScopeResetVersion === applicationSelectorsResetVersion && rulesets.length >= applicationSelectorScopeRuleCount;
+
+	if (canAppend) {
+		applicationSelectorScope.appendRulesets(rulesets, applicationSelectorScopeRuleCount);
+	} else {
+		applicationSelectorScope = rulesets.length > 0 ? new StyleSheetSelectorScope(rulesets, SelectorTier.Application) : null;
+		applicationSelectorsHaveScopedTags = false;
+		applicationSelectorScopeRuleCount = 0;
+	}
+
+	for (let i = applicationSelectorScopeRuleCount, length = rulesets.length; i < length; i++) {
+		if (rulesets[i].scopedTag) {
+			applicationSelectorsHaveScopedTags = true;
+			break;
+		}
+	}
+
+	applicationSelectorScopeRuleCount = rulesets.length;
+	applicationSelectorScopeVersion = applicationCssSelectorVersion;
+	applicationSelectorScopeResetVersion = applicationSelectorsResetVersion;
+
+	return applicationSelectorScope;
+}
+
+/** Avoids `push(...arr)`, which blows the stack past the engine's argument limit. */
+function concatRuleSets<T>(base: T[], additional: T[]): T[] {
+	const baseLength = base.length;
+	const merged: T[] = new Array(baseLength + additional.length);
+
+	for (let i = 0; i < baseLength; i++) {
+		merged[i] = base[i];
+	}
+
+	for (let i = 0, length = additional.length; i < length; i++) {
+		merged[baseLength + i] = additional[i];
+	}
+
+	return merged;
 }
 
 class CSSSource {
@@ -239,7 +343,7 @@ class CSSSource {
 	}
 
 	@profile
-	private async parseCSSAst() {
+	private parseCSSAst(): void {
 		if (this._source) {
 			if (__CSS_PARSER__ === 'css-tree') {
 				this._ast = cssTreeParse(this._source, this._file);
@@ -374,6 +478,8 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 	}
 
 	if (selectorsChanged) {
+		// Rules were dropped from the middle of the list, so the index has to be rebuilt.
+		applicationSelectorsResetVersion++;
 		mergeCssSelectors();
 		updated = true;
 	}
@@ -483,6 +589,8 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string): void => {
 
 	// Check for existing application css selectors too in case the app is undergoing a live-sync
 	if (selectors.length > 0 || applicationCssSelectors.length > 0) {
+		// The base stylesheet is replaced rather than appended to.
+		applicationSelectorsResetVersion++;
 		applicationCssSelectors = selectors;
 		mergeCssSelectors();
 		updated = true;
@@ -527,6 +635,44 @@ if (Application.hasLaunched()) {
 	getNativeScriptGlobals().events.on('loadAppCss', loadAppCSS);
 }
 
+function trackedNamesEqual(a: Set<string> | undefined, b: Set<string> | undefined): boolean {
+	if (a === b) {
+		return true;
+	}
+
+	if (!a || !b || a.size !== b.size) {
+		return false;
+	}
+
+	for (const name of a) {
+		if (!b.has(name)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/** Two empty maps compare equal even when they are different objects. */
+function changeMapsEqual(applied: Readonly<ChangeMap<ViewBase>>, current: ChangeMap<ViewBase>): boolean {
+	if (applied === current) {
+		return true;
+	}
+
+	if (applied.size !== current.size) {
+		return false;
+	}
+
+	for (const [view, changes] of applied) {
+		const currentChanges: Changes = current.get(view);
+		if (!currentChanges || !trackedNamesEqual(changes.attributes, currentChanges.attributes) || !trackedNamesEqual(changes.pseudoClasses, currentChanges.pseudoClasses)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
 	static emptyPropertyBag: Record<string, unknown> = {};
@@ -560,9 +706,15 @@ export class CssState {
 	public onChange(): void {
 		const view = this.viewRef.get();
 		if (view && view.isLoaded) {
-			this.unsubscribeFromDynamicUpdates();
+			// Matching does not read the subscriptions, so re-subscribe only when the
+			// dependencies actually changed - they are usually identical.
 			this.updateMatch();
-			this.subscribeForDynamicUpdates();
+
+			if (!changeMapsEqual(this._appliedChangeMap, this._match.changeMap)) {
+				this.unsubscribeFromDynamicUpdates();
+				this.subscribeForDynamicUpdates();
+			}
+
 			this.updateDynamicState();
 		} else {
 			this._matchInvalid = true;
@@ -716,51 +868,130 @@ export class CssState {
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
-		const valuesToApply = {};
-		const cssExpsProperties = {};
+		let valuesToApply: Record<string, unknown>;
+		let cssExpsProperties: Record<string, string>;
+		let pendingProperties: Record<string, CssPendingSubstitution>;
 
 		for (const property in newPropertyValues) {
-			const value = cleanupImportantFlags(newPropertyValues[property], property);
+			const value = newPropertyValues[property];
 
-			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
+			if (_isCssPendingSubstitution(value)) {
+				// Resolvable only after the css variables below are up to date.
+				if (!pendingProperties) {
+					pendingProperties = {};
+				}
+				pendingProperties[property] = value;
+				continue;
+			}
+
+			// Expanded shorthand values are already converted and may not be strings.
+			const isCssExp = typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value));
 
 			if (isCssExp) {
 				// we handle css exp separately because css vars must be evaluated first
+				if (!cssExpsProperties) {
+					cssExpsProperties = {};
+				}
 				cssExpsProperties[property] = value;
 				continue;
 			}
-			delete oldProperties[property];
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
+
+			// Whatever is left in oldProperties after these loops was removed and gets unset.
+			const hadOldValue = property in oldProperties;
+			const unchanged = hadOldValue && oldProperties[property] === value;
+			if (hadOldValue) {
+				delete oldProperties[property];
 			}
+
 			if (isCssVariable(property)) {
+				// The scoped css-variables were just reset, so they always have to be re-registered.
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
 				continue;
+			}
+
+			if (unchanged) {
+				continue;
+			}
+
+			if (!valuesToApply) {
+				valuesToApply = {};
 			}
 			valuesToApply[property] = value;
 		}
 		//we need to parse CSS vars first before evaluating css expressions
 		for (const property in cssExpsProperties) {
-			delete oldProperties[property];
+			const hadOldValue = property in oldProperties;
+			const oldValue = hadOldValue ? oldProperties[property] : undefined;
+			if (hadOldValue) {
+				delete oldProperties[property];
+			}
+
 			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
-			}
-			if (value === unsetValue) {
-				delete newPropertyValues[property];
-			}
+
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
+				continue;
 			}
 
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			} else {
+				// Record the evaluated value - the next diff compares against it.
+				newPropertyValues[property] = value;
+			}
+
+			if (hadOldValue && oldValue === value) {
+				continue;
+			}
+
+			if (!valuesToApply) {
+				valuesToApply = {};
+			}
+			valuesToApply[property] = value;
+		}
+		// Each shorthand is resolved once, however many longhands point at it.
+		let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+		for (const property in pendingProperties) {
+			const pending = pendingProperties[property];
+
+			if (!resolvedShorthands) {
+				resolvedShorthands = new Map();
+			}
+
+			let resolved = resolvedShorthands.get(pending);
+			if (!resolved) {
+				resolved = resolvePendingSubstitution(view, pending);
+				resolvedShorthands.set(pending, resolved);
+			}
+
+			const value = property in resolved ? resolved[property] : unsetValue;
+
+			const hadOldValue = property in oldProperties;
+			const oldValue = hadOldValue ? oldProperties[property] : undefined;
+			if (hadOldValue) {
+				delete oldProperties[property];
+			}
+
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			} else {
+				newPropertyValues[property] = value;
+			}
+
+			if (hadOldValue && oldValue === value) {
+				continue;
+			}
+
+			if (!valuesToApply) {
+				valuesToApply = {};
+			}
 			valuesToApply[property] = value;
 		}
 
-		// Unset removed values
+		// Unset removed values - the bag is keyed by longhands only, so unsetting
+		// one entry cannot clear a value another one set.
 		for (const property in oldProperties) {
 			if (property in view.style) {
 				view.style[`css:${property}`] = unsetValue;
@@ -844,10 +1075,10 @@ CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
-	private _selectorScope: StyleSheetSelectorScope<any>;
+	private _localSelectorScope: StyleSheetSelectorScope<any>;
 	private _css = '';
 
-	private _mergedCssSelectors: RuleSet[];
+	private _hasSelectors = false;
 	private _mergedCssKeyframes: Keyframes[];
 
 	private _localCssSelectors: RuleSet[] = [];
@@ -856,7 +1087,7 @@ export class StyleScope {
 
 	private _localCssSelectorsAppliedVersion = 0;
 	private _applicationCssSelectorsAppliedVersion = 0;
-	private _cssFiles: string[] = [];
+	private _cssFiles = new Set<string>();
 
 	get css(): string {
 		return this._css;
@@ -878,7 +1109,7 @@ export class StyleScope {
 		if (!cssFileName) {
 			return;
 		}
-		this._cssFiles.push(cssFileName);
+		this._cssFiles.add(cssFileName);
 		currentScopeTag = cssFileName;
 
 		const cssFile = CSSSource.fromURI(cssFileName);
@@ -908,7 +1139,7 @@ export class StyleScope {
 			return;
 		}
 		if (cssFileName) {
-			this._cssFiles.push(cssFileName);
+			this._cssFiles.add(cssFileName);
 			currentScopeTag = cssFileName;
 		}
 
@@ -936,7 +1167,7 @@ export class StyleScope {
 	}
 
 	public ensureSelectors(): number {
-		if (!this.isApplicationCssSelectorsLatestVersionApplied() || !this.isLocalCssSelectorsLatestVersionApplied() || !this._mergedCssSelectors) {
+		if (!this.isApplicationCssSelectorsLatestVersionApplied() || !this.isLocalCssSelectorsLatestVersionApplied()) {
 			this._createSelectors();
 		}
 
@@ -949,7 +1180,7 @@ export class StyleScope {
 	get hasAdjacentCombinatorSelectors(): boolean {
 		this.ensureSelectors();
 
-		return this._selectorScope ? this._selectorScope.hasAdjacentCombinatorSelectors : false;
+		return !!applicationSelectorScope?.hasAdjacentCombinatorSelectors || !!this._localSelectorScope?.hasAdjacentCombinatorSelectors;
 	}
 
 	/**
@@ -958,7 +1189,7 @@ export class StyleScope {
 	get hasSiblingCombinatorSelectors(): boolean {
 		this.ensureSelectors();
 
-		return this._selectorScope ? this._selectorScope.hasSiblingCombinatorSelectors : false;
+		return !!applicationSelectorScope?.hasSiblingCombinatorSelectors || !!this._localSelectorScope?.hasSiblingCombinatorSelectors;
 	}
 
 	/**
@@ -978,23 +1209,29 @@ export class StyleScope {
 
 	@profile
 	private _createSelectors() {
-		const toMerge: RuleSet[] = [];
-		const toMergeKeyframes: Keyframes[] = [];
-
-		toMerge.push(...mergedApplicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
-		toMergeKeyframes.push(...mergedApplicationCssKeyframes.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
+		const cssFiles = this._cssFiles;
+		const applicationScope = getApplicationSelectorScope();
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 
-		toMerge.push(...this._localCssSelectors);
-		toMergeKeyframes.push(...this._localCssKeyframes);
-		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
+		if (!this.isLocalCssSelectorsLatestVersionApplied() || (!this._localSelectorScope && this._localCssSelectors.length > 0)) {
+			this._localSelectorScope = this._localCssSelectors.length > 0 ? new StyleSheetSelectorScope(this._localCssSelectors, SelectorTier.Local) : null;
+		}
 
-		if (toMerge.length > 0) {
-			this._mergedCssSelectors = toMerge;
-			this._selectorScope = new StyleSheetSelectorScope(this._mergedCssSelectors);
-		} else {
-			this._mergedCssSelectors = null;
-			this._selectorScope = null;
+		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
+		this._hasSelectors = !!applicationScope || !!this._localSelectorScope;
+
+		const toMergeKeyframes: Keyframes[] = [];
+		const applicationKeyframes = getMergedApplicationCssKeyframes();
+		for (let i = 0, length = applicationKeyframes.length; i < length; i++) {
+			const keyframe = applicationKeyframes[i];
+			if (!keyframe.scopedTag || cssFiles.has(keyframe.scopedTag)) {
+				toMergeKeyframes.push(keyframe);
+			}
+		}
+
+		const localKeyframes = this._localCssKeyframes;
+		for (let i = 0, length = localKeyframes.length; i < length; i++) {
+			toMergeKeyframes.push(localKeyframes[i]);
 		}
 
 		this._mergedCssKeyframes = toMergeKeyframes.length > 0 ? toMergeKeyframes : null;
@@ -1004,19 +1241,22 @@ export class StyleScope {
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
 	public matchSelectors(view): SelectorsMatch<ViewBase> {
-		let match: SelectorsMatch<ViewBase>;
-
 		// should be (view: ViewBase): SelectorsMatch<ViewBase>
 		this.ensureSelectors();
 
-		if (this._selectorScope) {
-			match = this._selectorScope.query(view);
-
-			// Make sure to re-apply keyframes to matching selectors as a media query keyframe might be applicable at this point
-			this._applyKeyframesToSelectors(match.selectors);
-		} else {
-			match = null;
+		if (!this._hasSelectors) {
+			return null;
 		}
+
+		// The cascade has to see the application and local candidates as a single ordered set.
+		const candidates: SelectorCore[] = [];
+		applicationSelectorScope?.collectCandidates(view, candidates);
+		this._localSelectorScope?.collectCandidates(view, candidates);
+
+		const match = matchSelectorCandidates<ViewBase>(view, candidates, applicationSelectorsHaveScopedTags ? this._cssFiles : undefined);
+
+		// Make sure to re-apply keyframes to matching selectors as a media query keyframe might be applicable at this point
+		this._applyKeyframesToSelectors(match.selectors);
 
 		return match;
 	}
@@ -1153,6 +1393,9 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 		}
 	});
 
+	// Pending-substitution longhands share one placeholder - resolve it once.
+	let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+
 	inlineRuleSet[0].declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
@@ -1162,7 +1405,23 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 				return;
 			}
 
-			const value = evaluateCssExpressions(view, property, d.value);
+			let value: unknown;
+			if (_isCssPendingSubstitution(d.value)) {
+				if (!resolvedShorthands) {
+					resolvedShorthands = new Map();
+				}
+
+				let resolved = resolvedShorthands.get(d.value);
+				if (!resolved) {
+					resolved = resolvePendingSubstitution(view, d.value);
+					resolvedShorthands.set(d.value, resolved);
+				}
+
+				value = property in resolved ? resolved[property] : unsetValue;
+			} else {
+				value = evaluateCssExpressions(view, property, d.value);
+			}
+
 			if (property in view.style) {
 				view.style[property] = value;
 			} else {

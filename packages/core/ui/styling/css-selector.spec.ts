@@ -1,6 +1,6 @@
 import { parse } from '../../css/reworkcss.js';
 import { Screen } from '../../platform';
-import { createSelector, RuleSet, StyleSheetSelectorScope, fromAstNode, Node, Changes } from './css-selector';
+import { createSelector, RuleSet, StyleSheetSelectorScope, SelectorTier, fromAstNode, Node, Changes, matchSelectorCandidates } from './css-selector';
 import { _populateRules } from './style-scope';
 
 describe('css-selector', () => {
@@ -345,6 +345,135 @@ describe('css-selector', () => {
 			expect(rule.selectors[0].match(matching)).toBe(true);
 			expect(rule.selectors[0].match(nonMatching)).toBe(false);
 		}
+	});
+
+	describe('attribute selectors', () => {
+		class Widget {
+			public cssType = 'widget';
+			public cssClasses = new Set<string>();
+			private _text: string;
+			get text(): string {
+				return this._text;
+			}
+			set text(value: string) {
+				this._text = value;
+			}
+		}
+
+		it('does not match a node that does not know the attribute', () => {
+			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
+			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
+
+			expect(rule.selectors[0].accumulateChanges(<any>node, undefined)).toBe(false);
+		});
+
+		it('matches a node carrying the attribute', () => {
+			const rule = createOne(`.title[_ngcontent-c3] { color: red; }`);
+			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
+
+			expect(rule.selectors[0].accumulateChanges(<any>node, undefined)).toBe(true);
+		});
+
+		it('does not subscribe for attributes that cannot raise change events', () => {
+			const rule = createOne(`[_ngcontent-c3] { color: red; }`);
+			const node = { cssType: 'label', '_ngcontent-c3': '' };
+			const changes: Array<string> = [];
+
+			rule.selectors[0].accumulateChanges(
+				<any>node,
+				<any>{
+					addAttribute: (_n, attribute: string) => changes.push(attribute),
+					addPseudoClass: () => {},
+				},
+			);
+
+			expect(changes).toEqual([]);
+		});
+
+		it('subscribes for attributes backed by a property', () => {
+			const rule = createOne(`widget[text] { color: red; }`);
+			const node = new Widget();
+			node.text = 'hello';
+			const changes: Array<string> = [];
+
+			rule.selectors[0].accumulateChanges(
+				<any>node,
+				<any>{
+					addAttribute: (_n, attribute: string) => changes.push(attribute),
+					addPseudoClass: () => {},
+				},
+			);
+
+			expect(changes).toEqual(['text']);
+		});
+
+		it('matches a property backed attribute even when it is unset', () => {
+			const rule = createOne(`widget[text] { color: red; }`);
+
+			// The value can still be assigned later, and assigning it raises `textChange`.
+			const accumulator = <any>{ addAttribute: () => {}, addPseudoClass: () => {} };
+			expect(rule.selectors[0].accumulateChanges(<any>new Widget(), accumulator)).toBe(true);
+		});
+	});
+
+	it('expands a shorthand into its longhands while parsing', () => {
+		const rule = createOne(`button { margin: 4; }`);
+
+		expect(rule.declarations.map((d) => d.property)).toEqual(['margin-top', 'margin-right', 'margin-bottom', 'margin-left']);
+	});
+
+	it('gives a shorthand holding a variable one pending-substitution value per longhand', () => {
+		// A single var() can substitute several longhands at once, so the shorthand can
+		// only be parsed once substitution has happened - but the declaration is still
+		// keyed by longhands, as the cascade requires.
+		const rule = createOne(`button { margin: var(--m); }`);
+
+		expect(rule.declarations.map((d) => d.property)).toEqual(['margin-top', 'margin-right', 'margin-bottom', 'margin-left']);
+		expect(rule.declarations.map((d) => String(d.value))).toEqual(['var(--m)', 'var(--m)', 'var(--m)', 'var(--m)']);
+		// One placeholder shared by every longhand, so it is only resolved once.
+		expect(new Set(rule.declarations.map((d) => d.value)).size).toBe(1);
+	});
+
+	it('strips the unsupported !important flag while parsing', () => {
+		const rule = createOne(`button { color: red !important; }`);
+		expect(rule.declarations).toEqual([{ property: 'color', value: 'red' }]);
+	});
+
+	describe('candidate resolution across scopes', () => {
+		it('breaks a specificity tie on the scope tier before the position', () => {
+			const application = create(`label { color: red; }`).selectorScope;
+			const local = new StyleSheetSelectorScope(create(`label { color: blue; }`).rulesets, SelectorTier.Local);
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const candidates = local.collectCandidates(<any>node, application.collectCandidates(<any>node));
+			const { selectors } = matchSelectorCandidates(<any>node, candidates);
+
+			// Local styles are a later "stylesheet", so they win the tie regardless of
+			// the position each selector got inside its own scope.
+			expect(selectors.length).toBe(2);
+			expect(selectors[1].ruleset.declarations[0].value).toBe('blue');
+		});
+
+		it('drops rules scoped to a stylesheet the caller did not load', () => {
+			const { rulesets, selectorScope } = create(`label { color: red; } label { color: blue; }`);
+			rulesets[1].scopedTag = 'other.css';
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const { selectors } = matchSelectorCandidates(<any>node, selectorScope.collectCandidates(<any>node), new Set(['mine.css']));
+
+			expect(selectors.length).toBe(1);
+			expect(selectors[0].ruleset.declarations[0].value).toBe('red');
+		});
+
+		it('keeps rules scoped to a stylesheet the caller did load', () => {
+			const { rulesets, selectorScope } = create(`label { color: red; } label { color: blue; }`);
+			rulesets[1].scopedTag = 'mine.css';
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const { selectors } = matchSelectorCandidates(<any>node, selectorScope.collectCandidates(<any>node), new Set(['mine.css']));
+
+			expect(selectors.length).toBe(2);
+		});
 	});
 
 	it('query returns selectors sorted by specificity then position', () => {
