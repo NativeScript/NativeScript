@@ -3,7 +3,7 @@ import * as view from '@nativescript/core/ui/core/view';
 import * as testModule from '../../ui-test';
 import * as platform from '@nativescript/core/platform';
 import * as helper from '../../ui-helper';
-import { Builder, Page, Label, GridLayout, Utils } from '@nativescript/core';
+import { Builder, Page, Label, GridLayout, TabView, Utils } from '@nativescript/core';
 import { dipToDp, left, top, right, bottom, height, width, equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith, isLeftWith, isAboveWith, isRightWith, isBelowWith } from './layout-tests-helper';
 
 export class SafeAreaTests extends testModule.UITest<any> {
@@ -69,15 +69,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
 		};
 	}
 
-	private layout_insets_top_action_bar_test(layout: view.View) {
-		// const app = UIApplication.sharedApplication;
-		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-		// const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
-		// const topInset = statusBarHeight + actionBarHeight;
+	// iPadOS 18+ renders the tab strip at the top of the screen and accounts for it
+	// in the safe area of the tab CONTENT controllers, not of the UITabBarController's
+	// own view - so read the inset UIKit computed for the selected content controller.
+	private tabContentTopInset(layout: view.View): number {
+		let parent = layout.parent;
+		while (parent) {
+			if (parent instanceof TabView) {
+				const controller = <UITabBarController>(<any>parent).viewController;
+				const contentView = controller?.selectedViewController?.view;
 
+				return contentView && contentView.window ? contentView.safeAreaInsets.top : 0;
+			}
+			parent = parent.parent;
+		}
+
+		return 0;
+	}
+
+	private layout_insets_top_action_bar_test(layout: view.View) {
 		const view = layout.page.actionBar.nativeViewProtected as unknown as UIView;
 		// use the action bar position and size instead of the status bar and action bar heights as those are unreliable on iOS 16+
-		const topInset = Math.round(dipToDp(view.frame.origin.y + view.frame.size.height));
+		const topInset = Math.round(dipToDp(Math.max(view.frame.origin.y + view.frame.size.height, this.tabContentTopInset(layout))));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
@@ -85,9 +98,9 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 	private layout_insets_top_action_bar_hidden_test(layout: view.View) {
 		const keyWindow = Utils.getWindow() as unknown as UIWindow;
-		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
 		// use window inset instead of status bar frame as that's unreliable on iOS 16+
-		const topInset = Math.round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));
+		const windowInset = keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
+		const topInset = Math.round(dipToDp(Math.max(windowInset, this.tabContentTopInset(layout))));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
