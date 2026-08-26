@@ -5,7 +5,7 @@ import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariab
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, Changes, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates } from './css-selector';
 import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -619,6 +619,50 @@ if (Application.hasLaunched()) {
 	getNativeScriptGlobals().events.on('loadAppCss', loadAppCSS);
 }
 
+function trackedNamesEqual(a: Set<string> | undefined, b: Set<string> | undefined): boolean {
+	if (a === b) {
+		return true;
+	}
+
+	if (!a || !b || a.size !== b.size) {
+		return false;
+	}
+
+	for (const name of a) {
+		if (!b.has(name)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Whether two change maps subscribe to exactly the same things.
+ *
+ * Re-matching usually lands on the same dependencies - the same view, the same
+ * pseudo classes - so this decides whether the listeners have to be touched at
+ * all. Both empty maps count as equal even though they are different objects.
+ */
+function changeMapsEqual(applied: Readonly<ChangeMap<ViewBase>>, current: ChangeMap<ViewBase>): boolean {
+	if (applied === current) {
+		return true;
+	}
+
+	if (applied.size !== current.size) {
+		return false;
+	}
+
+	for (const [view, changes] of applied) {
+		const currentChanges: Changes = current.get(view);
+		if (!currentChanges || !trackedNamesEqual(changes.attributes, currentChanges.attributes) || !trackedNamesEqual(changes.pseudoClasses, currentChanges.pseudoClasses)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
 	static emptyPropertyBag: Record<string, unknown> = {};
@@ -652,9 +696,18 @@ export class CssState {
 	public onChange(): void {
 		const view = this.viewRef.get();
 		if (view && view.isLoaded) {
-			this.unsubscribeFromDynamicUpdates();
+			// Matching does not read the subscriptions, so the new match can be computed
+			// first and its dependencies compared against the ones already subscribed to.
+			// They are usually identical, and tearing every listener down only to add the
+			// same ones back is pure churn - it also toggles the widget-level pseudo class
+			// handlers off and on for nothing.
 			this.updateMatch();
-			this.subscribeForDynamicUpdates();
+
+			if (!changeMapsEqual(this._appliedChangeMap, this._match.changeMap)) {
+				this.unsubscribeFromDynamicUpdates();
+				this.subscribeForDynamicUpdates();
+			}
+
 			this.updateDynamicState();
 		} else {
 			this._matchInvalid = true;

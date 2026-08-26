@@ -278,3 +278,66 @@ describe('application and local selector scopes', () => {
 		});
 	});
 });
+
+describe('CssState.onChange subscriptions', () => {
+	function trackListeners(view: any) {
+		const calls = { added: [] as string[], removed: [] as string[] };
+		const add = view.addEventListener.bind(view);
+		const remove = view.removeEventListener.bind(view);
+
+		view.addEventListener = (eventName: string, handler: any, thisArg?: any) => {
+			calls.added.push(eventName);
+
+			return add(eventName, handler, thisArg);
+		};
+		view.removeEventListener = (eventName: string, handler: any, thisArg?: any) => {
+			calls.removed.push(eventName);
+
+			return remove(eventName, handler, thisArg);
+		};
+
+		return calls;
+	}
+
+	function loadedView(css: string) {
+		const { view } = styled(css);
+		Object.defineProperty(view, 'isLoaded', { value: true, configurable: true });
+		view._cssState.onLoaded();
+
+		return view;
+	}
+
+	it('does not resubscribe when the matched dependencies are unchanged', () => {
+		const view = loadedView('label:highlighted { color: red; }');
+		const calls = trackListeners(view);
+
+		view._cssState.onChange();
+
+		expect(calls.added).toEqual([]);
+		expect(calls.removed).toEqual([]);
+	});
+
+	it('resubscribes when the matched dependencies change', () => {
+		const view = loadedView('label:highlighted { color: red; }');
+		const calls = trackListeners(view);
+
+		// A rule that depends on a different pseudo class changes what has to be watched.
+		view._styleScope.addCss('label:disabled { color: blue; }');
+		view._cssState.onChange();
+
+		expect(calls.added).toContain(':disabled');
+		expect(calls.removed).toContain(':highlighted');
+	});
+
+	it('still applies changed values when the subscriptions are left alone', () => {
+		const view = loadedView('label { color: red; } label:highlighted { color: blue; }');
+		view.addPseudoClass('highlighted');
+		expect(view.style.color.toString()).toBe('#0000FF');
+
+		const calls = trackListeners(view);
+		view._cssState.onChange();
+
+		expect(calls.added).toEqual([]);
+		expect(view.style.color.toString()).toBe('#0000FF');
+	});
+});

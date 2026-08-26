@@ -124,6 +124,23 @@ describe('css state - dynamic updates', () => {
 		}
 	});
 
+	const classTree = buildTree(200);
+	attachScope(classTree.root, classTree.views, scope);
+	for (const view of classTree.views) {
+		// The class-change path only runs for loaded views.
+		(view as any)._isLoaded = true;
+	}
+	styleTree(classTree.views);
+
+	bench('toggle a class on 200 loaded views', () => {
+		for (const view of classTree.views) {
+			view.className = `${view.className} accent`;
+		}
+		for (const view of classTree.views) {
+			view.className = view.className.replace(' accent', '');
+		}
+	});
+
 	bench('toggle a pseudo class on 200 views', () => {
 		for (const view of views) {
 			view.addPseudoClass('highlighted');
