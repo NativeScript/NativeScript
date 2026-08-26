@@ -201,6 +201,41 @@ export class iOSApplication extends ApplicationCommon {
 	set delegate(value: UIApplicationDelegate | unknown);
 
 	/**
+	 * NativeScript's default implementation of the `UIApplicationDelegate`
+	 * `applicationConfigurationForConnectingSceneSessionOptions` method.
+	 *
+	 * It is installed automatically on the application delegate class unless that class
+	 * already implements the method. A delegate that does implement it can handle the
+	 * scenes it cares about and forward the rest here:
+	 *
+	 * ```ts
+	 * applicationConfigurationForConnectingSceneSessionOptions(app, session, options) {
+	 *   if (session.role === myCustomRole) {
+	 *     return myConfig;
+	 *   }
+	 *   return Application.ios.defaultSceneConfiguration(app, session, options);
+	 * }
+	 * ```
+	 *
+	 * `onSceneConfiguration` is consulted first. Scenes with the
+	 * `UIWindowSceneSessionRoleApplication` role then get a configuration backed by
+	 * NativeScript's SceneDelegate; every other role gets a bare configuration that
+	 * NativeScript does not manage.
+	 */
+	defaultSceneConfiguration(application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration;
+
+	/**
+	 * NativeScript's default implementation of the `UIApplicationDelegate`
+	 * `applicationDidDiscardSceneSessions` method, which retires the windows belonging
+	 * to the discarded sessions.
+	 *
+	 * It is installed automatically on the application delegate class unless that class
+	 * already implements the method, in which case forward to it from there so window
+	 * bookkeeping stays correct.
+	 */
+	defaultDiscardSceneSessions(application: UIApplication, sceneSessions: NSSet<UISceneSession>): void;
+
+	/**
 	 * Adds a delegate handler for the specified delegate method name. This method does not replace an existing handler,
 	 * but rather adds the new handler to the existing chain of handlers.
 	 * @param methodName The name of the delegate method to add a handler for.
