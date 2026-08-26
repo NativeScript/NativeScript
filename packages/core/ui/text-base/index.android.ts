@@ -3,7 +3,7 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 import { Font } from '../styling/font';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
@@ -488,12 +488,61 @@ export class TextBase extends TextBaseCommon {
 		);
 	}
 
+	// The per-side handlers stage into _pendingPadding, which only exists while
+	// [paddingInternalProperty.setNative] runs - it drives them so subclass
+	// overrides participate, then commits all sides in one native write. A side
+	// whose override does not chain to super keeps its current native value.
+	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
+
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
+		return { value: this._defaultPaddingTop, unit: 'px' };
+	}
+
+	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
+		}
+	}
+
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
+		return { value: this._defaultPaddingRight, unit: 'px' };
+	}
+
+	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
+		}
+	}
+
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
+		return { value: this._defaultPaddingBottom, unit: 'px' };
+	}
+
+	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
+		}
+	}
+
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
+		return { value: this._defaultPaddingLeft, unit: 'px' };
+	}
+
+	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.left = this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0);
+		}
+	}
+
 	[paddingInternalProperty.setNative](_value: string) {
-		const left = this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0);
-		const top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
-		const right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
-		const bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
-		this.nativeTextViewProtected.setPadding(left, top, right, bottom);
+		const nativeView = this.nativeTextViewProtected;
+		this._pendingPadding = { top: nativeView.getPaddingTop(), right: nativeView.getPaddingRight(), bottom: nativeView.getPaddingBottom(), left: nativeView.getPaddingLeft() };
+		(<any>this)[paddingTopProperty.setNative](this.style.paddingTop);
+		(<any>this)[paddingRightProperty.setNative](this.style.paddingRight);
+		(<any>this)[paddingBottomProperty.setNative](this.style.paddingBottom);
+		(<any>this)[paddingLeftProperty.setNative](this.style.paddingLeft);
+		nativeView.setPadding(this._pendingPadding.left, this._pendingPadding.top, this._pendingPadding.right, this._pendingPadding.bottom);
+		this._pendingPadding = null;
 	}
 
 	[lineHeightProperty.getDefault](): number {

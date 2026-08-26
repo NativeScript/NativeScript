@@ -1,6 +1,6 @@
 import { Label as LabelDefinition } from '.';
 import { Background } from '../styling/background';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
@@ -228,13 +228,46 @@ export class Label extends TextBase implements LabelDefinition {
 		});
 	}
 
+	// The per-side handlers stage into _pendingPadding, which only exists while
+	// [paddingInternalProperty.setNative] runs - it drives them so subclass
+	// overrides participate, then commits all sides in one native write. A side
+	// whose override does not chain to super keeps its current native value.
+	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
+
+	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop);
+		}
+	}
+
+	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight);
+		}
+	}
+
+	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom);
+		}
+	}
+
+	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft);
+		}
+	}
+
 	[paddingInternalProperty.setNative](_value: string) {
-		this.nativeTextViewProtected.padding = new UIEdgeInsets({
-			top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
-			right: layout.toDeviceIndependentPixels(this.effectivePaddingRight),
-			bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom),
-			left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft),
-		});
+		const nativeView = this.nativeTextViewProtected;
+		const padding = nativeView.padding;
+		this._pendingPadding = { top: padding.top, right: padding.right, bottom: padding.bottom, left: padding.left };
+		(<any>this)[paddingTopProperty.setNative](this.style.paddingTop);
+		(<any>this)[paddingRightProperty.setNative](this.style.paddingRight);
+		(<any>this)[paddingBottomProperty.setNative](this.style.paddingBottom);
+		(<any>this)[paddingLeftProperty.setNative](this.style.paddingLeft);
+		nativeView.padding = new UIEdgeInsets(this._pendingPadding);
+		this._pendingPadding = null;
 	}
 }
 

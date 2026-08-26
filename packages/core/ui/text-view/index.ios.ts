@@ -5,7 +5,7 @@ import { editableProperty, hintProperty, placeholderColorProperty, _updateCharac
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
+import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { layout, isRealDevice } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 
@@ -360,13 +360,74 @@ export class TextView extends TextViewBaseCommon {
 		});
 	}
 
+	// The per-side handlers stage into _pendingPadding, which only exists while
+	// [paddingInternalProperty.setNative] runs - it drives them so subclass
+	// overrides participate, then commits all sides in one native write. A side
+	// whose override does not chain to super keeps its current native value.
+	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
+
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.top,
+			unit: 'px',
+		};
+	}
+
+	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		}
+	}
+
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.right,
+			unit: 'px',
+		};
+	}
+
+	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		}
+	}
+
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.bottom,
+			unit: 'px',
+		};
+	}
+
+	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		}
+	}
+
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.left,
+			unit: 'px',
+		};
+	}
+
+	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		}
+	}
+
 	[paddingInternalProperty.setNative](_value: string) {
-		this.nativeTextViewProtected.textContainerInset = new UIEdgeInsets({
-			top: layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth),
-			right: layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth),
-			bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth),
-			left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth),
-		});
+		const nativeView = this.nativeTextViewProtected;
+		const inset = nativeView.textContainerInset;
+		this._pendingPadding = { top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left };
+		(<any>this)[paddingTopProperty.setNative](this.style.paddingTop);
+		(<any>this)[paddingRightProperty.setNative](this.style.paddingRight);
+		(<any>this)[paddingBottomProperty.setNative](this.style.paddingBottom);
+		(<any>this)[paddingLeftProperty.setNative](this.style.paddingLeft);
+		nativeView.textContainerInset = new UIEdgeInsets(this._pendingPadding);
+		this._pendingPadding = null;
 	}
 
 	[iosWritingToolsBehaviorProperty.setNative](value: WritingToolsBehavior) {

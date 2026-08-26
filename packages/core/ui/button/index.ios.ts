@@ -1,7 +1,7 @@
 import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
@@ -147,13 +147,74 @@ export class Button extends ButtonBase {
 		});
 	}
 
+	// The per-side handlers stage into _pendingPadding, which only exists while
+	// [paddingInternalProperty.setNative] runs - it drives them so subclass
+	// overrides participate, then commits all sides in one native write. A side
+	// whose override does not chain to super keeps its current native value.
+	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
+
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeViewProtected.contentEdgeInsets.top,
+			unit: 'px',
+		};
+	}
+
+	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		}
+	}
+
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeViewProtected.contentEdgeInsets.right,
+			unit: 'px',
+		};
+	}
+
+	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		}
+	}
+
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeViewProtected.contentEdgeInsets.bottom,
+			unit: 'px',
+		};
+	}
+
+	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		}
+	}
+
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeViewProtected.contentEdgeInsets.left,
+			unit: 'px',
+		};
+	}
+
+	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		}
+	}
+
 	[paddingInternalProperty.setNative](_value: string) {
-		this.nativeViewProtected.contentEdgeInsets = new UIEdgeInsets({
-			top: layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth),
-			left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth),
-			bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth),
-			right: layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth),
-		});
+		const nativeView = this.nativeViewProtected;
+		const inset = nativeView.contentEdgeInsets;
+		this._pendingPadding = { top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left };
+		(<any>this)[paddingTopProperty.setNative](this.style.paddingTop);
+		(<any>this)[paddingRightProperty.setNative](this.style.paddingRight);
+		(<any>this)[paddingBottomProperty.setNative](this.style.paddingBottom);
+		(<any>this)[paddingLeftProperty.setNative](this.style.paddingLeft);
+		nativeView.contentEdgeInsets = new UIEdgeInsets(this._pendingPadding);
+		this._pendingPadding = null;
 	}
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
