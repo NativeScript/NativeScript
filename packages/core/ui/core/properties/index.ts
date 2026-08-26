@@ -59,13 +59,9 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 }
 
 /**
- * Stands in for the longhands of a shorthand whose value still has to be resolved.
- *
- * A single `var()` can substitute the value of several longhands at once, so such a
- * shorthand cannot be split while parsing. CSS fills its longhands with a
- * pending-substitution value instead, cascades that like any other value, and parses
- * the shorthand once substitution has happened - which is what this carries.
- *
+ * Placeholder cascaded for each longhand of a shorthand that cannot be split while
+ * parsing - a single `var()` may substitute several longhands at once, so the
+ * shorthand is only parsed once its expression is resolved per view.
  * @see https://drafts.csswg.org/css-variables/#variables-in-shorthands
  */
 export class CssPendingSubstitution {
@@ -84,11 +80,9 @@ export function _isCssPendingSubstitution(value: unknown): value is CssPendingSu
 }
 
 /**
- * The longhands a shorthand expands into, discovered by asking its converter.
- *
- * Every converter answers an unset value with its full set of longhands, and the
- * probe is deferred to first use because the longhand properties a converter closes
- * over are not initialized yet while the shorthand itself is being registered.
+ * The longhands a shorthand expands into, probed from its converter on first use -
+ * the longhand properties a converter closes over are not initialized yet while
+ * the shorthand itself is being registered.
  */
 function getCssShorthandLonghands(cssName: string): string[] | undefined {
 	const known = cssShorthandLonghands.get(cssName);
@@ -123,9 +117,8 @@ function getCssShorthandLonghands(cssName: string): string[] | undefined {
 }
 
 /**
- * Pending-substitution values for a shorthand that cannot be expanded yet, one per
- * longhand. Returns `undefined` when the property is not a shorthand or its
- * longhands cannot be determined, leaving the declaration as it was.
+ * One pending-substitution value per longhand of the shorthand, or `undefined`
+ * when the longhands cannot be determined.
  */
 export function _pendingCssShorthandSubstitution(cssName: string, value: string): [string, CssPendingSubstitution][] | undefined {
 	const longhands = getCssShorthandLonghands(cssName);
@@ -143,16 +136,9 @@ export function _pendingCssShorthandSubstitution(cssName: string, value: string)
 }
 
 /**
- * Expand a shorthand declaration into the longhand declarations it stands for.
- *
- * The cascade is defined on longhands - a shorthand declaration is equivalent to
- * declaring each of its longhands in its place - so doing this once while parsing
- * keeps source order meaningful and saves converting the same declaration again
- * for every view it applies to.
- *
- * Returns `undefined` when the property is not a shorthand, when the value still
- * has to be evaluated (`var()` / `calc()` are only resolvable per view), or when
- * the value does not parse - all of which leave the declaration as it was.
+ * Expand a shorthand declaration into its longhand declarations, or `undefined`
+ * when the property is not a shorthand, the value still has to be evaluated per
+ * view (`var()`/`calc()`), or it does not parse.
  */
 export function _expandCssShorthand(cssName: string, value: string): [string, any][] | undefined {
 	const converter = cssShorthandConverters.get(cssName);
@@ -1424,9 +1410,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
 
-		// Note: nothing is registered on `PropertyBag` here. Shorthands are expanded
-		// while parsing, and the only ones that reach the bag are `var()`/`calc()`
-		// values, which must not be converted until they have been evaluated.
+		// Nothing is defined on `PropertyBag`: shorthands are expanded while parsing,
+		// and the var()/calc() ones that do reach the bag must stay unconverted.
 	}
 }
 

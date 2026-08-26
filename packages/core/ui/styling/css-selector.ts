@@ -27,10 +27,7 @@ export interface Node {
 
 export interface Declaration {
 	property: string;
-	/**
-	 * Usually the raw text from the stylesheet, but a shorthand is expanded while
-	 * parsing and its longhands carry the already-converted value.
-	 */
+	/** Raw stylesheet text, except expanded shorthand longhands, which carry the converted value. */
 	value: any;
 }
 
@@ -107,14 +104,9 @@ interface LookupSorter {
 }
 
 /**
- * Which set of stylesheets a selector came from.
- *
- * The cascade breaks a specificity tie on source order, and source order across
- * stylesheets is really (stylesheet, position within it) - so a selector needs to
- * know its stylesheet's rank, not just its own index. Application styles are
- * consulted for every view and are indexed once; a scope's own styles come after
- * them and are indexed per scope, so their positions are only comparable within a
- * tier.
+ * Rank of the stylesheet set a selector was indexed in. Specificity ties break on
+ * (tier, pos): the application and local indexes are built separately, so positions
+ * are only comparable within a tier.
  */
 export const enum SelectorTier {
 	Application = 0,
@@ -164,13 +156,9 @@ function getNodePreviousDirectSibling(node: Node): null | Node {
 }
 
 /**
- * Cache of "does this view type notify for that attribute", keyed by prototype.
- *
- * `<attribute>Change` events are only raised by registered properties, which are
- * defined as accessors on a prototype. An attribute that is a plain value on the
- * instance - Angular's `_ngcontent-*` markers, anything a renderer assigns
- * directly - can never notify, so subscribing to its change event is pure
- * overhead on every view the selector may match.
+ * `<attribute>Change` is only raised by properties defined as prototype accessors;
+ * a plain instance value (e.g. Angular's `_ngcontent-*` markers) never notifies,
+ * so subscribing to its change event would be pure overhead.
  */
 const notifyingAttributes = new WeakMap<object, Map<string, boolean>>();
 
@@ -440,17 +428,12 @@ export class AttributeSelector extends SimpleSelector {
 		return false;
 	}
 	public mayMatch(node: Node): boolean {
-		// The attribute may still be assigned later, but only if the view knows about it:
-		// registered properties live on the prototype and anything a framework has already
-		// set is an own value. An attribute that is on neither can never start matching
-		// without the css state being invalidated anyway, and treating it as a permanent
-		// "maybe" keeps the selector - and a change subscription for it - on every view it
-		// will never match. Angular's per component `[_ngcontent-cN]` scoping makes that
-		// cost grow with the number of components in the app.
+		// Registered properties live on the prototype and anything already assigned is
+		// an own value; an attribute on neither can never start matching without the
+		// css state being invalidated anyway.
 		return this.attribute in node;
 	}
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		// Only subscribe when the attribute can actually raise `<attribute>Change`.
 		if (attributeNotifiesChanges(node, this.attribute)) {
 			map.addAttribute(node, this.attribute);
 		}
@@ -970,13 +953,10 @@ export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
 
 function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declaration): void {
 	const property = isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase();
-	// Strip the (unsupported) `!important` flag once, here, instead of scanning
-	// every declaration again for every view the rule is applied to.
 	const value = cleanupImportantFlags(decl.value, decl.property);
 
-	// A shorthand declaration is defined as declaring each of its longhands in its
-	// place, so expanding here keeps source order - and therefore the cascade -
-	// correct, and converts the value once instead of once per view per update.
+	// The cascade is defined on longhands: a shorthand declares each of its
+	// longhands in its place, so it is expanded here to keep source order meaningful.
 	const expanded = _expandCssShorthand(property, value);
 	if (expanded) {
 		for (let i = 0, length = expanded.length; i < length; i++) {
@@ -986,8 +966,8 @@ function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declarat
 		return;
 	}
 
-	// A shorthand whose value still has to be resolved gets one pending-substitution
-	// value per longhand, so a declaration is only ever keyed by a longhand.
+	// A var()/calc() shorthand cannot be expanded yet - cascade one
+	// pending-substitution value per longhand instead.
 	const pending = _pendingCssShorthandSubstitution(property, value);
 	if (pending) {
 		for (let i = 0, length = pending.length; i < length; i++) {
@@ -1289,11 +1269,8 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	}
 
 	/**
-	 * Index rulesets that were added after this scope was built.
-	 *
-	 * Application stylesheets are only ever appended to outside of a livesync or an
-	 * explicit removal, so the rules already indexed keep their positions and only
-	 * the tail has to be sorted into the lookup maps.
+	 * Index rulesets added after this scope was built; the rules already indexed
+	 * keep their positions.
 	 */
 	public appendRulesets(rulesets: RuleSet[], from: number): void {
 		this.lookupRulesets(rulesets, from);
@@ -1357,9 +1334,8 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	}
 
 	/**
-	 * Append every selector that could match the node, this scope's matching media
-	 * query scopes included. Several scopes feed one match, so the candidates are
-	 * collected into a shared array and resolved once by `matchSelectorCandidates`.
+	 * Append every selector that could match the node, matching media query scopes
+	 * included, for `matchSelectorCandidates` to resolve.
 	 */
 	public collectCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
 		this.getSelectorCandidates(node, candidates);
@@ -1387,27 +1363,19 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	}
 }
 
-/**
- * Order matching selectors the way the cascade does: by specificity, then by
- * source order - which across stylesheets means the stylesheet's rank first and
- * the position within it second.
- */
+/** Cascade order: specificity, then source order - (tier, position) across stylesheets. */
 function compareSelectors(a: SelectorCore, b: SelectorCore): number {
 	return a.specificity - b.specificity || a.tier - b.tier || a.pos - b.pos;
 }
 
 /**
- * Resolve collected candidates against a node.
- *
- * `scopedTags` filters out rules that were registered on behalf of a stylesheet
- * this scope never loaded; pass it only when such rules exist, since it costs a
- * lookup per candidate.
+ * Resolve collected candidates against a node, compacting the array in place.
+ * `scopedTags` filters out rules registered on behalf of a stylesheet this scope
+ * never loaded; pass it only when such rules exist - it costs a lookup per candidate.
  */
 export function matchSelectorCandidates<T extends Node>(node: T, candidates: SelectorCore[], scopedTags?: Set<string>): SelectorsMatch<T> {
 	const selectorsMatch = new SelectorsMatch<T>();
 
-	// Compact the candidates in place - a query runs for every view, so the
-	// intermediate array a filter() would allocate is worth avoiding.
 	let matched = 0;
 	for (let i = 0, length = candidates.length; i < length; i++) {
 		const selector = candidates[i];
@@ -1435,10 +1403,7 @@ interface ChangeAccumulator {
 	addPseudoClass(node: Node, pseudoClass: string): void;
 }
 
-/**
- * Most views match no dynamic selector at all, so the change map is only
- * materialized once something actually has to be tracked.
- */
+/** Shared by matches that track nothing; a real map is materialized on first write. */
 const emptyChangeMap: ChangeMap<any> = new Map();
 
 export class SelectorsMatch<T extends Node> implements ChangeAccumulator {

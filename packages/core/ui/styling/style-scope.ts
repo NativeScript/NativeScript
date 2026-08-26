@@ -51,19 +51,14 @@ let mergedApplicationCssKeyframesInvalid = false;
 let applicationCssSelectorVersion = 0;
 
 /**
- * The application stylesheets are the same for every style scope, so they are
- * indexed once here instead of once per scope. Rules that were registered on
- * behalf of a particular stylesheet stay in the index and are filtered out at
- * match time for scopes that never loaded it - see `matchSelectorCandidates`.
+ * Shared index over the application stylesheets, built once for all style scopes.
+ * Tagged rules stay in it and are filtered out at match time - see `matchSelectorCandidates`.
  */
 let applicationSelectorScope: StyleSheetSelectorScope<any> = null;
 let applicationSelectorScopeVersion = -1;
 let applicationSelectorScopeRuleCount = 0;
 let applicationSelectorsHaveScopedTags = false;
-/**
- * Bumped whenever the application rules change in a way an append cannot express
- * - a stylesheet reload, or a tagged stylesheet being removed.
- */
+/** Bumped when the application rules change in a way an append cannot express. */
 let applicationSelectorsResetVersion = 0;
 let applicationSelectorScopeResetVersion = -1;
 
@@ -76,11 +71,8 @@ const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
 
 /**
- * Resolve a pending-substitution value into the longhand values it stands for.
- *
- * The shorthand is only parsed here, once the expression it holds has been
- * evaluated against the view - which is the point of the placeholder. A shorthand
- * that does not survive evaluation leaves its longhands unset.
+ * Parse a pending-substitution shorthand once its expression has been evaluated
+ * against the view; a value that does not survive evaluation leaves its longhands unset.
  */
 function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitution): Record<string, unknown> {
 	const value = evaluateCssExpressions(view, pending.shorthand, pending.value);
@@ -126,9 +118,8 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 }
 
 /**
- * Frameworks register component stylesheets one at a time, so merging eagerly on
- * every call is O(stylesheets * rules). Mark the merged list dirty instead and
- * rebuild it the next time a style scope actually reads it.
+ * Only marks the merged list dirty - it is rebuilt on next read, since frameworks
+ * register stylesheets one call at a time.
  */
 export function mergeCssSelectors(): void {
 	mergedApplicationCssSelectorsInvalid = true;
@@ -186,10 +177,7 @@ function getApplicationSelectorScope(): StyleSheetSelectorScope<any> {
 	return applicationSelectorScope;
 }
 
-/**
- * `push(...arr)` passes every element as an argument, which allocates and blows
- * the stack once a stylesheet grows past the engine's argument limit.
- */
+/** Avoids `push(...arr)`, which blows the stack past the engine's argument limit. */
 function concatRuleSets<T>(base: T[], additional: T[]): T[] {
 	const baseLength = base.length;
 	const merged: T[] = new Array(baseLength + additional.length);
@@ -665,13 +653,7 @@ function trackedNamesEqual(a: Set<string> | undefined, b: Set<string> | undefine
 	return true;
 }
 
-/**
- * Whether two change maps subscribe to exactly the same things.
- *
- * Re-matching usually lands on the same dependencies - the same view, the same
- * pseudo classes - so this decides whether the listeners have to be touched at
- * all. Both empty maps count as equal even though they are different objects.
- */
+/** Two empty maps compare equal even when they are different objects. */
 function changeMapsEqual(applied: Readonly<ChangeMap<ViewBase>>, current: ChangeMap<ViewBase>): boolean {
 	if (applied === current) {
 		return true;
@@ -724,11 +706,8 @@ export class CssState {
 	public onChange(): void {
 		const view = this.viewRef.get();
 		if (view && view.isLoaded) {
-			// Matching does not read the subscriptions, so the new match can be computed
-			// first and its dependencies compared against the ones already subscribed to.
-			// They are usually identical, and tearing every listener down only to add the
-			// same ones back is pure churn - it also toggles the widget-level pseudo class
-			// handlers off and on for nothing.
+			// Matching does not read the subscriptions, so re-subscribe only when the
+			// dependencies actually changed - they are usually identical.
 			this.updateMatch();
 
 			if (!changeMapsEqual(this._appliedChangeMap, this._match.changeMap)) {
@@ -889,8 +868,6 @@ export class CssState {
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
-		// These stay empty in the common case (nothing changed, no css expressions), so
-		// they are only allocated once there is something to put in them.
 		let valuesToApply: Record<string, unknown>;
 		let cssExpsProperties: Record<string, string>;
 		let pendingProperties: Record<string, CssPendingSubstitution>;
@@ -899,8 +876,7 @@ export class CssState {
 			const value = newPropertyValues[property];
 
 			if (_isCssPendingSubstitution(value)) {
-				// The shorthand behind it can only be parsed once its expression has been
-				// evaluated, which needs the css variables below to be up to date first.
+				// Resolvable only after the css variables below are up to date.
 				if (!pendingProperties) {
 					pendingProperties = {};
 				}
@@ -908,8 +884,7 @@ export class CssState {
 				continue;
 			}
 
-			// Expanded shorthands carry already-converted values, which can never be
-			// an expression.
+			// Expanded shorthand values are already converted and may not be strings.
 			const isCssExp = typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value));
 
 			if (isCssExp) {
@@ -921,8 +896,7 @@ export class CssState {
 				continue;
 			}
 
-			// Consume the entry - whatever is left in oldProperties once every new
-			// value has been visited was removed and has to be unset.
+			// Whatever is left in oldProperties after these loops was removed and gets unset.
 			const hadOldValue = property in oldProperties;
 			const unchanged = hadOldValue && oldProperties[property] === value;
 			if (hadOldValue) {
@@ -937,7 +911,6 @@ export class CssState {
 			}
 
 			if (unchanged) {
-				// Skip unchanged values
 				continue;
 			}
 
@@ -965,13 +938,11 @@ export class CssState {
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
 			} else {
-				// Store the evaluated value so the next update can tell whether the
-				// expression still resolves to what is currently applied.
+				// Record the evaluated value - the next diff compares against it.
 				newPropertyValues[property] = value;
 			}
 
 			if (hadOldValue && oldValue === value) {
-				// Skip unchanged values
 				continue;
 			}
 
@@ -1006,13 +977,10 @@ export class CssState {
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
 			} else {
-				// Remember the resolved value so the next update can tell whether the
-				// shorthand still resolves to what is currently applied.
 				newPropertyValues[property] = value;
 			}
 
 			if (hadOldValue && oldValue === value) {
-				// Skip unchanged values
 				continue;
 			}
 
@@ -1022,8 +990,8 @@ export class CssState {
 			valuesToApply[property] = value;
 		}
 
-		// Unset removed values. The bag is keyed by longhands only, so no two entries
-		// write the same style property and unsetting one cannot clear another.
+		// Unset removed values - the bag is keyed by longhands only, so unsetting
+		// one entry cannot clear a value another one set.
 		for (const property in oldProperties) {
 			if (property in view.style) {
 				view.style[`css:${property}`] = unsetValue;
@@ -1280,9 +1248,7 @@ export class StyleScope {
 			return null;
 		}
 
-		// The application and the scope's own stylesheets are indexed separately, so
-		// their candidates are gathered into one array and resolved together - the
-		// cascade needs to see them as a single ordered set.
+		// The cascade has to see the application and local candidates as a single ordered set.
 		const candidates: SelectorCore[] = [];
 		applicationSelectorScope?.collectCandidates(view, candidates);
 		this._localSelectorScope?.collectCandidates(view, candidates);
@@ -1427,8 +1393,7 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 		}
 	});
 
-	// A shorthand that could not be expanded while parsing left a pending-substitution
-	// value on each of its longhands; resolving it once serves all of them.
+	// Pending-substitution longhands share one placeholder - resolve it once.
 	let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
 
 	inlineRuleSet[0].declarations.forEach((d) => {
