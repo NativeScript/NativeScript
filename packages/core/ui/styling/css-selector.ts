@@ -1,6 +1,6 @@
 import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
-import { _expandCssShorthand, isCssVariable } from '../core/properties';
+import { _expandCssShorthand, _pendingCssShorthandSubstitution, isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
 
@@ -981,6 +981,17 @@ function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declarat
 	if (expanded) {
 		for (let i = 0, length = expanded.length; i < length; i++) {
 			declarations.push({ property: expanded[i][0], value: expanded[i][1] });
+		}
+
+		return;
+	}
+
+	// A shorthand whose value still has to be resolved gets one pending-substitution
+	// value per longhand, so a declaration is only ever keyed by a longhand.
+	const pending = _pendingCssShorthandSubstitution(property, value);
+	if (pending) {
+		for (let i = 0, length = pending.length; i < length; i++) {
+			declarations.push({ property: pending[i][0], value: pending[i][1] });
 		}
 
 		return;

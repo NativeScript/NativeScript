@@ -12,8 +12,8 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
-const cssShorthandPropertyNames = new Set<string>();
 const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
+const cssShorthandLonghands = new Map<string, string[]>();
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -59,12 +59,87 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 }
 
 /**
- * A shorthand writes several longhand properties, so unsetting one of the two
- * can silently clear the other. Callers that diff css values need to know which
- * names can overlap.
+ * Stands in for the longhands of a shorthand whose value still has to be resolved.
+ *
+ * A single `var()` can substitute the value of several longhands at once, so such a
+ * shorthand cannot be split while parsing. CSS fills its longhands with a
+ * pending-substitution value instead, cascades that like any other value, and parses
+ * the shorthand once substitution has happened - which is what this carries.
+ *
+ * @see https://drafts.csswg.org/css-variables/#variables-in-shorthands
  */
-export function isCssShorthandProperty(cssName: string): boolean {
-	return cssShorthandPropertyNames.has(cssName);
+export class CssPendingSubstitution {
+	constructor(
+		public readonly shorthand: string,
+		public readonly value: string,
+	) {}
+
+	toString(): string {
+		return this.value;
+	}
+}
+
+export function _isCssPendingSubstitution(value: unknown): value is CssPendingSubstitution {
+	return value instanceof CssPendingSubstitution;
+}
+
+/**
+ * The longhands a shorthand expands into, discovered by asking its converter.
+ *
+ * Every converter answers an unset value with its full set of longhands, and the
+ * probe is deferred to first use because the longhand properties a converter closes
+ * over are not initialized yet while the shorthand itself is being registered.
+ */
+function getCssShorthandLonghands(cssName: string): string[] | undefined {
+	const known = cssShorthandLonghands.get(cssName);
+	if (known) {
+		return known;
+	}
+
+	const converter = cssShorthandConverters.get(cssName);
+	if (!converter) {
+		return undefined;
+	}
+
+	try {
+		const probed = converter(unsetValue);
+		if (!probed?.length) {
+			return undefined;
+		}
+
+		const longhands: string[] = [];
+		for (let i = 0, length = probed.length; i < length; i++) {
+			longhands.push(probed[i][0].cssLocalName);
+		}
+
+		cssShorthandLonghands.set(cssName, longhands);
+
+		return longhands;
+	} catch (e) {
+		Trace.write(`Could not determine the longhands of shorthand [${cssName}]. ${e}`, Trace.categories.Style, Trace.messageType.warn);
+
+		return undefined;
+	}
+}
+
+/**
+ * Pending-substitution values for a shorthand that cannot be expanded yet, one per
+ * longhand. Returns `undefined` when the property is not a shorthand or its
+ * longhands cannot be determined, leaving the declaration as it was.
+ */
+export function _pendingCssShorthandSubstitution(cssName: string, value: string): [string, CssPendingSubstitution][] | undefined {
+	const longhands = getCssShorthandLonghands(cssName);
+	if (!longhands) {
+		return undefined;
+	}
+
+	const pending = new CssPendingSubstitution(cssName, value);
+	const declarations: [string, CssPendingSubstitution][] = [];
+	for (let i = 0, length = longhands.length; i < length; i++) {
+		declarations.push([longhands[i], pending]);
+	}
+
+	return declarations;
 }
 
 /**
@@ -1286,7 +1361,6 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
-		cssShorthandPropertyNames.add(options.cssName);
 		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
 
 		const converter = options.converter;

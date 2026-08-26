@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { StyleScope, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
+import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
 
@@ -122,19 +122,71 @@ describe('CssState.setPropertyValues', () => {
 		expect(writes.count).toBe(0);
 	});
 
-	it('keeps an unexpandable shorthand applied when an overlapping longhand stops matching', () => {
-		// A shorthand holding a css expression cannot be expanded while parsing, so it
-		// still shares style properties with its longhands. Unsetting `margin-top`
-		// resets what `margin` had set, and the skip-unchanged path cannot be taken.
+	it('lets a longhand override part of a shorthand holding a variable, and back', () => {
+		// The shorthand's longhands each hold a pending-substitution value, so
+		// `margin-top` overrides one of them and reverts to the resolved shorthand.
 		const { view } = styled('label { --m: 4; margin: var(--m); } label:highlighted { margin-top: 8; }');
+		view._cssState.onLoaded();
+		expect(view.style.marginTop).toBe(4);
+		expect(view.style.marginLeft).toBe(4);
+
+		view.addPseudoClass('highlighted');
+		expect(view.style.marginTop).toBe(8);
+		expect(view.style.marginLeft).toBe(4);
+
+		view.deletePseudoClass('highlighted');
+		expect(view.style.marginTop).toBe(4);
+	});
+
+	it('re-resolves a shorthand when the variable it holds changes', () => {
+		const { view } = styled('label { --m: 4; margin: var(--m); } label:highlighted { --m: 9; }');
 		view._cssState.onLoaded();
 		expect(view.style.marginTop).toBe(4);
 
 		view.addPseudoClass('highlighted');
-		expect(view.style.marginTop).toBe(8);
+		expect(view.style.marginTop).toBe(9);
 
 		view.deletePseudoClass('highlighted');
 		expect(view.style.marginTop).toBe(4);
+	});
+
+	it('does not re-apply a shorthand whose variable did not change', () => {
+		const { view } = styled('label { --m: 4; margin: var(--m); }');
+		view._cssState.onLoaded();
+
+		const writes = countCssWrites(view, 'margin-top');
+		view._cssState.updateDynamicState();
+
+		expect(writes.count).toBe(0);
+	});
+
+	it('unsets the longhands when a shorthand variable cannot be resolved', () => {
+		const { view } = styled('label { margin: 4; } label:highlighted { margin: var(--missing); }');
+		view._cssState.onLoaded();
+		expect(view.style.marginTop).toBe(4);
+
+		view.addPseudoClass('highlighted');
+		// Unresolvable leaves the longhands unset, i.e. back to the property default.
+		expect(view.style.marginTop).toEqual(styled('').view.style.marginTop);
+	});
+
+	it('applies an inline shorthand holding a variable', () => {
+		const { view } = styled('label { --m: 6; }');
+		view._cssState.onLoaded();
+
+		applyInlineStyle(view, 'margin: var(--m)');
+
+		expect(view.style.marginTop).toBe(6);
+		expect(view.style.marginLeft).toBe(6);
+	});
+
+	it('applies a literal inline shorthand', () => {
+		const { view } = styled('');
+		view._cssState.onLoaded();
+
+		applyInlineStyle(view, 'margin: 3');
+
+		expect(view.style.marginTop).toBe(3);
 	});
 
 	it('expands shorthands so a later, more specific rule wins', () => {

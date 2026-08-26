@@ -416,6 +416,24 @@ describe('css-selector', () => {
 		});
 	});
 
+	it('expands a shorthand into its longhands while parsing', () => {
+		const rule = createOne(`button { margin: 4; }`);
+
+		expect(rule.declarations.map((d) => d.property)).toEqual(['margin-top', 'margin-right', 'margin-bottom', 'margin-left']);
+	});
+
+	it('gives a shorthand holding a variable one pending-substitution value per longhand', () => {
+		// A single var() can substitute several longhands at once, so the shorthand can
+		// only be parsed once substitution has happened - but the declaration is still
+		// keyed by longhands, as the cascade requires.
+		const rule = createOne(`button { margin: var(--m); }`);
+
+		expect(rule.declarations.map((d) => d.property)).toEqual(['margin-top', 'margin-right', 'margin-bottom', 'margin-left']);
+		expect(rule.declarations.map((d) => String(d.value))).toEqual(['var(--m)', 'var(--m)', 'var(--m)', 'var(--m)']);
+		// One placeholder shared by every longhand, so it is only resolved once.
+		expect(new Set(rule.declarations.map((d) => d.value)).size).toBe(1);
+	});
+
 	it('strips the unsupported !important flag while parsing', () => {
 		const rule = createOne(`button { color: red !important; }`);
 		expect(rule.declarations).toEqual([{ property: 'color', value: 'red' }]);

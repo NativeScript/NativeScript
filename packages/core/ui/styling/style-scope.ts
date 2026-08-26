@@ -1,7 +1,7 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssShorthandProperty, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssShorthand, _isCssPendingSubstitution, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
@@ -74,6 +74,34 @@ const animationsSymbol = Symbol('animations');
 const kebabCasePattern = /-([a-z])/g;
 const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
+
+/**
+ * Resolve a pending-substitution value into the longhand values it stands for.
+ *
+ * The shorthand is only parsed here, once the expression it holds has been
+ * evaluated against the view - which is the point of the placeholder. A shorthand
+ * that does not survive evaluation leaves its longhands unset.
+ */
+function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitution): Record<string, unknown> {
+	const value = evaluateCssExpressions(view, pending.shorthand, pending.value);
+	if (value === unsetValue) {
+		return CssState.emptyPropertyBag;
+	}
+
+	const expanded = _expandCssShorthand(pending.shorthand, value);
+	if (!expanded) {
+		Trace.write(`Failed to expand shorthand [${pending.shorthand}] resolved to [${value}] for ${view}.`, Trace.categories.Style, Trace.messageType.warn);
+
+		return CssState.emptyPropertyBag;
+	}
+
+	const resolved: Record<string, unknown> = {};
+	for (let i = 0, length = expanded.length; i < length; i++) {
+		resolved[expanded[i][0]] = expanded[i][1];
+	}
+
+	return resolved;
+}
 
 /**
  * Evaluate css-variable and css-calc expressions
@@ -861,18 +889,24 @@ export class CssState {
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
-		// Both bags stay empty in the common case (nothing changed, no css expressions),
-		// so they are only allocated once there is something to put in them.
+		// These stay empty in the common case (nothing changed, no css expressions), so
+		// they are only allocated once there is something to put in them.
 		let valuesToApply: Record<string, unknown>;
 		let cssExpsProperties: Record<string, string>;
-
-		// A shorthand and its longhands write the same style properties, so unsetting
-		// one of them can clear a value that is being skipped as unchanged. Remember
-		// whether any skipped value could be caught by that.
-		let skippedShorthand = false;
+		let pendingProperties: Record<string, CssPendingSubstitution>;
 
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
+
+			if (_isCssPendingSubstitution(value)) {
+				// The shorthand behind it can only be parsed once its expression has been
+				// evaluated, which needs the css variables below to be up to date first.
+				if (!pendingProperties) {
+					pendingProperties = {};
+				}
+				pendingProperties[property] = value;
+				continue;
+			}
 
 			// Expanded shorthands carry already-converted values, which can never be
 			// an expression.
@@ -904,7 +938,6 @@ export class CssState {
 
 			if (unchanged) {
 				// Skip unchanged values
-				skippedShorthand = skippedShorthand || isCssShorthandProperty(property);
 				continue;
 			}
 
@@ -939,7 +972,47 @@ export class CssState {
 
 			if (hadOldValue && oldValue === value) {
 				// Skip unchanged values
-				skippedShorthand = skippedShorthand || isCssShorthandProperty(property);
+				continue;
+			}
+
+			if (!valuesToApply) {
+				valuesToApply = {};
+			}
+			valuesToApply[property] = value;
+		}
+		// Each shorthand is resolved once, however many longhands point at it.
+		let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+		for (const property in pendingProperties) {
+			const pending = pendingProperties[property];
+
+			if (!resolvedShorthands) {
+				resolvedShorthands = new Map();
+			}
+
+			let resolved = resolvedShorthands.get(pending);
+			if (!resolved) {
+				resolved = resolvePendingSubstitution(view, pending);
+				resolvedShorthands.set(pending, resolved);
+			}
+
+			const value = property in resolved ? resolved[property] : unsetValue;
+
+			const hadOldValue = property in oldProperties;
+			const oldValue = hadOldValue ? oldProperties[property] : undefined;
+			if (hadOldValue) {
+				delete oldProperties[property];
+			}
+
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			} else {
+				// Remember the resolved value so the next update can tell whether the
+				// shorthand still resolves to what is currently applied.
+				newPropertyValues[property] = value;
+			}
+
+			if (hadOldValue && oldValue === value) {
+				// Skip unchanged values
 				continue;
 			}
 
@@ -949,27 +1022,8 @@ export class CssState {
 			valuesToApply[property] = value;
 		}
 
-		// Whatever is left in oldProperties stopped matching and has to be unset.
-		let hasRemovedValues = false;
-		let removedShorthand = false;
-		for (const property in oldProperties) {
-			hasRemovedValues = true;
-			if (isCssShorthandProperty(property)) {
-				removedShorthand = true;
-				break;
-			}
-		}
-
-		// Unsetting a shorthand clears its longhands (and the other way around), so a
-		// value that was skipped as unchanged has to be written again afterwards.
-		if (hasRemovedValues && (removedShorthand || skippedShorthand)) {
-			valuesToApply = {};
-			for (const property in newPropertyValues) {
-				valuesToApply[property] = newPropertyValues[property];
-			}
-		}
-
-		// Unset removed values
+		// Unset removed values. The bag is keyed by longhands only, so no two entries
+		// write the same style property and unsetting one cannot clear another.
 		for (const property in oldProperties) {
 			if (property in view.style) {
 				view.style[`css:${property}`] = unsetValue;
@@ -1373,6 +1427,10 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 		}
 	});
 
+	// A shorthand that could not be expanded while parsing left a pending-substitution
+	// value on each of its longhands; resolving it once serves all of them.
+	let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+
 	inlineRuleSet[0].declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
@@ -1382,7 +1440,23 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 				return;
 			}
 
-			const value = evaluateCssExpressions(view, property, d.value);
+			let value: unknown;
+			if (_isCssPendingSubstitution(d.value)) {
+				if (!resolvedShorthands) {
+					resolvedShorthands = new Map();
+				}
+
+				let resolved = resolvedShorthands.get(d.value);
+				if (!resolved) {
+					resolved = resolvePendingSubstitution(view, d.value);
+					resolvedShorthands.set(d.value, resolved);
+				}
+
+				value = property in resolved ? resolved[property] : unsetValue;
+			} else {
+				value = evaluateCssExpressions(view, property, d.value);
+			}
+
 			if (property in view.style) {
 				view.style[property] = value;
 			} else {
