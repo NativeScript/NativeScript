@@ -29,6 +29,11 @@ for (var i = 0; i < 100; i++) {
 	MANY_ITEMS.push(i);
 }
 
+// Sectioned template resolution is internal, so the public typings do not declare it.
+type ListViewInternal = ListView & {
+	_getItemTemplateInSection(section: number, index: number): KeyedTemplate;
+};
+
 export class ListViewTest extends UITest<ListView> {
 	public create(): ListView {
 		return new ListView();
@@ -1099,7 +1104,7 @@ export class ListViewTest extends UITest<ListView> {
 	public test_SectionedListView_ItemTemplateSelector_CorrectTemplatePerSection() {
 		// Verifies that _getItemTemplateInSection resolves the template using the
 		// actual row data item (not the section wrapper object).
-		const listView = this.testView;
+		const listView = this.testView as ListViewInternal;
 		listView.sectioned = true;
 
 		// Section 0 items have age=0 (even → 'red'), section 1 items have age=1 (odd → 'green')
@@ -1129,7 +1134,7 @@ export class ListViewTest extends UITest<ListView> {
 
 	public test_SectionedListView_ItemTemplateSelector_DifferentTemplatesWithinSameSection() {
 		// Verifies mixed templates within a single section are resolved correctly.
-		const listView = this.testView;
+		const listView = this.testView as ListViewInternal;
 		listView.sectioned = true;
 
 		listView.items = [{ title: 'Mixed', items: [{ age: 0 }, { age: 1 }, { age: 2 }] }];
@@ -1144,7 +1149,7 @@ export class ListViewTest extends UITest<ListView> {
 	public test_SectionedListView_ItemTemplateSelector_UnknownKeyFallsBackToDefault() {
 		// Mirrors test_ItemTemplateSelector_WhenWrongTemplateKeyIsSpecified_TheDefaultTemplateIsUsed
 		// but for the sectioned path.
-		const listView = this.testView;
+		const listView = this.testView as ListViewInternal;
 		listView.sectioned = true;
 
 		listView.items = [{ title: 'Section A', items: [{ age: 0 }] }];
