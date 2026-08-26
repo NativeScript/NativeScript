@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { StyleScope } from './style-scope';
+import { StyleScope, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
 
@@ -190,5 +190,91 @@ describe('CssState.setPropertyValues', () => {
 		view._cssState.onLoaded();
 
 		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+});
+
+describe('application and local selector scopes', () => {
+	function withApplicationCss(entries: Array<[string, string]>, run: () => void): void {
+		for (const [tag, css] of entries) {
+			addTaggedAdditionalCSS(css, tag);
+		}
+
+		try {
+			run();
+		} finally {
+			for (const [tag] of entries) {
+				removeTaggedAdditionalCSS(tag);
+			}
+		}
+	}
+
+	function loaded(css: string) {
+		const { view } = styled(css);
+		view._cssState.onLoaded();
+
+		return view;
+	}
+
+	function restyle(view: any): void {
+		view._cssState.onChange();
+		view._cssState.onLoaded();
+	}
+
+	it('applies application css to a scope with no css of its own', () => {
+		withApplicationCss([['scope-a', 'label { color: red; }']], () => {
+			expect(loaded('').style.color.toString()).toBe('#FF0000');
+		});
+	});
+
+	it('lets local css win over application css at equal specificity', () => {
+		withApplicationCss([['scope-b', 'label { color: red; }']], () => {
+			expect(loaded('label { color: blue; }').style.color.toString()).toBe('#0000FF');
+		});
+	});
+
+	it('keeps application css beaten by a more specific local rule and vice versa', () => {
+		withApplicationCss([['scope-c', '#x { color: red; }']], () => {
+			const { view } = styled('label { color: blue; }');
+			view.id = 'x';
+			view._cssState.onLoaded();
+
+			expect(view.style.color.toString()).toBe('#FF0000');
+		});
+	});
+
+	it('keeps registration order across separately registered application stylesheets', () => {
+		withApplicationCss(
+			[
+				['scope-d1', 'label { color: red; }'],
+				['scope-d2', 'label { color: blue; }'],
+			],
+			() => {
+				expect(loaded('').style.color.toString()).toBe('#0000FF');
+			},
+		);
+	});
+
+	it('picks up application css registered after the scope was built', () => {
+		const view = loaded('');
+		expect(view.style.color).toBeUndefined();
+
+		withApplicationCss([['scope-e', 'label { color: red; }']], () => {
+			restyle(view);
+			expect(view.style.color.toString()).toBe('#FF0000');
+		});
+
+		restyle(view);
+		expect(view.style.color).toBeUndefined();
+	});
+
+	it('serves several scopes from the same application index', () => {
+		withApplicationCss([['scope-f', 'label { color: red; } label.accent { color: blue; }']], () => {
+			const first = loaded('');
+			const { view: second } = styled('', 'accent');
+			second._cssState.onLoaded();
+
+			expect(first.style.color.toString()).toBe('#FF0000');
+			expect(second.style.color.toString()).toBe('#0000FF');
+		});
 	});
 });

@@ -1,6 +1,6 @@
 import { parse } from '../../css/reworkcss.js';
 import { Screen } from '../../platform';
-import { createSelector, RuleSet, StyleSheetSelectorScope, fromAstNode, Node, Changes } from './css-selector';
+import { createSelector, RuleSet, StyleSheetSelectorScope, SelectorTier, fromAstNode, Node, Changes, matchSelectorCandidates } from './css-selector';
 import { _populateRules } from './style-scope';
 
 describe('css-selector', () => {
@@ -419,6 +419,43 @@ describe('css-selector', () => {
 	it('strips the unsupported !important flag while parsing', () => {
 		const rule = createOne(`button { color: red !important; }`);
 		expect(rule.declarations).toEqual([{ property: 'color', value: 'red' }]);
+	});
+
+	describe('candidate resolution across scopes', () => {
+		it('breaks a specificity tie on the scope tier before the position', () => {
+			const application = create(`label { color: red; }`).selectorScope;
+			const local = new StyleSheetSelectorScope(create(`label { color: blue; }`).rulesets, SelectorTier.Local);
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const candidates = local.collectCandidates(<any>node, application.collectCandidates(<any>node));
+			const { selectors } = matchSelectorCandidates(<any>node, candidates);
+
+			// Local styles are a later "stylesheet", so they win the tie regardless of
+			// the position each selector got inside its own scope.
+			expect(selectors.length).toBe(2);
+			expect(selectors[1].ruleset.declarations[0].value).toBe('blue');
+		});
+
+		it('drops rules scoped to a stylesheet the caller did not load', () => {
+			const { rulesets, selectorScope } = create(`label { color: red; } label { color: blue; }`);
+			rulesets[1].scopedTag = 'other.css';
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const { selectors } = matchSelectorCandidates(<any>node, selectorScope.collectCandidates(<any>node), new Set(['mine.css']));
+
+			expect(selectors.length).toBe(1);
+			expect(selectors[0].ruleset.declarations[0].value).toBe('red');
+		});
+
+		it('keeps rules scoped to a stylesheet the caller did load', () => {
+			const { rulesets, selectorScope } = create(`label { color: red; } label { color: blue; }`);
+			rulesets[1].scopedTag = 'mine.css';
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const { selectors } = matchSelectorCandidates(<any>node, selectorScope.collectCandidates(<any>node), new Set(['mine.css']));
+
+			expect(selectors.length).toBe(2);
+		});
 	});
 
 	it('query returns selectors sorted by specificity then position', () => {

@@ -106,6 +106,21 @@ interface LookupSorter {
 	sortAsUniversal(sel: SelectorCore);
 }
 
+/**
+ * Which set of stylesheets a selector came from.
+ *
+ * The cascade breaks a specificity tie on source order, and source order across
+ * stylesheets is really (stylesheet, position within it) - so a selector needs to
+ * know its stylesheet's rank, not just its own index. Application styles are
+ * consulted for every view and are indexed once; a scope's own styles come after
+ * them and are indexed per scope, so their positions are only comparable within a
+ * tier.
+ */
+export const enum SelectorTier {
+	Application = 0,
+	Local = 1,
+}
+
 namespace Match {
 	/**
 	 * Depends on attributes or pseudoclasses state;
@@ -198,6 +213,7 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = 
 		cls.prototype.dynamic = dynamic;
 		cls.prototype.hasAdjacentCombinator = false;
 		cls.prototype.hasSiblingCombinator = false;
+		cls.prototype.tier = SelectorTier.Application;
 
 		return cls;
 	};
@@ -238,6 +254,7 @@ export abstract class SelectorBase {
 @SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
 export abstract class SelectorCore extends SelectorBase {
 	public pos: number;
+	public tier: SelectorTier;
 	public specificity: number;
 	public rarity: Rarity;
 	public combinator: Combinator;
@@ -1164,6 +1181,7 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	private universal: SelectorCore[] = [];
 
 	public position: number = 0;
+	public tier: SelectorTier = SelectorTier.Application;
 
 	/**
 	 * True when any selector in the scope contains an adjacent sibling ('+') combinator.
@@ -1228,6 +1246,7 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 		}
 
 		sel.pos = this.position++;
+		sel.tier = this.tier;
 
 		return sel;
 	}
@@ -1236,10 +1255,11 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
 	private _mediaQueryString: string | string[];
 
-	constructor(mediaQueryString: string | string[]) {
+	constructor(mediaQueryString: string | string[], tier: SelectorTier) {
 		super();
 
 		this._mediaQueryString = mediaQueryString;
+		this.tier = tier;
 	}
 
 	get mediaQueryString(): string | string[] {
@@ -1250,14 +1270,26 @@ export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
 export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	private mediaQuerySelectorScopes: MediaQuerySelectorScope<T>[];
 
-	constructor(rulesets: RuleSet[]) {
+	constructor(rulesets: RuleSet[], tier: SelectorTier = SelectorTier.Application) {
 		super();
 
+		this.tier = tier;
 		this.lookupRulesets(rulesets);
 	}
 
+	/**
+	 * Index rulesets that were added after this scope was built.
+	 *
+	 * Application stylesheets are only ever appended to outside of a livesync or an
+	 * explicit removal, so the rules already indexed keep their positions and only
+	 * the tail has to be sorted into the lookup maps.
+	 */
+	public appendRulesets(rulesets: RuleSet[], from: number): void {
+		this.lookupRulesets(rulesets, from);
+	}
+
 	private createMediaQuerySelectorScope(mediaQueryString: string | string[]): MediaQuerySelectorScope<T> {
-		const selectorScope = new MediaQuerySelectorScope(mediaQueryString);
+		const selectorScope = new MediaQuerySelectorScope(mediaQueryString, this.tier);
 		selectorScope.position = this.position;
 
 		if (this.mediaQuerySelectorScopes) {
@@ -1269,10 +1301,10 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		return selectorScope;
 	}
 
-	private lookupRulesets(rulesets: RuleSet[]) {
+	private lookupRulesets(rulesets: RuleSet[], from = 0) {
 		let lastMediaSelectorScope: MediaQuerySelectorScope<T>;
 
-		for (let i = 0, length = rulesets.length; i < length; i++) {
+		for (let i = from, length = rulesets.length; i < length; i++) {
 			const ruleset = rulesets[i];
 
 			if (lastMediaSelectorScope && lastMediaSelectorScope.mediaQueryString !== ruleset.mediaQueryString) {
@@ -1313,9 +1345,13 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		}
 	}
 
-	query(node: T): SelectorsMatch<T> {
-		const selectorsMatch = new SelectorsMatch<T>();
-		const selectors = this.getSelectorCandidates(node);
+	/**
+	 * Append every selector that could match the node, this scope's matching media
+	 * query scopes included. Several scopes feed one match, so the candidates are
+	 * collected into a shared array and resolved once by `matchSelectorCandidates`.
+	 */
+	public collectCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
+		this.getSelectorCandidates(node, candidates);
 
 		// Validate media queries and include their selectors if needed
 		if (this.mediaQuerySelectorScopes) {
@@ -1327,26 +1363,60 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
 
 				if (isMatchingAllQueries) {
-					selectorScope.getSelectorCandidates(node, selectors);
+					selectorScope.getSelectorCandidates(node, candidates);
 				}
 			}
 		}
 
-		// Compact the candidates in place - a query runs for every view, so the
-		// intermediate array a filter() would allocate is worth avoiding.
-		let matched = 0;
-		for (let i = 0, length = selectors.length; i < length; i++) {
-			const selector = selectors[i];
-			if (selector.accumulateChanges(node, selectorsMatch)) {
-				selectors[matched++] = selector;
+		return candidates;
+	}
+
+	query(node: T): SelectorsMatch<T> {
+		return matchSelectorCandidates(node, this.collectCandidates(node));
+	}
+}
+
+/**
+ * Order matching selectors the way the cascade does: by specificity, then by
+ * source order - which across stylesheets means the stylesheet's rank first and
+ * the position within it second.
+ */
+function compareSelectors(a: SelectorCore, b: SelectorCore): number {
+	return a.specificity - b.specificity || a.tier - b.tier || a.pos - b.pos;
+}
+
+/**
+ * Resolve collected candidates against a node.
+ *
+ * `scopedTags` filters out rules that were registered on behalf of a stylesheet
+ * this scope never loaded; pass it only when such rules exist, since it costs a
+ * lookup per candidate.
+ */
+export function matchSelectorCandidates<T extends Node>(node: T, candidates: SelectorCore[], scopedTags?: Set<string>): SelectorsMatch<T> {
+	const selectorsMatch = new SelectorsMatch<T>();
+
+	// Compact the candidates in place - a query runs for every view, so the
+	// intermediate array a filter() would allocate is worth avoiding.
+	let matched = 0;
+	for (let i = 0, length = candidates.length; i < length; i++) {
+		const selector = candidates[i];
+
+		if (scopedTags) {
+			const scopedTag = selector.ruleset?.scopedTag;
+			if (scopedTag && !scopedTags.has(scopedTag)) {
+				continue;
 			}
 		}
-		selectors.length = matched;
 
-		selectorsMatch.selectors = selectors.sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
-
-		return selectorsMatch;
+		if (selector.accumulateChanges(node, selectorsMatch)) {
+			candidates[matched++] = selector;
+		}
 	}
+	candidates.length = matched;
+
+	selectorsMatch.selectors = candidates.sort(compareSelectors);
+
+	return selectorsMatch;
 }
 
 interface ChangeAccumulator {
@@ -1413,4 +1483,5 @@ export const CSSHelper = {
 	StyleSheetSelectorScope,
 	fromAstNode,
 	SelectorsMatch,
+	matchSelectorCandidates,
 };

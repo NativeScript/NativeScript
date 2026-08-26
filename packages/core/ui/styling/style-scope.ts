@@ -5,7 +5,7 @@ import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariab
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, matchMediaQueryString } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates } from './css-selector';
 import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -49,6 +49,23 @@ const applicationAdditionalKeyframes: Keyframes[] = [];
 let mergedApplicationCssKeyframesInvalid = false;
 
 let applicationCssSelectorVersion = 0;
+
+/**
+ * The application stylesheets are the same for every style scope, so they are
+ * indexed once here instead of once per scope. Rules that were registered on
+ * behalf of a particular stylesheet stay in the index and are filtered out at
+ * match time for scopes that never loaded it - see `matchSelectorCandidates`.
+ */
+let applicationSelectorScope: StyleSheetSelectorScope<any> = null;
+let applicationSelectorScopeVersion = -1;
+let applicationSelectorScopeRuleCount = 0;
+let applicationSelectorsHaveScopedTags = false;
+/**
+ * Bumped whenever the application rules change in a way an append cannot express
+ * - a stylesheet reload, or a tagged stylesheet being removed.
+ */
+let applicationSelectorsResetVersion = 0;
+let applicationSelectorScopeResetVersion = -1;
 
 const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
@@ -109,6 +126,36 @@ function getMergedApplicationCssKeyframes(): Keyframes[] {
 	}
 
 	return mergedApplicationCssKeyframes;
+}
+
+function getApplicationSelectorScope(): StyleSheetSelectorScope<any> {
+	if (applicationSelectorScopeVersion === applicationCssSelectorVersion) {
+		return applicationSelectorScope;
+	}
+
+	const rulesets = getMergedApplicationCssSelectors();
+	const canAppend = applicationSelectorScope && applicationSelectorScopeResetVersion === applicationSelectorsResetVersion && rulesets.length >= applicationSelectorScopeRuleCount;
+
+	if (canAppend) {
+		applicationSelectorScope.appendRulesets(rulesets, applicationSelectorScopeRuleCount);
+	} else {
+		applicationSelectorScope = rulesets.length > 0 ? new StyleSheetSelectorScope(rulesets, SelectorTier.Application) : null;
+		applicationSelectorsHaveScopedTags = false;
+		applicationSelectorScopeRuleCount = 0;
+	}
+
+	for (let i = applicationSelectorScopeRuleCount, length = rulesets.length; i < length; i++) {
+		if (rulesets[i].scopedTag) {
+			applicationSelectorsHaveScopedTags = true;
+			break;
+		}
+	}
+
+	applicationSelectorScopeRuleCount = rulesets.length;
+	applicationSelectorScopeVersion = applicationCssSelectorVersion;
+	applicationSelectorScopeResetVersion = applicationSelectorsResetVersion;
+
+	return applicationSelectorScope;
 }
 
 /**
@@ -415,6 +462,8 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 	}
 
 	if (selectorsChanged) {
+		// Rules were dropped from the middle of the list, so the index has to be rebuilt.
+		applicationSelectorsResetVersion++;
 		mergeCssSelectors();
 		updated = true;
 	}
@@ -524,6 +573,8 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string): void => {
 
 	// Check for existing application css selectors too in case the app is undergoing a live-sync
 	if (selectors.length > 0 || applicationCssSelectors.length > 0) {
+		// The base stylesheet is replaced rather than appended to.
+		applicationSelectorsResetVersion++;
 		applicationCssSelectors = selectors;
 		mergeCssSelectors();
 		updated = true;
@@ -949,10 +1000,10 @@ CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
-	private _selectorScope: StyleSheetSelectorScope<any>;
+	private _localSelectorScope: StyleSheetSelectorScope<any>;
 	private _css = '';
 
-	private _mergedCssSelectors: RuleSet[];
+	private _hasSelectors = false;
 	private _mergedCssKeyframes: Keyframes[];
 
 	private _localCssSelectors: RuleSet[] = [];
@@ -1041,7 +1092,7 @@ export class StyleScope {
 	}
 
 	public ensureSelectors(): number {
-		if (!this.isApplicationCssSelectorsLatestVersionApplied() || !this.isLocalCssSelectorsLatestVersionApplied() || !this._mergedCssSelectors) {
+		if (!this.isApplicationCssSelectorsLatestVersionApplied() || !this.isLocalCssSelectorsLatestVersionApplied()) {
 			this._createSelectors();
 		}
 
@@ -1054,7 +1105,7 @@ export class StyleScope {
 	get hasAdjacentCombinatorSelectors(): boolean {
 		this.ensureSelectors();
 
-		return this._selectorScope ? this._selectorScope.hasAdjacentCombinatorSelectors : false;
+		return !!applicationSelectorScope?.hasAdjacentCombinatorSelectors || !!this._localSelectorScope?.hasAdjacentCombinatorSelectors;
 	}
 
 	/**
@@ -1063,7 +1114,7 @@ export class StyleScope {
 	get hasSiblingCombinatorSelectors(): boolean {
 		this.ensureSelectors();
 
-		return this._selectorScope ? this._selectorScope.hasSiblingCombinatorSelectors : false;
+		return !!applicationSelectorScope?.hasSiblingCombinatorSelectors || !!this._localSelectorScope?.hasSiblingCombinatorSelectors;
 	}
 
 	/**
@@ -1083,18 +1134,18 @@ export class StyleScope {
 
 	@profile
 	private _createSelectors() {
-		const toMerge: RuleSet[] = [];
-		const toMergeKeyframes: Keyframes[] = [];
 		const cssFiles = this._cssFiles;
+		const applicationScope = getApplicationSelectorScope();
+		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 
-		const applicationSelectors = getMergedApplicationCssSelectors();
-		for (let i = 0, length = applicationSelectors.length; i < length; i++) {
-			const ruleSet = applicationSelectors[i];
-			if (!ruleSet.scopedTag || cssFiles.has(ruleSet.scopedTag)) {
-				toMerge.push(ruleSet);
-			}
+		if (!this.isLocalCssSelectorsLatestVersionApplied() || (!this._localSelectorScope && this._localCssSelectors.length > 0)) {
+			this._localSelectorScope = this._localCssSelectors.length > 0 ? new StyleSheetSelectorScope(this._localCssSelectors, SelectorTier.Local) : null;
 		}
 
+		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
+		this._hasSelectors = !!applicationScope || !!this._localSelectorScope;
+
+		const toMergeKeyframes: Keyframes[] = [];
 		const applicationKeyframes = getMergedApplicationCssKeyframes();
 		for (let i = 0, length = applicationKeyframes.length; i < length; i++) {
 			const keyframe = applicationKeyframes[i];
@@ -1103,26 +1154,9 @@ export class StyleScope {
 			}
 		}
 
-		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
-
-		const localSelectors = this._localCssSelectors;
-		for (let i = 0, length = localSelectors.length; i < length; i++) {
-			toMerge.push(localSelectors[i]);
-		}
-
 		const localKeyframes = this._localCssKeyframes;
 		for (let i = 0, length = localKeyframes.length; i < length; i++) {
 			toMergeKeyframes.push(localKeyframes[i]);
-		}
-
-		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
-
-		if (toMerge.length > 0) {
-			this._mergedCssSelectors = toMerge;
-			this._selectorScope = new StyleSheetSelectorScope(this._mergedCssSelectors);
-		} else {
-			this._mergedCssSelectors = null;
-			this._selectorScope = null;
 		}
 
 		this._mergedCssKeyframes = toMergeKeyframes.length > 0 ? toMergeKeyframes : null;
@@ -1132,19 +1166,24 @@ export class StyleScope {
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
 	public matchSelectors(view): SelectorsMatch<ViewBase> {
-		let match: SelectorsMatch<ViewBase>;
-
 		// should be (view: ViewBase): SelectorsMatch<ViewBase>
 		this.ensureSelectors();
 
-		if (this._selectorScope) {
-			match = this._selectorScope.query(view);
-
-			// Make sure to re-apply keyframes to matching selectors as a media query keyframe might be applicable at this point
-			this._applyKeyframesToSelectors(match.selectors);
-		} else {
-			match = null;
+		if (!this._hasSelectors) {
+			return null;
 		}
+
+		// The application and the scope's own stylesheets are indexed separately, so
+		// their candidates are gathered into one array and resolved together - the
+		// cascade needs to see them as a single ordered set.
+		const candidates: SelectorCore[] = [];
+		applicationSelectorScope?.collectCandidates(view, candidates);
+		this._localSelectorScope?.collectCandidates(view, candidates);
+
+		const match = matchSelectorCandidates<ViewBase>(view, candidates, applicationSelectorsHaveScopedTags ? this._cssFiles : undefined);
+
+		// Make sure to re-apply keyframes to matching selectors as a media query keyframe might be applicable at this point
+		this._applyKeyframesToSelectors(match.selectors);
 
 		return match;
 	}
