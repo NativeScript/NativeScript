@@ -1,3 +1,13 @@
+## 9.1.0-rc.1 (2026-08-26)
+
+### 🔥 Performance
+
+- **core:** overhaul css matching, cascade, and application ([#11361](https://github.com/NativeScript/NativeScript/pull/11361))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 9.1.0-rc.0 (2026-08-25)
 
 ### 🚀 Features
