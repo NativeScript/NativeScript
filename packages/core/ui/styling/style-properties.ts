@@ -1053,6 +1053,17 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 });
 borderBottomLeftRadiusProperty.register(Style);
 
+export const cornerShapeProperty = new CssProperty<Style, CoreTypes.CornerShapeType>({
+	name: 'cornerShape',
+	cssName: 'corner-shape',
+	defaultValue: CoreTypes.CornerShape.round,
+	valueConverter: CoreTypes.CornerShape.parse,
+	valueChanged: (target, oldValue, newValue) => {
+		target.backgroundInternal = target.backgroundInternal.withCornerShape(newValue);
+	},
+});
+cornerShapeProperty.register(Style);
+
 const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',

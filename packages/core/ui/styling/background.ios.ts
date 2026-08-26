@@ -12,6 +12,7 @@ import { parse as cssParse } from '../../css-value/reworkcss-value';
 import { BoxShadow } from './box-shadow';
 import { BackgroundClearFlags } from './background-common';
 import { ClipPathFunction } from './clip-path-function';
+import { CoreTypes } from '../../core-types';
 
 export * from './background-common';
 
@@ -93,6 +94,7 @@ export namespace ios {
 			layer.borderColor = borderColor?.ios?.CGColor;
 			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
 			layer.cornerRadius = getUniformBorderRadius(view, layer.bounds);
+			layer.cornerCurve = background.cornerShape === CoreTypes.CornerShape.squircle ? kCACornerCurveContinuous : kCACornerCurveCircular;
 		} else {
 			drawNonUniformBorders(nativeView, background);
 			needsLayerAdjustmentOnScroll = true;

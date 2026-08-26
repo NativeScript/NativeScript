@@ -35,3 +35,29 @@ describe('border-color shorthand', () => {
 		expect(label.style.borderLeftColor).toEqual(new Color('blue'));
 	});
 });
+
+describe('corner-shape', () => {
+	it('defaults to round', () => {
+		const label = new Label();
+
+		expect(label.style.cornerShape).toBe('round');
+		expect(label.style.backgroundInternal.cornerShape).toBe('round');
+	});
+
+	it('accepts squircle and reaches the background', () => {
+		const label = new Label();
+		label.style.cornerShape = 'squircle';
+
+		expect(label.style.backgroundInternal.cornerShape).toBe('squircle');
+
+		label.style.cornerShape = 'round';
+
+		expect(label.style.backgroundInternal.cornerShape).toBe('round');
+	});
+
+	it('rejects unknown keywords', () => {
+		const label = new Label();
+
+		expect(() => (label.style.cornerShape = 'bevel' as any)).toThrow();
+	});
+});
