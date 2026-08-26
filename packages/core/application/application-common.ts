@@ -146,7 +146,7 @@ interface ApplicationEvents {
 
 export class ApplicationCommon {
 	/**
-	 * @deprecated Use the 'ready' event for application initialization and Application.setWindowContentResolver() to provide window UI. 'launch' continues to fire before the first window's content is created, and its 'root' property is still honored, for backwards compatibility. It will not fire for additional windows or for background launches.
+	 * @deprecated Use the 'ready' event for application initialization and Application.setWindowContentResolver() to provide window UI. 'launch' continues to fire before the first window's content is created, and its 'root' property is still honored, for backwards compatibility. It never fires for additional windows. In a scene-based app it fires with the first window's content, so a background launch that connects no scene does not raise it.
 	 */
 	readonly launchEvent = 'launch';
 	/**

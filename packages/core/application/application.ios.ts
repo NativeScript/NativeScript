@@ -157,47 +157,87 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 	static ObjCProtocols = [UIApplicationDelegate];
 }
 
-if (supportsScenes()) {
-	/**
-	 * This method is called when a new scene session is being created.
-	 * Important: When this method is implemented, the app assumes scene-based lifecycle management.
-	 * Detected by the Info.plist existence 'UIApplicationSceneManifest'.
-	 * If this method is implemented when there is no manifest defined,
-	 * the app will boot to a white screen.
-	 *
-	 * Since we configure the delegate dynamically here, UISceneConfigurations
-	 * does NOT need to be present in Info.plist — only UIApplicationSceneManifest is required.
-	 *
-	 * NativeScript only handles UIWindowSceneSessionRoleApplication by default.
-	 * Other scene types (CarPlay, external displays, etc.) are ignored unless
-	 * the user provides an `onSceneConfiguration` callback.
-	 */
-	(Responder.prototype as UIApplicationDelegate).applicationConfigurationForConnectingSceneSessionOptions = function (application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
-		// Let the user intercept scene configuration for any/all scenes
-		const userHandler = Application.ios._onSceneConfiguration;
-		if (userHandler) {
-			const userConfig = userHandler(application, connectingSceneSession, options);
-			if (userConfig) {
-				return userConfig;
-			}
+const delegateWindowKey = Symbol('nativescript.delegateWindow');
+
+/**
+ * Installs NativeScript's default `UIApplicationDelegate` members on the class that will
+ * be handed to `UIApplicationMain`, so scenes keep working with a custom delegate.
+ *
+ * Each member is installed only when the class does not already provide one (its own or
+ * inherited), so a delegate that implements a method keeps it and can forward to
+ * `Application.ios.defaultSceneConfiguration` / `defaultDiscardSceneSessions` itself.
+ *
+ * @internal
+ */
+function installSceneDelegateDefaults(delegateClass: unknown): void {
+	const proto = (delegateClass as { prototype?: UIApplicationDelegate })?.prototype;
+
+	if (!proto) {
+		return;
+	}
+
+	// Implementing the scene methods makes the app assume scene-based lifecycle management,
+	// which boots to a white screen when Info.plist has no UIApplicationSceneManifest.
+	// Configuring the delegate here is also why UISceneConfigurations does not have to be
+	// declared in Info.plist — UIApplicationSceneManifest on its own is enough.
+	if (supportsScenes()) {
+		if (!proto.applicationConfigurationForConnectingSceneSessionOptions) {
+			proto.applicationConfigurationForConnectingSceneSessionOptions = function (application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
+				return Application.ios.defaultSceneConfiguration(application, connectingSceneSession, options);
+			};
 		}
 
-		// Only handle the standard window scene role — skip CarPlay, external displays, etc.
-		if (connectingSceneSession.role !== UIWindowSceneSessionRoleApplication) {
-			// Return a bare configuration so iOS doesn't crash, but NativeScript won't manage it
-			return UISceneConfiguration.configurationWithNameSessionRole('Unmanaged', connectingSceneSession.role);
+		if (!proto.applicationDidDiscardSceneSessions) {
+			proto.applicationDidDiscardSceneSessions = function (application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
+				Application.ios.defaultDiscardSceneSessions(application, sceneSessions);
+			};
 		}
+	}
 
-		const config = UISceneConfiguration.configurationWithNameSessionRole('Default Configuration', connectingSceneSession.role);
-		config.sceneClass = UIWindowScene as any;
-		config.delegateClass = SceneDelegate;
-		return config;
-	};
+	if (!('window' in proto)) {
+		Object.defineProperty(proto, 'window', {
+			get(this: Record<symbol, UIWindow>): UIWindow {
+				return this[delegateWindowKey] ?? Application.ios.window;
+			},
+			// UIKit assigns `delegate.window` on non-scene apps and a delegate may assign it
+			// itself, so the value has to be kept: a discarding setter would leave the
+			// delegate reporting a window it never set.
+			set(this: Record<symbol, UIWindow>, value: UIWindow) {
+				this[delegateWindowKey] = value;
+			},
+			enumerable: true,
+			configurable: true,
+		});
+	}
+}
 
-	// scene session destruction handling
-	(Responder.prototype as UIApplicationDelegate).applicationDidDiscardSceneSessions = function (application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
-		Application.ios._onSceneSessionsDiscarded(sceneSessions);
-	};
+installSceneDelegateDefaults(Responder);
+
+let warnedAboutDelegateProtocols = false;
+let warnedAboutDelegateAfterStart = false;
+
+function warnAboutDelegate(message: string): void {
+	Trace.write(message, Trace.categories.Error, Trace.messageType.warn);
+	console.warn(message);
+}
+
+/**
+ * Reports the two custom-delegate mistakes NativeScript cannot correct on the app's behalf:
+ * a delegate class that never declared `UIApplicationDelegate` conformance, and a delegate
+ * assigned once `UIApplicationMain` has already been given a class.
+ */
+function warnAboutDelegateClass(delegateClass: unknown, alreadyStarted: boolean): void {
+	const protocols = (delegateClass as { ObjCProtocols?: unknown[] })?.ObjCProtocols;
+
+	if (!warnedAboutDelegateProtocols && !(Array.isArray(protocols) && protocols.indexOf(UIApplicationDelegate) !== -1)) {
+		warnedAboutDelegateProtocols = true;
+		warnAboutDelegate('Application.ios.delegate was set to a class that does not list UIApplicationDelegate in its static ObjCProtocols. Add `static ObjCProtocols = [UIApplicationDelegate];` to the class body: the Objective-C class is built from ObjCProtocols and cached, so conformance cannot be declared from here and UIKit may never dispatch the delegate methods.');
+	}
+
+	if (alreadyStarted && !warnedAboutDelegateAfterStart) {
+		warnedAboutDelegateAfterStart = true;
+		warnAboutDelegate('Application.ios.delegate was set after the application started. UIApplicationMain has already been given a delegate class, so this assignment has no effect — set Application.ios.delegate before calling Application.run().');
+	}
 }
 
 /**
@@ -532,7 +572,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
-	/** Set when a background launch defers the primary window's content until the app first becomes active. */
+	/** Set when `shouldDelayLaunchEvent` defers the primary window's content until the app first becomes active. */
 	private _pendingWindowContentResolve: (() => void) | null;
 	private _sceneDelegate: UIWindowSceneDelegate;
 	/**
@@ -561,7 +601,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	displayedLink: CADisplayLink;
 
 	/**
-	 * @deprecated Has no effect. Application initialization is signalled by the 'ready' event, which is never deferred.
+	 * Delays the 'launch' event, and with it the creation of the first window's content, until the
+	 * app first becomes active, instead of raising it while the app finishes launching.
+	 *
+	 * Applies to non-scene apps only. It has no effect in a scene-based app, where each window's
+	 * content is resolved as its scene connects.
+	 *
+	 * @deprecated Use the 'ready' event for application initialization, and
+	 * Application.setWindowContentResolver() to provide window UI.
 	 */
 	shouldDelayLaunchEvent = false;
 
@@ -885,7 +932,69 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	set delegate(value: UIApplicationDelegate | unknown) {
 		if (this._delegate !== value) {
 			this._delegate = value as UIApplicationDelegate;
+
+			if (value) {
+				warnAboutDelegateClass(value, this.started);
+				installSceneDelegateDefaults(value);
+			}
 		}
+	}
+
+	/**
+	 * NativeScript's default implementation of the `UIApplicationDelegate`
+	 * `applicationConfigurationForConnectingSceneSessionOptions` method.
+	 *
+	 * It is installed automatically on the application delegate class unless that class
+	 * already implements the method. A delegate that does implement it can handle the
+	 * scenes it cares about and forward the rest here:
+	 *
+	 * ```ts
+	 * applicationConfigurationForConnectingSceneSessionOptions(app, session, options) {
+	 *   if (session.role === myCustomRole) {
+	 *     return myConfig;
+	 *   }
+	 *   return Application.ios.defaultSceneConfiguration(app, session, options);
+	 * }
+	 * ```
+	 *
+	 * `onSceneConfiguration` is consulted first. Scenes with the
+	 * `UIWindowSceneSessionRoleApplication` role then get a configuration backed by
+	 * NativeScript's SceneDelegate; every other role gets a bare configuration that
+	 * NativeScript does not manage.
+	 */
+	defaultSceneConfiguration(application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
+		// Let the user intercept scene configuration for any/all scenes
+		const userHandler = this._onSceneConfiguration;
+		if (userHandler) {
+			const userConfig = userHandler(application, connectingSceneSession, options);
+			if (userConfig) {
+				return userConfig;
+			}
+		}
+
+		// Only handle the standard window scene role — skip CarPlay, external displays, etc.
+		if (connectingSceneSession.role !== UIWindowSceneSessionRoleApplication) {
+			// Return a bare configuration so iOS doesn't crash, but NativeScript won't manage it
+			return UISceneConfiguration.configurationWithNameSessionRole('Unmanaged', connectingSceneSession.role);
+		}
+
+		const config = UISceneConfiguration.configurationWithNameSessionRole('Default Configuration', connectingSceneSession.role);
+		config.sceneClass = UIWindowScene as any;
+		config.delegateClass = SceneDelegate;
+		return config;
+	}
+
+	/**
+	 * NativeScript's default implementation of the `UIApplicationDelegate`
+	 * `applicationDidDiscardSceneSessions` method, which retires the `NativeWindow`s
+	 * belonging to the discarded sessions.
+	 *
+	 * It is installed automatically on the application delegate class unless that class
+	 * already implements the method, in which case forward to it from there so window
+	 * bookkeeping stays correct.
+	 */
+	defaultDiscardSceneSessions(application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
+		this._onSceneSessionsDiscarded(sceneSessions);
 	}
 
 	addDelegateHandler<T extends keyof UIApplicationDelegate>(methodName: T, handler: (typeof UIApplicationDelegate.prototype)[T]): void {
@@ -894,8 +1003,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 
-		// ensure we have a delegate
-		this.delegate ??= Responder as any;
+		// ensure we have a delegate; Responder already carries the defaults, so it is
+		// stored directly rather than through the setter, whose warnings only apply to
+		// a delegate class the app supplied.
+		this._delegate ??= Responder as any;
 
 		const handlers = this._delegateHandlers.get(methodName) ?? [];
 
@@ -1134,8 +1245,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					},
 				);
 
-			if (UIApplication.sharedApplication.applicationState === UIApplicationState.Background) {
-				// A background launch has no UI to build yet, so content waits for the first activation.
+			if (this.shouldDelayLaunchEvent) {
 				this._pendingWindowContentResolve = resolveContent;
 			} else {
 				resolveContent();
