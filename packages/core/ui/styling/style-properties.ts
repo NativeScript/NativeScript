@@ -15,7 +15,7 @@ import { LinearGradient } from './linear-gradient';
 import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
-import { parseCSSCommaSeparatedListOfValues } from './css-utils';
+import { parseCSSCommaSeparatedListOfValues, splitOnTopLevelSpacesAndCommas } from './css-utils';
 
 interface ShorthandPositioning {
 	top: string;
@@ -62,8 +62,10 @@ function parseClipPath(value: string): string | ClipPathFunction {
 }
 
 function parseShorthandPositioning(value: string): ShorthandPositioning {
-	const arr = value.split(/[ ,]+/);
+	return positioningFromParts(value.split(/[ ,]+/), value);
+}
 
+function positioningFromParts(arr: string[], value: string): ShorthandPositioning {
 	let top: string;
 	let right: string;
 	let bottom: string;
@@ -124,16 +126,10 @@ function parseShorthandGap(value: string): ShorthandGap {
 }
 
 function parseBorderColorPositioning(value: string): ShorthandPositioning {
-	if (value.indexOf('rgb') === 0 || value.indexOf('hsl') === 0) {
-		return {
-			top: value,
-			right: value,
-			bottom: value,
-			left: value,
-		};
-	}
-
-	return parseShorthandPositioning(value);
+	// Colors can be functions with spaces and commas in their arguments
+	// (`rgb(0, 0, 0)`, `color-mix(in srgb, red 35%, blue)`), so only
+	// top-level separators delimit the sides.
+	return positioningFromParts(splitOnTopLevelSpacesAndCommas(value.trim()), value);
 }
 
 function convertToBackgrounds(value: string): [CssProperty<any, any> | CssAnimationProperty<any, any>, any][] {
