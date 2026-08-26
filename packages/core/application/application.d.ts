@@ -358,7 +358,14 @@ export class iOSApplication extends ApplicationCommon {
 	onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
 
 	/**
-	 * @deprecated Has no effect. Application initialization is signalled by the 'ready' event, which is never deferred.
+	 * Delays the 'launch' event, and with it the creation of the first window's content, until the
+	 * app first becomes active, instead of raising it while the app finishes launching.
+	 *
+	 * Applies to non-scene apps only. It has no effect in a scene-based app, where each window's
+	 * content is resolved as its scene connects.
+	 *
+	 * @deprecated Use the 'ready' event for application initialization, and
+	 * Application.setWindowContentResolver() to provide window UI.
 	 */
 	shouldDelayLaunchEvent: boolean;
 }

@@ -572,7 +572,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
-	/** Set when a background launch defers the primary window's content until the app first becomes active. */
+	/** Set when `shouldDelayLaunchEvent` defers the primary window's content until the app first becomes active. */
 	private _pendingWindowContentResolve: (() => void) | null;
 	private _sceneDelegate: UIWindowSceneDelegate;
 	/**
@@ -601,7 +601,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	displayedLink: CADisplayLink;
 
 	/**
-	 * @deprecated Has no effect. Application initialization is signalled by the 'ready' event, which is never deferred.
+	 * Delays the 'launch' event, and with it the creation of the first window's content, until the
+	 * app first becomes active, instead of raising it while the app finishes launching.
+	 *
+	 * Applies to non-scene apps only. It has no effect in a scene-based app, where each window's
+	 * content is resolved as its scene connects.
+	 *
+	 * @deprecated Use the 'ready' event for application initialization, and
+	 * Application.setWindowContentResolver() to provide window UI.
 	 */
 	shouldDelayLaunchEvent = false;
 
@@ -1238,8 +1245,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					},
 				);
 
-			if (UIApplication.sharedApplication.applicationState === UIApplicationState.Background) {
-				// A background launch has no UI to build yet, so content waits for the first activation.
+			if (this.shouldDelayLaunchEvent) {
 				this._pendingWindowContentResolve = resolveContent;
 			} else {
 				resolveContent();
