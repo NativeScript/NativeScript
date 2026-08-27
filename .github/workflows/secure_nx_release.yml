@@ -295,6 +295,74 @@ jobs:
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && !inputs.dry-run }}
         run: git push --atomic --follow-tags origin HEAD
 
+      # Nx only writes CHANGELOG.md files (nx.json release.changelog has no createRelease),
+      # so GitHub releases are posted here. This must stay after the push above: creating a
+      # release for a tag GitHub doesn't have yet would auto-create that tag from the wrong
+      # commit and make the push non-fast-forward.
+      - name: Create GitHub releases (dispatch)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' && !inputs.dry-run }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          tags=$(git tag --points-at HEAD)
+          if [[ -z "$tags" ]]; then
+            echo "No release tags on HEAD; skipping GitHub release creation."
+            exit 0
+          fi
+
+          projects=$(npx nx show projects --projects "packages/*" --type lib --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android" --sep ' ')
+
+          for tag in $tags; do
+            # Tag format is {version}-{projectName} (nx.json releaseTag.pattern); take the
+            # longest project suffix so project names containing '-' resolve correctly.
+            best_match=""
+            best_len=0
+            for p in $projects; do
+              suffix="-${p}"
+              if [[ "$tag" == *"$suffix" ]] && (( ${#p} > best_len )); then
+                best_match="$p"
+                best_len=${#p}
+              fi
+            done
+            if [[ -z "$best_match" ]]; then
+              echo "Skipping tag '$tag' (no matching release project)."
+              continue
+            fi
+
+            version="${tag%-$best_match}"
+            root=$(npx nx show project "$best_match" --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.parse(s).root))')
+            pkg=$(node -e "console.log(require('./${root}/package.json').name)")
+
+            if gh release view "$tag" --json id --jq .id >/dev/null 2>&1; then
+              echo "Release for '$tag' already exists; skipping."
+              continue
+            fi
+
+            notes_file="$(mktemp)"
+            awk -v h="## ${version} (" 'index($0, h) == 1 {found=1; next} /^## / {if (found) exit} found' "${root}/CHANGELOG.md" > "$notes_file"
+
+            flags=(--verify-tag --title "${pkg}@${version}")
+            if [[ "$version" == *-* ]]; then
+              flags+=(--prerelease)
+            elif [[ "$best_match" == "core" ]]; then
+              # The repo's Latest badge stays on stable core releases; other packages
+              # must not claim it just by being published later.
+              flags+=(--latest)
+            else
+              flags+=(--latest=false)
+            fi
+            if [[ -s "$notes_file" ]]; then
+              flags+=(--notes-file "$notes_file")
+            else
+              flags+=(--generate-notes)
+            fi
+
+            gh release create "$tag" "${flags[@]}"
+          done
+
       - name: nx release version + changelog (dispatch, dry-run)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run }}
         shell: bash
