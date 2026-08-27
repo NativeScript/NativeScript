@@ -59,6 +59,20 @@ global.NSCCrypto = {
 	},
 	getRandomValues(data: any) {},
 };
+// The Android crypto shim, so the platform branches of `wgc/crypto` can be exercised from the
+// same specs by flipping `__ANDROID__`.
+global.org = {
+	nativescript: {
+		winter_tc: {
+			Crypto: {
+				randomUUID() {
+					return 'native-uuid';
+				},
+				getRandomValues(bytes: any) {},
+			},
+		},
+	},
+};
 global.NSString = {
 	stringWithString() {
 		return {
