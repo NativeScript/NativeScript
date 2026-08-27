@@ -33,6 +33,32 @@ global.NSObject = class NSObject {
 	}
 };
 global.NSNumber = {};
+// The NSData factories record which selector was used and with what arguments: ownership of the
+// bytes differs per selector, so that choice is the thing specs need to pin.
+function nsDataStub(selector: string, args: any[]) {
+	return { selector, args };
+}
+global.NSData = {
+	dataWithData(data: any) {
+		return nsDataStub('dataWithData', [data]);
+	},
+	dataWithBytesLength(bytes: any, length: number) {
+		return nsDataStub('dataWithBytesLength', [bytes, length]);
+	},
+	dataWithBytesNoCopyLength(bytes: any, length: number) {
+		return nsDataStub('dataWithBytesNoCopyLength', [bytes, length]);
+	},
+	dataWithBytesNoCopyLengthFreeWhenDone(bytes: any, length: number, freeWhenDone: boolean) {
+		return nsDataStub('dataWithBytesNoCopyLengthFreeWhenDone', [bytes, length, freeWhenDone]);
+	},
+};
+global.NSMutableData = { ...global.NSData };
+global.NSCCrypto = {
+	randomUUID() {
+		return 'native-uuid';
+	},
+	getRandomValues(data: any) {},
+};
 global.NSString = {
 	stringWithString() {
 		return {

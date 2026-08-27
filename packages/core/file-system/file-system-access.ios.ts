@@ -439,9 +439,9 @@ export class FileSystemAccess {
 		if (buffer instanceof ArrayBuffer) {
 			return NSData.dataWithData(buffer as any);
 		} else {
-			const buf = NSData.dataWithData(buffer?.buffer as any);
-			const len = buffer.byteLength;
-			return NSData.dataWithBytesNoCopyLength((buf.bytes as interop.Pointer).add(buffer?.byteOffset ?? 0), len);
+			// The view marshals to backingStore->Data() + byteOffset, so this copies exactly its window.
+			// The bytes are V8-owned; a no-copy wrapper would donate them to Foundation to free.
+			return NSData.dataWithBytesLength(buffer as any, buffer.byteLength);
 		}
 	}
 

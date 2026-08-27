@@ -27,7 +27,9 @@ export class Crypto {
 			if (typedArray.BYTES_PER_ELEMENT !== 1) {
 				typedArray = new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
 			}
-			const data = NSMutableData.dataWithBytesNoCopyLength(typedArray as never, typedArray.byteLength);
+			// The pointer is V8-owned: freeWhenDone must stay NO, or Foundation and V8's
+			// ArrayBufferSweeper both free the same allocation.
+			const data = NSMutableData.dataWithBytesNoCopyLengthFreeWhenDone(typedArray as never, typedArray.byteLength, false);
 
 			NSCCrypto.getRandomValues(data);
 		}
