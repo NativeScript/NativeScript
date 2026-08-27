@@ -40,11 +40,11 @@ declare class SCSensitivityAnalyzer extends NSObject {
 
 	readonly analysisPolicy: SCSensitivityAnalysisPolicy;
 
-	analyzeCGImageCompletionHandler(image: any, completionHandler: (p1: SCSensitivityAnalysis, p2: NSError) => void): void;
+	analyzeCGImageCompletionHandler(image: any, completionHandler: (p1: SCSensitivityAnalysis | null, p2: NSError | null) => void): void;
 
-	analyzeImageFileCompletionHandler(fileURL: NSURL, completionHandler: (p1: SCSensitivityAnalysis, p2: NSError) => void): void;
+	analyzeImageFileCompletionHandler(fileURL: NSURL, completionHandler: (p1: SCSensitivityAnalysis | null, p2: NSError | null) => void): void;
 
-	analyzeVideoFileCompletionHandler(fileURL: NSURL, completionHandler: (p1: SCSensitivityAnalysis, p2: NSError) => void): NSProgress;
+	analyzeVideoFileCompletionHandler(fileURL: NSURL, completionHandler: (p1: SCSensitivityAnalysis | null, p2: NSError | null) => void): NSProgress;
 }
 
 /**
@@ -56,9 +56,9 @@ declare class SCVideoStreamAnalyzer extends NSObject {
 
 	static new(): SCVideoStreamAnalyzer; // inherited from NSObject
 
-	readonly analysis: SCSensitivityAnalysis;
+	readonly analysis: SCSensitivityAnalysis | null;
 
-	analysisChangedHandler: (p1: SCSensitivityAnalysis, p2: NSError) => void;
+	analysisChangedHandler: (p1: SCSensitivityAnalysis | null, p2: NSError | null) => void | null;
 
 	constructor(o: { participantUUID: string; streamDirection: SCVideoStreamAnalyzerStreamDirection; });
 

@@ -26,7 +26,7 @@ declare class CNChangeHistoryAddContactEvent extends CNChangeHistoryEvent {
 
 	readonly contact: CNContact;
 
-	readonly containerIdentifier: string;
+	readonly containerIdentifier: string | null;
 }
 
 /**
@@ -120,7 +120,7 @@ declare class CNChangeHistoryEvent extends NSObject implements NSCopying, NSSecu
 
 	acceptEventVisitor(visitor: CNChangeHistoryEventVisitor): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -168,9 +168,9 @@ declare class CNChangeHistoryFetchRequest extends CNFetchRequest implements NSSe
 
 	static new(): CNChangeHistoryFetchRequest; // inherited from NSObject
 
-	additionalContactKeyDescriptors: NSArray<CNKeyDescriptor>;
+	additionalContactKeyDescriptors: NSArray<CNKeyDescriptor> | null;
 
-	excludedTransactionAuthors: NSArray<string>;
+	excludedTransactionAuthors: NSArray<string> | null;
 
 	includeGroupChanges: boolean;
 
@@ -178,7 +178,7 @@ declare class CNChangeHistoryFetchRequest extends CNFetchRequest implements NSSe
 
 	shouldUnifyResults: boolean;
 
-	startingToken: NSData;
+	startingToken: NSData | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -278,7 +278,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	static predicateForContactsWithIdentifiers(identifiers: NSArray<string> | string[]): NSPredicate;
 
-	readonly birthday: NSDateComponents;
+	readonly birthday: NSDateComponents | null;
 
 	readonly contactRelations: NSArray<CNLabeledValue<CNContactRelation>>;
 
@@ -296,7 +296,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	readonly identifier: string;
 
-	readonly imageData: NSData;
+	readonly imageData: NSData | null;
 
 	/**
 	 * @since 9.0
@@ -315,7 +315,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	readonly nickname: string;
 
-	readonly nonGregorianBirthday: NSDateComponents;
+	readonly nonGregorianBirthday: NSDateComponents | null;
 
 	readonly note: string;
 
@@ -340,7 +340,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	readonly socialProfiles: NSArray<CNLabeledValue<CNSocialProfile>>;
 
-	readonly thumbnailImageData: NSData;
+	readonly thumbnailImageData: NSData | null;
 
 	readonly urlAddresses: NSArray<CNLabeledValue<string>>;
 
@@ -372,7 +372,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -390,9 +390,9 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
-	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData | null, p2: NSError | null) => void): NSProgress | null;
 
-	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	performSelector(aSelector: string): any;
 
@@ -460,7 +460,7 @@ declare class CNContactFetchRequest extends CNFetchRequest implements NSSecureCo
 	 */
 	mutableObjects: boolean;
 
-	predicate: NSPredicate;
+	predicate: NSPredicate | null;
 
 	sortOrder: CNContactSortOrder;
 
@@ -486,7 +486,7 @@ declare class CNContactFormatter extends NSFormatter implements NSSecureCoding {
 
 	static alloc(): CNContactFormatter; // inherited from NSObject
 
-	static attributedStringFromContactStyleDefaultAttributes(contact: CNContact, style: CNContactFormatterStyle, attributes: NSDictionary<any, any>): NSAttributedString;
+	static attributedStringFromContactStyleDefaultAttributes(contact: CNContact, style: CNContactFormatterStyle, attributes: NSDictionary<any, any> | null): NSAttributedString | null;
 
 	static delimiterForContact(contact: CNContact): string;
 
@@ -496,7 +496,7 @@ declare class CNContactFormatter extends NSFormatter implements NSSecureCoding {
 
 	static new(): CNContactFormatter; // inherited from NSObject
 
-	static stringFromContactStyle(contact: CNContact, style: CNContactFormatterStyle): string;
+	static stringFromContactStyle(contact: CNContact, style: CNContactFormatterStyle): string | null;
 
 	style: CNContactFormatterStyle;
 
@@ -508,13 +508,13 @@ declare class CNContactFormatter extends NSFormatter implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	attributedStringFromContactDefaultAttributes(contact: CNContact, attributes: NSDictionary<any, any>): NSAttributedString;
+	attributedStringFromContactDefaultAttributes(contact: CNContact, attributes: NSDictionary<any, any> | null): NSAttributedString | null;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	stringFromContact(contact: CNContact): string;
+	stringFromContact(contact: CNContact): string | null;
 }
 
 /**
@@ -638,19 +638,19 @@ declare class CNContactProperty extends NSObject implements NSCopying, NSSecureC
 
 	readonly contact: CNContact;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
 	readonly key: string;
 
-	readonly label: string;
+	readonly label: string | null;
 
-	readonly value: any;
+	readonly value: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -680,7 +680,7 @@ declare class CNContactRelation extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { name: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -727,33 +727,33 @@ declare class CNContactStore extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly currentHistoryToken: NSData;
+	readonly currentHistoryToken: NSData | null;
 
-	containersMatchingPredicateError(predicate: NSPredicate, error?: interop.Reference<NSError>): NSArray<CNContainer>;
+	containersMatchingPredicateError(predicate: NSPredicate | null, error?: interop.Reference<NSError>): NSArray<CNContainer> | null;
 
-	defaultContainerIdentifier(): string;
+	defaultContainerIdentifier(): string | null;
 
-	enumerateContactsWithFetchRequestErrorUsingBlock(fetchRequest: CNContactFetchRequest, error: interop.Pointer | interop.Reference<NSError>, block: (p1: CNContact, p2: interop.Pointer | interop.Reference<boolean>) => void): boolean;
-
-	/**
-	 * @since 13.0
-	 */
-	enumeratorForChangeHistoryFetchRequestError(request: CNChangeHistoryFetchRequest, error?: interop.Reference<NSError>): CNFetchResult<NSEnumerator<CNChangeHistoryEvent>>;
+	enumerateContactsWithFetchRequestErrorUsingBlock(fetchRequest: CNContactFetchRequest, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, block: (p1: CNContact, p2: interop.Pointer | interop.Reference<boolean> | null) => void): boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	enumeratorForContactFetchRequestError(request: CNContactFetchRequest, error?: interop.Reference<NSError>): CNFetchResult<NSEnumerator<CNContact>>;
+	enumeratorForChangeHistoryFetchRequestError(request: CNChangeHistoryFetchRequest, error?: interop.Reference<NSError>): CNFetchResult<NSEnumerator<CNChangeHistoryEvent>> | null;
+
+	/**
+	 * @since 13.0
+	 */
+	enumeratorForContactFetchRequestError(request: CNContactFetchRequest, error?: interop.Reference<NSError>): CNFetchResult<NSEnumerator<CNContact>> | null;
 
 	executeSaveRequestError(saveRequest: CNSaveRequest, error?: interop.Reference<NSError>): boolean;
 
-	groupsMatchingPredicateError(predicate: NSPredicate, error?: interop.Reference<NSError>): NSArray<CNGroup>;
+	groupsMatchingPredicateError(predicate: NSPredicate | null, error?: interop.Reference<NSError>): NSArray<CNGroup> | null;
 
-	requestAccessForEntityTypeCompletionHandler(entityType: CNEntityType, completionHandler: (p1: boolean, p2: NSError) => void): void;
+	requestAccessForEntityTypeCompletionHandler(entityType: CNEntityType, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
-	unifiedContactWithIdentifierKeysToFetchError(identifier: string, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[], error?: interop.Reference<NSError>): CNContact;
+	unifiedContactWithIdentifierKeysToFetchError(identifier: string, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[], error?: interop.Reference<NSError>): CNContact | null;
 
-	unifiedContactsMatchingPredicateKeysToFetchError(predicate: NSPredicate, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[], error?: interop.Reference<NSError>): NSArray<CNContact>;
+	unifiedContactsMatchingPredicateKeysToFetchError(predicate: NSPredicate, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[], error?: interop.Reference<NSError>): NSArray<CNContact> | null;
 }
 
 /**
@@ -793,9 +793,9 @@ declare class CNContactVCardSerialization extends NSObject {
 
 	static alloc(): CNContactVCardSerialization; // inherited from NSObject
 
-	static contactsWithDataError(data: NSData, error?: interop.Reference<NSError>): NSArray<CNContact>;
+	static contactsWithDataError(data: NSData, error?: interop.Reference<NSError>): NSArray<CNContact> | null;
 
-	static dataWithContactsError(contacts: NSArray<CNContact> | CNContact[], error?: interop.Reference<NSError>): NSData;
+	static dataWithContactsError(contacts: NSArray<CNContact> | CNContact[], error?: interop.Reference<NSError>): NSData | null;
 
 	static descriptorForRequiredKeys(): CNKeyDescriptor;
 
@@ -843,7 +843,7 @@ declare class CNContainer extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1019,13 +1019,13 @@ declare class CNGroup extends NSObject implements NSCopying, NSMutableCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1061,7 +1061,7 @@ declare class CNInstantMessageAddress extends NSObject implements NSCopying, NSS
 
 	constructor(o: { username: string; service: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2299,7 +2299,7 @@ declare class CNLabeledValue<ValueType> extends NSObject implements NSCopying, N
 
 	static alloc<ValueType>(): CNLabeledValue<ValueType>; // inherited from NSObject
 
-	static labeledValueWithLabelValue<ValueType>(label: string, value: any): CNLabeledValue<ValueType>;
+	static labeledValueWithLabelValue<ValueType>(label: string | null, value: any): CNLabeledValue<ValueType>;
 
 	static localizedStringForLabel(label: string): string;
 
@@ -2307,7 +2307,7 @@ declare class CNLabeledValue<ValueType> extends NSObject implements NSCopying, N
 
 	readonly identifier: string;
 
-	readonly label: string;
+	readonly label: string | null;
 
 	readonly value: any;
 
@@ -2315,19 +2315,19 @@ declare class CNLabeledValue<ValueType> extends NSObject implements NSCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { label: string; value: any; });
+	constructor(o: { label: string | null; value: any; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithLabelValue(label: string, value: any): this;
+	initWithLabelValue(label: string | null, value: any): this;
 
-	labeledValueBySettingLabel(label: string): this;
+	labeledValueBySettingLabel(label: string | null): this;
 
-	labeledValueBySettingLabelValue(label: string, value: any): this;
+	labeledValueBySettingLabelValue(label: string | null, value: any): this;
 
 	labeledValueBySettingValue(value: any): this;
 }
@@ -2343,7 +2343,7 @@ declare class CNMutableContact extends CNContact {
 
 	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): CNMutableContact; // inherited from NSItemProviderReading
 
-	birthday: NSDateComponents;
+	birthday: NSDateComponents | null;
 
 	contactRelations: NSArray<CNLabeledValue<CNContactRelation>>;
 
@@ -2359,7 +2359,7 @@ declare class CNMutableContact extends CNContact {
 
 	givenName: string;
 
-	imageData: NSData;
+	imageData: NSData | null;
 
 	instantMessageAddresses: NSArray<CNLabeledValue<CNInstantMessageAddress>>;
 
@@ -2373,7 +2373,7 @@ declare class CNMutableContact extends CNContact {
 
 	nickname: string;
 
-	nonGregorianBirthday: NSDateComponents;
+	nonGregorianBirthday: NSDateComponents | null;
 
 	note: string;
 
@@ -2461,7 +2461,7 @@ declare class CNPhoneNumber extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { stringValue: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2507,13 +2507,13 @@ declare class CNPostalAddress extends NSObject implements NSCopying, NSMutableCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2605,11 +2605,11 @@ declare class CNSaveRequest extends NSObject {
 	/**
 	 * @since 15
 	 */
-	transactionAuthor: string;
+	transactionAuthor: string | null;
 
-	addContactToContainerWithIdentifier(contact: CNMutableContact, identifier: string): void;
+	addContactToContainerWithIdentifier(contact: CNMutableContact, identifier: string | null): void;
 
-	addGroupToContainerWithIdentifier(group: CNMutableGroup, identifier: string): void;
+	addGroupToContainerWithIdentifier(group: CNMutableGroup, identifier: string | null): void;
 
 	addMemberToGroup(contact: CNContact, group: CNGroup): void;
 
@@ -2649,15 +2649,15 @@ declare class CNSocialProfile extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { urlString: string; username: string; userIdentifier: string; service: string; });
+	constructor(o: { urlString: string | null; username: string | null; userIdentifier: string | null; service: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithUrlStringUsernameUserIdentifierService(urlString: string, username: string, userIdentifier: string, service: string): this;
+	initWithUrlStringUsernameUserIdentifierService(urlString: string | null, username: string | null, userIdentifier: string | null, service: string | null): this;
 }
 
 /**

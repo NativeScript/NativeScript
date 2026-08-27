@@ -17,7 +17,7 @@ declare class CLLocationButton extends UIControl implements NSSecureCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): CLLocationButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): CLLocationButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -28,7 +28,7 @@ declare class CLLocationButton extends UIControl implements NSSecureCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): CLLocationButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): CLLocationButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0

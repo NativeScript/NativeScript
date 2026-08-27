@@ -21,7 +21,7 @@ declare class EAAccessory extends NSObject {
 	/**
 	 * @since 3.0
 	 */
-	delegate: EAAccessoryDelegate;
+	delegate: EAAccessoryDelegate | null;
 
 	/**
 	 * @since 9.3
@@ -119,7 +119,7 @@ declare class EAAccessoryManager extends NSObject {
 	/**
 	 * @since 6
 	 */
-	showBluetoothAccessoryPickerWithNameFilterCompletion(predicate: NSPredicate, completion: (p1: NSError) => void): void;
+	showBluetoothAccessoryPickerWithNameFilterCompletion(predicate: NSPredicate | null, completion: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 3.0
@@ -159,22 +159,22 @@ declare class EASession extends NSObject {
 	/**
 	 * @since 3.0
 	 */
-	readonly accessory: EAAccessory;
+	readonly accessory: EAAccessory | null;
 
 	/**
 	 * @since 3.0
 	 */
-	readonly inputStream: NSInputStream;
+	readonly inputStream: NSInputStream | null;
 
 	/**
 	 * @since 3.0
 	 */
-	readonly outputStream: NSOutputStream;
+	readonly outputStream: NSOutputStream | null;
 
 	/**
 	 * @since 3.0
 	 */
-	readonly protocolString: string;
+	readonly protocolString: string | null;
 
 	/**
 	 * @since 3.0
@@ -218,14 +218,14 @@ declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
 
 	static new(): EAWiFiUnconfiguredAccessoryBrowser; // inherited from NSObject
 
-	delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate;
+	delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate | null;
 
 	readonly unconfiguredAccessories: NSSet<EAWiFiUnconfiguredAccessory>;
 
 	/**
 	 * @since 8.0
 	 */
-	constructor(o: { delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate | null; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 8.0
@@ -235,12 +235,12 @@ declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	initWithDelegateQueue(delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithDelegateQueue(delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate | null, queue: NSObject & OS_dispatch_queue | null): this;
 
 	/**
 	 * @since 8.0
 	 */
-	startSearchingForUnconfiguredAccessoriesMatchingPredicate(predicate: NSPredicate): void;
+	startSearchingForUnconfiguredAccessoriesMatchingPredicate(predicate: NSPredicate | null): void;
 
 	/**
 	 * @since 8.0

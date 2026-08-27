@@ -11,16 +11,16 @@ declare class RPBroadcastActivityViewController extends UIViewController {
 
 	static alloc(): RPBroadcastActivityViewController; // inherited from NSObject
 
-	static loadBroadcastActivityViewControllerWithHandler(handler: (p1: RPBroadcastActivityViewController, p2: NSError) => void): void;
+	static loadBroadcastActivityViewControllerWithHandler(handler: (p1: RPBroadcastActivityViewController | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	static loadBroadcastActivityViewControllerWithPreferredExtensionHandler(preferredExtension: string, handler: (p1: RPBroadcastActivityViewController, p2: NSError) => void): void;
+	static loadBroadcastActivityViewControllerWithPreferredExtensionHandler(preferredExtension: string | null, handler: (p1: RPBroadcastActivityViewController | null, p2: NSError | null) => void): void;
 
 	static new(): RPBroadcastActivityViewController; // inherited from NSObject
 
-	delegate: RPBroadcastActivityViewControllerDelegate;
+	delegate: RPBroadcastActivityViewControllerDelegate | null;
 }
 
 /**
@@ -31,7 +31,7 @@ interface RPBroadcastActivityViewControllerDelegate extends NSObjectProtocol {
 	/**
 	 * @since 10.0
 	 */
-	broadcastActivityViewControllerDidFinishWithBroadcastControllerError(broadcastActivityViewController: RPBroadcastActivityViewController, broadcastController: RPBroadcastController, error: NSError): void;
+	broadcastActivityViewControllerDidFinishWithBroadcastControllerError(broadcastActivityViewController: RPBroadcastActivityViewController, broadcastController: RPBroadcastController | null, error: NSError | null): void;
 }
 declare var RPBroadcastActivityViewControllerDelegate: {
 
@@ -50,7 +50,7 @@ declare class RPBroadcastConfiguration extends NSObject implements NSCoding, NSS
 
 	clipDuration: number;
 
-	videoCompressionProperties: NSDictionary<string, NSObject & NSCoding & NSSecureCoding>;
+	videoCompressionProperties: NSDictionary<string, NSObject & NSCoding & NSSecureCoding> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -74,25 +74,25 @@ declare class RPBroadcastController extends NSObject {
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	readonly broadcastExtensionBundleID: string;
+	readonly broadcastExtensionBundleID: string | null;
 
 	readonly broadcastURL: NSURL;
 
 	readonly broadcasting: boolean;
 
-	delegate: RPBroadcastControllerDelegate;
+	delegate: RPBroadcastControllerDelegate | null;
 
 	readonly paused: boolean;
 
-	readonly serviceInfo: NSDictionary<string, NSObject & NSCoding>;
+	readonly serviceInfo: NSDictionary<string, NSObject & NSCoding> | null;
 
-	finishBroadcastWithHandler(handler: (p1: NSError) => void): void;
+	finishBroadcastWithHandler(handler: (p1: NSError | null) => void): void;
 
 	pauseBroadcast(): void;
 
 	resumeBroadcast(): void;
 
-	startBroadcastWithHandler(handler: (p1: NSError) => void): void;
+	startBroadcastWithHandler(handler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -100,7 +100,7 @@ declare class RPBroadcastController extends NSObject {
  */
 interface RPBroadcastControllerDelegate extends NSObjectProtocol {
 
-	broadcastControllerDidFinishWithError?(broadcastController: RPBroadcastController, error: NSError): void;
+	broadcastControllerDidFinishWithError?(broadcastController: RPBroadcastController, error: NSError | null): void;
 
 	/**
 	 * @since 11.0
@@ -177,9 +177,9 @@ declare class RPBroadcastMP4ClipHandler extends RPBroadcastHandler {
 
 	static new(): RPBroadcastMP4ClipHandler; // inherited from NSObject
 
-	finishedProcessingMP4ClipWithUpdatedBroadcastConfigurationError(broadcastConfiguration: RPBroadcastConfiguration, error: NSError): void;
+	finishedProcessingMP4ClipWithUpdatedBroadcastConfigurationError(broadcastConfiguration: RPBroadcastConfiguration | null, error: NSError | null): void;
 
-	processMP4ClipWithURLSetupInfoFinished(mp4ClipURL: NSURL, setupInfo: NSDictionary<string, NSObject>, finished: boolean): void;
+	processMP4ClipWithURLSetupInfoFinished(mp4ClipURL: NSURL | null, setupInfo: NSDictionary<string, NSObject> | null, finished: boolean): void;
 }
 
 /**
@@ -202,7 +202,7 @@ declare class RPBroadcastSampleHandler extends RPBroadcastHandler {
 
 	broadcastResumed(): void;
 
-	broadcastStartedWithSetupInfo(setupInfo: NSDictionary<string, NSObject>): void;
+	broadcastStartedWithSetupInfo(setupInfo: NSDictionary<string, NSObject> | null): void;
 
 	finishBroadcastWithError(error: NSError): void;
 
@@ -222,7 +222,7 @@ declare class RPPreviewViewController extends UIViewController {
 
 	static new(): RPPreviewViewController; // inherited from NSObject
 
-	previewControllerDelegate: RPPreviewViewControllerDelegate;
+	previewControllerDelegate: RPPreviewViewControllerDelegate | null;
 }
 
 interface RPPreviewViewControllerDelegate extends NSObjectProtocol {
@@ -349,9 +349,9 @@ declare class RPScreenRecorder extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	readonly cameraPreviewView: UIView;
+	readonly cameraPreviewView: UIView | null;
 
-	delegate: RPScreenRecorderDelegate;
+	delegate: RPScreenRecorderDelegate | null;
 
 	microphoneEnabled: boolean;
 
@@ -362,45 +362,45 @@ declare class RPScreenRecorder extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	exportClipToURLDurationCompletionHandler(url: NSURL, duration: number, completionHandler: (p1: NSError) => void): void;
+	exportClipToURLDurationCompletionHandler(url: NSURL, duration: number, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	startCaptureWithHandlerCompletionHandler(captureHandler: (p1: any, p2: RPSampleBufferType, p3: NSError) => void, completionHandler: (p1: NSError) => void): void;
+	startCaptureWithHandlerCompletionHandler(captureHandler: (p1: any, p2: RPSampleBufferType, p3: NSError | null) => void | null, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 15.0
 	 */
-	startClipBufferingWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	startClipBufferingWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 10.0
 	 */
-	startRecordingWithHandler(handler: (p1: NSError) => void): void;
+	startRecordingWithHandler(handler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 10.0
 	 */
-	startRecordingWithMicrophoneEnabledHandler(microphoneEnabled: boolean, handler: (p1: NSError) => void): void;
+	startRecordingWithMicrophoneEnabledHandler(microphoneEnabled: boolean, handler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	stopCaptureWithHandler(handler: (p1: NSError) => void): void;
+	stopCaptureWithHandler(handler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 15.0
 	 */
-	stopClipBufferingWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	stopClipBufferingWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
-	stopRecordingWithHandler(handler: (p1: RPPreviewViewController, p2: NSError) => void): void;
+	stopRecordingWithHandler(handler: (p1: RPPreviewViewController | null, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 14.0
 	 */
-	stopRecordingWithOutputURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+	stopRecordingWithOutputURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -414,12 +414,12 @@ interface RPScreenRecorderDelegate extends NSObjectProtocol {
 	 * @since 9.0
 	 * @deprecated 10.0
 	 */
-	screenRecorderDidStopRecordingWithErrorPreviewViewController?(screenRecorder: RPScreenRecorder, error: NSError, previewViewController: RPPreviewViewController): void;
+	screenRecorderDidStopRecordingWithErrorPreviewViewController?(screenRecorder: RPScreenRecorder, error: NSError, previewViewController: RPPreviewViewController | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	screenRecorderDidStopRecordingWithPreviewViewControllerError?(screenRecorder: RPScreenRecorder, previewViewController: RPPreviewViewController, error: NSError): void;
+	screenRecorderDidStopRecordingWithPreviewViewControllerError?(screenRecorder: RPScreenRecorder, previewViewController: RPPreviewViewController | null, error: NSError | null): void;
 }
 declare var RPScreenRecorderDelegate: {
 
@@ -444,7 +444,7 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): RPSystemBroadcastPickerView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): RPSystemBroadcastPickerView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -455,7 +455,7 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): RPSystemBroadcastPickerView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): RPSystemBroadcastPickerView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -464,7 +464,7 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 
 	static new(): RPSystemBroadcastPickerView; // inherited from NSObject
 
-	preferredExtension: string;
+	preferredExtension: string | null;
 
 	showsMicrophoneButton: boolean;
 

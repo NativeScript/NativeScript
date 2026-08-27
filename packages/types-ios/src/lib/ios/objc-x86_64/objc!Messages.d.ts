@@ -12,35 +12,35 @@ declare class MSConversation extends NSObject {
 
 	readonly remoteParticipantIdentifiers: NSArray<NSUUID>;
 
-	readonly selectedMessage: MSMessage;
+	readonly selectedMessage: MSMessage | null;
 
-	insertAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string, completionHandler: (p1: NSError) => void): void;
+	insertAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string | null, completionHandler: (p1: NSError | null) => void | null): void;
 
-	insertMessageCompletionHandler(message: MSMessage, completionHandler: (p1: NSError) => void): void;
+	insertMessageCompletionHandler(message: MSMessage, completionHandler: (p1: NSError | null) => void | null): void;
 
-	insertStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError) => void): void;
+	insertStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError | null) => void | null): void;
 
-	insertTextCompletionHandler(text: string, completionHandler: (p1: NSError) => void): void;
-
-	/**
-	 * @since 11.0
-	 */
-	sendAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string, completionHandler: (p1: NSError) => void): void;
+	insertTextCompletionHandler(text: string, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	sendMessageCompletionHandler(message: MSMessage, completionHandler: (p1: NSError) => void): void;
+	sendAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string | null, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	sendStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError) => void): void;
+	sendMessageCompletionHandler(message: MSMessage, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	sendTextCompletionHandler(text: string, completionHandler: (p1: NSError) => void): void;
+	sendStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError | null) => void | null): void;
+
+	/**
+	 * @since 11.0
+	 */
+	sendTextCompletionHandler(text: string, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -52,11 +52,11 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): MSMessage; // inherited from NSObject
 
-	URL: NSURL;
+	URL: NSURL | null;
 
-	error: NSError;
+	error: NSError | null;
 
-	layout: MSMessageLayout;
+	layout: MSMessageLayout | null;
 
 	/**
 	 * @since 11.0
@@ -65,11 +65,11 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly senderParticipantIdentifier: NSUUID;
 
-	readonly session: MSSession;
+	readonly session: MSSession | null;
 
 	shouldExpire: boolean;
 
-	summaryText: string;
+	summaryText: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -77,7 +77,7 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { session: MSSession; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -125,7 +125,7 @@ declare class MSMessageLayout extends NSObject implements NSCopying {
 
 	static new(): MSMessageLayout; // inherited from NSObject
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -153,21 +153,21 @@ declare class MSMessageTemplateLayout extends MSMessageLayout {
 
 	static new(): MSMessageTemplateLayout; // inherited from NSObject
 
-	caption: string;
+	caption: string | null;
 
-	image: UIImage;
+	image: UIImage | null;
 
-	imageSubtitle: string;
+	imageSubtitle: string | null;
 
-	imageTitle: string;
+	imageTitle: string | null;
 
-	mediaFileURL: NSURL;
+	mediaFileURL: NSURL | null;
 
-	subcaption: string;
+	subcaption: string | null;
 
-	trailingCaption: string;
+	trailingCaption: string | null;
 
-	trailingSubcaption: string;
+	trailingSubcaption: string | null;
 }
 
 /**
@@ -205,7 +205,7 @@ interface MSMessagesAppTranscriptPresentation {
 	/**
 	 * @since 26.0
 	 */
-	messageTintColor: UIColor;
+	messageTintColor: UIColor | null;
 
 	/**
 	 * @since 11.0
@@ -231,7 +231,7 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 
 	static new(): MSMessagesAppViewController; // inherited from NSObject
 
-	readonly activeConversation: MSConversation;
+	readonly activeConversation: MSConversation | null;
 
 	/**
 	 * @since 12.0
@@ -248,7 +248,7 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 	/**
 	 * @since 26.0
 	 */
-	readonly messageTintColor: UIColor; // inherited from MSMessagesAppTranscriptPresentation
+	readonly messageTintColor: UIColor | null; // inherited from MSMessagesAppTranscriptPresentation
 
 	/**
 	 * @since 11.0
@@ -370,7 +370,7 @@ declare class MSStickerBrowserView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MSStickerBrowserView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MSStickerBrowserView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -381,7 +381,7 @@ declare class MSStickerBrowserView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MSStickerBrowserView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MSStickerBrowserView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -394,7 +394,7 @@ declare class MSStickerBrowserView extends UIView {
 
 	contentOffset: CGPoint;
 
-	dataSource: MSStickerBrowserViewDataSource;
+	dataSource: MSStickerBrowserViewDataSource | null;
 
 	readonly stickerSize: MSStickerSize;
 
@@ -507,7 +507,7 @@ declare class MSStickerView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MSStickerView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MSStickerView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -518,7 +518,7 @@ declare class MSStickerView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MSStickerView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MSStickerView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -529,11 +529,11 @@ declare class MSStickerView extends UIView {
 
 	readonly animationDuration: number;
 
-	sticker: MSSticker;
+	sticker: MSSticker | null;
 
-	constructor(o: { frame: CGRect; sticker: MSSticker; });
+	constructor(o: { frame: CGRect; sticker: MSSticker | null; });
 
-	initWithFrameSticker(frame: CGRect, sticker: MSSticker): this;
+	initWithFrameSticker(frame: CGRect, sticker: MSSticker | null): this;
 
 	isAnimating(): boolean;
 

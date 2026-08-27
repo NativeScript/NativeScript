@@ -13,7 +13,7 @@ declare class GLKBaseEffect extends NSObject implements GLKNamedEffect {
 
 	readonly fog: GLKEffectPropertyFog;
 
-	label: string;
+	label: string | null;
 
 	readonly light0: GLKEffectPropertyLight;
 
@@ -31,7 +31,7 @@ declare class GLKBaseEffect extends NSObject implements GLKNamedEffect {
 
 	readonly texture2d1: GLKEffectPropertyTexture;
 
-	textureOrder: NSArray<GLKEffectPropertyTexture>;
+	textureOrder: NSArray<GLKEffectPropertyTexture> | null;
 
 	readonly transform: GLKEffectPropertyTransform;
 
@@ -162,7 +162,7 @@ declare const enum GLKLightingType {
 	PerPixel = 1
 }
 
-declare function GLKMatrixStackCreate(alloc: any): interop.Unmanaged<any>;
+declare function GLKMatrixStackCreate(alloc: any | null): interop.Unmanaged<any | null>;
 
 declare function GLKMatrixStackGetTypeID(): number;
 
@@ -196,7 +196,7 @@ declare class GLKMesh extends NSObject {
 
 	static new(): GLKMesh; // inherited from NSObject
 
-	static newMeshesFromAssetSourceMeshesError(asset: MDLAsset, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>, error?: interop.Reference<NSError>): NSArray<GLKMesh>;
+	static newMeshesFromAssetSourceMeshesError(asset: MDLAsset, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh> | null> | ArrayBufferLike | ArrayBufferView | null, error?: interop.Reference<NSError>): NSArray<GLKMesh> | null;
 
 	readonly name: string;
 
@@ -249,7 +249,7 @@ declare class GLKMeshBuffer extends NSObject implements MDLMeshBuffer {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	fillDataOffset(data: NSData, offset: number): void;
 
@@ -306,9 +306,9 @@ declare class GLKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	newBufferFromZoneDataType(zone: MDLMeshBufferZone, data: NSData, type: MDLMeshBufferType): MDLMeshBuffer;
+	newBufferFromZoneDataType(zone: MDLMeshBufferZone | null, data: NSData, type: MDLMeshBufferType): MDLMeshBuffer | null;
 
-	newBufferFromZoneLengthType(zone: MDLMeshBufferZone, length: number, type: MDLMeshBufferType): MDLMeshBuffer;
+	newBufferFromZoneLengthType(zone: MDLMeshBufferZone | null, length: number, type: MDLMeshBufferType): MDLMeshBuffer | null;
 
 	newBufferType(length: number, type: MDLMeshBufferType): MDLMeshBuffer;
 
@@ -365,7 +365,7 @@ declare class GLKSkyboxEffect extends NSObject implements GLKNamedEffect {
 
 	static new(): GLKSkyboxEffect; // inherited from NSObject
 
-	label: string;
+	label: string | null;
 
 	readonly textureCubeMap: GLKEffectPropertyTexture;
 
@@ -396,7 +396,7 @@ declare class GLKSubmesh extends NSObject {
 
 	readonly elementCount: number;
 
-	readonly mesh: GLKMesh;
+	readonly mesh: GLKMesh | null;
 
 	readonly mode: number;
 
@@ -447,7 +447,7 @@ declare class GLKTextureInfo extends NSObject implements NSCopying {
 
 	readonly width: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -482,43 +482,43 @@ declare class GLKTextureLoader extends NSObject {
 
 	static alloc(): GLKTextureLoader; // inherited from NSObject
 
-	static cubeMapWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static cubeMapWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
-	static cubeMapWithContentsOfFilesOptionsError(paths: NSArray<any> | any[], options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static cubeMapWithContentsOfFilesOptionsError(paths: NSArray<any> | any[], options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
-	static cubeMapWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static cubeMapWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
 	static new(): GLKTextureLoader; // inherited from NSObject
 
-	static textureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static textureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
-	static textureWithContentsOfDataOptionsError(data: NSData, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static textureWithContentsOfDataOptionsError(data: NSData, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
-	static textureWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static textureWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
-	static textureWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static textureWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
-	static textureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, error?: interop.Reference<NSError>): GLKTextureInfo;
+	static textureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle | null, options: NSDictionary<string, number> | null, error?: interop.Reference<NSError>): GLKTextureInfo | null;
 
 	constructor(o: { sharegroup: EAGLSharegroup; });
 
-	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
-	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
-	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
 	initWithSharegroup(sharegroup: EAGLSharegroup): this;
 
-	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
-	textureWithContentsOfDataOptionsQueueCompletionHandler(data: NSData, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfDataOptionsQueueCompletionHandler(data: NSData, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
-	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
-	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 
-	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle | null, options: NSDictionary<string, number> | null, queue: NSObject & OS_dispatch_queue | null, block: (p1: GLKTextureInfo | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -657,7 +657,7 @@ declare class GLKView extends UIView implements NSCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): GLKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -668,7 +668,7 @@ declare class GLKView extends UIView implements NSCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): GLKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -679,7 +679,7 @@ declare class GLKView extends UIView implements NSCoding {
 
 	context: EAGLContext;
 
-	delegate: GLKViewDelegate;
+	delegate: GLKViewDelegate | null;
 
 	drawableColorFormat: GLKViewDrawableColorFormat;
 
@@ -724,7 +724,7 @@ declare class GLKViewController extends UIViewController implements GLKViewDeleg
 
 	static new(): GLKViewController; // inherited from NSObject
 
-	delegate: GLKViewControllerDelegate;
+	delegate: GLKViewControllerDelegate | null;
 
 	readonly framesDisplayed: number;
 

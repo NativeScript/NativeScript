@@ -68,7 +68,7 @@ declare class BEAccessibilityRemoteHostElement extends NSObject {
 
 	static new(): BEAccessibilityRemoteHostElement; // inherited from NSObject
 
-	accessibilityContainer: any;
+	accessibilityContainer: any | null;
 
 	constructor(o: { identifier: string; remotePid: number; });
 
@@ -93,7 +93,7 @@ declare class BEAccessibilityTextMarker extends NSObject implements NSCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -117,7 +117,7 @@ declare class BEAccessibilityTextMarkerRange extends NSObject implements NSCopyi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -131,27 +131,27 @@ interface BEAccessibilityTextMarkerSupport extends NSObjectProtocol {
 
 	accessibilityBoundsForTextMarkerRange(range: BEAccessibilityTextMarkerRange): CGRect;
 
-	accessibilityContentForTextMarkerRange(range: BEAccessibilityTextMarkerRange): string;
+	accessibilityContentForTextMarkerRange(range: BEAccessibilityTextMarkerRange): string | null;
 
-	accessibilityLineEndMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+	accessibilityLineEndMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker | null;
 
-	accessibilityLineStartMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+	accessibilityLineStartMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker | null;
 
-	accessibilityMarkerForPoint(point: CGPoint): BEAccessibilityTextMarker;
+	accessibilityMarkerForPoint(point: CGPoint): BEAccessibilityTextMarker | null;
 
-	accessibilityNextTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+	accessibilityNextTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker | null;
 
-	accessibilityPreviousTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+	accessibilityPreviousTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker | null;
 
 	accessibilityRangeForTextMarkerRange(range: BEAccessibilityTextMarkerRange): NSRange;
 
-	accessibilityTextMarkerForPosition(position: number): BEAccessibilityTextMarker;
+	accessibilityTextMarkerForPosition(position: number): BEAccessibilityTextMarker | null;
 
 	accessibilityTextMarkerRange(): BEAccessibilityTextMarkerRange;
 
-	accessibilityTextMarkerRangeForCurrentSelection(): BEAccessibilityTextMarkerRange;
+	accessibilityTextMarkerRangeForCurrentSelection(): BEAccessibilityTextMarkerRange | null;
 
-	accessibilityTextMarkerRangeForRange(range: NSRange): BEAccessibilityTextMarkerRange;
+	accessibilityTextMarkerRangeForRange(range: NSRange): BEAccessibilityTextMarkerRange | null;
 }
 declare var BEAccessibilityTextMarkerSupport: {
 
@@ -207,11 +207,11 @@ declare class BEContextMenuConfiguration extends UIContextMenuConfiguration {
 
 	static alloc(): BEContextMenuConfiguration; // inherited from NSObject
 
-	static configurationWithIdentifierPreviewProviderActionProvider(identifier: any, previewProvider: () => UIViewController, actionProvider: (p1: NSArray<UIMenuElement>) => UIMenu): BEContextMenuConfiguration; // inherited from UIContextMenuConfiguration
+	static configurationWithIdentifierPreviewProviderActionProvider(identifier: any | null, previewProvider: () => UIViewController | null | null, actionProvider: (p1: NSArray<UIMenuElement>) => UIMenu | null | null): BEContextMenuConfiguration; // inherited from UIContextMenuConfiguration
 
 	static new(): BEContextMenuConfiguration; // inherited from NSObject
 
-	fulfillUsingConfiguration(configuration: UIContextMenuConfiguration): boolean;
+	fulfillUsingConfiguration(configuration: UIContextMenuConfiguration | null): boolean;
 }
 
 interface BEDirectionalTextRange {
@@ -227,7 +227,7 @@ declare class BEDownloadMonitor extends NSObject {
 
 	static alloc(): BEDownloadMonitor; // inherited from NSObject
 
-	static createAccessToken(): NSData;
+	static createAccessToken(): NSData | null;
 
 	static new(): BEDownloadMonitor; // inherited from NSObject
 
@@ -239,13 +239,13 @@ declare class BEDownloadMonitor extends NSObject {
 
 	constructor(o: { sourceURL: NSURL; destinationURL: NSURL; observedProgress: NSProgress; liveActivityAccessToken: NSData; });
 
-	beginMonitoring(completion: (p1: BEDownloadMonitorLocation, p2: NSError) => void): void;
+	beginMonitoring(completion: (p1: BEDownloadMonitorLocation | null, p2: NSError | null) => void): void;
 
 	initWithSourceURLDestinationURLObservedProgressLiveActivityAccessToken(sourceURL: NSURL, destinationURL: NSURL, observedProgress: NSProgress, liveActivityAccessToken: NSData): this;
 
-	resumeMonitoringCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+	resumeMonitoringCompletionHandler(url: NSURL, completionHandler: (p1: NSError | null) => void): void;
 
-	useDownloadsFolderWithPlaceholderTypeFinalFileCreatedHandler(type: UTType, finalFileCreatedHandler: (p1: BEDownloadMonitorLocation) => void): void;
+	useDownloadsFolderWithPlaceholderTypeFinalFileCreatedHandler(type: UTType | null, finalFileCreatedHandler: (p1: BEDownloadMonitorLocation | null) => void): void;
 }
 
 /**
@@ -271,7 +271,7 @@ declare class BEDragInteraction extends UIDragInteraction {
 
 	static new(): BEDragInteraction; // inherited from NSObject
 
-	readonly delegate: BEDragInteractionDelegate;
+	readonly delegate: BEDragInteractionDelegate | null;
 
 	constructor(o: { delegate: BEDragInteractionDelegate; });
 
@@ -297,11 +297,11 @@ declare var BEDragInteractionDelegate: {
  */
 interface BEExtendedTextInputTraits extends UITextInputTraits {
 
-	insertionPointColor?: UIColor;
+	insertionPointColor?: UIColor | null;
 
-	selectionHandleColor?: UIColor;
+	selectionHandleColor?: UIColor | null;
 
-	selectionHighlightColor?: UIColor;
+	selectionHighlightColor?: UIColor | null;
 
 	singleLineDocument?: boolean;
 
@@ -319,7 +319,7 @@ interface BEExtensionProcess extends NSObjectProtocol {
 
 	invalidate(): void;
 
-	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object | null;
 }
 declare var BEExtensionProcess: {
 
@@ -421,13 +421,13 @@ declare class BELayerHierarchy extends NSObject {
 
 	static alloc(): BELayerHierarchy; // inherited from NSObject
 
-	static layerHierarchyWithError(error?: interop.Reference<NSError>): BELayerHierarchy;
+	static layerHierarchyWithError(error?: interop.Reference<NSError>): BELayerHierarchy | null;
 
 	static new(): BELayerHierarchy; // inherited from NSObject
 
 	readonly handle: BELayerHierarchyHandle;
 
-	layer: CALayer;
+	layer: CALayer | null;
 
 	invalidate(): void;
 }
@@ -442,9 +442,9 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 	/**
 	 * @since 26.0
 	 */
-	static handleWithPortDataError(port: number, data: NSData, error?: interop.Reference<NSError>): BELayerHierarchyHandle;
+	static handleWithPortDataError(port: number, data: NSData, error?: interop.Reference<NSError>): BELayerHierarchyHandle | null;
 
-	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object, error?: interop.Reference<NSError>): BELayerHierarchyHandle;
+	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object | null, error?: interop.Reference<NSError>): BELayerHierarchyHandle | null;
 
 	static new(): BELayerHierarchyHandle; // inherited from NSObject
 
@@ -471,14 +471,14 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 
 	static alloc(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
-	static coordinatorWithError(error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithError(error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator | null;
 
 	/**
 	 * @since 26.0
 	 */
-	static coordinatorWithPortDataError(port: number, data: NSData, error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithPortDataError(port: number, data: NSData, error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator | null;
 
-	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object, error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object | null, error?: interop.Reference<NSError>): BELayerHierarchyHostingTransactionCoordinator | null;
 
 	static new(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
@@ -522,7 +522,7 @@ declare class BELayerHierarchyHostingView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): BELayerHierarchyHostingView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): BELayerHierarchyHostingView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -533,7 +533,7 @@ declare class BELayerHierarchyHostingView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): BELayerHierarchyHostingView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): BELayerHierarchyHostingView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -542,7 +542,7 @@ declare class BELayerHierarchyHostingView extends UIView {
 
 	static new(): BELayerHierarchyHostingView; // inherited from NSObject
 
-	handle: BELayerHierarchyHandle;
+	handle: BELayerHierarchyHandle | null;
 }
 
 /**
@@ -566,7 +566,7 @@ declare class BEMediaEnvironment extends NSObject {
 
 	initWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object, error?: interop.Reference<NSError>): this;
 
-	makeCaptureSessionWithError(error?: interop.Reference<NSError>): AVCaptureSession;
+	makeCaptureSessionWithError(error?: interop.Reference<NSError>): AVCaptureSession | null;
 
 	suspendWithError(error?: interop.Reference<NSError>): boolean;
 }
@@ -581,9 +581,9 @@ declare class BENetworkingProcess extends NSObject implements BEExtensionProcess
 	/**
 	 * @since 18.2
 	 */
-	static networkProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BENetworkingProcess, p2: NSError) => void): void;
+	static networkProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BENetworkingProcess | null, p2: NSError | null) => void): void;
 
-	static networkProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BENetworkingProcess, p2: NSError) => void): void;
+	static networkProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BENetworkingProcess | null, p2: NSError | null) => void): void;
 
 	static new(): BENetworkingProcess; // inherited from NSObject
 
@@ -603,9 +603,9 @@ declare class BENetworkingProcess extends NSObject implements BEExtensionProcess
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
+	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant | null;
 
-	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
+	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, invalidationHandler: () => void): BEProcessCapabilityGrant | null;
 
 	invalidate(): void;
 
@@ -615,7 +615,7 @@ declare class BENetworkingProcess extends NSObject implements BEExtensionProcess
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object | null;
 
 	performSelector(aSelector: string): any;
 
@@ -676,9 +676,9 @@ declare class BERenderingProcess extends NSObject implements BEExtensionProcess 
 	/**
 	 * @since 18.2
 	 */
-	static renderingProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
+	static renderingProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BERenderingProcess | null, p2: NSError | null) => void): void;
 
-	static renderingProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
+	static renderingProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BERenderingProcess | null, p2: NSError | null) => void): void;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -698,9 +698,9 @@ declare class BERenderingProcess extends NSObject implements BEExtensionProcess 
 
 	createVisibilityPropagationInteraction(): UIInteraction;
 
-	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
+	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant | null;
 
-	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
+	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, invalidationHandler: () => void): BEProcessCapabilityGrant | null;
 
 	invalidate(): void;
 
@@ -710,7 +710,7 @@ declare class BERenderingProcess extends NSObject implements BEExtensionProcess 
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object | null;
 
 	performSelector(aSelector: string): any;
 
@@ -730,21 +730,21 @@ declare class BERenderingProcess extends NSObject implements BEExtensionProcess 
  */
 interface BEResponderEditActions extends UIResponderStandardEditActions {
 
-	addShortcut?(sender: any): void;
+	addShortcut?(sender: any | null): void;
 
-	findSelected?(sender: any): void;
+	findSelected?(sender: any | null): void;
 
-	lookup?(sender: any): void;
+	lookup?(sender: any | null): void;
 
-	promptForReplace?(sender: any): void;
+	promptForReplace?(sender: any | null): void;
 
-	replace?(sender: any): void;
+	replace?(sender: any | null): void;
 
-	share?(sender: any): void;
+	share?(sender: any | null): void;
 
-	translate?(sender: any): void;
+	translate?(sender: any | null): void;
 
-	transliterateChinese?(sender: any): void;
+	transliterateChinese?(sender: any | null): void;
 }
 declare var BEResponderEditActions: {
 
@@ -769,7 +769,7 @@ declare class BEScrollView extends UIScrollView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): BEScrollView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): BEScrollView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -780,7 +780,7 @@ declare class BEScrollView extends UIScrollView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): BEScrollView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): BEScrollView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -789,7 +789,7 @@ declare class BEScrollView extends UIScrollView {
 
 	static new(): BEScrollView; // inherited from NSObject
 
-	delegate: BEScrollViewDelegate;
+	delegate: BEScrollViewDelegate | null;
 }
 
 /**
@@ -797,7 +797,7 @@ declare class BEScrollView extends UIScrollView {
  */
 interface BEScrollViewDelegate extends UIScrollViewDelegate {
 
-	parentScrollViewForScrollView?(scrollView: BEScrollView): BEScrollView;
+	parentScrollViewForScrollView?(scrollView: BEScrollView): BEScrollView | null;
 
 	scrollViewHandleScrollUpdateCompletion?(scrollView: BEScrollView, scrollUpdate: BEScrollViewScrollUpdate, completion: (p1: boolean) => void): void;
 }
@@ -819,9 +819,9 @@ declare class BEScrollViewScrollUpdate extends NSObject {
 
 	readonly timestamp: number;
 
-	locationInView(view: UIView): CGPoint;
+	locationInView(view: UIView | null): CGPoint;
 
-	translationInView(view: UIView): CGPoint;
+	translationInView(view: UIView | null): CGPoint;
 }
 
 /**
@@ -895,15 +895,15 @@ declare class BETextDocumentContext extends NSObject {
 
 	autocorrectedRanges: NSArray<NSValue>;
 
-	constructor(o: { attributedSelectedText: NSAttributedString; contextBefore: NSAttributedString; contextAfter: NSAttributedString; markedText: NSAttributedString; selectedRangeInMarkedText: NSRange; });
+	constructor(o: { attributedSelectedText: NSAttributedString | null; contextBefore: NSAttributedString | null; contextAfter: NSAttributedString | null; markedText: NSAttributedString | null; selectedRangeInMarkedText: NSRange; });
 
-	constructor(o: { selectedText: string; contextBefore: string; contextAfter: string; markedText: string; selectedRangeInMarkedText: NSRange; });
+	constructor(o: { selectedText: string | null; contextBefore: string | null; contextAfter: string | null; markedText: string | null; selectedRangeInMarkedText: NSRange; });
 
 	addTextRectForCharacterRange(rect: CGRect, range: NSRange): void;
 
-	initWithAttributedSelectedTextContextBeforeContextAfterMarkedTextSelectedRangeInMarkedText(selectedText: NSAttributedString, contextBefore: NSAttributedString, contextAfter: NSAttributedString, markedText: NSAttributedString, selectedRangeInMarkedText: NSRange): this;
+	initWithAttributedSelectedTextContextBeforeContextAfterMarkedTextSelectedRangeInMarkedText(selectedText: NSAttributedString | null, contextBefore: NSAttributedString | null, contextAfter: NSAttributedString | null, markedText: NSAttributedString | null, selectedRangeInMarkedText: NSRange): this;
 
-	initWithSelectedTextContextBeforeContextAfterMarkedTextSelectedRangeInMarkedText(selectedText: string, contextBefore: string, contextAfter: string, markedText: string, selectedRangeInMarkedText: NSRange): this;
+	initWithSelectedTextContextBeforeContextAfterMarkedTextSelectedRangeInMarkedText(selectedText: string | null, contextBefore: string | null, contextAfter: string | null, markedText: string | null, selectedRangeInMarkedText: NSRange): this;
 }
 
 /**
@@ -945,27 +945,27 @@ declare const enum BETextDocumentRequestOptions {
  */
 interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNavigation, UIKeyInput {
 
-	asyncInputDelegate: BETextInputDelegate;
+	asyncInputDelegate: BETextInputDelegate | null;
 
-	attributedMarkedText: NSAttributedString;
+	attributedMarkedText: NSAttributedString | null;
 
 	automaticallyPresentEditMenu: boolean;
 
 	editable: boolean;
 
-	extendedTextInputTraits: BEExtendedTextInputTraits;
+	extendedTextInputTraits: BEExtendedTextInputTraits | null;
 
 	hasMarkedText: boolean;
 
-	markedText: string;
+	markedText: string | null;
 
-	markedTextRange: UITextRange;
+	markedTextRange: UITextRange | null;
 
 	replaceAllowed: boolean;
 
-	selectedText: string;
+	selectedText: string | null;
 
-	selectedTextRange: UITextRange;
+	selectedTextRange: UITextRange | null;
 
 	selectionAtDocumentStart: boolean;
 
@@ -974,12 +974,12 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 	/**
 	 * @since 26.0
 	 */
-	selectionContainerViewAboveText?: UIView;
+	selectionContainerViewAboveText?: UIView | null;
 
 	/**
 	 * @since 26.0
 	 */
-	selectionContainerViewBelowText?: UIView;
+	selectionContainerViewBelowText?: UIView | null;
 
 	textFirstRect: CGRect;
 
@@ -997,11 +997,11 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 
 	adjustSelectionByRangeCompletionHandler(range: BEDirectionalTextRange, completionHandler: () => void): void;
 
-	alternativesForSelectedText(): NSArray<BETextAlternatives>;
+	alternativesForSelectedText(): NSArray<BETextAlternatives> | null;
 
 	autoscrollToPoint(point: CGPoint): void;
 
-	canPerformActionWithSender(action: string, sender: any): boolean;
+	canPerformActionWithSender(action: string, sender: any | null): boolean;
 
 	cancelAutoscroll(): void;
 
@@ -1057,7 +1057,7 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 
 	selectPositionAtPointWithContextRequestCompletionHandler(point: CGPoint, request: BETextDocumentRequest, completionHandler: (p1: BETextDocumentContext) => void): void;
 
-	selectTextForEditMenuWithLocationInViewCompletionHandler(locationInView: CGPoint, completionHandler: (p1: boolean, p2: string, p3: NSRange) => void): void;
+	selectTextForEditMenuWithLocationInViewCompletionHandler(locationInView: CGPoint, completionHandler: (p1: boolean, p2: string | null, p3: NSRange) => void): void;
 
 	selectTextInGranularityAtPointCompletionHandler(granularity: UITextGranularity, point: CGPoint, completionHandler: () => void): void;
 
@@ -1065,11 +1065,11 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 
 	selectionRectsForRange(range: UITextRange): NSArray<UITextSelectionRect>;
 
-	setAttributedMarkedTextSelectedRange(markedText: NSAttributedString, selectedRange: NSRange): void;
+	setAttributedMarkedTextSelectedRange(markedText: NSAttributedString | null, selectedRange: NSRange): void;
 
 	setBaseWritingDirectionForRange(writingDirection: NSWritingDirection, range: UITextRange): void;
 
-	setMarkedTextSelectedRange(markedText: string, selectedRange: NSRange): void;
+	setMarkedTextSelectedRange(markedText: string | null, selectedRange: NSRange): void;
 
 	setSelectionFromPointToPointGestureState(from: CGPoint, to: CGPoint, gesture: BEGestureType, state: UIGestureRecognizerState): void;
 
@@ -1079,11 +1079,11 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 
 	systemWillPresentEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
 
-	textInRange(range: UITextRange): string;
+	textInRange(range: UITextRange): string | null;
 
 	textInteractionGestureShouldBeginAtPoint(gestureType: BEGestureType, point: CGPoint): boolean;
 
-	textStylingAtPositionInDirection(position: UITextPosition, direction: UITextStorageDirection): NSDictionary<string, any>;
+	textStylingAtPositionInDirection(position: UITextPosition, direction: UITextStorageDirection): NSDictionary<string, any> | null;
 
 	transposeCharactersAroundSelection(): void;
 
@@ -1115,7 +1115,7 @@ interface BETextInputDelegate {
 
 	textInputDeferReplaceTextActionToSystem(textInput: BETextInput, sender: any): void;
 
-	textInputSetCandidateSuggestions(textInput: BETextInput, suggestions: NSArray<BETextSuggestion> | BETextSuggestion[]): void;
+	textInputSetCandidateSuggestions(textInput: BETextInput, suggestions: NSArray<BETextSuggestion> | BETextSuggestion[] | null): void;
 }
 declare var BETextInputDelegate: {
 
@@ -1133,9 +1133,9 @@ declare class BETextInteraction extends NSObject implements UIInteraction {
 
 	readonly contextMenuInteraction: UIContextMenuInteraction;
 
-	contextMenuInteractionDelegate: UIContextMenuInteractionDelegate;
+	contextMenuInteractionDelegate: UIContextMenuInteractionDelegate | null;
 
-	delegate: BETextInteractionDelegate;
+	delegate: BETextInteractionDelegate | null;
 
 	readonly textSelectionDisplayInteraction: UITextSelectionDisplayInteraction;
 
@@ -1149,7 +1149,7 @@ declare class BETextInteraction extends NSObject implements UIInteraction {
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly view: UIView; // inherited from UIInteraction
+	readonly view: UIView | null; // inherited from UIInteraction
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -1159,7 +1159,7 @@ declare class BETextInteraction extends NSObject implements UIInteraction {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	didMoveToView(view: UIView): void;
+	didMoveToView(view: UIView | null): void;
 
 	dismissEditMenuForSelection(): void;
 
@@ -1201,7 +1201,7 @@ declare class BETextInteraction extends NSObject implements UIInteraction {
 
 	transliterateChineseForText(text: string): void;
 
-	willMoveToView(view: UIView): void;
+	willMoveToView(view: UIView | null): void;
 }
 
 /**
@@ -1281,6 +1281,22 @@ declare class BEWebAppManifest extends NSObject {
 }
 
 /**
+ * @since 26.2
+ */
+declare class BEWebContentFilter extends NSObject {
+
+	static alloc(): BEWebContentFilter; // inherited from NSObject
+
+	static new(): BEWebContentFilter; // inherited from NSObject
+
+	static readonly shouldEvaluateURLs: boolean;
+
+	allowURLCompletionHandler(url: NSURL, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
+
+	evaluateURLCompletionHandler(url: NSURL, completionHandler: (p1: boolean, p2: NSData | null) => void): void;
+}
+
+/**
  * @since 17.4
  */
 declare class BEWebContentProcess extends NSObject implements BEExtensionProcess {
@@ -1292,9 +1308,9 @@ declare class BEWebContentProcess extends NSObject implements BEExtensionProcess
 	/**
 	 * @since 18.2
 	 */
-	static webContentProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
+	static webContentProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BEWebContentProcess | null, p2: NSError | null) => void): void;
 
-	static webContentProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
+	static webContentProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BEWebContentProcess | null, p2: NSError | null) => void): void;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1314,9 +1330,9 @@ declare class BEWebContentProcess extends NSObject implements BEExtensionProcess
 
 	createVisibilityPropagationInteraction(): UIInteraction;
 
-	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
+	grantCapabilityError(capability: BEProcessCapability, error?: interop.Reference<NSError>): BEProcessCapabilityGrant | null;
 
-	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
+	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, invalidationHandler: () => void): BEProcessCapabilityGrant | null;
 
 	invalidate(): void;
 
@@ -1326,7 +1342,7 @@ declare class BEWebContentProcess extends NSObject implements BEExtensionProcess
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object;
+	makeLibXPCConnectionError(error?: interop.Reference<NSError>): NSObject & OS_xpc_object | null;
 
 	performSelector(aSelector: string): any;
 

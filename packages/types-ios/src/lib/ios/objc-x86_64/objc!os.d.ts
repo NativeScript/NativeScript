@@ -21,7 +21,7 @@ declare var __dso_handle: mach_header;
 /**
  * @since 10.0
  */
-declare function _os_activity_create(dso: interop.Pointer | interop.Reference<any>, description: string | interop.Pointer | interop.Reference<any>, activity: NSObject & OS_os_activity, flags: os_activity_flag_t): NSObject & OS_os_activity;
+declare function _os_activity_create(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, description: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, activity: NSObject & OS_os_activity, flags: os_activity_flag_t): NSObject & OS_os_activity;
 
 /**
  * @since 10.0
@@ -31,17 +31,17 @@ declare var _os_activity_current: void;
 /**
  * @since 8.0
  */
-declare function _os_activity_initiate(dso: interop.Pointer | interop.Reference<any>, description: string | interop.Pointer | interop.Reference<any>, flags: os_activity_flag_t, activity_block: () => void): void;
+declare function _os_activity_initiate(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, description: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: os_activity_flag_t, activity_block: () => void): void;
 
 /**
  * @since 8.0
  */
-declare function _os_activity_initiate_f(dso: interop.Pointer | interop.Reference<any>, description: string | interop.Pointer | interop.Reference<any>, flags: os_activity_flag_t, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function _os_activity_initiate_f(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, description: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: os_activity_flag_t, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 10.0
  */
-declare function _os_activity_label_useraction(dso: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
+declare function _os_activity_label_useraction(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 10.0
@@ -52,23 +52,23 @@ declare var _os_activity_none: void;
  * @since 8.0
  * @deprecated 10.0
  */
-declare function _os_activity_set_breadcrumb(dso: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
+declare function _os_activity_set_breadcrumb(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 8.0
  * @deprecated 10.0
  */
-declare function _os_activity_start(dso: interop.Pointer | interop.Reference<any>, description: string | interop.Pointer | interop.Reference<any>, flags: os_activity_flag_t): NSObject & OS_os_activity;
+declare function _os_activity_start(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, description: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: os_activity_flag_t): NSObject & OS_os_activity;
 
 /**
  * @since 9.0
  */
-declare function _os_log_create(dso: interop.Pointer | interop.Reference<any>, subsystem: string | interop.Pointer | interop.Reference<any>, category: string | interop.Pointer | interop.Reference<any>): NSObject & OS_os_log;
+declare function _os_log_create(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, subsystem: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, category: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_os_log;
 
 /**
  * @since 13.0
  */
-declare function _os_log_debug_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any>, buf: string | interop.Pointer | interop.Reference<any>, size: number): void;
+declare function _os_log_debug_impl(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): void;
 
 /**
  * @since 9.0
@@ -83,28 +83,28 @@ declare var _os_log_disabled: void;
 /**
  * @since 11.0
  */
-declare function _os_log_error_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any>, buf: string | interop.Pointer | interop.Reference<any>, size: number): void;
+declare function _os_log_error_impl(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): void;
 
 /**
  * @since 11.0
  */
-declare function _os_log_fault_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any>, buf: string | interop.Pointer | interop.Reference<any>, size: number): void;
+declare function _os_log_fault_impl(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): void;
 
 /**
  * @since 10.0
  */
-declare function _os_log_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any>, buf: string | interop.Pointer | interop.Reference<any>, size: number): void;
+declare function _os_log_impl(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, log: NSObject & OS_os_log, type: os_log_type_t, format: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): void;
 
 /**
  * @since 12.0
  */
-declare function _os_signpost_emit_with_name_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject & OS_os_log, type: os_signpost_type_t, spid: number, name: string | interop.Pointer | interop.Reference<any>, format: string | interop.Pointer | interop.Reference<any>, buf: string | interop.Pointer | interop.Reference<any>, size: number): void;
+declare function _os_signpost_emit_with_name_impl(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, log: NSObject & OS_os_log, type: os_signpost_type_t, spid: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, format: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): void;
 
 /**
  * @since 8.0
  * @deprecated 11.0
  */
-declare function _os_trace_with_buffer(dso: interop.Pointer | interop.Reference<any>, message: string | interop.Pointer | interop.Reference<any>, type: number, buffer: interop.Pointer | interop.Reference<any>, buffer_size: number, payload: (p1: NSObject & OS_xpc_object) => void): void;
+declare function _os_trace_with_buffer(dso: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, message: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: number, buffer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buffer_size: number, payload: (p1: NSObject & OS_xpc_object) => void): void;
 
 /**
  * @since 10.0
@@ -114,7 +114,7 @@ declare function os_activity_apply(activity: NSObject & OS_os_activity, block: (
 /**
  * @since 10.0
  */
-declare function os_activity_apply_f(activity: NSObject & OS_os_activity, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function os_activity_apply_f(activity: NSObject & OS_os_activity, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 8.0
@@ -135,22 +135,22 @@ declare const enum os_activity_flag_t {
  * @since 8.0
  * @deprecated 10.0
  */
-declare function os_activity_get_active(entries: interop.Pointer | interop.Reference<number>, count: interop.Pointer | interop.Reference<number>): number;
+declare function os_activity_get_active(entries: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, count: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 10.0
  */
-declare function os_activity_get_identifier(activity: NSObject & OS_os_activity, parent_id: interop.Pointer | interop.Reference<number>): number;
+declare function os_activity_get_identifier(activity: NSObject & OS_os_activity, parent_id: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 10.0
  */
-declare function os_activity_scope_enter(activity: NSObject & OS_os_activity, state: interop.Pointer | interop.Reference<os_activity_scope_state_s>): void;
+declare function os_activity_scope_enter(activity: NSObject & OS_os_activity, state: interop.Pointer | interop.Reference<os_activity_scope_state_s> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 10.0
  */
-declare function os_activity_scope_leave(state: interop.Pointer | interop.Reference<os_activity_scope_state_s>): void;
+declare function os_activity_scope_leave(state: interop.Pointer | interop.Reference<os_activity_scope_state_s> | ArrayBufferLike | ArrayBufferView): void;
 
 interface os_activity_scope_state_s {
 	opaque: interop.Reference<number>;
@@ -160,7 +160,7 @@ declare var os_activity_scope_state_s: interop.StructType<os_activity_scope_stat
 /**
  * @since 10.0
  */
-declare function os_log_create(subsystem: string | interop.Pointer | interop.Reference<any>, category: string | interop.Pointer | interop.Reference<any>): NSObject & OS_os_log;
+declare function os_log_create(subsystem: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, category: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_os_log;
 
 /**
  * @since 9.0
@@ -205,7 +205,7 @@ declare function os_signpost_id_generate(log: NSObject & OS_os_log): number;
 /**
  * @since 12.0
  */
-declare function os_signpost_id_make_with_pointer(log: NSObject & OS_os_log, ptr: interop.Pointer | interop.Reference<any>): number;
+declare function os_signpost_id_make_with_pointer(log: NSObject & OS_os_log, ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum os_signpost_type_t {
 

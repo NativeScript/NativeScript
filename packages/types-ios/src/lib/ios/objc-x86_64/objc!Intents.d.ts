@@ -72,13 +72,13 @@ declare class INActivateCarSignalIntent extends INIntent {
 
 	static new(): INActivateCarSignalIntent; // inherited from NSObject
 
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
 	readonly signals: INCarSignalOptions;
 
-	constructor(o: { carName: INSpeakableString; signals: INCarSignalOptions; });
+	constructor(o: { carName: INSpeakableString | null; signals: INCarSignalOptions; });
 
-	initWithCarNameSignals(carName: INSpeakableString, signals: INCarSignalOptions): this;
+	initWithCarNameSignals(carName: INSpeakableString | null, signals: INCarSignalOptions): this;
 }
 
 /**
@@ -112,9 +112,9 @@ declare class INActivateCarSignalIntentResponse extends INIntentResponse {
 
 	signals: INCarSignalOptions;
 
-	constructor(o: { code: INActivateCarSignalIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INActivateCarSignalIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INActivateCarSignalIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INActivateCarSignalIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -144,15 +144,15 @@ declare class INAddMediaIntent extends INIntent {
 
 	static new(): INAddMediaIntent; // inherited from NSObject
 
-	readonly mediaDestination: INMediaDestination;
+	readonly mediaDestination: INMediaDestination | null;
 
-	readonly mediaItems: NSArray<INMediaItem>;
+	readonly mediaItems: NSArray<INMediaItem> | null;
 
-	readonly mediaSearch: INMediaSearch;
+	readonly mediaSearch: INMediaSearch | null;
 
-	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[]; mediaSearch: INMediaSearch; mediaDestination: INMediaDestination; });
+	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[] | null; mediaSearch: INMediaSearch | null; mediaDestination: INMediaDestination | null; });
 
-	initWithMediaItemsMediaSearchMediaDestination(mediaItems: NSArray<INMediaItem> | INMediaItem[], mediaSearch: INMediaSearch, mediaDestination: INMediaDestination): this;
+	initWithMediaItemsMediaSearchMediaDestination(mediaItems: NSArray<INMediaItem> | INMediaItem[] | null, mediaSearch: INMediaSearch | null, mediaDestination: INMediaDestination | null): this;
 }
 
 /**
@@ -184,9 +184,9 @@ declare class INAddMediaIntentResponse extends INIntentResponse {
 
 	readonly code: INAddMediaIntentResponseCode;
 
-	constructor(o: { code: INAddMediaIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INAddMediaIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INAddMediaIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INAddMediaIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -221,7 +221,7 @@ declare class INAddMediaMediaDestinationResolutionResult extends INMediaDestinat
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INAddMediaMediaDestinationResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaDestinationToConfirm(mediaDestinationToConfirm: INMediaDestination): INAddMediaMediaDestinationResolutionResult; // inherited from INMediaDestinationResolutionResult
+	static confirmationRequiredWithMediaDestinationToConfirm(mediaDestinationToConfirm: INMediaDestination | null): INAddMediaMediaDestinationResolutionResult; // inherited from INMediaDestinationResolutionResult
 
 	static disambiguationWithMediaDestinationsToDisambiguate(mediaDestinationsToDisambiguate: NSArray<INMediaDestination> | INMediaDestination[]): INAddMediaMediaDestinationResolutionResult; // inherited from INMediaDestinationResolutionResult
 
@@ -269,7 +269,7 @@ declare class INAddMediaMediaItemResolutionResult extends INMediaItemResolutionR
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INAddMediaMediaItemResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem): INAddMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
+	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem | null): INAddMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
 	static disambiguationWithMediaItemsToDisambiguate(mediaItemsToDisambiguate: NSArray<INMediaItem> | INMediaItem[]): INAddMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
@@ -331,35 +331,35 @@ declare class INAddTasksIntent extends INIntent {
 	 */
 	readonly priority: INTaskPriority;
 
-	readonly spatialEventTrigger: INSpatialEventTrigger;
+	readonly spatialEventTrigger: INSpatialEventTrigger | null;
 
-	readonly targetTaskList: INTaskList;
+	readonly targetTaskList: INTaskList | null;
 
-	readonly taskTitles: NSArray<INSpeakableString>;
+	readonly taskTitles: NSArray<INSpeakableString> | null;
 
-	readonly temporalEventTrigger: INTemporalEventTrigger;
-
-	/**
-	 * @since 11.0
-	 * @deprecated 13.0
-	 */
-	constructor(o: { targetTaskList: INTaskList; taskTitles: NSArray<INSpeakableString> | INSpeakableString[]; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; });
-
-	/**
-	 * @since 13.0
-	 */
-	constructor(o: { targetTaskList: INTaskList; taskTitles: NSArray<INSpeakableString> | INSpeakableString[]; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; priority: INTaskPriority; });
+	readonly temporalEventTrigger: INTemporalEventTrigger | null;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 13.0
 	 */
-	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTrigger(targetTaskList: INTaskList, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger): this;
+	constructor(o: { targetTaskList: INTaskList | null; taskTitles: NSArray<INSpeakableString> | INSpeakableString[] | null; spatialEventTrigger: INSpatialEventTrigger | null; temporalEventTrigger: INTemporalEventTrigger | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTriggerPriority(targetTaskList: INTaskList, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger, priority: INTaskPriority): this;
+	constructor(o: { targetTaskList: INTaskList | null; taskTitles: NSArray<INSpeakableString> | INSpeakableString[] | null; spatialEventTrigger: INSpatialEventTrigger | null; temporalEventTrigger: INTemporalEventTrigger | null; priority: INTaskPriority; });
+
+	/**
+	 * @since 11.0
+	 * @deprecated 13.0
+	 */
+	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTrigger(targetTaskList: INTaskList | null, taskTitles: NSArray<INSpeakableString> | INSpeakableString[] | null, spatialEventTrigger: INSpatialEventTrigger | null, temporalEventTrigger: INTemporalEventTrigger | null): this;
+
+	/**
+	 * @since 13.0
+	 */
+	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTriggerPriority(targetTaskList: INTaskList | null, taskTitles: NSArray<INSpeakableString> | INSpeakableString[] | null, spatialEventTrigger: INSpatialEventTrigger | null, temporalEventTrigger: INTemporalEventTrigger | null, priority: INTaskPriority): this;
 }
 
 /**
@@ -416,15 +416,15 @@ declare class INAddTasksIntentResponse extends INIntentResponse {
 
 	static new(): INAddTasksIntentResponse; // inherited from NSObject
 
-	addedTasks: NSArray<INTask>;
+	addedTasks: NSArray<INTask> | null;
 
 	readonly code: INAddTasksIntentResponseCode;
 
-	modifiedTaskList: INTaskList;
+	modifiedTaskList: INTaskList | null;
 
-	constructor(o: { code: INAddTasksIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INAddTasksIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INAddTasksIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INAddTasksIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -465,9 +465,9 @@ declare class INAddTasksTargetTaskListResolutionResult extends INTaskListResolut
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INAddTasksTargetTaskListResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList): INAddTasksTargetTaskListResolutionResult; // inherited from INTaskListResolutionResult
+	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList | null): INAddTasksTargetTaskListResolutionResult; // inherited from INTaskListResolutionResult
 
-	static confirmationRequiredWithTaskListToConfirmForReason(taskListToConfirm: INTaskList, reason: INAddTasksTargetTaskListConfirmationReason): INAddTasksTargetTaskListResolutionResult;
+	static confirmationRequiredWithTaskListToConfirmForReason(taskListToConfirm: INTaskList | null, reason: INAddTasksTargetTaskListConfirmationReason): INAddTasksTargetTaskListResolutionResult;
 
 	static disambiguationWithTaskListsToDisambiguate(taskListsToDisambiguate: NSArray<INTaskList> | INTaskList[]): INAddTasksTargetTaskListResolutionResult; // inherited from INTaskListResolutionResult
 
@@ -503,7 +503,7 @@ declare class INAddTasksTemporalEventTriggerResolutionResult extends INTemporalE
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INAddTasksTemporalEventTriggerResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger): INAddTasksTemporalEventTriggerResolutionResult; // inherited from INTemporalEventTriggerResolutionResult
+	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger | null): INAddTasksTemporalEventTriggerResolutionResult; // inherited from INTemporalEventTriggerResolutionResult
 
 	static disambiguationWithTemporalEventTriggersToDisambiguate(temporalEventTriggersToDisambiguate: NSArray<INTemporalEventTrigger> | INTemporalEventTrigger[]): INAddTasksTemporalEventTriggerResolutionResult; // inherited from INTemporalEventTriggerResolutionResult
 
@@ -548,25 +548,25 @@ declare class INAirline extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INAirline; // inherited from NSObject
 
-	readonly iataCode: string;
+	readonly iataCode: string | null;
 
-	readonly icaoCode: string;
+	readonly icaoCode: string | null;
 
-	readonly name: string;
+	readonly name: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { name: string; iataCode: string; icaoCode: string; });
+	constructor(o: { name: string | null; iataCode: string | null; icaoCode: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithNameIataCodeIcaoCode(name: string, iataCode: string, icaoCode: string): this;
+	initWithNameIataCodeIcaoCode(name: string | null, iataCode: string | null, icaoCode: string | null): this;
 }
 
 /**
@@ -578,25 +578,25 @@ declare class INAirport extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INAirport; // inherited from NSObject
 
-	readonly iataCode: string;
+	readonly iataCode: string | null;
 
-	readonly icaoCode: string;
+	readonly icaoCode: string | null;
 
-	readonly name: string;
+	readonly name: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { name: string; iataCode: string; icaoCode: string; });
+	constructor(o: { name: string | null; iataCode: string | null; icaoCode: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithNameIataCodeIcaoCode(name: string, iataCode: string, icaoCode: string): this;
+	initWithNameIataCodeIcaoCode(name: string | null, iataCode: string | null, icaoCode: string | null): this;
 }
 
 /**
@@ -610,21 +610,21 @@ declare class INAirportGate extends NSObject implements NSCopying, NSSecureCodin
 
 	readonly airport: INAirport;
 
-	readonly gate: string;
+	readonly gate: string | null;
 
-	readonly terminal: string;
+	readonly terminal: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { airport: INAirport; terminal: string; gate: string; });
+	constructor(o: { airport: INAirport; terminal: string | null; gate: string | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithAirportTerminalGate(airport: INAirport, terminal: string, gate: string): this;
+	initWithAirportTerminalGate(airport: INAirport, terminal: string | null, gate: string | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -660,17 +660,17 @@ declare class INAnswerCallIntent extends INIntent {
 
 	readonly audioRoute: INCallAudioRoute;
 
-	readonly callIdentifier: string;
+	readonly callIdentifier: string | null;
 
 	/**
 	 * @since 16.2
 	 */
-	constructor(o: { audioRoute: INCallAudioRoute; callIdentifier: string; });
+	constructor(o: { audioRoute: INCallAudioRoute; callIdentifier: string | null; });
 
 	/**
 	 * @since 16.2
 	 */
-	initWithAudioRouteCallIdentifier(audioRoute: INCallAudioRoute, callIdentifier: string): this;
+	initWithAudioRouteCallIdentifier(audioRoute: INCallAudioRoute, callIdentifier: string | null): this;
 }
 
 /**
@@ -701,13 +701,13 @@ declare class INAnswerCallIntentResponse extends INIntentResponse {
 
 	static new(): INAnswerCallIntentResponse; // inherited from NSObject
 
-	callRecords: NSArray<INCallRecord>;
+	callRecords: NSArray<INCallRecord> | null;
 
 	readonly code: INAnswerCallIntentResponseCode;
 
-	constructor(o: { code: INAnswerCallIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INAnswerCallIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INAnswerCallIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INAnswerCallIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -740,13 +740,13 @@ declare class INAppendToNoteIntent extends INIntent {
 
 	static new(): INAppendToNoteIntent; // inherited from NSObject
 
-	readonly content: INNoteContent;
+	readonly content: INNoteContent | null;
 
-	readonly targetNote: INNote;
+	readonly targetNote: INNote | null;
 
-	constructor(o: { targetNote: INNote; content: INNoteContent; });
+	constructor(o: { targetNote: INNote | null; content: INNoteContent | null; });
 
-	initWithTargetNoteContent(targetNote: INNote, content: INNoteContent): this;
+	initWithTargetNoteContent(targetNote: INNote | null, content: INNoteContent | null): this;
 }
 
 /**
@@ -780,11 +780,11 @@ declare class INAppendToNoteIntentResponse extends INIntentResponse {
 
 	readonly code: INAppendToNoteIntentResponseCode;
 
-	note: INNote;
+	note: INNote | null;
 
-	constructor(o: { code: INAppendToNoteIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INAppendToNoteIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INAppendToNoteIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INAppendToNoteIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -817,11 +817,11 @@ declare class INBalanceAmount extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): INBalanceAmount; // inherited from NSObject
 
-	readonly amount: NSDecimalNumber;
+	readonly amount: NSDecimalNumber | null;
 
 	readonly balanceType: INBalanceType;
 
-	readonly currencyCode: string;
+	readonly currencyCode: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -831,7 +831,7 @@ declare class INBalanceAmount extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -896,33 +896,33 @@ declare class INBillDetails extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): INBillDetails; // inherited from NSObject
 
-	amountDue: INCurrencyAmount;
+	amountDue: INCurrencyAmount | null;
 
-	billPayee: INBillPayee;
+	billPayee: INBillPayee | null;
 
 	billType: INBillType;
 
-	dueDate: NSDateComponents;
+	dueDate: NSDateComponents | null;
 
-	lateFee: INCurrencyAmount;
+	lateFee: INCurrencyAmount | null;
 
-	minimumDue: INCurrencyAmount;
+	minimumDue: INCurrencyAmount | null;
 
-	paymentDate: NSDateComponents;
+	paymentDate: NSDateComponents | null;
 
 	paymentStatus: INPaymentStatus;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { billType: INBillType; paymentStatus: INPaymentStatus; billPayee: INBillPayee; amountDue: INCurrencyAmount; minimumDue: INCurrencyAmount; lateFee: INCurrencyAmount; dueDate: NSDateComponents; paymentDate: NSDateComponents; });
+	constructor(o: { billType: INBillType; paymentStatus: INPaymentStatus; billPayee: INBillPayee | null; amountDue: INCurrencyAmount | null; minimumDue: INCurrencyAmount | null; lateFee: INCurrencyAmount | null; dueDate: NSDateComponents | null; paymentDate: NSDateComponents | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithBillTypePaymentStatusBillPayeeAmountDueMinimumDueLateFeeDueDatePaymentDate(billType: INBillType, paymentStatus: INPaymentStatus, billPayee: INBillPayee, amountDue: INCurrencyAmount, minimumDue: INCurrencyAmount, lateFee: INCurrencyAmount, dueDate: NSDateComponents, paymentDate: NSDateComponents): this;
+	initWithBillTypePaymentStatusBillPayeeAmountDueMinimumDueLateFeeDueDatePaymentDate(billType: INBillType, paymentStatus: INPaymentStatus, billPayee: INBillPayee | null, amountDue: INCurrencyAmount | null, minimumDue: INCurrencyAmount | null, lateFee: INCurrencyAmount | null, dueDate: NSDateComponents | null, paymentDate: NSDateComponents | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -937,25 +937,25 @@ declare class INBillPayee extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): INBillPayee; // inherited from NSObject
 
-	readonly accountNumber: string;
+	readonly accountNumber: string | null;
 
-	readonly nickname: INSpeakableString;
+	readonly nickname: INSpeakableString | null;
 
-	readonly organizationName: INSpeakableString;
+	readonly organizationName: INSpeakableString | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { nickname: INSpeakableString; number: string; organizationName: INSpeakableString; });
+	constructor(o: { nickname: INSpeakableString; number: string | null; organizationName: INSpeakableString | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithNicknameNumberOrganizationName(nickname: INSpeakableString, number: string, organizationName: INSpeakableString): this;
+	initWithNicknameNumberOrganizationName(nickname: INSpeakableString, number: string | null, organizationName: INSpeakableString | null): this;
 }
 
 /**
@@ -966,7 +966,7 @@ declare class INBillPayeeResolutionResult extends INIntentResolutionResult {
 
 	static alloc(): INBillPayeeResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithBillPayeeToConfirm(billPayeeToConfirm: INBillPayee): INBillPayeeResolutionResult;
+	static confirmationRequiredWithBillPayeeToConfirm(billPayeeToConfirm: INBillPayee | null): INBillPayeeResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -1096,23 +1096,23 @@ declare class INBoatReservation extends INReservation implements NSCopying, NSSe
 
 	static new(): INBoatReservation; // inherited from NSObject
 
-	readonly boatTrip: INBoatTrip;
+	readonly boatTrip: INBoatTrip | null;
 
-	readonly reservedSeat: INSeat;
+	readonly reservedSeat: INSeat | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; reservedSeat: INSeat; boatTrip: INBoatTrip; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; reservedSeat: INSeat | null; boatTrip: INBoatTrip | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatBoatTrip(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservedSeat: INSeat, boatTrip: INBoatTrip): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatBoatTrip(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, reservedSeat: INSeat | null, boatTrip: INBoatTrip | null): this;
 }
 
 /**
@@ -1126,13 +1126,13 @@ declare class INBoatTrip extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly arrivalBoatTerminalLocation: CLPlacemark;
 
-	readonly boatName: string;
+	readonly boatName: string | null;
 
-	readonly boatNumber: string;
+	readonly boatNumber: string | null;
 
 	readonly departureBoatTerminalLocation: CLPlacemark;
 
-	readonly provider: string;
+	readonly provider: string | null;
 
 	readonly tripDuration: INDateComponentsRange;
 
@@ -1140,15 +1140,15 @@ declare class INBoatTrip extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { provider: string; boatName: string; boatNumber: string; tripDuration: INDateComponentsRange; departureBoatTerminalLocation: CLPlacemark; arrivalBoatTerminalLocation: CLPlacemark; });
+	constructor(o: { provider: string | null; boatName: string | null; boatNumber: string | null; tripDuration: INDateComponentsRange; departureBoatTerminalLocation: CLPlacemark; arrivalBoatTerminalLocation: CLPlacemark; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithProviderBoatNameBoatNumberTripDurationDepartureBoatTerminalLocationArrivalBoatTerminalLocation(provider: string, boatName: string, boatNumber: string, tripDuration: INDateComponentsRange, departureBoatTerminalLocation: CLPlacemark, arrivalBoatTerminalLocation: CLPlacemark): this;
+	initWithProviderBoatNameBoatNumberTripDurationDepartureBoatTerminalLocationArrivalBoatTerminalLocation(provider: string | null, boatName: string | null, boatNumber: string | null, tripDuration: INDateComponentsRange, departureBoatTerminalLocation: CLPlacemark, arrivalBoatTerminalLocation: CLPlacemark): this;
 }
 
 /**
@@ -1162,29 +1162,29 @@ declare class INBookRestaurantReservationIntent extends INIntent implements NSCo
 
 	bookingDateComponents: NSDateComponents;
 
-	bookingIdentifier: string;
+	bookingIdentifier: string | null;
 
-	guest: INRestaurantGuest;
+	guest: INRestaurantGuest | null;
 
-	guestProvidedSpecialRequestText: string;
+	guestProvidedSpecialRequestText: string | null;
 
 	partySize: number;
 
 	restaurant: INRestaurant;
 
-	selectedOffer: INRestaurantOffer;
+	selectedOffer: INRestaurantOffer | null;
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { restaurant: INRestaurant; bookingDateComponents: NSDateComponents; partySize: number; bookingIdentifier: string; guest: INRestaurantGuest; selectedOffer: INRestaurantOffer; guestProvidedSpecialRequestText: string; });
+	constructor(o: { restaurant: INRestaurant; bookingDateComponents: NSDateComponents; partySize: number; bookingIdentifier: string | null; guest: INRestaurantGuest | null; selectedOffer: INRestaurantOffer | null; guestProvidedSpecialRequestText: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithRestaurantBookingDateComponentsPartySizeBookingIdentifierGuestSelectedOfferGuestProvidedSpecialRequestText(restaurant: INRestaurant, bookingDateComponents: NSDateComponents, partySize: number, bookingIdentifier: string, guest: INRestaurantGuest, selectedOffer: INRestaurantOffer, guestProvidedSpecialRequestText: string): this;
+	initWithRestaurantBookingDateComponentsPartySizeBookingIdentifierGuestSelectedOfferGuestProvidedSpecialRequestText(restaurant: INRestaurant, bookingDateComponents: NSDateComponents, partySize: number, bookingIdentifier: string | null, guest: INRestaurantGuest | null, selectedOffer: INRestaurantOffer | null, guestProvidedSpecialRequestText: string | null): this;
 }
 
 declare const enum INBookRestaurantReservationIntentCode {
@@ -1237,11 +1237,11 @@ declare class INBookRestaurantReservationIntentResponse extends INIntentResponse
 
 	readonly code: INBookRestaurantReservationIntentCode;
 
-	userBooking: INRestaurantReservationUserBooking;
+	userBooking: INRestaurantReservationUserBooking | null;
 
-	constructor(o: { code: INBookRestaurantReservationIntentCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INBookRestaurantReservationIntentCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INBookRestaurantReservationIntentCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INBookRestaurantReservationIntentCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -1256,7 +1256,7 @@ declare class INBooleanResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INBooleanResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithValueToConfirm(valueToConfirm: number): INBooleanResolutionResult;
+	static confirmationRequiredWithValueToConfirm(valueToConfirm: number | null): INBooleanResolutionResult;
 
 	static needsValue(): INBooleanResolutionResult; // inherited from INIntentResolutionResult
 
@@ -1285,21 +1285,21 @@ declare class INBusReservation extends INReservation implements NSCopying, NSSec
 
 	readonly busTrip: INBusTrip;
 
-	readonly reservedSeat: INSeat;
+	readonly reservedSeat: INSeat | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; reservedSeat: INSeat; busTrip: INBusTrip; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; reservedSeat: INSeat | null; busTrip: INBusTrip | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatBusTrip(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservedSeat: INSeat, busTrip: INBusTrip): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatBusTrip(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, reservedSeat: INSeat | null, busTrip: INBusTrip | null): this;
 }
 
 /**
@@ -1313,17 +1313,17 @@ declare class INBusTrip extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly arrivalBusStopLocation: CLPlacemark;
 
-	readonly arrivalPlatform: string;
+	readonly arrivalPlatform: string | null;
 
-	readonly busName: string;
+	readonly busName: string | null;
 
-	readonly busNumber: string;
+	readonly busNumber: string | null;
 
 	readonly departureBusStopLocation: CLPlacemark;
 
-	readonly departurePlatform: string;
+	readonly departurePlatform: string | null;
 
-	readonly provider: string;
+	readonly provider: string | null;
 
 	readonly tripDuration: INDateComponentsRange;
 
@@ -1331,15 +1331,15 @@ declare class INBusTrip extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { provider: string; busName: string; busNumber: string; tripDuration: INDateComponentsRange; departureBusStopLocation: CLPlacemark; departurePlatform: string; arrivalBusStopLocation: CLPlacemark; arrivalPlatform: string; });
+	constructor(o: { provider: string | null; busName: string | null; busNumber: string | null; tripDuration: INDateComponentsRange; departureBusStopLocation: CLPlacemark; departurePlatform: string | null; arrivalBusStopLocation: CLPlacemark; arrivalPlatform: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithProviderBusNameBusNumberTripDurationDepartureBusStopLocationDeparturePlatformArrivalBusStopLocationArrivalPlatform(provider: string, busName: string, busNumber: string, tripDuration: INDateComponentsRange, departureBusStopLocation: CLPlacemark, departurePlatform: string, arrivalBusStopLocation: CLPlacemark, arrivalPlatform: string): this;
+	initWithProviderBusNameBusNumberTripDurationDepartureBusStopLocationDeparturePlatformArrivalBusStopLocationArrivalPlatform(provider: string | null, busName: string | null, busNumber: string | null, tripDuration: INDateComponentsRange, departureBusStopLocation: CLPlacemark, departurePlatform: string | null, arrivalBusStopLocation: CLPlacemark, arrivalPlatform: string | null): this;
 }
 
 /**
@@ -1471,23 +1471,23 @@ declare class INCallGroup extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): INCallGroup; // inherited from NSObject
 
-	readonly groupId: string;
+	readonly groupId: string | null;
 
-	readonly groupName: string;
+	readonly groupName: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { groupName: string; groupId: string; });
+	constructor(o: { groupName: string | null; groupId: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithGroupNameGroupId(groupName: string, groupId: string): this;
+	initWithGroupNameGroupId(groupName: string | null, groupId: string | null): this;
 }
 
 /**
@@ -1501,7 +1501,7 @@ declare class INCallRecord extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly callCapability: INCallCapability;
 
-	readonly callDuration: number;
+	readonly callDuration: number | null;
 
 	readonly callRecordType: INCallRecordType;
 
@@ -1509,86 +1509,86 @@ declare class INCallRecord extends NSObject implements NSCopying, NSSecureCoding
 	 * @since 11.0
 	 * @deprecated 14.5
 	 */
-	readonly caller: INPerson;
+	readonly caller: INPerson | null;
 
-	readonly dateCreated: Date;
+	readonly dateCreated: Date | null;
 
 	readonly identifier: string;
 
 	/**
 	 * @since 14.5
 	 */
-	readonly isCallerIdBlocked: number;
+	readonly isCallerIdBlocked: number | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly numberOfCalls: number;
+	readonly numberOfCalls: number | null;
 
 	/**
 	 * @since 14.5
 	 */
-	readonly participants: NSArray<INPerson>;
+	readonly participants: NSArray<INPerson> | null;
 
-	readonly unseen: number;
+	readonly unseen: number | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identifier: string; dateCreated: Date; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; });
+	constructor(o: { identifier: string; dateCreated: Date | null; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number | null; unseen: number | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { identifier: string; dateCreated: Date; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; numberOfCalls: number; });
+	constructor(o: { identifier: string; dateCreated: Date | null; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number | null; unseen: number | null; numberOfCalls: number | null; });
 
 	/**
 	 * @since 14.5
 	 */
-	constructor(o: { identifier: string; dateCreated: Date; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; participants: NSArray<INPerson> | INPerson[]; numberOfCalls: number; isCallerIdBlocked: number; });
+	constructor(o: { identifier: string; dateCreated: Date | null; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number | null; unseen: number | null; participants: NSArray<INPerson> | INPerson[] | null; numberOfCalls: number | null; isCallerIdBlocked: number | null; });
 
 	/**
 	 * @since 11.0
 	 * @deprecated 14.5
 	 */
-	constructor(o: { identifier: string; dateCreated: Date; caller: INPerson; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; });
+	constructor(o: { identifier: string; dateCreated: Date | null; caller: INPerson | null; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number | null; unseen: number | null; });
 
 	/**
 	 * @since 13.0
 	 * @deprecated 14.5
 	 */
-	constructor(o: { identifier: string; dateCreated: Date; caller: INPerson; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; numberOfCalls: number; });
+	constructor(o: { identifier: string; dateCreated: Date | null; caller: INPerson | null; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number | null; unseen: number | null; numberOfCalls: number | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseen(identifier: string, dateCreated: Date, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number): this;
+	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseen(identifier: string, dateCreated: Date | null, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number | null, unseen: number | null): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseenNumberOfCalls(identifier: string, dateCreated: Date, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number, numberOfCalls: number): this;
+	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseenNumberOfCalls(identifier: string, dateCreated: Date | null, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number | null, unseen: number | null, numberOfCalls: number | null): this;
 
 	/**
 	 * @since 14.5
 	 */
-	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseenParticipantsNumberOfCallsIsCallerIdBlocked(identifier: string, dateCreated: Date, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number, participants: NSArray<INPerson> | INPerson[], numberOfCalls: number, isCallerIdBlocked: number): this;
+	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseenParticipantsNumberOfCallsIsCallerIdBlocked(identifier: string, dateCreated: Date | null, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number | null, unseen: number | null, participants: NSArray<INPerson> | INPerson[] | null, numberOfCalls: number | null, isCallerIdBlocked: number | null): this;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 14.5
 	 */
-	initWithIdentifierDateCreatedCallerCallRecordTypeCallCapabilityCallDurationUnseen(identifier: string, dateCreated: Date, caller: INPerson, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number): this;
+	initWithIdentifierDateCreatedCallerCallRecordTypeCallCapabilityCallDurationUnseen(identifier: string, dateCreated: Date | null, caller: INPerson | null, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number | null, unseen: number | null): this;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 14.5
 	 */
-	initWithIdentifierDateCreatedCallerCallRecordTypeCallCapabilityCallDurationUnseenNumberOfCalls(identifier: string, dateCreated: Date, caller: INPerson, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number, numberOfCalls: number): this;
+	initWithIdentifierDateCreatedCallerCallRecordTypeCallCapabilityCallDurationUnseenNumberOfCalls(identifier: string, dateCreated: Date | null, caller: INPerson | null, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number | null, unseen: number | null, numberOfCalls: number | null): this;
 }
 
 /**
@@ -1604,21 +1604,21 @@ declare class INCallRecordFilter extends NSObject implements NSCopying, NSSecure
 
 	readonly callTypes: INCallRecordTypeOptions;
 
-	readonly participants: NSArray<INPerson>;
+	readonly participants: NSArray<INPerson> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { participants: NSArray<INPerson> | INPerson[]; callTypes: INCallRecordTypeOptions; callCapability: INCallCapability; });
+	constructor(o: { participants: NSArray<INPerson> | INPerson[] | null; callTypes: INCallRecordTypeOptions; callCapability: INCallCapability; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithParticipantsCallTypesCallCapability(participants: NSArray<INPerson> | INPerson[], callTypes: INCallRecordTypeOptions, callCapability: INCallCapability): this;
+	initWithParticipantsCallTypesCallCapability(participants: NSArray<INPerson> | INPerson[] | null, callTypes: INCallRecordTypeOptions, callCapability: INCallCapability): this;
 }
 
 /**
@@ -1628,7 +1628,7 @@ declare class INCallRecordResolutionResult extends INIntentResolutionResult {
 
 	static alloc(): INCallRecordResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithCallRecordToConfirm(callRecordToConfirm: INCallRecord): INCallRecordResolutionResult;
+	static confirmationRequiredWithCallRecordToConfirm(callRecordToConfirm: INCallRecord | null): INCallRecordResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -1809,15 +1809,15 @@ declare class INCancelRideIntentResponse extends INIntentResponse {
 
 	static new(): INCancelRideIntentResponse; // inherited from NSObject
 
-	cancellationFee: INCurrencyAmount;
+	cancellationFee: INCurrencyAmount | null;
 
-	cancellationFeeThreshold: NSDateComponents;
+	cancellationFeeThreshold: NSDateComponents | null;
 
 	readonly code: INCancelRideIntentResponseCode;
 
-	constructor(o: { code: INCancelRideIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INCancelRideIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INCancelRideIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INCancelRideIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -1843,11 +1843,11 @@ declare class INCancelWorkoutIntent extends INIntent {
 
 	static new(): INCancelWorkoutIntent; // inherited from NSObject
 
-	readonly workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString | null;
 
-	constructor(o: { workoutName: INSpeakableString; });
+	constructor(o: { workoutName: INSpeakableString | null; });
 
-	initWithWorkoutName(workoutName: INSpeakableString): this;
+	initWithWorkoutName(workoutName: INSpeakableString | null): this;
 }
 
 /**
@@ -1882,9 +1882,9 @@ declare class INCancelWorkoutIntentResponse extends INIntentResponse {
 
 	readonly code: INCancelWorkoutIntentResponseCode;
 
-	constructor(o: { code: INCancelWorkoutIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INCancelWorkoutIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INCancelWorkoutIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INCancelWorkoutIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -1920,35 +1920,35 @@ declare class INCar extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly carIdentifier: string;
 
-	readonly color: any;
+	readonly color: any | null;
 
-	readonly displayName: string;
+	readonly displayName: string | null;
 
-	readonly headUnit: INCarHeadUnit;
+	readonly headUnit: INCarHeadUnit | null;
 
-	readonly make: string;
+	readonly make: string | null;
 
-	readonly model: string;
+	readonly model: string | null;
 
 	readonly supportedChargingConnectors: NSArray<string>;
 
-	readonly year: string;
+	readonly year: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { carIdentifier: string; displayName: string; year: string; make: string; model: string; color: any; headUnit: INCarHeadUnit; supportedChargingConnectors: NSArray<string> | string[]; });
+	constructor(o: { carIdentifier: string; displayName: string | null; year: string | null; make: string | null; model: string | null; color: any | null; headUnit: INCarHeadUnit | null; supportedChargingConnectors: NSArray<string> | string[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCarIdentifierDisplayNameYearMakeModelColorHeadUnitSupportedChargingConnectors(carIdentifier: string, displayName: string, year: string, make: string, model: string, color: any, headUnit: INCarHeadUnit, supportedChargingConnectors: NSArray<string> | string[]): this;
+	initWithCarIdentifierDisplayNameYearMakeModelColorHeadUnitSupportedChargingConnectors(carIdentifier: string, displayName: string | null, year: string | null, make: string | null, model: string | null, color: any | null, headUnit: INCarHeadUnit | null, supportedChargingConnectors: NSArray<string> | string[]): this;
 
 	initWithCoder(coder: NSCoder): this;
 
-	maximumPowerForChargingConnectorType(chargingConnectorType: string): NSMeasurement<NSUnitPower>;
+	maximumPowerForChargingConnectorType(chargingConnectorType: string): NSMeasurement<NSUnitPower> | null;
 
 	setMaximumPowerForChargingConnectorType(power: NSMeasurement<NSUnitPower>, chargingConnectorType: string): void;
 }
@@ -2208,21 +2208,21 @@ declare class INCarHeadUnit extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): INCarHeadUnit; // inherited from NSObject
 
-	readonly bluetoothIdentifier: string;
+	readonly bluetoothIdentifier: string | null;
 
-	readonly iAP2Identifier: string;
+	readonly iAP2Identifier: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { bluetoothIdentifier: string; iAP2Identifier: string; });
+	constructor(o: { bluetoothIdentifier: string | null; iAP2Identifier: string | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithBluetoothIdentifierIAP2Identifier(bluetoothIdentifier: string, iAP2Identifier: string): this;
+	initWithBluetoothIdentifierIAP2Identifier(bluetoothIdentifier: string | null, iAP2Identifier: string | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -2387,15 +2387,15 @@ declare class INCreateNoteIntent extends INIntent {
 
 	static new(): INCreateNoteIntent; // inherited from NSObject
 
-	readonly content: INNoteContent;
+	readonly content: INNoteContent | null;
 
-	readonly groupName: INSpeakableString;
+	readonly groupName: INSpeakableString | null;
 
-	readonly title: INSpeakableString;
+	readonly title: INSpeakableString | null;
 
-	constructor(o: { title: INSpeakableString; content: INNoteContent; groupName: INSpeakableString; });
+	constructor(o: { title: INSpeakableString | null; content: INNoteContent | null; groupName: INSpeakableString | null; });
 
-	initWithTitleContentGroupName(title: INSpeakableString, content: INNoteContent, groupName: INSpeakableString): this;
+	initWithTitleContentGroupName(title: INSpeakableString | null, content: INNoteContent | null, groupName: INSpeakableString | null): this;
 }
 
 /**
@@ -2429,11 +2429,11 @@ declare class INCreateNoteIntentResponse extends INIntentResponse {
 
 	readonly code: INCreateNoteIntentResponseCode;
 
-	createdNote: INNote;
+	createdNote: INNote | null;
 
-	constructor(o: { code: INCreateNoteIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INCreateNoteIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INCreateNoteIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INCreateNoteIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -2464,15 +2464,15 @@ declare class INCreateTaskListIntent extends INIntent {
 
 	static new(): INCreateTaskListIntent; // inherited from NSObject
 
-	readonly groupName: INSpeakableString;
+	readonly groupName: INSpeakableString | null;
 
-	readonly taskTitles: NSArray<INSpeakableString>;
+	readonly taskTitles: NSArray<INSpeakableString> | null;
 
-	readonly title: INSpeakableString;
+	readonly title: INSpeakableString | null;
 
-	constructor(o: { title: INSpeakableString; taskTitles: NSArray<INSpeakableString> | INSpeakableString[]; groupName: INSpeakableString; });
+	constructor(o: { title: INSpeakableString | null; taskTitles: NSArray<INSpeakableString> | INSpeakableString[] | null; groupName: INSpeakableString | null; });
 
-	initWithTitleTaskTitlesGroupName(title: INSpeakableString, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], groupName: INSpeakableString): this;
+	initWithTitleTaskTitlesGroupName(title: INSpeakableString | null, taskTitles: NSArray<INSpeakableString> | INSpeakableString[] | null, groupName: INSpeakableString | null): this;
 }
 
 /**
@@ -2508,11 +2508,11 @@ declare class INCreateTaskListIntentResponse extends INIntentResponse {
 
 	readonly code: INCreateTaskListIntentResponseCode;
 
-	createdTaskList: INTaskList;
+	createdTaskList: INTaskList | null;
 
-	constructor(o: { code: INCreateTaskListIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INCreateTaskListIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INCreateTaskListIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INCreateTaskListIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -2543,9 +2543,9 @@ declare class INCurrencyAmount extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): INCurrencyAmount; // inherited from NSObject
 
-	readonly amount: NSDecimalNumber;
+	readonly amount: NSDecimalNumber | null;
 
-	readonly currencyCode: string;
+	readonly currencyCode: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2553,7 +2553,7 @@ declare class INCurrencyAmount extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2569,7 +2569,7 @@ declare class INCurrencyAmountResolutionResult extends INIntentResolutionResult 
 
 	static alloc(): INCurrencyAmountResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount): INCurrencyAmountResolutionResult;
+	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount | null): INCurrencyAmountResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -2645,14 +2645,14 @@ declare class INDateComponentsRange extends NSObject implements NSCopying, NSSec
 
 	static new(): INDateComponentsRange; // inherited from NSObject
 
-	readonly endDateComponents: NSDateComponents;
+	readonly endDateComponents: NSDateComponents | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly recurrenceRule: INRecurrenceRule;
+	readonly recurrenceRule: INRecurrenceRule | null;
 
-	readonly startDateComponents: NSDateComponents;
+	readonly startDateComponents: NSDateComponents | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2663,19 +2663,19 @@ declare class INDateComponentsRange extends NSObject implements NSCopying, NSSec
 	 */
 	constructor(o: { EKRecurrenceRule: EKRecurrenceRule; });
 
-	constructor(o: { startDateComponents: NSDateComponents; endDateComponents: NSDateComponents; });
+	constructor(o: { startDateComponents: NSDateComponents | null; endDateComponents: NSDateComponents | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { startDateComponents: NSDateComponents; endDateComponents: NSDateComponents; recurrenceRule: INRecurrenceRule; });
+	constructor(o: { startDateComponents: NSDateComponents | null; endDateComponents: NSDateComponents | null; recurrenceRule: INRecurrenceRule | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	EKRecurrenceRule(): EKRecurrenceRule;
+	EKRecurrenceRule(): EKRecurrenceRule | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2686,12 +2686,12 @@ declare class INDateComponentsRange extends NSObject implements NSCopying, NSSec
 	 */
 	initWithEKRecurrenceRule(recurrenceRule: EKRecurrenceRule): this;
 
-	initWithStartDateComponentsEndDateComponents(startDateComponents: NSDateComponents, endDateComponents: NSDateComponents): this;
+	initWithStartDateComponentsEndDateComponents(startDateComponents: NSDateComponents | null, endDateComponents: NSDateComponents | null): this;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithStartDateComponentsEndDateComponentsRecurrenceRule(startDateComponents: NSDateComponents, endDateComponents: NSDateComponents, recurrenceRule: INRecurrenceRule): this;
+	initWithStartDateComponentsEndDateComponentsRecurrenceRule(startDateComponents: NSDateComponents | null, endDateComponents: NSDateComponents | null, recurrenceRule: INRecurrenceRule | null): this;
 }
 
 /**
@@ -2701,7 +2701,7 @@ declare class INDateComponentsRangeResolutionResult extends INIntentResolutionRe
 
 	static alloc(): INDateComponentsRangeResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithDateComponentsRangeToConfirm(dateComponentsRangeToConfirm: INDateComponentsRange): INDateComponentsRangeResolutionResult;
+	static confirmationRequiredWithDateComponentsRangeToConfirm(dateComponentsRangeToConfirm: INDateComponentsRange | null): INDateComponentsRangeResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -2733,7 +2733,7 @@ declare class INDateComponentsResolutionResult extends INIntentResolutionResult 
 
 	static alloc(): INDateComponentsResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithDateComponentsToConfirm(dateComponentsToConfirm: NSDateComponents): INDateComponentsResolutionResult;
+	static confirmationRequiredWithDateComponentsToConfirm(dateComponentsToConfirm: NSDateComponents | null): INDateComponentsResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -2767,13 +2767,13 @@ declare class INDateRelevanceProvider extends INRelevanceProvider {
 
 	static new(): INDateRelevanceProvider; // inherited from NSObject
 
-	readonly endDate: Date;
+	readonly endDate: Date | null;
 
 	readonly startDate: Date;
 
-	constructor(o: { startDate: Date; endDate: Date; });
+	constructor(o: { startDate: Date; endDate: Date | null; });
 
-	initWithStartDateEndDate(startDate: Date, endDate: Date): this;
+	initWithStartDateEndDate(startDate: Date, endDate: Date | null): this;
 }
 
 /**
@@ -2849,9 +2849,9 @@ declare class INDefaultCardTemplate extends NSObject implements NSCopying, NSSec
 
 	static new(): INDefaultCardTemplate; // inherited from NSObject
 
-	image: INImage;
+	image: INImage | null;
 
-	subtitle: string;
+	subtitle: string | null;
 
 	title: string;
 
@@ -2861,7 +2861,7 @@ declare class INDefaultCardTemplate extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { title: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2880,15 +2880,15 @@ declare class INDeleteTasksIntent extends INIntent {
 
 	static new(): INDeleteTasksIntent; // inherited from NSObject
 
-	readonly all: number;
+	readonly all: number | null;
 
-	readonly taskList: INTaskList;
+	readonly taskList: INTaskList | null;
 
-	readonly tasks: NSArray<INTask>;
+	readonly tasks: NSArray<INTask> | null;
 
-	constructor(o: { taskList: INTaskList; tasks: NSArray<INTask> | INTask[]; all: number; });
+	constructor(o: { taskList: INTaskList | null; tasks: NSArray<INTask> | INTask[] | null; all: number | null; });
 
-	initWithTaskListTasksAll(taskList: INTaskList, tasks: NSArray<INTask> | INTask[], all: number): this;
+	initWithTaskListTasksAll(taskList: INTaskList | null, tasks: NSArray<INTask> | INTask[] | null, all: number | null): this;
 }
 
 /**
@@ -2922,11 +2922,11 @@ declare class INDeleteTasksIntentResponse extends INIntentResponse {
 
 	readonly code: INDeleteTasksIntentResponseCode;
 
-	deletedTasks: NSArray<INTask>;
+	deletedTasks: NSArray<INTask> | null;
 
-	constructor(o: { code: INDeleteTasksIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INDeleteTasksIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INDeleteTasksIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INDeleteTasksIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -2961,7 +2961,7 @@ declare class INDeleteTasksTaskListResolutionResult extends INTaskListResolution
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INDeleteTasksTaskListResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList): INDeleteTasksTaskListResolutionResult; // inherited from INTaskListResolutionResult
+	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList | null): INDeleteTasksTaskListResolutionResult; // inherited from INTaskListResolutionResult
 
 	static disambiguationWithTaskListsToDisambiguate(taskListsToDisambiguate: NSArray<INTaskList> | INTaskList[]): INDeleteTasksTaskListResolutionResult; // inherited from INTaskListResolutionResult
 
@@ -3009,7 +3009,7 @@ declare class INDeleteTasksTaskResolutionResult extends INTaskResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INDeleteTasksTaskResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask): INDeleteTasksTaskResolutionResult; // inherited from INTaskResolutionResult
+	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask | null): INDeleteTasksTaskResolutionResult; // inherited from INTaskResolutionResult
 
 	static disambiguationWithTasksToDisambiguate(tasksToDisambiguate: NSArray<INTask> | INTask[]): INDeleteTasksTaskResolutionResult; // inherited from INTaskResolutionResult
 
@@ -3058,7 +3058,7 @@ declare class INDoubleResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INDoubleResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithValueToConfirm(valueToConfirm: number): INDoubleResolutionResult;
+	static confirmationRequiredWithValueToConfirm(valueToConfirm: number | null): INDoubleResolutionResult;
 
 	static needsValue(): INDoubleResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3085,13 +3085,13 @@ declare class INEditMessageIntent extends INIntent {
 
 	static new(): INEditMessageIntent; // inherited from NSObject
 
-	readonly editedContent: string;
+	readonly editedContent: string | null;
 
-	readonly messageIdentifier: string;
+	readonly messageIdentifier: string | null;
 
-	constructor(o: { messageIdentifier: string; editedContent: string; });
+	constructor(o: { messageIdentifier: string | null; editedContent: string | null; });
 
-	initWithMessageIdentifierEditedContent(messageIdentifier: string, editedContent: string): this;
+	initWithMessageIdentifierEditedContent(messageIdentifier: string | null, editedContent: string | null): this;
 }
 
 /**
@@ -3121,9 +3121,9 @@ declare class INEditMessageIntentResponse extends INIntentResponse {
 
 	readonly code: INEditMessageIntentResponseCode;
 
-	constructor(o: { code: INEditMessageIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INEditMessageIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INEditMessageIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INEditMessageIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -3165,11 +3165,11 @@ declare class INEndWorkoutIntent extends INIntent {
 
 	static new(): INEndWorkoutIntent; // inherited from NSObject
 
-	readonly workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString | null;
 
-	constructor(o: { workoutName: INSpeakableString; });
+	constructor(o: { workoutName: INSpeakableString | null; });
 
-	initWithWorkoutName(workoutName: INSpeakableString): this;
+	initWithWorkoutName(workoutName: INSpeakableString | null): this;
 }
 
 /**
@@ -3204,9 +3204,9 @@ declare class INEndWorkoutIntentResponse extends INIntentResponse {
 
 	readonly code: INEndWorkoutIntentResponseCode;
 
-	constructor(o: { code: INEndWorkoutIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INEndWorkoutIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INEndWorkoutIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INEndWorkoutIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -3238,7 +3238,7 @@ declare class INEnergyResolutionResult extends INIntentResolutionResult {
 
 	static alloc(): INEnergyResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithEnergyToConfirm(energyToConfirm: NSMeasurement<NSUnitEnergy>): INEnergyResolutionResult;
+	static confirmationRequiredWithEnergyToConfirm(energyToConfirm: NSMeasurement<NSUnitEnergy> | null): INEnergyResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -3318,7 +3318,7 @@ declare class INExtension extends NSObject implements INIntentHandlerProviding {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	handlerForIntent(intent: INIntent): any;
+	handlerForIntent(intent: INIntent): any | null;
 
 	isEqual(object: any): boolean;
 
@@ -3346,15 +3346,15 @@ declare class INFile extends NSObject implements NSSecureCoding {
 
 	static alloc(): INFile; // inherited from NSObject
 
-	static fileWithDataFilenameTypeIdentifier(data: NSData, filename: string, typeIdentifier: string): INFile;
+	static fileWithDataFilenameTypeIdentifier(data: NSData, filename: string, typeIdentifier: string | null): INFile;
 
-	static fileWithFileURLFilenameTypeIdentifier(fileURL: NSURL, filename: string, typeIdentifier: string): INFile;
+	static fileWithFileURLFilenameTypeIdentifier(fileURL: NSURL, filename: string | null, typeIdentifier: string | null): INFile;
 
 	static new(): INFile; // inherited from NSObject
 
 	readonly data: NSData;
 
-	readonly fileURL: NSURL;
+	readonly fileURL: NSURL | null;
 
 	filename: string;
 
@@ -3363,7 +3363,7 @@ declare class INFile extends NSObject implements NSSecureCoding {
 	 */
 	removedOnCompletion: boolean;
 
-	readonly typeIdentifier: string;
+	readonly typeIdentifier: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -3381,7 +3381,7 @@ declare class INFileResolutionResult extends INIntentResolutionResult {
 
 	static alloc(): INFileResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithFileToConfirm(fileToConfirm: INFile): INFileResolutionResult;
+	static confirmationRequiredWithFileToConfirm(fileToConfirm: INFile | null): INFileResolutionResult;
 
 	/**
 	 * @since 13.0
@@ -3419,7 +3419,7 @@ declare class INFlight extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly arrivalAirportGate: INAirportGate;
 
-	readonly boardingTime: INDateComponentsRange;
+	readonly boardingTime: INDateComponentsRange | null;
 
 	readonly departureAirportGate: INAirportGate;
 
@@ -3429,15 +3429,15 @@ declare class INFlight extends NSObject implements NSCopying, NSSecureCoding {
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { airline: INAirline; flightNumber: string; boardingTime: INDateComponentsRange; flightDuration: INDateComponentsRange; departureAirportGate: INAirportGate; arrivalAirportGate: INAirportGate; });
+	constructor(o: { airline: INAirline; flightNumber: string; boardingTime: INDateComponentsRange | null; flightDuration: INDateComponentsRange; departureAirportGate: INAirportGate; arrivalAirportGate: INAirportGate; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithAirlineFlightNumberBoardingTimeFlightDurationDepartureAirportGateArrivalAirportGate(airline: INAirline, flightNumber: string, boardingTime: INDateComponentsRange, flightDuration: INDateComponentsRange, departureAirportGate: INAirportGate, arrivalAirportGate: INAirportGate): this;
+	initWithAirlineFlightNumberBoardingTimeFlightDurationDepartureAirportGateArrivalAirportGate(airline: INAirline, flightNumber: string, boardingTime: INDateComponentsRange | null, flightDuration: INDateComponentsRange, departureAirportGate: INAirportGate, arrivalAirportGate: INAirportGate): this;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -3453,31 +3453,31 @@ declare class INFlightReservation extends INReservation implements NSCopying, NS
 
 	readonly flight: INFlight;
 
-	readonly reservedSeat: INSeat;
+	readonly reservedSeat: INSeat | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; reservedSeat: INSeat; flight: INFlight; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; reservedSeat: INSeat | null; flight: INFlight; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; reservedSeat: INSeat; flight: INFlight; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; reservedSeat: INSeat | null; flight: INFlight; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatFlight(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], reservedSeat: INSeat, flight: INFlight): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatFlight(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, reservedSeat: INSeat | null, flight: INFlight): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatFlight(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservedSeat: INSeat, flight: INFlight): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatFlight(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, reservedSeat: INSeat | null, flight: INFlight): this;
 }
 
 /**
@@ -3489,21 +3489,21 @@ declare class INFocusStatus extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): INFocusStatus; // inherited from NSObject
 
-	readonly isFocused: number;
+	readonly isFocused: number | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { isFocused: number; });
+	constructor(o: { isFocused: number | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIsFocused(isFocused: number): this;
+	initWithIsFocused(isFocused: number | null): this;
 }
 
 /**
@@ -3535,7 +3535,7 @@ declare class INFocusStatusCenter extends NSObject {
 
 	static readonly defaultCenter: INFocusStatusCenter;
 
-	requestAuthorizationWithCompletionHandler(completionHandler: (p1: INFocusStatusAuthorizationStatus) => void): void;
+	requestAuthorizationWithCompletionHandler(completionHandler: (p1: INFocusStatusAuthorizationStatus) => void | null): void;
 }
 
 /**
@@ -3547,17 +3547,17 @@ declare class INGetAvailableRestaurantReservationBookingDefaultsIntent extends I
 
 	static new(): INGetAvailableRestaurantReservationBookingDefaultsIntent; // inherited from NSObject
 
-	restaurant: INRestaurant;
+	restaurant: INRestaurant | null;
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { restaurant: INRestaurant; });
+	constructor(o: { restaurant: INRestaurant | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	initWithRestaurant(restaurant: INRestaurant): this;
+	initWithRestaurant(restaurant: INRestaurant | null): this;
 }
 
 /**
@@ -3591,15 +3591,15 @@ declare class INGetAvailableRestaurantReservationBookingDefaultsIntentResponse e
 
 	readonly defaultPartySize: number;
 
-	maximumPartySize: number;
+	maximumPartySize: number | null;
 
-	minimumPartySize: number;
+	minimumPartySize: number | null;
 
 	providerImage: INImage;
 
-	constructor(o: { defaultPartySize: number; defaultBookingDate: Date; code: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { defaultPartySize: number; defaultBookingDate: Date; code: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithDefaultPartySizeDefaultBookingDateCodeUserActivity(defaultPartySize: number, defaultBookingDate: Date, code: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithDefaultPartySizeDefaultBookingDateCodeUserActivity(defaultPartySize: number, defaultBookingDate: Date, code: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 declare const enum INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode {
@@ -3620,29 +3620,29 @@ declare class INGetAvailableRestaurantReservationBookingsIntent extends INIntent
 
 	static new(): INGetAvailableRestaurantReservationBookingsIntent; // inherited from NSObject
 
-	earliestBookingDateForResults: Date;
+	earliestBookingDateForResults: Date | null;
 
-	latestBookingDateForResults: Date;
+	latestBookingDateForResults: Date | null;
 
-	maximumNumberOfResults: number;
+	maximumNumberOfResults: number | null;
 
 	partySize: number;
 
-	preferredBookingDateComponents: NSDateComponents;
+	preferredBookingDateComponents: NSDateComponents | null;
 
 	restaurant: INRestaurant;
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { restaurant: INRestaurant; partySize: number; preferredBookingDateComponents: NSDateComponents; maximumNumberOfResults: number; earliestBookingDateForResults: Date; latestBookingDateForResults: Date; });
+	constructor(o: { restaurant: INRestaurant; partySize: number; preferredBookingDateComponents: NSDateComponents | null; maximumNumberOfResults: number | null; earliestBookingDateForResults: Date | null; latestBookingDateForResults: Date | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithRestaurantPartySizePreferredBookingDateComponentsMaximumNumberOfResultsEarliestBookingDateForResultsLatestBookingDateForResults(restaurant: INRestaurant, partySize: number, preferredBookingDateComponents: NSDateComponents, maximumNumberOfResults: number, earliestBookingDateForResults: Date, latestBookingDateForResults: Date): this;
+	initWithRestaurantPartySizePreferredBookingDateComponentsMaximumNumberOfResultsEarliestBookingDateForResultsLatestBookingDateForResults(restaurant: INRestaurant, partySize: number, preferredBookingDateComponents: NSDateComponents | null, maximumNumberOfResults: number | null, earliestBookingDateForResults: Date | null, latestBookingDateForResults: Date | null): this;
 }
 
 declare const enum INGetAvailableRestaurantReservationBookingsIntentCode {
@@ -3689,15 +3689,15 @@ declare class INGetAvailableRestaurantReservationBookingsIntentResponse extends 
 
 	readonly code: INGetAvailableRestaurantReservationBookingsIntentCode;
 
-	localizedBookingAdvisementText: string;
+	localizedBookingAdvisementText: string | null;
 
-	localizedRestaurantDescriptionText: string;
+	localizedRestaurantDescriptionText: string | null;
 
-	termsAndConditions: INTermsAndConditions;
+	termsAndConditions: INTermsAndConditions | null;
 
-	constructor(o: { availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[]; code: INGetAvailableRestaurantReservationBookingsIntentCode; userActivity: NSUserActivity; });
+	constructor(o: { availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[]; code: INGetAvailableRestaurantReservationBookingsIntentCode; userActivity: NSUserActivity | null; });
 
-	initWithAvailableBookingsCodeUserActivity(availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[], code: INGetAvailableRestaurantReservationBookingsIntentCode, userActivity: NSUserActivity): this;
+	initWithAvailableBookingsCodeUserActivity(availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[], code: INGetAvailableRestaurantReservationBookingsIntentCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -3709,11 +3709,11 @@ declare class INGetCarLockStatusIntent extends INIntent {
 
 	static new(): INGetCarLockStatusIntent; // inherited from NSObject
 
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
-	constructor(o: { carName: INSpeakableString; });
+	constructor(o: { carName: INSpeakableString | null; });
 
-	initWithCarName(carName: INSpeakableString): this;
+	initWithCarName(carName: INSpeakableString | null): this;
 }
 
 /**
@@ -3743,11 +3743,11 @@ declare class INGetCarLockStatusIntentResponse extends INIntentResponse {
 
 	readonly code: INGetCarLockStatusIntentResponseCode;
 
-	locked: number;
+	locked: number | null;
 
-	constructor(o: { code: INGetCarLockStatusIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INGetCarLockStatusIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INGetCarLockStatusIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INGetCarLockStatusIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -3777,11 +3777,11 @@ declare class INGetCarPowerLevelStatusIntent extends INIntent {
 
 	static new(): INGetCarPowerLevelStatusIntent; // inherited from NSObject
 
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
-	constructor(o: { carName: INSpeakableString; });
+	constructor(o: { carName: INSpeakableString | null; });
 
-	initWithCarName(carName: INSpeakableString): this;
+	initWithCarName(carName: INSpeakableString | null): this;
 }
 
 /**
@@ -3822,89 +3822,89 @@ declare class INGetCarPowerLevelStatusIntentResponse extends INIntentResponse {
 	/**
 	 * @since 14.0
 	 */
-	activeConnector: string;
+	activeConnector: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	carIdentifier: string;
+	carIdentifier: string | null;
 
-	chargePercentRemaining: number;
+	chargePercentRemaining: number | null;
 
 	/**
 	 * @since 12.0
 	 */
-	charging: number;
+	charging: number | null;
 
 	/**
 	 * @since 14.0
 	 */
-	chargingFormulaArguments: NSDictionary<string, any>;
+	chargingFormulaArguments: NSDictionary<string, any> | null;
 
 	readonly code: INGetCarPowerLevelStatusIntentResponseCode;
 
 	/**
 	 * @since 14.0
 	 */
-	consumptionFormulaArguments: NSDictionary<string, any>;
+	consumptionFormulaArguments: NSDictionary<string, any> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	currentBatteryCapacity: NSMeasurement<NSUnitEnergy>;
+	currentBatteryCapacity: NSMeasurement<NSUnitEnergy> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	dateOfLastStateUpdate: NSDateComponents;
+	dateOfLastStateUpdate: NSDateComponents | null;
 
-	distanceRemaining: NSMeasurement<NSUnitLength>;
-
-	/**
-	 * @since 14.0
-	 */
-	distanceRemainingElectric: NSMeasurement<NSUnitLength>;
+	distanceRemaining: NSMeasurement<NSUnitLength> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	distanceRemainingFuel: NSMeasurement<NSUnitLength>;
-
-	fuelPercentRemaining: number;
+	distanceRemainingElectric: NSMeasurement<NSUnitLength> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	maximumBatteryCapacity: NSMeasurement<NSUnitEnergy>;
+	distanceRemainingFuel: NSMeasurement<NSUnitLength> | null;
+
+	fuelPercentRemaining: number | null;
 
 	/**
 	 * @since 14.0
 	 */
-	maximumDistance: NSMeasurement<NSUnitLength>;
+	maximumBatteryCapacity: NSMeasurement<NSUnitEnergy> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	maximumDistanceElectric: NSMeasurement<NSUnitLength>;
+	maximumDistance: NSMeasurement<NSUnitLength> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	maximumDistanceFuel: NSMeasurement<NSUnitLength>;
+	maximumDistanceElectric: NSMeasurement<NSUnitLength> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	minimumBatteryCapacity: NSMeasurement<NSUnitEnergy>;
+	maximumDistanceFuel: NSMeasurement<NSUnitLength> | null;
+
+	/**
+	 * @since 14.0
+	 */
+	minimumBatteryCapacity: NSMeasurement<NSUnitEnergy> | null;
 
 	/**
 	 * @since 12.0
 	 */
-	minutesToFull: number;
+	minutesToFull: number | null;
 
-	constructor(o: { code: INGetCarPowerLevelStatusIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INGetCarPowerLevelStatusIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INGetCarPowerLevelStatusIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INGetCarPowerLevelStatusIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -3946,13 +3946,13 @@ declare class INGetReservationDetailsIntent extends INIntent {
 
 	static new(): INGetReservationDetailsIntent; // inherited from NSObject
 
-	readonly reservationContainerReference: INSpeakableString;
+	readonly reservationContainerReference: INSpeakableString | null;
 
-	readonly reservationItemReferences: NSArray<INSpeakableString>;
+	readonly reservationItemReferences: NSArray<INSpeakableString> | null;
 
-	constructor(o: { reservationContainerReference: INSpeakableString; reservationItemReferences: NSArray<INSpeakableString> | INSpeakableString[]; });
+	constructor(o: { reservationContainerReference: INSpeakableString | null; reservationItemReferences: NSArray<INSpeakableString> | INSpeakableString[] | null; });
 
-	initWithReservationContainerReferenceReservationItemReferences(reservationContainerReference: INSpeakableString, reservationItemReferences: NSArray<INSpeakableString> | INSpeakableString[]): this;
+	initWithReservationContainerReferenceReservationItemReferences(reservationContainerReference: INSpeakableString | null, reservationItemReferences: NSArray<INSpeakableString> | INSpeakableString[] | null): this;
 }
 
 /**
@@ -3966,11 +3966,11 @@ declare class INGetReservationDetailsIntentResponse extends INIntentResponse {
 
 	readonly code: INGetReservationDetailsIntentResponseCode;
 
-	reservations: NSArray<INReservation>;
+	reservations: NSArray<INReservation> | null;
 
-	constructor(o: { code: INGetReservationDetailsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INGetReservationDetailsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INGetReservationDetailsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INGetReservationDetailsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -4026,13 +4026,13 @@ declare class INGetRestaurantGuestIntentResponse extends INIntentResponse {
 
 	readonly code: INGetRestaurantGuestIntentResponseCode;
 
-	guest: INRestaurantGuest;
+	guest: INRestaurantGuest | null;
 
-	guestDisplayPreferences: INRestaurantGuestDisplayPreferences;
+	guestDisplayPreferences: INRestaurantGuestDisplayPreferences | null;
 
-	constructor(o: { code: INGetRestaurantGuestIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INGetRestaurantGuestIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INGetRestaurantGuestIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INGetRestaurantGuestIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 declare const enum INGetRestaurantGuestIntentResponseCode {
@@ -4086,11 +4086,11 @@ declare class INGetRideStatusIntentResponse extends INIntentResponse {
 
 	readonly code: INGetRideStatusIntentResponseCode;
 
-	rideStatus: INRideStatus;
+	rideStatus: INRideStatus | null;
 
-	constructor(o: { code: INGetRideStatusIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INGetRideStatusIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INGetRideStatusIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INGetRideStatusIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -4136,25 +4136,25 @@ declare class INGetUserCurrentRestaurantReservationBookingsIntent extends INInte
 
 	static new(): INGetUserCurrentRestaurantReservationBookingsIntent; // inherited from NSObject
 
-	earliestBookingDateForResults: Date;
+	earliestBookingDateForResults: Date | null;
 
-	maximumNumberOfResults: number;
+	maximumNumberOfResults: number | null;
 
-	reservationIdentifier: string;
+	reservationIdentifier: string | null;
 
-	restaurant: INRestaurant;
-
-	/**
-	 * @since 11.0
-	 */
-	constructor(o: { restaurant: INRestaurant; reservationIdentifier: string; maximumNumberOfResults: number; earliestBookingDateForResults: Date; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	restaurant: INRestaurant | null;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithRestaurantReservationIdentifierMaximumNumberOfResultsEarliestBookingDateForResults(restaurant: INRestaurant, reservationIdentifier: string, maximumNumberOfResults: number, earliestBookingDateForResults: Date): this;
+	constructor(o: { restaurant: INRestaurant | null; reservationIdentifier: string | null; maximumNumberOfResults: number | null; earliestBookingDateForResults: Date | null; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	/**
+	 * @since 11.0
+	 */
+	initWithRestaurantReservationIdentifierMaximumNumberOfResultsEarliestBookingDateForResults(restaurant: INRestaurant | null, reservationIdentifier: string | null, maximumNumberOfResults: number | null, earliestBookingDateForResults: Date | null): this;
 }
 
 /**
@@ -4186,9 +4186,9 @@ declare class INGetUserCurrentRestaurantReservationBookingsIntentResponse extend
 
 	userCurrentBookings: NSArray<INRestaurantReservationUserBooking>;
 
-	constructor(o: { userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[]; code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[]; code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithUserCurrentBookingsCodeUserActivity(userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[], code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithUserCurrentBookingsCodeUserActivity(userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[], code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 declare const enum INGetUserCurrentRestaurantReservationBookingsIntentResponseCode {
@@ -4248,11 +4248,11 @@ declare class INGetVisualCodeIntentResponse extends INIntentResponse {
 
 	readonly code: INGetVisualCodeIntentResponseCode;
 
-	visualCodeImage: INImage;
+	visualCodeImage: INImage | null;
 
-	constructor(o: { code: INGetVisualCodeIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INGetVisualCodeIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INGetVisualCodeIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INGetVisualCodeIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -4287,17 +4287,17 @@ declare class INHangUpCallIntent extends INIntent {
 
 	static new(): INHangUpCallIntent; // inherited from NSObject
 
-	readonly callIdentifier: string;
+	readonly callIdentifier: string | null;
 
 	/**
 	 * @since 16.2
 	 */
-	constructor(o: { callIdentifier: string; });
+	constructor(o: { callIdentifier: string | null; });
 
 	/**
 	 * @since 16.2
 	 */
-	initWithCallIdentifier(callIdentifier: string): this;
+	initWithCallIdentifier(callIdentifier: string | null): this;
 }
 
 /**
@@ -4330,9 +4330,9 @@ declare class INHangUpCallIntentResponse extends INIntentResponse {
 
 	readonly code: INHangUpCallIntentResponseCode;
 
-	constructor(o: { code: INHangUpCallIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INHangUpCallIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INHangUpCallIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INHangUpCallIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -4399,14 +4399,14 @@ declare class INImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	/**
 	 * @since 11.0
 	 */
-	fetchUIImageWithCompletion(completion: (p1: UIImage) => void): void;
+	fetchUIImageWithCompletion(completion: (p1: UIImage | null) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -4420,7 +4420,7 @@ declare class INImageNoteContent extends INNoteContent implements NSCopying, NSS
 
 	static new(): INImageNoteContent; // inherited from NSObject
 
-	readonly image: INImage;
+	readonly image: INImage | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -4428,7 +4428,7 @@ declare class INImageNoteContent extends INNoteContent implements NSCopying, NSS
 
 	constructor(o: { image: INImage; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4449,7 +4449,7 @@ declare class INIntegerResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INIntegerResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithValueToConfirm(valueToConfirm: number): INIntegerResolutionResult;
+	static confirmationRequiredWithValueToConfirm(valueToConfirm: number | null): INIntegerResolutionResult;
 
 	static needsValue(): INIntegerResolutionResult; // inherited from INIntentResolutionResult
 
@@ -4479,14 +4479,14 @@ declare class INIntent extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 15.0
 	 */
-	donationMetadata: INIntentDonationMetadata;
+	donationMetadata: INIntentDonationMetadata | null;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly intentDescription: string;
+	readonly intentDescription: string | null;
 
 	/**
 	 * @since 14.0
@@ -4496,29 +4496,29 @@ declare class INIntent extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 12.0
 	 */
-	suggestedInvocationPhrase: string;
+	suggestedInvocationPhrase: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	/**
 	 * @since 12.0
 	 */
-	imageForParameterNamed(parameterName: string): INImage;
+	imageForParameterNamed(parameterName: string): INImage | null;
 
 	initWithCoder(coder: NSCoder): this;
 
-	keyImage(): INImage;
+	keyImage(): INImage | null;
 
 	/**
 	 * @since 12.0
 	 */
-	setImageForParameterNamed(image: INImage, parameterName: string): void;
+	setImageForParameterNamed(image: INImage | null, parameterName: string): void;
 }
 
 /**
@@ -4534,7 +4534,7 @@ declare class INIntentDonationMetadata extends NSObject implements NSCopying, NS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4625,7 +4625,7 @@ declare var INIntentErrorDomain: string;
  */
 interface INIntentHandlerProviding extends NSObjectProtocol {
 
-	handlerForIntent(intent: INIntent): any;
+	handlerForIntent(intent: INIntent): any | null;
 }
 declare var INIntentHandlerProviding: {
 
@@ -4687,13 +4687,13 @@ declare class INIntentResponse extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): INIntentResponse; // inherited from NSObject
 
-	userActivity: NSUserActivity;
+	userActivity: NSUserActivity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4707,19 +4707,19 @@ declare class INInteraction extends NSObject implements NSCopying, NSSecureCodin
 
 	static alloc(): INInteraction; // inherited from NSObject
 
-	static deleteAllInteractionsWithCompletion(completion: (p1: NSError) => void): void;
+	static deleteAllInteractionsWithCompletion(completion: (p1: NSError | null) => void | null): void;
 
-	static deleteInteractionsWithGroupIdentifierCompletion(groupIdentifier: string, completion: (p1: NSError) => void): void;
+	static deleteInteractionsWithGroupIdentifierCompletion(groupIdentifier: string, completion: (p1: NSError | null) => void | null): void;
 
-	static deleteInteractionsWithIdentifiersCompletion(identifiers: NSArray<string> | string[], completion: (p1: NSError) => void): void;
+	static deleteInteractionsWithIdentifiersCompletion(identifiers: NSArray<string> | string[], completion: (p1: NSError | null) => void | null): void;
 
 	static new(): INInteraction; // inherited from NSObject
 
-	dateInterval: NSDateInterval;
+	dateInterval: NSDateInterval | null;
 
 	direction: INInteractionDirection;
 
-	groupIdentifier: string;
+	groupIdentifier: string | null;
 
 	identifier: string;
 
@@ -4727,28 +4727,28 @@ declare class INInteraction extends NSObject implements NSCopying, NSSecureCodin
 
 	readonly intentHandlingStatus: INIntentHandlingStatus;
 
-	readonly intentResponse: INIntentResponse;
+	readonly intentResponse: INIntentResponse | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { intent: INIntent; response: INIntentResponse; });
+	constructor(o: { intent: INIntent; response: INIntentResponse | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	donateInteractionWithCompletion(completion: (p1: NSError) => void): void;
+	donateInteractionWithCompletion(completion: (p1: NSError | null) => void | null): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIntentResponse(intent: INIntent, response: INIntentResponse): this;
+	initWithIntentResponse(intent: INIntent, response: INIntentResponse | null): this;
 
 	/**
 	 * @since 11.0
 	 */
-	parameterValueForParameter(parameter: INParameter): any;
+	parameterValueForParameter(parameter: INParameter): any | null;
 }
 
 /**
@@ -4775,7 +4775,7 @@ declare class INLengthResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INLengthResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithLengthToConfirm(lengthToConfirm: NSMeasurement<NSUnitLength>): INLengthResolutionResult;
+	static confirmationRequiredWithLengthToConfirm(lengthToConfirm: NSMeasurement<NSUnitLength> | null): INLengthResolutionResult;
 
 	static disambiguationWithLengthsToDisambiguate(lengthsToDisambiguate: NSArray<NSMeasurement<NSUnitLength>> | NSMeasurement<NSUnitLength>[]): INLengthResolutionResult;
 
@@ -4828,13 +4828,13 @@ declare class INListCarsIntentResponse extends INIntentResponse {
 
 	static new(): INListCarsIntentResponse; // inherited from NSObject
 
-	cars: NSArray<INCar>;
+	cars: NSArray<INCar> | null;
 
 	readonly code: INListCarsIntentResponseCode;
 
-	constructor(o: { code: INListCarsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INListCarsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INListCarsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INListCarsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -4864,13 +4864,13 @@ declare class INListRideOptionsIntent extends INIntent {
 
 	static new(): INListRideOptionsIntent; // inherited from NSObject
 
-	readonly dropOffLocation: CLPlacemark;
+	readonly dropOffLocation: CLPlacemark | null;
 
-	readonly pickupLocation: CLPlacemark;
+	readonly pickupLocation: CLPlacemark | null;
 
-	constructor(o: { pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; });
+	constructor(o: { pickupLocation: CLPlacemark | null; dropOffLocation: CLPlacemark | null; });
 
-	initWithPickupLocationDropOffLocation(pickupLocation: CLPlacemark, dropOffLocation: CLPlacemark): this;
+	initWithPickupLocationDropOffLocation(pickupLocation: CLPlacemark | null, dropOffLocation: CLPlacemark | null): this;
 }
 
 /**
@@ -4907,15 +4907,15 @@ declare class INListRideOptionsIntentResponse extends INIntentResponse {
 
 	readonly code: INListRideOptionsIntentResponseCode;
 
-	expirationDate: Date;
+	expirationDate: Date | null;
 
-	paymentMethods: NSArray<INPaymentMethod>;
+	paymentMethods: NSArray<INPaymentMethod> | null;
 
-	rideOptions: NSArray<INRideOption>;
+	rideOptions: NSArray<INRideOption> | null;
 
-	constructor(o: { code: INListRideOptionsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INListRideOptionsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INListRideOptionsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INListRideOptionsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -5013,9 +5013,9 @@ declare class INLodgingReservation extends INReservation implements NSCopying, N
 
 	readonly lodgingBusinessLocation: CLPlacemark;
 
-	readonly numberOfAdults: number;
+	readonly numberOfAdults: number | null;
 
-	readonly numberOfChildren: number;
+	readonly numberOfChildren: number | null;
 
 	readonly reservationDuration: INDateComponentsRange;
 
@@ -5023,25 +5023,25 @@ declare class INLodgingReservation extends INReservation implements NSCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; lodgingBusinessLocation: CLPlacemark; reservationDuration: INDateComponentsRange; numberOfAdults: number; numberOfChildren: number; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; lodgingBusinessLocation: CLPlacemark; reservationDuration: INDateComponentsRange; numberOfAdults: number | null; numberOfChildren: number | null; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; lodgingBusinessLocation: CLPlacemark; reservationDuration: INDateComponentsRange; numberOfAdults: number; numberOfChildren: number; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; lodgingBusinessLocation: CLPlacemark; reservationDuration: INDateComponentsRange; numberOfAdults: number | null; numberOfChildren: number | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsLodgingBusinessLocationReservationDurationNumberOfAdultsNumberOfChildren(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], lodgingBusinessLocation: CLPlacemark, reservationDuration: INDateComponentsRange, numberOfAdults: number, numberOfChildren: number): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsLodgingBusinessLocationReservationDurationNumberOfAdultsNumberOfChildren(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, lodgingBusinessLocation: CLPlacemark, reservationDuration: INDateComponentsRange, numberOfAdults: number | null, numberOfChildren: number | null): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLLodgingBusinessLocationReservationDurationNumberOfAdultsNumberOfChildren(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, lodgingBusinessLocation: CLPlacemark, reservationDuration: INDateComponentsRange, numberOfAdults: number, numberOfChildren: number): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLLodgingBusinessLocationReservationDurationNumberOfAdultsNumberOfChildren(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, lodgingBusinessLocation: CLPlacemark, reservationDuration: INDateComponentsRange, numberOfAdults: number | null, numberOfChildren: number | null): this;
 }
 
 /**
@@ -5056,7 +5056,7 @@ declare class INMassResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INMassResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMassToConfirm(massToConfirm: NSMeasurement<NSUnitMass>): INMassResolutionResult;
+	static confirmationRequiredWithMassToConfirm(massToConfirm: NSMeasurement<NSUnitMass> | null): INMassResolutionResult;
 
 	static disambiguationWithMassToDisambiguate(massToDisambiguate: NSArray<NSMeasurement<NSUnitMass>> | NSMeasurement<NSUnitMass>[]): INMassResolutionResult;
 
@@ -5133,13 +5133,13 @@ declare class INMediaDestination extends NSObject implements NSCopying, NSSecure
 
 	readonly mediaDestinationType: INMediaDestinationType;
 
-	readonly playlistName: string;
+	readonly playlistName: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5158,7 +5158,7 @@ declare class INMediaDestinationResolutionResult extends INIntentResolutionResul
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INMediaDestinationResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaDestinationToConfirm(mediaDestinationToConfirm: INMediaDestination): INMediaDestinationResolutionResult;
+	static confirmationRequiredWithMediaDestinationToConfirm(mediaDestinationToConfirm: INMediaDestination | null): INMediaDestinationResolutionResult;
 
 	static disambiguationWithMediaDestinationsToDisambiguate(mediaDestinationsToDisambiguate: NSArray<INMediaDestination> | INMediaDestination[]): INMediaDestinationResolutionResult;
 
@@ -5202,13 +5202,13 @@ declare class INMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 	/**
 	 * @since 13.0
 	 */
-	readonly artist: string;
+	readonly artist: string | null;
 
-	readonly artwork: INImage;
+	readonly artwork: INImage | null;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
-	readonly title: string;
+	readonly title: string | null;
 
 	readonly type: INMediaItemType;
 
@@ -5216,25 +5216,25 @@ declare class INMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identifier: string; title: string; type: INMediaItemType; artwork: INImage; });
+	constructor(o: { identifier: string | null; title: string | null; type: INMediaItemType; artwork: INImage | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { identifier: string; title: string; type: INMediaItemType; artwork: INImage; artist: string; });
+	constructor(o: { identifier: string | null; title: string | null; type: INMediaItemType; artwork: INImage | null; artist: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIdentifierTitleTypeArtwork(identifier: string, title: string, type: INMediaItemType, artwork: INImage): this;
+	initWithIdentifierTitleTypeArtwork(identifier: string | null, title: string | null, type: INMediaItemType, artwork: INImage | null): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithIdentifierTitleTypeArtworkArtist(identifier: string, title: string, type: INMediaItemType, artwork: INImage, artist: string): this;
+	initWithIdentifierTitleTypeArtworkArtist(identifier: string | null, title: string | null, type: INMediaItemType, artwork: INImage | null, artist: string | null): this;
 }
 
 /**
@@ -5249,7 +5249,7 @@ declare class INMediaItemResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INMediaItemResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem): INMediaItemResolutionResult;
+	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem | null): INMediaItemResolutionResult;
 
 	static disambiguationWithMediaItemsToDisambiguate(mediaItemsToDisambiguate: NSArray<INMediaItem> | INMediaItem[]): INMediaItemResolutionResult;
 
@@ -5344,25 +5344,25 @@ declare class INMediaSearch extends NSObject implements NSCopying, NSSecureCodin
 	 * @since 13.0
 	 * @deprecated 13.0
 	 */
-	readonly activityNames: NSArray<string>;
+	readonly activityNames: NSArray<string> | null;
 
-	readonly albumName: string;
+	readonly albumName: string | null;
 
-	readonly artistName: string;
+	readonly artistName: string | null;
 
-	readonly genreNames: NSArray<string>;
+	readonly genreNames: NSArray<string> | null;
 
-	readonly mediaIdentifier: string;
+	readonly mediaIdentifier: string | null;
 
-	readonly mediaName: string;
+	readonly mediaName: string | null;
 
 	readonly mediaType: INMediaItemType;
 
-	readonly moodNames: NSArray<string>;
+	readonly moodNames: NSArray<string> | null;
 
 	readonly reference: INMediaReference;
 
-	readonly releaseDate: INDateComponentsRange;
+	readonly releaseDate: INDateComponentsRange | null;
 
 	readonly sortOrder: INMediaSortOrder;
 
@@ -5370,15 +5370,15 @@ declare class INMediaSearch extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { mediaType: INMediaItemType; sortOrder: INMediaSortOrder; mediaName: string; artistName: string; albumName: string; genreNames: NSArray<string> | string[]; moodNames: NSArray<string> | string[]; releaseDate: INDateComponentsRange; reference: INMediaReference; mediaIdentifier: string; });
+	constructor(o: { mediaType: INMediaItemType; sortOrder: INMediaSortOrder; mediaName: string | null; artistName: string | null; albumName: string | null; genreNames: NSArray<string> | string[] | null; moodNames: NSArray<string> | string[] | null; releaseDate: INDateComponentsRange | null; reference: INMediaReference; mediaIdentifier: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithMediaTypeSortOrderMediaNameArtistNameAlbumNameGenreNamesMoodNamesReleaseDateReferenceMediaIdentifier(mediaType: INMediaItemType, sortOrder: INMediaSortOrder, mediaName: string, artistName: string, albumName: string, genreNames: NSArray<string> | string[], moodNames: NSArray<string> | string[], releaseDate: INDateComponentsRange, reference: INMediaReference, mediaIdentifier: string): this;
+	initWithMediaTypeSortOrderMediaNameArtistNameAlbumNameGenreNamesMoodNamesReleaseDateReferenceMediaIdentifier(mediaType: INMediaItemType, sortOrder: INMediaSortOrder, mediaName: string | null, artistName: string | null, albumName: string | null, genreNames: NSArray<string> | string[] | null, moodNames: NSArray<string> | string[] | null, releaseDate: INDateComponentsRange | null, reference: INMediaReference, mediaIdentifier: string | null): this;
 }
 
 /**
@@ -5414,7 +5414,7 @@ declare class INMediaUserContext extends INUserContext {
 
 	static new(): INMediaUserContext; // inherited from NSObject
 
-	numberOfLibraryItems: number;
+	numberOfLibraryItems: number | null;
 
 	subscriptionStatus: INMediaUserContextSubscriptionStatus;
 }
@@ -5443,34 +5443,34 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 17.0
 	 */
-	readonly attachmentFiles: NSArray<INFile>;
+	readonly attachmentFiles: NSArray<INFile> | null;
 
 	/**
 	 * @since 16.0
 	 * @deprecated 17.0
 	 */
-	readonly audioMessageFile: INFile;
+	readonly audioMessageFile: INFile | null;
 
-	readonly content: string;
-
-	/**
-	 * @since 11.0
-	 */
-	readonly conversationIdentifier: string;
-
-	readonly dateSent: Date;
+	readonly content: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly groupName: INSpeakableString;
+	readonly conversationIdentifier: string | null;
+
+	readonly dateSent: Date | null;
+
+	/**
+	 * @since 11.0
+	 */
+	readonly groupName: INSpeakableString | null;
 
 	readonly identifier: string;
 
 	/**
 	 * @since 17.0
 	 */
-	readonly linkMetadata: INMessageLinkMetadata;
+	readonly linkMetadata: INMessageLinkMetadata | null;
 
 	/**
 	 * @since 11.0
@@ -5480,112 +5480,112 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 17.0
 	 */
-	readonly numberOfAttachments: number;
+	readonly numberOfAttachments: number | null;
 
 	/**
 	 * @since 18.0
 	 */
-	reaction: INMessageReaction;
+	reaction: INMessageReaction | null;
 
-	readonly recipients: NSArray<INPerson>;
+	readonly recipients: NSArray<INPerson> | null;
 
-	readonly sender: INPerson;
+	readonly sender: INPerson | null;
 
 	/**
 	 * @since 13.2
 	 */
-	readonly serviceName: string;
+	readonly serviceName: string | null;
 
 	/**
 	 * @since 18.0
 	 */
-	sticker: INSticker;
+	sticker: INSticker | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; });
+	constructor(o: { identifier: string; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; });
 
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; messageType: INMessageType; });
 
 	/**
 	 * @since 13.2
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; messageType: INMessageType; serviceName: string | null; });
 
 	/**
 	 * @since 17.0
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; attachmentFiles: NSArray<INFile> | INFile[]; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; messageType: INMessageType; serviceName: string | null; attachmentFiles: NSArray<INFile> | INFile[] | null; });
 
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; audioMessageFile: INFile; });
-
-	/**
-	 * @since 17.0
-	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; linkMetadata: INMessageLinkMetadata; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; messageType: INMessageType; serviceName: string | null; audioMessageFile: INFile | null; });
 
 	/**
 	 * @since 17.0
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; numberOfAttachments: number; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; serviceName: string | null; linkMetadata: INMessageLinkMetadata | null; });
+
+	/**
+	 * @since 17.0
+	 */
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; serviceName: string | null; messageType: INMessageType; numberOfAttachments: number | null; });
 
 	/**
 	 * @since 18.0
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; referencedMessage: INMessage; reaction: INMessageReaction; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; serviceName: string | null; messageType: INMessageType; referencedMessage: INMessage | null; reaction: INMessageReaction | null; });
 
 	/**
 	 * @since 18.0
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; referencedMessage: INMessage; sticker: INSticker; reaction: INMessageReaction; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; groupName: INSpeakableString | null; serviceName: string | null; messageType: INMessageType; referencedMessage: INMessage | null; sticker: INSticker | null; reaction: INMessageReaction | null; });
 
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
+	constructor(o: { identifier: string; conversationIdentifier: string | null; content: string | null; dateSent: Date | null; sender: INPerson | null; recipients: NSArray<INPerson> | INPerson[] | null; messageType: INMessageType; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIdentifierContentDateSentSenderRecipients(identifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[]): this;
+	initWithIdentifierContentDateSentSenderRecipients(identifier: string, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null): this;
 
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, messageType: INMessageType): this;
 
 	/**
 	 * @since 13.2
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceName(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceName(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, messageType: INMessageType, serviceName: string | null): this;
 
 	/**
 	 * @since 17.0
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAttachmentFiles(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string, attachmentFiles: NSArray<INFile> | INFile[]): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAttachmentFiles(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, messageType: INMessageType, serviceName: string | null, attachmentFiles: NSArray<INFile> | INFile[] | null): this;
 
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAudioMessageFile(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string, audioMessageFile: INFile): this;
-
-	/**
-	 * @since 17.0
-	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameLinkMetadata(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, linkMetadata: INMessageLinkMetadata): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAudioMessageFile(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, messageType: INMessageType, serviceName: string | null, audioMessageFile: INFile | null): this;
 
 	/**
 	 * @since 17.0
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeNumberOfAttachments(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, numberOfAttachments: number): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameLinkMetadata(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, serviceName: string | null, linkMetadata: INMessageLinkMetadata | null): this;
+
+	/**
+	 * @since 17.0
+	 */
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeNumberOfAttachments(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, serviceName: string | null, messageType: INMessageType, numberOfAttachments: number | null): this;
 
 	/**
 	 * @since 18.0
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageReaction(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, referencedMessage: INMessage, reaction: INMessageReaction): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageReaction(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, serviceName: string | null, messageType: INMessageType, referencedMessage: INMessage | null, reaction: INMessageReaction | null): this;
 
 	/**
 	 * @since 18.0
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageStickerReaction(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, referencedMessage: INMessage, sticker: INSticker, reaction: INMessageReaction): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageStickerReaction(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, groupName: INSpeakableString | null, serviceName: string | null, messageType: INMessageType, referencedMessage: INMessage | null, sticker: INSticker | null, reaction: INMessageReaction | null): this;
 
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string | null, content: string | null, dateSent: Date | null, sender: INPerson | null, recipients: NSArray<INPerson> | INPerson[] | null, messageType: INMessageType): this;
 }
 
 /**
@@ -5715,29 +5715,29 @@ declare class INMessageLinkMetadata extends NSObject implements NSCopying, NSSec
 
 	static new(): INMessageLinkMetadata; // inherited from NSObject
 
-	linkURL: NSURL;
+	linkURL: NSURL | null;
 
-	openGraphType: string;
+	openGraphType: string | null;
 
-	siteName: string;
+	siteName: string | null;
 
-	summary: string;
+	summary: string | null;
 
-	title: string;
+	title: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { siteName: string; summary: string; title: string; openGraphType: string; linkURL: NSURL; });
+	constructor(o: { siteName: string | null; summary: string | null; title: string | null; openGraphType: string | null; linkURL: NSURL | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSiteNameSummaryTitleOpenGraphTypeLinkURL(siteName: string, summary: string, title: string, openGraphType: string, linkURL: NSURL): this;
+	initWithSiteNameSummaryTitleOpenGraphTypeLinkURL(siteName: string | null, summary: string | null, title: string | null, openGraphType: string | null, linkURL: NSURL | null): this;
 }
 
 /**
@@ -5749,9 +5749,9 @@ declare class INMessageReaction extends NSObject implements NSCopying, NSSecureC
 
 	static new(): INMessageReaction; // inherited from NSObject
 
-	readonly emoji: string;
+	readonly emoji: string | null;
 
-	readonly reactionDescription: string;
+	readonly reactionDescription: string | null;
 
 	readonly reactionType: INMessageReactionType;
 
@@ -5759,15 +5759,15 @@ declare class INMessageReaction extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { reactionType: INMessageReactionType; reactionDescription: string; emoji: string; });
+	constructor(o: { reactionType: INMessageReactionType; reactionDescription: string | null; emoji: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithReactionTypeReactionDescriptionEmoji(reactionType: INMessageReactionType, reactionDescription: string, emoji: string): this;
+	initWithReactionTypeReactionDescriptionEmoji(reactionType: INMessageReactionType, reactionDescription: string | null, emoji: string | null): this;
 }
 
 /**
@@ -5868,13 +5868,13 @@ declare class INNote extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly contents: NSArray<INNoteContent>;
 
-	readonly createdDateComponents: NSDateComponents;
+	readonly createdDateComponents: NSDateComponents | null;
 
-	readonly groupName: INSpeakableString;
+	readonly groupName: INSpeakableString | null;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
-	readonly modifiedDateComponents: NSDateComponents;
+	readonly modifiedDateComponents: NSDateComponents | null;
 
 	readonly title: INSpeakableString;
 
@@ -5882,15 +5882,15 @@ declare class INNote extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: INSpeakableString; contents: NSArray<INNoteContent> | INNoteContent[]; groupName: INSpeakableString; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
+	constructor(o: { title: INSpeakableString; contents: NSArray<INNoteContent> | INNoteContent[]; groupName: INSpeakableString | null; createdDateComponents: NSDateComponents | null; modifiedDateComponents: NSDateComponents | null; identifier: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleContentsGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, contents: NSArray<INNoteContent> | INNoteContent[], groupName: INSpeakableString, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
+	initWithTitleContentsGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, contents: NSArray<INNoteContent> | INNoteContent[], groupName: INSpeakableString | null, createdDateComponents: NSDateComponents | null, modifiedDateComponents: NSDateComponents | null, identifier: string | null): this;
 }
 
 /**
@@ -5906,7 +5906,7 @@ declare class INNoteContent extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5925,7 +5925,7 @@ declare class INNoteContentResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INNoteContentResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithNoteContentToConfirm(noteContentToConfirm: INNoteContent): INNoteContentResolutionResult;
+	static confirmationRequiredWithNoteContentToConfirm(noteContentToConfirm: INNoteContent | null): INNoteContentResolutionResult;
 
 	static disambiguationWithNoteContentsToDisambiguate(noteContentsToDisambiguate: NSArray<INNoteContent> | INNoteContent[]): INNoteContentResolutionResult;
 
@@ -6001,7 +6001,7 @@ declare class INNoteResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INNoteResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithNoteToConfirm(noteToConfirm: INNote): INNoteResolutionResult;
+	static confirmationRequiredWithNoteToConfirm(noteToConfirm: INNote | null): INNoteResolutionResult;
 
 	static disambiguationWithNotesToDisambiguate(notesToDisambiguate: NSArray<INNote> | INNote[]): INNoteResolutionResult;
 
@@ -6090,19 +6090,19 @@ declare class INObject extends NSObject implements INSpeakable, NSCopying, NSSec
 	/**
 	 * @since 13.0
 	 */
-	alternativeSpeakableMatches: NSArray<INSpeakableString>;
+	alternativeSpeakableMatches: NSArray<INSpeakableString> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	displayImage: INImage;
+	displayImage: INImage | null;
 
 	readonly displayString: string;
 
 	/**
 	 * @since 14.0
 	 */
-	subtitleString: string;
+	subtitleString: string | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -6114,17 +6114,17 @@ declare class INObject extends NSObject implements INSpeakable, NSCopying, NSSec
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	readonly identifier: string; // inherited from INSpeakable
+	readonly identifier: string | null; // inherited from INSpeakable
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly pronunciationHint: string; // inherited from INSpeakable
+	readonly pronunciationHint: string | null; // inherited from INSpeakable
 
 	readonly spokenPhrase: string; // inherited from INSpeakable
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly vocabularyIdentifier: string; // inherited from INSpeakable
+	readonly vocabularyIdentifier: string | null; // inherited from INSpeakable
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -6132,43 +6132,43 @@ declare class INObject extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identifier: string; displayString: string; });
+	constructor(o: { identifier: string | null; displayString: string; });
 
-	constructor(o: { identifier: string; displayString: string; pronunciationHint: string; });
-
-	/**
-	 * @since 14.0
-	 */
-	constructor(o: { identifier: string; displayString: string; pronunciationHint: string; subtitleString: string; displayImage: INImage; });
+	constructor(o: { identifier: string | null; displayString: string; pronunciationHint: string | null; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { identifier: string; displayString: string; subtitleString: string; displayImage: INImage; });
+	constructor(o: { identifier: string | null; displayString: string; pronunciationHint: string | null; subtitleString: string | null; displayImage: INImage | null; });
+
+	/**
+	 * @since 14.0
+	 */
+	constructor(o: { identifier: string | null; displayString: string; subtitleString: string | null; displayImage: INImage | null; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIdentifierDisplayString(identifier: string, displayString: string): this;
+	initWithIdentifierDisplayString(identifier: string | null, displayString: string): this;
 
-	initWithIdentifierDisplayStringPronunciationHint(identifier: string, displayString: string, pronunciationHint: string): this;
-
-	/**
-	 * @since 14.0
-	 */
-	initWithIdentifierDisplayStringPronunciationHintSubtitleStringDisplayImage(identifier: string, displayString: string, pronunciationHint: string, subtitleString: string, displayImage: INImage): this;
+	initWithIdentifierDisplayStringPronunciationHint(identifier: string | null, displayString: string, pronunciationHint: string | null): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithIdentifierDisplayStringSubtitleStringDisplayImage(identifier: string, displayString: string, subtitleString: string, displayImage: INImage): this;
+	initWithIdentifierDisplayStringPronunciationHintSubtitleStringDisplayImage(identifier: string | null, displayString: string, pronunciationHint: string | null, subtitleString: string | null, displayImage: INImage | null): this;
+
+	/**
+	 * @since 14.0
+	 */
+	initWithIdentifierDisplayStringSubtitleStringDisplayImage(identifier: string | null, displayString: string, subtitleString: string | null, displayImage: INImage | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -6212,7 +6212,7 @@ declare class INObjectCollection<ObjectType> extends NSObject implements NSCopyi
 
 	constructor(o: { sections: NSArray<INObjectSection<any>> | INObjectSection<any>[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6235,7 +6235,7 @@ declare class INObjectResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INObjectResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithObjectToConfirm(objectToConfirm: INObject): INObjectResolutionResult;
+	static confirmationRequiredWithObjectToConfirm(objectToConfirm: INObject | null): INObjectResolutionResult;
 
 	static disambiguationWithObjectsToDisambiguate(objectsToDisambiguate: NSArray<INObject> | INObject[]): INObjectResolutionResult;
 
@@ -6266,21 +6266,21 @@ declare class INObjectSection<ObjectType> extends NSObject implements NSCopying,
 
 	readonly items: NSArray<any>;
 
-	readonly title: string;
+	readonly title: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: string; items: NSArray<any> | any[]; });
+	constructor(o: { title: string | null; items: NSArray<any> | any[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleItems(title: string, items: NSArray<any> | any[]): this;
+	initWithTitleItems(title: string | null, items: NSArray<any> | any[]): this;
 }
 
 /**
@@ -6344,7 +6344,7 @@ declare class INParameter extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6366,11 +6366,11 @@ declare class INPauseWorkoutIntent extends INIntent {
 
 	static new(): INPauseWorkoutIntent; // inherited from NSObject
 
-	readonly workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString | null;
 
-	constructor(o: { workoutName: INSpeakableString; });
+	constructor(o: { workoutName: INSpeakableString | null; });
 
-	initWithWorkoutName(workoutName: INSpeakableString): this;
+	initWithWorkoutName(workoutName: INSpeakableString | null): this;
 }
 
 /**
@@ -6405,9 +6405,9 @@ declare class INPauseWorkoutIntentResponse extends INIntentResponse {
 
 	readonly code: INPauseWorkoutIntentResponseCode;
 
-	constructor(o: { code: INPauseWorkoutIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INPauseWorkoutIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INPauseWorkoutIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INPauseWorkoutIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -6442,23 +6442,23 @@ declare class INPayBillIntent extends INIntent {
 
 	static new(): INPayBillIntent; // inherited from NSObject
 
-	readonly billPayee: INBillPayee;
+	readonly billPayee: INBillPayee | null;
 
 	readonly billType: INBillType;
 
-	readonly dueDate: INDateComponentsRange;
+	readonly dueDate: INDateComponentsRange | null;
 
-	readonly fromAccount: INPaymentAccount;
+	readonly fromAccount: INPaymentAccount | null;
 
-	readonly transactionAmount: INPaymentAmount;
+	readonly transactionAmount: INPaymentAmount | null;
 
-	readonly transactionNote: string;
+	readonly transactionNote: string | null;
 
-	readonly transactionScheduledDate: INDateComponentsRange;
+	readonly transactionScheduledDate: INDateComponentsRange | null;
 
-	constructor(o: { billPayee: INBillPayee; fromAccount: INPaymentAccount; transactionAmount: INPaymentAmount; transactionScheduledDate: INDateComponentsRange; transactionNote: string; billType: INBillType; dueDate: INDateComponentsRange; });
+	constructor(o: { billPayee: INBillPayee | null; fromAccount: INPaymentAccount | null; transactionAmount: INPaymentAmount | null; transactionScheduledDate: INDateComponentsRange | null; transactionNote: string | null; billType: INBillType; dueDate: INDateComponentsRange | null; });
 
-	initWithBillPayeeFromAccountTransactionAmountTransactionScheduledDateTransactionNoteBillTypeDueDate(billPayee: INBillPayee, fromAccount: INPaymentAccount, transactionAmount: INPaymentAmount, transactionScheduledDate: INDateComponentsRange, transactionNote: string, billType: INBillType, dueDate: INDateComponentsRange): this;
+	initWithBillPayeeFromAccountTransactionAmountTransactionScheduledDateTransactionNoteBillTypeDueDate(billPayee: INBillPayee | null, fromAccount: INPaymentAccount | null, transactionAmount: INPaymentAmount | null, transactionScheduledDate: INDateComponentsRange | null, transactionNote: string | null, billType: INBillType, dueDate: INDateComponentsRange | null): this;
 }
 
 /**
@@ -6500,21 +6500,21 @@ declare class INPayBillIntentResponse extends INIntentResponse {
 
 	static new(): INPayBillIntentResponse; // inherited from NSObject
 
-	billDetails: INBillDetails;
+	billDetails: INBillDetails | null;
 
 	readonly code: INPayBillIntentResponseCode;
 
-	fromAccount: INPaymentAccount;
+	fromAccount: INPaymentAccount | null;
 
-	transactionAmount: INPaymentAmount;
+	transactionAmount: INPaymentAmount | null;
 
-	transactionNote: string;
+	transactionNote: string | null;
 
-	transactionScheduledDate: INDateComponentsRange;
+	transactionScheduledDate: INDateComponentsRange | null;
 
-	constructor(o: { code: INPayBillIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INPayBillIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INPayBillIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INPayBillIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -6549,23 +6549,23 @@ declare class INPaymentAccount extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): INPaymentAccount; // inherited from NSObject
 
-	readonly accountNumber: string;
+	readonly accountNumber: string | null;
 
 	readonly accountType: INAccountType;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly balance: INBalanceAmount;
+	readonly balance: INBalanceAmount | null;
 
-	readonly nickname: INSpeakableString;
+	readonly nickname: INSpeakableString | null;
 
-	readonly organizationName: INSpeakableString;
+	readonly organizationName: INSpeakableString | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly secondaryBalance: INBalanceAmount;
+	readonly secondaryBalance: INBalanceAmount | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -6575,14 +6575,14 @@ declare class INPaymentAccount extends NSObject implements NSCopying, NSSecureCo
 	 * @since 10.3
 	 * @deprecated 11.0
 	 */
-	constructor(o: { nickname: INSpeakableString; number: string; accountType: INAccountType; organizationName: INSpeakableString; });
+	constructor(o: { nickname: INSpeakableString; number: string | null; accountType: INAccountType; organizationName: INSpeakableString | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { nickname: INSpeakableString; number: string; accountType: INAccountType; organizationName: INSpeakableString; balance: INBalanceAmount; secondaryBalance: INBalanceAmount; });
+	constructor(o: { nickname: INSpeakableString; number: string | null; accountType: INAccountType; organizationName: INSpeakableString | null; balance: INBalanceAmount | null; secondaryBalance: INBalanceAmount | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6592,12 +6592,12 @@ declare class INPaymentAccount extends NSObject implements NSCopying, NSSecureCo
 	 * @since 10.3
 	 * @deprecated 11.0
 	 */
-	initWithNicknameNumberAccountTypeOrganizationName(nickname: INSpeakableString, number: string, accountType: INAccountType, organizationName: INSpeakableString): this;
+	initWithNicknameNumberAccountTypeOrganizationName(nickname: INSpeakableString, number: string | null, accountType: INAccountType, organizationName: INSpeakableString | null): this;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithNicknameNumberAccountTypeOrganizationNameBalanceSecondaryBalance(nickname: INSpeakableString, number: string, accountType: INAccountType, organizationName: INSpeakableString, balance: INBalanceAmount, secondaryBalance: INBalanceAmount): this;
+	initWithNicknameNumberAccountTypeOrganizationNameBalanceSecondaryBalance(nickname: INSpeakableString, number: string | null, accountType: INAccountType, organizationName: INSpeakableString | null, balance: INBalanceAmount | null, secondaryBalance: INBalanceAmount | null): this;
 }
 
 /**
@@ -6612,7 +6612,7 @@ declare class INPaymentAccountResolutionResult extends INIntentResolutionResult 
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPaymentAccountResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPaymentAccountToConfirm(paymentAccountToConfirm: INPaymentAccount): INPaymentAccountResolutionResult;
+	static confirmationRequiredWithPaymentAccountToConfirm(paymentAccountToConfirm: INPaymentAccount | null): INPaymentAccountResolutionResult;
 
 	static disambiguationWithPaymentAccountsToDisambiguate(paymentAccountsToDisambiguate: NSArray<INPaymentAccount> | INPaymentAccount[]): INPaymentAccountResolutionResult;
 
@@ -6641,7 +6641,7 @@ declare class INPaymentAmount extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): INPaymentAmount; // inherited from NSObject
 
-	readonly amount: INCurrencyAmount;
+	readonly amount: INCurrencyAmount | null;
 
 	readonly amountType: INAmountType;
 
@@ -6651,7 +6651,7 @@ declare class INPaymentAmount extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6672,7 +6672,7 @@ declare class INPaymentAmountResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPaymentAmountResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPaymentAmountToConfirm(paymentAmountToConfirm: INPaymentAmount): INPaymentAmountResolutionResult;
+	static confirmationRequiredWithPaymentAmountToConfirm(paymentAmountToConfirm: INPaymentAmount | null): INPaymentAmountResolutionResult;
 
 	static disambiguationWithPaymentAmountsToDisambiguate(paymentAmountsToDisambiguate: NSArray<INPaymentAmount> | INPaymentAmount[]): INPaymentAmountResolutionResult;
 
@@ -6703,11 +6703,11 @@ declare class INPaymentMethod extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): INPaymentMethod; // inherited from NSObject
 
-	readonly icon: INImage;
+	readonly icon: INImage | null;
 
-	readonly identificationHint: string;
+	readonly identificationHint: string | null;
 
-	readonly name: string;
+	readonly name: string | null;
 
 	readonly type: INPaymentMethodType;
 
@@ -6715,15 +6715,15 @@ declare class INPaymentMethod extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { type: INPaymentMethodType; name: string; identificationHint: string; icon: INImage; });
+	constructor(o: { type: INPaymentMethodType; name: string | null; identificationHint: string | null; icon: INImage | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTypeNameIdentificationHintIcon(type: INPaymentMethodType, name: string, identificationHint: string, icon: INImage): this;
+	initWithTypeNameIdentificationHintIcon(type: INPaymentMethodType, name: string | null, identificationHint: string | null, icon: INImage | null): this;
 }
 
 /**
@@ -6738,7 +6738,7 @@ declare class INPaymentMethodResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPaymentMethodResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPaymentMethodToConfirm(paymentMethodToConfirm: INPaymentMethod): INPaymentMethodResolutionResult;
+	static confirmationRequiredWithPaymentMethodToConfirm(paymentMethodToConfirm: INPaymentMethod | null): INPaymentMethodResolutionResult;
 
 	static disambiguationWithPaymentMethodsToDisambiguate(paymentMethodsToDisambiguate: NSArray<INPaymentMethod> | INPaymentMethod[]): INPaymentMethodResolutionResult;
 
@@ -6791,17 +6791,17 @@ declare class INPaymentRecord extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): INPaymentRecord; // inherited from NSObject
 
-	readonly currencyAmount: INCurrencyAmount;
+	readonly currencyAmount: INCurrencyAmount | null;
 
-	readonly feeAmount: INCurrencyAmount;
+	readonly feeAmount: INCurrencyAmount | null;
 
-	readonly note: string;
+	readonly note: string | null;
 
-	readonly payee: INPerson;
+	readonly payee: INPerson | null;
 
-	readonly payer: INPerson;
+	readonly payer: INPerson | null;
 
-	readonly paymentMethod: INPaymentMethod;
+	readonly paymentMethod: INPaymentMethod | null;
 
 	readonly status: INPaymentStatus;
 
@@ -6809,19 +6809,19 @@ declare class INPaymentRecord extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { payee: INPerson; payer: INPerson; currencyAmount: INCurrencyAmount; paymentMethod: INPaymentMethod; note: string; status: INPaymentStatus; });
+	constructor(o: { payee: INPerson | null; payer: INPerson | null; currencyAmount: INCurrencyAmount | null; paymentMethod: INPaymentMethod | null; note: string | null; status: INPaymentStatus; });
 
-	constructor(o: { payee: INPerson; payer: INPerson; currencyAmount: INCurrencyAmount; paymentMethod: INPaymentMethod; note: string; status: INPaymentStatus; feeAmount: INCurrencyAmount; });
+	constructor(o: { payee: INPerson | null; payer: INPerson | null; currencyAmount: INCurrencyAmount | null; paymentMethod: INPaymentMethod | null; note: string | null; status: INPaymentStatus; feeAmount: INCurrencyAmount | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithPayeePayerCurrencyAmountPaymentMethodNoteStatus(payee: INPerson, payer: INPerson, currencyAmount: INCurrencyAmount, paymentMethod: INPaymentMethod, note: string, status: INPaymentStatus): this;
+	initWithPayeePayerCurrencyAmountPaymentMethodNoteStatus(payee: INPerson | null, payer: INPerson | null, currencyAmount: INCurrencyAmount | null, paymentMethod: INPaymentMethod | null, note: string | null, status: INPaymentStatus): this;
 
-	initWithPayeePayerCurrencyAmountPaymentMethodNoteStatusFeeAmount(payee: INPerson, payer: INPerson, currencyAmount: INCurrencyAmount, paymentMethod: INPaymentMethod, note: string, status: INPaymentStatus, feeAmount: INCurrencyAmount): this;
+	initWithPayeePayerCurrencyAmountPaymentMethodNoteStatusFeeAmount(payee: INPerson | null, payer: INPerson | null, currencyAmount: INCurrencyAmount | null, paymentMethod: INPaymentMethod | null, note: string | null, status: INPaymentStatus, feeAmount: INCurrencyAmount | null): this;
 }
 
 /**
@@ -6904,16 +6904,16 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	static new(): INPerson; // inherited from NSObject
 
-	readonly aliases: NSArray<INPersonHandle>;
+	readonly aliases: NSArray<INPersonHandle> | null;
 
-	readonly contactIdentifier: string;
+	readonly contactIdentifier: string | null;
 
 	/**
 	 * @since 15.0
 	 */
 	readonly contactSuggestion: boolean;
 
-	readonly customIdentifier: string;
+	readonly customIdentifier: string | null;
 
 	readonly displayName: string;
 
@@ -6921,32 +6921,32 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	readonly handle: string;
+	readonly handle: string | null;
 
-	readonly image: INImage;
+	readonly image: INImage | null;
 
 	/**
 	 * @since 11.0
 	 */
 	readonly isMe: boolean;
 
-	readonly nameComponents: NSPersonNameComponents;
+	readonly nameComponents: NSPersonNameComponents | null;
 
-	readonly personHandle: INPersonHandle;
+	readonly personHandle: INPersonHandle | null;
 
 	/**
 	 * @since 10.2
 	 */
-	readonly relationship: string;
+	readonly relationship: string | null;
 
 	/**
 	 * @since 10.3
 	 */
-	readonly siriMatches: NSArray<INPerson>;
+	readonly siriMatches: NSArray<INPerson> | null;
 
 	readonly suggestionType: INPersonSuggestionType;
 
-	readonly alternativeSpeakableMatches: NSArray<INSpeakable>; // inherited from INSpeakable
+	readonly alternativeSpeakableMatches: NSArray<INSpeakable> | null; // inherited from INSpeakable
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -6958,17 +6958,17 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	readonly identifier: string; // inherited from INSpeakable
+	readonly identifier: string | null; // inherited from INSpeakable
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly pronunciationHint: string; // inherited from INSpeakable
+	readonly pronunciationHint: string | null; // inherited from INSpeakable
 
 	readonly spokenPhrase: string; // inherited from INSpeakable
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly vocabularyIdentifier: string; // inherited from INSpeakable
+	readonly vocabularyIdentifier: string | null; // inherited from INSpeakable
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -6980,49 +6980,49 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	constructor(o: { handle: string; displayName: string; contactIdentifier: string; });
+	constructor(o: { handle: string; displayName: string | null; contactIdentifier: string | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	constructor(o: { handle: string; nameComponents: NSPersonNameComponents; contactIdentifier: string; });
+	constructor(o: { handle: string; nameComponents: NSPersonNameComponents; contactIdentifier: string | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	constructor(o: { handle: string; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; });
+	constructor(o: { handle: string; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; });
 
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; customIdentifier: string | null; });
 
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; aliases: NSArray<INPersonHandle> | INPersonHandle[]; suggestionType: INPersonSuggestionType; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; customIdentifier: string | null; aliases: NSArray<INPersonHandle> | INPersonHandle[] | null; suggestionType: INPersonSuggestionType; });
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; isContactSuggestion: boolean; suggestionType: INPersonSuggestionType; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; customIdentifier: string | null; isContactSuggestion: boolean; suggestionType: INPersonSuggestionType; });
 
 	/**
 	 * @since 12.0
 	 */
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; isMe: boolean; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; customIdentifier: string | null; isMe: boolean; });
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; isMe: boolean; suggestionType: INPersonSuggestionType; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; customIdentifier: string | null; isMe: boolean; suggestionType: INPersonSuggestionType; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; relationship: string; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; contactIdentifier: string | null; customIdentifier: string | null; relationship: string | null; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -7032,43 +7032,43 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	initWithHandleDisplayNameContactIdentifier(handle: string, displayName: string, contactIdentifier: string): this;
+	initWithHandleDisplayNameContactIdentifier(handle: string, displayName: string | null, contactIdentifier: string | null): this;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	initWithHandleNameComponentsContactIdentifier(handle: string, nameComponents: NSPersonNameComponents, contactIdentifier: string): this;
+	initWithHandleNameComponentsContactIdentifier(handle: string, nameComponents: NSPersonNameComponents, contactIdentifier: string | null): this;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	initWithHandleNameComponentsDisplayNameImageContactIdentifier(handle: string, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string): this;
+	initWithHandleNameComponentsDisplayNameImageContactIdentifier(handle: string, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null): this;
 
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifier(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifier(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null, customIdentifier: string | null): this;
 
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierAliasesSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, aliases: NSArray<INPersonHandle> | INPersonHandle[], suggestionType: INPersonSuggestionType): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierAliasesSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null, customIdentifier: string | null, aliases: NSArray<INPersonHandle> | INPersonHandle[] | null, suggestionType: INPersonSuggestionType): this;
 
 	/**
 	 * @since 15.0
 	 */
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsContactSuggestionSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, isContactSuggestion: boolean, suggestionType: INPersonSuggestionType): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsContactSuggestionSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null, customIdentifier: string | null, isContactSuggestion: boolean, suggestionType: INPersonSuggestionType): this;
 
 	/**
 	 * @since 12.0
 	 */
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsMe(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, isMe: boolean): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsMe(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null, customIdentifier: string | null, isMe: boolean): this;
 
 	/**
 	 * @since 15.0
 	 */
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsMeSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, isMe: boolean, suggestionType: INPersonSuggestionType): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsMeSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null, customIdentifier: string | null, isMe: boolean, suggestionType: INPersonSuggestionType): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierRelationship(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, relationship: string): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierRelationship(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, contactIdentifier: string | null, customIdentifier: string | null, relationship: string | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -7101,35 +7101,35 @@ declare class INPersonHandle extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 10.2
 	 */
-	readonly label: string;
+	readonly label: string | null;
 
 	readonly type: INPersonHandleType;
 
-	readonly value: string;
+	readonly value: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { value: string; type: INPersonHandleType; });
+	constructor(o: { value: string | null; type: INPersonHandleType; });
 
 	/**
 	 * @since 10.2
 	 */
-	constructor(o: { value: string; type: INPersonHandleType; label: string; });
+	constructor(o: { value: string | null; type: INPersonHandleType; label: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithValueType(value: string, type: INPersonHandleType): this;
+	initWithValueType(value: string | null, type: INPersonHandleType): this;
 
 	/**
 	 * @since 10.2
 	 */
-	initWithValueTypeLabel(value: string, type: INPersonHandleType, label: string): this;
+	initWithValueTypeLabel(value: string | null, type: INPersonHandleType, label: string | null): this;
 }
 
 /**
@@ -7271,7 +7271,7 @@ declare class INPersonResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPersonResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INPersonResolutionResult;
+	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson | null): INPersonResolutionResult;
 
 	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INPersonResolutionResult;
 
@@ -7391,7 +7391,7 @@ declare class INPlacemarkResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPlacemarkResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPlacemarkToConfirm(placemarkToConfirm: CLPlacemark): INPlacemarkResolutionResult;
+	static confirmationRequiredWithPlacemarkToConfirm(placemarkToConfirm: CLPlacemark | null): INPlacemarkResolutionResult;
 
 	static disambiguationWithPlacemarksToDisambiguate(placemarksToDisambiguate: NSArray<CLPlacemark> | CLPlacemark[]): INPlacemarkResolutionResult;
 
@@ -7420,16 +7420,16 @@ declare class INPlayMediaIntent extends INIntent {
 
 	static new(): INPlayMediaIntent; // inherited from NSObject
 
-	readonly mediaContainer: INMediaItem;
+	readonly mediaContainer: INMediaItem | null;
 
-	readonly mediaItems: NSArray<INMediaItem>;
+	readonly mediaItems: NSArray<INMediaItem> | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly mediaSearch: INMediaSearch;
+	readonly mediaSearch: INMediaSearch | null;
 
-	readonly playShuffled: number;
+	readonly playShuffled: number | null;
 
 	/**
 	 * @since 13.0
@@ -7441,31 +7441,31 @@ declare class INPlayMediaIntent extends INIntent {
 	/**
 	 * @since 13.0
 	 */
-	readonly playbackSpeed: number;
+	readonly playbackSpeed: number | null;
 
-	readonly resumePlayback: number;
-
-	/**
-	 * @since 12.0
-	 * @deprecated 13.0
-	 */
-	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[]; mediaContainer: INMediaItem; playShuffled: number; playbackRepeatMode: INPlaybackRepeatMode; resumePlayback: number; });
-
-	/**
-	 * @since 13.0
-	 */
-	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[]; mediaContainer: INMediaItem; playShuffled: number; playbackRepeatMode: INPlaybackRepeatMode; resumePlayback: number; playbackQueueLocation: INPlaybackQueueLocation; playbackSpeed: number; mediaSearch: INMediaSearch; });
+	readonly resumePlayback: number | null;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 13.0
 	 */
-	initWithMediaItemsMediaContainerPlayShuffledPlaybackRepeatModeResumePlayback(mediaItems: NSArray<INMediaItem> | INMediaItem[], mediaContainer: INMediaItem, playShuffled: number, playbackRepeatMode: INPlaybackRepeatMode, resumePlayback: number): this;
+	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[] | null; mediaContainer: INMediaItem | null; playShuffled: number | null; playbackRepeatMode: INPlaybackRepeatMode; resumePlayback: number | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	initWithMediaItemsMediaContainerPlayShuffledPlaybackRepeatModeResumePlaybackPlaybackQueueLocationPlaybackSpeedMediaSearch(mediaItems: NSArray<INMediaItem> | INMediaItem[], mediaContainer: INMediaItem, playShuffled: number, playbackRepeatMode: INPlaybackRepeatMode, resumePlayback: number, playbackQueueLocation: INPlaybackQueueLocation, playbackSpeed: number, mediaSearch: INMediaSearch): this;
+	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[] | null; mediaContainer: INMediaItem | null; playShuffled: number | null; playbackRepeatMode: INPlaybackRepeatMode; resumePlayback: number | null; playbackQueueLocation: INPlaybackQueueLocation; playbackSpeed: number | null; mediaSearch: INMediaSearch | null; });
+
+	/**
+	 * @since 12.0
+	 * @deprecated 13.0
+	 */
+	initWithMediaItemsMediaContainerPlayShuffledPlaybackRepeatModeResumePlayback(mediaItems: NSArray<INMediaItem> | INMediaItem[] | null, mediaContainer: INMediaItem | null, playShuffled: number | null, playbackRepeatMode: INPlaybackRepeatMode, resumePlayback: number | null): this;
+
+	/**
+	 * @since 13.0
+	 */
+	initWithMediaItemsMediaContainerPlayShuffledPlaybackRepeatModeResumePlaybackPlaybackQueueLocationPlaybackSpeedMediaSearch(mediaItems: NSArray<INMediaItem> | INMediaItem[] | null, mediaContainer: INMediaItem | null, playShuffled: number | null, playbackRepeatMode: INPlaybackRepeatMode, resumePlayback: number | null, playbackQueueLocation: INPlaybackQueueLocation, playbackSpeed: number | null, mediaSearch: INMediaSearch | null): this;
 }
 
 /**
@@ -7523,11 +7523,11 @@ declare class INPlayMediaIntentResponse extends INIntentResponse {
 
 	readonly code: INPlayMediaIntentResponseCode;
 
-	nowPlayingInfo: NSDictionary<string, any>;
+	nowPlayingInfo: NSDictionary<string, any> | null;
 
-	constructor(o: { code: INPlayMediaIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INPlayMediaIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INPlayMediaIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INPlayMediaIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -7572,7 +7572,7 @@ declare class INPlayMediaMediaItemResolutionResult extends INMediaItemResolution
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPlayMediaMediaItemResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem): INPlayMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
+	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem | null): INPlayMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
 	static disambiguationWithMediaItemsToDisambiguate(mediaItemsToDisambiguate: NSArray<INMediaItem> | INMediaItem[]): INPlayMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
@@ -7632,7 +7632,7 @@ declare class INPlayMediaPlaybackSpeedResolutionResult extends INDoubleResolutio
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INPlayMediaPlaybackSpeedResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithValueToConfirm(valueToConfirm: number): INPlayMediaPlaybackSpeedResolutionResult; // inherited from INDoubleResolutionResult
+	static confirmationRequiredWithValueToConfirm(valueToConfirm: number | null): INPlayMediaPlaybackSpeedResolutionResult; // inherited from INDoubleResolutionResult
 
 	static needsValue(): INPlayMediaPlaybackSpeedResolutionResult; // inherited from INIntentResolutionResult
 
@@ -7781,9 +7781,9 @@ declare class INPriceRange extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly currencyCode: string;
 
-	readonly maximumPrice: NSDecimalNumber;
+	readonly maximumPrice: NSDecimalNumber | null;
 
-	readonly minimumPrice: NSDecimalNumber;
+	readonly minimumPrice: NSDecimalNumber | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -7797,7 +7797,7 @@ declare class INPriceRange extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { rangeBetweenPrice: NSDecimalNumber; andPrice: NSDecimalNumber; currencyCode: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -7934,7 +7934,7 @@ declare class INRecurrenceRule extends NSObject implements NSCopying, NSSecureCo
 	 */
 	constructor(o: { interval: number; frequency: INRecurrenceFrequency; weeklyRecurrenceDays: INDayOfWeekOptions; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8077,7 +8077,7 @@ declare class INRelevanceProvider extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8099,12 +8099,12 @@ declare class INRelevantShortcut extends NSObject implements NSCopying, NSSecure
 
 	shortcutRole: INRelevantShortcutRole;
 
-	watchTemplate: INDefaultCardTemplate;
+	watchTemplate: INDefaultCardTemplate | null;
 
 	/**
 	 * @since 15.0
 	 */
-	widgetKind: string;
+	widgetKind: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -8112,7 +8112,7 @@ declare class INRelevantShortcut extends NSObject implements NSCopying, NSSecure
 
 	constructor(o: { shortcut: INShortcut; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8142,7 +8142,7 @@ declare class INRelevantShortcutStore extends NSObject {
 
 	static readonly defaultStore: INRelevantShortcutStore;
 
-	setRelevantShortcutsCompletionHandler(shortcuts: NSArray<INRelevantShortcut> | INRelevantShortcut[], completionHandler: (p1: NSError) => void): void;
+	setRelevantShortcutsCompletionHandler(shortcuts: NSArray<INRelevantShortcut> | INRelevantShortcut[], completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -8154,29 +8154,29 @@ declare class INRentalCar extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): INRentalCar; // inherited from NSObject
 
-	readonly make: string;
+	readonly make: string | null;
 
-	readonly model: string;
+	readonly model: string | null;
 
-	readonly rentalCarDescription: string;
+	readonly rentalCarDescription: string | null;
 
 	readonly rentalCompanyName: string;
 
-	readonly type: string;
+	readonly type: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { rentalCompanyName: string; type: string; make: string; model: string; rentalCarDescription: string; });
+	constructor(o: { rentalCompanyName: string; type: string | null; make: string | null; model: string | null; rentalCarDescription: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithRentalCompanyNameTypeMakeModelRentalCarDescription(rentalCompanyName: string, type: string, make: string, model: string, rentalCarDescription: string): this;
+	initWithRentalCompanyNameTypeMakeModelRentalCarDescription(rentalCompanyName: string, type: string | null, make: string | null, model: string | null, rentalCarDescription: string | null): this;
 }
 
 /**
@@ -8188,9 +8188,9 @@ declare class INRentalCarReservation extends INReservation implements NSCopying,
 
 	static new(): INRentalCarReservation; // inherited from NSObject
 
-	readonly dropOffLocation: CLPlacemark;
+	readonly dropOffLocation: CLPlacemark | null;
 
-	readonly pickupLocation: CLPlacemark;
+	readonly pickupLocation: CLPlacemark | null;
 
 	readonly rentalCar: INRentalCar;
 
@@ -8200,25 +8200,25 @@ declare class INRentalCarReservation extends INReservation implements NSCopying,
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; rentalCar: INRentalCar; rentalDuration: INDateComponentsRange; pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; rentalCar: INRentalCar; rentalDuration: INDateComponentsRange; pickupLocation: CLPlacemark | null; dropOffLocation: CLPlacemark | null; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; rentalCar: INRentalCar; rentalDuration: INDateComponentsRange; pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; rentalCar: INRentalCar; rentalDuration: INDateComponentsRange; pickupLocation: CLPlacemark | null; dropOffLocation: CLPlacemark | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsRentalCarRentalDurationPickupLocationDropOffLocation(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], rentalCar: INRentalCar, rentalDuration: INDateComponentsRange, pickupLocation: CLPlacemark, dropOffLocation: CLPlacemark): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsRentalCarRentalDurationPickupLocationDropOffLocation(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, rentalCar: INRentalCar, rentalDuration: INDateComponentsRange, pickupLocation: CLPlacemark | null, dropOffLocation: CLPlacemark | null): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLRentalCarRentalDurationPickupLocationDropOffLocation(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, rentalCar: INRentalCar, rentalDuration: INDateComponentsRange, pickupLocation: CLPlacemark, dropOffLocation: CLPlacemark): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLRentalCarRentalDurationPickupLocationDropOffLocation(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, rentalCar: INRentalCar, rentalDuration: INDateComponentsRange, pickupLocation: CLPlacemark | null, dropOffLocation: CLPlacemark | null): this;
 }
 
 /**
@@ -8228,7 +8228,7 @@ declare class INRequestPaymentCurrencyAmountResolutionResult extends INCurrencyA
 
 	static alloc(): INRequestPaymentCurrencyAmountResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount): INRequestPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
+	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount | null): INRequestPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
 
 	/**
 	 * @since 13.0
@@ -8280,15 +8280,15 @@ declare class INRequestPaymentIntent extends INIntent {
 
 	static new(): INRequestPaymentIntent; // inherited from NSObject
 
-	readonly currencyAmount: INCurrencyAmount;
+	readonly currencyAmount: INCurrencyAmount | null;
 
-	readonly note: string;
+	readonly note: string | null;
 
-	readonly payer: INPerson;
+	readonly payer: INPerson | null;
 
-	constructor(o: { payer: INPerson; currencyAmount: INCurrencyAmount; note: string; });
+	constructor(o: { payer: INPerson | null; currencyAmount: INCurrencyAmount | null; note: string | null; });
 
-	initWithPayerCurrencyAmountNote(payer: INPerson, currencyAmount: INCurrencyAmount, note: string): this;
+	initWithPayerCurrencyAmountNote(payer: INPerson | null, currencyAmount: INCurrencyAmount | null, note: string | null): this;
 }
 
 /**
@@ -8345,11 +8345,11 @@ declare class INRequestPaymentIntentResponse extends INIntentResponse {
 
 	readonly code: INRequestPaymentIntentResponseCode;
 
-	paymentRecord: INPaymentRecord;
+	paymentRecord: INPaymentRecord | null;
 
-	constructor(o: { code: INRequestPaymentIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INRequestPaymentIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INRequestPaymentIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INRequestPaymentIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -8396,7 +8396,7 @@ declare class INRequestPaymentPayerResolutionResult extends INPersonResolutionRe
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INRequestPaymentPayerResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INRequestPaymentPayerResolutionResult; // inherited from INPersonResolutionResult
+	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson | null): INRequestPaymentPayerResolutionResult; // inherited from INPersonResolutionResult
 
 	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INRequestPaymentPayerResolutionResult; // inherited from INPersonResolutionResult
 
@@ -8443,42 +8443,42 @@ declare class INRequestRideIntent extends INIntent {
 
 	static new(): INRequestRideIntent; // inherited from NSObject
 
-	readonly dropOffLocation: CLPlacemark;
+	readonly dropOffLocation: CLPlacemark | null;
 
-	readonly partySize: number;
+	readonly partySize: number | null;
 
-	readonly paymentMethod: INPaymentMethod;
+	readonly paymentMethod: INPaymentMethod | null;
 
-	readonly pickupLocation: CLPlacemark;
+	readonly pickupLocation: CLPlacemark | null;
 
-	readonly rideOptionName: INSpeakableString;
+	readonly rideOptionName: INSpeakableString | null;
 
 	/**
 	 * @since 10.3
 	 */
-	readonly scheduledPickupTime: INDateComponentsRange;
+	readonly scheduledPickupTime: INDateComponentsRange | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.3
 	 */
-	constructor(o: { pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; rideOptionName: INSpeakableString; partySize: number; paymentMethod: INPaymentMethod; });
+	constructor(o: { pickupLocation: CLPlacemark | null; dropOffLocation: CLPlacemark | null; rideOptionName: INSpeakableString | null; partySize: number | null; paymentMethod: INPaymentMethod | null; });
 
 	/**
 	 * @since 10.3
 	 */
-	constructor(o: { pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; rideOptionName: INSpeakableString; partySize: number; paymentMethod: INPaymentMethod; scheduledPickupTime: INDateComponentsRange; });
+	constructor(o: { pickupLocation: CLPlacemark | null; dropOffLocation: CLPlacemark | null; rideOptionName: INSpeakableString | null; partySize: number | null; paymentMethod: INPaymentMethod | null; scheduledPickupTime: INDateComponentsRange | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.3
 	 */
-	initWithPickupLocationDropOffLocationRideOptionNamePartySizePaymentMethod(pickupLocation: CLPlacemark, dropOffLocation: CLPlacemark, rideOptionName: INSpeakableString, partySize: number, paymentMethod: INPaymentMethod): this;
+	initWithPickupLocationDropOffLocationRideOptionNamePartySizePaymentMethod(pickupLocation: CLPlacemark | null, dropOffLocation: CLPlacemark | null, rideOptionName: INSpeakableString | null, partySize: number | null, paymentMethod: INPaymentMethod | null): this;
 
 	/**
 	 * @since 10.3
 	 */
-	initWithPickupLocationDropOffLocationRideOptionNamePartySizePaymentMethodScheduledPickupTime(pickupLocation: CLPlacemark, dropOffLocation: CLPlacemark, rideOptionName: INSpeakableString, partySize: number, paymentMethod: INPaymentMethod, scheduledPickupTime: INDateComponentsRange): this;
+	initWithPickupLocationDropOffLocationRideOptionNamePartySizePaymentMethodScheduledPickupTime(pickupLocation: CLPlacemark | null, dropOffLocation: CLPlacemark | null, rideOptionName: INSpeakableString | null, partySize: number | null, paymentMethod: INPaymentMethod | null, scheduledPickupTime: INDateComponentsRange | null): this;
 }
 
 /**
@@ -8524,11 +8524,11 @@ declare class INRequestRideIntentResponse extends INIntentResponse {
 
 	readonly code: INRequestRideIntentResponseCode;
 
-	rideStatus: INRideStatus;
+	rideStatus: INRideStatus | null;
 
-	constructor(o: { code: INRequestRideIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INRequestRideIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INRequestRideIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INRequestRideIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -8571,17 +8571,17 @@ declare class INReservation extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 14.0
 	 */
-	readonly URL: NSURL;
+	readonly URL: NSURL | null;
 
-	readonly actions: NSArray<INReservationAction>;
+	readonly actions: NSArray<INReservationAction> | null;
 
-	readonly bookingTime: Date;
+	readonly bookingTime: Date | null;
 
 	readonly itemReference: INSpeakableString;
 
-	readonly reservationHolderName: string;
+	readonly reservationHolderName: string | null;
 
-	readonly reservationNumber: string;
+	readonly reservationNumber: string | null;
 
 	readonly reservationStatus: INReservationStatus;
 
@@ -8589,7 +8589,7 @@ declare class INReservation extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8617,7 +8617,7 @@ declare class INReservationAction extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { type: INReservationActionType; validDuration: INDateComponentsRange; userActivity: NSUserActivity; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8675,7 +8675,7 @@ declare class INRestaurant extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { location: CLLocation; name: string; vendorIdentifier: string; restaurantIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8693,13 +8693,13 @@ declare class INRestaurantGuest extends INPerson {
 
 	static new(): INRestaurantGuest; // inherited from NSObject
 
-	emailAddress: string;
+	emailAddress: string | null;
 
-	phoneNumber: string;
+	phoneNumber: string | null;
 
-	constructor(o: { nameComponents: NSPersonNameComponents; phoneNumber: string; emailAddress: string; });
+	constructor(o: { nameComponents: NSPersonNameComponents | null; phoneNumber: string | null; emailAddress: string | null; });
 
-	initWithNameComponentsPhoneNumberEmailAddress(nameComponents: NSPersonNameComponents, phoneNumber: string, emailAddress: string): this;
+	initWithNameComponentsPhoneNumberEmailAddress(nameComponents: NSPersonNameComponents | null, phoneNumber: string | null, emailAddress: string | null): this;
 }
 
 /**
@@ -8731,7 +8731,7 @@ declare class INRestaurantGuestDisplayPreferences extends NSObject implements NS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8750,7 +8750,7 @@ declare class INRestaurantGuestResolutionResult extends INIntentResolutionResult
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INRestaurantGuestResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithRestaurantGuestToConfirm(restaurantGuestToConfirm: INRestaurantGuest): INRestaurantGuestResolutionResult;
+	static confirmationRequiredWithRestaurantGuestToConfirm(restaurantGuestToConfirm: INRestaurantGuest | null): INRestaurantGuestResolutionResult;
 
 	static disambiguationWithRestaurantGuestsToDisambiguate(restaurantGuestsToDisambiguate: NSArray<INRestaurantGuest> | INRestaurantGuest[]): INRestaurantGuestResolutionResult;
 
@@ -8789,7 +8789,7 @@ declare class INRestaurantOffer extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8805,7 +8805,7 @@ declare class INRestaurantReservation extends INReservation implements NSCopying
 
 	static new(): INRestaurantReservation; // inherited from NSObject
 
-	readonly partySize: number;
+	readonly partySize: number | null;
 
 	readonly reservationDuration: INDateComponentsRange;
 
@@ -8815,25 +8815,25 @@ declare class INRestaurantReservation extends INReservation implements NSCopying
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; reservationDuration: INDateComponentsRange; partySize: number; restaurantLocation: CLPlacemark; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; reservationDuration: INDateComponentsRange; partySize: number | null; restaurantLocation: CLPlacemark; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; reservationDuration: INDateComponentsRange; partySize: number; restaurantLocation: CLPlacemark; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; reservationDuration: INDateComponentsRange; partySize: number | null; restaurantLocation: CLPlacemark; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservationDurationPartySizeRestaurantLocation(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], reservationDuration: INDateComponentsRange, partySize: number, restaurantLocation: CLPlacemark): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservationDurationPartySizeRestaurantLocation(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, reservationDuration: INDateComponentsRange, partySize: number | null, restaurantLocation: CLPlacemark): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservationDurationPartySizeRestaurantLocation(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservationDuration: INDateComponentsRange, partySize: number, restaurantLocation: CLPlacemark): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservationDurationPartySizeRestaurantLocation(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, reservationDuration: INDateComponentsRange, partySize: number | null, restaurantLocation: CLPlacemark): this;
 }
 
 /**
@@ -8849,11 +8849,11 @@ declare class INRestaurantReservationBooking extends NSObject implements NSCopyi
 
 	bookingDate: Date;
 
-	bookingDescription: string;
+	bookingDescription: string | null;
 
 	bookingIdentifier: string;
 
-	offers: NSArray<INRestaurantOffer>;
+	offers: NSArray<INRestaurantOffer> | null;
 
 	partySize: number;
 
@@ -8873,7 +8873,7 @@ declare class INRestaurantReservationBooking extends NSObject implements NSCopyi
 
 	constructor(o: { restaurant: INRestaurant; bookingDate: Date; partySize: number; bookingIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -8891,21 +8891,21 @@ declare class INRestaurantReservationUserBooking extends INRestaurantReservation
 
 	static new(): INRestaurantReservationUserBooking; // inherited from NSObject
 
-	advisementText: string;
+	advisementText: string | null;
 
 	dateStatusModified: Date;
 
 	guest: INRestaurantGuest;
 
-	guestProvidedSpecialRequestText: string;
+	guestProvidedSpecialRequestText: string | null;
 
-	selectedOffer: INRestaurantOffer;
+	selectedOffer: INRestaurantOffer | null;
 
 	status: INRestaurantReservationUserBookingStatus;
 
 	constructor(o: { restaurant: INRestaurant; bookingDate: Date; partySize: number; bookingIdentifier: string; guest: INRestaurantGuest; status: INRestaurantReservationUserBookingStatus; dateStatusModified: Date; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithRestaurantBookingDatePartySizeBookingIdentifierGuestStatusDateStatusModified(restaurant: INRestaurant, bookingDate: Date, partySize: number, bookingIdentifier: string, guest: INRestaurantGuest, status: INRestaurantReservationUserBookingStatus, dateStatusModified: Date): this;
 }
@@ -8931,7 +8931,7 @@ declare class INRestaurantResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INRestaurantResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithRestaurantToConfirm(restaurantToConfirm: INRestaurant): INRestaurantResolutionResult;
+	static confirmationRequiredWithRestaurantToConfirm(restaurantToConfirm: INRestaurant | null): INRestaurantResolutionResult;
 
 	static disambiguationWithRestaurantsToDisambiguate(restaurantsToDisambiguate: NSArray<INRestaurant> | INRestaurant[]): INRestaurantResolutionResult;
 
@@ -8960,11 +8960,11 @@ declare class INResumeWorkoutIntent extends INIntent {
 
 	static new(): INResumeWorkoutIntent; // inherited from NSObject
 
-	readonly workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString | null;
 
-	constructor(o: { workoutName: INSpeakableString; });
+	constructor(o: { workoutName: INSpeakableString | null; });
 
-	initWithWorkoutName(workoutName: INSpeakableString): this;
+	initWithWorkoutName(workoutName: INSpeakableString | null): this;
 }
 
 /**
@@ -8999,9 +8999,9 @@ declare class INResumeWorkoutIntentResponse extends INIntentResponse {
 
 	readonly code: INResumeWorkoutIntentResponseCode;
 
-	constructor(o: { code: INResumeWorkoutIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INResumeWorkoutIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INResumeWorkoutIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INResumeWorkoutIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -9056,12 +9056,12 @@ declare class INRideCompletionStatus extends NSObject implements NSCopying, NSSe
 
 	readonly completed: boolean;
 
-	completionUserActivity: NSUserActivity;
+	completionUserActivity: NSUserActivity | null;
 
 	/**
 	 * @since 11.0
 	 */
-	defaultTippingOptions: NSSet<INCurrencyAmount>;
+	defaultTippingOptions: NSSet<INCurrencyAmount> | null;
 
 	/**
 	 * @since 11.0
@@ -9072,13 +9072,13 @@ declare class INRideCompletionStatus extends NSObject implements NSCopying, NSSe
 
 	readonly outstanding: boolean;
 
-	readonly paymentAmount: INCurrencyAmount;
+	readonly paymentAmount: INCurrencyAmount | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -9094,9 +9094,9 @@ declare class INRideDriver extends INPerson implements NSCopying, NSSecureCoding
 
 	static new(): INRideDriver; // inherited from NSObject
 
-	readonly phoneNumber: string;
+	readonly phoneNumber: string | null;
 
-	readonly rating: string;
+	readonly rating: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -9106,26 +9106,26 @@ declare class INRideDriver extends INPerson implements NSCopying, NSSecureCoding
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	constructor(o: { handle: string; displayName: string; image: INImage; rating: string; phoneNumber: string; });
+	constructor(o: { handle: string; displayName: string | null; image: INImage | null; rating: string | null; phoneNumber: string | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	constructor(o: { handle: string; nameComponents: NSPersonNameComponents; image: INImage; rating: string; phoneNumber: string; });
+	constructor(o: { handle: string; nameComponents: NSPersonNameComponents; image: INImage | null; rating: string | null; phoneNumber: string | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; rating: string; phoneNumber: string; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; rating: string | null; phoneNumber: string | null; });
 
 	/**
 	 * @since 10.2
 	 */
-	constructor(o: { phoneNumber: string; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; rating: string; });
+	constructor(o: { phoneNumber: string; nameComponents: NSPersonNameComponents | null; displayName: string | null; image: INImage | null; rating: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -9135,24 +9135,24 @@ declare class INRideDriver extends INPerson implements NSCopying, NSSecureCoding
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	initWithHandleDisplayNameImageRatingPhoneNumber(handle: string, displayName: string, image: INImage, rating: string, phoneNumber: string): this;
+	initWithHandleDisplayNameImageRatingPhoneNumber(handle: string, displayName: string | null, image: INImage | null, rating: string | null, phoneNumber: string | null): this;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	initWithHandleNameComponentsImageRatingPhoneNumber(handle: string, nameComponents: NSPersonNameComponents, image: INImage, rating: string, phoneNumber: string): this;
+	initWithHandleNameComponentsImageRatingPhoneNumber(handle: string, nameComponents: NSPersonNameComponents, image: INImage | null, rating: string | null, phoneNumber: string | null): this;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	initWithPersonHandleNameComponentsDisplayNameImageRatingPhoneNumber(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, rating: string, phoneNumber: string): this;
+	initWithPersonHandleNameComponentsDisplayNameImageRatingPhoneNumber(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, rating: string | null, phoneNumber: string | null): this;
 
 	/**
 	 * @since 10.2
 	 */
-	initWithPhoneNumberNameComponentsDisplayNameImageRating(phoneNumber: string, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, rating: string): this;
+	initWithPhoneNumberNameComponentsDisplayNameImageRating(phoneNumber: string, nameComponents: NSPersonNameComponents | null, displayName: string | null, image: INImage | null, rating: string | null): this;
 }
 
 /**
@@ -9176,7 +9176,7 @@ declare class INRideFareLineItem extends NSObject implements NSCopying, NSSecure
 
 	constructor(o: { title: string; price: NSDecimalNumber; currencyCode: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -9204,29 +9204,29 @@ declare class INRideOption extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): INRideOption; // inherited from NSObject
 
-	availablePartySizeOptions: NSArray<INRidePartySizeOption>;
+	availablePartySizeOptions: NSArray<INRidePartySizeOption> | null;
 
-	availablePartySizeOptionsSelectionPrompt: string;
+	availablePartySizeOptionsSelectionPrompt: string | null;
 
-	disclaimerMessage: string;
+	disclaimerMessage: string | null;
 
 	estimatedPickupDate: Date;
 
-	fareLineItems: NSArray<INRideFareLineItem>;
+	fareLineItems: NSArray<INRideFareLineItem> | null;
 
-	identifier: string;
+	identifier: string | null;
 
 	name: string;
 
-	priceRange: INPriceRange;
+	priceRange: INPriceRange | null;
 
-	specialPricing: string;
+	specialPricing: string | null;
 
-	specialPricingBadgeImage: INImage;
+	specialPricingBadgeImage: INImage | null;
 
-	userActivityForBookingInApplication: NSUserActivity;
+	userActivityForBookingInApplication: NSUserActivity | null;
 
-	usesMeteredFare: number;
+	usesMeteredFare: number | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -9234,7 +9234,7 @@ declare class INRideOption extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { name: string; estimatedPickupDate: Date; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -9254,7 +9254,7 @@ declare class INRidePartySizeOption extends NSObject implements NSCopying, NSSec
 
 	readonly partySizeRange: NSRange;
 
-	readonly priceRange: INPriceRange;
+	readonly priceRange: INPriceRange | null;
 
 	readonly sizeDescription: string;
 
@@ -9262,15 +9262,15 @@ declare class INRidePartySizeOption extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { partySizeRange: NSRange; sizeDescription: string; priceRange: INPriceRange; });
+	constructor(o: { partySizeRange: NSRange; sizeDescription: string; priceRange: INPriceRange | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithPartySizeRangeSizeDescriptionPriceRange(partySizeRange: NSRange, sizeDescription: string, priceRange: INPriceRange): this;
+	initWithPartySizeRangeSizeDescriptionPriceRange(partySizeRange: NSRange, sizeDescription: string, priceRange: INPriceRange | null): this;
 }
 
 /**
@@ -9302,44 +9302,44 @@ declare class INRideStatus extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): INRideStatus; // inherited from NSObject
 
-	additionalActionActivities: NSArray<NSUserActivity>;
+	additionalActionActivities: NSArray<NSUserActivity> | null;
 
-	completionStatus: INRideCompletionStatus;
+	completionStatus: INRideCompletionStatus | null;
 
-	driver: INRideDriver;
+	driver: INRideDriver | null;
 
-	dropOffLocation: CLPlacemark;
+	dropOffLocation: CLPlacemark | null;
 
-	estimatedDropOffDate: Date;
+	estimatedDropOffDate: Date | null;
 
-	estimatedPickupDate: Date;
+	estimatedPickupDate: Date | null;
 
-	estimatedPickupEndDate: Date;
+	estimatedPickupEndDate: Date | null;
 
 	phase: INRidePhase;
 
-	pickupLocation: CLPlacemark;
+	pickupLocation: CLPlacemark | null;
 
-	rideIdentifier: string;
+	rideIdentifier: string | null;
 
-	rideOption: INRideOption;
+	rideOption: INRideOption | null;
 
 	/**
 	 * @since 10.3
 	 */
-	scheduledPickupTime: INDateComponentsRange;
+	scheduledPickupTime: INDateComponentsRange | null;
 
-	userActivityForCancelingInApplication: NSUserActivity;
+	userActivityForCancelingInApplication: NSUserActivity | null;
 
-	vehicle: INRideVehicle;
+	vehicle: INRideVehicle | null;
 
-	waypoints: NSArray<CLPlacemark>;
+	waypoints: NSArray<CLPlacemark> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -9355,21 +9355,21 @@ declare class INRideVehicle extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): INRideVehicle; // inherited from NSObject
 
-	location: CLLocation;
+	location: CLLocation | null;
 
-	manufacturer: string;
+	manufacturer: string | null;
 
-	mapAnnotationImage: INImage;
+	mapAnnotationImage: INImage | null;
 
-	model: string;
+	model: string | null;
 
-	registrationPlate: string;
+	registrationPlate: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -9401,36 +9401,36 @@ declare class INSaveProfileInCarIntent extends INIntent {
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	readonly profileLabel: string;
+	readonly profileLabel: string | null;
 
 	/**
 	 * @since 10.2
 	 */
-	readonly profileName: string;
+	readonly profileName: string | null;
 
-	readonly profileNumber: number;
+	readonly profileNumber: number | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	constructor(o: { profileNumber: number; profileLabel: string; });
+	constructor(o: { profileNumber: number | null; profileLabel: string | null; });
 
 	/**
 	 * @since 10.2
 	 */
-	constructor(o: { profileNumber: number; profileName: string; });
+	constructor(o: { profileNumber: number | null; profileName: string | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	initWithProfileNumberProfileLabel(profileNumber: number, profileLabel: string): this;
+	initWithProfileNumberProfileLabel(profileNumber: number | null, profileLabel: string | null): this;
 
 	/**
 	 * @since 10.2
 	 */
-	initWithProfileNumberProfileName(profileNumber: number, profileName: string): this;
+	initWithProfileNumberProfileName(profileNumber: number | null, profileName: string | null): this;
 }
 
 /**
@@ -9472,9 +9472,9 @@ declare class INSaveProfileInCarIntentResponse extends INIntentResponse {
 
 	readonly code: INSaveProfileInCarIntentResponseCode;
 
-	constructor(o: { code: INSaveProfileInCarIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSaveProfileInCarIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSaveProfileInCarIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSaveProfileInCarIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -9519,36 +9519,36 @@ declare class INSearchCallHistoryIntent extends INIntent {
 	 */
 	readonly callTypes: INCallRecordTypeOptions;
 
-	readonly dateCreated: INDateComponentsRange;
+	readonly dateCreated: INDateComponentsRange | null;
 
-	readonly recipient: INPerson;
+	readonly recipient: INPerson | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly unseen: number;
+	readonly unseen: number | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	constructor(o: { callType: INCallRecordType; dateCreated: INDateComponentsRange; recipient: INPerson; callCapabilities: INCallCapabilityOptions; });
+	constructor(o: { callType: INCallRecordType; dateCreated: INDateComponentsRange | null; recipient: INPerson | null; callCapabilities: INCallCapabilityOptions; });
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { dateCreated: INDateComponentsRange; recipient: INPerson; callCapabilities: INCallCapabilityOptions; callTypes: INCallRecordTypeOptions; unseen: number; });
+	constructor(o: { dateCreated: INDateComponentsRange | null; recipient: INPerson | null; callCapabilities: INCallCapabilityOptions; callTypes: INCallRecordTypeOptions; unseen: number | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	initWithCallTypeDateCreatedRecipientCallCapabilities(callType: INCallRecordType, dateCreated: INDateComponentsRange, recipient: INPerson, callCapabilities: INCallCapabilityOptions): this;
+	initWithCallTypeDateCreatedRecipientCallCapabilities(callType: INCallRecordType, dateCreated: INDateComponentsRange | null, recipient: INPerson | null, callCapabilities: INCallCapabilityOptions): this;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithDateCreatedRecipientCallCapabilitiesCallTypesUnseen(dateCreated: INDateComponentsRange, recipient: INPerson, callCapabilities: INCallCapabilityOptions, callTypes: INCallRecordTypeOptions, unseen: number): this;
+	initWithDateCreatedRecipientCallCapabilitiesCallTypesUnseen(dateCreated: INDateComponentsRange | null, recipient: INPerson | null, callCapabilities: INCallCapabilityOptions, callTypes: INCallRecordTypeOptions, unseen: number | null): this;
 }
 
 /**
@@ -9600,13 +9600,13 @@ declare class INSearchCallHistoryIntentResponse extends INIntentResponse {
 	/**
 	 * @since 11.0
 	 */
-	callRecords: NSArray<INCallRecord>;
+	callRecords: NSArray<INCallRecord> | null;
 
 	readonly code: INSearchCallHistoryIntentResponseCode;
 
-	constructor(o: { code: INSearchCallHistoryIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchCallHistoryIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchCallHistoryIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchCallHistoryIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -9641,17 +9641,17 @@ declare class INSearchForAccountsIntent extends INIntent {
 
 	static new(): INSearchForAccountsIntent; // inherited from NSObject
 
-	readonly accountNickname: INSpeakableString;
+	readonly accountNickname: INSpeakableString | null;
 
 	readonly accountType: INAccountType;
 
-	readonly organizationName: INSpeakableString;
+	readonly organizationName: INSpeakableString | null;
 
 	readonly requestedBalanceType: INBalanceType;
 
-	constructor(o: { accountNickname: INSpeakableString; accountType: INAccountType; organizationName: INSpeakableString; requestedBalanceType: INBalanceType; });
+	constructor(o: { accountNickname: INSpeakableString | null; accountType: INAccountType; organizationName: INSpeakableString | null; requestedBalanceType: INBalanceType; });
 
-	initWithAccountNicknameAccountTypeOrganizationNameRequestedBalanceType(accountNickname: INSpeakableString, accountType: INAccountType, organizationName: INSpeakableString, requestedBalanceType: INBalanceType): this;
+	initWithAccountNicknameAccountTypeOrganizationNameRequestedBalanceType(accountNickname: INSpeakableString | null, accountType: INAccountType, organizationName: INSpeakableString | null, requestedBalanceType: INBalanceType): this;
 }
 
 /**
@@ -9685,13 +9685,13 @@ declare class INSearchForAccountsIntentResponse extends INIntentResponse {
 
 	static new(): INSearchForAccountsIntentResponse; // inherited from NSObject
 
-	accounts: NSArray<INPaymentAccount>;
+	accounts: NSArray<INPaymentAccount> | null;
 
 	readonly code: INSearchForAccountsIntentResponseCode;
 
-	constructor(o: { code: INSearchForAccountsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchForAccountsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchForAccountsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchForAccountsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -9730,19 +9730,19 @@ declare class INSearchForBillsIntent extends INIntent {
 
 	static new(): INSearchForBillsIntent; // inherited from NSObject
 
-	readonly billPayee: INBillPayee;
+	readonly billPayee: INBillPayee | null;
 
 	readonly billType: INBillType;
 
-	readonly dueDateRange: INDateComponentsRange;
+	readonly dueDateRange: INDateComponentsRange | null;
 
-	readonly paymentDateRange: INDateComponentsRange;
+	readonly paymentDateRange: INDateComponentsRange | null;
 
 	readonly status: INPaymentStatus;
 
-	constructor(o: { billPayee: INBillPayee; paymentDateRange: INDateComponentsRange; billType: INBillType; status: INPaymentStatus; dueDateRange: INDateComponentsRange; });
+	constructor(o: { billPayee: INBillPayee | null; paymentDateRange: INDateComponentsRange | null; billType: INBillType; status: INPaymentStatus; dueDateRange: INDateComponentsRange | null; });
 
-	initWithBillPayeePaymentDateRangeBillTypeStatusDueDateRange(billPayee: INBillPayee, paymentDateRange: INDateComponentsRange, billType: INBillType, status: INPaymentStatus, dueDateRange: INDateComponentsRange): this;
+	initWithBillPayeePaymentDateRangeBillTypeStatusDueDateRange(billPayee: INBillPayee | null, paymentDateRange: INDateComponentsRange | null, billType: INBillType, status: INPaymentStatus, dueDateRange: INDateComponentsRange | null): this;
 }
 
 /**
@@ -9780,13 +9780,13 @@ declare class INSearchForBillsIntentResponse extends INIntentResponse {
 
 	static new(): INSearchForBillsIntentResponse; // inherited from NSObject
 
-	bills: NSArray<INBillDetails>;
+	bills: NSArray<INBillDetails> | null;
 
 	readonly code: INSearchForBillsIntentResponseCode;
 
-	constructor(o: { code: INSearchForBillsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchForBillsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchForBillsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchForBillsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -9821,13 +9821,13 @@ declare class INSearchForMediaIntent extends INIntent {
 
 	static new(): INSearchForMediaIntent; // inherited from NSObject
 
-	readonly mediaItems: NSArray<INMediaItem>;
+	readonly mediaItems: NSArray<INMediaItem> | null;
 
-	readonly mediaSearch: INMediaSearch;
+	readonly mediaSearch: INMediaSearch | null;
 
-	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[]; mediaSearch: INMediaSearch; });
+	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[] | null; mediaSearch: INMediaSearch | null; });
 
-	initWithMediaItemsMediaSearch(mediaItems: NSArray<INMediaItem> | INMediaItem[], mediaSearch: INMediaSearch): this;
+	initWithMediaItemsMediaSearch(mediaItems: NSArray<INMediaItem> | INMediaItem[] | null, mediaSearch: INMediaSearch | null): this;
 }
 
 /**
@@ -9857,11 +9857,11 @@ declare class INSearchForMediaIntentResponse extends INIntentResponse {
 
 	readonly code: INSearchForMediaIntentResponseCode;
 
-	mediaItems: NSArray<INMediaItem>;
+	mediaItems: NSArray<INMediaItem> | null;
 
-	constructor(o: { code: INSearchForMediaIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchForMediaIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchForMediaIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchForMediaIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -9896,7 +9896,7 @@ declare class INSearchForMediaMediaItemResolutionResult extends INMediaItemResol
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSearchForMediaMediaItemResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem): INSearchForMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
+	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem | null): INSearchForMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
 	static disambiguationWithMediaItemsToDisambiguate(mediaItemsToDisambiguate: NSArray<INMediaItem> | INMediaItem[]): INSearchForMediaMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
@@ -9958,20 +9958,20 @@ declare class INSearchForMessagesIntent extends INIntent {
 	/**
 	 * @since 12.0
 	 */
-	readonly conversationIdentifiers: NSArray<string>;
+	readonly conversationIdentifiers: NSArray<string> | null;
 
 	/**
 	 * @since 12.0
 	 */
 	readonly conversationIdentifiersOperator: INConditionalOperator;
 
-	readonly dateTimeRange: INDateComponentsRange;
+	readonly dateTimeRange: INDateComponentsRange | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	readonly groupNames: NSArray<string>;
+	readonly groupNames: NSArray<string> | null;
 
 	/**
 	 * @since 10.0
@@ -9979,30 +9979,30 @@ declare class INSearchForMessagesIntent extends INIntent {
 	 */
 	readonly groupNamesOperator: INConditionalOperator;
 
-	readonly identifiers: NSArray<string>;
+	readonly identifiers: NSArray<string> | null;
 
 	readonly identifiersOperator: INConditionalOperator;
 
-	readonly notificationIdentifiers: NSArray<string>;
+	readonly notificationIdentifiers: NSArray<string> | null;
 
 	readonly notificationIdentifiersOperator: INConditionalOperator;
 
-	readonly recipients: NSArray<INPerson>;
+	readonly recipients: NSArray<INPerson> | null;
 
 	readonly recipientsOperator: INConditionalOperator;
 
-	readonly searchTerms: NSArray<string>;
+	readonly searchTerms: NSArray<string> | null;
 
 	readonly searchTermsOperator: INConditionalOperator;
 
-	readonly senders: NSArray<INPerson>;
+	readonly senders: NSArray<INPerson> | null;
 
 	readonly sendersOperator: INConditionalOperator;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly speakableGroupNames: NSArray<INSpeakableString>;
+	readonly speakableGroupNames: NSArray<INSpeakableString> | null;
 
 	/**
 	 * @since 11.0
@@ -10013,35 +10013,35 @@ declare class INSearchForMessagesIntent extends INIntent {
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; senders: NSArray<INPerson> | INPerson[]; searchTerms: NSArray<string> | string[]; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string> | string[]; notificationIdentifiers: NSArray<string> | string[]; groupNames: NSArray<string> | string[]; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; senders: NSArray<INPerson> | INPerson[] | null; searchTerms: NSArray<string> | string[] | null; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange | null; identifiers: NSArray<string> | string[] | null; notificationIdentifiers: NSArray<string> | string[] | null; groupNames: NSArray<string> | string[] | null; });
 
 	/**
 	 * @since 11.0
 	 * @deprecated 12.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; senders: NSArray<INPerson> | INPerson[]; searchTerms: NSArray<string> | string[]; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string> | string[]; notificationIdentifiers: NSArray<string> | string[]; speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[]; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; senders: NSArray<INPerson> | INPerson[] | null; searchTerms: NSArray<string> | string[] | null; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange | null; identifiers: NSArray<string> | string[] | null; notificationIdentifiers: NSArray<string> | string[] | null; speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[] | null; });
 
 	/**
 	 * @since 12.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; senders: NSArray<INPerson> | INPerson[]; searchTerms: NSArray<string> | string[]; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string> | string[]; notificationIdentifiers: NSArray<string> | string[]; speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[]; conversationIdentifiers: NSArray<string> | string[]; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; senders: NSArray<INPerson> | INPerson[] | null; searchTerms: NSArray<string> | string[] | null; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange | null; identifiers: NSArray<string> | string[] | null; notificationIdentifiers: NSArray<string> | string[] | null; speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[] | null; conversationIdentifiers: NSArray<string> | string[] | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersGroupNames(recipients: NSArray<INPerson> | INPerson[], senders: NSArray<INPerson> | INPerson[], searchTerms: NSArray<string> | string[], attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string> | string[], notificationIdentifiers: NSArray<string> | string[], groupNames: NSArray<string> | string[]): this;
+	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersGroupNames(recipients: NSArray<INPerson> | INPerson[] | null, senders: NSArray<INPerson> | INPerson[] | null, searchTerms: NSArray<string> | string[] | null, attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange | null, identifiers: NSArray<string> | string[] | null, notificationIdentifiers: NSArray<string> | string[] | null, groupNames: NSArray<string> | string[] | null): this;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 12.0
 	 */
-	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersSpeakableGroupNames(recipients: NSArray<INPerson> | INPerson[], senders: NSArray<INPerson> | INPerson[], searchTerms: NSArray<string> | string[], attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string> | string[], notificationIdentifiers: NSArray<string> | string[], speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[]): this;
+	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersSpeakableGroupNames(recipients: NSArray<INPerson> | INPerson[] | null, senders: NSArray<INPerson> | INPerson[] | null, searchTerms: NSArray<string> | string[] | null, attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange | null, identifiers: NSArray<string> | string[] | null, notificationIdentifiers: NSArray<string> | string[] | null, speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[] | null): this;
 
 	/**
 	 * @since 12.0
 	 */
-	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersSpeakableGroupNamesConversationIdentifiers(recipients: NSArray<INPerson> | INPerson[], senders: NSArray<INPerson> | INPerson[], searchTerms: NSArray<string> | string[], attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string> | string[], notificationIdentifiers: NSArray<string> | string[], speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[], conversationIdentifiers: NSArray<string> | string[]): this;
+	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersSpeakableGroupNamesConversationIdentifiers(recipients: NSArray<INPerson> | INPerson[] | null, senders: NSArray<INPerson> | INPerson[] | null, searchTerms: NSArray<string> | string[] | null, attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange | null, identifiers: NSArray<string> | string[] | null, notificationIdentifiers: NSArray<string> | string[] | null, speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[] | null, conversationIdentifiers: NSArray<string> | string[] | null): this;
 }
 
 /**
@@ -10093,11 +10093,11 @@ declare class INSearchForMessagesIntentResponse extends INIntentResponse {
 
 	readonly code: INSearchForMessagesIntentResponseCode;
 
-	messages: NSArray<INMessage>;
+	messages: NSArray<INMessage> | null;
 
-	constructor(o: { code: INSearchForMessagesIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchForMessagesIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchForMessagesIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchForMessagesIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -10133,22 +10133,22 @@ declare class INSearchForNotebookItemsIntent extends INIntent {
 
 	static new(): INSearchForNotebookItemsIntent; // inherited from NSObject
 
-	readonly content: string;
+	readonly content: string | null;
 
 	readonly dateSearchType: INDateSearchType;
 
-	readonly dateTime: INDateComponentsRange;
+	readonly dateTime: INDateComponentsRange | null;
 
 	readonly itemType: INNotebookItemType;
 
-	readonly location: CLPlacemark;
+	readonly location: CLPlacemark | null;
 
 	readonly locationSearchType: INLocationSearchType;
 
 	/**
 	 * @since 11.2
 	 */
-	readonly notebookItemIdentifier: string;
+	readonly notebookItemIdentifier: string | null;
 
 	readonly status: INTaskStatus;
 
@@ -10162,41 +10162,41 @@ declare class INSearchForNotebookItemsIntent extends INIntent {
 	 */
 	readonly temporalEventTriggerTypes: INTemporalEventTriggerTypeOptions;
 
-	readonly title: INSpeakableString;
+	readonly title: INSpeakableString | null;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 11.2
 	 */
-	constructor(o: { title: INSpeakableString; content: string; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange; dateSearchType: INDateSearchType; });
+	constructor(o: { title: INSpeakableString | null; content: string | null; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark | null; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange | null; dateSearchType: INDateSearchType; });
 
 	/**
 	 * @since 11.2
 	 * @deprecated 13.0
 	 */
-	constructor(o: { title: INSpeakableString; content: string; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange; dateSearchType: INDateSearchType; notebookItemIdentifier: string; });
+	constructor(o: { title: INSpeakableString | null; content: string | null; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark | null; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange | null; dateSearchType: INDateSearchType; notebookItemIdentifier: string | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { title: INSpeakableString; content: string; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange; dateSearchType: INDateSearchType; temporalEventTriggerTypes: INTemporalEventTriggerTypeOptions; taskPriority: INTaskPriority; notebookItemIdentifier: string; });
+	constructor(o: { title: INSpeakableString | null; content: string | null; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark | null; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange | null; dateSearchType: INDateSearchType; temporalEventTriggerTypes: INTemporalEventTriggerTypeOptions; taskPriority: INTaskPriority; notebookItemIdentifier: string | null; });
 
 	/**
 	 * @since 11.0
 	 * @deprecated 11.2
 	 */
-	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchType(title: INSpeakableString, content: string, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange, dateSearchType: INDateSearchType): this;
+	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchType(title: INSpeakableString | null, content: string | null, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark | null, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange | null, dateSearchType: INDateSearchType): this;
 
 	/**
 	 * @since 11.2
 	 * @deprecated 13.0
 	 */
-	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchTypeNotebookItemIdentifier(title: INSpeakableString, content: string, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange, dateSearchType: INDateSearchType, notebookItemIdentifier: string): this;
+	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchTypeNotebookItemIdentifier(title: INSpeakableString | null, content: string | null, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark | null, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange | null, dateSearchType: INDateSearchType, notebookItemIdentifier: string | null): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchTypeTemporalEventTriggerTypesTaskPriorityNotebookItemIdentifier(title: INSpeakableString, content: string, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange, dateSearchType: INDateSearchType, temporalEventTriggerTypes: INTemporalEventTriggerTypeOptions, taskPriority: INTaskPriority, notebookItemIdentifier: string): this;
+	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchTypeTemporalEventTriggerTypesTaskPriorityNotebookItemIdentifier(title: INSpeakableString | null, content: string | null, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark | null, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange | null, dateSearchType: INDateSearchType, temporalEventTriggerTypes: INTemporalEventTriggerTypeOptions, taskPriority: INTaskPriority, notebookItemIdentifier: string | null): this;
 }
 
 /**
@@ -10250,17 +10250,17 @@ declare class INSearchForNotebookItemsIntentResponse extends INIntentResponse {
 
 	readonly code: INSearchForNotebookItemsIntentResponseCode;
 
-	notes: NSArray<INNote>;
+	notes: NSArray<INNote> | null;
 
 	sortType: INSortType;
 
-	taskLists: NSArray<INTaskList>;
+	taskLists: NSArray<INTaskList> | null;
 
-	tasks: NSArray<INTask>;
+	tasks: NSArray<INTask> | null;
 
-	constructor(o: { code: INSearchForNotebookItemsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchForNotebookItemsIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchForNotebookItemsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchForNotebookItemsIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -10291,27 +10291,27 @@ declare class INSearchForPhotosIntent extends INIntent {
 
 	static new(): INSearchForPhotosIntent; // inherited from NSObject
 
-	readonly albumName: string;
+	readonly albumName: string | null;
 
-	readonly dateCreated: INDateComponentsRange;
+	readonly dateCreated: INDateComponentsRange | null;
 
 	readonly excludedAttributes: INPhotoAttributeOptions;
 
 	readonly includedAttributes: INPhotoAttributeOptions;
 
-	readonly locationCreated: CLPlacemark;
+	readonly locationCreated: CLPlacemark | null;
 
-	readonly peopleInPhoto: NSArray<INPerson>;
+	readonly peopleInPhoto: NSArray<INPerson> | null;
 
 	readonly peopleInPhotoOperator: INConditionalOperator;
 
-	readonly searchTerms: NSArray<string>;
+	readonly searchTerms: NSArray<string> | null;
 
 	readonly searchTermsOperator: INConditionalOperator;
 
-	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string> | string[]; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson> | INPerson[]; });
+	constructor(o: { dateCreated: INDateComponentsRange | null; locationCreated: CLPlacemark | null; albumName: string | null; searchTerms: NSArray<string> | string[] | null; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson> | INPerson[] | null; });
 
-	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string> | string[], includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[]): this;
+	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange | null, locationCreated: CLPlacemark | null, albumName: string | null, searchTerms: NSArray<string> | string[] | null, includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[] | null): this;
 }
 
 /**
@@ -10360,11 +10360,11 @@ declare class INSearchForPhotosIntentResponse extends INIntentResponse {
 
 	readonly code: INSearchForPhotosIntentResponseCode;
 
-	searchResultsCount: number;
+	searchResultsCount: number | null;
 
-	constructor(o: { code: INSearchForPhotosIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSearchForPhotosIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSearchForPhotosIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSearchForPhotosIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -10395,27 +10395,27 @@ declare class INSeat extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INSeat; // inherited from NSObject
 
-	readonly seatNumber: string;
+	readonly seatNumber: string | null;
 
-	readonly seatRow: string;
+	readonly seatRow: string | null;
 
-	readonly seatSection: string;
+	readonly seatSection: string | null;
 
-	readonly seatingType: string;
+	readonly seatingType: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { seatSection: string; seatRow: string; seatNumber: string; seatingType: string; });
+	constructor(o: { seatSection: string | null; seatRow: string | null; seatNumber: string | null; seatingType: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSeatSectionSeatRowSeatNumberSeatingType(seatSection: string, seatRow: string, seatNumber: string, seatingType: string): this;
+	initWithSeatSectionSeatRowSeatNumberSeatingType(seatSection: string | null, seatRow: string | null, seatNumber: string | null, seatingType: string | null): this;
 }
 
 /**
@@ -10429,7 +10429,7 @@ declare class INSendMessageAttachment extends NSObject {
 
 	static new(): INSendMessageAttachment; // inherited from NSObject
 
-	readonly audioMessageFile: INFile;
+	readonly audioMessageFile: INFile | null;
 }
 
 /**
@@ -10444,36 +10444,36 @@ declare class INSendMessageIntent extends INIntent implements UNNotificationCont
 	/**
 	 * @since 14.0
 	 */
-	readonly attachments: NSArray<INSendMessageAttachment>;
+	readonly attachments: NSArray<INSendMessageAttachment> | null;
 
-	readonly content: string;
+	readonly content: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly conversationIdentifier: string;
+	readonly conversationIdentifier: string | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	readonly groupName: string;
+	readonly groupName: string | null;
 
 	/**
 	 * @since 14.0
 	 */
 	readonly outgoingMessageType: INOutgoingMessageType;
 
-	readonly recipients: NSArray<INPerson>;
+	readonly recipients: NSArray<INPerson> | null;
 
-	readonly sender: INPerson;
+	readonly sender: INPerson | null;
 
-	readonly serviceName: string;
+	readonly serviceName: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly speakableGroupName: INSpeakableString;
+	readonly speakableGroupName: INSpeakableString | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -10491,24 +10491,24 @@ declare class INSendMessageIntent extends INIntent implements UNNotificationCont
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; content: string; groupName: string; serviceName: string; sender: INPerson; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; content: string | null; groupName: string | null; serviceName: string | null; sender: INPerson | null; });
 
 	/**
 	 * @since 11.0
 	 * @deprecated 14.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; content: string | null; speakableGroupName: INSpeakableString | null; conversationIdentifier: string | null; serviceName: string | null; sender: INPerson | null; });
 
 	/**
 	 * @since 14.0
 	 * @deprecated 14.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; outgoingMessageType: INOutgoingMessageType; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; outgoingMessageType: INOutgoingMessageType; content: string | null; speakableGroupName: INSpeakableString | null; conversationIdentifier: string | null; serviceName: string | null; sender: INPerson | null; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; outgoingMessageType: INOutgoingMessageType; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; attachments: NSArray<INSendMessageAttachment> | INSendMessageAttachment[]; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[] | null; outgoingMessageType: INOutgoingMessageType; content: string | null; speakableGroupName: INSpeakableString | null; conversationIdentifier: string | null; serviceName: string | null; sender: INPerson | null; attachments: NSArray<INSendMessageAttachment> | INSendMessageAttachment[] | null; });
 
 	class(): typeof NSObject;
 
@@ -10518,24 +10518,24 @@ declare class INSendMessageIntent extends INIntent implements UNNotificationCont
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	initWithRecipientsContentGroupNameServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, groupName: string, serviceName: string, sender: INPerson): this;
+	initWithRecipientsContentGroupNameServiceNameSender(recipients: NSArray<INPerson> | INPerson[] | null, content: string | null, groupName: string | null, serviceName: string | null, sender: INPerson | null): this;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 14.0
 	 */
-	initWithRecipientsContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson): this;
+	initWithRecipientsContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[] | null, content: string | null, speakableGroupName: INSpeakableString | null, conversationIdentifier: string | null, serviceName: string | null, sender: INPerson | null): this;
 
 	/**
 	 * @since 14.0
 	 * @deprecated 14.0
 	 */
-	initWithRecipientsOutgoingMessageTypeContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[], outgoingMessageType: INOutgoingMessageType, content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson): this;
+	initWithRecipientsOutgoingMessageTypeContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[] | null, outgoingMessageType: INOutgoingMessageType, content: string | null, speakableGroupName: INSpeakableString | null, conversationIdentifier: string | null, serviceName: string | null, sender: INPerson | null): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithRecipientsOutgoingMessageTypeContentSpeakableGroupNameConversationIdentifierServiceNameSenderAttachments(recipients: NSArray<INPerson> | INPerson[], outgoingMessageType: INOutgoingMessageType, content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson, attachments: NSArray<INSendMessageAttachment> | INSendMessageAttachment[]): this;
+	initWithRecipientsOutgoingMessageTypeContentSpeakableGroupNameConversationIdentifierServiceNameSenderAttachments(recipients: NSArray<INPerson> | INPerson[] | null, outgoingMessageType: INOutgoingMessageType, content: string | null, speakableGroupName: INSpeakableString | null, conversationIdentifier: string | null, serviceName: string | null, sender: INPerson | null, attachments: NSArray<INSendMessageAttachment> | INSendMessageAttachment[] | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -10637,16 +10637,16 @@ declare class INSendMessageIntentResponse extends INIntentResponse {
 	 * @since 10.3
 	 * @deprecated 16.0
 	 */
-	sentMessage: INMessage;
+	sentMessage: INMessage | null;
 
 	/**
 	 * @since 16.0
 	 */
-	sentMessages: NSArray<INMessage>;
+	sentMessages: NSArray<INMessage> | null;
 
-	constructor(o: { code: INSendMessageIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSendMessageIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSendMessageIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSendMessageIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -10683,7 +10683,7 @@ declare class INSendMessageRecipientResolutionResult extends INPersonResolutionR
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSendMessageRecipientResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INSendMessageRecipientResolutionResult; // inherited from INPersonResolutionResult
+	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson | null): INSendMessageRecipientResolutionResult; // inherited from INPersonResolutionResult
 
 	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INSendMessageRecipientResolutionResult; // inherited from INPersonResolutionResult
 
@@ -10736,7 +10736,7 @@ declare class INSendPaymentCurrencyAmountResolutionResult extends INCurrencyAmou
 
 	static alloc(): INSendPaymentCurrencyAmountResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount): INSendPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
+	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount | null): INSendPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
 
 	/**
 	 * @since 13.0
@@ -10788,15 +10788,15 @@ declare class INSendPaymentIntent extends INIntent {
 
 	static new(): INSendPaymentIntent; // inherited from NSObject
 
-	readonly currencyAmount: INCurrencyAmount;
+	readonly currencyAmount: INCurrencyAmount | null;
 
-	readonly note: string;
+	readonly note: string | null;
 
-	readonly payee: INPerson;
+	readonly payee: INPerson | null;
 
-	constructor(o: { payee: INPerson; currencyAmount: INCurrencyAmount; note: string; });
+	constructor(o: { payee: INPerson | null; currencyAmount: INCurrencyAmount | null; note: string | null; });
 
-	initWithPayeeCurrencyAmountNote(payee: INPerson, currencyAmount: INCurrencyAmount, note: string): this;
+	initWithPayeeCurrencyAmountNote(payee: INPerson | null, currencyAmount: INCurrencyAmount | null, note: string | null): this;
 }
 
 /**
@@ -10853,11 +10853,11 @@ declare class INSendPaymentIntentResponse extends INIntentResponse {
 
 	readonly code: INSendPaymentIntentResponseCode;
 
-	paymentRecord: INPaymentRecord;
+	paymentRecord: INPaymentRecord | null;
 
-	constructor(o: { code: INSendPaymentIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSendPaymentIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSendPaymentIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSendPaymentIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -10906,7 +10906,7 @@ declare class INSendPaymentPayeeResolutionResult extends INPersonResolutionResul
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSendPaymentPayeeResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INSendPaymentPayeeResolutionResult; // inherited from INPersonResolutionResult
+	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson | null): INSendPaymentPayeeResolutionResult; // inherited from INPersonResolutionResult
 
 	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INSendPaymentPayeeResolutionResult; // inherited from INPersonResolutionResult
 
@@ -10955,11 +10955,11 @@ declare class INSendRideFeedbackIntent extends INIntent {
 
 	static new(): INSendRideFeedbackIntent; // inherited from NSObject
 
-	rating: number;
+	rating: number | null;
 
 	readonly rideIdentifier: string;
 
-	tip: INCurrencyAmount;
+	tip: INCurrencyAmount | null;
 
 	constructor(o: { rideIdentifier: string; });
 
@@ -10991,9 +10991,9 @@ declare class INSendRideFeedbackIntentResponse extends INIntentResponse {
 
 	readonly code: INSendRideFeedbackIntentResponseCode;
 
-	constructor(o: { code: INSendRideFeedbackIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSendRideFeedbackIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSendRideFeedbackIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSendRideFeedbackIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11065,9 +11065,9 @@ declare class INSetAudioSourceInCarIntentResponse extends INIntentResponse {
 
 	readonly code: INSetAudioSourceInCarIntentResponseCode;
 
-	constructor(o: { code: INSetAudioSourceInCarIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetAudioSourceInCarIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetAudioSourceInCarIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetAudioSourceInCarIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11098,13 +11098,13 @@ declare class INSetCarLockStatusIntent extends INIntent {
 
 	static new(): INSetCarLockStatusIntent; // inherited from NSObject
 
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
-	readonly locked: number;
+	readonly locked: number | null;
 
-	constructor(o: { locked: number; carName: INSpeakableString; });
+	constructor(o: { locked: number | null; carName: INSpeakableString | null; });
 
-	initWithLockedCarName(locked: number, carName: INSpeakableString): this;
+	initWithLockedCarName(locked: number | null, carName: INSpeakableString | null): this;
 }
 
 /**
@@ -11136,9 +11136,9 @@ declare class INSetCarLockStatusIntentResponse extends INIntentResponse {
 
 	readonly code: INSetCarLockStatusIntentResponseCode;
 
-	constructor(o: { code: INSetCarLockStatusIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetCarLockStatusIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetCarLockStatusIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetCarLockStatusIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11174,49 +11174,49 @@ declare class INSetClimateSettingsInCarIntent extends INIntent {
 	/**
 	 * @since 12.0
 	 */
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
 	readonly climateZone: INCarSeat;
 
-	readonly enableAirConditioner: number;
+	readonly enableAirConditioner: number | null;
 
-	readonly enableAutoMode: number;
+	readonly enableAutoMode: number | null;
 
-	readonly enableClimateControl: number;
+	readonly enableClimateControl: number | null;
 
-	readonly enableFan: number;
+	readonly enableFan: number | null;
 
-	readonly fanSpeedIndex: number;
+	readonly fanSpeedIndex: number | null;
 
-	readonly fanSpeedPercentage: number;
+	readonly fanSpeedPercentage: number | null;
 
 	readonly relativeFanSpeedSetting: INRelativeSetting;
 
 	readonly relativeTemperatureSetting: INRelativeSetting;
 
-	readonly temperature: NSMeasurement<NSUnitTemperature>;
+	readonly temperature: NSMeasurement<NSUnitTemperature> | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 12.0
 	 */
-	constructor(o: { enableFan: number; enableAirConditioner: number; enableClimateControl: number; enableAutoMode: number; airCirculationMode: INCarAirCirculationMode; fanSpeedIndex: number; fanSpeedPercentage: number; relativeFanSpeedSetting: INRelativeSetting; temperature: NSMeasurement<NSUnitTemperature>; relativeTemperatureSetting: INRelativeSetting; climateZone: INCarSeat; });
+	constructor(o: { enableFan: number | null; enableAirConditioner: number | null; enableClimateControl: number | null; enableAutoMode: number | null; airCirculationMode: INCarAirCirculationMode; fanSpeedIndex: number | null; fanSpeedPercentage: number | null; relativeFanSpeedSetting: INRelativeSetting; temperature: NSMeasurement<NSUnitTemperature> | null; relativeTemperatureSetting: INRelativeSetting; climateZone: INCarSeat; });
 
 	/**
 	 * @since 12.0
 	 */
-	constructor(o: { enableFan: number; enableAirConditioner: number; enableClimateControl: number; enableAutoMode: number; airCirculationMode: INCarAirCirculationMode; fanSpeedIndex: number; fanSpeedPercentage: number; relativeFanSpeedSetting: INRelativeSetting; temperature: NSMeasurement<NSUnitTemperature>; relativeTemperatureSetting: INRelativeSetting; climateZone: INCarSeat; carName: INSpeakableString; });
+	constructor(o: { enableFan: number | null; enableAirConditioner: number | null; enableClimateControl: number | null; enableAutoMode: number | null; airCirculationMode: INCarAirCirculationMode; fanSpeedIndex: number | null; fanSpeedPercentage: number | null; relativeFanSpeedSetting: INRelativeSetting; temperature: NSMeasurement<NSUnitTemperature> | null; relativeTemperatureSetting: INRelativeSetting; climateZone: INCarSeat; carName: INSpeakableString | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 12.0
 	 */
-	initWithEnableFanEnableAirConditionerEnableClimateControlEnableAutoModeAirCirculationModeFanSpeedIndexFanSpeedPercentageRelativeFanSpeedSettingTemperatureRelativeTemperatureSettingClimateZone(enableFan: number, enableAirConditioner: number, enableClimateControl: number, enableAutoMode: number, airCirculationMode: INCarAirCirculationMode, fanSpeedIndex: number, fanSpeedPercentage: number, relativeFanSpeedSetting: INRelativeSetting, temperature: NSMeasurement<NSUnitTemperature>, relativeTemperatureSetting: INRelativeSetting, climateZone: INCarSeat): this;
+	initWithEnableFanEnableAirConditionerEnableClimateControlEnableAutoModeAirCirculationModeFanSpeedIndexFanSpeedPercentageRelativeFanSpeedSettingTemperatureRelativeTemperatureSettingClimateZone(enableFan: number | null, enableAirConditioner: number | null, enableClimateControl: number | null, enableAutoMode: number | null, airCirculationMode: INCarAirCirculationMode, fanSpeedIndex: number | null, fanSpeedPercentage: number | null, relativeFanSpeedSetting: INRelativeSetting, temperature: NSMeasurement<NSUnitTemperature> | null, relativeTemperatureSetting: INRelativeSetting, climateZone: INCarSeat): this;
 
 	/**
 	 * @since 12.0
 	 */
-	initWithEnableFanEnableAirConditionerEnableClimateControlEnableAutoModeAirCirculationModeFanSpeedIndexFanSpeedPercentageRelativeFanSpeedSettingTemperatureRelativeTemperatureSettingClimateZoneCarName(enableFan: number, enableAirConditioner: number, enableClimateControl: number, enableAutoMode: number, airCirculationMode: INCarAirCirculationMode, fanSpeedIndex: number, fanSpeedPercentage: number, relativeFanSpeedSetting: INRelativeSetting, temperature: NSMeasurement<NSUnitTemperature>, relativeTemperatureSetting: INRelativeSetting, climateZone: INCarSeat, carName: INSpeakableString): this;
+	initWithEnableFanEnableAirConditionerEnableClimateControlEnableAutoModeAirCirculationModeFanSpeedIndexFanSpeedPercentageRelativeFanSpeedSettingTemperatureRelativeTemperatureSettingClimateZoneCarName(enableFan: number | null, enableAirConditioner: number | null, enableClimateControl: number | null, enableAutoMode: number | null, airCirculationMode: INCarAirCirculationMode, fanSpeedIndex: number | null, fanSpeedPercentage: number | null, relativeFanSpeedSetting: INRelativeSetting, temperature: NSMeasurement<NSUnitTemperature> | null, relativeTemperatureSetting: INRelativeSetting, climateZone: INCarSeat, carName: INSpeakableString | null): this;
 }
 
 /**
@@ -11278,9 +11278,9 @@ declare class INSetClimateSettingsInCarIntentResponse extends INIntentResponse {
 
 	readonly code: INSetClimateSettingsInCarIntentResponseCode;
 
-	constructor(o: { code: INSetClimateSettingsInCarIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetClimateSettingsInCarIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetClimateSettingsInCarIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetClimateSettingsInCarIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11315,33 +11315,33 @@ declare class INSetDefrosterSettingsInCarIntent extends INIntent {
 	/**
 	 * @since 12.0
 	 */
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
 	readonly defroster: INCarDefroster;
 
-	readonly enable: number;
+	readonly enable: number | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 12.0
 	 */
-	constructor(o: { enable: number; defroster: INCarDefroster; });
+	constructor(o: { enable: number | null; defroster: INCarDefroster; });
 
 	/**
 	 * @since 12.0
 	 */
-	constructor(o: { enable: number; defroster: INCarDefroster; carName: INSpeakableString; });
+	constructor(o: { enable: number | null; defroster: INCarDefroster; carName: INSpeakableString | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 12.0
 	 */
-	initWithEnableDefroster(enable: number, defroster: INCarDefroster): this;
+	initWithEnableDefroster(enable: number | null, defroster: INCarDefroster): this;
 
 	/**
 	 * @since 12.0
 	 */
-	initWithEnableDefrosterCarName(enable: number, defroster: INCarDefroster, carName: INSpeakableString): this;
+	initWithEnableDefrosterCarName(enable: number | null, defroster: INCarDefroster, carName: INSpeakableString | null): this;
 }
 
 /**
@@ -11385,9 +11385,9 @@ declare class INSetDefrosterSettingsInCarIntentResponse extends INIntentResponse
 
 	readonly code: INSetDefrosterSettingsInCarIntentResponseCode;
 
-	constructor(o: { code: INSetDefrosterSettingsInCarIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetDefrosterSettingsInCarIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetDefrosterSettingsInCarIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetDefrosterSettingsInCarIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11420,11 +11420,11 @@ declare class INSetMessageAttributeIntent extends INIntent {
 
 	readonly attribute: INMessageAttribute;
 
-	readonly identifiers: NSArray<string>;
+	readonly identifiers: NSArray<string> | null;
 
-	constructor(o: { identifiers: NSArray<string> | string[]; attribute: INMessageAttribute; });
+	constructor(o: { identifiers: NSArray<string> | string[] | null; attribute: INMessageAttribute; });
 
-	initWithIdentifiersAttribute(identifiers: NSArray<string> | string[], attribute: INMessageAttribute): this;
+	initWithIdentifiersAttribute(identifiers: NSArray<string> | string[] | null, attribute: INMessageAttribute): this;
 }
 
 /**
@@ -11459,9 +11459,9 @@ declare class INSetMessageAttributeIntentResponse extends INIntentResponse {
 
 	readonly code: INSetMessageAttributeIntentResponseCode;
 
-	constructor(o: { code: INSetMessageAttributeIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetMessageAttributeIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetMessageAttributeIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetMessageAttributeIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11499,56 +11499,56 @@ declare class INSetProfileInCarIntent extends INIntent {
 	/**
 	 * @since 12.0
 	 */
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
-	readonly defaultProfile: number;
+	readonly defaultProfile: number | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	readonly profileLabel: string;
+	readonly profileLabel: string | null;
 
 	/**
 	 * @since 10.2
 	 */
-	readonly profileName: string;
+	readonly profileName: string | null;
 
-	readonly profileNumber: number;
-
-	/**
-	 * @since 10.0
-	 * @deprecated 10.2
-	 */
-	constructor(o: { profileNumber: number; profileLabel: string; defaultProfile: number; });
-
-	/**
-	 * @since 10.2
-	 * @deprecated 12.0
-	 */
-	constructor(o: { profileNumber: number; profileName: string; defaultProfile: number; });
-
-	/**
-	 * @since 12.0
-	 */
-	constructor(o: { profileNumber: number; profileName: string; defaultProfile: number; carName: INSpeakableString; });
+	readonly profileNumber: number | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 10.2
 	 */
-	initWithProfileNumberProfileLabelDefaultProfile(profileNumber: number, profileLabel: string, defaultProfile: number): this;
+	constructor(o: { profileNumber: number | null; profileLabel: string | null; defaultProfile: number | null; });
 
 	/**
 	 * @since 10.2
 	 * @deprecated 12.0
 	 */
-	initWithProfileNumberProfileNameDefaultProfile(profileNumber: number, profileName: string, defaultProfile: number): this;
+	constructor(o: { profileNumber: number | null; profileName: string | null; defaultProfile: number | null; });
 
 	/**
 	 * @since 12.0
 	 */
-	initWithProfileNumberProfileNameDefaultProfileCarName(profileNumber: number, profileName: string, defaultProfile: number, carName: INSpeakableString): this;
+	constructor(o: { profileNumber: number | null; profileName: string | null; defaultProfile: number | null; carName: INSpeakableString | null; });
+
+	/**
+	 * @since 10.0
+	 * @deprecated 10.2
+	 */
+	initWithProfileNumberProfileLabelDefaultProfile(profileNumber: number | null, profileLabel: string | null, defaultProfile: number | null): this;
+
+	/**
+	 * @since 10.2
+	 * @deprecated 12.0
+	 */
+	initWithProfileNumberProfileNameDefaultProfile(profileNumber: number | null, profileName: string | null, defaultProfile: number | null): this;
+
+	/**
+	 * @since 12.0
+	 */
+	initWithProfileNumberProfileNameDefaultProfileCarName(profileNumber: number | null, profileName: string | null, defaultProfile: number | null, carName: INSpeakableString | null): this;
 }
 
 /**
@@ -11601,9 +11601,9 @@ declare class INSetProfileInCarIntentResponse extends INIntentResponse {
 
 	readonly code: INSetProfileInCarIntentResponseCode;
 
-	constructor(o: { code: INSetProfileInCarIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetProfileInCarIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetProfileInCarIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetProfileInCarIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11635,19 +11635,19 @@ declare class INSetRadioStationIntent extends INIntent {
 
 	static new(): INSetRadioStationIntent; // inherited from NSObject
 
-	readonly channel: string;
+	readonly channel: string | null;
 
-	readonly frequency: number;
+	readonly frequency: number | null;
 
-	readonly presetNumber: number;
+	readonly presetNumber: number | null;
 
 	readonly radioType: INRadioType;
 
-	readonly stationName: string;
+	readonly stationName: string | null;
 
-	constructor(o: { radioType: INRadioType; frequency: number; stationName: string; channel: string; presetNumber: number; });
+	constructor(o: { radioType: INRadioType; frequency: number | null; stationName: string | null; channel: string | null; presetNumber: number | null; });
 
-	initWithRadioTypeFrequencyStationNameChannelPresetNumber(radioType: INRadioType, frequency: number, stationName: string, channel: string, presetNumber: number): this;
+	initWithRadioTypeFrequencyStationNameChannelPresetNumber(radioType: INRadioType, frequency: number | null, stationName: string | null, channel: string | null, presetNumber: number | null): this;
 }
 
 /**
@@ -11692,9 +11692,9 @@ declare class INSetRadioStationIntentResponse extends INIntentResponse {
 
 	readonly code: INSetRadioStationIntentResponseCode;
 
-	constructor(o: { code: INSetRadioStationIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetRadioStationIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetRadioStationIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetRadioStationIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11731,15 +11731,15 @@ declare class INSetSeatSettingsInCarIntent extends INIntent {
 	/**
 	 * @since 12.0
 	 */
-	readonly carName: INSpeakableString;
+	readonly carName: INSpeakableString | null;
 
-	readonly enableCooling: number;
+	readonly enableCooling: number | null;
 
-	readonly enableHeating: number;
+	readonly enableHeating: number | null;
 
-	readonly enableMassage: number;
+	readonly enableMassage: number | null;
 
-	readonly level: number;
+	readonly level: number | null;
 
 	readonly relativeLevelSetting: INRelativeSetting;
 
@@ -11749,23 +11749,23 @@ declare class INSetSeatSettingsInCarIntent extends INIntent {
 	 * @since 10.0
 	 * @deprecated 12.0
 	 */
-	constructor(o: { enableHeating: number; enableCooling: number; enableMassage: number; seat: INCarSeat; level: number; relativeLevelSetting: INRelativeSetting; });
+	constructor(o: { enableHeating: number | null; enableCooling: number | null; enableMassage: number | null; seat: INCarSeat; level: number | null; relativeLevelSetting: INRelativeSetting; });
 
 	/**
 	 * @since 12.0
 	 */
-	constructor(o: { enableHeating: number; enableCooling: number; enableMassage: number; seat: INCarSeat; level: number; relativeLevelSetting: INRelativeSetting; carName: INSpeakableString; });
+	constructor(o: { enableHeating: number | null; enableCooling: number | null; enableMassage: number | null; seat: INCarSeat; level: number | null; relativeLevelSetting: INRelativeSetting; carName: INSpeakableString | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 12.0
 	 */
-	initWithEnableHeatingEnableCoolingEnableMassageSeatLevelRelativeLevelSetting(enableHeating: number, enableCooling: number, enableMassage: number, seat: INCarSeat, level: number, relativeLevelSetting: INRelativeSetting): this;
+	initWithEnableHeatingEnableCoolingEnableMassageSeatLevelRelativeLevelSetting(enableHeating: number | null, enableCooling: number | null, enableMassage: number | null, seat: INCarSeat, level: number | null, relativeLevelSetting: INRelativeSetting): this;
 
 	/**
 	 * @since 12.0
 	 */
-	initWithEnableHeatingEnableCoolingEnableMassageSeatLevelRelativeLevelSettingCarName(enableHeating: number, enableCooling: number, enableMassage: number, seat: INCarSeat, level: number, relativeLevelSetting: INRelativeSetting, carName: INSpeakableString): this;
+	initWithEnableHeatingEnableCoolingEnableMassageSeatLevelRelativeLevelSettingCarName(enableHeating: number | null, enableCooling: number | null, enableMassage: number | null, seat: INCarSeat, level: number | null, relativeLevelSetting: INRelativeSetting, carName: INSpeakableString | null): this;
 }
 
 /**
@@ -11817,9 +11817,9 @@ declare class INSetSeatSettingsInCarIntentResponse extends INIntentResponse {
 
 	readonly code: INSetSeatSettingsInCarIntentResponseCode;
 
-	constructor(o: { code: INSetSeatSettingsInCarIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetSeatSettingsInCarIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetSeatSettingsInCarIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetSeatSettingsInCarIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11855,40 +11855,40 @@ declare class INSetTaskAttributeIntent extends INIntent {
 	 */
 	readonly priority: INTaskPriority;
 
-	readonly spatialEventTrigger: INSpatialEventTrigger;
+	readonly spatialEventTrigger: INSpatialEventTrigger | null;
 
 	readonly status: INTaskStatus;
 
-	readonly targetTask: INTask;
+	readonly targetTask: INTask | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly taskTitle: INSpeakableString;
+	readonly taskTitle: INSpeakableString | null;
 
-	readonly temporalEventTrigger: INTemporalEventTrigger;
+	readonly temporalEventTrigger: INTemporalEventTrigger | null;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 13.0
 	 */
-	constructor(o: { targetTask: INTask; status: INTaskStatus; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; });
+	constructor(o: { targetTask: INTask | null; status: INTaskStatus; spatialEventTrigger: INSpatialEventTrigger | null; temporalEventTrigger: INTemporalEventTrigger | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { targetTask: INTask; taskTitle: INSpeakableString; status: INTaskStatus; priority: INTaskPriority; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; });
+	constructor(o: { targetTask: INTask | null; taskTitle: INSpeakableString | null; status: INTaskStatus; priority: INTaskPriority; spatialEventTrigger: INSpatialEventTrigger | null; temporalEventTrigger: INTemporalEventTrigger | null; });
 
 	/**
 	 * @since 11.0
 	 * @deprecated 13.0
 	 */
-	initWithTargetTaskStatusSpatialEventTriggerTemporalEventTrigger(targetTask: INTask, status: INTaskStatus, spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger): this;
+	initWithTargetTaskStatusSpatialEventTriggerTemporalEventTrigger(targetTask: INTask | null, status: INTaskStatus, spatialEventTrigger: INSpatialEventTrigger | null, temporalEventTrigger: INTemporalEventTrigger | null): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithTargetTaskTaskTitleStatusPrioritySpatialEventTriggerTemporalEventTrigger(targetTask: INTask, taskTitle: INSpeakableString, status: INTaskStatus, priority: INTaskPriority, spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger): this;
+	initWithTargetTaskTaskTitleStatusPrioritySpatialEventTriggerTemporalEventTrigger(targetTask: INTask | null, taskTitle: INSpeakableString | null, status: INTaskStatus, priority: INTaskPriority, spatialEventTrigger: INSpatialEventTrigger | null, temporalEventTrigger: INTemporalEventTrigger | null): this;
 }
 
 /**
@@ -11943,11 +11943,11 @@ declare class INSetTaskAttributeIntentResponse extends INIntentResponse {
 
 	readonly code: INSetTaskAttributeIntentResponseCode;
 
-	modifiedTask: INTask;
+	modifiedTask: INTask | null;
 
-	constructor(o: { code: INSetTaskAttributeIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSetTaskAttributeIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSetTaskAttributeIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSetTaskAttributeIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -11980,7 +11980,7 @@ declare class INSetTaskAttributeTemporalEventTriggerResolutionResult extends INT
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSetTaskAttributeTemporalEventTriggerResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger): INSetTaskAttributeTemporalEventTriggerResolutionResult; // inherited from INTemporalEventTriggerResolutionResult
+	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger | null): INSetTaskAttributeTemporalEventTriggerResolutionResult; // inherited from INTemporalEventTriggerResolutionResult
 
 	static disambiguationWithTemporalEventTriggersToDisambiguate(temporalEventTriggersToDisambiguate: NSArray<INTemporalEventTrigger> | INTemporalEventTrigger[]): INSetTaskAttributeTemporalEventTriggerResolutionResult; // inherited from INTemporalEventTriggerResolutionResult
 
@@ -12025,11 +12025,11 @@ declare class INShareFocusStatusIntent extends INIntent {
 
 	static new(): INShareFocusStatusIntent; // inherited from NSObject
 
-	readonly focusStatus: INFocusStatus;
+	readonly focusStatus: INFocusStatus | null;
 
-	constructor(o: { focusStatus: INFocusStatus; });
+	constructor(o: { focusStatus: INFocusStatus | null; });
 
-	initWithFocusStatus(focusStatus: INFocusStatus): this;
+	initWithFocusStatus(focusStatus: INFocusStatus | null): this;
 }
 
 /**
@@ -12057,9 +12057,9 @@ declare class INShareFocusStatusIntentResponse extends INIntentResponse {
 
 	readonly code: INShareFocusStatusIntentResponseCode;
 
-	constructor(o: { code: INShareFocusStatusIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INShareFocusStatusIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INShareFocusStatusIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INShareFocusStatusIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -12089,9 +12089,9 @@ declare class INShortcut extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INShortcut; // inherited from NSObject
 
-	readonly intent: INIntent;
+	readonly intent: INIntent | null;
 
-	readonly userActivity: NSUserActivity;
+	readonly userActivity: NSUserActivity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -12101,7 +12101,7 @@ declare class INShortcut extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { userActivity: NSUserActivity; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -12155,15 +12155,15 @@ declare class INSnoozeTasksIntent extends INIntent {
 
 	static new(): INSnoozeTasksIntent; // inherited from NSObject
 
-	readonly all: number;
+	readonly all: number | null;
 
-	readonly nextTriggerTime: INDateComponentsRange;
+	readonly nextTriggerTime: INDateComponentsRange | null;
 
-	readonly tasks: NSArray<INTask>;
+	readonly tasks: NSArray<INTask> | null;
 
-	constructor(o: { tasks: NSArray<INTask> | INTask[]; nextTriggerTime: INDateComponentsRange; all: number; });
+	constructor(o: { tasks: NSArray<INTask> | INTask[] | null; nextTriggerTime: INDateComponentsRange | null; all: number | null; });
 
-	initWithTasksNextTriggerTimeAll(tasks: NSArray<INTask> | INTask[], nextTriggerTime: INDateComponentsRange, all: number): this;
+	initWithTasksNextTriggerTimeAll(tasks: NSArray<INTask> | INTask[] | null, nextTriggerTime: INDateComponentsRange | null, all: number | null): this;
 }
 
 /**
@@ -12195,11 +12195,11 @@ declare class INSnoozeTasksIntentResponse extends INIntentResponse {
 
 	readonly code: INSnoozeTasksIntentResponseCode;
 
-	snoozedTasks: NSArray<INTask>;
+	snoozedTasks: NSArray<INTask> | null;
 
-	constructor(o: { code: INSnoozeTasksIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INSnoozeTasksIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INSnoozeTasksIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INSnoozeTasksIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -12232,7 +12232,7 @@ declare class INSnoozeTasksTaskResolutionResult extends INTaskResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSnoozeTasksTaskResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask): INSnoozeTasksTaskResolutionResult; // inherited from INTaskResolutionResult
+	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask | null): INSnoozeTasksTaskResolutionResult; // inherited from INTaskResolutionResult
 
 	static disambiguationWithTasksToDisambiguate(tasksToDisambiguate: NSArray<INTask> | INTask[]): INSnoozeTasksTaskResolutionResult; // inherited from INTaskResolutionResult
 
@@ -12309,7 +12309,7 @@ declare class INSpatialEventTrigger extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { placemark: CLPlacemark; event: INSpatialEvent; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -12330,7 +12330,7 @@ declare class INSpatialEventTriggerResolutionResult extends INIntentResolutionRe
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSpatialEventTriggerResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithSpatialEventTriggerToConfirm(spatialEventTriggerToConfirm: INSpatialEventTrigger): INSpatialEventTriggerResolutionResult;
+	static confirmationRequiredWithSpatialEventTriggerToConfirm(spatialEventTriggerToConfirm: INSpatialEventTrigger | null): INSpatialEventTriggerResolutionResult;
 
 	static disambiguationWithSpatialEventTriggersToDisambiguate(spatialEventTriggersToDisambiguate: NSArray<INSpatialEventTrigger> | INSpatialEventTrigger[]): INSpatialEventTriggerResolutionResult;
 
@@ -12355,19 +12355,19 @@ declare class INSpatialEventTriggerResolutionResult extends INIntentResolutionRe
  */
 interface INSpeakable extends NSObjectProtocol {
 
-	alternativeSpeakableMatches: NSArray<INSpeakable>;
+	alternativeSpeakableMatches: NSArray<INSpeakable> | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	identifier?: string;
+	identifier?: string | null;
 
-	pronunciationHint: string;
+	pronunciationHint: string | null;
 
 	spokenPhrase: string;
 
-	vocabularyIdentifier: string;
+	vocabularyIdentifier: string | null;
 }
 declare var INSpeakable: {
 
@@ -12383,7 +12383,7 @@ declare class INSpeakableString extends NSObject implements INSpeakable, NSCopyi
 
 	static new(): INSpeakableString; // inherited from NSObject
 
-	readonly alternativeSpeakableMatches: NSArray<INSpeakable>; // inherited from INSpeakable
+	readonly alternativeSpeakableMatches: NSArray<INSpeakable> | null; // inherited from INSpeakable
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -12395,17 +12395,17 @@ declare class INSpeakableString extends NSObject implements INSpeakable, NSCopyi
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	readonly identifier: string; // inherited from INSpeakable
+	readonly identifier: string | null; // inherited from INSpeakable
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly pronunciationHint: string; // inherited from INSpeakable
+	readonly pronunciationHint: string | null; // inherited from INSpeakable
 
 	readonly spokenPhrase: string; // inherited from INSpeakable
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly vocabularyIdentifier: string; // inherited from INSpeakable
+	readonly vocabularyIdentifier: string | null; // inherited from INSpeakable
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -12417,20 +12417,20 @@ declare class INSpeakableString extends NSObject implements INSpeakable, NSCopyi
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	constructor(o: { identifier: string; spokenPhrase: string; pronunciationHint: string; });
+	constructor(o: { identifier: string; spokenPhrase: string; pronunciationHint: string | null; });
 
 	/**
 	 * @since 10.2
 	 */
 	constructor(o: { spokenPhrase: string; });
 
-	constructor(o: { vocabularyIdentifier: string; spokenPhrase: string; pronunciationHint: string; });
+	constructor(o: { vocabularyIdentifier: string; spokenPhrase: string; pronunciationHint: string | null; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -12440,14 +12440,14 @@ declare class INSpeakableString extends NSObject implements INSpeakable, NSCopyi
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	initWithIdentifierSpokenPhrasePronunciationHint(identifier: string, spokenPhrase: string, pronunciationHint: string): this;
+	initWithIdentifierSpokenPhrasePronunciationHint(identifier: string, spokenPhrase: string, pronunciationHint: string | null): this;
 
 	/**
 	 * @since 10.2
 	 */
 	initWithSpokenPhrase(spokenPhrase: string): this;
 
-	initWithVocabularyIdentifierSpokenPhrasePronunciationHint(vocabularyIdentifier: string, spokenPhrase: string, pronunciationHint: string): this;
+	initWithVocabularyIdentifierSpokenPhrasePronunciationHint(vocabularyIdentifier: string, spokenPhrase: string, pronunciationHint: string | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -12480,7 +12480,7 @@ declare class INSpeakableStringResolutionResult extends INIntentResolutionResult
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSpeakableStringResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithStringToConfirm(stringToConfirm: INSpeakableString): INSpeakableStringResolutionResult;
+	static confirmationRequiredWithStringToConfirm(stringToConfirm: INSpeakableString | null): INSpeakableStringResolutionResult;
 
 	static disambiguationWithStringsToDisambiguate(stringsToDisambiguate: NSArray<INSpeakableString> | INSpeakableString[]): INSpeakableStringResolutionResult;
 
@@ -12512,7 +12512,7 @@ declare class INSpeedResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INSpeedResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithSpeedToConfirm(speedToConfirm: NSMeasurement<NSUnitSpeed>): INSpeedResolutionResult;
+	static confirmationRequiredWithSpeedToConfirm(speedToConfirm: NSMeasurement<NSUnitSpeed> | null): INSpeedResolutionResult;
 
 	static disambiguationWithSpeedToDisambiguate(speedToDisambiguate: NSArray<NSMeasurement<NSUnitSpeed>> | NSMeasurement<NSUnitSpeed>[]): INSpeedResolutionResult;
 
@@ -12542,7 +12542,7 @@ declare class INStartAudioCallIntent extends INIntent {
 
 	static new(): INStartAudioCallIntent; // inherited from NSObject
 
-	readonly contacts: NSArray<INPerson>;
+	readonly contacts: NSArray<INPerson> | null;
 
 	/**
 	 * @since 11.0
@@ -12553,23 +12553,23 @@ declare class INStartAudioCallIntent extends INIntent {
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	constructor(o: { contacts: NSArray<INPerson> | INPerson[]; });
+	constructor(o: { contacts: NSArray<INPerson> | INPerson[] | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[]; });
+	constructor(o: { destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[] | null; });
 
 	/**
 	 * @since 10.0
 	 * @deprecated 11.0
 	 */
-	initWithContacts(contacts: NSArray<INPerson> | INPerson[]): this;
+	initWithContacts(contacts: NSArray<INPerson> | INPerson[] | null): this;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithDestinationTypeContacts(destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[]): this;
+	initWithDestinationTypeContacts(destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[] | null): this;
 }
 
 /**
@@ -12612,9 +12612,9 @@ declare class INStartAudioCallIntentResponse extends INIntentResponse {
 
 	readonly code: INStartAudioCallIntentResponseCode;
 
-	constructor(o: { code: INStartAudioCallIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INStartAudioCallIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INStartAudioCallIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INStartAudioCallIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -12697,7 +12697,7 @@ declare class INStartCallCallRecordToCallBackResolutionResult extends INCallReco
 
 	static alloc(): INStartCallCallRecordToCallBackResolutionResult; // inherited from NSObject
 
-	static confirmationRequiredWithCallRecordToConfirm(callRecordToConfirm: INCallRecord): INStartCallCallRecordToCallBackResolutionResult; // inherited from INCallRecordResolutionResult
+	static confirmationRequiredWithCallRecordToConfirm(callRecordToConfirm: INCallRecord | null): INStartCallCallRecordToCallBackResolutionResult; // inherited from INCallRecordResolutionResult
 
 	/**
 	 * @since 13.0
@@ -12748,7 +12748,7 @@ declare class INStartCallContactResolutionResult extends INPersonResolutionResul
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INStartCallContactResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INStartCallContactResolutionResult; // inherited from INPersonResolutionResult
+	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson | null): INStartCallContactResolutionResult; // inherited from INPersonResolutionResult
 
 	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INStartCallContactResolutionResult; // inherited from INPersonResolutionResult
 
@@ -12812,14 +12812,14 @@ declare class INStartCallIntent extends INIntent implements UNNotificationConten
 	/**
 	 * @since 14.0
 	 */
-	readonly callRecordFilter: INCallRecordFilter;
+	readonly callRecordFilter: INCallRecordFilter | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly callRecordToCallBack: INCallRecord;
+	readonly callRecordToCallBack: INCallRecord | null;
 
-	readonly contacts: NSArray<INPerson>;
+	readonly contacts: NSArray<INPerson> | null;
 
 	readonly destinationType: INCallDestinationType;
 
@@ -12845,12 +12845,12 @@ declare class INStartCallIntent extends INIntent implements UNNotificationConten
 	 * @since 13.0
 	 * @deprecated 14.0
 	 */
-	constructor(o: { audioRoute: INCallAudioRoute; destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[]; recordTypeForRedialing: INCallRecordType; callCapability: INCallCapability; });
+	constructor(o: { audioRoute: INCallAudioRoute; destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[] | null; recordTypeForRedialing: INCallRecordType; callCapability: INCallCapability; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { callRecordFilter: INCallRecordFilter; callRecordToCallBack: INCallRecord; audioRoute: INCallAudioRoute; destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[]; callCapability: INCallCapability; });
+	constructor(o: { callRecordFilter: INCallRecordFilter | null; callRecordToCallBack: INCallRecord | null; audioRoute: INCallAudioRoute; destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[] | null; callCapability: INCallCapability; });
 
 	class(): typeof NSObject;
 
@@ -12860,12 +12860,12 @@ declare class INStartCallIntent extends INIntent implements UNNotificationConten
 	 * @since 13.0
 	 * @deprecated 14.0
 	 */
-	initWithAudioRouteDestinationTypeContactsRecordTypeForRedialingCallCapability(audioRoute: INCallAudioRoute, destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[], recordTypeForRedialing: INCallRecordType, callCapability: INCallCapability): this;
+	initWithAudioRouteDestinationTypeContactsRecordTypeForRedialingCallCapability(audioRoute: INCallAudioRoute, destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[] | null, recordTypeForRedialing: INCallRecordType, callCapability: INCallCapability): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithCallRecordFilterCallRecordToCallBackAudioRouteDestinationTypeContactsCallCapability(callRecordFilter: INCallRecordFilter, callRecordToCallBack: INCallRecord, audioRoute: INCallAudioRoute, destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[], callCapability: INCallCapability): this;
+	initWithCallRecordFilterCallRecordToCallBackAudioRouteDestinationTypeContactsCallCapability(callRecordFilter: INCallRecordFilter | null, callRecordToCallBack: INCallRecord | null, audioRoute: INCallAudioRoute, destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[] | null, callCapability: INCallCapability): this;
 
 	isEqual(object: any): boolean;
 
@@ -12927,9 +12927,9 @@ declare class INStartCallIntentResponse extends INIntentResponse {
 
 	readonly code: INStartCallIntentResponseCode;
 
-	constructor(o: { code: INStartCallIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INStartCallIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INStartCallIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INStartCallIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -12976,27 +12976,27 @@ declare class INStartPhotoPlaybackIntent extends INIntent {
 
 	static new(): INStartPhotoPlaybackIntent; // inherited from NSObject
 
-	readonly albumName: string;
+	readonly albumName: string | null;
 
-	readonly dateCreated: INDateComponentsRange;
+	readonly dateCreated: INDateComponentsRange | null;
 
 	readonly excludedAttributes: INPhotoAttributeOptions;
 
 	readonly includedAttributes: INPhotoAttributeOptions;
 
-	readonly locationCreated: CLPlacemark;
+	readonly locationCreated: CLPlacemark | null;
 
-	readonly peopleInPhoto: NSArray<INPerson>;
+	readonly peopleInPhoto: NSArray<INPerson> | null;
 
 	readonly peopleInPhotoOperator: INConditionalOperator;
 
-	readonly searchTerms: NSArray<string>;
+	readonly searchTerms: NSArray<string> | null;
 
 	readonly searchTermsOperator: INConditionalOperator;
 
-	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string> | string[]; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson> | INPerson[]; });
+	constructor(o: { dateCreated: INDateComponentsRange | null; locationCreated: CLPlacemark | null; albumName: string | null; searchTerms: NSArray<string> | string[] | null; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson> | INPerson[] | null; });
 
-	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string> | string[], includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[]): this;
+	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange | null, locationCreated: CLPlacemark | null, albumName: string | null, searchTerms: NSArray<string> | string[] | null, includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[] | null): this;
 }
 
 /**
@@ -13039,11 +13039,11 @@ declare class INStartPhotoPlaybackIntentResponse extends INIntentResponse {
 
 	readonly code: INStartPhotoPlaybackIntentResponseCode;
 
-	searchResultsCount: number;
+	searchResultsCount: number | null;
 
-	constructor(o: { code: INStartPhotoPlaybackIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INStartPhotoPlaybackIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INStartPhotoPlaybackIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INStartPhotoPlaybackIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -13075,11 +13075,11 @@ declare class INStartVideoCallIntent extends INIntent {
 
 	static new(): INStartVideoCallIntent; // inherited from NSObject
 
-	readonly contacts: NSArray<INPerson>;
+	readonly contacts: NSArray<INPerson> | null;
 
-	constructor(o: { contacts: NSArray<INPerson> | INPerson[]; });
+	constructor(o: { contacts: NSArray<INPerson> | INPerson[] | null; });
 
-	initWithContacts(contacts: NSArray<INPerson> | INPerson[]): this;
+	initWithContacts(contacts: NSArray<INPerson> | INPerson[] | null): this;
 }
 
 /**
@@ -13117,9 +13117,9 @@ declare class INStartVideoCallIntentResponse extends INIntentResponse {
 
 	readonly code: INStartVideoCallIntentResponseCode;
 
-	constructor(o: { code: INStartVideoCallIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INStartVideoCallIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INStartVideoCallIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INStartVideoCallIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -13156,19 +13156,19 @@ declare class INStartWorkoutIntent extends INIntent {
 
 	static new(): INStartWorkoutIntent; // inherited from NSObject
 
-	readonly goalValue: number;
+	readonly goalValue: number | null;
 
-	readonly isOpenEnded: number;
+	readonly isOpenEnded: number | null;
 
 	readonly workoutGoalUnitType: INWorkoutGoalUnitType;
 
 	readonly workoutLocationType: INWorkoutLocationType;
 
-	readonly workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString | null;
 
-	constructor(o: { workoutName: INSpeakableString; goalValue: number; workoutGoalUnitType: INWorkoutGoalUnitType; workoutLocationType: INWorkoutLocationType; isOpenEnded: number; });
+	constructor(o: { workoutName: INSpeakableString | null; goalValue: number | null; workoutGoalUnitType: INWorkoutGoalUnitType; workoutLocationType: INWorkoutLocationType; isOpenEnded: number | null; });
 
-	initWithWorkoutNameGoalValueWorkoutGoalUnitTypeWorkoutLocationTypeIsOpenEnded(workoutName: INSpeakableString, goalValue: number, workoutGoalUnitType: INWorkoutGoalUnitType, workoutLocationType: INWorkoutLocationType, isOpenEnded: number): this;
+	initWithWorkoutNameGoalValueWorkoutGoalUnitTypeWorkoutLocationTypeIsOpenEnded(workoutName: INSpeakableString | null, goalValue: number | null, workoutGoalUnitType: INWorkoutGoalUnitType, workoutLocationType: INWorkoutLocationType, isOpenEnded: number | null): this;
 }
 
 /**
@@ -13211,9 +13211,9 @@ declare class INStartWorkoutIntentResponse extends INIntentResponse {
 
 	readonly code: INStartWorkoutIntentResponseCode;
 
-	constructor(o: { code: INStartWorkoutIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INStartWorkoutIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INStartWorkoutIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INStartWorkoutIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -13249,7 +13249,7 @@ declare class INSticker extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INSticker; // inherited from NSObject
 
-	readonly emoji: string;
+	readonly emoji: string | null;
 
 	readonly type: INStickerType;
 
@@ -13257,15 +13257,15 @@ declare class INSticker extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { type: INStickerType; emoji: string; });
+	constructor(o: { type: INStickerType; emoji: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTypeEmoji(type: INStickerType, emoji: string): this;
+	initWithTypeEmoji(type: INStickerType, emoji: string | null): this;
 }
 
 /**
@@ -13292,7 +13292,7 @@ declare class INStringResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INStringResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithStringToConfirm(stringToConfirm: string): INStringResolutionResult;
+	static confirmationRequiredWithStringToConfirm(stringToConfirm: string | null): INStringResolutionResult;
 
 	static disambiguationWithStringsToDisambiguate(stringsToDisambiguate: NSArray<string> | string[]): INStringResolutionResult;
 
@@ -13321,24 +13321,24 @@ declare class INTask extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INTask; // inherited from NSObject
 
-	readonly createdDateComponents: NSDateComponents;
+	readonly createdDateComponents: NSDateComponents | null;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
-	readonly modifiedDateComponents: NSDateComponents;
+	readonly modifiedDateComponents: NSDateComponents | null;
 
 	/**
 	 * @since 13.0
 	 */
 	readonly priority: INTaskPriority;
 
-	readonly spatialEventTrigger: INSpatialEventTrigger;
+	readonly spatialEventTrigger: INSpatialEventTrigger | null;
 
 	readonly status: INTaskStatus;
 
 	readonly taskType: INTaskType;
 
-	readonly temporalEventTrigger: INTemporalEventTrigger;
+	readonly temporalEventTrigger: INTemporalEventTrigger | null;
 
 	readonly title: INSpeakableString;
 
@@ -13346,25 +13346,25 @@ declare class INTask extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: INSpeakableString; status: INTaskStatus; taskType: INTaskType; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
+	constructor(o: { title: INSpeakableString; status: INTaskStatus; taskType: INTaskType; spatialEventTrigger: INSpatialEventTrigger | null; temporalEventTrigger: INTemporalEventTrigger | null; createdDateComponents: NSDateComponents | null; modifiedDateComponents: NSDateComponents | null; identifier: string | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { title: INSpeakableString; status: INTaskStatus; taskType: INTaskType; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; priority: INTaskPriority; });
+	constructor(o: { title: INSpeakableString; status: INTaskStatus; taskType: INTaskType; spatialEventTrigger: INSpatialEventTrigger | null; temporalEventTrigger: INTemporalEventTrigger | null; createdDateComponents: NSDateComponents | null; modifiedDateComponents: NSDateComponents | null; identifier: string | null; priority: INTaskPriority; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleStatusTaskTypeSpatialEventTriggerTemporalEventTriggerCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, status: INTaskStatus, taskType: INTaskType, spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
+	initWithTitleStatusTaskTypeSpatialEventTriggerTemporalEventTriggerCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, status: INTaskStatus, taskType: INTaskType, spatialEventTrigger: INSpatialEventTrigger | null, temporalEventTrigger: INTemporalEventTrigger | null, createdDateComponents: NSDateComponents | null, modifiedDateComponents: NSDateComponents | null, identifier: string | null): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithTitleStatusTaskTypeSpatialEventTriggerTemporalEventTriggerCreatedDateComponentsModifiedDateComponentsIdentifierPriority(title: INSpeakableString, status: INTaskStatus, taskType: INTaskType, spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string, priority: INTaskPriority): this;
+	initWithTitleStatusTaskTypeSpatialEventTriggerTemporalEventTriggerCreatedDateComponentsModifiedDateComponentsIdentifierPriority(title: INSpeakableString, status: INTaskStatus, taskType: INTaskType, spatialEventTrigger: INSpatialEventTrigger | null, temporalEventTrigger: INTemporalEventTrigger | null, createdDateComponents: NSDateComponents | null, modifiedDateComponents: NSDateComponents | null, identifier: string | null, priority: INTaskPriority): this;
 }
 
 /**
@@ -13376,13 +13376,13 @@ declare class INTaskList extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INTaskList; // inherited from NSObject
 
-	readonly createdDateComponents: NSDateComponents;
+	readonly createdDateComponents: NSDateComponents | null;
 
-	readonly groupName: INSpeakableString;
+	readonly groupName: INSpeakableString | null;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
-	readonly modifiedDateComponents: NSDateComponents;
+	readonly modifiedDateComponents: NSDateComponents | null;
 
 	readonly tasks: NSArray<INTask>;
 
@@ -13392,15 +13392,15 @@ declare class INTaskList extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: INSpeakableString; tasks: NSArray<INTask> | INTask[]; groupName: INSpeakableString; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
+	constructor(o: { title: INSpeakableString; tasks: NSArray<INTask> | INTask[]; groupName: INSpeakableString | null; createdDateComponents: NSDateComponents | null; modifiedDateComponents: NSDateComponents | null; identifier: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleTasksGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, tasks: NSArray<INTask> | INTask[], groupName: INSpeakableString, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
+	initWithTitleTasksGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, tasks: NSArray<INTask> | INTask[], groupName: INSpeakableString | null, createdDateComponents: NSDateComponents | null, modifiedDateComponents: NSDateComponents | null, identifier: string | null): this;
 }
 
 /**
@@ -13415,7 +13415,7 @@ declare class INTaskListResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INTaskListResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList): INTaskListResolutionResult;
+	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList | null): INTaskListResolutionResult;
 
 	static disambiguationWithTaskListsToDisambiguate(taskListsToDisambiguate: NSArray<INTaskList> | INTaskList[]): INTaskListResolutionResult;
 
@@ -13489,7 +13489,7 @@ declare class INTaskResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INTaskResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask): INTaskResolutionResult;
+	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask | null): INTaskResolutionResult;
 
 	static disambiguationWithTasksToDisambiguate(tasksToDisambiguate: NSArray<INTask> | INTask[]): INTaskResolutionResult;
 
@@ -13575,7 +13575,7 @@ declare class INTemperatureResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INTemperatureResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTemperatureToConfirm(temperatureToConfirm: NSMeasurement<NSUnitTemperature>): INTemperatureResolutionResult;
+	static confirmationRequiredWithTemperatureToConfirm(temperatureToConfirm: NSMeasurement<NSUnitTemperature> | null): INTemperatureResolutionResult;
 
 	static disambiguationWithTemperaturesToDisambiguate(temperaturesToDisambiguate: NSArray<NSMeasurement<NSUnitTemperature>> | NSMeasurement<NSUnitTemperature>[]): INTemperatureResolutionResult;
 
@@ -13612,7 +13612,7 @@ declare class INTemporalEventTrigger extends NSObject implements NSCopying, NSSe
 
 	constructor(o: { dateComponentsRange: INDateComponentsRange; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -13633,7 +13633,7 @@ declare class INTemporalEventTriggerResolutionResult extends INIntentResolutionR
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INTemporalEventTriggerResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger): INTemporalEventTriggerResolutionResult;
+	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger | null): INTemporalEventTriggerResolutionResult;
 
 	static disambiguationWithTemporalEventTriggersToDisambiguate(temporalEventTriggersToDisambiguate: NSArray<INTemporalEventTrigger> | INTemporalEventTrigger[]): INTemporalEventTriggerResolutionResult;
 
@@ -13706,23 +13706,23 @@ declare class INTermsAndConditions extends NSObject implements NSCopying, NSSecu
 
 	readonly localizedTermsAndConditionsText: string;
 
-	readonly privacyPolicyURL: NSURL;
+	readonly privacyPolicyURL: NSURL | null;
 
-	readonly termsAndConditionsURL: NSURL;
+	readonly termsAndConditionsURL: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { localizedTermsAndConditionsText: string; privacyPolicyURL: NSURL; termsAndConditionsURL: NSURL; });
+	constructor(o: { localizedTermsAndConditionsText: string; privacyPolicyURL: NSURL | null; termsAndConditionsURL: NSURL | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithLocalizedTermsAndConditionsTextPrivacyPolicyURLTermsAndConditionsURL(localizedTermsAndConditionsText: string, privacyPolicyURL: NSURL, termsAndConditionsURL: NSURL): this;
+	initWithLocalizedTermsAndConditionsTextPrivacyPolicyURLTermsAndConditionsURL(localizedTermsAndConditionsText: string, privacyPolicyURL: NSURL | null, termsAndConditionsURL: NSURL | null): this;
 }
 
 /**
@@ -13734,7 +13734,7 @@ declare class INTextNoteContent extends INNoteContent implements NSCopying, NSSe
 
 	static new(): INTextNoteContent; // inherited from NSObject
 
-	readonly text: string;
+	readonly text: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -13742,7 +13742,7 @@ declare class INTextNoteContent extends INNoteContent implements NSCopying, NSSe
 
 	constructor(o: { text: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -13764,21 +13764,21 @@ declare class INTicketedEvent extends NSObject implements NSCopying, NSSecureCod
 
 	readonly eventDuration: INDateComponentsRange;
 
-	readonly location: CLPlacemark;
+	readonly location: CLPlacemark | null;
 
 	readonly name: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { category: INTicketedEventCategory; name: string; eventDuration: INDateComponentsRange; location: CLPlacemark; });
+	constructor(o: { category: INTicketedEventCategory; name: string; eventDuration: INDateComponentsRange; location: CLPlacemark | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCategoryNameEventDurationLocation(category: INTicketedEventCategory, name: string, eventDuration: INDateComponentsRange, location: CLPlacemark): this;
+	initWithCategoryNameEventDurationLocation(category: INTicketedEventCategory, name: string, eventDuration: INDateComponentsRange, location: CLPlacemark | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -13804,31 +13804,31 @@ declare class INTicketedEventReservation extends INReservation implements NSCopy
 
 	readonly event: INTicketedEvent;
 
-	readonly reservedSeat: INSeat;
+	readonly reservedSeat: INSeat | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; reservedSeat: INSeat; event: INTicketedEvent; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; reservedSeat: INSeat | null; event: INTicketedEvent; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; reservedSeat: INSeat; event: INTicketedEvent; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; reservedSeat: INSeat | null; event: INTicketedEvent; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatEvent(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], reservedSeat: INSeat, event: INTicketedEvent): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatEvent(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, reservedSeat: INSeat | null, event: INTicketedEvent): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatEvent(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservedSeat: INSeat, event: INTicketedEvent): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatEvent(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, reservedSeat: INSeat | null, event: INTicketedEvent): this;
 }
 
 /**
@@ -13870,7 +13870,7 @@ declare class INTrainReservation extends INReservation implements NSCopying, NSS
 
 	static new(): INTrainReservation; // inherited from NSObject
 
-	readonly reservedSeat: INSeat;
+	readonly reservedSeat: INSeat | null;
 
 	readonly trainTrip: INTrainTrip;
 
@@ -13878,25 +13878,25 @@ declare class INTrainReservation extends INReservation implements NSCopying, NSS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; reservedSeat: INSeat; trainTrip: INTrainTrip; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; reservedSeat: INSeat | null; trainTrip: INTrainTrip; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { itemReference: INSpeakableString; reservationNumber: string; bookingTime: Date; reservationStatus: INReservationStatus; reservationHolderName: string; actions: NSArray<INReservationAction> | INReservationAction[]; URL: NSURL; reservedSeat: INSeat; trainTrip: INTrainTrip; });
+	constructor(o: { itemReference: INSpeakableString; reservationNumber: string | null; bookingTime: Date | null; reservationStatus: INReservationStatus; reservationHolderName: string | null; actions: NSArray<INReservationAction> | INReservationAction[] | null; URL: NSURL | null; reservedSeat: INSeat | null; trainTrip: INTrainTrip; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatTrainTrip(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], reservedSeat: INSeat, trainTrip: INTrainTrip): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatTrainTrip(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, reservedSeat: INSeat | null, trainTrip: INTrainTrip): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatTrainTrip(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservedSeat: INSeat, trainTrip: INTrainTrip): this;
+	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatTrainTrip(itemReference: INSpeakableString, reservationNumber: string | null, bookingTime: Date | null, reservationStatus: INReservationStatus, reservationHolderName: string | null, actions: NSArray<INReservationAction> | INReservationAction[] | null, URL: NSURL | null, reservedSeat: INSeat | null, trainTrip: INTrainTrip): this;
 }
 
 /**
@@ -13908,19 +13908,19 @@ declare class INTrainTrip extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): INTrainTrip; // inherited from NSObject
 
-	readonly arrivalPlatform: string;
+	readonly arrivalPlatform: string | null;
 
 	readonly arrivalStationLocation: CLPlacemark;
 
-	readonly departurePlatform: string;
+	readonly departurePlatform: string | null;
 
 	readonly departureStationLocation: CLPlacemark;
 
-	readonly provider: string;
+	readonly provider: string | null;
 
-	readonly trainName: string;
+	readonly trainName: string | null;
 
-	readonly trainNumber: string;
+	readonly trainNumber: string | null;
 
 	readonly tripDuration: INDateComponentsRange;
 
@@ -13928,15 +13928,15 @@ declare class INTrainTrip extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { provider: string; trainName: string; trainNumber: string; tripDuration: INDateComponentsRange; departureStationLocation: CLPlacemark; departurePlatform: string; arrivalStationLocation: CLPlacemark; arrivalPlatform: string; });
+	constructor(o: { provider: string | null; trainName: string | null; trainNumber: string | null; tripDuration: INDateComponentsRange; departureStationLocation: CLPlacemark; departurePlatform: string | null; arrivalStationLocation: CLPlacemark; arrivalPlatform: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithProviderTrainNameTrainNumberTripDurationDepartureStationLocationDeparturePlatformArrivalStationLocationArrivalPlatform(provider: string, trainName: string, trainNumber: string, tripDuration: INDateComponentsRange, departureStationLocation: CLPlacemark, departurePlatform: string, arrivalStationLocation: CLPlacemark, arrivalPlatform: string): this;
+	initWithProviderTrainNameTrainNumberTripDurationDepartureStationLocationDeparturePlatformArrivalStationLocationArrivalPlatform(provider: string | null, trainName: string | null, trainNumber: string | null, tripDuration: INDateComponentsRange, departureStationLocation: CLPlacemark, departurePlatform: string | null, arrivalStationLocation: CLPlacemark, arrivalPlatform: string | null): this;
 }
 
 /**
@@ -13949,19 +13949,19 @@ declare class INTransferMoneyIntent extends INIntent {
 
 	static new(): INTransferMoneyIntent; // inherited from NSObject
 
-	readonly fromAccount: INPaymentAccount;
+	readonly fromAccount: INPaymentAccount | null;
 
-	readonly toAccount: INPaymentAccount;
+	readonly toAccount: INPaymentAccount | null;
 
-	readonly transactionAmount: INPaymentAmount;
+	readonly transactionAmount: INPaymentAmount | null;
 
-	readonly transactionNote: string;
+	readonly transactionNote: string | null;
 
-	readonly transactionScheduledDate: INDateComponentsRange;
+	readonly transactionScheduledDate: INDateComponentsRange | null;
 
-	constructor(o: { fromAccount: INPaymentAccount; toAccount: INPaymentAccount; transactionAmount: INPaymentAmount; transactionScheduledDate: INDateComponentsRange; transactionNote: string; });
+	constructor(o: { fromAccount: INPaymentAccount | null; toAccount: INPaymentAccount | null; transactionAmount: INPaymentAmount | null; transactionScheduledDate: INDateComponentsRange | null; transactionNote: string | null; });
 
-	initWithFromAccountToAccountTransactionAmountTransactionScheduledDateTransactionNote(fromAccount: INPaymentAccount, toAccount: INPaymentAccount, transactionAmount: INPaymentAmount, transactionScheduledDate: INDateComponentsRange, transactionNote: string): this;
+	initWithFromAccountToAccountTransactionAmountTransactionScheduledDateTransactionNote(fromAccount: INPaymentAccount | null, toAccount: INPaymentAccount | null, transactionAmount: INPaymentAmount | null, transactionScheduledDate: INDateComponentsRange | null, transactionNote: string | null): this;
 }
 
 /**
@@ -14001,21 +14001,21 @@ declare class INTransferMoneyIntentResponse extends INIntentResponse {
 
 	readonly code: INTransferMoneyIntentResponseCode;
 
-	fromAccount: INPaymentAccount;
+	fromAccount: INPaymentAccount | null;
 
-	toAccount: INPaymentAccount;
+	toAccount: INPaymentAccount | null;
 
-	transactionAmount: INPaymentAmount;
+	transactionAmount: INPaymentAmount | null;
 
-	transactionNote: string;
+	transactionNote: string | null;
 
-	transactionScheduledDate: INDateComponentsRange;
+	transactionScheduledDate: INDateComponentsRange | null;
 
-	transferFee: INCurrencyAmount;
+	transferFee: INCurrencyAmount | null;
 
-	constructor(o: { code: INTransferMoneyIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INTransferMoneyIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INTransferMoneyIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INTransferMoneyIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -14053,7 +14053,7 @@ declare class INURLResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INURLResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithURLToConfirm(urlToConfirm: NSURL): INURLResolutionResult;
+	static confirmationRequiredWithURLToConfirm(urlToConfirm: NSURL | null): INURLResolutionResult;
 
 	static disambiguationWithURLsToDisambiguate(urlsToDisambiguate: NSArray<NSURL> | NSURL[]): INURLResolutionResult;
 
@@ -14082,11 +14082,11 @@ declare class INUnsendMessagesIntent extends INIntent {
 
 	static new(): INUnsendMessagesIntent; // inherited from NSObject
 
-	readonly messageIdentifiers: NSArray<string>;
+	readonly messageIdentifiers: NSArray<string> | null;
 
-	constructor(o: { messageIdentifiers: NSArray<string> | string[]; });
+	constructor(o: { messageIdentifiers: NSArray<string> | string[] | null; });
 
-	initWithMessageIdentifiers(messageIdentifiers: NSArray<string> | string[]): this;
+	initWithMessageIdentifiers(messageIdentifiers: NSArray<string> | string[] | null): this;
 }
 
 /**
@@ -14114,9 +14114,9 @@ declare class INUnsendMessagesIntentResponse extends INIntentResponse {
 
 	readonly code: INUnsendMessagesIntentResponseCode;
 
-	constructor(o: { code: INUnsendMessagesIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INUnsendMessagesIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INUnsendMessagesIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INUnsendMessagesIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -14186,13 +14186,13 @@ declare class INUpdateMediaAffinityIntent extends INIntent {
 
 	readonly affinityType: INMediaAffinityType;
 
-	readonly mediaItems: NSArray<INMediaItem>;
+	readonly mediaItems: NSArray<INMediaItem> | null;
 
-	readonly mediaSearch: INMediaSearch;
+	readonly mediaSearch: INMediaSearch | null;
 
-	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[]; mediaSearch: INMediaSearch; affinityType: INMediaAffinityType; });
+	constructor(o: { mediaItems: NSArray<INMediaItem> | INMediaItem[] | null; mediaSearch: INMediaSearch | null; affinityType: INMediaAffinityType; });
 
-	initWithMediaItemsMediaSearchAffinityType(mediaItems: NSArray<INMediaItem> | INMediaItem[], mediaSearch: INMediaSearch, affinityType: INMediaAffinityType): this;
+	initWithMediaItemsMediaSearchAffinityType(mediaItems: NSArray<INMediaItem> | INMediaItem[] | null, mediaSearch: INMediaSearch | null, affinityType: INMediaAffinityType): this;
 }
 
 /**
@@ -14224,9 +14224,9 @@ declare class INUpdateMediaAffinityIntentResponse extends INIntentResponse {
 
 	readonly code: INUpdateMediaAffinityIntentResponseCode;
 
-	constructor(o: { code: INUpdateMediaAffinityIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { code: INUpdateMediaAffinityIntentResponseCode; userActivity: NSUserActivity | null; });
 
-	initWithCodeUserActivity(code: INUpdateMediaAffinityIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithCodeUserActivity(code: INUpdateMediaAffinityIntentResponseCode, userActivity: NSUserActivity | null): this;
 }
 
 /**
@@ -14259,7 +14259,7 @@ declare class INUpdateMediaAffinityMediaItemResolutionResult extends INMediaItem
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INUpdateMediaAffinityMediaItemResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem): INUpdateMediaAffinityMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
+	static confirmationRequiredWithMediaItemToConfirm(mediaItemToConfirm: INMediaItem | null): INUpdateMediaAffinityMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
 	static disambiguationWithMediaItemsToDisambiguate(mediaItemsToDisambiguate: NSArray<INMediaItem> | INMediaItem[]): INUpdateMediaAffinityMediaItemResolutionResult; // inherited from INMediaItemResolutionResult
 
@@ -14468,7 +14468,7 @@ declare class INVoiceShortcut extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -14486,9 +14486,9 @@ declare class INVoiceShortcutCenter extends NSObject {
 
 	static readonly sharedCenter: INVoiceShortcutCenter;
 
-	getAllVoiceShortcutsWithCompletion(completionHandler: (p1: NSArray<INVoiceShortcut>, p2: NSError) => void): void;
+	getAllVoiceShortcutsWithCompletion(completionHandler: (p1: NSArray<INVoiceShortcut> | null, p2: NSError | null) => void): void;
 
-	getVoiceShortcutWithIdentifierCompletion(identifier: NSUUID, completionHandler: (p1: INVoiceShortcut, p2: NSError) => void): void;
+	getVoiceShortcutWithIdentifierCompletion(identifier: NSUUID, completionHandler: (p1: INVoiceShortcut | null, p2: NSError | null) => void): void;
 
 	setShortcutSuggestions(suggestions: NSArray<INShortcut> | INShortcut[]): void;
 }
@@ -14505,7 +14505,7 @@ declare class INVolumeResolutionResult extends INIntentResolutionResult {
 	 */
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INVolumeResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithVolumeToConfirm(volumeToConfirm: NSMeasurement<NSUnitVolume>): INVolumeResolutionResult;
+	static confirmationRequiredWithVolumeToConfirm(volumeToConfirm: NSMeasurement<NSUnitVolume> | null): INVolumeResolutionResult;
 
 	static disambiguationWithVolumeToDisambiguate(volumeToDisambiguate: NSArray<NSMeasurement<NSUnitVolume>> | NSMeasurement<NSUnitVolume>[]): INVolumeResolutionResult;
 

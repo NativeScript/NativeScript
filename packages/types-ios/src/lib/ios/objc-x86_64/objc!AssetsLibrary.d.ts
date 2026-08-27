@@ -221,7 +221,7 @@ declare class ALAssetRepresentation extends NSObject {
 	 * @since 4
 	 * @deprecated 9
 	 */
-	getBytesFromOffsetLengthError(buffer: string | interop.Pointer | interop.Reference<any>, offset: number, length: number, error?: interop.Reference<NSError>): number;
+	getBytesFromOffsetLengthError(buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, offset: number, length: number, error?: interop.Reference<NSError>): number;
 
 	/**
 	 * @since 4
@@ -315,19 +315,19 @@ declare class ALAssetsGroup extends NSObject {
 	 * @since 4
 	 * @deprecated 9
 	 */
-	enumerateAssetsAtIndexesOptionsUsingBlock(indexSet: NSIndexSet, options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateAssetsAtIndexesOptionsUsingBlock(indexSet: NSIndexSet, options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 4
 	 * @deprecated 9
 	 */
-	enumerateAssetsUsingBlock(enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateAssetsUsingBlock(enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 4
 	 * @deprecated 9
 	 */
-	enumerateAssetsWithOptionsUsingBlock(options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateAssetsWithOptionsUsingBlock(options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 4
@@ -430,7 +430,7 @@ declare class ALAssetsLibrary extends NSObject {
 	 * @since 4
 	 * @deprecated 9
 	 */
-	enumerateGroupsWithTypesUsingBlockFailureBlock(types: number, enumerationBlock: (p1: ALAssetsGroup, p2: interop.Pointer | interop.Reference<boolean>) => void, failureBlock: (p1: NSError) => void): void;
+	enumerateGroupsWithTypesUsingBlockFailureBlock(types: number, enumerationBlock: (p1: ALAssetsGroup, p2: interop.Pointer | interop.Reference<boolean> | null) => void, failureBlock: (p1: NSError) => void): void;
 
 	/**
 	 * @since 5

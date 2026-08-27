@@ -59,7 +59,7 @@ declare class AVCaptureEventInteraction extends NSObject implements UIInteractio
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly view: UIView; // inherited from UIInteraction
+	readonly view: UIView | null; // inherited from UIInteraction
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -71,7 +71,7 @@ declare class AVCaptureEventInteraction extends NSObject implements UIInteractio
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	didMoveToView(view: UIView): void;
+	didMoveToView(view: UIView | null): void;
 
 	initWithEventHandler(handler: (p1: AVCaptureEvent) => void): this;
 
@@ -95,7 +95,7 @@ declare class AVCaptureEventInteraction extends NSObject implements UIInteractio
 
 	self(): this;
 
-	willMoveToView(view: UIView): void;
+	willMoveToView(view: UIView | null): void;
 }
 
 /**
@@ -155,7 +155,7 @@ declare class AVInputPickerInteraction extends NSObject implements UIInteraction
 
 	audioSession: AVAudioSession;
 
-	delegate: AVInputPickerInteractionDelegate;
+	delegate: AVInputPickerInteractionDelegate | null;
 
 	readonly presented: boolean;
 
@@ -169,21 +169,21 @@ declare class AVInputPickerInteraction extends NSObject implements UIInteraction
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly view: UIView; // inherited from UIInteraction
+	readonly view: UIView | null; // inherited from UIInteraction
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { audioSession: AVAudioSession; });
+	constructor(o: { audioSession: AVAudioSession | null; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	didMoveToView(view: UIView): void;
+	didMoveToView(view: UIView | null): void;
 
 	dismiss(): void;
 
-	initWithAudioSession(audioSession: AVAudioSession): this;
+	initWithAudioSession(audioSession: AVAudioSession | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -205,7 +205,7 @@ declare class AVInputPickerInteraction extends NSObject implements UIInteraction
 
 	self(): this;
 
-	willMoveToView(view: UIView): void;
+	willMoveToView(view: UIView | null): void;
 }
 
 /**
@@ -241,7 +241,7 @@ declare class AVInterstitialTimeRange extends NSObject implements NSCopying, NSS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -272,6 +272,72 @@ declare const enum AVKitError {
 declare var AVKitErrorDomain: string;
 
 /**
+ * @since 26.4
+ */
+declare const enum AVLegibleMediaOptionsMenuContents {
+
+	Legible = 1,
+
+	CaptionAppearance = 2,
+
+	All = 3
+}
+
+/**
+ * @since 26.4
+ */
+declare class AVLegibleMediaOptionsMenuController extends NSObject {
+
+	static alloc(): AVLegibleMediaOptionsMenuController; // inherited from NSObject
+
+	static new(): AVLegibleMediaOptionsMenuController; // inherited from NSObject
+
+	delegate: AVLegibleMediaOptionsMenuControllerDelegate | null;
+
+	readonly menuState: AVLegibleMediaOptionsMenuState;
+
+	player: AVPlayer;
+
+	constructor(o: { player: AVPlayer | null; });
+
+	initWithPlayer(player: AVPlayer | null): this;
+
+	menuWithContents(contents: AVLegibleMediaOptionsMenuContents): UIMenu | null;
+}
+
+/**
+ * @since 26.4
+ */
+interface AVLegibleMediaOptionsMenuControllerDelegate extends NSObjectProtocol {
+
+	legibleMenuControllerDidChangeMenuState?(menuController: AVLegibleMediaOptionsMenuController, state: AVLegibleMediaOptionsMenuState): void;
+
+	legibleMenuControllerDidRequestCaptionPreviewForProfileID?(menuController: AVLegibleMediaOptionsMenuController, profileID: string): void;
+
+	legibleMenuControllerDidRequestStoppingSubtitleCaptionPreview?(menuController: AVLegibleMediaOptionsMenuController): void;
+}
+declare var AVLegibleMediaOptionsMenuControllerDelegate: {
+
+	prototype: AVLegibleMediaOptionsMenuControllerDelegate;
+};
+
+interface AVLegibleMediaOptionsMenuState {
+	enabled: boolean;
+	reason: AVLegibleMediaOptionsMenuStateChangeReason;
+}
+declare var AVLegibleMediaOptionsMenuState: interop.StructType<AVLegibleMediaOptionsMenuState>;
+
+/**
+ * @since 26.4
+ */
+declare const enum AVLegibleMediaOptionsMenuStateChangeReason {
+
+	None = 0,
+
+	LanguageMismatch = 1
+}
+
+/**
  * @since 9.0
  */
 declare class AVPictureInPictureController extends NSObject {
@@ -282,9 +348,9 @@ declare class AVPictureInPictureController extends NSObject {
 
 	static new(): AVPictureInPictureController; // inherited from NSObject
 
-	static pictureInPictureButtonStartImageCompatibleWithTraitCollection(traitCollection: UITraitCollection): UIImage;
+	static pictureInPictureButtonStartImageCompatibleWithTraitCollection(traitCollection: UITraitCollection | null): UIImage;
 
-	static pictureInPictureButtonStopImageCompatibleWithTraitCollection(traitCollection: UITraitCollection): UIImage;
+	static pictureInPictureButtonStopImageCompatibleWithTraitCollection(traitCollection: UITraitCollection | null): UIImage;
 
 	/**
 	 * @since 14.2
@@ -294,9 +360,9 @@ declare class AVPictureInPictureController extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	contentSource: AVPictureInPictureControllerContentSource;
+	contentSource: AVPictureInPictureControllerContentSource | null;
 
-	delegate: AVPictureInPictureControllerDelegate;
+	delegate: AVPictureInPictureControllerDelegate | null;
 
 	readonly pictureInPictureActive: boolean;
 
@@ -362,13 +428,13 @@ declare class AVPictureInPictureControllerContentSource extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	readonly activeVideoCallSourceView: UIView;
+	readonly activeVideoCallSourceView: UIView | null;
 
-	readonly playerLayer: AVPlayerLayer;
+	readonly playerLayer: AVPlayerLayer | null;
 
-	readonly sampleBufferDisplayLayer: AVSampleBufferDisplayLayer;
+	readonly sampleBufferDisplayLayer: AVSampleBufferDisplayLayer | null;
 
-	readonly sampleBufferPlaybackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate;
+	readonly sampleBufferPlaybackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate | null;
 
 	/**
 	 * @since 15.0
@@ -489,12 +555,12 @@ declare class AVPlayerViewController extends UIViewController {
 	 */
 	canStartPictureInPictureAutomaticallyFromInline: boolean;
 
-	readonly contentOverlayView: UIView;
+	readonly contentOverlayView: UIView | null;
 
 	/**
 	 * @since 9.0
 	 */
-	delegate: AVPlayerViewControllerDelegate;
+	delegate: AVPlayerViewControllerDelegate | null;
 
 	/**
 	 * @since 11.0
@@ -509,9 +575,9 @@ declare class AVPlayerViewController extends UIViewController {
 	/**
 	 * @since 9.0
 	 */
-	pixelBufferAttributes: NSDictionary<string, any>;
+	pixelBufferAttributes: NSDictionary<string, any> | null;
 
-	player: AVPlayer;
+	player: AVPlayer | null;
 
 	/**
 	 * @since 26.0
@@ -528,7 +594,7 @@ declare class AVPlayerViewController extends UIViewController {
 	/**
 	 * @since 16.0
 	 */
-	readonly selectedSpeed: AVPlaybackSpeed;
+	readonly selectedSpeed: AVPlaybackSpeed | null;
 
 	showsPlaybackControls: boolean;
 
@@ -660,7 +726,7 @@ declare class AVRoutePickerView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): AVRoutePickerView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): AVRoutePickerView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -671,7 +737,7 @@ declare class AVRoutePickerView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): AVRoutePickerView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): AVRoutePickerView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -688,9 +754,9 @@ declare class AVRoutePickerView extends UIView {
 	/**
 	 * @since 16.0
 	 */
-	customRoutingController: AVCustomRoutingController;
+	customRoutingController: AVCustomRoutingController | null;
 
-	delegate: AVRoutePickerViewDelegate;
+	delegate: AVRoutePickerViewDelegate | null;
 
 	/**
 	 * @since 13.0

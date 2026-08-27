@@ -50,6 +50,19 @@ rm -f packages/types-ios/src/lib/ios/objc-x86_64/*
 echo "Moving generated typings to ios/objc-x86_64..."
 mv ios-typings-prj/typings/x86_64/* packages/types-ios/src/lib/ios/objc-x86_64/
 
+pushd packages/types-ios/src/lib/ios/objc-x86_64
+
+echo "Pruning C shim typings nothing else references..."
+# Keep XPC, os_object, os_workgroup and the _DarwinFoundation set: framework
+# typings take their types (OS_xpc_object, OS_object, FILE, timeval, ...) as parameters.
+rm -f 'objc!libunwind.d.ts' 'objc!libxml2.d.ts' 'objc!rpc.d.ts' 'objc!_Builtin_intrinsics.d.ts' 'objc!_Builtin_stdatomic.d.ts' 'objc!libkern.d.ts' 'objc!unwind.d.ts' 'objc!xlocale.d.ts'
+
+# <time.h>'s `extern long timezone` shadows the `struct timezone` handle that
+# Darwin's settimeofday() takes, and nothing references the global.
+perl -0pi -e 's/\ndeclare var timezone: number;\n//' 'objc!_DarwinFoundation2.d.ts'
+
+popd
+
 echo "Emitting (ios/ios.d.ts)..."
 
 pushd packages/types-ios/src/lib/ios

@@ -41,7 +41,7 @@ declare var BslnFormat2Part: interop.StructType<BslnFormat2Part>;
 
 interface CTAdaptiveImageProviding {
 
-	imageForProposedSizeScaleFactorImageOffsetImageSize(proposedSize: CGSize, scaleFactor: number, outImageOffset: interop.Pointer | interop.Reference<CGPoint>, outImageSize: interop.Pointer | interop.Reference<CGSize>): any;
+	imageForProposedSizeScaleFactorImageOffsetImageSize(proposedSize: CGSize, scaleFactor: number, outImageOffset: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView, outImageSize: interop.Pointer | interop.Reference<CGSize> | ArrayBufferLike | ArrayBufferView): any | null;
 }
 declare var CTAdaptiveImageProviding: {
 
@@ -100,32 +100,32 @@ declare const enum CTFontCollectionCopyOptions {
 /**
  * @since 3.2
  */
-declare function CTFontCollectionCreateCopyWithFontDescriptors(original: any, queryDescriptors: NSArray<any> | any[], options: NSDictionary<any, any>): any;
+declare function CTFontCollectionCreateCopyWithFontDescriptors(original: any, queryDescriptors: NSArray<any> | any[] | null, options: NSDictionary<any, any> | null): any;
 
 /**
  * @since 3.2
  */
-declare function CTFontCollectionCreateFromAvailableFonts(options: NSDictionary<any, any>): any;
+declare function CTFontCollectionCreateFromAvailableFonts(options: NSDictionary<any, any> | null): any;
 
 /**
  * @since 3.2
  */
-declare function CTFontCollectionCreateMatchingFontDescriptors(collection: any): NSArray<any>;
+declare function CTFontCollectionCreateMatchingFontDescriptors(collection: any): NSArray<any> | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback(collection: any, sortCallback: interop.FunctionReference<(p1: UIFontDescriptor, p2: UIFontDescriptor, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, refCon: interop.Pointer | interop.Reference<any>): NSArray<any>;
+declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback(collection: any, sortCallback: interop.FunctionReference<(p1: UIFontDescriptor, p2: UIFontDescriptor, p3: interop.Pointer | interop.Reference<any> | null) => CFComparisonResult> | null, refCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSArray<any> | null;
 
 /**
  * @since 12.0
  */
-declare function CTFontCollectionCreateMatchingFontDescriptorsWithOptions(collection: any, options: NSDictionary<any, any>): NSArray<any>;
+declare function CTFontCollectionCreateMatchingFontDescriptorsWithOptions(collection: any, options: NSDictionary<any, any> | null): NSArray<any> | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any> | any[], options: NSDictionary<any, any>): any;
+declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any> | any[] | null, options: NSDictionary<any, any> | null): any;
 
 /**
  * @since 3.2
@@ -135,12 +135,12 @@ declare function CTFontCollectionGetTypeID(): number;
 /**
  * @since 3.2
  */
-declare function CTFontCopyAttribute(font: UIFont, attribute: string): any;
+declare function CTFontCopyAttribute(font: UIFont, attribute: string): any | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCopyAvailableTables(font: UIFont, options: CTFontTableOptions): NSArray<any>;
+declare function CTFontCopyAvailableTables(font: UIFont, options: CTFontTableOptions): NSArray<any> | null;
 
 /**
  * @since 3.2
@@ -150,7 +150,7 @@ declare function CTFontCopyCharacterSet(font: UIFont): NSCharacterSet;
 /**
  * @since 6.0
  */
-declare function CTFontCopyDefaultCascadeListForLanguages(font: UIFont, languagePrefList: NSArray<any> | any[]): NSArray<any>;
+declare function CTFontCopyDefaultCascadeListForLanguages(font: UIFont, languagePrefList: NSArray<any> | any[] | null): NSArray<any> | null;
 
 /**
  * @since 3.2
@@ -165,12 +165,12 @@ declare function CTFontCopyFamilyName(font: UIFont): string;
 /**
  * @since 3.2
  */
-declare function CTFontCopyFeatureSettings(font: UIFont): NSArray<any>;
+declare function CTFontCopyFeatureSettings(font: UIFont): NSArray<any> | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCopyFeatures(font: UIFont): NSArray<any>;
+declare function CTFontCopyFeatures(font: UIFont): NSArray<any> | null;
 
 /**
  * @since 3.2
@@ -185,22 +185,22 @@ declare function CTFontCopyFullName(font: UIFont): string;
 /**
  * @since 3.2
  */
-declare function CTFontCopyGraphicsFont(font: UIFont, attributes: interop.Pointer | interop.Reference<UIFontDescriptor>): any;
+declare function CTFontCopyGraphicsFont(font: UIFont, attributes: interop.Pointer | interop.Reference<UIFontDescriptor | null> | ArrayBufferLike | ArrayBufferView | null): any;
 
 /**
  * @since 3.2
  */
-declare function CTFontCopyLocalizedName(font: UIFont, nameKey: string, actualLanguage: interop.Pointer | interop.Reference<string>): string;
+declare function CTFontCopyLocalizedName(font: UIFont, nameKey: string, actualLanguage: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView | null): string | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCopyName(font: UIFont, nameKey: string): string;
+declare function CTFontCopyName(font: UIFont, nameKey: string): string | null;
 
 /**
  * @since 6.0
  */
-declare function CTFontCopyNameForGlyph(font: UIFont, glyph: number): string;
+declare function CTFontCopyNameForGlyph(font: UIFont, glyph: number): string | null;
 
 /**
  * @since 3.2
@@ -215,7 +215,7 @@ declare function CTFontCopySupportedLanguages(font: UIFont): NSArray<any>;
 /**
  * @since 3.2
  */
-declare function CTFontCopyTable(font: UIFont, table: number, options: CTFontTableOptions): NSData;
+declare function CTFontCopyTable(font: UIFont, table: number, options: CTFontTableOptions): NSData | null;
 
 /**
  * @since 3.2
@@ -225,27 +225,27 @@ declare function CTFontCopyTraits(font: UIFont): NSDictionary<any, any>;
 /**
  * @since 3.2
  */
-declare function CTFontCopyVariation(font: UIFont): NSDictionary<any, any>;
+declare function CTFontCopyVariation(font: UIFont): NSDictionary<any, any> | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCopyVariationAxes(font: UIFont): NSArray<any>;
+declare function CTFontCopyVariationAxes(font: UIFont): NSArray<any> | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateCopyWithAttributes(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
+declare function CTFontCreateCopyWithAttributes(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, attributes: UIFontDescriptor | null): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateCopyWithFamily(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, family: string): UIFont;
+declare function CTFontCreateCopyWithFamily(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, family: string): UIFont | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateCopyWithSymbolicTraits(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFont;
+declare function CTFontCreateCopyWithSymbolicTraits(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFont | null;
 
 /**
  * @since 3.2
@@ -255,47 +255,47 @@ declare function CTFontCreateForString(currentFont: UIFont, string: string, rang
 /**
  * @since 7.0
  */
-declare function CTFontCreateForStringWithLanguage(currentFont: UIFont, string: string, range: CFRange, language: string): UIFont;
+declare function CTFontCreateForStringWithLanguage(currentFont: UIFont, string: string, range: CFRange, language: string | null): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreatePathForGlyph(font: UIFont, glyph: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+declare function CTFontCreatePathForGlyph(font: UIFont, glyph: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateUIFontForLanguage(uiType: CTFontUIFontType, size: number, language: string): UIFont;
+declare function CTFontCreateUIFontForLanguage(uiType: CTFontUIFontType, size: number, language: string | null): UIFont | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateWithFontDescriptor(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): UIFont;
+declare function CTFontCreateWithFontDescriptor(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateWithFontDescriptorAndOptions(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
+declare function CTFontCreateWithFontDescriptorAndOptions(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, options: CTFontOptions): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateWithGraphicsFont(graphicsFont: any, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
+declare function CTFontCreateWithGraphicsFont(graphicsFont: any, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, attributes: UIFontDescriptor | null): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateWithName(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): UIFont;
+declare function CTFontCreateWithName(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontCreateWithNameAndOptions(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
+declare function CTFontCreateWithNameAndOptions(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, options: CTFontOptions): UIFont;
 
 /**
  * @since 3.2
  */
-declare function CTFontDescriptorCopyAttribute(descriptor: UIFontDescriptor, attribute: string): any;
+declare function CTFontDescriptorCopyAttribute(descriptor: UIFontDescriptor, attribute: string): any | null;
 
 /**
  * @since 3.2
@@ -305,7 +305,7 @@ declare function CTFontDescriptorCopyAttributes(descriptor: UIFontDescriptor): N
 /**
  * @since 3.2
  */
-declare function CTFontDescriptorCopyLocalizedAttribute(descriptor: UIFontDescriptor, attribute: string, language: interop.Pointer | interop.Reference<string>): any;
+declare function CTFontDescriptorCopyLocalizedAttribute(descriptor: UIFontDescriptor, attribute: string, language: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 3.2
@@ -315,7 +315,7 @@ declare function CTFontDescriptorCreateCopyWithAttributes(original: UIFontDescri
 /**
  * @since 7.0
  */
-declare function CTFontDescriptorCreateCopyWithFamily(original: UIFontDescriptor, family: string): UIFontDescriptor;
+declare function CTFontDescriptorCreateCopyWithFamily(original: UIFontDescriptor, family: string): UIFontDescriptor | null;
 
 /**
  * @since 3.2
@@ -325,7 +325,7 @@ declare function CTFontDescriptorCreateCopyWithFeature(original: UIFontDescripto
 /**
  * @since 7.0
  */
-declare function CTFontDescriptorCreateCopyWithSymbolicTraits(original: UIFontDescriptor, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFontDescriptor;
+declare function CTFontDescriptorCreateCopyWithSymbolicTraits(original: UIFontDescriptor, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFontDescriptor | null;
 
 /**
  * @since 3.2
@@ -335,12 +335,12 @@ declare function CTFontDescriptorCreateCopyWithVariation(original: UIFontDescrip
 /**
  * @since 3.2
  */
-declare function CTFontDescriptorCreateMatchingFontDescriptor(descriptor: UIFontDescriptor, mandatoryAttributes: NSSet<any>): UIFontDescriptor;
+declare function CTFontDescriptorCreateMatchingFontDescriptor(descriptor: UIFontDescriptor, mandatoryAttributes: NSSet<any> | null): UIFontDescriptor | null;
 
 /**
  * @since 3.2
  */
-declare function CTFontDescriptorCreateMatchingFontDescriptors(descriptor: UIFontDescriptor, mandatoryAttributes: NSSet<any>): NSArray<any>;
+declare function CTFontDescriptorCreateMatchingFontDescriptors(descriptor: UIFontDescriptor, mandatoryAttributes: NSSet<any> | null): NSArray<any> | null;
 
 /**
  * @since 3.2
@@ -360,7 +360,7 @@ declare function CTFontDescriptorGetTypeID(): number;
 /**
  * @since 6.0
  */
-declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any> | any[], mandatoryAttributes: NSSet<any>, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => boolean): boolean;
+declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any> | any[], mandatoryAttributes: NSSet<any> | null, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => boolean): boolean;
 
 declare const enum CTFontDescriptorMatchingState {
 
@@ -411,7 +411,7 @@ declare const enum CTFontFormat {
 /**
  * @since 3.2
  */
-declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Reference<CGSize>, count: number): number;
+declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Reference<CGSize> | null, count: number): number;
 
 /**
  * @since 3.2
@@ -426,7 +426,7 @@ declare function CTFontGetBoundingBox(font: UIFont): CGRect;
 /**
  * @since 3.2
  */
-declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number): CGRect;
+declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect> | null, count: number): CGRect;
 
 /**
  * @since 3.2
@@ -461,7 +461,7 @@ declare function CTFontGetLeading(font: UIFont): number;
 /**
  * @since 3.2
  */
-declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Reference<number>, maxPositions: number): number;
+declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Reference<number> | null, maxPositions: number): number;
 
 /**
  * @since 3.2
@@ -471,7 +471,7 @@ declare function CTFontGetMatrix(font: UIFont): CGAffineTransform;
 /**
  * @since 6.0
  */
-declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number, options: number): CGRect;
+declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect> | null, count: number, options: number): CGRect;
 
 /**
  * @since 3.2
@@ -501,7 +501,12 @@ declare function CTFontGetTypeID(): number;
 /**
  * @since 18.0
  */
-declare function CTFontGetTypographicBoundsForAdaptiveImageProvider(font: UIFont, provider: CTAdaptiveImageProviding): CGRect;
+declare function CTFontGetTypographicBoundsForAdaptiveImageProvider(font: UIFont, provider: CTAdaptiveImageProviding | null): CGRect;
+
+/**
+ * @since 13.0
+ */
+declare function CTFontGetUIFontType(font: UIFont): CTFontUIFontType;
 
 /**
  * @since 3.2
@@ -562,7 +567,7 @@ declare function CTFontManagerCopyRegisteredFontDescriptors(scope: CTFontManager
 /**
  * @since 7.0
  */
-declare function CTFontManagerCreateFontDescriptorFromData(data: NSData): UIFontDescriptor;
+declare function CTFontManagerCreateFontDescriptorFromData(data: NSData): UIFontDescriptor | null;
 
 /**
  * @since 11.0
@@ -572,7 +577,7 @@ declare function CTFontManagerCreateFontDescriptorsFromData(data: NSData): NSArr
 /**
  * @since 7.0
  */
-declare function CTFontManagerCreateFontDescriptorsFromURL(fileURL: NSURL): NSArray<any>;
+declare function CTFontManagerCreateFontDescriptorsFromURL(fileURL: NSURL): NSArray<any> | null;
 
 declare const enum CTFontManagerError {
 
@@ -614,34 +619,34 @@ declare const enum CTFontManagerError {
 /**
  * @since 13.0
  */
-declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean | null): void;
 
 /**
  * @since 13.0
  */
-declare function CTFontManagerRegisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerRegisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean | null): void;
 
 /**
  * @since 4.1
  */
-declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.1
  * @deprecated 13.0
  */
-declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 13.0
  */
-declare function CTFontManagerRegisterFontsWithAssetNames(fontAssetNames: NSArray<any> | any[], bundle: any, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerRegisterFontsWithAssetNames(fontAssetNames: NSArray<any> | any[], bundle: any | null, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean | null): void;
 
 /**
  * @since 4.1
  * @deprecated 18
  */
-declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 13.0
@@ -664,29 +669,29 @@ declare const enum CTFontManagerScope {
 /**
  * @since 13.0
  */
-declare function CTFontManagerUnregisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerUnregisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean | null): void;
 
 /**
  * @since 13.0
  */
-declare function CTFontManagerUnregisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerUnregisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean | null): void;
 
 /**
  * @since 4.1
  */
-declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.1
  * @deprecated 13.0
  */
-declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.1
  * @deprecated 18
  */
-declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 declare const enum CTFontOptions {
 
@@ -934,7 +939,7 @@ declare function CTFrameDraw(frame: any, context: any): void;
 /**
  * @since 3.2
  */
-declare function CTFrameGetFrameAttributes(frame: any): NSDictionary<any, any>;
+declare function CTFrameGetFrameAttributes(frame: any): NSDictionary<any, any> | null;
 
 /**
  * @since 3.2
@@ -985,7 +990,7 @@ declare const enum CTFrameProgression {
 /**
  * @since 3.2
  */
-declare function CTFramesetterCreateFrame(framesetter: any, stringRange: CFRange, path: any, frameAttributes: NSDictionary<any, any>): any;
+declare function CTFramesetterCreateFrame(framesetter: any, stringRange: CFRange, path: any, frameAttributes: NSDictionary<any, any> | null): any;
 
 /**
  * @since 3.2
@@ -1010,7 +1015,7 @@ declare function CTFramesetterGetTypesetter(framesetter: any): any;
 /**
  * @since 3.2
  */
-declare function CTFramesetterSuggestFrameSizeWithConstraints(framesetter: any, stringRange: CFRange, frameAttributes: NSDictionary<any, any>, constraints: CGSize, fitRange: interop.Pointer | interop.Reference<CFRange>): CGSize;
+declare function CTFramesetterSuggestFrameSizeWithConstraints(framesetter: any, stringRange: CFRange, frameAttributes: NSDictionary<any, any> | null, constraints: CGSize, fitRange: interop.Pointer | interop.Reference<CFRange> | ArrayBufferLike | ArrayBufferView | null): CGSize;
 
 /**
  * @since 3.2
@@ -1021,17 +1026,17 @@ declare function CTGetCoreTextVersion(): number;
 /**
  * @since 3.2
  */
-declare function CTGlyphInfoCreateWithCharacterIdentifier(cid: number, collection: CTCharacterCollection, baseString: string): any;
+declare function CTGlyphInfoCreateWithCharacterIdentifier(cid: number, collection: CTCharacterCollection, baseString: string): any | null;
 
 /**
  * @since 3.2
  */
-declare function CTGlyphInfoCreateWithGlyph(glyph: number, font: UIFont, baseString: string): any;
+declare function CTGlyphInfoCreateWithGlyph(glyph: number, font: UIFont, baseString: string): any | null;
 
 /**
  * @since 3.2
  */
-declare function CTGlyphInfoCreateWithGlyphName(glyphName: string, font: UIFont, baseString: string): any;
+declare function CTGlyphInfoCreateWithGlyphName(glyphName: string, font: UIFont, baseString: string): any | null;
 
 /**
  * @since 3.2
@@ -1051,7 +1056,7 @@ declare function CTGlyphInfoGetGlyph(glyphInfo: any): number;
 /**
  * @since 3.2
  */
-declare function CTGlyphInfoGetGlyphName(glyphInfo: any): string;
+declare function CTGlyphInfoGetGlyphName(glyphInfo: any): string | null;
 
 /**
  * @since 3.2
@@ -1091,12 +1096,12 @@ declare const enum CTLineBreakMode {
 /**
  * @since 3.2
  */
-declare function CTLineCreateJustifiedLine(line: any, justificationFactor: number, justificationWidth: number): any;
+declare function CTLineCreateJustifiedLine(line: any, justificationFactor: number, justificationWidth: number): any | null;
 
 /**
  * @since 3.2
  */
-declare function CTLineCreateTruncatedLine(line: any, width: number, truncationType: CTLineTruncationType, truncationToken: any): any;
+declare function CTLineCreateTruncatedLine(line: any, width: number, truncationType: CTLineTruncationType, truncationToken: any | null): any | null;
 
 /**
  * @since 3.2
@@ -1111,7 +1116,7 @@ declare function CTLineDraw(line: any, context: any): void;
 /**
  * @since 9.0
  */
-declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: boolean, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
+declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: boolean, p4: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 /**
  * @since 6.0
@@ -1131,12 +1136,12 @@ declare function CTLineGetGlyphRuns(line: any): NSArray<any>;
 /**
  * @since 3.2
  */
-declare function CTLineGetImageBounds(line: any, context: any): CGRect;
+declare function CTLineGetImageBounds(line: any, context: any | null): CGRect;
 
 /**
  * @since 3.2
  */
-declare function CTLineGetOffsetForStringIndex(line: any, charIndex: number, secondaryOffset: interop.Pointer | interop.Reference<number>): number;
+declare function CTLineGetOffsetForStringIndex(line: any, charIndex: number, secondaryOffset: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
@@ -1166,7 +1171,7 @@ declare function CTLineGetTypeID(): number;
 /**
  * @since 3.2
  */
-declare function CTLineGetTypographicBounds(line: any, ascent: interop.Pointer | interop.Reference<number>, descent: interop.Pointer | interop.Reference<number>, leading: interop.Pointer | interop.Reference<number>): number;
+declare function CTLineGetTypographicBounds(line: any, ascent: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, descent: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, leading: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum CTLineTruncationType {
 
@@ -1180,7 +1185,7 @@ declare const enum CTLineTruncationType {
 /**
  * @since 3.2
  */
-declare function CTParagraphStyleCreate(settings: interop.Pointer | interop.Reference<CTParagraphStyleSetting>, settingCount: number): any;
+declare function CTParagraphStyleCreate(settings: interop.Pointer | interop.Reference<CTParagraphStyleSetting> | ArrayBufferLike | ArrayBufferView | null, settingCount: number): any;
 
 /**
  * @since 3.2
@@ -1195,12 +1200,12 @@ declare function CTParagraphStyleGetTypeID(): number;
 /**
  * @since 3.2
  */
-declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer | interop.Reference<any>): boolean;
+declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): boolean;
 
 interface CTParagraphStyleSetting {
 	spec: CTParagraphStyleSpecifier;
 	valueSize: number;
-	value: interop.Pointer | interop.Reference<any>;
+	value: interop.Pointer | interop.Reference<any> | null;
 }
 declare var CTParagraphStyleSetting: interop.StructType<CTParagraphStyleSetting>;
 
@@ -1270,7 +1275,7 @@ declare const enum CTRubyAlignment {
 /**
  * @since 8.0
  */
-declare function CTRubyAnnotationCreate(alignment: CTRubyAlignment, overhang: CTRubyOverhang, sizeFactor: number, text: interop.Reference<string>): any;
+declare function CTRubyAnnotationCreate(alignment: CTRubyAlignment, overhang: CTRubyOverhang, sizeFactor: number, text: interop.Reference<string | null>): any;
 
 /**
  * @since 8.0
@@ -1300,7 +1305,7 @@ declare function CTRubyAnnotationGetSizeFactor(rubyAnnotation: any): number;
 /**
  * @since 8.0
  */
-declare function CTRubyAnnotationGetTextForPosition(rubyAnnotation: any, position: CTRubyPosition): string;
+declare function CTRubyAnnotationGetTextForPosition(rubyAnnotation: any, position: CTRubyPosition): string | null;
 
 /**
  * @since 8.0
@@ -1341,22 +1346,22 @@ declare const enum CTRubyPosition {
 
 interface CTRunDelegateCallbacks {
 	version: number;
-	dealloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	getAscent: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	getDescent: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	getWidth: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
+	dealloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>;
+	getAscent: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => number>;
+	getDescent: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => number>;
+	getWidth: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => number>;
 }
 declare var CTRunDelegateCallbacks: interop.StructType<CTRunDelegateCallbacks>;
 
 /**
  * @since 3.2
  */
-declare function CTRunDelegateCreate(callbacks: interop.Pointer | interop.Reference<CTRunDelegateCallbacks>, refCon: interop.Pointer | interop.Reference<any>): any;
+declare function CTRunDelegateCreate(callbacks: interop.Pointer | interop.Reference<CTRunDelegateCallbacks> | ArrayBufferLike | ArrayBufferView, refCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 3.2
  */
-declare function CTRunDelegateGetRefCon(runDelegate: any): interop.Pointer | interop.Reference<any>;
+declare function CTRunDelegateGetRefCon(runDelegate: any): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 3.2
@@ -1376,7 +1381,7 @@ declare function CTRunGetAdvances(run: any, range: CFRange, buffer: interop.Refe
 /**
  * @since 3.2
  */
-declare function CTRunGetAdvancesPtr(run: any): interop.Pointer | interop.Reference<CGSize>;
+declare function CTRunGetAdvancesPtr(run: any): interop.Pointer | interop.Reference<CGSize> | null;
 
 /**
  * @since 3.2
@@ -1386,7 +1391,7 @@ declare function CTRunGetAttributes(run: any): NSDictionary<any, any>;
 /**
  * @since 9.0
  */
-declare function CTRunGetBaseAdvancesAndOrigins(runRef: any, range: CFRange, advancesBuffer: interop.Reference<CGSize>, originsBuffer: interop.Reference<CGPoint>): void;
+declare function CTRunGetBaseAdvancesAndOrigins(runRef: any, range: CFRange, advancesBuffer: interop.Reference<CGSize> | null, originsBuffer: interop.Reference<CGPoint> | null): void;
 
 /**
  * @since 3.2
@@ -1401,12 +1406,12 @@ declare function CTRunGetGlyphs(run: any, range: CFRange, buffer: interop.Refere
 /**
  * @since 3.2
  */
-declare function CTRunGetGlyphsPtr(run: any): interop.Pointer | interop.Reference<number>;
+declare function CTRunGetGlyphsPtr(run: any): interop.Pointer | interop.Reference<number> | null;
 
 /**
  * @since 3.2
  */
-declare function CTRunGetImageBounds(run: any, context: any, range: CFRange): CGRect;
+declare function CTRunGetImageBounds(run: any, context: any | null, range: CFRange): CGRect;
 
 /**
  * @since 3.2
@@ -1416,7 +1421,7 @@ declare function CTRunGetPositions(run: any, range: CFRange, buffer: interop.Ref
 /**
  * @since 3.2
  */
-declare function CTRunGetPositionsPtr(run: any): interop.Pointer | interop.Reference<CGPoint>;
+declare function CTRunGetPositionsPtr(run: any): interop.Pointer | interop.Reference<CGPoint> | null;
 
 /**
  * @since 3.2
@@ -1431,7 +1436,7 @@ declare function CTRunGetStringIndices(run: any, range: CFRange, buffer: interop
 /**
  * @since 3.2
  */
-declare function CTRunGetStringIndicesPtr(run: any): interop.Pointer | interop.Reference<number>;
+declare function CTRunGetStringIndicesPtr(run: any): interop.Pointer | interop.Reference<number> | null;
 
 /**
  * @since 3.2
@@ -1451,7 +1456,7 @@ declare function CTRunGetTypeID(): number;
 /**
  * @since 3.2
  */
-declare function CTRunGetTypographicBounds(run: any, range: CFRange, ascent: interop.Pointer | interop.Reference<number>, descent: interop.Pointer | interop.Reference<number>, leading: interop.Pointer | interop.Reference<number>): number;
+declare function CTRunGetTypographicBounds(run: any, range: CFRange, ascent: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, descent: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, leading: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum CTRunStatus {
 
@@ -1490,7 +1495,7 @@ declare const enum CTTextAlignment {
 /**
  * @since 3.2
  */
-declare function CTTextTabCreate(alignment: CTTextAlignment, location: number, options: NSDictionary<any, any>): any;
+declare function CTTextTabCreate(alignment: CTTextAlignment, location: number, options: NSDictionary<any, any> | null): any;
 
 /**
  * @since 3.2
@@ -1505,7 +1510,7 @@ declare function CTTextTabGetLocation(tab: any): number;
 /**
  * @since 3.2
  */
-declare function CTTextTabGetOptions(tab: any): NSDictionary<any, any>;
+declare function CTTextTabGetOptions(tab: any): NSDictionary<any, any> | null;
 
 /**
  * @since 3.2
@@ -1530,7 +1535,7 @@ declare function CTTypesetterCreateWithAttributedString(string: NSAttributedStri
 /**
  * @since 3.2
  */
-declare function CTTypesetterCreateWithAttributedStringAndOptions(string: NSAttributedString, options: NSDictionary<any, any>): any;
+declare function CTTypesetterCreateWithAttributedStringAndOptions(string: NSAttributedString, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 3.2
@@ -2332,6 +2337,11 @@ declare var kCTFontCopyrightNameKey: string;
  * @since 3.2
  */
 declare var kCTFontDescriptionNameKey: string;
+
+/**
+ * @since 13.0
+ */
+declare var kCTFontDescriptorLanguageAttribute: string;
 
 /**
  * @since 6.0

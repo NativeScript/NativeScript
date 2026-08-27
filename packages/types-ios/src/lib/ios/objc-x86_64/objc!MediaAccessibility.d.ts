@@ -27,17 +27,17 @@ declare function MACaptionAppearanceCopyActiveProfileID(): string;
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceCopyBackgroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
+declare function MACaptionAppearanceCopyBackgroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): interop.Unmanaged<any>;
 
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceCopyFontDescriptorForStyle(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>, fontStyle: MACaptionAppearanceFontStyle): interop.Unmanaged<UIFontDescriptor>;
+declare function MACaptionAppearanceCopyFontDescriptorForStyle(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null, fontStyle: MACaptionAppearanceFontStyle): interop.Unmanaged<UIFontDescriptor>;
 
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceCopyForegroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
+declare function MACaptionAppearanceCopyForegroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): interop.Unmanaged<any>;
 
 /**
  * @since 7.0
@@ -62,7 +62,7 @@ declare function MACaptionAppearanceCopySelectedLanguages(domain: MACaptionAppea
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceCopyWindowColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
+declare function MACaptionAppearanceCopyWindowColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): interop.Unmanaged<any>;
 
 declare function MACaptionAppearanceDidDisplayCaptions(strings: NSArray<any> | any[]): void;
 
@@ -118,7 +118,7 @@ declare const enum MACaptionAppearanceFontStyle {
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceGetBackgroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetBackgroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
@@ -128,27 +128,27 @@ declare function MACaptionAppearanceGetDisplayType(domain: MACaptionAppearanceDo
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceGetForegroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetForegroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceGetRelativeCharacterSize(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetRelativeCharacterSize(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceGetTextEdgeStyle(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): MACaptionAppearanceTextEdgeStyle;
+declare function MACaptionAppearanceGetTextEdgeStyle(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): MACaptionAppearanceTextEdgeStyle;
 
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceGetWindowOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetWindowOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
  */
-declare function MACaptionAppearanceGetWindowRoundedCornerRadius(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetWindowRoundedCornerRadius(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.0
@@ -199,7 +199,7 @@ declare class MAFlashingLightsProcessor extends NSObject {
 
 	canProcessSurface(surface: IOSurface): boolean;
 
-	processSurfaceOutSurfaceTimestampOptions(inSurface: IOSurface, outSurface: IOSurface, timestamp: number, options: NSDictionary<string, any>): MAFlashingLightsProcessorResult;
+	processSurfaceOutSurfaceTimestampOptions(inSurface: IOSurface, outSurface: IOSurface, timestamp: number, options: NSDictionary<string, any> | null): MAFlashingLightsProcessorResult;
 }
 
 /**
@@ -221,7 +221,7 @@ declare class MAFlashingLightsProcessorResult extends NSObject {
 /**
  * @since 13.0
  */
-declare function MAImageCaptioningCopyCaption(url: NSURL, error: interop.Pointer | interop.Reference<NSError>): string;
+declare function MAImageCaptioningCopyCaption(url: NSURL, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): string | null;
 
 /**
  * @since 13.0
@@ -231,7 +231,7 @@ declare function MAImageCaptioningCopyMetadataTagPath(): string;
 /**
  * @since 13.0
  */
-declare function MAImageCaptioningSetCaption(url: NSURL, string: string, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function MAImageCaptioningSetCaption(url: NSURL, string: string | null, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 7.0
@@ -261,9 +261,9 @@ declare class MAMusicHapticsManager extends NSObject {
 
 	static readonly sharedManager: MAMusicHapticsManager;
 
-	addStatusObserver(statusHandler: (p1: string, p2: boolean) => void): any;
+	addStatusObserver(statusHandler: (p1: string, p2: boolean) => void): any | null;
 
-	checkHapticTrackAvailabilityForMediaMatchingCodeCompletionHandler(internationalStandardRecordingCode: string, completionHandler: (p1: boolean) => void): void;
+	checkHapticTrackAvailabilityForMediaMatchingCodeCompletionHandler(internationalStandardRecordingCode: string, completionHandler: (p1: boolean) => void | null): void;
 
 	removeStatusObserver(registrationToken: any): void;
 }

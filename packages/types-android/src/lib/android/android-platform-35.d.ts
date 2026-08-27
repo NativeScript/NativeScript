@@ -99516,8 +99516,8 @@ declare module android {
 	export module view {
 		export class ViewDebug extends java.lang.Object {
 			public static class: java.lang.Class<android.view.ViewDebug>;
-			public static TRACE_HIERARCHY: boolean = 0;
-			public static TRACE_RECYCLER: boolean = 0;
+			public static TRACE_HIERARCHY: false;
+			public static TRACE_RECYCLER: false;
 			/** @deprecated */
 			public static startHierarchyTracing(prefix: string, view: android.view.View): void;
 			public static dumpCapturedView(tag: string, view: any): void;

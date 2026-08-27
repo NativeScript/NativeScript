@@ -14,105 +14,105 @@ declare const enum DNSServiceAAAAPolicy {
 	kDNSServiceAAAAPolicyFallback = 1
 }
 
-declare function DNSServiceAddRecord(sdRef: interop.Pointer | interop.Reference<any>, RecordRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, rrtype: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any>, ttl: number): number;
+declare function DNSServiceAddRecord(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, RecordRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, rrtype: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ttl: number): number;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceAttributeCreate(): interop.Pointer | interop.Reference<any>;
+declare function DNSServiceAttributeCreate(): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceAttributeDeallocate(attr: interop.Pointer | interop.Reference<any>): void;
+declare function DNSServiceAttributeDeallocate(attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceAttributeSetAAAAPolicy(attr: interop.Pointer | interop.Reference<any>, policy: DNSServiceAAAAPolicy): number;
+declare function DNSServiceAttributeSetAAAAPolicy(attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, policy: DNSServiceAAAAPolicy): number;
 
 /**
  * @since 18.0
  */
-declare function DNSServiceAttributeSetHostKeyHash(attr: interop.Pointer | interop.Reference<any>, hostkeyhash: number): number;
+declare function DNSServiceAttributeSetHostKeyHash(attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, hostkeyhash: number): number;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceAttributeSetTimestamp(attr: interop.Pointer | interop.Reference<any>, timestamp: number): number;
+declare function DNSServiceAttributeSetTimestamp(attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, timestamp: number): number;
 
-declare function DNSServiceBrowse(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, regtype: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>, p7: interop.Pointer | interop.Reference<any>, p8: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceBrowse(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, regtype: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null, p6: interop.Pointer | interop.Reference<any> | null, p7: interop.Pointer | interop.Reference<any> | null, p8: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceConstructFullName(fullName: string | interop.Pointer | interop.Reference<any>, service: string | interop.Pointer | interop.Reference<any>, regtype: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceConstructFullName(fullName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, service: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regtype: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceCreateConnection(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function DNSServiceCreateConnection(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceEnumerateDomains(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceEnumerateDomains(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null, p6: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceGetAddrInfo(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, protocol: number, hostname: string | interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<sockaddr>, p7: number, p8: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceGetAddrInfo(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, protocol: number, hostname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null, p6: interop.Pointer | interop.Reference<sockaddr> | null, p7: number, p8: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceGetProperty(property: string | interop.Pointer | interop.Reference<any>, result: interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): number;
+declare function DNSServiceGetProperty(property: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, result: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceNATPortMappingCreate(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, protocol: number, internalPort: number, externalPort: number, ttl: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceNATPortMappingCreate(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, protocol: number, internalPort: number, externalPort: number, ttl: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceProcessResult(sdRef: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceProcessResult(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceQueryRecord(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any>, rrtype: number, rrclass: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>, p6: number, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any>, p10: number, p11: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
-
-/**
- * @since 16.0
- */
-declare function DNSServiceQueryRecordWithAttribute(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, ifindex: number, name: string | interop.Pointer | interop.Reference<any>, rrtype: number, rrclass: number, attr: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>, p6: number, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any>, p10: number, p11: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
-
-declare function DNSServiceReconfirmRecord(flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any>, rrtype: number, rrclass: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any>): number;
-
-declare function DNSServiceRefDeallocate(sdRef: interop.Pointer | interop.Reference<any>): void;
-
-declare function DNSServiceRefSockFD(sdRef: interop.Pointer | interop.Reference<any>): number;
-
-declare function DNSServiceRegister(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, name: string | interop.Pointer | interop.Reference<any>, regtype: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>, host: string | interop.Pointer | interop.Reference<any>, port: number, txtLen: number, txtRecord: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>, p7: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
-
-declare function DNSServiceRegisterRecord(sdRef: interop.Pointer | interop.Reference<any>, RecordRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any>, rrtype: number, rrclass: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any>, ttl: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceQueryRecord(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, rrtype: number, rrclass: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null, p6: number, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any> | null, p10: number, p11: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceRegisterRecordWithAttribute(sdRef: interop.Pointer | interop.Reference<any>, recordRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any>, rrtype: number, rrclass: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any>, ttl: number, attr: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceQueryRecordWithAttribute(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, ifindex: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, rrtype: number, rrclass: number, attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null, p6: number, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any> | null, p10: number, p11: interop.Pointer | interop.Reference<any> | null) => void> | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function DNSServiceReconfirmRecord(flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, rrtype: number, rrclass: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function DNSServiceRefDeallocate(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
+
+declare function DNSServiceRefSockFD(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function DNSServiceRegister(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regtype: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, host: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, port: number, txtLen: number, txtRecord: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | null, p5: interop.Pointer | interop.Reference<any> | null, p6: interop.Pointer | interop.Reference<any> | null, p7: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function DNSServiceRegisterRecord(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, RecordRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, rrtype: number, rrclass: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ttl: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceRegisterWithAttribute(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, name: string | interop.Pointer | interop.Reference<any>, regtype: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>, host: string | interop.Pointer | interop.Reference<any>, portInNetworkByteOrder: number, txtLen: number, txtRecord: interop.Pointer | interop.Reference<any>, attr: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>, p7: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
-
-declare function DNSServiceRemoveRecord(sdRef: interop.Pointer | interop.Reference<any>, RecordRef: interop.Pointer | interop.Reference<any>, flags: number): number;
-
-declare function DNSServiceResolve(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, interfaceIndex: number, name: string | interop.Pointer | interop.Reference<any>, regtype: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any>, p10: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceRegisterRecordWithAttribute(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recordRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, fullname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, rrtype: number, rrclass: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ttl: number, attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null) => void> | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceSendQueuedRequests(sdRef: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceRegisterWithAttribute(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, regtype: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, host: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, portInNetworkByteOrder: number, txtLen: number, txtRecord: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | null, p5: interop.Pointer | interop.Reference<any> | null, p6: interop.Pointer | interop.Reference<any> | null, p7: interop.Pointer | interop.Reference<any> | null) => void> | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function DNSServiceSetDispatchQueue(service: interop.Pointer | interop.Reference<any>, queue: NSObject & OS_dispatch_queue): number;
+declare function DNSServiceRemoveRecord(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, RecordRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number): number;
 
-declare function DNSServiceSleepKeepalive(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, fd: number, timeout: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
-
-declare function DNSServiceUpdateRecord(sdRef: interop.Pointer | interop.Reference<any>, recordRef: interop.Pointer | interop.Reference<any>, flags: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any>, ttl: number): number;
+declare function DNSServiceResolve(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, interfaceIndex: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regtype: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any> | null, p6: interop.Pointer | interop.Reference<any> | null, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any> | null, p10: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 16.0
  */
-declare function DNSServiceUpdateRecordWithAttribute(sdRef: interop.Pointer | interop.Reference<any>, recordRef: interop.Pointer | interop.Reference<any>, flags: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any>, ttl: number, attr: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceSendQueuedRequests(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function PeerConnectionRelease(flags: number, name: string | interop.Pointer | interop.Reference<any>, regtype: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceSetDispatchQueue(service: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, queue: NSObject & OS_dispatch_queue): number;
 
-declare function TXTRecordContainsKey(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceSleepKeepalive(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number, fd: number, timeout: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function TXTRecordGetCount(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any>): number;
+declare function DNSServiceUpdateRecord(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recordRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ttl: number): number;
 
-declare function TXTRecordGetItemAtIndex(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any>, itemIndex: number, keyBufLen: number, key: string | interop.Pointer | interop.Reference<any>, valueLen: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+/**
+ * @since 16.0
+ */
+declare function DNSServiceUpdateRecordWithAttribute(sdRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recordRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number, rdlen: number, rdata: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ttl: number, attr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function TXTRecordGetValuePtr(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, valueLen: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function PeerConnectionRelease(flags: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regtype: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function TXTRecordContainsKey(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function TXTRecordGetCount(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function TXTRecordGetItemAtIndex(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, itemIndex: number, keyBufLen: number, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, valueLen: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function TXTRecordGetValuePtr(txtLen: number, txtRecord: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, valueLen: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 16.0

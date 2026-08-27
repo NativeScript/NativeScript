@@ -90,5 +90,5 @@ declare class OSSystemExtensionsWorkspace extends NSObject {
 	/**
 	 * @since 18.4
 	 */
-	systemExtensionsForApplicationWithBundleIDError(bundleID: string, error?: interop.Reference<NSError>): NSSet<OSSystemExtensionProperties>;
+	systemExtensionsForApplicationWithBundleIDError(bundleID: string, error?: interop.Reference<NSError>): NSSet<OSSystemExtensionProperties> | null;
 }

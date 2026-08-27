@@ -8,7 +8,7 @@ declare class CLKWatchFaceLibrary extends NSObject {
 
 	static new(): CLKWatchFaceLibrary; // inherited from NSObject
 
-	addWatchFaceAtURLCompletionHandler(fileURL: NSURL, handler: (p1: NSError) => void): void;
+	addWatchFaceAtURLCompletionHandler(fileURL: NSURL, handler: (p1: NSError | null) => void): void;
 }
 
 /**
