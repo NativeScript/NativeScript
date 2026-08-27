@@ -16,21 +16,23 @@ export class Crypto {
 		}
 	}
 
-	getRandomValues(typedArray: Exclude<TypedArray, Float32Array | Float64Array>) {
+	getRandomValues<T extends Exclude<TypedArray, Float32Array | Float64Array>>(typedArray: T): T {
+		// Both natives fill bytes, so a wider element type is reinterpreted over the very same
+		// window — never past it, and never in place of the caller's own view, which is what
+		// getRandomValues has to hand back.
+		const bytes = typedArray.BYTES_PER_ELEMENT === 1 ? typedArray : new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+
 		if (__ANDROID__) {
-			if (typedArray.BYTES_PER_ELEMENT !== 1) {
-				typedArray = new Uint8Array(typedArray.buffer, typedArray.byteOffset);
-			}
-			(<any>org).nativescript.winter_tc.Crypto.getRandomValues(typedArray);
+			(<any>org).nativescript.winter_tc.Crypto.getRandomValues(bytes);
 		}
 		if (__IOS__) {
-			if (typedArray.BYTES_PER_ELEMENT !== 1) {
-				typedArray = new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
-			}
-			const data = NSMutableData.dataWithBytesNoCopyLength(typedArray as never, typedArray.byteLength);
+			// The pointer is V8-owned: freeWhenDone must stay NO, or Foundation and V8's
+			// ArrayBufferSweeper both free the same allocation.
+			const data = NSMutableData.dataWithBytesNoCopyLengthFreeWhenDone(bytes as never, bytes.byteLength, false);
 
 			NSCCrypto.getRandomValues(data);
 		}
+
 		return typedArray;
 	}
 }
