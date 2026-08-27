@@ -5,7 +5,7 @@ import { editableProperty, hintProperty, placeholderColorProperty, _updateCharac
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
+import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _hasPaddingSetNativeOverrides } from '../styling/style-properties';
 import { layout, isRealDevice } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 
@@ -360,13 +360,115 @@ export class TextView extends TextViewBaseCommon {
 		});
 	}
 
+	// When no subclass overrides the per-side handlers, they stage into
+	// _pendingPadding - which only exists while [paddingInternalProperty.setNative]
+	// runs - and all sides commit in one native write. An override takes ownership:
+	// the consolidated write stands down and each side applies individually, so an
+	// override that does not chain to super suppresses that side entirely.
+	private _pendingPadding: { top: number; right: number; bottom: number; left: number };
+
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.top,
+			unit: 'px',
+		};
+	}
+
+	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth),
+				right: inset.right,
+				bottom: inset.bottom,
+				left: inset.left,
+			});
+		}
+	}
+
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.right,
+			unit: 'px',
+		};
+	}
+
+	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: inset.top,
+				right: layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth),
+				bottom: inset.bottom,
+				left: inset.left,
+			});
+		}
+	}
+
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.bottom,
+			unit: 'px',
+		};
+	}
+
+	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth),
+				left: inset.left,
+			});
+		}
+	}
+
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
+		return {
+			value: this.nativeTextViewProtected.textContainerInset.left,
+			unit: 'px',
+		};
+	}
+
+	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) {
+		if (this._pendingPadding) {
+			this._pendingPadding.left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		} else if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			const nativeView = this.nativeTextViewProtected;
+			const inset = nativeView.textContainerInset;
+			nativeView.textContainerInset = new UIEdgeInsets({
+				top: inset.top,
+				right: inset.right,
+				bottom: inset.bottom,
+				left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth),
+			});
+		}
+	}
+
 	[paddingInternalProperty.setNative](_value: string) {
-		this.nativeTextViewProtected.textContainerInset = new UIEdgeInsets({
-			top: layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth),
-			right: layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth),
-			bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth),
-			left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth),
-		});
+		if (_hasPaddingSetNativeOverrides(this, TextView.prototype)) {
+			// An override owns padding application; each side applies through its own handler.
+			return;
+		}
+		const nativeView = this.nativeTextViewProtected;
+		const inset = nativeView.textContainerInset;
+		this._pendingPadding = { top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left };
+		(<any>this)[paddingTopProperty.setNative](this.style.paddingTop);
+		(<any>this)[paddingRightProperty.setNative](this.style.paddingRight);
+		(<any>this)[paddingBottomProperty.setNative](this.style.paddingBottom);
+		(<any>this)[paddingLeftProperty.setNative](this.style.paddingLeft);
+		nativeView.textContainerInset = new UIEdgeInsets(this._pendingPadding);
+		this._pendingPadding = null;
 	}
 
 	[iosWritingToolsBehaviorProperty.setNative](value: WritingToolsBehavior) {
