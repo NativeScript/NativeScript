@@ -16,7 +16,7 @@ declare class SWAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -50,7 +50,7 @@ declare class SWCollaborationCoordinator extends NSObject {
 
 	static new(): SWCollaborationCoordinator; // inherited from NSObject
 
-	actionHandler: SWCollaborationActionHandler;
+	actionHandler: SWCollaborationActionHandler | null;
 
 	static readonly sharedCoordinator: SWCollaborationCoordinator;
 }
@@ -70,17 +70,17 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 
 	readonly collaborationIdentifier: string;
 
-	defaultShareOptions: SWCollaborationShareOptions;
+	defaultShareOptions: SWCollaborationShareOptions | null;
 
-	initiatorHandle: string;
+	initiatorHandle: string | null;
 
-	initiatorNameComponents: NSPersonNameComponents;
+	initiatorNameComponents: NSPersonNameComponents | null;
 
 	readonly localIdentifier: string;
 
-	title: string;
+	title: string | null;
 
-	userSelectedShareOptions: SWCollaborationShareOptions;
+	userSelectedShareOptions: SWCollaborationShareOptions | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -112,7 +112,7 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -130,9 +130,9 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
-	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData | null, p2: NSError | null) => void): NSProgress | null;
 
-	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	performSelector(aSelector: string): any;
 
@@ -174,7 +174,7 @@ declare class SWCollaborationOption extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { title: string; identifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -208,7 +208,7 @@ declare class SWCollaborationOptionsGroup extends NSObject implements NSCopying,
 
 	constructor(o: { identifier: string; options: NSArray<SWCollaborationOption> | SWCollaborationOption[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -254,7 +254,7 @@ declare class SWCollaborationShareOptions extends NSObject implements NSCopying,
 
 	constructor(o: { optionsGroups: NSArray<SWCollaborationOptionsGroup> | SWCollaborationOptionsGroup[]; summary: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -278,13 +278,13 @@ declare class SWPerson extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { handle: string; identity: SWPersonIdentity; displayName: string; thumbnailImageData: NSData; });
+	constructor(o: { handle: string | null; identity: SWPersonIdentity | null; displayName: string; thumbnailImageData: NSData | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithHandleIdentityDisplayNameThumbnailImageData(handle: string, identity: SWPersonIdentity, displayName: string, thumbnailImageData: NSData): this;
+	initWithHandleIdentityDisplayNameThumbnailImageData(handle: string | null, identity: SWPersonIdentity | null, displayName: string, thumbnailImageData: NSData | null): this;
 }
 
 /**
@@ -304,7 +304,7 @@ declare class SWPersonIdentity extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { rootHash: NSData; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -332,7 +332,7 @@ declare class SWPersonIdentityProof extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -370,7 +370,7 @@ declare class SWStartCollaborationAction extends SWAction implements NSCopying, 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -398,7 +398,7 @@ declare class SWUpdateCollaborationParticipantsAction extends SWAction implement
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

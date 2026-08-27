@@ -12,9 +12,9 @@ declare class VNAnimalBodyPoseObservation extends VNRecognizedPointsObservation 
 
 	readonly availableJointNames: NSArray<string>;
 
-	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNRecognizedPoint;
+	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNRecognizedPoint | null;
 
-	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint>;
+	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint> | null;
 }
 
 /**
@@ -222,7 +222,7 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 	 */
 	static rectangleObservationWithRequestRevisionTopLeftTopRightBottomRightBottomLeft(requestRevision: number, topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint): VNBarcodeObservation; // inherited from VNRectangleObservation
 
-	readonly barcodeDescriptor: CIBarcodeDescriptor;
+	readonly barcodeDescriptor: CIBarcodeDescriptor | null;
 
 	/**
 	 * @since 17.0
@@ -237,9 +237,9 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 	/**
 	 * @since 17.0
 	 */
-	readonly payloadData: NSData;
+	readonly payloadData: NSData | null;
 
-	readonly payloadStringValue: string;
+	readonly payloadStringValue: string | null;
 
 	/**
 	 * @since 17.0
@@ -249,12 +249,12 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 	/**
 	 * @since 17.0
 	 */
-	readonly supplementalPayloadData: NSData;
+	readonly supplementalPayloadData: NSData | null;
 
 	/**
 	 * @since 17.0
 	 */
-	readonly supplementalPayloadString: string;
+	readonly supplementalPayloadString: string | null;
 
 	readonly symbology: string;
 }
@@ -582,7 +582,7 @@ declare class VNCircle extends NSObject implements NSCopying, NSSecureCoding {
 
 	containsPointInCircumferentialRingOfWidth(point: VNPoint, ringWidth: number): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -622,14 +622,14 @@ declare class VNClassifyImageRequest extends VNImageBasedRequest {
 	 * @since 13.0
 	 * @deprecated 15.0
 	 */
-	static knownClassificationsForRevisionError(requestRevision: number, error?: interop.Reference<NSError>): NSArray<VNClassificationObservation>;
+	static knownClassificationsForRevisionError(requestRevision: number, error?: interop.Reference<NSError>): NSArray<VNClassificationObservation> | null;
 
 	static new(): VNClassifyImageRequest; // inherited from NSObject
 
 	/**
 	 * @since 15.0
 	 */
-	supportedIdentifiersAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedIdentifiersAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -671,17 +671,17 @@ declare class VNContour extends NSObject implements NSCopying, VNRequestRevision
 
 	readonly normalizedPath: any;
 
-	readonly normalizedPoints: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly normalizedPoints: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	readonly pointCount: number;
 
 	readonly requestRevision: number; // inherited from VNRequestRevisionProviding
 
-	childContourAtIndexError(childContourIndex: number, error?: interop.Reference<NSError>): VNContour;
+	childContourAtIndexError(childContourIndex: number, error?: interop.Reference<NSError>): VNContour | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	polygonApproximationWithEpsilonError(epsilon: number, error?: interop.Reference<NSError>): VNContour;
+	polygonApproximationWithEpsilonError(epsilon: number, error?: interop.Reference<NSError>): VNContour | null;
 }
 
 /**
@@ -701,9 +701,9 @@ declare class VNContoursObservation extends VNObservation {
 
 	readonly topLevelContours: NSArray<VNContour>;
 
-	contourAtIndexError(contourIndex: number, error?: interop.Reference<NSError>): VNContour;
+	contourAtIndexError(contourIndex: number, error?: interop.Reference<NSError>): VNContour | null;
 
-	contourAtIndexPathError(indexPath: NSIndexPath, error?: interop.Reference<NSError>): VNContour;
+	contourAtIndexPathError(indexPath: NSIndexPath, error?: interop.Reference<NSError>): VNContour | null;
 }
 
 /**
@@ -737,7 +737,7 @@ declare class VNCoreMLModel extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	featureProvider: MLFeatureProvider;
+	featureProvider: MLFeatureProvider | null;
 
 	/**
 	 * @since 13.0
@@ -760,11 +760,11 @@ declare class VNCoreMLRequest extends VNImageBasedRequest {
 
 	constructor(o: { model: VNCoreMLModel; });
 
-	constructor(o: { model: VNCoreMLModel; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { model: VNCoreMLModel; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	initWithModel(model: VNCoreMLModel): this;
 
-	initWithModelCompletionHandler(model: VNCoreMLModel, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithModelCompletionHandler(model: VNCoreMLModel, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 }
 
 /**
@@ -781,9 +781,9 @@ declare class VNDetectAnimalBodyPoseRequest extends VNImageBasedRequest {
 
 	static new(): VNDetectAnimalBodyPoseRequest; // inherited from NSObject
 
-	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 
-	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -816,7 +816,7 @@ declare class VNDetectBarcodesRequest extends VNImageBasedRequest {
 	/**
 	 * @since 15.0
 	 */
-	supportedSymbologiesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedSymbologiesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -860,7 +860,7 @@ declare class VNDetectContoursRequest extends VNImageBasedRequest {
 	/**
 	 * @since 15.0
 	 */
-	contrastPivot: number;
+	contrastPivot: number | null;
 
 	/**
 	 * @since 14.0
@@ -903,7 +903,7 @@ declare class VNDetectFaceCaptureQualityRequest extends VNImageBasedRequest impl
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
-	inputFaceObservations: NSArray<VNFaceObservation>; // inherited from VNFaceObservationAccepting
+	inputFaceObservations: NSArray<VNFaceObservation> | null; // inherited from VNFaceObservationAccepting
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
@@ -971,7 +971,7 @@ declare class VNDetectFaceLandmarksRequest extends VNImageBasedRequest implement
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
-	inputFaceObservations: NSArray<VNFaceObservation>; // inherited from VNFaceObservationAccepting
+	inputFaceObservations: NSArray<VNFaceObservation> | null; // inherited from VNFaceObservationAccepting
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
@@ -1068,9 +1068,9 @@ declare class VNDetectHumanBodyPose3DRequest extends VNStatefulRequest {
 
 	static new(): VNDetectHumanBodyPose3DRequest; // inherited from NSObject
 
-	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 
-	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -1091,23 +1091,23 @@ declare class VNDetectHumanBodyPoseRequest extends VNImageBasedRequest {
 	 * @since 14.0
 	 * @deprecated 17.0
 	 */
-	static supportedJointNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string>;
+	static supportedJointNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	/**
 	 * @since 14.0
 	 * @deprecated 17.0
 	 */
-	static supportedJointsGroupNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string>;
+	static supportedJointsGroupNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	/**
 	 * @since 17.0
 	 */
-	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	/**
 	 * @since 17.0
 	 */
-	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -1128,25 +1128,25 @@ declare class VNDetectHumanHandPoseRequest extends VNImageBasedRequest {
 	 * @since 14.0
 	 * @deprecated 17.0
 	 */
-	static supportedJointNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string>;
+	static supportedJointNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	/**
 	 * @since 14.0
 	 * @deprecated 17.0
 	 */
-	static supportedJointsGroupNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string>;
+	static supportedJointsGroupNamesForRevisionError(revision: number, error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	maximumHandCount: number;
 
 	/**
 	 * @since 17.0
 	 */
-	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	/**
 	 * @since 17.0
 	 */
-	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedJointsGroupNamesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -1255,9 +1255,9 @@ declare class VNDetectTrajectoriesRequest extends VNStatefulRequest {
 
 	readonly trajectoryLength: number;
 
-	constructor(o: { frameAnalysisSpacing: CMTime; trajectoryLength: number; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { frameAnalysisSpacing: CMTime; trajectoryLength: number; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
-	initWithFrameAnalysisSpacingTrajectoryLengthCompletionHandler(frameAnalysisSpacing: CMTime, trajectoryLength: number, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithFrameAnalysisSpacingTrajectoryLengthCompletionHandler(frameAnalysisSpacing: CMTime, trajectoryLength: number, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 }
 
 /**
@@ -1286,7 +1286,7 @@ declare class VNDetectedObjectObservation extends VNObservation {
 	/**
 	 * @since 15.0
 	 */
-	readonly globalSegmentationMask: VNPixelBufferObservation;
+	readonly globalSegmentationMask: VNPixelBufferObservation | null;
 }
 
 /**
@@ -1388,7 +1388,7 @@ declare class VNFaceLandmarkRegion extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1404,7 +1404,7 @@ declare class VNFaceLandmarkRegion2D extends VNFaceLandmarkRegion {
 
 	static new(): VNFaceLandmarkRegion2D; // inherited from NSObject
 
-	readonly normalizedPoints: interop.Pointer | interop.Reference<CGPoint>;
+	readonly normalizedPoints: interop.Pointer | interop.Reference<CGPoint> | null;
 
 	/**
 	 * @since 16.0
@@ -1414,9 +1414,9 @@ declare class VNFaceLandmarkRegion2D extends VNFaceLandmarkRegion {
 	/**
 	 * @since 13.0
 	 */
-	readonly precisionEstimatesPerPoint: NSArray<number>;
+	readonly precisionEstimatesPerPoint: NSArray<number> | null;
 
-	pointsInImageOfSize(imageSize: CGSize): interop.Pointer | interop.Reference<CGPoint>;
+	pointsInImageOfSize(imageSize: CGSize): interop.Pointer | interop.Reference<CGPoint> | null;
 }
 
 /**
@@ -1436,7 +1436,7 @@ declare class VNFaceLandmarks extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1452,31 +1452,31 @@ declare class VNFaceLandmarks2D extends VNFaceLandmarks {
 
 	static new(): VNFaceLandmarks2D; // inherited from NSObject
 
-	readonly allPoints: VNFaceLandmarkRegion2D;
+	readonly allPoints: VNFaceLandmarkRegion2D | null;
 
-	readonly faceContour: VNFaceLandmarkRegion2D;
+	readonly faceContour: VNFaceLandmarkRegion2D | null;
 
-	readonly innerLips: VNFaceLandmarkRegion2D;
+	readonly innerLips: VNFaceLandmarkRegion2D | null;
 
-	readonly leftEye: VNFaceLandmarkRegion2D;
+	readonly leftEye: VNFaceLandmarkRegion2D | null;
 
-	readonly leftEyebrow: VNFaceLandmarkRegion2D;
+	readonly leftEyebrow: VNFaceLandmarkRegion2D | null;
 
-	readonly leftPupil: VNFaceLandmarkRegion2D;
+	readonly leftPupil: VNFaceLandmarkRegion2D | null;
 
-	readonly medianLine: VNFaceLandmarkRegion2D;
+	readonly medianLine: VNFaceLandmarkRegion2D | null;
 
-	readonly nose: VNFaceLandmarkRegion2D;
+	readonly nose: VNFaceLandmarkRegion2D | null;
 
-	readonly noseCrest: VNFaceLandmarkRegion2D;
+	readonly noseCrest: VNFaceLandmarkRegion2D | null;
 
-	readonly outerLips: VNFaceLandmarkRegion2D;
+	readonly outerLips: VNFaceLandmarkRegion2D | null;
 
-	readonly rightEye: VNFaceLandmarkRegion2D;
+	readonly rightEye: VNFaceLandmarkRegion2D | null;
 
-	readonly rightEyebrow: VNFaceLandmarkRegion2D;
+	readonly rightEyebrow: VNFaceLandmarkRegion2D | null;
 
-	readonly rightPupil: VNFaceLandmarkRegion2D;
+	readonly rightPupil: VNFaceLandmarkRegion2D | null;
 }
 
 /**
@@ -1490,12 +1490,12 @@ declare class VNFaceObservation extends VNDetectedObjectObservation {
 	 * @since 12.0
 	 * @deprecated 15.0
 	 */
-	static faceObservationWithRequestRevisionBoundingBoxRollYaw(requestRevision: number, boundingBox: CGRect, roll: number, yaw: number): VNFaceObservation;
+	static faceObservationWithRequestRevisionBoundingBoxRollYaw(requestRevision: number, boundingBox: CGRect, roll: number | null, yaw: number | null): VNFaceObservation;
 
 	/**
 	 * @since 15.0
 	 */
-	static faceObservationWithRequestRevisionBoundingBoxRollYawPitch(requestRevision: number, boundingBox: CGRect, roll: number, yaw: number, pitch: number): VNFaceObservation;
+	static faceObservationWithRequestRevisionBoundingBoxRollYawPitch(requestRevision: number, boundingBox: CGRect, roll: number | null, yaw: number | null, pitch: number | null): VNFaceObservation;
 
 	static new(): VNFaceObservation; // inherited from NSObject
 
@@ -1509,24 +1509,24 @@ declare class VNFaceObservation extends VNDetectedObjectObservation {
 	/**
 	 * @since 13.0
 	 */
-	readonly faceCaptureQuality: number;
+	readonly faceCaptureQuality: number | null;
 
-	readonly landmarks: VNFaceLandmarks2D;
+	readonly landmarks: VNFaceLandmarks2D | null;
 
 	/**
 	 * @since 15.0
 	 */
-	readonly pitch: number;
+	readonly pitch: number | null;
 
 	/**
 	 * @since 12.0
 	 */
-	readonly roll: number;
+	readonly roll: number | null;
 
 	/**
 	 * @since 12.0
 	 */
-	readonly yaw: number;
+	readonly yaw: number | null;
 }
 
 /**
@@ -1534,7 +1534,7 @@ declare class VNFaceObservation extends VNDetectedObjectObservation {
  */
 interface VNFaceObservationAccepting extends NSObjectProtocol {
 
-	inputFaceObservations: NSArray<VNFaceObservation>;
+	inputFaceObservations: NSArray<VNFaceObservation> | null;
 }
 declare var VNFaceObservationAccepting: {
 
@@ -1556,7 +1556,7 @@ declare class VNFeaturePrintObservation extends VNObservation {
 
 	readonly elementType: VNElementType;
 
-	computeDistanceToFeaturePrintObservationError(outDistance: interop.Pointer | interop.Reference<number>, featurePrint: VNFeaturePrintObservation, error?: interop.Reference<NSError>): boolean;
+	computeDistanceToFeaturePrintObservationError(outDistance: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, featurePrint: VNFeaturePrintObservation, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1707,7 +1707,7 @@ declare class VNGeneratePersonSegmentationRequest extends VNStatefulRequest {
 	/**
 	 * @since 18.0
 	 */
-	supportedOutputPixelFormatsAndReturnError(error?: interop.Reference<NSError>): NSArray<number>;
+	supportedOutputPixelFormatsAndReturnError(error?: interop.Reference<NSError>): NSArray<number> | null;
 }
 
 declare const enum VNGeneratePersonSegmentationRequestQualityLevel {
@@ -1731,15 +1731,15 @@ declare class VNGeometryUtils extends NSObject {
 
 	static alloc(): VNGeometryUtils; // inherited from NSObject
 
-	static boundingCircleForContourError(contour: VNContour, error?: interop.Reference<NSError>): VNCircle;
+	static boundingCircleForContourError(contour: VNContour, error?: interop.Reference<NSError>): VNCircle | null;
 
-	static boundingCircleForPointsError(points: NSArray<VNPoint> | VNPoint[], error?: interop.Reference<NSError>): VNCircle;
+	static boundingCircleForPointsError(points: NSArray<VNPoint> | VNPoint[], error?: interop.Reference<NSError>): VNCircle | null;
 
-	static boundingCircleForSIMDPointsPointCountError(points: interop.Pointer | interop.Reference<interop.Reference<number>>, pointCount: number, error?: interop.Reference<NSError>): VNCircle;
+	static boundingCircleForSIMDPointsPointCountError(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, pointCount: number, error?: interop.Reference<NSError>): VNCircle | null;
 
-	static calculateAreaForContourOrientedAreaError(area: interop.Pointer | interop.Reference<number>, contour: VNContour, orientedArea: boolean, error?: interop.Reference<NSError>): boolean;
+	static calculateAreaForContourOrientedAreaError(area: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, contour: VNContour, orientedArea: boolean, error?: interop.Reference<NSError>): boolean;
 
-	static calculatePerimeterForContourError(perimeter: interop.Pointer | interop.Reference<number>, contour: VNContour, error?: interop.Reference<NSError>): boolean;
+	static calculatePerimeterForContourError(perimeter: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, contour: VNContour, error?: interop.Reference<NSError>): boolean;
 
 	static new(): VNGeometryUtils; // inherited from NSObject
 }
@@ -1797,15 +1797,15 @@ declare class VNHumanBodyPose3DObservation extends VNRecognizedPoints3DObservati
 
 	readonly heightEstimation: VNHumanBodyPose3DObservationHeightEstimation;
 
-	getCameraRelativePositionForJointNameError(modelPositionOut: interop.Pointer | interop.Reference<simd_float4x4>, jointName: string, error?: interop.Reference<NSError>): boolean;
+	getCameraRelativePositionForJointNameError(modelPositionOut: interop.Pointer | interop.Reference<simd_float4x4> | ArrayBufferLike | ArrayBufferView, jointName: string, error?: interop.Reference<NSError>): boolean;
 
-	parentJointNameForJointName(jointName: string): string;
+	parentJointNameForJointName(jointName: string): string | null;
 
-	pointInImageForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNPoint;
+	pointInImageForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNPoint | null;
 
-	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNHumanBodyRecognizedPoint3D;
+	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNHumanBodyRecognizedPoint3D | null;
 
-	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNHumanBodyRecognizedPoint3D>;
+	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNHumanBodyRecognizedPoint3D> | null;
 }
 
 declare const enum VNHumanBodyPose3DObservationHeightEstimation {
@@ -1948,9 +1948,9 @@ declare class VNHumanBodyPoseObservation extends VNRecognizedPointsObservation {
 
 	readonly availableJointsGroupNames: NSArray<string>;
 
-	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNRecognizedPoint;
+	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNRecognizedPoint | null;
 
-	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint>;
+	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint> | null;
 }
 
 /**
@@ -2115,9 +2115,9 @@ declare class VNHumanHandPoseObservation extends VNRecognizedPointsObservation {
 	 */
 	readonly chirality: VNChirality;
 
-	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNRecognizedPoint;
+	recognizedPointForJointNameError(jointName: string, error?: interop.Reference<NSError>): VNRecognizedPoint | null;
 
-	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint>;
+	recognizedPointsForJointsGroupNameError(jointsGroupName: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint> | null;
 }
 
 /**
@@ -2505,11 +2505,11 @@ declare class VNInstanceMaskObservation extends VNObservation {
 
 	readonly instanceMask: any;
 
-	generateMaskForInstancesError(instances: NSIndexSet, error?: interop.Reference<NSError>): any;
+	generateMaskForInstancesError(instances: NSIndexSet, error?: interop.Reference<NSError>): any | null;
 
-	generateMaskedImageOfInstancesFromRequestHandlerCroppedToInstancesExtentError(instances: NSIndexSet, requestHandler: VNImageRequestHandler, cropResult: boolean, error?: interop.Reference<NSError>): any;
+	generateMaskedImageOfInstancesFromRequestHandlerCroppedToInstancesExtentError(instances: NSIndexSet, requestHandler: VNImageRequestHandler, cropResult: boolean, error?: interop.Reference<NSError>): any | null;
 
-	generateScaledMaskForImageForInstancesFromRequestHandlerError(instances: NSIndexSet, requestHandler: VNImageRequestHandler, error?: interop.Reference<NSError>): any;
+	generateScaledMaskForImageForInstancesFromRequestHandlerError(instances: NSIndexSet, requestHandler: VNImageRequestHandler, error?: interop.Reference<NSError>): any | null;
 }
 
 /**
@@ -2571,7 +2571,7 @@ declare class VNObservation extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2590,7 +2590,7 @@ declare class VNPixelBufferObservation extends VNObservation {
 	/**
 	 * @since 13.0
 	 */
-	readonly featureName: string;
+	readonly featureName: string | null;
 
 	readonly pixelBuffer: any;
 }
@@ -2628,7 +2628,7 @@ declare class VNPoint extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { x: number; y: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	distanceToPoint(point: VNPoint): number;
 
@@ -2658,7 +2658,7 @@ declare class VNPoint3D extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { position: simd_float4x4; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2687,14 +2687,14 @@ declare class VNRecognizeAnimalsRequest extends VNImageBasedRequest {
 	 * @since 13.0
 	 * @deprecated 15.0
 	 */
-	static knownAnimalIdentifiersForRevisionError(requestRevision: number, error?: interop.Reference<NSError>): NSArray<string>;
+	static knownAnimalIdentifiersForRevisionError(requestRevision: number, error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	static new(): VNRecognizeAnimalsRequest; // inherited from NSObject
 
 	/**
 	 * @since 15.0
 	 */
-	supportedIdentifiersAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedIdentifiersAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -2720,7 +2720,7 @@ declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRe
 	 * @since 13.0
 	 * @deprecated 15.0
 	 */
-	static supportedRecognitionLanguagesForTextRecognitionLevelRevisionError(recognitionLevel: VNRequestTextRecognitionLevel, requestRevision: number, error?: interop.Reference<NSError>): NSArray<string>;
+	static supportedRecognitionLanguagesForTextRecognitionLevelRevisionError(recognitionLevel: VNRequestTextRecognitionLevel, requestRevision: number, error?: interop.Reference<NSError>): NSArray<string> | null;
 
 	/**
 	 * @since 16.0
@@ -2747,7 +2747,7 @@ declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRe
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	progressHandler: (p1: VNRequest, p2: number, p3: NSError) => void; // inherited from VNRequestProgressProviding
+	progressHandler: (p1: VNRequest, p2: number, p3: NSError | null) => void; // inherited from VNRequestProgressProviding
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -2778,7 +2778,7 @@ declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRe
 	/**
 	 * @since 15.0
 	 */
-	supportedRecognitionLanguagesAndReturnError(error?: interop.Reference<NSError>): NSArray<string>;
+	supportedRecognitionLanguagesAndReturnError(error?: interop.Reference<NSError>): NSArray<string> | null;
 }
 
 /**
@@ -2864,9 +2864,9 @@ declare class VNRecognizedPoints3DObservation extends VNObservation {
 
 	readonly availableKeys: NSArray<string>;
 
-	recognizedPointForKeyError(pointKey: string, error?: interop.Reference<NSError>): VNRecognizedPoint3D;
+	recognizedPointForKeyError(pointKey: string, error?: interop.Reference<NSError>): VNRecognizedPoint3D | null;
 
-	recognizedPointsForGroupKeyError(groupKey: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint3D>;
+	recognizedPointsForGroupKeyError(groupKey: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint3D> | null;
 }
 
 /**
@@ -2882,11 +2882,11 @@ declare class VNRecognizedPointsObservation extends VNObservation {
 
 	readonly availableKeys: NSArray<string>;
 
-	keypointsMultiArrayAndReturnError(error?: interop.Reference<NSError>): MLMultiArray;
+	keypointsMultiArrayAndReturnError(error?: interop.Reference<NSError>): MLMultiArray | null;
 
-	recognizedPointForKeyError(pointKey: string, error?: interop.Reference<NSError>): VNRecognizedPoint;
+	recognizedPointForKeyError(pointKey: string, error?: interop.Reference<NSError>): VNRecognizedPoint | null;
 
-	recognizedPointsForGroupKeyError(groupKey: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint>;
+	recognizedPointsForGroupKeyError(groupKey: string, error?: interop.Reference<NSError>): NSDictionary<string, VNRecognizedPoint> | null;
 }
 
 /**
@@ -2908,9 +2908,9 @@ declare class VNRecognizedText extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	boundingBoxForRangeError(range: NSRange, error?: interop.Reference<NSError>): VNRectangleObservation;
+	boundingBoxForRangeError(range: NSRange, error?: interop.Reference<NSError>): VNRectangleObservation | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2992,11 +2992,11 @@ declare class VNRequest extends NSObject implements NSCopying {
 
 	static new(): VNRequest; // inherited from NSObject
 
-	readonly completionHandler: (p1: VNRequest, p2: NSError) => void;
+	readonly completionHandler: (p1: VNRequest, p2: NSError | null) => void | null;
 
 	preferBackgroundProcessing: boolean;
 
-	readonly results: NSArray<VNObservation>;
+	readonly results: NSArray<VNObservation> | null;
 
 	/**
 	 * @since 12.0
@@ -3024,22 +3024,22 @@ declare class VNRequest extends NSObject implements NSCopying {
 	 */
 	static readonly supportedRevisions: NSIndexSet;
 
-	constructor(o: { completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	/**
 	 * @since 13.0
 	 */
 	cancel(): void;
 
-	computeDeviceForComputeStage(computeStage: string): MLComputeDeviceProtocol;
+	computeDeviceForComputeStage(computeStage: string): MLComputeDeviceProtocol | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	initWithCompletionHandler(completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithCompletionHandler(completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
-	setComputeDeviceForComputeStage(computeDevice: MLComputeDeviceProtocol, computeStage: string): void;
+	setComputeDeviceForComputeStage(computeDevice: MLComputeDeviceProtocol | null, computeStage: string): void;
 
-	supportedComputeStageDevicesAndReturnError(error?: interop.Reference<NSError>): NSDictionary<string, NSArray<MLComputeDeviceProtocol>>;
+	supportedComputeStageDevicesAndReturnError(error?: interop.Reference<NSError>): NSDictionary<string, NSArray<MLComputeDeviceProtocol>> | null;
 }
 
 declare const enum VNRequestFaceLandmarksConstellation {
@@ -3058,7 +3058,7 @@ interface VNRequestProgressProviding extends NSObjectProtocol {
 
 	indeterminate: boolean;
 
-	progressHandler: (p1: VNRequest, p2: number, p3: NSError) => void;
+	progressHandler: (p1: VNRequest, p2: number, p3: NSError | null) => void;
 }
 declare var VNRequestProgressProviding: {
 
@@ -3105,7 +3105,7 @@ declare class VNSaliencyImageObservation extends VNPixelBufferObservation {
 
 	static new(): VNSaliencyImageObservation; // inherited from NSObject
 
-	readonly salientObjects: NSArray<VNRectangleObservation>;
+	readonly salientObjects: NSArray<VNRectangleObservation> | null;
 }
 
 /**
@@ -3161,9 +3161,9 @@ declare class VNStatefulRequest extends VNImageBasedRequest {
 
 	readonly minimumLatencyFrameCount: number;
 
-	constructor(o: { frameAnalysisSpacing: CMTime; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { frameAnalysisSpacing: CMTime; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
-	initWithFrameAnalysisSpacingCompletionHandler(frameAnalysisSpacing: CMTime, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithFrameAnalysisSpacingCompletionHandler(frameAnalysisSpacing: CMTime, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 }
 
 /**
@@ -3177,19 +3177,19 @@ declare class VNTargetedImageRequest extends VNImageBasedRequest {
 
 	constructor(o: { targetedCGImage: any; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedCGImage: any; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCGImage: any; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedCGImage: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedCGImage: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCGImage: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedCIImage: CIImage; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedCIImage: CIImage; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCIImage: CIImage; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedCIImage: CIImage; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedCIImage: CIImage; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCIImage: CIImage; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	/**
 	 * @since 14.0
@@ -3199,7 +3199,7 @@ declare class VNTargetedImageRequest extends VNImageBasedRequest {
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { targetedCMSampleBuffer: any; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCMSampleBuffer: any; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	/**
 	 * @since 14.0
@@ -3209,47 +3209,47 @@ declare class VNTargetedImageRequest extends VNImageBasedRequest {
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { targetedCMSampleBuffer: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCMSampleBuffer: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedCVPixelBuffer: any; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedCVPixelBuffer: any; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCVPixelBuffer: any; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedCVPixelBuffer: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedCVPixelBuffer: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedCVPixelBuffer: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedImageData: NSData; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedImageData: NSData; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedImageData: NSData; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedImageData: NSData; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedImageData: NSData; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedImageData: NSData; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedImageURL: NSURL; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedImageURL: NSURL; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedImageURL: NSURL; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	constructor(o: { targetedImageURL: NSURL; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
-	constructor(o: { targetedImageURL: NSURL; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { targetedImageURL: NSURL; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	initWithTargetedCGImageOptions(cgImage: any, options: NSDictionary<string, any>): this;
 
-	initWithTargetedCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedCGImageOrientationOptions(cgImage: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
-	initWithTargetedCGImageOrientationOptionsCompletionHandler(cgImage: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCGImageOrientationOptionsCompletionHandler(cgImage: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedCIImageOptions(ciImage: CIImage, options: NSDictionary<string, any>): this;
 
-	initWithTargetedCIImageOptionsCompletionHandler(ciImage: CIImage, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCIImageOptionsCompletionHandler(ciImage: CIImage, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedCIImageOrientationOptions(ciImage: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
-	initWithTargetedCIImageOrientationOptionsCompletionHandler(ciImage: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCIImageOrientationOptionsCompletionHandler(ciImage: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	/**
 	 * @since 14.0
@@ -3259,7 +3259,7 @@ declare class VNTargetedImageRequest extends VNImageBasedRequest {
 	/**
 	 * @since 14.0
 	 */
-	initWithTargetedCMSampleBufferOptionsCompletionHandler(sampleBuffer: any, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCMSampleBufferOptionsCompletionHandler(sampleBuffer: any, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	/**
 	 * @since 14.0
@@ -3269,31 +3269,31 @@ declare class VNTargetedImageRequest extends VNImageBasedRequest {
 	/**
 	 * @since 14.0
 	 */
-	initWithTargetedCMSampleBufferOrientationOptionsCompletionHandler(sampleBuffer: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCMSampleBufferOrientationOptionsCompletionHandler(sampleBuffer: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedCVPixelBufferOptions(pixelBuffer: any, options: NSDictionary<string, any>): this;
 
-	initWithTargetedCVPixelBufferOptionsCompletionHandler(pixelBuffer: any, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCVPixelBufferOptionsCompletionHandler(pixelBuffer: any, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedCVPixelBufferOrientationOptions(pixelBuffer: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
-	initWithTargetedCVPixelBufferOrientationOptionsCompletionHandler(pixelBuffer: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedCVPixelBufferOrientationOptionsCompletionHandler(pixelBuffer: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedImageDataOptions(imageData: NSData, options: NSDictionary<string, any>): this;
 
-	initWithTargetedImageDataOptionsCompletionHandler(imageData: NSData, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedImageDataOptionsCompletionHandler(imageData: NSData, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedImageDataOrientationOptions(imageData: NSData, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
-	initWithTargetedImageDataOrientationOptionsCompletionHandler(imageData: NSData, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedImageDataOrientationOptionsCompletionHandler(imageData: NSData, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedImageURLOptions(imageURL: NSURL, options: NSDictionary<string, any>): this;
 
-	initWithTargetedImageURLOptionsCompletionHandler(imageURL: NSURL, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedImageURLOptionsCompletionHandler(imageURL: NSURL, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 
 	initWithTargetedImageURLOrientationOptions(imageURL: NSURL, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
-	initWithTargetedImageURLOrientationOptionsCompletionHandler(imageURL: NSURL, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithTargetedImageURLOrientationOptionsCompletionHandler(imageURL: NSURL, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 }
 
 /**
@@ -3323,7 +3323,7 @@ declare class VNTextObservation extends VNRectangleObservation {
 	 */
 	static rectangleObservationWithRequestRevisionTopLeftTopRightBottomRightBottomLeft(requestRevision: number, topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint): VNTextObservation; // inherited from VNRectangleObservation
 
-	readonly characterBoxes: NSArray<VNRectangleObservation>;
+	readonly characterBoxes: NSArray<VNRectangleObservation> | null;
 }
 
 /**
@@ -3352,11 +3352,11 @@ declare class VNTrackObjectRequest extends VNTrackingRequest {
 
 	constructor(o: { detectedObjectObservation: VNDetectedObjectObservation; });
 
-	constructor(o: { detectedObjectObservation: VNDetectedObjectObservation; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { detectedObjectObservation: VNDetectedObjectObservation; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	initWithDetectedObjectObservation(observation: VNDetectedObjectObservation): this;
 
-	initWithDetectedObjectObservationCompletionHandler(observation: VNDetectedObjectObservation, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithDetectedObjectObservationCompletionHandler(observation: VNDetectedObjectObservation, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 }
 
 /**
@@ -3412,11 +3412,11 @@ declare class VNTrackRectangleRequest extends VNTrackingRequest {
 
 	constructor(o: { rectangleObservation: VNRectangleObservation; });
 
-	constructor(o: { rectangleObservation: VNRectangleObservation; completionHandler: (p1: VNRequest, p2: NSError) => void; });
+	constructor(o: { rectangleObservation: VNRectangleObservation; completionHandler: (p1: VNRequest, p2: NSError | null) => void | null; });
 
 	initWithRectangleObservation(observation: VNRectangleObservation): this;
 
-	initWithRectangleObservationCompletionHandler(observation: VNRectangleObservation, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+	initWithRectangleObservationCompletionHandler(observation: VNRectangleObservation, completionHandler: (p1: VNRequest, p2: NSError | null) => void | null): this;
 }
 
 /**
@@ -3539,7 +3539,7 @@ declare class VNVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { XComponent: number; yComponent: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3607,7 +3607,7 @@ declare class VNVideoProcessorCadence extends NSObject implements NSCopying {
 
 	static new(): VNVideoProcessorCadence; // inherited from NSObject
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -3635,9 +3635,9 @@ declare class VNVideoProcessorRequestProcessingOptions extends NSObject implemen
 
 	static new(): VNVideoProcessorRequestProcessingOptions; // inherited from NSObject
 
-	cadence: VNVideoProcessorCadence;
+	cadence: VNVideoProcessorCadence | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**

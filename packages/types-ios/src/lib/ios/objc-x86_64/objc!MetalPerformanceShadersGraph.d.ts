@@ -15,1298 +15,1303 @@ declare class MPSGraph extends MPSGraphObject {
 	/**
 	 * @since 16.0
 	 */
-	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, descriptor: MPSGraphGRUDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 16.0
 	 */
-	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, descriptor: MPSGraphGRUDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 16.0
 	 */
-	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdStateGradientInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, secondaryBias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdStateGradientInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor | null, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, mask: MPSGraphTensor | null, secondaryBias: MPSGraphTensor | null, descriptor: MPSGraphGRUDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 16.0
 	 */
-	GRUWithSourceTensorRecurrentWeightInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+	GRUWithSourceTensorRecurrentWeightInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, descriptor: MPSGraphGRUDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 16.0
 	 */
-	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, descriptor: MPSGraphGRUDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 16.0
 	 */
-	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, secondaryBias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, mask: MPSGraphTensor | null, secondaryBias: MPSGraphTensor | null, descriptor: MPSGraphGRUDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 17.0
 	 */
-	HermiteanToRealFFTWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
+	HermiteanToRealFFTWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	HermiteanToRealFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
+	HermiteanToRealFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	L2NormPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	L2NormPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	L2NormPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	L2NormPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, initCell: MPSGraphTensor | null, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, initCell: MPSGraphTensor | null, mask: MPSGraphTensor | null, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdStateGradientCellGradientInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor, cellGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, peephole: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdStateGradientCellGradientInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor | null, cellGradient: MPSGraphTensor | null, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, initCell: MPSGraphTensor | null, mask: MPSGraphTensor | null, peephole: MPSGraphTensor | null, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMWithSourceTensorRecurrentWeightInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMWithSourceTensorRecurrentWeightInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor | null, initCell: MPSGraphTensor | null, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, initCell: MPSGraphTensor | null, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, peephole: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, initCell: MPSGraphTensor | null, mask: MPSGraphTensor | null, peephole: MPSGraphTensor | null, descriptor: MPSGraphLSTMDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 17.0
 	 */
-	absoluteSquareWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	absoluteSquareWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	absoluteWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	absoluteWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	acosWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	acosWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	acoshWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	acoshWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	adamWithCurrentLearningRateTensorBeta1TensorBeta2TensorEpsilonTensorValuesTensorMomentumTensorVelocityTensorMaximumVelocityTensorGradientTensorName(currentLearningRateTensor: MPSGraphTensor, beta1Tensor: MPSGraphTensor, beta2Tensor: MPSGraphTensor, epsilonTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, momentumTensor: MPSGraphTensor, velocityTensor: MPSGraphTensor, maximumVelocityTensor: MPSGraphTensor, gradientTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+	adamWithCurrentLearningRateTensorBeta1TensorBeta2TensorEpsilonTensorValuesTensorMomentumTensorVelocityTensorMaximumVelocityTensorGradientTensorName(currentLearningRateTensor: MPSGraphTensor, beta1Tensor: MPSGraphTensor, beta2Tensor: MPSGraphTensor, epsilonTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, momentumTensor: MPSGraphTensor, velocityTensor: MPSGraphTensor, maximumVelocityTensor: MPSGraphTensor | null, gradientTensor: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
 
-	adamWithLearningRateTensorBeta1TensorBeta2TensorEpsilonTensorBeta1PowerTensorBeta2PowerTensorValuesTensorMomentumTensorVelocityTensorMaximumVelocityTensorGradientTensorName(learningRateTensor: MPSGraphTensor, beta1Tensor: MPSGraphTensor, beta2Tensor: MPSGraphTensor, epsilonTensor: MPSGraphTensor, beta1PowerTensor: MPSGraphTensor, beta2PowerTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, momentumTensor: MPSGraphTensor, velocityTensor: MPSGraphTensor, maximumVelocityTensor: MPSGraphTensor, gradientTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+	adamWithLearningRateTensorBeta1TensorBeta2TensorEpsilonTensorBeta1PowerTensorBeta2PowerTensorValuesTensorMomentumTensorVelocityTensorMaximumVelocityTensorGradientTensorName(learningRateTensor: MPSGraphTensor, beta1Tensor: MPSGraphTensor, beta2Tensor: MPSGraphTensor, epsilonTensor: MPSGraphTensor, beta1PowerTensor: MPSGraphTensor, beta2PowerTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, momentumTensor: MPSGraphTensor, velocityTensor: MPSGraphTensor, maximumVelocityTensor: MPSGraphTensor | null, gradientTensor: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
 
-	additionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	additionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	applyStochasticGradientDescentWithLearningRateTensorVariableGradientTensorName(learningRateTensor: MPSGraphTensor, variable: MPSGraphVariableOp, gradientTensor: MPSGraphTensor, name: string): MPSGraphOperation;
-
-	/**
-	 * @since 16.1
-	 */
-	argSortWithTensorAxisDescendingName(tensor: MPSGraphTensor, axis: number, descending: boolean, name: string): MPSGraphTensor;
+	applyStochasticGradientDescentWithLearningRateTensorVariableGradientTensorName(learningRateTensor: MPSGraphTensor, variable: MPSGraphVariableOp, gradientTensor: MPSGraphTensor, name: string | null): MPSGraphOperation;
 
 	/**
 	 * @since 16.1
 	 */
-	argSortWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	argSortWithTensorAxisDescendingName(tensor: MPSGraphTensor, axis: number, descending: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	argSortWithTensorAxisTensorDescendingName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, descending: boolean, name: string): MPSGraphTensor;
+	argSortWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	argSortWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	argSortWithTensorAxisTensorDescendingName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, descending: boolean, name: string | null): MPSGraphTensor;
 
-	asinWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	/**
+	 * @since 16.1
+	 */
+	argSortWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	asinhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	asinWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	assignVariableWithValueOfTensorName(variable: MPSGraphTensor, tensor: MPSGraphTensor, name: string): MPSGraphOperation;
+	asinhWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	atan2WithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	assignVariableWithValueOfTensorName(variable: MPSGraphTensor, tensor: MPSGraphTensor, name: string | null): MPSGraphOperation;
 
-	atanWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	atan2WithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	atanhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	atanWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	avgPooling2DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+	atanhWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	avgPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+	avgPooling2DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	avgPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	avgPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	avgPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	avgPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	avgPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	bandPartWithTensorNumLowerNumUpperName(inputTensor: MPSGraphTensor, numLower: number, numUpper: number, name: string): MPSGraphTensor;
+	bandPartWithTensorNumLowerNumUpperName(inputTensor: MPSGraphTensor, numLower: number, numUpper: number, name: string | null): MPSGraphTensor;
 
-	bandPartWithTensorNumLowerTensorNumUpperTensorName(inputTensor: MPSGraphTensor, numLowerTensor: MPSGraphTensor, numUpperTensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.1
-	 */
-	batchToSpaceTensorSpatialAxesBatchAxisBlockDimensionsUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxes: NSArray<number> | number[], batchAxis: number, blockDimensions: NSArray<number> | number[], usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	bandPartWithTensorNumLowerTensorNumUpperTensorName(inputTensor: MPSGraphTensor, numLowerTensor: MPSGraphTensor, numUpperTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	batchToSpaceTensorSpatialAxesTensorBatchAxisTensorBlockDimensionsTensorUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxesTensor: MPSGraphTensor, batchAxisTensor: MPSGraphTensor, blockDimensionsTensor: MPSGraphTensor, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	batchToSpaceTensorSpatialAxesBatchAxisBlockDimensionsUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxes: NSArray<number> | number[], batchAxis: number, blockDimensions: NSArray<number> | number[], usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwiseANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	batchToSpaceTensorSpatialAxesTensorBatchAxisTensorBlockDimensionsTensorUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxesTensor: MPSGraphTensor, batchAxisTensor: MPSGraphTensor, blockDimensionsTensor: MPSGraphTensor, usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwiseLeftShiftWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bitwiseANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwiseNOTWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bitwiseLeftShiftWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwiseORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bitwiseNOTWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwisePopulationCountWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bitwiseORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwiseRightShiftWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bitwisePopulationCountWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	bitwiseXORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bitwiseRightShiftWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.1
+	 */
+	bitwiseXORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	bottomKWithGradientTensorSourceAxisKName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, k: number, name: string): MPSGraphTensor;
+	bottomKWithGradientTensorSourceAxisKName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, k: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	bottomKWithGradientTensorSourceAxisTensorKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	bottomKWithGradientTensorSourceAxisTensorKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	bottomKWithSourceTensorAxisKName(source: MPSGraphTensor, axis: number, k: number, name: string): NSArray<MPSGraphTensor>;
+	bottomKWithSourceTensorAxisKName(source: MPSGraphTensor, axis: number, k: number, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 17.0
 	 */
-	bottomKWithSourceTensorAxisTensorKTensorName(source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+	bottomKWithSourceTensorAxisTensorKTensorName(source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.0
 	 */
-	broadcastTensorToShapeName(tensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
+	broadcastTensorToShapeName(tensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	broadcastTensorToShapeTensorName(tensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	broadcastTensorToShapeTensorName(tensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	callSymbolNameInputTensorsOutputTypesName(symbolName: string, inputTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], outputTypes: NSArray<MPSGraphType> | MPSGraphType[], name: string): NSArray<MPSGraphTensor>;
+	callSymbolNameInputTensorsOutputTypesName(symbolName: string, inputTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], outputTypes: NSArray<MPSGraphType> | MPSGraphType[], name: string | null): NSArray<MPSGraphTensor>;
 
-	ceilWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	ceilWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	clampWithTensorMinValueTensorMaxValueTensorName(tensor: MPSGraphTensor, minValueTensor: MPSGraphTensor, maxValueTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	clampWithTensorMinValueTensorMaxValueTensorName(tensor: MPSGraphTensor, minValueTensor: MPSGraphTensor, maxValueTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	colToImWithSourceTensorOutputShapeDescriptorName(source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphImToColOpDescriptor, name: string): MPSGraphTensor;
+	colToImWithSourceTensorOutputShapeDescriptorName(source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphImToColOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	compileWithDeviceFeedsTargetTensorsTargetOperationsCompilationDescriptor(device: MPSGraphDevice, feeds: NSDictionary<MPSGraphTensor, MPSGraphShapedType>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[], compilationDescriptor: MPSGraphCompilationDescriptor): MPSGraphExecutable;
+	compileWithDeviceFeedsTargetTensorsTargetOperationsCompilationDescriptor(device: MPSGraphDevice | null, feeds: NSDictionary<MPSGraphTensor, MPSGraphShapedType>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null, compilationDescriptor: MPSGraphCompilationDescriptor | null): MPSGraphExecutable;
 
 	/**
 	 * @since 17.0
 	 */
-	complexTensorWithRealTensorImaginaryTensorName(realTensor: MPSGraphTensor, imaginaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	complexTensorWithRealTensorImaginaryTensorName(realTensor: MPSGraphTensor, imaginaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	concatTensorWithTensorDimensionName(tensor: MPSGraphTensor, tensor2: MPSGraphTensor, dimensionIndex: number, name: string): MPSGraphTensor;
+	concatTensorWithTensorDimensionName(tensor: MPSGraphTensor, tensor2: MPSGraphTensor, dimensionIndex: number, name: string | null): MPSGraphTensor;
 
-	concatTensorsDimensionInterleaveName(tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], dimensionIndex: number, interleave: boolean, name: string): MPSGraphTensor;
+	concatTensorsDimensionInterleaveName(tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], dimensionIndex: number, interleave: boolean, name: string | null): MPSGraphTensor;
 
-	concatTensorsDimensionName(tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], dimensionIndex: number, name: string): MPSGraphTensor;
+	concatTensorsDimensionName(tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], dimensionIndex: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	conjugateWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	conjugateWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
 	constantWithRealPartImaginaryPart(realPart: number, imaginaryPart: number): MPSGraphTensor;
 
-	controlDependencyWithOperationsDependentBlockName(operations: NSArray<MPSGraphOperation> | MPSGraphOperation[], dependentBlock: () => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
+	controlDependencyWithOperationsDependentBlockName(operations: NSArray<MPSGraphOperation> | MPSGraphOperation[], dependentBlock: () => NSArray<MPSGraphTensor>, name: string | null): NSArray<MPSGraphTensor>;
 
-	convolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.0
-	 */
-	convolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
-
-	convolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	convolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	convolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.3
-	 */
-	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.3
-	 */
-	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.3
-	 */
-	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.3
-	 */
-	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.3
-	 */
-	convolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
-
-	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	convolutionTranspose2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradientTensor: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.3
+	 */
+	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.3
+	 */
+	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.3
+	 */
+	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.3
+	 */
+	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.3
+	 */
+	convolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	convolutionTranspose2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradientTensor: MPSGraphTensor, source: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	convolutionTranspose2DWithSourceTensorWeightsTensorOutputShapeDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolutionTranspose2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradientTensor: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	convolutionTranspose2DWithSourceTensorWeightsTensorOutputShapeTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	convolutionTranspose2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradientTensor: MPSGraphTensor, source: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	convolutionTranspose2DWithSourceTensorWeightsTensorOutputShapeDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 15.0
+	 */
+	convolutionTranspose2DWithSourceTensorWeightsTensorOutputShapeTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	coordinateAlongAxisTensorWithShapeName(axisTensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
+	coordinateAlongAxisTensorWithShapeName(axisTensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	coordinateAlongAxisTensorWithShapeTensorName(axisTensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	coordinateAlongAxisTensorWithShapeTensorName(axisTensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	coordinateAlongAxisWithShapeName(axis: number, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
+	coordinateAlongAxisWithShapeName(axis: number, shape: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	coordinateAlongAxisWithShapeTensorName(axis: number, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	coordinateAlongAxisWithShapeTensorName(axis: number, shapeTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	cosWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	cosWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	coshWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.0
-	 */
-	cumulativeMaximumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	coshWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	cumulativeMaximumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMaximumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMaximumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	cumulativeMaximumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMinimumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeMaximumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	cumulativeMinimumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMinimumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeMinimumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	cumulativeMinimumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeProductWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeMinimumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeProductWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	cumulativeProductWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeProductWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeProductWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeProductWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	cumulativeProductWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeSumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeProductWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeSumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	cumulativeSumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeSumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
+	cumulativeSumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	cumulativeSumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	cumulativeSumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.0
+	 */
+	cumulativeSumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	depthToSpace2DTensorWidthAxisHeightAxisDepthAxisBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxis: number, heightAxis: number, depthAxis: number, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	depthToSpace2DTensorWidthAxisHeightAxisDepthAxisBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxis: number, heightAxis: number, depthAxis: number, blockSize: number, usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	depthToSpace2DTensorWidthAxisTensorHeightAxisTensorDepthAxisTensorBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxisTensor: MPSGraphTensor, heightAxisTensor: MPSGraphTensor, depthAxisTensor: MPSGraphTensor, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	depthToSpace2DTensorWidthAxisTensorHeightAxisTensorDepthAxisTensorBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxisTensor: MPSGraphTensor, heightAxisTensor: MPSGraphTensor, depthAxisTensor: MPSGraphTensor, blockSize: number, usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
-	depthwiseConvolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	depthwiseConvolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	depthwiseConvolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string): MPSGraphTensor;
+	depthwiseConvolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	depthwiseConvolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.0
-	 */
-	depthwiseConvolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string): MPSGraphTensor;
-
-	depthwiseConvolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+	depthwiseConvolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	depthwiseConvolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+	depthwiseConvolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[] | null, descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	depthwiseConvolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 15.0
+	 */
+	depthwiseConvolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	dequantizeTensorLUTTensorAxisName(tensor: MPSGraphTensor, LUTTensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	dequantizeTensorLUTTensorAxisName(tensor: MPSGraphTensor, LUTTensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	dequantizeTensorLUTTensorName(tensor: MPSGraphTensor, LUTTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	dequantizeTensorLUTTensorName(tensor: MPSGraphTensor, LUTTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	divisionNoNaNWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	divisionNoNaNWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	divisionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	divisionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	dropoutTensorRateName(tensor: MPSGraphTensor, rate: number, name: string): MPSGraphTensor;
+	dropoutTensorRateName(tensor: MPSGraphTensor, rate: number, name: string | null): MPSGraphTensor;
 
-	dropoutTensorRateTensorName(tensor: MPSGraphTensor, rate: MPSGraphTensor, name: string): MPSGraphTensor;
+	dropoutTensorRateTensorName(tensor: MPSGraphTensor, rate: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	equalWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	equalWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	erfWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.4
-	 */
-	expandDimsOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	erfWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	expandDimsOfTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	expandDimsOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	expandDimsOfTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	expandDimsOfTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	exponentBase10WithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	/**
+	 * @since 15.4
+	 */
+	expandDimsOfTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
-	exponentBase2WithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	exponentBase10WithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	exponentWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	exponentBase2WithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	exponentWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	fastFourierTransformWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
+	fastFourierTransformWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	fastFourierTransformWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
+	fastFourierTransformWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	flatten2DTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	flatten2DTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	flatten2DTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	flatten2DTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	floorModuloWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	floorModuloWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	floorWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	floorWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	forLoopWithLowerBoundUpperBoundStepInitialBodyArgumentsBodyName(lowerBound: MPSGraphTensor, upperBound: MPSGraphTensor, step: MPSGraphTensor, initialBodyArguments: NSArray<MPSGraphTensor> | MPSGraphTensor[], body: (p1: MPSGraphTensor, p2: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
+	forLoopWithLowerBoundUpperBoundStepInitialBodyArgumentsBodyName(lowerBound: MPSGraphTensor, upperBound: MPSGraphTensor, step: MPSGraphTensor, initialBodyArguments: NSArray<MPSGraphTensor> | MPSGraphTensor[], body: (p1: MPSGraphTensor, p2: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string | null): NSArray<MPSGraphTensor>;
 
-	forLoopWithNumberOfIterationsInitialBodyArgumentsBodyName(numberOfIterations: MPSGraphTensor, initialBodyArguments: NSArray<MPSGraphTensor> | MPSGraphTensor[], body: (p1: MPSGraphTensor, p2: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
-
-	/**
-	 * @since 15.4
-	 */
-	gatherAlongAxisTensorWithUpdatesTensorIndicesTensorName(axisTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	forLoopWithNumberOfIterationsInitialBodyArgumentsBodyName(numberOfIterations: MPSGraphTensor, initialBodyArguments: NSArray<MPSGraphTensor> | MPSGraphTensor[], body: (p1: MPSGraphTensor, p2: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	gatherAlongAxisWithUpdatesTensorIndicesTensorName(axis: number, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	gatherAlongAxisTensorWithUpdatesTensorIndicesTensorName(axisTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	gatherNDWithUpdatesTensorIndicesTensorBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, batchDimensions: number, name: string): MPSGraphTensor;
+	/**
+	 * @since 15.4
+	 */
+	gatherAlongAxisWithUpdatesTensorIndicesTensorName(axis: number, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	gatherWithUpdatesTensorIndicesTensorAxisBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, axis: number, batchDimensions: number, name: string): MPSGraphTensor;
+	gatherNDWithUpdatesTensorIndicesTensorBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, batchDimensions: number, name: string | null): MPSGraphTensor;
 
-	gradientForPrimaryTensorWithTensorsName(primaryTensor: MPSGraphTensor, tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], name: string): NSDictionary<MPSGraphTensor, MPSGraphTensor>;
+	gatherWithUpdatesTensorIndicesTensorAxisBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, axis: number, batchDimensions: number, name: string | null): MPSGraphTensor;
 
-	greaterThanOrEqualToWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	gradientForPrimaryTensorWithTensorsName(primaryTensor: MPSGraphTensor, tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], name: string | null): NSDictionary<MPSGraphTensor, MPSGraphTensor>;
 
-	greaterThanWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	greaterThanOrEqualToWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	identityWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	greaterThanWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	ifWithPredicateTensorThenBlockElseBlockName(predicateTensor: MPSGraphTensor, thenBlock: () => NSArray<MPSGraphTensor>, elseBlock: () => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
+	identityWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	imToColWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphImToColOpDescriptor, name: string): MPSGraphTensor;
+	ifWithPredicateTensorThenBlockElseBlockName(predicateTensor: MPSGraphTensor, thenBlock: () => NSArray<MPSGraphTensor>, elseBlock: () => NSArray<MPSGraphTensor> | null, name: string | null): NSArray<MPSGraphTensor>;
+
+	imToColWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphImToColOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	imaginaryPartOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	imaginaryPartOfTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	inverseOfTensorName(inputTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	inverseOfTensorName(inputTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	isFiniteWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	isFiniteWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	isInfiniteWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	isInfiniteWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	isNaNWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.0
-	 */
-	leakyReLUGradientWithIncomingGradientSourceTensorAlphaTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, alphaTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	isNaNWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	leakyReLUWithTensorAlphaName(tensor: MPSGraphTensor, alpha: number, name: string): MPSGraphTensor;
+	leakyReLUGradientWithIncomingGradientSourceTensorAlphaTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, alphaTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	leakyReLUWithTensorAlphaTensorName(tensor: MPSGraphTensor, alphaTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	leakyReLUWithTensorAlphaName(tensor: MPSGraphTensor, alpha: number, name: string | null): MPSGraphTensor;
 
-	lessThanOrEqualToWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	/**
+	 * @since 15.0
+	 */
+	leakyReLUWithTensorAlphaTensorName(tensor: MPSGraphTensor, alphaTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	lessThanWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	lessThanOrEqualToWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logarithmBase10WithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	lessThanWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logarithmBase2WithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logarithmBase10WithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logarithmWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logarithmBase2WithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logicalANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logarithmWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logicalNANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logicalANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logicalNORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logicalNANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logicalORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logicalNORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logicalXNORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logicalORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	logicalXORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logicalXNORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	matrixMultiplicationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	logicalXORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	matrixMultiplicationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): MPSGraphTensor;
 
-	maxPooling2DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling2DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.3
 	 */
-	maxPooling2DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): NSArray<MPSGraphTensor>;
+	maxPooling2DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
-	maxPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.0
-	 */
-	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.0
+	 */
+	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	maxPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.3
 	 */
-	maxPooling4DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): NSArray<MPSGraphTensor>;
+	maxPooling4DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.0
 	 */
-	maxPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+	maxPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	maximumWithNaNPropagationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	maximumWithNaNPropagationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	maximumWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	maximumWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	meanOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	meanOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	minimumWithNaNPropagationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	minimumWithNaNPropagationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	minimumWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	minimumWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	moduloWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	moduloWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	multiplicationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	multiplicationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	negativeWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	negativeWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	nonMaximumSuppressionWithBoxesTensorScoresTensorClassIndicesTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, classIndicesTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string): MPSGraphTensor;
+	nonMaximumSuppressionWithBoxesTensorScoresTensorClassIndicesTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, classIndicesTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string | null): MPSGraphTensor;
 
-	nonMaximumSuppressionWithBoxesTensorScoresTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 17.0
-	 */
-	nonZeroIndicesOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	normalizationBetaGradientWithIncomingGradientTensorSourceTensorReductionAxesName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	normalizationGammaGradientWithIncomingGradientTensorSourceTensorMeanTensorVarianceTensorReductionAxesEpsilonName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, meanTensor: MPSGraphTensor, varianceTensor: MPSGraphTensor, axes: NSArray<number> | number[], epsilon: number, name: string): MPSGraphTensor;
-
-	normalizationGradientWithIncomingGradientTensorSourceTensorMeanTensorVarianceTensorGammaTensorGammaGradientTensorBetaGradientTensorReductionAxesEpsilonName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, meanTensor: MPSGraphTensor, varianceTensor: MPSGraphTensor, gamma: MPSGraphTensor, gammaGradient: MPSGraphTensor, betaGradient: MPSGraphTensor, axes: NSArray<number> | number[], epsilon: number, name: string): MPSGraphTensor;
-
-	normalizationWithTensorMeanTensorVarianceTensorGammaTensorBetaTensorEpsilonName(tensor: MPSGraphTensor, mean: MPSGraphTensor, variance: MPSGraphTensor, gamma: MPSGraphTensor, beta: MPSGraphTensor, epsilon: number, name: string): MPSGraphTensor;
-
-	notEqualWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	notWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	oneHotWithIndicesTensorDepthAxisName(indicesTensor: MPSGraphTensor, depth: number, axis: number, name: string): MPSGraphTensor;
-
-	oneHotWithIndicesTensorDepthName(indicesTensor: MPSGraphTensor, depth: number, name: string): MPSGraphTensor;
-
-	padGradientWithIncomingGradientTensorSourceTensorPaddingModeLeftPaddingRightPaddingName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, paddingMode: MPSGraphPaddingMode, leftPadding: NSArray<number> | number[], rightPadding: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	padTensorWithPaddingModeLeftPaddingRightPaddingConstantValueName(tensor: MPSGraphTensor, paddingMode: MPSGraphPaddingMode, leftPadding: NSArray<number> | number[], rightPadding: NSArray<number> | number[], constantValue: number, name: string): MPSGraphTensor;
-
-	placeholderWithShapeName(shape: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	powerWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	randomPhiloxStateTensorWithCounterLowCounterHighKeyName(counterLow: number, counterHigh: number, key: number, name: string): MPSGraphTensor;
-
-	randomPhiloxStateTensorWithSeedName(seed: number, name: string): MPSGraphTensor;
-
-	randomTensorWithShapeDescriptorName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, name: string): MPSGraphTensor;
-
-	randomTensorWithShapeDescriptorSeedName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, seed: number, name: string): MPSGraphTensor;
-
-	randomTensorWithShapeDescriptorStateTensorName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
-
-	randomTensorWithShapeTensorDescriptorName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, name: string): MPSGraphTensor;
-
-	randomTensorWithShapeTensorDescriptorSeedName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, seed: number, name: string): MPSGraphTensor;
-
-	randomTensorWithShapeTensorDescriptorStateTensorName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
-
-	randomUniformTensorWithShapeName(shape: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	randomUniformTensorWithShapeSeedName(shape: NSArray<number> | number[], seed: number, name: string): MPSGraphTensor;
-
-	randomUniformTensorWithShapeStateTensorName(shape: NSArray<number> | number[], state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
-
-	randomUniformTensorWithShapeTensorName(shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	randomUniformTensorWithShapeTensorSeedName(shapeTensor: MPSGraphTensor, seed: number, name: string): MPSGraphTensor;
-
-	randomUniformTensorWithShapeTensorStateTensorName(shapeTensor: MPSGraphTensor, state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
-
-	reLUGradientWithIncomingGradientSourceTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	reLUWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	readVariableName(variable: MPSGraphTensor, name: string): MPSGraphTensor;
+	nonMaximumSuppressionWithBoxesTensorScoresTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	realPartOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	nonZeroIndicesOfTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	normalizationBetaGradientWithIncomingGradientTensorSourceTensorReductionAxesName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
+
+	normalizationGammaGradientWithIncomingGradientTensorSourceTensorMeanTensorVarianceTensorReductionAxesEpsilonName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, meanTensor: MPSGraphTensor, varianceTensor: MPSGraphTensor, axes: NSArray<number> | number[], epsilon: number, name: string | null): MPSGraphTensor;
+
+	normalizationGradientWithIncomingGradientTensorSourceTensorMeanTensorVarianceTensorGammaTensorGammaGradientTensorBetaGradientTensorReductionAxesEpsilonName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, meanTensor: MPSGraphTensor, varianceTensor: MPSGraphTensor, gamma: MPSGraphTensor | null, gammaGradient: MPSGraphTensor | null, betaGradient: MPSGraphTensor | null, axes: NSArray<number> | number[], epsilon: number, name: string | null): MPSGraphTensor;
+
+	normalizationWithTensorMeanTensorVarianceTensorGammaTensorBetaTensorEpsilonName(tensor: MPSGraphTensor, mean: MPSGraphTensor, variance: MPSGraphTensor, gamma: MPSGraphTensor | null, beta: MPSGraphTensor | null, epsilon: number, name: string | null): MPSGraphTensor;
+
+	notEqualWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	notWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	oneHotWithIndicesTensorDepthAxisName(indicesTensor: MPSGraphTensor, depth: number, axis: number, name: string | null): MPSGraphTensor;
+
+	oneHotWithIndicesTensorDepthName(indicesTensor: MPSGraphTensor, depth: number, name: string | null): MPSGraphTensor;
+
+	padGradientWithIncomingGradientTensorSourceTensorPaddingModeLeftPaddingRightPaddingName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, paddingMode: MPSGraphPaddingMode, leftPadding: NSArray<number> | number[], rightPadding: NSArray<number> | number[], name: string | null): MPSGraphTensor;
+
+	padTensorWithPaddingModeLeftPaddingRightPaddingConstantValueName(tensor: MPSGraphTensor, paddingMode: MPSGraphPaddingMode, leftPadding: NSArray<number> | number[], rightPadding: NSArray<number> | number[], constantValue: number, name: string | null): MPSGraphTensor;
+
+	placeholderWithShapeName(shape: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 26.3
+	 */
+	planarTensorWithComplexTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	powerWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	randomPhiloxStateTensorWithCounterLowCounterHighKeyName(counterLow: number, counterHigh: number, key: number, name: string | null): MPSGraphTensor;
+
+	randomPhiloxStateTensorWithSeedName(seed: number, name: string | null): MPSGraphTensor;
+
+	randomTensorWithShapeDescriptorName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, name: string | null): MPSGraphTensor;
+
+	randomTensorWithShapeDescriptorSeedName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, seed: number, name: string | null): MPSGraphTensor;
+
+	randomTensorWithShapeDescriptorStateTensorName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, state: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
+
+	randomTensorWithShapeTensorDescriptorName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, name: string | null): MPSGraphTensor;
+
+	randomTensorWithShapeTensorDescriptorSeedName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, seed: number, name: string | null): MPSGraphTensor;
+
+	randomTensorWithShapeTensorDescriptorStateTensorName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, state: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
+
+	randomUniformTensorWithShapeName(shape: NSArray<number> | number[], name: string | null): MPSGraphTensor;
+
+	randomUniformTensorWithShapeSeedName(shape: NSArray<number> | number[], seed: number, name: string | null): MPSGraphTensor;
+
+	randomUniformTensorWithShapeStateTensorName(shape: NSArray<number> | number[], state: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
+
+	randomUniformTensorWithShapeTensorName(shapeTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	randomUniformTensorWithShapeTensorSeedName(shapeTensor: MPSGraphTensor, seed: number, name: string | null): MPSGraphTensor;
+
+	randomUniformTensorWithShapeTensorStateTensorName(shapeTensor: MPSGraphTensor, state: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
+
+	reLUGradientWithIncomingGradientSourceTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	reLUWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	readVariableName(variable: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	realToHermiteanFFTWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
+	realPartOfTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	realToHermiteanFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
+	realToHermiteanFFTWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 17.0
+	 */
+	realToHermiteanFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	reciprocalSquareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	reciprocalSquareRootWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	reciprocalWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.3
-	 */
-	reductionAndWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	reciprocalWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.3
 	 */
-	reductionAndWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.0
-	 */
-	reductionArgMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.0
-	 */
-	reductionArgMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	reductionMaximumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	reductionMaximumPropagateNaNWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	reductionMaximumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	reductionMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	reductionMinimumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	reductionMinimumPropagateNaNWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	reductionMinimumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
-
-	reductionMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	reductionAndWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.3
 	 */
-	reductionOrWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	reductionAndWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 15.0
+	 */
+	reductionArgMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 15.0
+	 */
+	reductionArgMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	reductionMaximumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
+
+	reductionMaximumPropagateNaNWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	reductionMaximumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
+
+	reductionMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	reductionMinimumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
+
+	reductionMinimumPropagateNaNWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	reductionMinimumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
+
+	reductionMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.3
 	 */
-	reductionOrWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	reductionOrWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
 
-	reductionProductWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	/**
+	 * @since 15.3
+	 */
+	reductionOrWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
-	reductionProductWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	reductionProductWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
 
-	reductionSumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	reductionProductWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
-	reductionSumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	reductionSumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[] | null, name: string | null): MPSGraphTensor;
 
-	reshapeTensorWithShapeName(tensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
+	reductionSumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
+
+	reshapeTensorWithShapeName(tensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	reshapeTensorWithShapeTensorName(tensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	reshapeTensorWithShapeTensorName(tensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeBilinearWithGradientTensorInputCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeBilinearWithGradientTensorInputCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeBilinearWithGradientTensorInputScaleOffsetTensorLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeBilinearWithGradientTensorInputScaleOffsetTensorLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeBilinearWithGradientTensorInputScaleTensorOffsetTensorName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, name: string): MPSGraphTensor;
+	resizeBilinearWithGradientTensorInputScaleTensorOffsetTensorName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeBilinearWithTensorSizeTensorCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeBilinearWithTensorSizeTensorCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeBilinearWithTensorSizeTensorCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, name: string): MPSGraphTensor;
+	resizeBilinearWithTensorSizeTensorCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeBilinearWithTensorSizeTensorScaleOffsetTensorLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeBilinearWithTensorSizeTensorScaleOffsetTensorLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeBilinearWithTensorSizeTensorScaleTensorOffsetTensorName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, name: string): MPSGraphTensor;
+	resizeBilinearWithTensorSizeTensorScaleTensorOffsetTensorName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeNearestWithGradientTensorInputNearestRoundingModeCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeNearestWithGradientTensorInputNearestRoundingModeCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeNearestWithGradientTensorInputScaleOffsetTensorNearestRoundingModeLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeNearestWithGradientTensorInputScaleOffsetTensorNearestRoundingModeLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeNearestWithGradientTensorInputScaleTensorOffsetTensorNearestRoundingModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, name: string): MPSGraphTensor;
+	resizeNearestWithGradientTensorInputScaleTensorOffsetTensorNearestRoundingModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeNearestWithTensorSizeTensorNearestRoundingModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeNearestWithTensorSizeTensorNearestRoundingModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeNearestWithTensorSizeTensorNearestRoundingModeCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, name: string): MPSGraphTensor;
+	resizeNearestWithTensorSizeTensorNearestRoundingModeCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeNearestWithTensorSizeTensorScaleOffsetTensorNearestRoundingModeLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeNearestWithTensorSizeTensorScaleOffsetTensorNearestRoundingModeLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeNearestWithTensorSizeTensorScaleTensorOffsetTensorNearestRoundingModeName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, name: string): MPSGraphTensor;
+	resizeNearestWithTensorSizeTensorScaleTensorOffsetTensorNearestRoundingModeName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, name: string | null): MPSGraphTensor;
 
-	resizeTensorSizeModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: NSArray<number> | number[], mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeTensorSizeModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: NSArray<number> | number[], mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	resizeTensorSizeTensorModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeTensorSizeTensorModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeTensorSizeTensorModeCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, name: string): MPSGraphTensor;
+	resizeTensorSizeTensorModeCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeTensorSizeTensorScaleOffsetTensorModeLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, mode: MPSGraphResizeMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeTensorSizeTensorScaleOffsetTensorModeLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, mode: MPSGraphResizeMode, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeTensorSizeTensorScaleTensorOffsetTensorModeName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string): MPSGraphTensor;
+	resizeTensorSizeTensorScaleTensorOffsetTensorModeName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string | null): MPSGraphTensor;
 
-	resizeWithGradientTensorInputModeCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeWithGradientTensorInputModeCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	resizeWithGradientTensorInputScaleOffsetTensorModeLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, mode: MPSGraphResizeMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
+	resizeWithGradientTensorInputScaleOffsetTensorModeLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, mode: MPSGraphResizeMode, layout: MPSGraphTensorNamedDataLayout, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	resizeWithGradientTensorInputScaleTensorOffsetTensorModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string): MPSGraphTensor;
+	resizeWithGradientTensorInputScaleTensorOffsetTensorModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 14.0
 	 * @deprecated 18.0
 	 */
-	reverseSquareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	reverseSquareRootWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	reverseTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	reverseTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	reverseTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	reverseTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	reverseTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	reverseTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	rintWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	rintWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	roundWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	roundWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	runAsyncWithFeedsTargetTensorsTargetOperationsExecutionDescriptor(feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[], executionDescriptor: MPSGraphExecutionDescriptor): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
+	runAsyncWithFeedsTargetTensorsTargetOperationsExecutionDescriptor(feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null, executionDescriptor: MPSGraphExecutionDescriptor | null): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
 
-	runAsyncWithMTLCommandQueueFeedsTargetOperationsResultsDictionaryExecutionDescriptor(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[], resultsDictionary: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, executionDescriptor: MPSGraphExecutionDescriptor): void;
+	runAsyncWithMTLCommandQueueFeedsTargetOperationsResultsDictionaryExecutionDescriptor(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null, resultsDictionary: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, executionDescriptor: MPSGraphExecutionDescriptor | null): void;
 
-	runAsyncWithMTLCommandQueueFeedsTargetTensorsTargetOperationsExecutionDescriptor(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[], executionDescriptor: MPSGraphExecutionDescriptor): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
+	runAsyncWithMTLCommandQueueFeedsTargetTensorsTargetOperationsExecutionDescriptor(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null, executionDescriptor: MPSGraphExecutionDescriptor | null): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
 
-	runWithFeedsTargetTensorsTargetOperations(feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[]): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
+	runWithFeedsTargetTensorsTargetOperations(feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
 
-	runWithMTLCommandQueueFeedsTargetOperationsResultsDictionary(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[], resultsDictionary: NSDictionary<MPSGraphTensor, MPSGraphTensorData>): void;
+	runWithMTLCommandQueueFeedsTargetOperationsResultsDictionary(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null, resultsDictionary: NSDictionary<MPSGraphTensor, MPSGraphTensorData>): void;
 
-	runWithMTLCommandQueueFeedsTargetTensorsTargetOperations(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[]): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
+	runWithMTLCommandQueueFeedsTargetTensorsTargetOperations(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[] | null): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
 
 	/**
 	 * @since 16.2
 	 */
-	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeNearestRoundingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, constantValue: number, name: string): MPSGraphTensor;
+	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeNearestRoundingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, constantValue: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.2
 	 */
-	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeSamplingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, samplingMode: MPSGraphResizeMode, constantValue: number, name: string): MPSGraphTensor;
+	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeSamplingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, samplingMode: MPSGraphResizeMode, constantValue: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorMaskTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, maskTensor: MPSGraphTensor, scale: number, name: string): MPSGraphTensor;
+	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorMaskTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, maskTensor: MPSGraphTensor | null, scale: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, scale: number, name: string): MPSGraphTensor;
+	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, scale: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	scatterAlongAxisTensorWithDataTensorUpdatesTensorIndicesTensorModeName(axisTensor: MPSGraphTensor, dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterAlongAxisTensorWithDataTensorUpdatesTensorIndicesTensorModeName(axisTensor: MPSGraphTensor, dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	scatterAlongAxisTensorWithUpdatesTensorIndicesTensorShapeModeName(axisTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterAlongAxisTensorWithUpdatesTensorIndicesTensorShapeModeName(axisTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	scatterAlongAxisWithDataTensorUpdatesTensorIndicesTensorModeName(axis: number, dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterAlongAxisWithDataTensorUpdatesTensorIndicesTensorModeName(axis: number, dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	scatterAlongAxisWithUpdatesTensorIndicesTensorShapeModeName(axis: number, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterAlongAxisWithUpdatesTensorIndicesTensorShapeModeName(axis: number, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	scatterNDWithDataTensorUpdatesTensorIndicesTensorBatchDimensionsModeName(dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, batchDimensions: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterNDWithDataTensorUpdatesTensorIndicesTensorBatchDimensionsModeName(dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, batchDimensions: number, mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
-	scatterNDWithUpdatesTensorIndicesTensorShapeBatchDimensionsModeName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], batchDimensions: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterNDWithUpdatesTensorIndicesTensorShapeBatchDimensionsModeName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], batchDimensions: number, mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
-	scatterNDWithUpdatesTensorIndicesTensorShapeBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], batchDimensions: number, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.0
-	 */
-	scatterWithDataTensorUpdatesTensorIndicesTensorAxisModeName(dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, axis: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
+	scatterNDWithUpdatesTensorIndicesTensorShapeBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], batchDimensions: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	scatterWithUpdatesTensorIndicesTensorShapeAxisModeName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], axis: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
-
-	selectWithPredicateTensorTruePredicateTensorFalsePredicateTensorName(predicateTensor: MPSGraphTensor, truePredicateTensor: MPSGraphTensor, falseSelectTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	scatterWithDataTensorUpdatesTensorIndicesTensorAxisModeName(dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, axis: number, mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	shapeOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	scatterWithUpdatesTensorIndicesTensorShapeAxisModeName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], axis: number, mode: MPSGraphScatterMode, name: string | null): MPSGraphTensor;
 
-	sigmoidGradientWithIncomingGradientSourceTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, name: string): MPSGraphTensor;
+	selectWithPredicateTensorTruePredicateTensorFalsePredicateTensorName(predicateTensor: MPSGraphTensor, truePredicateTensor: MPSGraphTensor, falseSelectTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	sigmoidWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	/**
+	 * @since 15.0
+	 */
+	shapeOfTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	signWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	sigmoidGradientWithIncomingGradientSourceTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	signbitWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	sigmoidWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	sinWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	signWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	signbitWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
+
+	sinWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, initState: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, mask: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateStateGradientInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, stateGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateStateGradientInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, stateGradient: MPSGraphTensor | null, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, mask: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNWithSourceTensorRecurrentWeightInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNWithSourceTensorRecurrentWeightInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor | null, bias: MPSGraphTensor | null, initState: MPSGraphTensor | null, mask: MPSGraphTensor | null, descriptor: MPSGraphSingleGateRNNDescriptor, name: string | null): NSArray<MPSGraphTensor>;
 
-	sinhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	sinhWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.2
 	 */
-	sliceGradientTensorFwdInShapeTensorStartTensorEndTensorStrideTensorStartMaskEndMaskSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, startTensor: MPSGraphTensor, endTensor: MPSGraphTensor, strideTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceGradientTensorFwdInShapeTensorStartTensorEndTensorStrideTensorStartMaskEndMaskSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, startTensor: MPSGraphTensor, endTensor: MPSGraphTensor, strideTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.2
 	 */
-	sliceGradientTensorFwdInShapeTensorStartTensorSizeTensorSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, startTensor: MPSGraphTensor, sizeTensor: MPSGraphTensor, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceGradientTensorFwdInShapeTensorStartTensorSizeTensorSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, startTensor: MPSGraphTensor, sizeTensor: MPSGraphTensor, squeezeMask: number, name: string | null): MPSGraphTensor;
 
-	sliceGradientTensorFwdInShapeTensorStartsEndsStridesName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
+	sliceGradientTensorFwdInShapeTensorStartsEndsStridesName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
-	sliceGradientTensorFwdInShapeTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceGradientTensorFwdInShapeTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string | null): MPSGraphTensor;
 
-	sliceTensorDimensionStartLengthName(tensor: MPSGraphTensor, dimensionIndex: number, start: number, length: number, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 18.2
-	 */
-	sliceTensorStartTensorEndTensorStrideTensorStartMaskEndMaskSqueezeMaskName(tensor: MPSGraphTensor, startTensor: MPSGraphTensor, endTensor: MPSGraphTensor, strideTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceTensorDimensionStartLengthName(tensor: MPSGraphTensor, dimensionIndex: number, start: number, length: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.2
 	 */
-	sliceTensorStartTensorSizeTensorSqueezeMaskName(tensor: MPSGraphTensor, startTensor: MPSGraphTensor, sizeTensor: MPSGraphTensor, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceTensorStartTensorEndTensorStrideTensorStartMaskEndMaskSqueezeMaskName(tensor: MPSGraphTensor, startTensor: MPSGraphTensor, endTensor: MPSGraphTensor, strideTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string | null): MPSGraphTensor;
 
-	sliceTensorStartsEndsStridesName(tensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
+	/**
+	 * @since 18.2
+	 */
+	sliceTensorStartTensorSizeTensorSqueezeMaskName(tensor: MPSGraphTensor, startTensor: MPSGraphTensor, sizeTensor: MPSGraphTensor, squeezeMask: number, name: string | null): MPSGraphTensor;
 
-	sliceTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(tensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceTensorStartsEndsStridesName(tensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string | null): MPSGraphTensor;
+
+	sliceTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(tensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	sliceUpdateDataTensorUpdateTensorStartsEndsStridesName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
+	sliceUpdateDataTensorUpdateTensorStartsEndsStridesName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.4
 	 */
-	sliceUpdateDataTensorUpdateTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceUpdateDataTensorUpdateTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	sliceUpdateDataTensorUpdateTensorStartsTensorEndsTensorStridesTensorName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, startsTensor: MPSGraphTensor, endsTensor: MPSGraphTensor, stridesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	sliceUpdateDataTensorUpdateTensorStartsTensorEndsTensorStridesTensorName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, startsTensor: MPSGraphTensor, endsTensor: MPSGraphTensor, stridesTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.4
 	 */
-	sliceUpdateDataTensorUpdateTensorStartsTensorEndsTensorStridesTensorStartMaskEndMaskSqueezeMaskName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, startsTensor: MPSGraphTensor, endsTensor: MPSGraphTensor, stridesTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+	sliceUpdateDataTensorUpdateTensorStartsTensorEndsTensorStridesTensorStartMaskEndMaskSqueezeMaskName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, startsTensor: MPSGraphTensor, endsTensor: MPSGraphTensor, stridesTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string | null): MPSGraphTensor;
 
-	softMaxCrossEntropyGradientWithIncomingGradientTensorSourceTensorLabelsTensorAxisReductionTypeName(gradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, labelsTensor: MPSGraphTensor, axis: number, reductionType: MPSGraphLossReductionType, name: string): MPSGraphTensor;
+	softMaxCrossEntropyGradientWithIncomingGradientTensorSourceTensorLabelsTensorAxisReductionTypeName(gradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, labelsTensor: MPSGraphTensor, axis: number, reductionType: MPSGraphLossReductionType, name: string | null): MPSGraphTensor;
 
-	softMaxCrossEntropyWithSourceTensorLabelsTensorAxisReductionTypeName(sourceTensor: MPSGraphTensor, labelsTensor: MPSGraphTensor, axis: number, reductionType: MPSGraphLossReductionType, name: string): MPSGraphTensor;
+	softMaxCrossEntropyWithSourceTensorLabelsTensorAxisReductionTypeName(sourceTensor: MPSGraphTensor, labelsTensor: MPSGraphTensor, axis: number, reductionType: MPSGraphLossReductionType, name: string | null): MPSGraphTensor;
 
-	softMaxGradientWithIncomingGradientSourceTensorAxisName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	softMaxGradientWithIncomingGradientSourceTensorAxisName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
-	softMaxWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 16.0
-	 */
-	sortWithTensorAxisDescendingName(tensor: MPSGraphTensor, axis: number, descending: boolean, name: string): MPSGraphTensor;
+	softMaxWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	sortWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	sortWithTensorAxisDescendingName(tensor: MPSGraphTensor, axis: number, descending: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	sortWithTensorAxisTensorDescendingName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, descending: boolean, name: string): MPSGraphTensor;
+	sortWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	sortWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	sortWithTensorAxisTensorDescendingName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, descending: boolean, name: string | null): MPSGraphTensor;
+
+	/**
+	 * @since 16.0
+	 */
+	sortWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	spaceToBatchTensorSpatialAxesBatchAxisBlockDimensionsUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxes: NSArray<number> | number[], batchAxis: number, blockDimensions: NSArray<number> | number[], usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	spaceToBatchTensorSpatialAxesBatchAxisBlockDimensionsUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxes: NSArray<number> | number[], batchAxis: number, blockDimensions: NSArray<number> | number[], usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.1
 	 */
-	spaceToBatchTensorSpatialAxesTensorBatchAxisTensorBlockDimensionsTensorUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxesTensor: MPSGraphTensor, batchAxisTensor: MPSGraphTensor, blockDimensionsTensor: MPSGraphTensor, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	spaceToBatchTensorSpatialAxesTensorBatchAxisTensorBlockDimensionsTensorUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxesTensor: MPSGraphTensor, batchAxisTensor: MPSGraphTensor, blockDimensionsTensor: MPSGraphTensor, usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	spaceToDepth2DTensorWidthAxisHeightAxisDepthAxisBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxis: number, heightAxis: number, depthAxis: number, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	spaceToDepth2DTensorWidthAxisHeightAxisDepthAxisBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxis: number, heightAxis: number, depthAxis: number, blockSize: number, usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	spaceToDepth2DTensorWidthAxisTensorHeightAxisTensorDepthAxisTensorBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxisTensor: MPSGraphTensor, heightAxisTensor: MPSGraphTensor, depthAxisTensor: MPSGraphTensor, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
+	spaceToDepth2DTensorWidthAxisTensorHeightAxisTensorDepthAxisTensorBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxisTensor: MPSGraphTensor, heightAxisTensor: MPSGraphTensor, depthAxisTensor: MPSGraphTensor, blockSize: number, usePixelShuffleOrder: boolean, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.0
 	 */
-	sparseTensorWithDescriptorTensorsShapeName(sparseDescriptor: MPSGraphCreateSparseOpDescriptor, inputTensorArray: NSArray<MPSGraphTensor> | MPSGraphTensor[], shape: NSArray<number> | number[], name: string): MPSGraphTensor;
+	sparseTensorWithDescriptorTensorsShapeName(sparseDescriptor: MPSGraphCreateSparseOpDescriptor, inputTensorArray: NSArray<MPSGraphTensor> | MPSGraphTensor[], shape: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	splitTensorNumSplitsAxisName(tensor: MPSGraphTensor, numSplits: number, axis: number, name: string): NSArray<MPSGraphTensor>;
+	splitTensorNumSplitsAxisName(tensor: MPSGraphTensor, numSplits: number, axis: number, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	splitTensorSplitSizesAxisName(tensor: MPSGraphTensor, splitSizes: NSArray<number> | number[], axis: number, name: string): NSArray<MPSGraphTensor>;
+	splitTensorSplitSizesAxisName(tensor: MPSGraphTensor, splitSizes: NSArray<number> | number[], axis: number, name: string | null): NSArray<MPSGraphTensor>;
 
 	/**
 	 * @since 15.4
 	 */
-	splitTensorSplitSizesTensorAxisName(tensor: MPSGraphTensor, splitSizesTensor: MPSGraphTensor, axis: number, name: string): NSArray<MPSGraphTensor>;
+	splitTensorSplitSizesTensorAxisName(tensor: MPSGraphTensor, splitSizesTensor: MPSGraphTensor, axis: number, name: string | null): NSArray<MPSGraphTensor>;
 
-	squareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	squareRootWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	squareWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 15.4
-	 */
-	squeezeTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	squareWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	squeezeTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	squeezeTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	squeezeTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+	squeezeTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	squeezeTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	squeezeTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 15.4
 	 */
-	stackTensorsAxisName(inputTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], axis: number, name: string): MPSGraphTensor;
+	squeezeTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	stencilWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphStencilOpDescriptor, name: string): MPSGraphTensor;
+	/**
+	 * @since 15.4
+	 */
+	stackTensorsAxisName(inputTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], axis: number, name: string | null): MPSGraphTensor;
 
-	stochasticGradientDescentWithLearningRateTensorValuesTensorGradientTensorName(learningRateTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, gradientTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	stencilWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphStencilOpDescriptor, name: string | null): MPSGraphTensor;
 
-	subtractionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	stochasticGradientDescentWithLearningRateTensorValuesTensorGradientTensorName(learningRateTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, gradientTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	tanWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	subtractionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	tanhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	tanWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	tileGradientWithIncomingGradientTensorSourceTensorWithMultiplierName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, multiplier: NSArray<number> | number[], name: string): MPSGraphTensor;
+	tanhWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	tileTensorWithMultiplierName(tensor: MPSGraphTensor, multiplier: NSArray<number> | number[], name: string): MPSGraphTensor;
+	tileGradientWithIncomingGradientTensorSourceTensorWithMultiplierName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, multiplier: NSArray<number> | number[], name: string | null): MPSGraphTensor;
+
+	tileTensorWithMultiplierName(tensor: MPSGraphTensor, multiplier: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	topKWithGradientTensorSourceAxisKName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, k: number, name: string): MPSGraphTensor;
+	topKWithGradientTensorSourceAxisKName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, k: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	topKWithGradientTensorSourceAxisTensorKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	topKWithGradientTensorSourceAxisTensorKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	topKWithGradientTensorSourceKName(gradient: MPSGraphTensor, source: MPSGraphTensor, k: number, name: string): MPSGraphTensor;
+	topKWithGradientTensorSourceKName(gradient: MPSGraphTensor, source: MPSGraphTensor, k: number, name: string | null): MPSGraphTensor;
 
-	topKWithGradientTensorSourceKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): MPSGraphTensor;
-
-	/**
-	 * @since 17.0
-	 */
-	topKWithSourceTensorAxisKName(source: MPSGraphTensor, axis: number, k: number, name: string): NSArray<MPSGraphTensor>;
+	topKWithGradientTensorSourceKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, kTensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 17.0
 	 */
-	topKWithSourceTensorAxisTensorKTensorName(source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+	topKWithSourceTensorAxisKName(source: MPSGraphTensor, axis: number, k: number, name: string | null): NSArray<MPSGraphTensor>;
 
-	topKWithSourceTensorKName(source: MPSGraphTensor, k: number, name: string): NSArray<MPSGraphTensor>;
+	/**
+	 * @since 17.0
+	 */
+	topKWithSourceTensorAxisTensorKTensorName(source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
 
-	topKWithSourceTensorKTensorName(source: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+	topKWithSourceTensorKName(source: MPSGraphTensor, k: number, name: string | null): NSArray<MPSGraphTensor>;
 
-	transposeTensorDimensionWithDimensionName(tensor: MPSGraphTensor, dimensionIndex: number, dimensionIndex2: number, name: string): MPSGraphTensor;
+	topKWithSourceTensorKTensorName(source: MPSGraphTensor, kTensor: MPSGraphTensor, name: string | null): NSArray<MPSGraphTensor>;
+
+	transposeTensorDimensionWithDimensionName(tensor: MPSGraphTensor, dimensionIndex: number, dimensionIndex2: number, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	transposeTensorPermutationName(tensor: MPSGraphTensor, permutation: NSArray<number> | number[], name: string): MPSGraphTensor;
+	transposeTensorPermutationName(tensor: MPSGraphTensor, permutation: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 16.0
 	 */
-	truncateWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	truncateWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
 	/**
 	 * @since 18.0
 	 */
-	variableFromTensorWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+	variableFromTensorWithTensorName(tensor: MPSGraphTensor, name: string | null): MPSGraphTensor;
 
-	varianceOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	varianceOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
-	varianceOfTensorMeanTensorAxesName(tensor: MPSGraphTensor, meanTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+	varianceOfTensorMeanTensorAxesName(tensor: MPSGraphTensor, meanTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string | null): MPSGraphTensor;
 
-	whileWithInitialInputsBeforeAfterName(initialInputs: NSArray<MPSGraphTensor> | MPSGraphTensor[], before: (p1: NSArray<MPSGraphTensor>, p2: NSMutableArray<MPSGraphTensor>) => MPSGraphTensor, after: (p1: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
+	whileWithInitialInputsBeforeAfterName(initialInputs: NSArray<MPSGraphTensor> | MPSGraphTensor[], before: (p1: NSArray<MPSGraphTensor>, p2: NSMutableArray<MPSGraphTensor>) => MPSGraphTensor, after: (p1: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string | null): NSArray<MPSGraphTensor>;
 }
 
 /**
@@ -1321,12 +1326,12 @@ declare class MPSGraphCompilationDescriptor extends MPSGraphObject implements NS
 	/**
 	 * @since 17.1
 	 */
-	callables: NSDictionary<string, MPSGraphExecutable>;
+	callables: NSDictionary<string, MPSGraphExecutable> | null;
 
 	/**
 	 * @since 16.0
 	 */
-	compilationCompletionHandler: (p1: MPSGraphExecutable, p2: NSError) => void;
+	compilationCompletionHandler: (p1: MPSGraphExecutable, p2: NSError | null) => void;
 
 	/**
 	 * @since 16.0
@@ -1354,7 +1359,12 @@ declare class MPSGraphCompilationDescriptor extends MPSGraphObject implements NS
 	 */
 	waitForCompilationCompletion: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	/**
+	 * @since 26.4
+	 */
+	convertLayoutToNHWC(): void;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	disableTypeInference(): void;
 }
@@ -1396,7 +1406,7 @@ declare class MPSGraphConvolution2DOpDescriptor extends MPSGraphObject implement
 
 	weightsLayout: MPSGraphTensorNamedDataLayout;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
@@ -1446,7 +1456,7 @@ declare class MPSGraphConvolution3DOpDescriptor extends MPSGraphObject implement
 
 	weightsLayout: MPSGraphTensorNamedDataLayout;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottomPaddingFrontPaddingBack(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number, paddingFront: number, paddingBack: number): void;
 }
@@ -1462,7 +1472,7 @@ declare class MPSGraphCreateSparseOpDescriptor extends MPSGraphObject implements
 
 	sparseStorageType: MPSGraphSparseStorageType;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum MPSGraphDeploymentPlatform {
@@ -1511,7 +1521,7 @@ declare class MPSGraphDepthwiseConvolution2DOpDescriptor extends MPSGraphObject 
 
 	weightsLayout: MPSGraphTensorNamedDataLayout;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
@@ -1539,7 +1549,7 @@ declare class MPSGraphDepthwiseConvolution3DOpDescriptor extends MPSGraphObject 
 
 	strides: NSArray<number>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1553,7 +1563,7 @@ declare class MPSGraphDevice extends MPSGraphObject {
 
 	static new(): MPSGraphDevice; // inherited from NSObject
 
-	readonly metalDevice: MTLDevice;
+	readonly metalDevice: MTLDevice | null;
 
 	readonly type: MPSGraphDeviceType;
 }
@@ -1572,47 +1582,47 @@ declare class MPSGraphExecutable extends MPSGraphObject {
 
 	static new(): MPSGraphExecutable; // inherited from NSObject
 
-	readonly feedTensors: NSArray<MPSGraphTensor>;
+	readonly feedTensors: NSArray<MPSGraphTensor> | null;
 
 	options: MPSGraphOptions;
 
-	readonly targetTensors: NSArray<MPSGraphTensor>;
+	readonly targetTensors: NSArray<MPSGraphTensor> | null;
 
 	/**
 	 * @since 18.0
 	 */
-	constructor(o: { coreMLPackageAtURL: NSURL; compilationDescriptor: MPSGraphCompilationDescriptor; });
+	constructor(o: { coreMLPackageAtURL: NSURL; compilationDescriptor: MPSGraphCompilationDescriptor | null; });
 
 	/**
 	 * @since 17.0
 	 */
-	constructor(o: { MPSGraphPackageAtURL: NSURL; compilationDescriptor: MPSGraphCompilationDescriptor; });
+	constructor(o: { MPSGraphPackageAtURL: NSURL; compilationDescriptor: MPSGraphCompilationDescriptor | null; });
 
 	/**
 	 * @since 16.3
 	 */
-	getOutputTypesWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor): NSArray<MPSGraphShapedType>;
+	getOutputTypesWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice | null, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor | null): NSArray<MPSGraphShapedType> | null;
 
 	/**
 	 * @since 18.0
 	 */
-	initWithCoreMLPackageAtURLCompilationDescriptor(coreMLPackageURL: NSURL, compilationDescriptor: MPSGraphCompilationDescriptor): this;
+	initWithCoreMLPackageAtURLCompilationDescriptor(coreMLPackageURL: NSURL, compilationDescriptor: MPSGraphCompilationDescriptor | null): this;
 
 	/**
 	 * @since 17.0
 	 */
-	initWithMPSGraphPackageAtURLCompilationDescriptor(mpsgraphPackageURL: NSURL, compilationDescriptor: MPSGraphCompilationDescriptor): this;
+	initWithMPSGraphPackageAtURLCompilationDescriptor(mpsgraphPackageURL: NSURL, compilationDescriptor: MPSGraphCompilationDescriptor | null): this;
 
-	runAsyncWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], executionDescriptor: MPSGraphExecutableExecutionDescriptor): NSArray<MPSGraphTensorData>;
+	runAsyncWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[] | null, executionDescriptor: MPSGraphExecutableExecutionDescriptor | null): NSArray<MPSGraphTensorData>;
 
-	runWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], executionDescriptor: MPSGraphExecutableExecutionDescriptor): NSArray<MPSGraphTensorData>;
+	runWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[] | null, executionDescriptor: MPSGraphExecutableExecutionDescriptor | null): NSArray<MPSGraphTensorData>;
 
 	/**
 	 * @since 17.0
 	 */
-	serializeToMPSGraphPackageAtURLDescriptor(url: NSURL, descriptor: MPSGraphExecutableSerializationDescriptor): void;
+	serializeToMPSGraphPackageAtURLDescriptor(url: NSURL, descriptor: MPSGraphExecutableSerializationDescriptor | null): void;
 
-	specializeWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor): void;
+	specializeWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice | null, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor | null): void;
 }
 
 /**
@@ -1624,13 +1634,13 @@ declare class MPSGraphExecutableExecutionDescriptor extends MPSGraphObject imple
 
 	static new(): MPSGraphExecutableExecutionDescriptor; // inherited from NSObject
 
-	completionHandler: (p1: NSArray<MPSGraphTensorData>, p2: NSError) => void;
+	completionHandler: (p1: NSArray<MPSGraphTensorData>, p2: NSError | null) => void;
 
-	scheduledHandler: (p1: NSArray<MPSGraphTensorData>, p2: NSError) => void;
+	scheduledHandler: (p1: NSArray<MPSGraphTensorData>, p2: NSError | null) => void;
 
 	waitUntilCompleted: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 16.0
@@ -1671,11 +1681,11 @@ declare class MPSGraphExecutionDescriptor extends MPSGraphObject {
 	/**
 	 * @since 15.4
 	 */
-	compilationDescriptor: MPSGraphCompilationDescriptor;
+	compilationDescriptor: MPSGraphCompilationDescriptor | null;
 
-	completionHandler: (p1: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, p2: NSError) => void;
+	completionHandler: (p1: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, p2: NSError | null) => void;
 
-	scheduledHandler: (p1: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, p2: NSError) => void;
+	scheduledHandler: (p1: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, p2: NSError | null) => void;
 
 	waitUntilCompleted: boolean;
 
@@ -1712,7 +1722,7 @@ declare class MPSGraphFFTDescriptor extends MPSGraphObject implements NSCopying 
 
 	scalingMode: MPSGraphFFTScalingMode;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum MPSGraphFFTScalingMode {
@@ -1753,7 +1763,7 @@ declare class MPSGraphGRUDescriptor extends MPSGraphObject implements NSCopying 
 
 	updateGateActivation: MPSGraphRNNActivation;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1791,7 +1801,7 @@ declare class MPSGraphImToColOpDescriptor extends MPSGraphObject implements NSCo
 
 	strideInY: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
@@ -1827,7 +1837,7 @@ declare class MPSGraphLSTMDescriptor extends MPSGraphObject implements NSCopying
 
 	training: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum MPSGraphLossReductionType {
@@ -1881,7 +1891,7 @@ declare class MPSGraphOperation extends MPSGraphObject implements NSCopying {
 
 	readonly outputTensors: NSArray<MPSGraphTensor>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum MPSGraphOptimization {
@@ -1991,7 +2001,7 @@ declare class MPSGraphPooling2DOpDescriptor extends MPSGraphObject implements NS
 
 	strideInY: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
@@ -2028,7 +2038,7 @@ declare class MPSGraphPooling4DOpDescriptor extends MPSGraphObject implements NS
 
 	strides: NSArray<number>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum MPSGraphPoolingReturnIndicesMode {
@@ -2103,7 +2113,7 @@ declare class MPSGraphRandomOpDescriptor extends MPSGraphObject implements NSCop
 
 	standardDeviation: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2114,6 +2124,8 @@ declare const enum MPSGraphReducedPrecisionFastMath {
 	None = 0,
 
 	AllowFP16Conv2DWinogradTransformIntermediate = 2,
+
+	AllowConvertingOperandsFromFP32ToFP19 = 4,
 
 	AllowFP16Intermediates = 2,
 
@@ -2183,9 +2195,9 @@ declare class MPSGraphShapedType extends MPSGraphType {
 
 	static new(): MPSGraphShapedType; // inherited from NSObject
 
-	shape: NSArray<number>;
+	shape: NSArray<number> | null;
 
-	isEqualTo(object: MPSGraphShapedType): boolean;
+	isEqualTo(object: MPSGraphShapedType | null): boolean;
 }
 
 /**
@@ -2207,7 +2219,7 @@ declare class MPSGraphSingleGateRNNDescriptor extends MPSGraphObject implements 
 
 	training: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum MPSGraphSparseStorageType {
@@ -2252,7 +2264,7 @@ declare class MPSGraphStencilOpDescriptor extends MPSGraphObject implements NSCo
 
 	strides: NSArray<number>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2266,9 +2278,9 @@ declare class MPSGraphTensor extends MPSGraphObject implements NSCopying {
 
 	readonly operation: MPSGraphOperation;
 
-	readonly shape: NSArray<number>;
+	readonly shape: NSArray<number> | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2329,7 +2341,7 @@ declare class MPSGraphType extends MPSGraphObject implements NSCopying {
 
 	static new(): MPSGraphType; // inherited from NSObject
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**

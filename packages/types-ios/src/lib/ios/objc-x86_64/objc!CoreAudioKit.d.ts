@@ -36,7 +36,7 @@ declare class AUGenericViewController extends UIViewController {
 
 	static new(): AUGenericViewController; // inherited from NSObject
 
-	auAudioUnit: AUAudioUnit;
+	auAudioUnit: AUAudioUnit | null;
 }
 
 /**
@@ -124,7 +124,7 @@ declare class CAInterAppAudioSwitcherView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): CAInterAppAudioSwitcherView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): CAInterAppAudioSwitcherView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -135,7 +135,7 @@ declare class CAInterAppAudioSwitcherView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): CAInterAppAudioSwitcherView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): CAInterAppAudioSwitcherView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -148,7 +148,7 @@ declare class CAInterAppAudioSwitcherView extends UIView {
 
 	contentWidth(): number;
 
-	setOutputAudioUnit(au: interop.Pointer | interop.Reference<any>): void;
+	setOutputAudioUnit(au: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 }
 
 /**
@@ -170,7 +170,7 @@ declare class CAInterAppAudioTransportView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): CAInterAppAudioTransportView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): CAInterAppAudioTransportView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -181,7 +181,7 @@ declare class CAInterAppAudioTransportView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): CAInterAppAudioTransportView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): CAInterAppAudioTransportView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -210,5 +210,5 @@ declare class CAInterAppAudioTransportView extends UIView {
 
 	rewindButtonColor: UIColor;
 
-	setOutputAudioUnit(au: interop.Pointer | interop.Reference<any>): void;
+	setOutputAudioUnit(au: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): void;
 }

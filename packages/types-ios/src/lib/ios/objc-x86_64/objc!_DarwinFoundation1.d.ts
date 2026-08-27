@@ -5,9 +5,9 @@ declare var _FE_DFL_ENV: fenv_t;
 
 declare function ___mb_cur_max(): number;
 
-declare function ___mb_cur_max_l(p1: interop.Pointer | interop.Reference<any>): number;
+declare function ___mb_cur_max_l(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function __assert_rtn(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: string | interop.Pointer | interop.Reference<any>): void;
+declare function __assert_rtn(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 7.0
@@ -25,7 +25,7 @@ interface __double2 {
 }
 declare var __double2: interop.StructType<__double2>;
 
-declare function __error(): interop.Pointer | interop.Reference<number>;
+declare function __error(): interop.Pointer | interop.Reference<number> | null;
 
 /**
  * @since 7.0
@@ -81,19 +81,19 @@ declare function __inline_signbitl(p1: number): number;
 
 declare function __math_errhandling(): number;
 
-declare function __sincos(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
+declare function __sincos(__x: number, __sinp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __cosp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function __sincos_stret(p1: number): __double2;
 
-declare function __sincosf(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
+declare function __sincosf(__x: number, __sinp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __cosp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function __sincosf_stret(p1: number): __float2;
 
-declare function __sincospi(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
+declare function __sincospi(__x: number, __sinp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __cosp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function __sincospi_stret(p1: number): __double2;
 
-declare function __sincospif(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
+declare function __sincospif(__x: number, __sinp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __cosp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function __sincospif_stret(p1: number): __float2;
 
@@ -207,7 +207,7 @@ declare function erfl(p1: number): number;
 
 interface exception {
 	type: number;
-	name: interop.Pointer | interop.Reference<any>;
+	name: interop.Pointer | interop.Reference<any> | null;
 	arg1: number;
 	arg2: number;
 	retval: number;
@@ -246,13 +246,13 @@ declare function fdiml(p1: number, p2: number): number;
 
 declare function feclearexcept(p1: number): number;
 
-declare function fegetenv(p1: interop.Pointer | interop.Reference<fenv_t>): number;
+declare function fegetenv(p1: interop.Pointer | interop.Reference<fenv_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fegetexceptflag(p1: interop.Pointer | interop.Reference<number>, p2: number): number;
+declare function fegetexceptflag(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 declare function fegetround(): number;
 
-declare function feholdexcept(p1: interop.Pointer | interop.Reference<fenv_t>): number;
+declare function feholdexcept(p1: interop.Pointer | interop.Reference<fenv_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface fenv_t {
 	__control: number;
@@ -264,15 +264,15 @@ declare var fenv_t: interop.StructType<fenv_t>;
 
 declare function feraiseexcept(p1: number): number;
 
-declare function fesetenv(p1: interop.Pointer | interop.Reference<fenv_t>): number;
+declare function fesetenv(p1: interop.Pointer | interop.Reference<fenv_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fesetexceptflag(p1: interop.Pointer | interop.Reference<number>, p2: number): number;
+declare function fesetexceptflag(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 declare function fesetround(p1: number): number;
 
 declare function fetestexcept(p1: number): number;
 
-declare function feupdateenv(p1: interop.Pointer | interop.Reference<fenv_t>): number;
+declare function feupdateenv(p1: interop.Pointer | interop.Reference<fenv_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function floor(p1: number): number;
 
@@ -304,11 +304,11 @@ declare function fmodf(p1: number, p2: number): number;
 
 declare function fmodl(p1: number, p2: number): number;
 
-declare function frexp(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function frexp(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function frexpf(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function frexpf(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function frexpl(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function frexpl(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function hypot(p1: number, p2: number): number;
 
@@ -407,17 +407,17 @@ declare function lroundf(p1: number): number;
 
 declare function lroundl(p1: number): number;
 
-declare function modf(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function modf(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function modff(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function modff(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function modfl(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function modfl(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function nan(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function nan(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function nanf(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function nanf(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function nanl(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function nanl(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function nearbyint(p1: number): number;
 
@@ -474,11 +474,11 @@ declare function remainderf(p1: number, p2: number): number;
 
 declare function remainderl(p1: number, p2: number): number;
 
-declare function remquo(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
+declare function remquo(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function remquof(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
+declare function remquof(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function remquol(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
+declare function remquol(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function rint(p1: number): number;
 

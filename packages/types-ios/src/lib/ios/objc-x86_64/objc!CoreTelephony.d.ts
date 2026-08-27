@@ -36,13 +36,13 @@ declare class CTCallCenter extends NSObject {
 	 * @since 4.0
 	 * @deprecated 10.0
 	 */
-	callEventHandler: (p1: CTCall) => void;
+	callEventHandler: (p1: CTCall) => void | null;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 10.0
 	 */
-	readonly currentCalls: NSSet<CTCall>;
+	readonly currentCalls: NSSet<CTCall> | null;
 }
 
 /**
@@ -89,25 +89,25 @@ declare class CTCarrier extends NSObject {
 	 * @since 4.0
 	 * @deprecated 16.0
 	 */
-	readonly carrierName: string;
+	readonly carrierName: string | null;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 16.0
 	 */
-	readonly isoCountryCode: string;
+	readonly isoCountryCode: string | null;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 16.0
 	 */
-	readonly mobileCountryCode: string;
+	readonly mobileCountryCode: string | null;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 16.0
 	 */
-	readonly mobileNetworkCode: string;
+	readonly mobileNetworkCode: string | null;
 }
 
 /**
@@ -122,7 +122,7 @@ declare class CTCellularData extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	cellularDataRestrictionDidUpdateNotifier: (p1: CTCellularDataRestrictedState) => void;
+	cellularDataRestrictionDidUpdateNotifier: (p1: CTCellularDataRestrictedState) => void | null;
 
 	/**
 	 * @since 9.0
@@ -150,6 +150,29 @@ declare const enum CTCellularPlanCapability {
 }
 
 /**
+ * @since 26.4
+ */
+declare class CTCellularPlanLifecycleProperties extends NSObject implements NSSecureCoding {
+
+	static alloc(): CTCellularPlanLifecycleProperties; // inherited from NSObject
+
+	static new(): CTCellularPlanLifecycleProperties; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	expirationDate: NSDateComponents;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 26.0
  */
 declare class CTCellularPlanProperties extends NSObject implements NSSecureCoding {
@@ -161,7 +184,12 @@ declare class CTCellularPlanProperties extends NSObject implements NSSecureCodin
 	/**
 	 * @since 26.0
 	 */
-	associatedIccid: string;
+	associatedIccid: string | null;
+
+	/**
+	 * @since 26.4
+	 */
+	lifecycleProperties: CTCellularPlanLifecycleProperties | null;
 
 	/**
 	 * @since 26.0
@@ -204,7 +232,7 @@ declare class CTCellularPlanProvisioning extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	addPlanWithRequestPropertiesCompletionHandler(request: CTCellularPlanProvisioningRequest, properties: CTCellularPlanProperties, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
+	addPlanWithRequestPropertiesCompletionHandler(request: CTCellularPlanProvisioningRequest, properties: CTCellularPlanProperties | null, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
 
 	/**
 	 * @since 12.0
@@ -214,7 +242,7 @@ declare class CTCellularPlanProvisioning extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	updateCellularPlanPropertiesCompletionHandler(properties: CTCellularPlanProperties, completionHandler: (p1: NSError) => void): void;
+	updateCellularPlanPropertiesCompletionHandler(properties: CTCellularPlanProperties, completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -243,17 +271,17 @@ declare class CTCellularPlanProvisioningRequest extends NSObject implements NSSe
 	/**
 	 * @since 12.0
 	 */
-	EID: string;
+	EID: string | null;
 
 	/**
 	 * @since 12.0
 	 */
-	ICCID: string;
+	ICCID: string | null;
 
 	/**
 	 * @since 12.0
 	 */
-	OID: string;
+	OID: string | null;
 
 	/**
 	 * @since 12.0
@@ -263,12 +291,12 @@ declare class CTCellularPlanProvisioningRequest extends NSObject implements NSSe
 	/**
 	 * @since 12.0
 	 */
-	confirmationCode: string;
+	confirmationCode: string | null;
 
 	/**
 	 * @since 12.0
 	 */
-	matchingID: string;
+	matchingID: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -289,12 +317,12 @@ declare class CTCellularPlanStatus extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	static checkValidityOfTokenCompletionHandler(token: string, completionHandler: (p1: boolean, p2: NSError) => void): void;
+	static checkValidityOfTokenCompletionHandler(token: string, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 26.0
 	 */
-	static getTokenWithCompletion(completionHandler: (p1: string, p2: NSError) => void): void;
+	static getTokenWithCompletion(completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 
 	static new(): CTCellularPlanStatus; // inherited from NSObject
 }
@@ -398,12 +426,12 @@ declare class CTSubscriber extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	readonly carrierToken: NSData;
+	readonly carrierToken: NSData | null;
 
 	/**
 	 * @since 12.1
 	 */
-	delegate: CTSubscriberDelegate;
+	delegate: CTSubscriberDelegate | null;
 
 	/**
 	 * @since 12.1
@@ -468,46 +496,46 @@ declare class CTTelephonyNetworkInfo extends NSObject {
 	 * @since 7.0
 	 * @deprecated 12.0
 	 */
-	readonly currentRadioAccessTechnology: string;
+	readonly currentRadioAccessTechnology: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly dataServiceIdentifier: string;
+	readonly dataServiceIdentifier: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	delegate: CTTelephonyNetworkInfoDelegate;
+	delegate: CTTelephonyNetworkInfoDelegate | null;
 
 	/**
 	 * @since 12.0
 	 */
-	readonly serviceCurrentRadioAccessTechnology: NSDictionary<string, string>;
+	readonly serviceCurrentRadioAccessTechnology: NSDictionary<string, string> | null;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 16.0
 	 */
-	readonly serviceSubscriberCellularProviders: NSDictionary<string, CTCarrier>;
+	readonly serviceSubscriberCellularProviders: NSDictionary<string, CTCarrier> | null;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 16.0
 	 */
-	serviceSubscriberCellularProvidersDidUpdateNotifier: (p1: string) => void;
+	serviceSubscriberCellularProvidersDidUpdateNotifier: (p1: string) => void | null;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 12.0
 	 */
-	readonly subscriberCellularProvider: CTCarrier;
+	readonly subscriberCellularProvider: CTCarrier | null;
 
 	/**
 	 * @since 4.0
 	 * @deprecated 12.0
 	 */
-	subscriberCellularProviderDidUpdateNotifier: (p1: CTCarrier) => void;
+	subscriberCellularProviderDidUpdateNotifier: (p1: CTCarrier) => void | null;
 }
 
 /**

@@ -18,7 +18,7 @@ declare class CXAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -94,17 +94,17 @@ declare class CXCallController extends NSObject {
 
 	initWithQueue(queue: NSObject & OS_dispatch_queue): this;
 
-	requestTransactionCompletion(transaction: CXTransaction, completion: (p1: NSError) => void): void;
+	requestTransactionCompletion(transaction: CXTransaction, completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	requestTransactionWithActionCompletion(action: CXAction, completion: (p1: NSError) => void): void;
+	requestTransactionWithActionCompletion(action: CXAction, completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	requestTransactionWithActionsCompletion(actions: NSArray<CXAction> | CXAction[], completion: (p1: NSError) => void): void;
+	requestTransactionWithActionsCompletion(actions: NSArray<CXAction> | CXAction[], completion: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -128,7 +128,7 @@ declare class CXCallDirectoryExtensionContext extends NSExtensionContext {
 
 	static new(): CXCallDirectoryExtensionContext; // inherited from NSObject
 
-	delegate: CXCallDirectoryExtensionContextDelegate;
+	delegate: CXCallDirectoryExtensionContextDelegate | null;
 
 	/**
 	 * @since 11.0
@@ -139,7 +139,7 @@ declare class CXCallDirectoryExtensionContext extends NSExtensionContext {
 
 	addIdentificationEntryWithNextSequentialPhoneNumberLabel(phoneNumber: number, label: string): void;
 
-	completeRequestWithCompletionHandler(completion: (p1: boolean) => void): void;
+	completeRequestWithCompletionHandler(completion: (p1: boolean) => void | null): void;
 
 	/**
 	 * @since 11.0
@@ -185,14 +185,14 @@ declare class CXCallDirectoryManager extends NSObject {
 
 	static readonly sharedInstance: CXCallDirectoryManager;
 
-	getEnabledStatusForExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: CXCallDirectoryEnabledStatus, p2: NSError) => void): void;
+	getEnabledStatusForExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: CXCallDirectoryEnabledStatus, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.4
 	 */
-	openSettingsWithCompletionHandler(completion: (p1: NSError) => void): void;
+	openSettingsWithCompletionHandler(completion: (p1: NSError | null) => void | null): void;
 
-	reloadExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: NSError) => void): void;
+	reloadExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: NSError | null) => void | null): void;
 }
 
 declare var CXCallDirectoryPhoneNumberMax: number;
@@ -270,7 +270,7 @@ declare class CXCallObserver extends NSObject {
 
 	readonly calls: NSArray<CXCall>;
 
-	setDelegateQueue(delegate: CXCallObserverDelegate, queue: NSObject & OS_dispatch_queue): void;
+	setDelegateQueue(delegate: CXCallObserverDelegate | null, queue: NSObject & OS_dispatch_queue | null): void;
 }
 
 /**
@@ -296,9 +296,9 @@ declare class CXCallUpdate extends NSObject implements NSCopying {
 
 	hasVideo: boolean;
 
-	localizedCallerName: string;
+	localizedCallerName: string | null;
 
-	remoteHandle: CXHandle;
+	remoteHandle: CXHandle | null;
 
 	supportsDTMF: boolean;
 
@@ -308,7 +308,7 @@ declare class CXCallUpdate extends NSObject implements NSCopying {
 
 	supportsUngrouping: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -463,7 +463,7 @@ declare class CXHandle extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { type: CXHandleType; value: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -528,7 +528,7 @@ declare class CXProvider extends NSObject {
 	/**
 	 * @since 14.5
 	 */
-	static reportNewIncomingVoIPPushPayloadCompletion(dictionaryPayload: NSDictionary<any, any>, completion: (p1: NSError) => void): void;
+	static reportNewIncomingVoIPPushPayloadCompletion(dictionaryPayload: NSDictionary<any, any>, completion: (p1: NSError | null) => void | null): void;
 
 	configuration: CXProviderConfiguration;
 
@@ -542,17 +542,17 @@ declare class CXProvider extends NSObject {
 
 	pendingCallActionsOfClassWithCallUUID(callActionClass: typeof NSObject, callUUID: NSUUID): NSArray<CXCallAction>;
 
-	reportCallWithUUIDEndedAtDateReason(UUID: NSUUID, dateEnded: Date, endedReason: CXCallEndedReason): void;
+	reportCallWithUUIDEndedAtDateReason(UUID: NSUUID, dateEnded: Date | null, endedReason: CXCallEndedReason): void;
 
 	reportCallWithUUIDUpdated(UUID: NSUUID, update: CXCallUpdate): void;
 
-	reportNewIncomingCallWithUUIDUpdateCompletion(UUID: NSUUID, update: CXCallUpdate, completion: (p1: NSError) => void): void;
+	reportNewIncomingCallWithUUIDUpdateCompletion(UUID: NSUUID, update: CXCallUpdate, completion: (p1: NSError | null) => void): void;
 
-	reportOutgoingCallWithUUIDConnectedAtDate(UUID: NSUUID, dateConnected: Date): void;
+	reportOutgoingCallWithUUIDConnectedAtDate(UUID: NSUUID, dateConnected: Date | null): void;
 
-	reportOutgoingCallWithUUIDStartedConnectingAtDate(UUID: NSUUID, dateStartedConnecting: Date): void;
+	reportOutgoingCallWithUUIDStartedConnectingAtDate(UUID: NSUUID, dateStartedConnecting: Date | null): void;
 
-	setDelegateQueue(delegate: CXProviderDelegate, queue: NSObject & OS_dispatch_queue): void;
+	setDelegateQueue(delegate: CXProviderDelegate | null, queue: NSObject & OS_dispatch_queue | null): void;
 }
 
 /**
@@ -564,7 +564,7 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 
 	static new(): CXProviderConfiguration; // inherited from NSObject
 
-	iconTemplateImageData: NSData;
+	iconTemplateImageData: NSData | null;
 
 	/**
 	 * @since 11.0
@@ -575,13 +575,13 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 	 * @since 10.0
 	 * @deprecated 14.0
 	 */
-	readonly localizedName: string;
+	readonly localizedName: string | null;
 
 	maximumCallGroups: number;
 
 	maximumCallsPerCallGroup: number;
 
-	ringtoneSound: string;
+	ringtoneSound: string | null;
 
 	supportedHandleTypes: NSSet<number>;
 
@@ -598,7 +598,7 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 	 */
 	constructor(o: { localizedName: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 10.0
@@ -654,11 +654,11 @@ declare class CXSetGroupCallAction extends CXCallAction {
 
 	static new(): CXSetGroupCallAction; // inherited from NSObject
 
-	callUUIDToGroupWith: NSUUID;
+	callUUIDToGroupWith: NSUUID | null;
 
-	constructor(o: { callUUID: NSUUID; callUUIDToGroupWith: NSUUID; });
+	constructor(o: { callUUID: NSUUID; callUUIDToGroupWith: NSUUID | null; });
 
-	initWithCallUUIDCallUUIDToGroupWith(callUUID: NSUUID, callUUIDToGroupWith: NSUUID): this;
+	initWithCallUUIDCallUUIDToGroupWith(callUUID: NSUUID, callUUIDToGroupWith: NSUUID | null): this;
 }
 
 /**
@@ -732,7 +732,7 @@ declare class CXStartCallAction extends CXCallAction {
 
 	static new(): CXStartCallAction; // inherited from NSObject
 
-	contactIdentifier: string;
+	contactIdentifier: string | null;
 
 	handle: CXHandle;
 
@@ -770,7 +770,7 @@ declare class CXTransaction extends NSObject implements NSCopying, NSSecureCodin
 
 	addAction(action: CXAction): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

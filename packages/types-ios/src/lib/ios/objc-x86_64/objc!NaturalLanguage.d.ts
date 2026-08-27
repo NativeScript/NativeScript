@@ -6,11 +6,11 @@ declare class NLContextualEmbedding extends NSObject {
 
 	static alloc(): NLContextualEmbedding; // inherited from NSObject
 
-	static contextualEmbeddingWithLanguage(language: string): NLContextualEmbedding;
+	static contextualEmbeddingWithLanguage(language: string): NLContextualEmbedding | null;
 
 	static contextualEmbeddingWithModelIdentifier(modelIdentifier: string): NLContextualEmbedding;
 
-	static contextualEmbeddingWithScript(script: string): NLContextualEmbedding;
+	static contextualEmbeddingWithScript(script: string): NLContextualEmbedding | null;
 
 	static contextualEmbeddingsForValues(valuesDictionary: NSDictionary<string, any>): NSArray<NLContextualEmbedding>;
 
@@ -30,11 +30,11 @@ declare class NLContextualEmbedding extends NSObject {
 
 	readonly scripts: NSArray<string>;
 
-	embeddingResultForStringLanguageError(string: string, language: string, error?: interop.Reference<NSError>): NLContextualEmbeddingResult;
+	embeddingResultForStringLanguageError(string: string, language: string | null, error?: interop.Reference<NSError>): NLContextualEmbeddingResult | null;
 
 	loadWithError(error?: interop.Reference<NSError>): boolean;
 
-	requestEmbeddingAssetsWithCompletionHandler(completionHandler: (p1: NLContextualEmbeddingAssetsResult, p2: NSError) => void): void;
+	requestEmbeddingAssetsWithCompletionHandler(completionHandler: (p1: NLContextualEmbeddingAssetsResult, p2: NSError | null) => void): void;
 
 	unload(): void;
 }
@@ -69,9 +69,9 @@ declare class NLContextualEmbeddingResult extends NSObject {
 
 	readonly string: string;
 
-	enumerateTokenVectorsInRangeUsingBlock(range: NSRange, block: (p1: NSArray<number>, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateTokenVectorsInRangeUsingBlock(range: NSRange, block: (p1: NSArray<number>, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
-	tokenVectorAtIndexTokenRange(characterIndex: number, tokenRange: interop.Pointer | interop.Reference<NSRange>): NSArray<number>;
+	tokenVectorAtIndexTokenRange(characterIndex: number, tokenRange: interop.Pointer | interop.Reference<NSRange> | ArrayBufferLike | ArrayBufferView | null): NSArray<number> | null;
 }
 
 declare const enum NLDistanceType {
@@ -106,12 +106,12 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	static sentenceEmbeddingForLanguage(language: string): NLEmbedding;
+	static sentenceEmbeddingForLanguage(language: string): NLEmbedding | null;
 
 	/**
 	 * @since 14.0
 	 */
-	static sentenceEmbeddingForLanguageRevision(language: string, revision: number): NLEmbedding;
+	static sentenceEmbeddingForLanguageRevision(language: string, revision: number): NLEmbedding | null;
 
 	/**
 	 * @since 13.0
@@ -126,17 +126,17 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static wordEmbeddingForLanguage(language: string): NLEmbedding;
+	static wordEmbeddingForLanguage(language: string): NLEmbedding | null;
 
 	/**
 	 * @since 13.0
 	 */
-	static wordEmbeddingForLanguageRevision(language: string, revision: number): NLEmbedding;
+	static wordEmbeddingForLanguageRevision(language: string, revision: number): NLEmbedding | null;
 
 	/**
 	 * @since 13.0
 	 */
-	static writeEmbeddingForDictionaryLanguageRevisionToURLError(dictionary: NSDictionary<string, NSArray<number>>, language: string, revision: number, url: NSURL, error?: interop.Reference<NSError>): boolean;
+	static writeEmbeddingForDictionaryLanguageRevisionToURLError(dictionary: NSDictionary<string, NSArray<number>>, language: string | null, revision: number, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
@@ -146,7 +146,7 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly language: string;
+	readonly language: string | null;
 
 	/**
 	 * @since 13.0
@@ -171,37 +171,37 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	enumerateNeighborsForStringMaximumCountDistanceTypeUsingBlock(string: string, maxCount: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateNeighborsForStringMaximumCountDistanceTypeUsingBlock(string: string, maxCount: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	enumerateNeighborsForStringMaximumCountMaximumDistanceDistanceTypeUsingBlock(string: string, maxCount: number, maxDistance: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateNeighborsForStringMaximumCountMaximumDistanceDistanceTypeUsingBlock(string: string, maxCount: number, maxDistance: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	enumerateNeighborsForVectorMaximumCountDistanceTypeUsingBlock(vector: NSArray<number> | number[], maxCount: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateNeighborsForVectorMaximumCountDistanceTypeUsingBlock(vector: NSArray<number> | number[], maxCount: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	enumerateNeighborsForVectorMaximumCountMaximumDistanceDistanceTypeUsingBlock(vector: NSArray<number> | number[], maxCount: number, maxDistance: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateNeighborsForVectorMaximumCountMaximumDistanceDistanceTypeUsingBlock(vector: NSArray<number> | number[], maxCount: number, maxDistance: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	getVectorForString(vector: interop.Pointer | interop.Reference<number>, string: string): boolean;
+	getVectorForString(vector: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, string: string): boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	neighborsForStringMaximumCountDistanceType(string: string, maxCount: number, distanceType: NLDistanceType): NSArray<string>;
+	neighborsForStringMaximumCountDistanceType(string: string, maxCount: number, distanceType: NLDistanceType): NSArray<string> | null;
 
 	/**
 	 * @since 13.0
 	 */
-	neighborsForStringMaximumCountMaximumDistanceDistanceType(string: string, maxCount: number, maxDistance: number, distanceType: NLDistanceType): NSArray<string>;
+	neighborsForStringMaximumCountMaximumDistanceDistanceType(string: string, maxCount: number, maxDistance: number, distanceType: NLDistanceType): NSArray<string> | null;
 
 	/**
 	 * @since 13.0
@@ -216,7 +216,7 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	vectorForString(string: string): NSArray<number>;
+	vectorForString(string: string): NSArray<number> | null;
 }
 
 /**
@@ -236,7 +236,7 @@ declare class NLGazetteer extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static writeGazetteerForDictionaryLanguageToURLError(dictionary: NSDictionary<string, NSArray<string>>, language: string, url: NSURL, error?: interop.Reference<NSError>): boolean;
+	static writeGazetteerForDictionaryLanguageToURLError(dictionary: NSDictionary<string, NSArray<string>>, language: string | null, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
@@ -246,7 +246,7 @@ declare class NLGazetteer extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly language: string;
+	readonly language: string | null;
 
 	/**
 	 * @since 13.0
@@ -261,7 +261,7 @@ declare class NLGazetteer extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { dictionary: NSDictionary<string, NSArray<string>>; language: string; });
+	constructor(o: { dictionary: NSDictionary<string, NSArray<string>>; language: string | null; });
 
 	/**
 	 * @since 13.0
@@ -276,12 +276,12 @@ declare class NLGazetteer extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	initWithDictionaryLanguageError(dictionary: NSDictionary<string, NSArray<string>>, language: string, error?: interop.Reference<NSError>): this;
+	initWithDictionaryLanguageError(dictionary: NSDictionary<string, NSArray<string>>, language: string | null, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 13.0
 	 */
-	labelForString(string: string): string;
+	labelForString(string: string): string | null;
 }
 
 /**
@@ -499,14 +499,14 @@ declare class NLLanguageRecognizer extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	static dominantLanguageForString(string: string): string;
+	static dominantLanguageForString(string: string): string | null;
 
 	static new(): NLLanguageRecognizer; // inherited from NSObject
 
 	/**
 	 * @since 12.0
 	 */
-	readonly dominantLanguage: string;
+	readonly dominantLanguage: string | null;
 
 	/**
 	 * @since 12.0
@@ -646,7 +646,7 @@ declare class NLModel extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	predictedLabelForString(string: string): string;
+	predictedLabelForString(string: string): string | null;
 
 	/**
 	 * @since 14.0
@@ -686,7 +686,7 @@ declare class NLModelConfiguration extends NSObject implements NSCopying, NSSecu
 	/**
 	 * @since 12.0
 	 */
-	readonly language: string;
+	readonly language: string | null;
 
 	/**
 	 * @since 12.0
@@ -702,7 +702,7 @@ declare class NLModelConfiguration extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1083,17 +1083,17 @@ declare class NLTagger extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static requestAssetsForLanguageTagSchemeCompletionHandler(language: string, tagScheme: string, completionHandler: (p1: NLTaggerAssetsResult, p2: NSError) => void): void;
+	static requestAssetsForLanguageTagSchemeCompletionHandler(language: string, tagScheme: string, completionHandler: (p1: NLTaggerAssetsResult, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 12.0
 	 */
-	readonly dominantLanguage: string;
+	readonly dominantLanguage: string | null;
 
 	/**
 	 * @since 12.0
 	 */
-	string: string;
+	string: string | null;
 
 	/**
 	 * @since 12.0
@@ -1108,7 +1108,7 @@ declare class NLTagger extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	enumerateTagsInRangeUnitSchemeOptionsUsingBlock(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, block: (p1: string, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateTagsInRangeUnitSchemeOptionsUsingBlock(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, block: (p1: string | null, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 13.0
@@ -1148,17 +1148,17 @@ declare class NLTagger extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	tagAtIndexUnitSchemeTokenRange(characterIndex: number, unit: NLTokenUnit, scheme: string, tokenRange: interop.Pointer | interop.Reference<NSRange>): string;
+	tagAtIndexUnitSchemeTokenRange(characterIndex: number, unit: NLTokenUnit, scheme: string, tokenRange: interop.Pointer | interop.Reference<NSRange> | ArrayBufferLike | ArrayBufferView | null): string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	tagHypothesesAtIndexUnitSchemeMaximumCountTokenRange(characterIndex: number, unit: NLTokenUnit, scheme: string, maximumCount: number, tokenRange: interop.Pointer | interop.Reference<NSRange>): NSDictionary<string, number>;
+	tagHypothesesAtIndexUnitSchemeMaximumCountTokenRange(characterIndex: number, unit: NLTokenUnit, scheme: string, maximumCount: number, tokenRange: interop.Pointer | interop.Reference<NSRange> | ArrayBufferLike | ArrayBufferView | null): NSDictionary<string, number>;
 
 	/**
 	 * @since 12.0
 	 */
-	tagsInRangeUnitSchemeOptionsTokenRanges(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
+	tagsInRangeUnitSchemeOptionsTokenRanges(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue> | null> | ArrayBufferLike | ArrayBufferView | null): NSArray<string>;
 
 	/**
 	 * @since 12.0
@@ -1218,7 +1218,7 @@ declare class NLTokenizer extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	string: string;
+	string: string | null;
 
 	/**
 	 * @since 12.0
@@ -1233,7 +1233,7 @@ declare class NLTokenizer extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	enumerateTokensInRangeUsingBlock(range: NSRange, block: (p1: NSRange, p2: NLTokenizerAttributes, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateTokensInRangeUsingBlock(range: NSRange, block: (p1: NSRange, p2: NLTokenizerAttributes, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	/**
 	 * @since 12.0

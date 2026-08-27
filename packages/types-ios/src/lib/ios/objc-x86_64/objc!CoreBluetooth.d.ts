@@ -55,7 +55,7 @@ declare class CBATTRequest extends NSObject {
 
 	readonly offset: number;
 
-	value: NSData;
+	value: NSData | null;
 }
 
 /**
@@ -135,35 +135,35 @@ declare class CBCentralManager extends CBManager {
 	 */
 	static supportsFeatures(features: CBCentralManagerFeature): boolean;
 
-	delegate: CBCentralManagerDelegate;
+	delegate: CBCentralManagerDelegate | null;
 
 	/**
 	 * @since 9.0
 	 */
 	readonly isScanning: boolean;
 
-	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { delegate: CBCentralManagerDelegate | null; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 7.0
 	 */
-	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject & OS_dispatch_queue; options: NSDictionary<string, any>; });
+	constructor(o: { delegate: CBCentralManagerDelegate | null; queue: NSObject & OS_dispatch_queue | null; options: NSDictionary<string, any> | null; });
 
 	cancelPeripheralConnection(peripheral: CBPeripheral): void;
 
-	connectPeripheralOptions(peripheral: CBPeripheral, options: NSDictionary<string, any>): void;
+	connectPeripheralOptions(peripheral: CBPeripheral, options: NSDictionary<string, any> | null): void;
 
-	initWithDelegateQueue(delegate: CBCentralManagerDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithDelegateQueue(delegate: CBCentralManagerDelegate | null, queue: NSObject & OS_dispatch_queue | null): this;
 
 	/**
 	 * @since 7.0
 	 */
-	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: NSObject & OS_dispatch_queue, options: NSDictionary<string, any>): this;
+	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate | null, queue: NSObject & OS_dispatch_queue | null, options: NSDictionary<string, any> | null): this;
 
 	/**
 	 * @since 13.0
 	 */
-	registerForConnectionEventsWithOptions(options: NSDictionary<string, any>): void;
+	registerForConnectionEventsWithOptions(options: NSDictionary<string, any> | null): void;
 
 	/**
 	 * @since 7.0
@@ -175,7 +175,7 @@ declare class CBCentralManager extends CBManager {
 	 */
 	retrievePeripheralsWithIdentifiers(identifiers: NSArray<NSUUID> | NSUUID[]): NSArray<CBPeripheral>;
 
-	scanForPeripheralsWithServicesOptions(serviceUUIDs: NSArray<CBUUID> | CBUUID[], options: NSDictionary<string, any>): void;
+	scanForPeripheralsWithServicesOptions(serviceUUIDs: NSArray<CBUUID> | CBUUID[] | null, options: NSDictionary<string, any> | null): void;
 
 	stopScan(): void;
 }
@@ -189,13 +189,13 @@ interface CBCentralManagerDelegate extends NSObjectProtocol {
 
 	centralManagerDidConnectPeripheral?(central: CBCentralManager, peripheral: CBPeripheral): void;
 
-	centralManagerDidDisconnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError): void;
+	centralManagerDidDisconnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError | null): void;
 
-	centralManagerDidDisconnectPeripheralTimestampIsReconnectingError?(central: CBCentralManager, peripheral: CBPeripheral, timestamp: number, isReconnecting: boolean, error: NSError): void;
+	centralManagerDidDisconnectPeripheralTimestampIsReconnectingError?(central: CBCentralManager, peripheral: CBPeripheral, timestamp: number, isReconnecting: boolean, error: NSError | null): void;
 
 	centralManagerDidDiscoverPeripheralAdvertisementDataRSSI?(central: CBCentralManager, peripheral: CBPeripheral, advertisementData: NSDictionary<string, any>, RSSI: number): void;
 
-	centralManagerDidFailToConnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError): void;
+	centralManagerDidFailToConnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError | null): void;
 
 	/**
 	 * @since 13.0
@@ -281,7 +281,7 @@ declare class CBCharacteristic extends CBAttribute {
 
 	static new(): CBCharacteristic; // inherited from NSObject
 
-	readonly descriptors: NSArray<CBDescriptor>;
+	readonly descriptors: NSArray<CBDescriptor> | null;
 
 	/**
 	 * @since 5.0
@@ -293,9 +293,9 @@ declare class CBCharacteristic extends CBAttribute {
 
 	readonly properties: CBCharacteristicProperties;
 
-	readonly service: CBService;
+	readonly service: CBService | null;
 
-	readonly value: NSData;
+	readonly value: NSData | null;
 }
 
 declare const enum CBCharacteristicProperties {
@@ -386,9 +386,9 @@ declare class CBDescriptor extends CBAttribute {
 
 	static new(): CBDescriptor; // inherited from NSObject
 
-	readonly characteristic: CBCharacteristic;
+	readonly characteristic: CBCharacteristic | null;
 
-	readonly value: any;
+	readonly value: any | null;
 }
 
 declare const enum CBError {
@@ -518,7 +518,7 @@ declare class CBMutableCharacteristic extends CBCharacteristic {
 
 	static new(): CBMutableCharacteristic; // inherited from NSObject
 
-	descriptors: NSArray<CBDescriptor>;
+	descriptors: NSArray<CBDescriptor> | null;
 
 	permissions: CBAttributePermissions;
 
@@ -527,19 +527,19 @@ declare class CBMutableCharacteristic extends CBCharacteristic {
 	/**
 	 * @since 7.0
 	 */
-	readonly subscribedCentrals: NSArray<CBCentral>;
+	readonly subscribedCentrals: NSArray<CBCentral> | null;
 
-	value: NSData;
-
-	/**
-	 * @since 6.0
-	 */
-	constructor(o: { type: CBUUID; properties: CBCharacteristicProperties; value: NSData; permissions: CBAttributePermissions; });
+	value: NSData | null;
 
 	/**
 	 * @since 6.0
 	 */
-	initWithTypePropertiesValuePermissions(UUID: CBUUID, properties: CBCharacteristicProperties, value: NSData, permissions: CBAttributePermissions): this;
+	constructor(o: { type: CBUUID; properties: CBCharacteristicProperties; value: NSData | null; permissions: CBAttributePermissions; });
+
+	/**
+	 * @since 6.0
+	 */
+	initWithTypePropertiesValuePermissions(UUID: CBUUID, properties: CBCharacteristicProperties, value: NSData | null, permissions: CBAttributePermissions): this;
 }
 
 /**
@@ -554,12 +554,12 @@ declare class CBMutableDescriptor extends CBDescriptor {
 	/**
 	 * @since 6.0
 	 */
-	constructor(o: { type: CBUUID; value: any; });
+	constructor(o: { type: CBUUID; value: any | null; });
 
 	/**
 	 * @since 6.0
 	 */
-	initWithTypeValue(UUID: CBUUID, value: any): this;
+	initWithTypeValue(UUID: CBUUID, value: any | null): this;
 }
 
 /**
@@ -571,9 +571,9 @@ declare class CBMutableService extends CBService {
 
 	static new(): CBMutableService; // inherited from NSObject
 
-	characteristics: NSArray<CBCharacteristic>;
+	characteristics: NSArray<CBCharacteristic> | null;
 
-	includedServices: NSArray<CBService>;
+	includedServices: NSArray<CBService> | null;
 
 	/**
 	 * @since 6.0
@@ -600,7 +600,7 @@ declare class CBPeer extends NSObject implements NSCopying {
 	 */
 	readonly identifier: NSUUID;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -616,7 +616,7 @@ declare class CBPeripheral extends CBPeer {
 	 * @since 5.0
 	 * @deprecated 8.0
 	 */
-	readonly RSSI: number;
+	readonly RSSI: number | null;
 
 	/**
 	 * @since 13.0
@@ -628,21 +628,21 @@ declare class CBPeripheral extends CBPeer {
 	 */
 	readonly canSendWriteWithoutResponse: boolean;
 
-	delegate: CBPeripheralDelegate;
+	delegate: CBPeripheralDelegate | null;
 
-	readonly name: string;
+	readonly name: string | null;
 
-	readonly services: NSArray<CBService>;
+	readonly services: NSArray<CBService> | null;
 
 	readonly state: CBPeripheralState;
 
-	discoverCharacteristicsForService(characteristicUUIDs: NSArray<CBUUID> | CBUUID[], service: CBService): void;
+	discoverCharacteristicsForService(characteristicUUIDs: NSArray<CBUUID> | CBUUID[] | null, service: CBService): void;
 
 	discoverDescriptorsForCharacteristic(characteristic: CBCharacteristic): void;
 
-	discoverIncludedServicesForService(includedServiceUUIDs: NSArray<CBUUID> | CBUUID[], service: CBService): void;
+	discoverIncludedServicesForService(includedServiceUUIDs: NSArray<CBUUID> | CBUUID[] | null, service: CBService): void;
 
-	discoverServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[]): void;
+	discoverServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[] | null): void;
 
 	/**
 	 * @since 9.0
@@ -669,46 +669,46 @@ declare class CBPeripheral extends CBPeer {
 
 interface CBPeripheralDelegate extends NSObjectProtocol {
 
-	peripheralDidDiscoverCharacteristicsForServiceError?(peripheral: CBPeripheral, service: CBService, error: NSError): void;
+	peripheralDidDiscoverCharacteristicsForServiceError?(peripheral: CBPeripheral, service: CBService, error: NSError | null): void;
 
-	peripheralDidDiscoverDescriptorsForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
+	peripheralDidDiscoverDescriptorsForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError | null): void;
 
-	peripheralDidDiscoverIncludedServicesForServiceError?(peripheral: CBPeripheral, service: CBService, error: NSError): void;
+	peripheralDidDiscoverIncludedServicesForServiceError?(peripheral: CBPeripheral, service: CBService, error: NSError | null): void;
 
-	peripheralDidDiscoverServices?(peripheral: CBPeripheral, error: NSError): void;
+	peripheralDidDiscoverServices?(peripheral: CBPeripheral, error: NSError | null): void;
 
 	/**
 	 * @since 7.0
 	 */
 	peripheralDidModifyServices?(peripheral: CBPeripheral, invalidatedServices: NSArray<CBService> | CBService[]): void;
 
-	peripheralDidOpenL2CAPChannelError?(peripheral: CBPeripheral, channel: CBL2CAPChannel, error: NSError): void;
+	peripheralDidOpenL2CAPChannelError?(peripheral: CBPeripheral, channel: CBL2CAPChannel | null, error: NSError | null): void;
 
 	/**
 	 * @since 8.0
 	 */
-	peripheralDidReadRSSIError?(peripheral: CBPeripheral, RSSI: number, error: NSError): void;
+	peripheralDidReadRSSIError?(peripheral: CBPeripheral, RSSI: number, error: NSError | null): void;
 
 	/**
 	 * @since 6.0
 	 */
 	peripheralDidUpdateName?(peripheral: CBPeripheral): void;
 
-	peripheralDidUpdateNotificationStateForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
+	peripheralDidUpdateNotificationStateForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError | null): void;
 
 	/**
 	 * @since 5.0
 	 * @deprecated 8.0
 	 */
-	peripheralDidUpdateRSSIError?(peripheral: CBPeripheral, error: NSError): void;
+	peripheralDidUpdateRSSIError?(peripheral: CBPeripheral, error: NSError | null): void;
 
-	peripheralDidUpdateValueForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
+	peripheralDidUpdateValueForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError | null): void;
 
-	peripheralDidUpdateValueForDescriptorError?(peripheral: CBPeripheral, descriptor: CBDescriptor, error: NSError): void;
+	peripheralDidUpdateValueForDescriptorError?(peripheral: CBPeripheral, descriptor: CBDescriptor, error: NSError | null): void;
 
-	peripheralDidWriteValueForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
+	peripheralDidWriteValueForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError | null): void;
 
-	peripheralDidWriteValueForDescriptorError?(peripheral: CBPeripheral, descriptor: CBDescriptor, error: NSError): void;
+	peripheralDidWriteValueForDescriptorError?(peripheral: CBPeripheral, descriptor: CBDescriptor, error: NSError | null): void;
 
 	peripheralIsReadyToSendWriteWithoutResponse?(peripheral: CBPeripheral): void;
 }
@@ -732,31 +732,31 @@ declare class CBPeripheralManager extends CBManager {
 
 	static new(): CBPeripheralManager; // inherited from NSObject
 
-	delegate: CBPeripheralManagerDelegate;
+	delegate: CBPeripheralManagerDelegate | null;
 
 	readonly isAdvertising: boolean;
 
 	/**
 	 * @since 6.0
 	 */
-	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { delegate: CBPeripheralManagerDelegate | null; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 7.0
 	 */
-	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject & OS_dispatch_queue; options: NSDictionary<string, any>; });
+	constructor(o: { delegate: CBPeripheralManagerDelegate | null; queue: NSObject & OS_dispatch_queue | null; options: NSDictionary<string, any> | null; });
 
 	addService(service: CBMutableService): void;
 
 	/**
 	 * @since 6.0
 	 */
-	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate | null, queue: NSObject & OS_dispatch_queue | null): this;
 
 	/**
 	 * @since 7.0
 	 */
-	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: NSObject & OS_dispatch_queue, options: NSDictionary<string, any>): this;
+	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate | null, queue: NSObject & OS_dispatch_queue | null, options: NSDictionary<string, any> | null): this;
 
 	/**
 	 * @since 11.0
@@ -771,7 +771,7 @@ declare class CBPeripheralManager extends CBManager {
 
 	setDesiredConnectionLatencyForCentral(latency: CBPeripheralManagerConnectionLatency, central: CBCentral): void;
 
-	startAdvertising(advertisementData: NSDictionary<string, any>): void;
+	startAdvertising(advertisementData: NSDictionary<string, any> | null): void;
 
 	stopAdvertising(): void;
 
@@ -780,7 +780,7 @@ declare class CBPeripheralManager extends CBManager {
 	 */
 	unpublishL2CAPChannel(PSM: number): void;
 
-	updateValueForCharacteristicOnSubscribedCentrals(value: NSData, characteristic: CBMutableCharacteristic, centrals: NSArray<CBCentral> | CBCentral[]): boolean;
+	updateValueForCharacteristicOnSubscribedCentrals(value: NSData, characteristic: CBMutableCharacteristic, centrals: NSArray<CBCentral> | CBCentral[] | null): boolean;
 }
 
 /**
@@ -816,19 +816,19 @@ interface CBPeripheralManagerDelegate extends NSObjectProtocol {
 
 	peripheralManagerCentralDidUnsubscribeFromCharacteristic?(peripheral: CBPeripheralManager, central: CBCentral, characteristic: CBCharacteristic): void;
 
-	peripheralManagerDidAddServiceError?(peripheral: CBPeripheralManager, service: CBService, error: NSError): void;
+	peripheralManagerDidAddServiceError?(peripheral: CBPeripheralManager, service: CBService, error: NSError | null): void;
 
-	peripheralManagerDidOpenL2CAPChannelError?(peripheral: CBPeripheralManager, channel: CBL2CAPChannel, error: NSError): void;
+	peripheralManagerDidOpenL2CAPChannelError?(peripheral: CBPeripheralManager, channel: CBL2CAPChannel | null, error: NSError | null): void;
 
-	peripheralManagerDidPublishL2CAPChannelError?(peripheral: CBPeripheralManager, PSM: number, error: NSError): void;
+	peripheralManagerDidPublishL2CAPChannelError?(peripheral: CBPeripheralManager, PSM: number, error: NSError | null): void;
 
 	peripheralManagerDidReceiveReadRequest?(peripheral: CBPeripheralManager, request: CBATTRequest): void;
 
 	peripheralManagerDidReceiveWriteRequests?(peripheral: CBPeripheralManager, requests: NSArray<CBATTRequest> | CBATTRequest[]): void;
 
-	peripheralManagerDidStartAdvertisingError?(peripheral: CBPeripheralManager, error: NSError): void;
+	peripheralManagerDidStartAdvertisingError?(peripheral: CBPeripheralManager, error: NSError | null): void;
 
-	peripheralManagerDidUnpublishL2CAPChannelError?(peripheral: CBPeripheralManager, PSM: number, error: NSError): void;
+	peripheralManagerDidUnpublishL2CAPChannelError?(peripheral: CBPeripheralManager, PSM: number, error: NSError | null): void;
 
 	peripheralManagerDidUpdateState(peripheral: CBPeripheralManager): void;
 
@@ -903,13 +903,13 @@ declare class CBService extends CBAttribute {
 
 	static new(): CBService; // inherited from NSObject
 
-	readonly characteristics: NSArray<CBCharacteristic>;
+	readonly characteristics: NSArray<CBCharacteristic> | null;
 
-	readonly includedServices: NSArray<CBService>;
+	readonly includedServices: NSArray<CBService> | null;
 
 	readonly isPrimary: boolean;
 
-	readonly peripheral: CBPeripheral;
+	readonly peripheral: CBPeripheral | null;
 }
 
 /**
@@ -943,7 +943,7 @@ declare class CBUUID extends NSObject implements NSCopying {
 
 	readonly data: NSData;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare var CBUUIDCharacteristicAggregateFormatString: string;

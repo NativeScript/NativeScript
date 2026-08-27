@@ -25,17 +25,17 @@ declare class SK3DNode extends SKNode {
 
 	playing: boolean;
 
-	pointOfView: SCNNode;
+	pointOfView: SCNNode | null;
 
 	sceneTime: number;
 
-	scnScene: SCNScene;
+	scnScene: SCNScene | null;
 
 	viewportSize: CGSize;
 
 	constructor(o: { viewportSize: CGSize; });
 
-	hitTestOptions(point: CGPoint, options: NSDictionary<string, any>): NSArray<SCNHitTestResult>;
+	hitTestOptions(point: CGPoint, options: NSDictionary<string, any> | null): NSArray<SCNHitTestResult>;
 
 	initWithViewportSize(viewportSize: CGSize): this;
 
@@ -49,22 +49,22 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	static actionNamed(name: string): SKAction;
+	static actionNamed(name: string): SKAction | null;
 
 	/**
 	 * @since 9.0
 	 */
-	static actionNamedDuration(name: string, duration: number): SKAction;
+	static actionNamedDuration(name: string, duration: number): SKAction | null;
 
 	/**
 	 * @since 9.0
 	 */
-	static actionNamedFromURL(name: string, url: NSURL): SKAction;
+	static actionNamedFromURL(name: string, url: NSURL): SKAction | null;
 
 	/**
 	 * @since 9.0
 	 */
-	static actionNamedFromURLDuration(name: string, url: NSURL, duration: number): SKAction;
+	static actionNamedFromURLDuration(name: string, url: NSURL, duration: number): SKAction | null;
 
 	static alloc(): SKAction; // inherited from NSObject
 
@@ -85,12 +85,12 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 10.0
 	 */
-	static animateWithWarpsTimes(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[]): SKAction;
+	static animateWithWarpsTimes(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[]): SKAction | null;
 
 	/**
 	 * @since 10.0
 	 */
-	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[], restore: boolean): SKAction;
+	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[], restore: boolean): SKAction | null;
 
 	/**
 	 * @since 9.0
@@ -383,7 +383,7 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 10.0
 	 */
-	static warpToDuration(warp: SKWarpGeometry, duration: number): SKAction;
+	static warpToDuration(warp: SKWarpGeometry, duration: number): SKAction | null;
 
 	duration: number;
 
@@ -400,7 +400,7 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -529,13 +529,13 @@ declare class SKAudioNode extends SKNode implements NSSecureCoding {
 
 	autoplayLooped: boolean;
 
-	avAudioNode: AVAudioNode;
+	avAudioNode: AVAudioNode | null;
 
 	positional: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { AVAudioNode: AVAudioNode; });
+	constructor(o: { AVAudioNode: AVAudioNode | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -545,7 +545,7 @@ declare class SKAudioNode extends SKNode implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithAVAudioNode(node: AVAudioNode): this;
+	initWithAVAudioNode(node: AVAudioNode | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -630,13 +630,13 @@ declare class SKConstraint extends NSObject implements NSCopying, NSSecureCoding
 
 	enabled: boolean;
 
-	referenceNode: SKNode;
+	referenceNode: SKNode | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -658,7 +658,7 @@ declare class SKCropNode extends SKNode {
 	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKCropNode; // inherited from SKNode
 
-	maskNode: SKNode;
+	maskNode: SKNode | null;
 }
 
 declare class SKEffectNode extends SKNode implements SKWarpable {
@@ -678,9 +678,9 @@ declare class SKEffectNode extends SKNode implements SKWarpable {
 
 	blendMode: SKBlendMode;
 
-	filter: CIFilter;
+	filter: CIFilter | null;
 
-	shader: SKShader;
+	shader: SKShader | null;
 
 	shouldCenterFilter: boolean;
 
@@ -700,7 +700,7 @@ declare class SKEffectNode extends SKNode implements SKWarpable {
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	warpGeometry: SKWarpGeometry; // inherited from SKWarpable
+	warpGeometry: SKWarpGeometry | null; // inherited from SKWarpable
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -750,13 +750,13 @@ declare class SKEmitterNode extends SKNode {
 
 	numParticlesToEmit: number;
 
-	particleAction: SKAction;
+	particleAction: SKAction | null;
 
 	particleAlpha: number;
 
 	particleAlphaRange: number;
 
-	particleAlphaSequence: SKKeyframeSequence;
+	particleAlphaSequence: SKKeyframeSequence | null;
 
 	particleAlphaSpeed: number;
 
@@ -774,7 +774,7 @@ declare class SKEmitterNode extends SKNode {
 
 	particleColorBlendFactorRange: number;
 
-	particleColorBlendFactorSequence: SKKeyframeSequence;
+	particleColorBlendFactorSequence: SKKeyframeSequence | null;
 
 	particleColorBlendFactorSpeed: number;
 
@@ -790,7 +790,7 @@ declare class SKEmitterNode extends SKNode {
 
 	particleColorRedSpeed: number;
 
-	particleColorSequence: SKKeyframeSequence;
+	particleColorSequence: SKKeyframeSequence | null;
 
 	particleLifetime: number;
 
@@ -815,7 +815,7 @@ declare class SKEmitterNode extends SKNode {
 
 	particleScaleRange: number;
 
-	particleScaleSequence: SKKeyframeSequence;
+	particleScaleSequence: SKKeyframeSequence | null;
 
 	particleScaleSpeed: number;
 
@@ -825,7 +825,7 @@ declare class SKEmitterNode extends SKNode {
 
 	particleSpeedRange: number;
 
-	particleTexture: SKTexture;
+	particleTexture: SKTexture | null;
 
 	particleZPosition: number;
 
@@ -841,9 +841,9 @@ declare class SKEmitterNode extends SKNode {
 	 */
 	particleZPositionSpeed: number;
 
-	shader: SKShader;
+	shader: SKShader | null;
 
-	targetNode: SKNode;
+	targetNode: SKNode | null;
 
 	xAcceleration: number;
 
@@ -910,13 +910,13 @@ declare class SKFieldNode extends SKNode {
 
 	minimumRadius: number;
 
-	region: SKRegion;
+	region: SKRegion | null;
 
 	smoothness: number;
 
 	strength: number;
 
-	texture: SKTexture;
+	texture: SKTexture | null;
 }
 
 declare const enum SKInterpolationMode {
@@ -948,7 +948,7 @@ declare class SKKeyframeSequence extends NSObject implements NSCopying, NSSecure
 
 	addKeyframeValueTime(value: any, time: number): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	count(): number;
 
@@ -968,7 +968,7 @@ declare class SKKeyframeSequence extends NSObject implements NSCopying, NSSecure
 
 	removeLastKeyframe(): void;
 
-	sampleAtTime(time: number): any;
+	sampleAtTime(time: number): any | null;
 
 	setKeyframeTimeForIndex(time: number, index: number): void;
 
@@ -996,11 +996,11 @@ declare class SKLabelNode extends SKNode {
 	/**
 	 * @since 11.0
 	 */
-	static labelNodeWithAttributedText(attributedText: NSAttributedString): SKLabelNode;
+	static labelNodeWithAttributedText(attributedText: NSAttributedString | null): SKLabelNode;
 
-	static labelNodeWithFontNamed(fontName: string): SKLabelNode;
+	static labelNodeWithFontNamed(fontName: string | null): SKLabelNode;
 
-	static labelNodeWithText(text: string): SKLabelNode;
+	static labelNodeWithText(text: string | null): SKLabelNode;
 
 	static new(): SKLabelNode; // inherited from NSObject
 
@@ -1016,17 +1016,17 @@ declare class SKLabelNode extends SKNode {
 	/**
 	 * @since 11.0
 	 */
-	attributedText: NSAttributedString;
+	attributedText: NSAttributedString | null;
 
 	blendMode: SKBlendMode;
 
-	color: UIColor;
+	color: UIColor | null;
 
 	colorBlendFactor: number;
 
-	fontColor: UIColor;
+	fontColor: UIColor | null;
 
-	fontName: string;
+	fontName: string | null;
 
 	fontSize: number;
 
@@ -1047,13 +1047,13 @@ declare class SKLabelNode extends SKNode {
 	 */
 	preferredMaxLayoutWidth: number;
 
-	text: string;
+	text: string | null;
 
 	verticalAlignmentMode: SKLabelVerticalAlignmentMode;
 
-	constructor(o: { fontNamed: string; });
+	constructor(o: { fontNamed: string | null; });
 
-	initWithFontNamed(fontName: string): this;
+	initWithFontNamed(fontName: string | null): this;
 }
 
 /**
@@ -1149,7 +1149,7 @@ declare class SKMutableTexture extends SKTexture {
 
 	initWithSizePixelFormat(size: CGSize, format: number): this;
 
-	modifyPixelDataWithBlock(block: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
+	modifyPixelDataWithBlock(block: (p1: interop.Pointer | interop.Reference<any> | null, p2: number) => void): void;
 }
 
 declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, UICoordinateSpace, UIFocusItem, UIFocusItemContainer {
@@ -1183,12 +1183,12 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	readonly children: NSArray<SKNode>;
 
-	constraints: NSArray<SKConstraint>;
+	constraints: NSArray<SKConstraint> | null;
 
 	/**
 	 * @since 10.0
 	 */
-	entity: GKEntity;
+	entity: GKEntity | null;
 
 	/**
 	 * @since 11.0
@@ -1197,23 +1197,23 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	hidden: boolean;
 
-	name: string;
+	name: string | null;
 
-	readonly parent: SKNode;
+	readonly parent: SKNode | null;
 
 	paused: boolean;
 
-	physicsBody: SKPhysicsBody;
+	physicsBody: SKPhysicsBody | null;
 
 	position: CGPoint;
 
-	reachConstraints: SKReachConstraints;
+	reachConstraints: SKReachConstraints | null;
 
-	readonly scene: SKScene;
+	readonly scene: SKScene | null;
 
 	speed: number;
 
-	userData: NSMutableDictionary<any, any>;
+	userData: NSMutableDictionary<any, any> | null;
 
 	userInteractionEnabled: boolean;
 
@@ -1241,12 +1241,12 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	/**
 	 * @since 15.0
 	 */
-	readonly focusEffect: UIFocusEffect; // inherited from UIFocusItem
+	readonly focusEffect: UIFocusEffect | null; // inherited from UIFocusItem
 
 	/**
 	 * @since 14.0
 	 */
-	readonly focusGroupIdentifier: string; // inherited from UIFocusEnvironment
+	readonly focusGroupIdentifier: string | null; // inherited from UIFocusEnvironment
 
 	/**
 	 * @since 15.0
@@ -1256,7 +1256,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	/**
 	 * @since 12.0
 	 */
-	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
+	readonly focusItemContainer: UIFocusItemContainer | null; // inherited from UIFocusEnvironment
 
 	readonly focusItemDeferralMode: UIFocusItemDeferralMode; // inherited from UIFocusItem
 
@@ -1277,7 +1277,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	/**
 	 * @since 12.0
 	 */
-	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
+	readonly parentFocusEnvironment: UIFocusEnvironment | null; // inherited from UIFocusEnvironment
 
 	readonly preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
 
@@ -1285,7 +1285,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	 * @since 9.0
 	 * @deprecated 10.0
 	 */
-	readonly preferredFocusedView: UIView; // inherited from UIFocusEnvironment
+	readonly preferredFocusedView: UIView | null; // inherited from UIFocusEnvironment
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -1295,13 +1295,13 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	actionForKey(key: string): SKAction;
+	actionForKey(key: string): SKAction | null;
 
 	addChild(node: SKNode): void;
 
 	calculateAccumulatedFrame(): CGRect;
 
-	childNodeWithName(name: string): SKNode;
+	childNodeWithName(name: string): SKNode | null;
 
 	class(): typeof NSObject;
 
@@ -1333,7 +1333,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	 */
 	convertRectToCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 12.0
@@ -1344,7 +1344,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	enumerateChildNodesWithNameUsingBlock(name: string, block: (p1: SKNode, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateChildNodesWithNameUsingBlock(name: string, block: (p1: SKNode, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	focusItemsInRect(rect: CGRect): NSArray<UIFocusItem>;
 
@@ -1426,7 +1426,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	 * @since 10.0
 	 * @deprecated 10.0
 	 */
-	valueForAttributeNamed(key: string): SKAttributeValue;
+	valueForAttributeNamed(key: string): SKAttributeValue | null;
 }
 
 /**
@@ -1527,7 +1527,7 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	mass: number;
 
-	readonly node: SKNode;
+	readonly node: SKNode | null;
 
 	/**
 	 * @since 8.0
@@ -1560,7 +1560,7 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	applyTorque(torque: number): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1691,7 +1691,7 @@ declare class SKPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	static new(): SKPhysicsWorld; // inherited from NSObject
 
-	contactDelegate: SKPhysicsContactDelegate;
+	contactDelegate: SKPhysicsContactDelegate | null;
 
 	gravity: CGVector;
 
@@ -1703,19 +1703,19 @@ declare class SKPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	addJoint(joint: SKPhysicsJoint): void;
 
-	bodyAlongRayStartEnd(start: CGPoint, end: CGPoint): SKPhysicsBody;
+	bodyAlongRayStartEnd(start: CGPoint, end: CGPoint): SKPhysicsBody | null;
 
-	bodyAtPoint(point: CGPoint): SKPhysicsBody;
+	bodyAtPoint(point: CGPoint): SKPhysicsBody | null;
 
-	bodyInRect(rect: CGRect): SKPhysicsBody;
+	bodyInRect(rect: CGRect): SKPhysicsBody | null;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	enumerateBodiesAlongRayStartEndUsingBlock(start: CGPoint, end: CGPoint, block: (p1: SKPhysicsBody, p2: CGPoint, p3: CGVector, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateBodiesAlongRayStartEndUsingBlock(start: CGPoint, end: CGPoint, block: (p1: SKPhysicsBody, p2: CGPoint, p3: CGVector, p4: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
-	enumerateBodiesAtPointUsingBlock(point: CGPoint, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateBodiesAtPointUsingBlock(point: CGPoint, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
-	enumerateBodiesInRectUsingBlock(rect: CGRect, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateBodiesInRectUsingBlock(rect: CGRect, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -1760,7 +1760,7 @@ declare class SKRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { lowerLimit: number; upperLimit: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1817,15 +1817,15 @@ declare class SKReferenceNode extends SKNode {
 
 	static referenceNodeWithURL(referenceURL: NSURL): SKReferenceNode;
 
-	constructor(o: { fileNamed: string; });
+	constructor(o: { fileNamed: string | null; });
 
-	constructor(o: { URL: NSURL; });
+	constructor(o: { URL: NSURL | null; });
 
-	didLoadReferenceNode(node: SKNode): void;
+	didLoadReferenceNode(node: SKNode | null): void;
 
-	initWithFileNamed(fileName: string): this;
+	initWithFileNamed(fileName: string | null): this;
 
-	initWithURL(url: NSURL): this;
+	initWithURL(url: NSURL | null): this;
 
 	resolveReferenceNode(): void;
 }
@@ -1841,7 +1841,7 @@ declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): SKRegion; // inherited from NSObject
 
-	readonly path: any;
+	readonly path: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1855,7 +1855,7 @@ declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	containsPoint(point: CGPoint): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1889,7 +1889,7 @@ declare class SKRenderer extends NSObject {
 
 	ignoresSiblingOrder: boolean;
 
-	scene: SKScene;
+	scene: SKScene | null;
 
 	shouldCullNonVisibleNodes: boolean;
 
@@ -1946,17 +1946,17 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 	/**
 	 * @since 9.0
 	 */
-	camera: SKCameraNode;
+	camera: SKCameraNode | null;
 
 	/**
 	 * @since 8.0
 	 */
-	delegate: SKSceneDelegate;
+	delegate: SKSceneDelegate | null;
 
 	/**
 	 * @since 9.0
 	 */
-	listener: SKNode;
+	listener: SKNode | null;
 
 	readonly physicsWorld: SKPhysicsWorld;
 
@@ -1964,7 +1964,7 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	size: CGSize;
 
-	readonly view: SKView;
+	readonly view: SKView | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -2092,7 +2092,7 @@ declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	attributes: NSArray<SKAttribute>;
 
-	source: string;
+	source: string | null;
 
 	uniforms: NSArray<SKUniform>;
 
@@ -2106,7 +2106,7 @@ declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 
 	addUniform(uniform: SKUniform): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2118,7 +2118,7 @@ declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 
 	removeUniformNamed(name: string): void;
 
-	uniformNamed(name: string): SKUniform;
+	uniformNamed(name: string): SKUniform | null;
 }
 
 declare class SKShapeNode extends SKNode {
@@ -2164,7 +2164,7 @@ declare class SKShapeNode extends SKNode {
 	/**
 	 * @since 8.0
 	 */
-	static shapeNodeWithPointsCount(points: interop.Pointer | interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
+	static shapeNodeWithPointsCount(points: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView, numPoints: number): SKShapeNode;
 
 	/**
 	 * @since 8.0
@@ -2189,7 +2189,7 @@ declare class SKShapeNode extends SKNode {
 	/**
 	 * @since 8.0
 	 */
-	static shapeNodeWithSplinePointsCount(points: interop.Pointer | interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
+	static shapeNodeWithSplinePointsCount(points: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView, numPoints: number): SKShapeNode;
 
 	antialiased: boolean;
 
@@ -2200,12 +2200,12 @@ declare class SKShapeNode extends SKNode {
 	/**
 	 * @since 8.0
 	 */
-	fillShader: SKShader;
+	fillShader: SKShader | null;
 
 	/**
 	 * @since 8.0
 	 */
-	fillTexture: SKTexture;
+	fillTexture: SKTexture | null;
 
 	glowWidth: number;
 
@@ -2219,19 +2219,19 @@ declare class SKShapeNode extends SKNode {
 
 	miterLimit: number;
 
-	path: any;
+	path: any | null;
 
 	strokeColor: UIColor;
 
 	/**
 	 * @since 8.0
 	 */
-	strokeShader: SKShader;
+	strokeShader: SKShader | null;
 
 	/**
 	 * @since 8.0
 	 */
-	strokeTexture: SKTexture;
+	strokeTexture: SKTexture | null;
 }
 
 declare class SKSpriteNode extends SKNode implements SKWarpable {
@@ -2255,11 +2255,11 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	static spriteNodeWithImageNamedNormalMapped(name: string, generateNormalMap: boolean): SKSpriteNode;
 
-	static spriteNodeWithTexture(texture: SKTexture): SKSpriteNode;
+	static spriteNodeWithTexture(texture: SKTexture | null): SKSpriteNode;
 
-	static spriteNodeWithTextureNormalMap(texture: SKTexture, normalMap: SKTexture): SKSpriteNode;
+	static spriteNodeWithTextureNormalMap(texture: SKTexture | null, normalMap: SKTexture | null): SKSpriteNode;
 
-	static spriteNodeWithTextureSize(texture: SKTexture, size: CGSize): SKSpriteNode;
+	static spriteNodeWithTextureSize(texture: SKTexture | null, size: CGSize): SKSpriteNode;
 
 	anchorPoint: CGPoint;
 
@@ -2279,12 +2279,12 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 	/**
 	 * @since 8.0
 	 */
-	normalTexture: SKTexture;
+	normalTexture: SKTexture | null;
 
 	/**
 	 * @since 8.0
 	 */
-	shader: SKShader;
+	shader: SKShader | null;
 
 	/**
 	 * @since 8.0
@@ -2298,7 +2298,7 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	size: CGSize;
 
-	texture: SKTexture;
+	texture: SKTexture | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -2312,7 +2312,7 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	warpGeometry: SKWarpGeometry; // inherited from SKWarpable
+	warpGeometry: SKWarpGeometry | null; // inherited from SKWarpable
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -2320,9 +2320,9 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	constructor(o: { imageNamed: string; });
 
-	constructor(o: { texture: SKTexture; });
+	constructor(o: { texture: SKTexture | null; });
 
-	constructor(o: { texture: SKTexture; color: UIColor; size: CGSize; });
+	constructor(o: { texture: SKTexture | null; color: UIColor; size: CGSize; });
 
 	class(): typeof NSObject;
 
@@ -2332,9 +2332,9 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	initWithImageNamed(name: string): this;
 
-	initWithTexture(texture: SKTexture): this;
+	initWithTexture(texture: SKTexture | null): this;
 
-	initWithTextureColorSize(texture: SKTexture, color: UIColor, size: CGSize): this;
+	initWithTextureColorSize(texture: SKTexture | null, color: UIColor, size: CGSize): this;
 
 	isEqual(object: any): boolean;
 
@@ -2410,7 +2410,7 @@ declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	CGImage(): any;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2451,7 +2451,7 @@ declare class SKTextureAtlas extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	static preloadTextureAtlasesNamedWithCompletionHandler(atlasNames: NSArray<string> | string[], completionHandler: (p1: NSError, p2: NSArray<SKTextureAtlas>) => void): void;
+	static preloadTextureAtlasesNamedWithCompletionHandler(atlasNames: NSArray<string> | string[], completionHandler: (p1: NSError | null, p2: NSArray<SKTextureAtlas>) => void): void;
 
 	static preloadTextureAtlasesWithCompletionHandler(textureAtlases: NSArray<SKTextureAtlas> | SKTextureAtlas[], completionHandler: () => void): void;
 
@@ -2579,7 +2579,7 @@ declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCo
 
 	flipVertically: boolean;
 
-	name: string;
+	name: string | null;
 
 	normalTextures: NSArray<SKTexture>;
 
@@ -2593,7 +2593,7 @@ declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCo
 
 	timePerFrame: number;
 
-	userData: NSMutableDictionary<any, any>;
+	userData: NSMutableDictionary<any, any> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2609,7 +2609,7 @@ declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { textures: NSArray<SKTexture> | SKTexture[]; size: CGSize; timePerFrame: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2655,7 +2655,7 @@ declare class SKTileGroup extends NSObject implements NSCopying, NSSecureCoding 
 
 	static tileGroupWithTileDefinition(tileDefinition: SKTileDefinition): SKTileGroup;
 
-	name: string;
+	name: string | null;
 
 	rules: NSArray<SKTileGroupRule>;
 
@@ -2667,7 +2667,7 @@ declare class SKTileGroup extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { tileDefinition: SKTileDefinition; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2691,7 +2691,7 @@ declare class SKTileGroupRule extends NSObject implements NSCopying, NSSecureCod
 
 	adjacency: SKTileAdjacencyMask;
 
-	name: string;
+	name: string | null;
 
 	tileDefinitions: NSArray<SKTileDefinition>;
 
@@ -2701,7 +2701,7 @@ declare class SKTileGroupRule extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2754,7 +2754,7 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 
 	numberOfRows: number;
 
-	shader: SKShader;
+	shader: SKShader | null;
 
 	tileSet: SKTileSet;
 
@@ -2772,11 +2772,11 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 
 	centerOfTileAtColumnRow(column: number, row: number): CGPoint;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	fillWithTileGroup(tileGroup: SKTileGroup): void;
+	fillWithTileGroup(tileGroup: SKTileGroup | null): void;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -2788,13 +2788,13 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 
 	setTileGroupAndTileDefinitionForColumnRow(tileGroup: SKTileGroup, tileDefinition: SKTileDefinition, column: number, row: number): void;
 
-	setTileGroupForColumnRow(tileGroup: SKTileGroup, column: number, row: number): void;
+	setTileGroupForColumnRow(tileGroup: SKTileGroup | null, column: number, row: number): void;
 
 	tileColumnIndexFromPosition(position: CGPoint): number;
 
-	tileDefinitionAtColumnRow(column: number, row: number): SKTileDefinition;
+	tileDefinitionAtColumnRow(column: number, row: number): SKTileDefinition | null;
 
-	tileGroupAtColumnRow(column: number, row: number): SKTileGroup;
+	tileGroupAtColumnRow(column: number, row: number): SKTileGroup | null;
 
 	tileRowIndexFromPosition(position: CGPoint): number;
 }
@@ -2816,11 +2816,11 @@ declare class SKTileSet extends NSObject implements NSCopying, NSSecureCoding {
 
 	static tileSetWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup> | SKTileGroup[], tileSetType: SKTileSetType): SKTileSet;
 
-	defaultTileGroup: SKTileGroup;
+	defaultTileGroup: SKTileGroup | null;
 
 	defaultTileSize: CGSize;
 
-	name: string;
+	name: string | null;
 
 	tileGroups: NSArray<SKTileGroup>;
 
@@ -2834,7 +2834,7 @@ declare class SKTileSet extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { tileGroups: NSArray<SKTileGroup> | SKTileGroup[]; tileSetType: SKTileSetType; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2932,7 +2932,7 @@ declare class SKTransition extends NSObject implements NSCopying {
 
 	pausesOutgoingScene: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2977,7 +2977,7 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	static uniformWithNameMatrixFloat4x4(name: string, value: simd_float4x4): SKUniform;
 
-	static uniformWithNameTexture(name: string, texture: SKTexture): SKUniform;
+	static uniformWithNameTexture(name: string, texture: SKTexture | null): SKUniform;
 
 	/**
 	 * @since 10.0
@@ -3013,7 +3013,7 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly name: string;
 
-	textureValue: SKTexture;
+	textureValue: SKTexture | null;
 
 	readonly uniformType: SKUniformType;
 
@@ -3055,7 +3055,7 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	constructor(o: { name: string; matrixFloat4x4: simd_float4x4; });
 
-	constructor(o: { name: string; texture: SKTexture; });
+	constructor(o: { name: string; texture: SKTexture | null; });
 
 	/**
 	 * @since 10.0
@@ -3072,7 +3072,7 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	constructor(o: { name: string; vectorFloat4: interop.Reference<number>; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3097,7 +3097,7 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	initWithNameMatrixFloat4x4(name: string, value: simd_float4x4): this;
 
-	initWithNameTexture(name: string, texture: SKTexture): this;
+	initWithNameTexture(name: string, texture: SKTexture | null): this;
 
 	/**
 	 * @since 10.0
@@ -3250,7 +3250,7 @@ declare class SKView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): SKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3261,7 +3261,7 @@ declare class SKView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): SKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3280,7 +3280,7 @@ declare class SKView extends UIView {
 	/**
 	 * @since 10.0
 	 */
-	delegate: NSObject & SKViewDelegate;
+	delegate: NSObject & SKViewDelegate | null;
 
 	disableDepthStencilBuffer: boolean;
 
@@ -3305,7 +3305,7 @@ declare class SKView extends UIView {
 	 */
 	preferredFramesPerSecond: number;
 
-	readonly scene: SKScene;
+	readonly scene: SKScene | null;
 
 	/**
 	 * @since 8.0
@@ -3337,13 +3337,13 @@ declare class SKView extends UIView {
 
 	convertPointToScene(point: CGPoint, scene: SKScene): CGPoint;
 
-	presentScene(scene: SKScene): void;
+	presentScene(scene: SKScene | null): void;
 
 	presentSceneTransition(scene: SKScene, transition: SKTransition): void;
 
-	textureFromNode(node: SKNode): SKTexture;
+	textureFromNode(node: SKNode): SKTexture | null;
 
-	textureFromNodeCrop(node: SKNode, crop: CGRect): SKTexture;
+	textureFromNodeCrop(node: SKNode, crop: CGRect): SKTexture | null;
 }
 
 /**
@@ -3371,7 +3371,7 @@ declare class SKWarpGeometry extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3389,7 +3389,7 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCodin
 
 	static gridWithColumnsRows(cols: number, rows: number): SKWarpGeometryGrid;
 
-	static gridWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): SKWarpGeometryGrid;
+	static gridWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): SKWarpGeometryGrid;
 
 	static new(): SKWarpGeometryGrid; // inherited from NSObject
 
@@ -3403,19 +3403,19 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { columns: number; rows: number; sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>; destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>; });
+	constructor(o: { columns: number; rows: number; sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null; destPositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null; });
 
 	destPositionAtIndex(index: number): interop.Reference<number>;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	gridByReplacingDestPositions(destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
+	gridByReplacingDestPositions(destPositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView): this;
 
-	gridByReplacingSourcePositions(sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
+	gridByReplacingSourcePositions(sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView): this;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
+	initWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): this;
 
 	sourcePositionAtIndex(index: number): interop.Reference<number>;
 }
@@ -3427,7 +3427,7 @@ interface SKWarpable extends NSObjectProtocol {
 
 	subdivisionLevels: number;
 
-	warpGeometry: SKWarpGeometry;
+	warpGeometry: SKWarpGeometry | null;
 }
 declare var SKWarpable: {
 

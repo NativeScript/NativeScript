@@ -9,24 +9,24 @@ declare const enum CVAttachmentMode {
 /**
  * @since 15.0
  */
-declare function CVBufferCopyAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode>): any;
+declare function CVBufferCopyAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 15.0
  */
-declare function CVBufferCopyAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any>;
+declare function CVBufferCopyAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
  * @deprecated 15.0
  */
-declare function CVBufferGetAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode>): interop.Unmanaged<any>;
+declare function CVBufferGetAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode> | ArrayBufferLike | ArrayBufferView | null): interop.Unmanaged<any | null>;
 
 /**
  * @since 4.0
  * @deprecated 15.0
  */
-declare function CVBufferGetAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any>;
+declare function CVBufferGetAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any> | null;
 
 /**
  * @since 15.0
@@ -41,7 +41,7 @@ declare function CVBufferPropagateAttachments(sourceBuffer: any, destinationBuff
 /**
  * @since 4.0
  */
-declare function CVBufferRelease(buffer: any): void;
+declare function CVBufferRelease(buffer: any | null): void;
 
 /**
  * @since 4.0
@@ -56,7 +56,7 @@ declare function CVBufferRemoveAttachment(buffer: any, key: string): void;
 /**
  * @since 4.0
  */
-declare function CVBufferRetain(buffer: any): interop.Unmanaged<any>;
+declare function CVBufferRetain(buffer: any | null): interop.Unmanaged<any | null>;
 
 /**
  * @since 4.0
@@ -71,17 +71,17 @@ declare function CVBufferSetAttachments(buffer: any, theAttachments: NSDictionar
 /**
  * @since 11.0
  */
-declare function CVColorPrimariesGetIntegerCodePointForString(colorPrimariesString: string): number;
+declare function CVColorPrimariesGetIntegerCodePointForString(colorPrimariesString: string | null): number;
 
 /**
  * @since 11.0
  */
-declare function CVColorPrimariesGetStringForIntegerCodePoint(colorPrimariesCodePoint: number): interop.Unmanaged<string>;
+declare function CVColorPrimariesGetStringForIntegerCodePoint(colorPrimariesCodePoint: number): interop.Unmanaged<string | null>;
 
 interface CVFillExtendedPixelsCallBackData {
 	version: number;
-	fillCallBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => boolean>;
-	refCon: interop.Pointer | interop.Reference<any>;
+	fillCallBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => boolean> | null;
+	refCon: interop.Pointer | interop.Reference<any> | null;
 }
 declare var CVFillExtendedPixelsCallBackData: interop.StructType<CVFillExtendedPixelsCallBackData>;
 
@@ -103,7 +103,7 @@ declare function CVGetHostClockMinimumTimeDelta(): number;
 /**
  * @since 10.0
  */
-declare function CVImageBufferCreateColorSpaceFromAttachments(attachments: NSDictionary<any, any>): interop.Unmanaged<any>;
+declare function CVImageBufferCreateColorSpaceFromAttachments(attachments: NSDictionary<any, any>): interop.Unmanaged<any | null>;
 
 /**
  * @since 4.0
@@ -113,7 +113,7 @@ declare function CVImageBufferGetCleanRect(imageBuffer: any): CGRect;
 /**
  * @since 4.0
  */
-declare function CVImageBufferGetColorSpace(imageBuffer: any): interop.Unmanaged<any>;
+declare function CVImageBufferGetColorSpace(imageBuffer: any): interop.Unmanaged<any | null>;
 
 /**
  * @since 4.0
@@ -138,12 +138,12 @@ declare function CVIsCompressedPixelFormatAvailable(pixelFormatType: number): bo
 /**
  * @since 18.0
  */
-declare function CVMetalBufferCacheCreate(allocator: any, cacheAttributes: NSDictionary<any, any>, metalDevice: MTLDevice, cacheOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVMetalBufferCacheCreate(allocator: any | null, cacheAttributes: NSDictionary<any, any> | null, metalDevice: MTLDevice, cacheOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 18.0
  */
-declare function CVMetalBufferCacheCreateBufferFromImage(allocator: any, bufferCache: any, imageBuffer: any, bufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVMetalBufferCacheCreateBufferFromImage(allocator: any | null, bufferCache: any, imageBuffer: any, bufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 18.0
@@ -158,7 +158,7 @@ declare function CVMetalBufferCacheGetTypeID(): number;
 /**
  * @since 18.0
  */
-declare function CVMetalBufferGetBuffer(buffer: any): MTLBuffer;
+declare function CVMetalBufferGetBuffer(buffer: any): MTLBuffer | null;
 
 /**
  * @since 18.0
@@ -168,12 +168,12 @@ declare function CVMetalBufferGetTypeID(): number;
 /**
  * @since 8.0
  */
-declare function CVMetalTextureCacheCreate(allocator: any, cacheAttributes: NSDictionary<any, any>, metalDevice: MTLDevice, textureAttributes: NSDictionary<any, any>, cacheOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVMetalTextureCacheCreate(allocator: any | null, cacheAttributes: NSDictionary<any, any> | null, metalDevice: MTLDevice, textureAttributes: NSDictionary<any, any> | null, cacheOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CVMetalTextureCacheCreateTextureFromImage(allocator: any, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any>, pixelFormat: MTLPixelFormat, width: number, height: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVMetalTextureCacheCreateTextureFromImage(allocator: any | null, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any> | null, pixelFormat: MTLPixelFormat, width: number, height: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -193,7 +193,7 @@ declare function CVMetalTextureGetCleanTexCoords(image: any, lowerLeft: interop.
 /**
  * @since 8.0
  */
-declare function CVMetalTextureGetTexture(image: any): MTLTexture;
+declare function CVMetalTextureGetTexture(image: any): MTLTexture | null;
 
 /**
  * @since 8.0
@@ -209,13 +209,13 @@ declare function CVMetalTextureIsFlipped(image: any): boolean;
  * @since 5.0
  * @deprecated 12.0
  */
-declare function CVOpenGLESTextureCacheCreate(allocator: any, cacheAttributes: NSDictionary<any, any>, eaglContext: EAGLContext, textureAttributes: NSDictionary<any, any>, cacheOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVOpenGLESTextureCacheCreate(allocator: any | null, cacheAttributes: NSDictionary<any, any> | null, eaglContext: EAGLContext, textureAttributes: NSDictionary<any, any> | null, cacheOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 12.0
  */
-declare function CVOpenGLESTextureCacheCreateTextureFromImage(allocator: any, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any>, target: number, internalFormat: number, width: number, height: number, format: number, type: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVOpenGLESTextureCacheCreateTextureFromImage(allocator: any | null, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any> | null, target: number, internalFormat: number, width: number, height: number, format: number, type: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
@@ -267,27 +267,27 @@ declare function CVPixelBufferCopyCreationAttributes(pixelBuffer: any): NSDictio
 /**
  * @since 4.0
  */
-declare function CVPixelBufferCreate(allocator: any, width: number, height: number, pixelFormatType: number, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferCreate(allocator: any | null, width: number, height: number, pixelFormatType: number, pixelBufferAttributes: NSDictionary<any, any> | null, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferCreateResolvedAttributesDictionary(allocator: any, attributes: NSArray<any> | any[], resolvedDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function CVPixelBufferCreateResolvedAttributesDictionary(allocator: any | null, attributes: NSArray<any> | any[] | null, resolvedDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferCreateWithBytes(allocator: any, width: number, height: number, pixelFormatType: number, baseAddress: interop.Pointer | interop.Reference<any>, bytesPerRow: number, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferCreateWithBytes(allocator: any | null, width: number, height: number, pixelFormatType: number, baseAddress: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, bytesPerRow: number, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void> | null, releaseRefCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pixelBufferAttributes: NSDictionary<any, any> | null, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferCreateWithIOSurface(allocator: any, surface: IOSurface, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferCreateWithIOSurface(allocator: any | null, surface: IOSurface, pixelBufferAttributes: NSDictionary<any, any> | null, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferCreateWithPlanarBytes(allocator: any, width: number, height: number, pixelFormatType: number, dataPtr: interop.Pointer | interop.Reference<any>, dataSize: number, numberOfPlanes: number, planeBaseAddress: interop.Reference<interop.Pointer | interop.Reference<any>>, planeWidth: interop.Reference<number>, planeHeight: interop.Reference<number>, planeBytesPerRow: interop.Reference<number>, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferCreateWithPlanarBytes(allocator: any | null, width: number, height: number, pixelFormatType: number, dataPtr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataSize: number, numberOfPlanes: number, planeBaseAddress: interop.Reference<interop.Pointer | interop.Reference<any> | null>, planeWidth: interop.Reference<number>, planeHeight: interop.Reference<number>, planeBytesPerRow: interop.Reference<number>, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any> | null> | null) => void> | null, releaseRefCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pixelBufferAttributes: NSDictionary<any, any> | null, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
@@ -297,12 +297,12 @@ declare function CVPixelBufferFillExtendedPixels(pixelBuffer: any): number;
 /**
  * @since 4.0
  */
-declare function CVPixelBufferGetBaseAddress(pixelBuffer: any): interop.Pointer | interop.Reference<any>;
+declare function CVPixelBufferGetBaseAddress(pixelBuffer: any): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferGetBaseAddressOfPlane(pixelBuffer: any, planeIndex: number): interop.Pointer | interop.Reference<any>;
+declare function CVPixelBufferGetBaseAddressOfPlane(pixelBuffer: any, planeIndex: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.0
@@ -322,7 +322,7 @@ declare function CVPixelBufferGetDataSize(pixelBuffer: any): number;
 /**
  * @since 4.0
  */
-declare function CVPixelBufferGetExtendedPixels(pixelBuffer: any, extraColumnsOnLeft: interop.Pointer | interop.Reference<number>, extraColumnsOnRight: interop.Pointer | interop.Reference<number>, extraRowsOnTop: interop.Pointer | interop.Reference<number>, extraRowsOnBottom: interop.Pointer | interop.Reference<number>): void;
+declare function CVPixelBufferGetExtendedPixels(pixelBuffer: any, extraColumnsOnLeft: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, extraColumnsOnRight: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, extraRowsOnTop: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, extraRowsOnBottom: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 4.0
@@ -337,7 +337,7 @@ declare function CVPixelBufferGetHeightOfPlane(pixelBuffer: any, planeIndex: num
 /**
  * @since 4.0
  */
-declare function CVPixelBufferGetIOSurface(pixelBuffer: any): interop.Unmanaged<IOSurface>;
+declare function CVPixelBufferGetIOSurface(pixelBuffer: any | null): interop.Unmanaged<IOSurface | null>;
 
 /**
  * @since 4.0
@@ -367,7 +367,7 @@ declare function CVPixelBufferGetWidthOfPlane(pixelBuffer: any, planeIndex: numb
 /**
  * @since 4.0
  */
-declare function CVPixelBufferIsCompatibleWithAttributes(pixelBuffer: any, attributes: NSDictionary<any, any>): boolean;
+declare function CVPixelBufferIsCompatibleWithAttributes(pixelBuffer: any, attributes: NSDictionary<any, any> | null): boolean;
 
 /**
  * @since 4.0
@@ -387,17 +387,17 @@ declare const enum CVPixelBufferLockFlags {
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolCreate(allocator: any, poolAttributes: NSDictionary<any, any>, pixelBufferAttributes: NSDictionary<any, any>, poolOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferPoolCreate(allocator: any | null, poolAttributes: NSDictionary<any, any> | null, pixelBufferAttributes: NSDictionary<any, any> | null, poolOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolCreatePixelBuffer(allocator: any, pixelBufferPool: any, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferPoolCreatePixelBuffer(allocator: any | null, pixelBufferPool: any, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(allocator: any, pixelBufferPool: any, auxAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(allocator: any | null, pixelBufferPool: any, auxAttributes: NSDictionary<any, any> | null, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 declare function CVPixelBufferPoolFlush(pool: any, options: CVPixelBufferPoolFlushFlags): void;
 
@@ -409,12 +409,12 @@ declare const enum CVPixelBufferPoolFlushFlags {
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolGetAttributes(pool: any): NSDictionary<any, any>;
+declare function CVPixelBufferPoolGetAttributes(pool: any): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolGetPixelBufferAttributes(pool: any): NSDictionary<any, any>;
+declare function CVPixelBufferPoolGetPixelBufferAttributes(pool: any): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
@@ -424,22 +424,22 @@ declare function CVPixelBufferPoolGetTypeID(): number;
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolRelease(pixelBufferPool: any): void;
+declare function CVPixelBufferPoolRelease(pixelBufferPool: any | null): void;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferPoolRetain(pixelBufferPool: any): interop.Unmanaged<any>;
+declare function CVPixelBufferPoolRetain(pixelBufferPool: any | null): interop.Unmanaged<any | null>;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferRelease(texture: any): void;
+declare function CVPixelBufferRelease(texture: any | null): void;
 
 /**
  * @since 4.0
  */
-declare function CVPixelBufferRetain(texture: any): interop.Unmanaged<any>;
+declare function CVPixelBufferRetain(texture: any | null): interop.Unmanaged<any | null>;
 
 /**
  * @since 4.0
@@ -449,12 +449,12 @@ declare function CVPixelBufferUnlockBaseAddress(pixelBuffer: any, unlockFlags: C
 /**
  * @since 4.0
  */
-declare function CVPixelFormatDescriptionArrayCreateWithAllPixelFormatTypes(allocator: any): NSArray<any>;
+declare function CVPixelFormatDescriptionArrayCreateWithAllPixelFormatTypes(allocator: any | null): NSArray<any> | null;
 
 /**
  * @since 4.0
  */
-declare function CVPixelFormatDescriptionCreateWithPixelFormatType(allocator: any, pixelFormat: number): NSDictionary<any, any>;
+declare function CVPixelFormatDescriptionCreateWithPixelFormatType(allocator: any | null, pixelFormat: number): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
@@ -578,22 +578,22 @@ declare const enum CVTimeStampFlags {
 /**
  * @since 11.0
  */
-declare function CVTransferFunctionGetIntegerCodePointForString(transferFunctionString: string): number;
+declare function CVTransferFunctionGetIntegerCodePointForString(transferFunctionString: string | null): number;
 
 /**
  * @since 11.0
  */
-declare function CVTransferFunctionGetStringForIntegerCodePoint(transferFunctionCodePoint: number): interop.Unmanaged<string>;
+declare function CVTransferFunctionGetStringForIntegerCodePoint(transferFunctionCodePoint: number): interop.Unmanaged<string | null>;
 
 /**
  * @since 11.0
  */
-declare function CVYCbCrMatrixGetIntegerCodePointForString(yCbCrMatrixString: string): number;
+declare function CVYCbCrMatrixGetIntegerCodePointForString(yCbCrMatrixString: string | null): number;
 
 /**
  * @since 11.0
  */
-declare function CVYCbCrMatrixGetStringForIntegerCodePoint(yCbCrMatrixCodePoint: number): interop.Unmanaged<string>;
+declare function CVYCbCrMatrixGetStringForIntegerCodePoint(yCbCrMatrixCodePoint: number): interop.Unmanaged<string | null>;
 
 /**
  * @since 4.0

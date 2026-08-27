@@ -72,67 +72,67 @@ declare function CGAffineTransformTranslate(t: CGAffineTransform, tx: number, ty
 /**
  * @since 2.0
  */
-declare function CGBitmapContextCreate(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo): any;
+declare function CGBitmapContextCreate(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any | null, bitmapInfo: CGBitmapInfo): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGBitmapContextCreateAdaptive(width: number, height: number, auxiliaryInfo: NSDictionary<any, any>, onResolve: (p1: interop.Pointer | interop.Reference<CGContentInfo>, p2: interop.Pointer | interop.Reference<CGBitmapParameters>) => boolean, onAllocate: (p1: interop.Pointer | interop.Reference<CGContentInfo>, p2: interop.Pointer | interop.Reference<CGBitmapParameters>) => any, onFree: (p1: any, p2: interop.Pointer | interop.Reference<CGContentInfo>, p3: interop.Pointer | interop.Reference<CGBitmapParameters>) => void, onError: (p1: NSError, p2: interop.Pointer | interop.Reference<CGContentInfo>, p3: interop.Pointer | interop.Reference<CGBitmapParameters>) => void): any;
+declare function CGBitmapContextCreateAdaptive(width: number, height: number, auxiliaryInfo: NSDictionary<any, any> | null, onResolve: (p1: interop.Pointer | interop.Reference<CGContentInfo> | null, p2: interop.Pointer | interop.Reference<CGBitmapParameters> | null) => boolean | null, onAllocate: (p1: interop.Pointer | interop.Reference<CGContentInfo> | null, p2: interop.Pointer | interop.Reference<CGBitmapParameters> | null) => any | null | null, onFree: (p1: any, p2: interop.Pointer | interop.Reference<CGContentInfo> | null, p3: interop.Pointer | interop.Reference<CGBitmapParameters> | null) => void | null, onError: (p1: NSError, p2: interop.Pointer | interop.Reference<CGContentInfo> | null, p3: interop.Pointer | interop.Reference<CGBitmapParameters> | null) => void | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextCreateImage(context: any): any;
+declare function CGBitmapContextCreateImage(context: any | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGBitmapContextCreateWithData(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseInfo: interop.Pointer | interop.Reference<any>): any;
+declare function CGBitmapContextCreateWithData(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, width: number, height: number, bitsPerComponent: number, bytesPerRow: number, space: any | null, bitmapInfo: CGBitmapInfo, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void> | null, releaseInfo: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetAlphaInfo(context: any): CGImageAlphaInfo;
+declare function CGBitmapContextGetAlphaInfo(context: any | null): CGImageAlphaInfo;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetBitmapInfo(context: any): CGBitmapInfo;
+declare function CGBitmapContextGetBitmapInfo(context: any | null): CGBitmapInfo;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetBitsPerComponent(context: any): number;
+declare function CGBitmapContextGetBitsPerComponent(context: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetBitsPerPixel(context: any): number;
+declare function CGBitmapContextGetBitsPerPixel(context: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetBytesPerRow(context: any): number;
+declare function CGBitmapContextGetBytesPerRow(context: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetColorSpace(context: any): any;
+declare function CGBitmapContextGetColorSpace(context: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetData(context: any): interop.Pointer | interop.Reference<any>;
+declare function CGBitmapContextGetData(context: any | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetHeight(context: any): number;
+declare function CGBitmapContextGetHeight(context: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGBitmapContextGetWidth(context: any): number;
+declare function CGBitmapContextGetWidth(context: any | null): number;
 
 /**
  * @since 2.0
@@ -277,22 +277,22 @@ declare var CGColorBufferFormat: interop.StructType<CGColorBufferFormat>;
 /**
  * @since 18.0
  */
-declare function CGColorConversionInfoConvertData(info: any, width: number, height: number, dst_data: interop.Pointer | interop.Reference<any>, dst_format: CGColorBufferFormat, src_data: interop.Pointer | interop.Reference<any>, src_format: CGColorBufferFormat, options: NSDictionary<any, any>): boolean;
+declare function CGColorConversionInfoConvertData(info: any, width: number, height: number, dst_data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, dst_format: CGColorBufferFormat, src_data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, src_format: CGColorBufferFormat, options: NSDictionary<any, any> | null): boolean;
 
 /**
  * @since 10.0
  */
-declare function CGColorConversionInfoCreate(src: any, dst: any): any;
+declare function CGColorConversionInfoCreate(src: any | null, dst: any | null): any | null;
 
 /**
  * @since 18.0
  */
-declare function CGColorConversionInfoCreateForToneMapping(from: any, source_headroom: number, to: any, target_headroom: number, method: CGToneMapping, options: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
+declare function CGColorConversionInfoCreateForToneMapping(from: any, source_headroom: number, to: any, target_headroom: number, method: CGToneMapping, options: NSDictionary<any, any> | null, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 13
  */
-declare function CGColorConversionInfoCreateWithOptions(src: any, dst: any, options: NSDictionary<any, any>): any;
+declare function CGColorConversionInfoCreateWithOptions(src: any, dst: any, options: NSDictionary<any, any> | null): any | null;
 
 declare function CGColorConversionInfoGetTypeID(): number;
 
@@ -308,22 +308,22 @@ declare const enum CGColorConversionInfoTransformType {
 /**
  * @since 2.0
  */
-declare function CGColorCreate(space: any, components: interop.Pointer | interop.Reference<number>): any;
+declare function CGColorCreate(space: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorCreateCopy(color: any): any;
+declare function CGColorCreateCopy(color: any | null): any | null;
 
 /**
  * @since 9.0
  */
-declare function CGColorCreateCopyByMatchingToColorSpace(p1: any, intent: CGColorRenderingIntent, color: any, options: NSDictionary<any, any>): any;
+declare function CGColorCreateCopyByMatchingToColorSpace(p1: any | null, intent: CGColorRenderingIntent, color: any | null, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorCreateCopyWithAlpha(color: any, alpha: number): any;
+declare function CGColorCreateCopyWithAlpha(color: any | null, alpha: number): any | null;
 
 /**
  * @since 13.0
@@ -353,12 +353,12 @@ declare function CGColorCreateSRGB(red: number, green: number, blue: number, alp
 /**
  * @since 26.0
  */
-declare function CGColorCreateWithContentHeadroom(headroom: number, space: any, red: number, green: number, blue: number, alpha: number): any;
+declare function CGColorCreateWithContentHeadroom(headroom: number, space: any | null, red: number, green: number, blue: number, alpha: number): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorCreateWithPattern(space: any, pattern: any, components: interop.Pointer | interop.Reference<number>): any;
+declare function CGColorCreateWithPattern(space: any | null, pattern: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 interface CGColorDataFormat {
 	version: number;
@@ -367,49 +367,49 @@ interface CGColorDataFormat {
 	bits_per_component: number;
 	bytes_per_row: number;
 	intent: CGColorRenderingIntent;
-	decode: interop.Pointer | interop.Reference<number>;
+	decode: interop.Pointer | interop.Reference<number> | null;
 }
 declare var CGColorDataFormat: interop.StructType<CGColorDataFormat>;
 
 /**
  * @since 2.0
  */
-declare function CGColorEqualToColor(color1: any, color2: any): boolean;
+declare function CGColorEqualToColor(color1: any | null, color2: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGColorGetAlpha(color: any): number;
+declare function CGColorGetAlpha(color: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGColorGetColorSpace(color: any): any;
+declare function CGColorGetColorSpace(color: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorGetComponents(color: any): interop.Pointer | interop.Reference<number>;
+declare function CGColorGetComponents(color: any | null): interop.Pointer | interop.Reference<number> | null;
 
 /**
  * @since 14.0
  */
-declare function CGColorGetConstantColor(colorName: string): any;
+declare function CGColorGetConstantColor(colorName: string | null): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGColorGetContentHeadroom(color: any): number;
+declare function CGColorGetContentHeadroom(color: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGColorGetNumberOfComponents(color: any): number;
+declare function CGColorGetNumberOfComponents(color: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGColorGetPattern(color: any): any;
+declare function CGColorGetPattern(color: any | null): any | null;
 
 /**
  * @since 2.0
@@ -434,7 +434,7 @@ declare const enum CGColorModel {
 /**
  * @since 2.0
  */
-declare function CGColorRelease(color: any): void;
+declare function CGColorRelease(color: any | null): void;
 
 declare const enum CGColorRenderingIntent {
 
@@ -452,7 +452,7 @@ declare const enum CGColorRenderingIntent {
 /**
  * @since 2.0
  */
-declare function CGColorRetain(color: any): any;
+declare function CGColorRetain(color: any | null): any | null;
 
 /**
  * @since 18.0
@@ -462,150 +462,150 @@ declare function CGColorSpaceCopyBaseColorSpace(space: any): any;
 /**
  * @since 10.0
  */
-declare function CGColorSpaceCopyICCData(space: any): NSData;
+declare function CGColorSpaceCopyICCData(space: any | null): NSData | null;
 
 /**
  * @since 2.0
  * @deprecated 11.0
  */
-declare function CGColorSpaceCopyICCProfile(space: any): NSData;
+declare function CGColorSpaceCopyICCProfile(space: any | null): NSData | null;
 
 /**
  * @since 10.0
  */
-declare function CGColorSpaceCopyName(space: any): string;
+declare function CGColorSpaceCopyName(space: any | null): string | null;
 
 /**
  * @since 10.0
  */
-declare function CGColorSpaceCopyPropertyList(space: any): any;
+declare function CGColorSpaceCopyPropertyList(space: any): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateCalibratedGray(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: number): any;
+declare function CGColorSpaceCreateCalibratedGray(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number> | null, gamma: number): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateCalibratedRGB(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: interop.Reference<number>, matrix: interop.Reference<number>): any;
+declare function CGColorSpaceCreateCalibratedRGB(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number> | null, gamma: interop.Reference<number> | null, matrix: interop.Reference<number> | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGColorSpaceCreateCopyWithStandardRange(s: any): any;
+declare function CGColorSpaceCreateCopyWithStandardRange(space: any | null): any;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateDeviceCMYK(): any;
+declare function CGColorSpaceCreateDeviceCMYK(): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateDeviceGray(): any;
+declare function CGColorSpaceCreateDeviceGray(): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateDeviceRGB(): any;
+declare function CGColorSpaceCreateDeviceRGB(): any | null;
 
 /**
  * @since 14.0
  */
-declare function CGColorSpaceCreateExtended(space: any): any;
+declare function CGColorSpaceCreateExtended(space: any | null): any | null;
 
 /**
  * @since 14.0
  */
-declare function CGColorSpaceCreateExtendedLinearized(space: any): any;
+declare function CGColorSpaceCreateExtendedLinearized(space: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateICCBased(nComponents: number, range: interop.Pointer | interop.Reference<number>, profile: any, alternate: any): any;
+declare function CGColorSpaceCreateICCBased(nComponents: number, range: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, profile: any | null, alternate: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateIndexed(baseSpace: any, lastIndex: number, colorTable: string | interop.Pointer | interop.Reference<any>): any;
+declare function CGColorSpaceCreateIndexed(baseSpace: any | null, lastIndex: number, colorTable: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateLab(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, range: interop.Reference<number>): any;
+declare function CGColorSpaceCreateLab(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number> | null, range: interop.Reference<number> | null): any | null;
 
 /**
  * @since 14.0
  */
-declare function CGColorSpaceCreateLinearized(space: any): any;
+declare function CGColorSpaceCreateLinearized(space: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreatePattern(baseSpace: any): any;
+declare function CGColorSpaceCreatePattern(baseSpace: any | null): any | null;
 
 /**
  * @since 15.0
  */
-declare function CGColorSpaceCreateWithColorSyncProfile(p1: any, options: NSDictionary<any, any>): any;
+declare function CGColorSpaceCreateWithColorSyncProfile(p1: any | null, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 10.0
  */
-declare function CGColorSpaceCreateWithICCData(data: any): any;
+declare function CGColorSpaceCreateWithICCData(data: any | null): any | null;
 
 /**
  * @since 2.0
  * @deprecated 11.0
  */
-declare function CGColorSpaceCreateWithICCProfile(data: NSData): any;
+declare function CGColorSpaceCreateWithICCProfile(data: NSData | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceCreateWithName(name: string): any;
+declare function CGColorSpaceCreateWithName(name: string | null): any | null;
 
 /**
  * @since 9.0
  * @deprecated 15.0
  */
-declare function CGColorSpaceCreateWithPlatformColorSpace(ref: interop.Pointer | interop.Reference<any>): any;
+declare function CGColorSpaceCreateWithPlatformColorSpace(ref: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 10.0
  */
-declare function CGColorSpaceCreateWithPropertyList(plist: any): any;
+declare function CGColorSpaceCreateWithPropertyList(plist: any): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceGetBaseColorSpace(space: any): any;
+declare function CGColorSpaceGetBaseColorSpace(space: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceGetColorTable(space: any, table: string | interop.Pointer | interop.Reference<any>): void;
+declare function CGColorSpaceGetColorTable(space: any | null, table: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceGetColorTableCount(space: any): number;
+declare function CGColorSpaceGetColorTableCount(space: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceGetModel(space: any): CGColorSpaceModel;
+declare function CGColorSpaceGetModel(space: any | null): CGColorSpaceModel;
 
 /**
  * @since 11.0
  */
-declare function CGColorSpaceGetName(space: any): string;
+declare function CGColorSpaceGetName(space: any | null): string | null;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceGetNumberOfComponents(space: any): number;
+declare function CGColorSpaceGetNumberOfComponents(space: any | null): number;
 
 /**
  * @since 2.0
@@ -656,22 +656,22 @@ declare const enum CGColorSpaceModel {
 /**
  * @since 2.0
  */
-declare function CGColorSpaceRelease(space: any): void;
+declare function CGColorSpaceRelease(space: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGColorSpaceRetain(space: any): any;
+declare function CGColorSpaceRetain(space: any | null): any | null;
 
 /**
  * @since 10.0
  */
-declare function CGColorSpaceSupportsOutput(space: any): boolean;
+declare function CGColorSpaceSupportsOutput(space: any | null): boolean;
 
 /**
  * @since 10.0
  */
-declare function CGColorSpaceUsesExtendedRange(space: any): boolean;
+declare function CGColorSpaceUsesExtendedRange(space: any | null): boolean;
 
 /**
  * @since 14.0
@@ -706,259 +706,259 @@ declare var CGContentInfo: interop.StructType<CGContentInfo>;
 
 interface CGContentToneMappingInfo {
 	method: CGToneMapping;
-	options: NSDictionary<any, any>;
+	options: NSDictionary<any, any> | null;
 }
 declare var CGContentToneMappingInfo: interop.StructType<CGContentToneMappingInfo>;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddArc(c: any, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: number): void;
+declare function CGContextAddArc(c: any | null, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddArcToPoint(c: any, x1: number, y1: number, x2: number, y2: number, radius: number): void;
+declare function CGContextAddArcToPoint(c: any | null, x1: number, y1: number, x2: number, y2: number, radius: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddCurveToPoint(c: any, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
+declare function CGContextAddCurveToPoint(c: any | null, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddEllipseInRect(c: any, rect: CGRect): void;
+declare function CGContextAddEllipseInRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddLineToPoint(c: any, x: number, y: number): void;
+declare function CGContextAddLineToPoint(c: any | null, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddLines(c: any, points: interop.Pointer | interop.Reference<CGPoint>, count: number): void;
+declare function CGContextAddLines(c: any | null, points: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddPath(c: any, path: any): void;
+declare function CGContextAddPath(c: any | null, path: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddQuadCurveToPoint(c: any, cpx: number, cpy: number, x: number, y: number): void;
+declare function CGContextAddQuadCurveToPoint(c: any | null, cpx: number, cpy: number, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddRect(c: any, rect: CGRect): void;
+declare function CGContextAddRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextAddRects(c: any, rects: interop.Pointer | interop.Reference<CGRect>, count: number): void;
+declare function CGContextAddRects(c: any | null, rects: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextBeginPage(c: any, mediaBox: interop.Pointer | interop.Reference<CGRect>): void;
+declare function CGContextBeginPage(c: any | null, mediaBox: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextBeginPath(c: any): void;
+declare function CGContextBeginPath(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextBeginTransparencyLayer(c: any, auxiliaryInfo: NSDictionary<any, any>): void;
+declare function CGContextBeginTransparencyLayer(c: any | null, auxiliaryInfo: NSDictionary<any, any> | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextBeginTransparencyLayerWithRect(c: any, rect: CGRect, auxInfo: NSDictionary<any, any>): void;
+declare function CGContextBeginTransparencyLayerWithRect(c: any | null, rect: CGRect, auxInfo: NSDictionary<any, any> | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextClearRect(c: any, rect: CGRect): void;
+declare function CGContextClearRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextClip(c: any): void;
+declare function CGContextClip(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextClipToMask(c: any, rect: CGRect, mask: any): void;
+declare function CGContextClipToMask(c: any | null, rect: CGRect, mask: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextClipToRect(c: any, rect: CGRect): void;
+declare function CGContextClipToRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextClipToRects(c: any, rects: interop.Pointer | interop.Reference<CGRect>, count: number): void;
+declare function CGContextClipToRects(c: any | null, rects: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextClosePath(c: any): void;
+declare function CGContextClosePath(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextConcatCTM(c: any, transform: CGAffineTransform): void;
+declare function CGContextConcatCTM(c: any | null, transform: CGAffineTransform): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextConvertPointToDeviceSpace(c: any, point: CGPoint): CGPoint;
+declare function CGContextConvertPointToDeviceSpace(c: any | null, point: CGPoint): CGPoint;
 
 /**
  * @since 2.0
  */
-declare function CGContextConvertPointToUserSpace(c: any, point: CGPoint): CGPoint;
+declare function CGContextConvertPointToUserSpace(c: any | null, point: CGPoint): CGPoint;
 
 /**
  * @since 2.0
  */
-declare function CGContextConvertRectToDeviceSpace(c: any, rect: CGRect): CGRect;
+declare function CGContextConvertRectToDeviceSpace(c: any | null, rect: CGRect): CGRect;
 
 /**
  * @since 2.0
  */
-declare function CGContextConvertRectToUserSpace(c: any, rect: CGRect): CGRect;
+declare function CGContextConvertRectToUserSpace(c: any | null, rect: CGRect): CGRect;
 
 /**
  * @since 2.0
  */
-declare function CGContextConvertSizeToDeviceSpace(c: any, size: CGSize): CGSize;
+declare function CGContextConvertSizeToDeviceSpace(c: any | null, size: CGSize): CGSize;
 
 /**
  * @since 2.0
  */
-declare function CGContextConvertSizeToUserSpace(c: any, size: CGSize): CGSize;
+declare function CGContextConvertSizeToUserSpace(c: any | null, size: CGSize): CGSize;
 
 /**
  * @since 2.0
  */
-declare function CGContextCopyPath(c: any): any;
+declare function CGContextCopyPath(c: any | null): any | null;
 
 /**
  * @since 17.0
  */
-declare function CGContextDrawConicGradient(c: any, gradient: any, center: CGPoint, angle: number): void;
+declare function CGContextDrawConicGradient(c: any, gradient: any | null, center: CGPoint, angle: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawImage(c: any, rect: CGRect, image: any): void;
+declare function CGContextDrawImage(c: any | null, rect: CGRect, image: any | null): void;
 
 /**
  * @since 18.0
  */
-declare function CGContextDrawImageApplyingToneMapping(c: any, r: CGRect, image: any, method: CGToneMapping, options: NSDictionary<any, any>): boolean;
+declare function CGContextDrawImageApplyingToneMapping(c: any, r: CGRect, image: any, method: CGToneMapping, options: NSDictionary<any, any> | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawLayerAtPoint(context: any, point: CGPoint, layer: any): void;
+declare function CGContextDrawLayerAtPoint(context: any | null, point: CGPoint, layer: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawLayerInRect(context: any, rect: CGRect, layer: any): void;
+declare function CGContextDrawLayerInRect(context: any | null, rect: CGRect, layer: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawLinearGradient(c: any, gradient: any, startPoint: CGPoint, endPoint: CGPoint, options: CGGradientDrawingOptions): void;
+declare function CGContextDrawLinearGradient(c: any | null, gradient: any | null, startPoint: CGPoint, endPoint: CGPoint, options: CGGradientDrawingOptions): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawPDFPage(c: any, page: any): void;
+declare function CGContextDrawPDFPage(c: any | null, page: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawPath(c: any, mode: CGPathDrawingMode): void;
+declare function CGContextDrawPath(c: any | null, mode: CGPathDrawingMode): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawRadialGradient(c: any, gradient: any, startCenter: CGPoint, startRadius: number, endCenter: CGPoint, endRadius: number, options: CGGradientDrawingOptions): void;
+declare function CGContextDrawRadialGradient(c: any | null, gradient: any | null, startCenter: CGPoint, startRadius: number, endCenter: CGPoint, endRadius: number, options: CGGradientDrawingOptions): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawShading(c: any, shading: any): void;
+declare function CGContextDrawShading(c: any | null, shading: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextDrawTiledImage(c: any, rect: CGRect, image: any): void;
+declare function CGContextDrawTiledImage(c: any | null, rect: CGRect, image: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextEOClip(c: any): void;
+declare function CGContextEOClip(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextEOFillPath(c: any): void;
+declare function CGContextEOFillPath(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextEndPage(c: any): void;
+declare function CGContextEndPage(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextEndTransparencyLayer(c: any): void;
+declare function CGContextEndTransparencyLayer(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextFillEllipseInRect(c: any, rect: CGRect): void;
+declare function CGContextFillEllipseInRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextFillPath(c: any): void;
+declare function CGContextFillPath(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextFillRect(c: any, rect: CGRect): void;
+declare function CGContextFillRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextFillRects(c: any, rects: interop.Pointer | interop.Reference<CGRect>, count: number): void;
+declare function CGContextFillRects(c: any | null, rects: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextFlush(c: any): void;
+declare function CGContextFlush(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextGetCTM(c: any): CGAffineTransform;
+declare function CGContextGetCTM(c: any | null): CGAffineTransform;
 
 /**
  * @since 2.0
  */
-declare function CGContextGetClipBoundingBox(c: any): CGRect;
+declare function CGContextGetClipBoundingBox(c: any | null): CGRect;
 
 /**
  * @since 26.0
@@ -973,27 +973,27 @@ declare function CGContextGetEDRTargetHeadroom(c: any): number;
 /**
  * @since 2.0
  */
-declare function CGContextGetInterpolationQuality(c: any): CGInterpolationQuality;
+declare function CGContextGetInterpolationQuality(c: any | null): CGInterpolationQuality;
 
 /**
  * @since 2.0
  */
-declare function CGContextGetPathBoundingBox(c: any): CGRect;
+declare function CGContextGetPathBoundingBox(c: any | null): CGRect;
 
 /**
  * @since 2.0
  */
-declare function CGContextGetPathCurrentPoint(c: any): CGPoint;
+declare function CGContextGetPathCurrentPoint(c: any | null): CGPoint;
 
 /**
  * @since 2.0
  */
-declare function CGContextGetTextMatrix(c: any): CGAffineTransform;
+declare function CGContextGetTextMatrix(c: any | null): CGAffineTransform;
 
 /**
  * @since 2.0
  */
-declare function CGContextGetTextPosition(c: any): CGPoint;
+declare function CGContextGetTextPosition(c: any | null): CGPoint;
 
 /**
  * @since 2.0
@@ -1003,110 +1003,110 @@ declare function CGContextGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGContextGetUserSpaceToDeviceSpaceTransform(c: any): CGAffineTransform;
+declare function CGContextGetUserSpaceToDeviceSpaceTransform(c: any | null): CGAffineTransform;
 
 /**
  * @since 2.0
  */
-declare function CGContextIsPathEmpty(c: any): boolean;
+declare function CGContextIsPathEmpty(c: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGContextMoveToPoint(c: any, x: number, y: number): void;
+declare function CGContextMoveToPoint(c: any | null, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextPathContainsPoint(c: any, point: CGPoint, mode: CGPathDrawingMode): boolean;
+declare function CGContextPathContainsPoint(c: any | null, point: CGPoint, mode: CGPathDrawingMode): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGContextRelease(c: any): void;
+declare function CGContextRelease(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextReplacePathWithStrokedPath(c: any): void;
+declare function CGContextReplacePathWithStrokedPath(c: any | null): void;
 
 declare function CGContextResetClip(c: any): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextRestoreGState(c: any): void;
+declare function CGContextRestoreGState(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextRetain(c: any): any;
+declare function CGContextRetain(c: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGContextRotateCTM(c: any, angle: number): void;
+declare function CGContextRotateCTM(c: any | null, angle: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSaveGState(c: any): void;
+declare function CGContextSaveGState(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextScaleCTM(c: any, sx: number, sy: number): void;
+declare function CGContextScaleCTM(c: any | null, sx: number, sy: number): void;
 
 /**
  * @since 2.0
  * @deprecated 7.0
  */
-declare function CGContextSelectFont(c: any, name: string | interop.Pointer | interop.Reference<any>, size: number, textEncoding: CGTextEncoding): void;
+declare function CGContextSelectFont(c: any | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, size: number, textEncoding: CGTextEncoding): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetAllowsAntialiasing(c: any, allowsAntialiasing: boolean): void;
+declare function CGContextSetAllowsAntialiasing(c: any | null, allowsAntialiasing: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetAllowsFontSmoothing(c: any, allowsFontSmoothing: boolean): void;
+declare function CGContextSetAllowsFontSmoothing(c: any | null, allowsFontSmoothing: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetAllowsFontSubpixelPositioning(c: any, allowsFontSubpixelPositioning: boolean): void;
+declare function CGContextSetAllowsFontSubpixelPositioning(c: any | null, allowsFontSubpixelPositioning: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetAllowsFontSubpixelQuantization(c: any, allowsFontSubpixelQuantization: boolean): void;
+declare function CGContextSetAllowsFontSubpixelQuantization(c: any | null, allowsFontSubpixelQuantization: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetAlpha(c: any, alpha: number): void;
+declare function CGContextSetAlpha(c: any | null, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetBlendMode(c: any, mode: CGBlendMode): void;
+declare function CGContextSetBlendMode(c: any | null, mode: CGBlendMode): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetCMYKFillColor(c: any, cyan: number, magenta: number, yellow: number, black: number, alpha: number): void;
+declare function CGContextSetCMYKFillColor(c: any | null, cyan: number, magenta: number, yellow: number, black: number, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetCMYKStrokeColor(c: any, cyan: number, magenta: number, yellow: number, black: number, alpha: number): void;
+declare function CGContextSetCMYKStrokeColor(c: any | null, cyan: number, magenta: number, yellow: number, black: number, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetCharacterSpacing(c: any, spacing: number): void;
+declare function CGContextSetCharacterSpacing(c: any | null, spacing: number): void;
 
 /**
  * @since 26.0
@@ -1121,227 +1121,227 @@ declare function CGContextSetEDRTargetHeadroom(c: any, headroom: number): boolea
 /**
  * @since 2.0
  */
-declare function CGContextSetFillColor(c: any, components: interop.Pointer | interop.Reference<number>): void;
+declare function CGContextSetFillColor(c: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetFillColorSpace(c: any, space: any): void;
+declare function CGContextSetFillColorSpace(c: any | null, space: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetFillColorWithColor(c: any, color: any): void;
+declare function CGContextSetFillColorWithColor(c: any | null, color: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetFillPattern(c: any, pattern: any, components: interop.Pointer | interop.Reference<number>): void;
+declare function CGContextSetFillPattern(c: any | null, pattern: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetFlatness(c: any, flatness: number): void;
+declare function CGContextSetFlatness(c: any | null, flatness: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetFont(c: any, font: any): void;
+declare function CGContextSetFont(c: any | null, font: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetFontSize(c: any, size: number): void;
+declare function CGContextSetFontSize(c: any | null, size: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetGrayFillColor(c: any, gray: number, alpha: number): void;
+declare function CGContextSetGrayFillColor(c: any | null, gray: number, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetGrayStrokeColor(c: any, gray: number, alpha: number): void;
+declare function CGContextSetGrayStrokeColor(c: any | null, gray: number, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetInterpolationQuality(c: any, quality: CGInterpolationQuality): void;
+declare function CGContextSetInterpolationQuality(c: any | null, quality: CGInterpolationQuality): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetLineCap(c: any, cap: CGLineCap): void;
+declare function CGContextSetLineCap(c: any | null, cap: CGLineCap): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetLineDash(c: any, phase: number, lengths: interop.Pointer | interop.Reference<number>, count: number): void;
+declare function CGContextSetLineDash(c: any | null, phase: number, lengths: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetLineJoin(c: any, join: CGLineJoin): void;
+declare function CGContextSetLineJoin(c: any | null, join: CGLineJoin): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetLineWidth(c: any, width: number): void;
+declare function CGContextSetLineWidth(c: any | null, width: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetMiterLimit(c: any, limit: number): void;
+declare function CGContextSetMiterLimit(c: any | null, limit: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetPatternPhase(c: any, phase: CGSize): void;
+declare function CGContextSetPatternPhase(c: any | null, phase: CGSize): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetRGBFillColor(c: any, red: number, green: number, blue: number, alpha: number): void;
+declare function CGContextSetRGBFillColor(c: any | null, red: number, green: number, blue: number, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetRGBStrokeColor(c: any, red: number, green: number, blue: number, alpha: number): void;
+declare function CGContextSetRGBStrokeColor(c: any | null, red: number, green: number, blue: number, alpha: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetRenderingIntent(c: any, intent: CGColorRenderingIntent): void;
+declare function CGContextSetRenderingIntent(c: any | null, intent: CGColorRenderingIntent): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetShadow(c: any, offset: CGSize, blur: number): void;
+declare function CGContextSetShadow(c: any | null, offset: CGSize, blur: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetShadowWithColor(c: any, offset: CGSize, blur: number, color: any): void;
+declare function CGContextSetShadowWithColor(c: any | null, offset: CGSize, blur: number, color: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetShouldAntialias(c: any, shouldAntialias: boolean): void;
+declare function CGContextSetShouldAntialias(c: any | null, shouldAntialias: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetShouldSmoothFonts(c: any, shouldSmoothFonts: boolean): void;
+declare function CGContextSetShouldSmoothFonts(c: any | null, shouldSmoothFonts: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetShouldSubpixelPositionFonts(c: any, shouldSubpixelPositionFonts: boolean): void;
+declare function CGContextSetShouldSubpixelPositionFonts(c: any | null, shouldSubpixelPositionFonts: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetShouldSubpixelQuantizeFonts(c: any, shouldSubpixelQuantizeFonts: boolean): void;
+declare function CGContextSetShouldSubpixelQuantizeFonts(c: any | null, shouldSubpixelQuantizeFonts: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetStrokeColor(c: any, components: interop.Pointer | interop.Reference<number>): void;
+declare function CGContextSetStrokeColor(c: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetStrokeColorSpace(c: any, space: any): void;
+declare function CGContextSetStrokeColorSpace(c: any | null, space: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetStrokeColorWithColor(c: any, color: any): void;
+declare function CGContextSetStrokeColorWithColor(c: any | null, color: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetStrokePattern(c: any, pattern: any, components: interop.Pointer | interop.Reference<number>): void;
+declare function CGContextSetStrokePattern(c: any | null, pattern: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetTextDrawingMode(c: any, mode: CGTextDrawingMode): void;
+declare function CGContextSetTextDrawingMode(c: any | null, mode: CGTextDrawingMode): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetTextMatrix(c: any, t: CGAffineTransform): void;
+declare function CGContextSetTextMatrix(c: any | null, t: CGAffineTransform): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSetTextPosition(c: any, x: number, y: number): void;
-
-/**
- * @since 2.0
- * @deprecated 7.0
- */
-declare function CGContextShowGlyphs(c: any, g: interop.Pointer | interop.Reference<number>, count: number): void;
+declare function CGContextSetTextPosition(c: any | null, x: number, y: number): void;
 
 /**
  * @since 2.0
  * @deprecated 7.0
  */
-declare function CGContextShowGlyphsAtPoint(c: any, x: number, y: number, glyphs: interop.Pointer | interop.Reference<number>, count: number): void;
-
-/**
- * @since 2.0
- */
-declare function CGContextShowGlyphsAtPositions(c: any, glyphs: interop.Pointer | interop.Reference<number>, Lpositions: interop.Pointer | interop.Reference<CGPoint>, count: number): void;
+declare function CGContextShowGlyphs(c: any | null, g: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  * @deprecated 7.0
  */
-declare function CGContextShowGlyphsWithAdvances(c: any, glyphs: interop.Pointer | interop.Reference<number>, advances: interop.Pointer | interop.Reference<CGSize>, count: number): void;
+declare function CGContextShowGlyphsAtPoint(c: any | null, x: number, y: number, glyphs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
+
+/**
+ * @since 2.0
+ */
+declare function CGContextShowGlyphsAtPositions(c: any | null, glyphs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, Lpositions: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  * @deprecated 7.0
  */
-declare function CGContextShowText(c: any, string: string | interop.Pointer | interop.Reference<any>, length: number): void;
+declare function CGContextShowGlyphsWithAdvances(c: any | null, glyphs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, advances: interop.Pointer | interop.Reference<CGSize> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  * @deprecated 7.0
  */
-declare function CGContextShowTextAtPoint(c: any, x: number, y: number, string: string | interop.Pointer | interop.Reference<any>, length: number): void;
+declare function CGContextShowText(c: any | null, string: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, length: number): void;
+
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
+declare function CGContextShowTextAtPoint(c: any | null, x: number, y: number, string: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, length: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextStrokeEllipseInRect(c: any, rect: CGRect): void;
+declare function CGContextStrokeEllipseInRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextStrokeLineSegments(c: any, points: interop.Pointer | interop.Reference<CGPoint>, count: number): void;
+declare function CGContextStrokeLineSegments(c: any | null, points: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextStrokePath(c: any): void;
+declare function CGContextStrokePath(c: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextStrokeRect(c: any, rect: CGRect): void;
+declare function CGContextStrokeRect(c: any | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextStrokeRectWithWidth(c: any, rect: CGRect, width: number): void;
+declare function CGContextStrokeRectWithWidth(c: any | null, rect: CGRect, width: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGContextSynchronize(c: any): void;
+declare function CGContextSynchronize(c: any | null): void;
 
 /**
  * @since 26.0
@@ -1351,30 +1351,30 @@ declare function CGContextSynchronizeAttributes(c: any): void;
 /**
  * @since 2.0
  */
-declare function CGContextTranslateCTM(c: any, tx: number, ty: number): void;
+declare function CGContextTranslateCTM(c: any | null, tx: number, ty: number): void;
 
-declare function CGConvertColorDataWithFormat(width: number, height: number, dst_data: interop.Pointer | interop.Reference<any>, dst_format: CGColorDataFormat, src_data: interop.Pointer | interop.Reference<any>, src_format: CGColorDataFormat, options: NSDictionary<any, any>): boolean;
+declare function CGConvertColorDataWithFormat(width: number, height: number, dst_data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dst_format: CGColorDataFormat, src_data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src_format: CGColorDataFormat, options: NSDictionary<any, any>): boolean;
 
 interface CGDataConsumerCallbacks {
-	putBytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
-	releaseConsumer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	putBytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number) => number> | null;
+	releaseConsumer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
 }
 declare var CGDataConsumerCallbacks: interop.StructType<CGDataConsumerCallbacks>;
 
 /**
  * @since 2.0
  */
-declare function CGDataConsumerCreate(info: interop.Pointer | interop.Reference<any>, cbks: interop.Pointer | interop.Reference<CGDataConsumerCallbacks>): any;
+declare function CGDataConsumerCreate(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, cbks: interop.Pointer | interop.Reference<CGDataConsumerCallbacks> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataConsumerCreateWithCFData(data: NSData): any;
+declare function CGDataConsumerCreateWithCFData(data: NSData | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataConsumerCreateWithURL(url: NSURL): any;
+declare function CGDataConsumerCreateWithURL(url: NSURL | null): any | null;
 
 /**
  * @since 2.0
@@ -1384,61 +1384,61 @@ declare function CGDataConsumerGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGDataConsumerRelease(consumer: any): void;
+declare function CGDataConsumerRelease(consumer: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGDataConsumerRetain(consumer: any): any;
+declare function CGDataConsumerRetain(consumer: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCopyData(provider: any): NSData;
+declare function CGDataProviderCopyData(provider: any | null): NSData | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCreateDirect(info: interop.Pointer | interop.Reference<any>, size: number, callbacks: interop.Pointer | interop.Reference<CGDataProviderDirectCallbacks>): any;
+declare function CGDataProviderCreateDirect(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, callbacks: interop.Pointer | interop.Reference<CGDataProviderDirectCallbacks> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCreateSequential(info: interop.Pointer | interop.Reference<any>, callbacks: interop.Pointer | interop.Reference<CGDataProviderSequentialCallbacks>): any;
+declare function CGDataProviderCreateSequential(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callbacks: interop.Pointer | interop.Reference<CGDataProviderSequentialCallbacks> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCreateWithCFData(data: NSData): any;
+declare function CGDataProviderCreateWithCFData(data: NSData | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCreateWithData(info: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>, size: number, releaseData: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>): any;
+declare function CGDataProviderCreateWithData(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, releaseData: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number) => void> | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCreateWithFilename(filename: string | interop.Pointer | interop.Reference<any>): any;
+declare function CGDataProviderCreateWithFilename(filename: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderCreateWithURL(url: NSURL): any;
+declare function CGDataProviderCreateWithURL(url: NSURL | null): any | null;
 
 interface CGDataProviderDirectCallbacks {
 	version: number;
-	getBytePointer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	releaseBytePointer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
-	getBytesAtPosition: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number) => number>;
-	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	getBytePointer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	releaseBytePointer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	getBytesAtPosition: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: number) => number> | null;
+	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
 }
 declare var CGDataProviderDirectCallbacks: interop.StructType<CGDataProviderDirectCallbacks>;
 
 /**
  * @since 11.0
  */
-declare function CGDataProviderGetInfo(provider: any): interop.Pointer | interop.Reference<any>;
+declare function CGDataProviderGetInfo(provider: any | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
@@ -1448,19 +1448,19 @@ declare function CGDataProviderGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGDataProviderRelease(provider: any): void;
+declare function CGDataProviderRelease(provider: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGDataProviderRetain(provider: any): any;
+declare function CGDataProviderRetain(provider: any | null): any | null;
 
 interface CGDataProviderSequentialCallbacks {
 	version: number;
-	getBytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
-	skipForward: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>;
-	rewind: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	getBytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number) => number> | null;
+	skipForward: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => number> | null;
+	rewind: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
 }
 declare var CGDataProviderSequentialCallbacks: interop.StructType<CGDataProviderSequentialCallbacks>;
 
@@ -1499,122 +1499,122 @@ declare function CGErrorSetCallback(callback: interop.FunctionReference<() => vo
 /**
  * @since 2.0
  */
-declare function CGFontCanCreatePostScriptSubset(font: any, format: CGFontPostScriptFormat): boolean;
+declare function CGFontCanCreatePostScriptSubset(font: any | null, format: CGFontPostScriptFormat): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyFullName(font: any): string;
+declare function CGFontCopyFullName(font: any | null): string | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyGlyphNameForGlyph(font: any, glyph: number): string;
+declare function CGFontCopyGlyphNameForGlyph(font: any | null, glyph: number): string | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyPostScriptName(font: any): string;
+declare function CGFontCopyPostScriptName(font: any | null): string | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyTableForTag(font: any, tag: number): NSData;
+declare function CGFontCopyTableForTag(font: any | null, tag: number): NSData | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyTableTags(font: any): NSArray<any>;
+declare function CGFontCopyTableTags(font: any | null): NSArray<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyVariationAxes(font: any): NSArray<any>;
+declare function CGFontCopyVariationAxes(font: any | null): NSArray<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCopyVariations(font: any): NSDictionary<any, any>;
+declare function CGFontCopyVariations(font: any | null): NSDictionary<any, any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCreateCopyWithVariations(font: any, variations: NSDictionary<any, any>): any;
+declare function CGFontCreateCopyWithVariations(font: any | null, variations: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCreatePostScriptEncoding(font: any, encoding: interop.Reference<number>): NSData;
+declare function CGFontCreatePostScriptEncoding(font: any | null, encoding: interop.Reference<number> | null): NSData | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCreatePostScriptSubset(font: any, subsetName: string, format: CGFontPostScriptFormat, glyphs: interop.Pointer | interop.Reference<number>, count: number, encoding: interop.Reference<number>): NSData;
+declare function CGFontCreatePostScriptSubset(font: any | null, subsetName: string | null, format: CGFontPostScriptFormat, glyphs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number, encoding: interop.Reference<number> | null): NSData | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCreateWithDataProvider(provider: any): any;
+declare function CGFontCreateWithDataProvider(provider: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontCreateWithFontName(name: string): any;
+declare function CGFontCreateWithFontName(name: string | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetAscent(font: any): number;
+declare function CGFontGetAscent(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetCapHeight(font: any): number;
+declare function CGFontGetCapHeight(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetDescent(font: any): number;
+declare function CGFontGetDescent(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetFontBBox(font: any): CGRect;
+declare function CGFontGetFontBBox(font: any | null): CGRect;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetGlyphAdvances(font: any, glyphs: interop.Pointer | interop.Reference<number>, count: number, advances: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGFontGetGlyphAdvances(font: any | null, glyphs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, count: number, advances: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetGlyphBBoxes(font: any, glyphs: interop.Pointer | interop.Reference<number>, count: number, bboxes: interop.Pointer | interop.Reference<CGRect>): boolean;
+declare function CGFontGetGlyphBBoxes(font: any | null, glyphs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, count: number, bboxes: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetGlyphWithGlyphName(font: any, name: string): number;
+declare function CGFontGetGlyphWithGlyphName(font: any | null, name: string | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetItalicAngle(font: any): number;
+declare function CGFontGetItalicAngle(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetLeading(font: any): number;
+declare function CGFontGetLeading(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetNumberOfGlyphs(font: any): number;
+declare function CGFontGetNumberOfGlyphs(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetStemV(font: any): number;
+declare function CGFontGetStemV(font: any | null): number;
 
 /**
  * @since 2.0
@@ -1624,12 +1624,12 @@ declare function CGFontGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGFontGetUnitsPerEm(font: any): number;
+declare function CGFontGetUnitsPerEm(font: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGFontGetXHeight(font: any): number;
+declare function CGFontGetXHeight(font: any | null): number;
 
 declare const enum CGFontPostScriptFormat {
 
@@ -1643,24 +1643,24 @@ declare const enum CGFontPostScriptFormat {
 /**
  * @since 2.0
  */
-declare function CGFontRelease(font: any): void;
+declare function CGFontRelease(font: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGFontRetain(font: any): any;
+declare function CGFontRetain(font: any | null): any | null;
 
 interface CGFunctionCallbacks {
 	version: number;
-	evaluate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>) => void>;
-	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	evaluate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<number> | null, p3: interop.Pointer | interop.Reference<number> | null) => void> | null;
+	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
 }
 declare var CGFunctionCallbacks: interop.StructType<CGFunctionCallbacks>;
 
 /**
  * @since 2.0
  */
-declare function CGFunctionCreate(info: interop.Pointer | interop.Reference<any>, domainDimension: number, domain: interop.Pointer | interop.Reference<number>, rangeDimension: number, range: interop.Pointer | interop.Reference<number>, callbacks: interop.Pointer | interop.Reference<CGFunctionCallbacks>): any;
+declare function CGFunctionCreate(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domainDimension: number, domain: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, rangeDimension: number, range: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, callbacks: interop.Pointer | interop.Reference<CGFunctionCallbacks> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
@@ -1670,12 +1670,12 @@ declare function CGFunctionGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGFunctionRelease(_function: any): void;
+declare function CGFunctionRelease(_function: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGFunctionRetain(_function: any): any;
+declare function CGFunctionRetain(_function: any | null): any | null;
 
 declare const enum CGGlyphDeprecatedEnum {
 
@@ -1687,17 +1687,17 @@ declare const enum CGGlyphDeprecatedEnum {
 /**
  * @since 2.0
  */
-declare function CGGradientCreateWithColorComponents(space: any, components: interop.Pointer | interop.Reference<number>, locations: interop.Pointer | interop.Reference<number>, count: number): any;
+declare function CGGradientCreateWithColorComponents(space: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, locations: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGGradientCreateWithColors(space: any, colors: NSArray<any> | any[], locations: interop.Pointer | interop.Reference<number>): any;
+declare function CGGradientCreateWithColors(space: any | null, colors: NSArray<any> | any[] | null, locations: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGGradientCreateWithContentHeadroom(headroom: number, space: any, components: interop.Pointer | interop.Reference<number>, locations: interop.Pointer | interop.Reference<number>, count: number): any;
+declare function CGGradientCreateWithContentHeadroom(headroom: number, space: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, locations: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): any | null;
 
 declare const enum CGGradientDrawingOptions {
 
@@ -1709,7 +1709,7 @@ declare const enum CGGradientDrawingOptions {
 /**
  * @since 26.0
  */
-declare function CGGradientGetContentHeadroom(gradient: any): number;
+declare function CGGradientGetContentHeadroom(gradient: any | null): number;
 
 /**
  * @since 2.0
@@ -1719,12 +1719,12 @@ declare function CGGradientGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGGradientRelease(gradient: any): void;
+declare function CGGradientRelease(gradient: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGGradientRetain(gradient: any): any;
+declare function CGGradientRetain(gradient: any | null): any | null;
 
 declare const enum CGImageAlphaInfo {
 
@@ -1770,12 +1770,12 @@ declare const enum CGImageByteOrderInfo {
 /**
  * @since 26.0
  */
-declare function CGImageCalculateContentAverageLightLevel(image: any): number;
+declare function CGImageCalculateContentAverageLightLevel(image: any | null): number;
 
 /**
  * @since 26.0
  */
-declare function CGImageCalculateContentHeadroom(image: any): number;
+declare function CGImageCalculateContentHeadroom(image: any | null): number;
 
 /**
  * @since 2.0
@@ -1790,142 +1790,142 @@ declare const enum CGImageComponentInfo {
 /**
  * @since 18.0
  */
-declare function CGImageContainsImageSpecificToneMappingMetadata(image: any): boolean;
+declare function CGImageContainsImageSpecificToneMappingMetadata(image: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any | null, bitmapInfo: CGBitmapInfo, provider: any | null, decode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateCopy(image: any): any;
+declare function CGImageCreateCopy(image: any | null): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGImageCreateCopyWithCalculatedHDRStats(image: any): any;
+declare function CGImageCreateCopyWithCalculatedHDRStats(image: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateCopyWithColorSpace(image: any, space: any): any;
+declare function CGImageCreateCopyWithColorSpace(image: any | null, space: any | null): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGImageCreateCopyWithContentAverageLightLevel(image: any, avll: number): any;
+declare function CGImageCreateCopyWithContentAverageLightLevel(image: any | null, avll: number): any | null;
 
 /**
  * @since 18.0
  */
-declare function CGImageCreateCopyWithContentHeadroom(headroom: number, image: any): any;
+declare function CGImageCreateCopyWithContentHeadroom(headroom: number, image: any | null): any | null;
 
 /**
  * @since 18.0
  */
-declare function CGImageCreateWithContentHeadroom(headroom: number, width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreateWithContentHeadroom(headroom: number, width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any | null, bitmapInfo: CGBitmapInfo, provider: any | null, decode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateWithImageInRect(image: any, rect: CGRect): any;
+declare function CGImageCreateWithImageInRect(image: any | null, rect: CGRect): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateWithJPEGDataProvider(source: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreateWithJPEGDataProvider(source: any | null, decode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateWithMask(image: any, mask: any): any;
+declare function CGImageCreateWithMask(image: any | null, mask: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateWithMaskingColors(image: any, components: interop.Pointer | interop.Reference<number>): any;
+declare function CGImageCreateWithMaskingColors(image: any | null, components: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageCreateWithPNGDataProvider(source: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreateWithPNGDataProvider(source: any | null, decode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetAlphaInfo(image: any): CGImageAlphaInfo;
+declare function CGImageGetAlphaInfo(image: any | null): CGImageAlphaInfo;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetBitmapInfo(image: any): CGBitmapInfo;
+declare function CGImageGetBitmapInfo(image: any | null): CGBitmapInfo;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetBitsPerComponent(image: any): number;
+declare function CGImageGetBitsPerComponent(image: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetBitsPerPixel(image: any): number;
+declare function CGImageGetBitsPerPixel(image: any | null): number;
 
 /**
  * @since 12.0
  */
-declare function CGImageGetByteOrderInfo(image: any): CGImageByteOrderInfo;
+declare function CGImageGetByteOrderInfo(image: any | null): CGImageByteOrderInfo;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetBytesPerRow(image: any): number;
+declare function CGImageGetBytesPerRow(image: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetColorSpace(image: any): any;
+declare function CGImageGetColorSpace(image: any | null): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGImageGetContentAverageLightLevel(image: any): number;
+declare function CGImageGetContentAverageLightLevel(image: any | null): number;
 
 /**
  * @since 18.0
  */
-declare function CGImageGetContentHeadroom(image: any): number;
+declare function CGImageGetContentHeadroom(image: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetDataProvider(image: any): any;
+declare function CGImageGetDataProvider(image: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetDecode(image: any): interop.Pointer | interop.Reference<number>;
+declare function CGImageGetDecode(image: any | null): interop.Pointer | interop.Reference<number> | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetHeight(image: any): number;
+declare function CGImageGetHeight(image: any | null): number;
 
 /**
  * @since 12.0
  */
-declare function CGImageGetPixelFormatInfo(image: any): CGImagePixelFormatInfo;
+declare function CGImageGetPixelFormatInfo(image: any | null): CGImagePixelFormatInfo;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetRenderingIntent(image: any): CGColorRenderingIntent;
+declare function CGImageGetRenderingIntent(image: any | null): CGColorRenderingIntent;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetShouldInterpolate(image: any): boolean;
+declare function CGImageGetShouldInterpolate(image: any | null): boolean;
 
 /**
  * @since 2.0
@@ -1935,22 +1935,22 @@ declare function CGImageGetTypeID(): number;
 /**
  * @since 9.0
  */
-declare function CGImageGetUTType(image: any): string;
+declare function CGImageGetUTType(image: any | null): string | null;
 
 /**
  * @since 2.0
  */
-declare function CGImageGetWidth(image: any): number;
+declare function CGImageGetWidth(image: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGImageIsMask(image: any): boolean;
+declare function CGImageIsMask(image: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGImageMaskCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean): any;
+declare function CGImageMaskCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, provider: any | null, decode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, shouldInterpolate: boolean): any | null;
 
 /**
  * @since 12.0
@@ -1973,17 +1973,17 @@ declare const enum CGImagePixelFormatInfo {
 /**
  * @since 2.0
  */
-declare function CGImageRelease(image: any): void;
+declare function CGImageRelease(image: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGImageRetain(image: any): any;
+declare function CGImageRetain(image: any | null): any | null;
 
 /**
  * @since 18.0
  */
-declare function CGImageShouldToneMap(image: any): boolean;
+declare function CGImageShouldToneMap(image: any | null): boolean;
 
 declare const enum CGInterpolationQuality {
 
@@ -2001,17 +2001,17 @@ declare const enum CGInterpolationQuality {
 /**
  * @since 2.0
  */
-declare function CGLayerCreateWithContext(context: any, size: CGSize, auxiliaryInfo: NSDictionary<any, any>): any;
+declare function CGLayerCreateWithContext(context: any | null, size: CGSize, auxiliaryInfo: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGLayerGetContext(layer: any): any;
+declare function CGLayerGetContext(layer: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGLayerGetSize(layer: any): CGSize;
+declare function CGLayerGetSize(layer: any | null): CGSize;
 
 /**
  * @since 2.0
@@ -2021,12 +2021,12 @@ declare function CGLayerGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGLayerRelease(layer: any): void;
+declare function CGLayerRelease(layer: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGLayerRetain(layer: any): any;
+declare function CGLayerRetain(layer: any | null): any | null;
 
 declare const enum CGLineCap {
 
@@ -2068,62 +2068,62 @@ declare const enum CGPDFAccessPermissions {
 /**
  * @since 12.0
  */
-declare function CGPDFArrayApplyBlock(array: interop.Pointer | interop.Reference<any>, block: (p1: number, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean, info: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFArrayApplyBlock(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, block: (p1: number, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => boolean | null, info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any>, index: number, value: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetCount(array: interop.Pointer | interop.Reference<any>): number;
+declare function CGPDFArrayGetCount(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetDictionary(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetDictionary(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetInteger(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFArrayGetInteger(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetName(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetName(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetNull(array: interop.Pointer | interop.Reference<any>, index: number): boolean;
+declare function CGPDFArrayGetNull(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetNumber(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFArrayGetNumber(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetObject(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetObject(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetStream(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetStream(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetString(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetString(array: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 declare const enum CGPDFBox {
 
@@ -2141,72 +2141,72 @@ declare const enum CGPDFBox {
 /**
  * @since 2.0
  */
-declare function CGPDFContentStreamCreateWithPage(page: any): interop.Pointer | interop.Reference<any>;
+declare function CGPDFContentStreamCreateWithPage(page: any): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContentStreamCreateWithStream(stream: interop.Pointer | interop.Reference<any>, streamResources: interop.Pointer | interop.Reference<any>, parent: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFContentStreamCreateWithStream(stream: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, streamResources: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, parent: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContentStreamGetResource(cs: interop.Pointer | interop.Reference<any>, category: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFContentStreamGetResource(cs: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, category: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContentStreamGetStreams(cs: interop.Pointer | interop.Reference<any>): NSArray<any>;
+declare function CGPDFContentStreamGetStreams(cs: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): NSArray<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContentStreamRelease(cs: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFContentStreamRelease(cs: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContentStreamRetain(cs: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFContentStreamRetain(cs: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextAddDestinationAtPoint(context: any, name: string, point: CGPoint): void;
+declare function CGPDFContextAddDestinationAtPoint(context: any | null, name: string, point: CGPoint): void;
 
 /**
  * @since 4.0
  */
-declare function CGPDFContextAddDocumentMetadata(context: any, metadata: NSData): void;
+declare function CGPDFContextAddDocumentMetadata(context: any | null, metadata: NSData | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextBeginPage(context: any, pageInfo: NSDictionary<any, any>): void;
+declare function CGPDFContextBeginPage(context: any | null, pageInfo: NSDictionary<any, any> | null): void;
 
 /**
  * @since 13.0
  */
-declare function CGPDFContextBeginTag(context: any, tagType: CGPDFTagType, tagProperties: NSDictionary<any, any>): void;
+declare function CGPDFContextBeginTag(context: any, tagType: CGPDFTagType, tagProperties: NSDictionary<any, any> | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextClose(context: any): void;
+declare function CGPDFContextClose(context: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextCreate(consumer: any, mediaBox: interop.Pointer | interop.Reference<CGRect>, auxiliaryInfo: NSDictionary<any, any>): any;
+declare function CGPDFContextCreate(consumer: any | null, mediaBox: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null, auxiliaryInfo: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextCreateWithURL(url: NSURL, mediaBox: interop.Pointer | interop.Reference<CGRect>, auxiliaryInfo: NSDictionary<any, any>): any;
+declare function CGPDFContextCreateWithURL(url: NSURL | null, mediaBox: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null, auxiliaryInfo: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextEndPage(context: any): void;
+declare function CGPDFContextEndPage(context: any | null): void;
 
 /**
  * @since 13.0
@@ -2216,23 +2216,23 @@ declare function CGPDFContextEndTag(context: any): void;
 /**
  * @since 2.0
  */
-declare function CGPDFContextSetDestinationForRect(context: any, name: string, rect: CGRect): void;
+declare function CGPDFContextSetDestinationForRect(context: any | null, name: string, rect: CGRect): void;
 
-declare function CGPDFContextSetIDTree(context: any, IDTreeDictionary: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFContextSetIDTree(context: any | null, IDTreeDictionary: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 11.0
  */
-declare function CGPDFContextSetOutline(context: any, outline: NSDictionary<any, any>): void;
+declare function CGPDFContextSetOutline(context: any, outline: NSDictionary<any, any> | null): void;
 
-declare function CGPDFContextSetPageTagStructureTree(context: any, pageTagStructureTreeDictionary: NSDictionary<any, any>): void;
+declare function CGPDFContextSetPageTagStructureTree(context: any | null, pageTagStructureTreeDictionary: NSDictionary<any, any>): void;
 
-declare function CGPDFContextSetParentTree(context: any, parentTreeDictionary: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFContextSetParentTree(context: any | null, parentTreeDictionary: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFContextSetURLForRect(context: any, url: NSURL, rect: CGRect): void;
+declare function CGPDFContextSetURLForRect(context: any | null, url: NSURL, rect: CGRect): void;
 
 declare const enum CGPDFDataFormat {
 
@@ -2246,82 +2246,82 @@ declare const enum CGPDFDataFormat {
 /**
  * @since 12.0
  */
-declare function CGPDFDictionaryApplyBlock(dict: interop.Pointer | interop.Reference<any>, block: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean, info: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFDictionaryApplyBlock(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, block: (p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => boolean | null, info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, info: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => void> | null, info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetArray(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetArray(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetBoolean(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFDictionaryGetBoolean(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetCount(dict: interop.Pointer | interop.Reference<any>): number;
+declare function CGPDFDictionaryGetCount(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetDictionary(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetDictionary(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetNumber(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFDictionaryGetNumber(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetObject(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetObject(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetStream(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetStream(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetString(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetString(dict: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentAllowsCopying(document: any): boolean;
+declare function CGPDFDocumentAllowsCopying(document: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentAllowsPrinting(document: any): boolean;
+declare function CGPDFDocumentAllowsPrinting(document: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentCreateWithProvider(provider: any): any;
+declare function CGPDFDocumentCreateWithProvider(provider: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentCreateWithURL(url: NSURL): any;
+declare function CGPDFDocumentCreateWithURL(url: NSURL | null): any | null;
 
 /**
  * @since 11.0
@@ -2331,32 +2331,32 @@ declare function CGPDFDocumentGetAccessPermissions(document: any): CGPDFAccessPe
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentGetCatalog(document: any): interop.Pointer | interop.Reference<any>;
+declare function CGPDFDocumentGetCatalog(document: any | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentGetID(document: any): interop.Pointer | interop.Reference<any>;
+declare function CGPDFDocumentGetID(document: any | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentGetInfo(document: any): interop.Pointer | interop.Reference<any>;
+declare function CGPDFDocumentGetInfo(document: any | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentGetNumberOfPages(document: any): number;
+declare function CGPDFDocumentGetNumberOfPages(document: any | null): number;
 
 /**
  * @since 11.0
  */
-declare function CGPDFDocumentGetOutline(document: any): NSDictionary<any, any>;
+declare function CGPDFDocumentGetOutline(document: any): NSDictionary<any, any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentGetPage(document: any, pageNumber: number): any;
+declare function CGPDFDocumentGetPage(document: any | null, pageNumber: number): any | null;
 
 /**
  * @since 2.0
@@ -2366,42 +2366,42 @@ declare function CGPDFDocumentGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentGetVersion(document: any, majorVersion: interop.Pointer | interop.Reference<number>, minorVersion: interop.Pointer | interop.Reference<number>): void;
+declare function CGPDFDocumentGetVersion(document: any | null, majorVersion: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, minorVersion: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentIsEncrypted(document: any): boolean;
+declare function CGPDFDocumentIsEncrypted(document: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentIsUnlocked(document: any): boolean;
+declare function CGPDFDocumentIsUnlocked(document: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentRelease(document: any): void;
+declare function CGPDFDocumentRelease(document: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentRetain(document: any): any;
+declare function CGPDFDocumentRetain(document: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDocumentUnlockWithPassword(document: any, password: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFDocumentUnlockWithPassword(document: any | null, password: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFObjectGetType(object: interop.Pointer | interop.Reference<any>): CGPDFObjectType;
+declare function CGPDFObjectGetType(object: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): CGPDFObjectType;
 
 /**
  * @since 2.0
  */
-declare function CGPDFObjectGetValue(object: interop.Pointer | interop.Reference<any>, type: CGPDFObjectType, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFObjectGetValue(object: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: CGPDFObjectType, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 declare const enum CGPDFObjectType {
 
@@ -2427,52 +2427,52 @@ declare const enum CGPDFObjectType {
 /**
  * @since 2.0
  */
-declare function CGPDFOperatorTableCreate(): interop.Pointer | interop.Reference<any>;
+declare function CGPDFOperatorTableCreate(): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFOperatorTableRelease(table: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFOperatorTableRelease(table: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFOperatorTableRetain(table: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFOperatorTableRetain(table: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFOperatorTableSetCallback(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function CGPDFOperatorTableSetCallback(table: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void> | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageGetBoxRect(page: any, box: CGPDFBox): CGRect;
+declare function CGPDFPageGetBoxRect(page: any | null, box: CGPDFBox): CGRect;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageGetDictionary(page: any): interop.Pointer | interop.Reference<any>;
+declare function CGPDFPageGetDictionary(page: any | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageGetDocument(page: any): any;
+declare function CGPDFPageGetDocument(page: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageGetDrawingTransform(page: any, box: CGPDFBox, rect: CGRect, rotate: number, preserveAspectRatio: boolean): CGAffineTransform;
+declare function CGPDFPageGetDrawingTransform(page: any | null, box: CGPDFBox, rect: CGRect, rotate: number, preserveAspectRatio: boolean): CGAffineTransform;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageGetPageNumber(page: any): number;
+declare function CGPDFPageGetPageNumber(page: any | null): number;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageGetRotationAngle(page: any): number;
+declare function CGPDFPageGetRotationAngle(page: any | null): number;
 
 /**
  * @since 2.0
@@ -2482,114 +2482,114 @@ declare function CGPDFPageGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGPDFPageRelease(page: any): void;
+declare function CGPDFPageRelease(page: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFPageRetain(page: any): any;
+declare function CGPDFPageRetain(page: any | null): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerCreate(cs: interop.Pointer | interop.Reference<any>, table: interop.Pointer | interop.Reference<any>, info: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFScannerCreate(cs: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, table: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerGetContentStream(scanner: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFScannerGetContentStream(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopArray(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopArray(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopBoolean(scanner: interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFScannerPopBoolean(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopDictionary(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopDictionary(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopInteger(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFScannerPopInteger(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopName(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopName(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopNumber(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFScannerPopNumber(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopObject(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopObject(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopStream(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopStream(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopString(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopString(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerRelease(scanner: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFScannerRelease(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerRetain(scanner: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFScannerRetain(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFScannerScan(scanner: interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFScannerScan(scanner: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
-declare function CGPDFScannerStop(s: interop.Pointer | interop.Reference<any>): void;
-
-/**
- * @since 2.0
- */
-declare function CGPDFStreamCopyData(stream: interop.Pointer | interop.Reference<any>, format: interop.Pointer | interop.Reference<CGPDFDataFormat>): NSData;
+declare function CGPDFScannerStop(s: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFStreamGetDictionary(stream: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFStreamCopyData(stream: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, format: interop.Pointer | interop.Reference<CGPDFDataFormat> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFStringCopyDate(string: interop.Pointer | interop.Reference<any>): Date;
+declare function CGPDFStreamGetDictionary(stream: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFStringCopyTextString(string: interop.Pointer | interop.Reference<any>): string;
+declare function CGPDFStringCopyDate(string: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): Date | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CGPDFStringCopyTextString(string: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): string | null;
 
 /**
  * @since 2.0
  */
-declare function CGPDFStringGetLength(string: interop.Pointer | interop.Reference<any>): number;
+declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null | null;
+
+/**
+ * @since 2.0
+ */
+declare function CGPDFStringGetLength(string: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 13.0
@@ -2700,147 +2700,147 @@ declare const enum CGPDFTagType {
 /**
  * @since 13.0
  */
-declare function CGPDFTagTypeGetName(tagType: CGPDFTagType): interop.Pointer | interop.Reference<any>;
+declare function CGPDFTagTypeGetName(tagType: CGPDFTagType): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddArc(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: boolean): void;
+declare function CGPathAddArc(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: boolean): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddArcToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x1: number, y1: number, x2: number, y2: number, radius: number): void;
+declare function CGPathAddArcToPoint(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, x1: number, y1: number, x2: number, y2: number, radius: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddCurveToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
+declare function CGPathAddCurveToPoint(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddEllipseInRect(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, rect: CGRect): void;
+declare function CGPathAddEllipseInRect(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddLineToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number): void;
+declare function CGPathAddLineToPoint(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddLines(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, points: interop.Pointer | interop.Reference<CGPoint>, count: number): void;
+declare function CGPathAddLines(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, points: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddPath(path1: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, path2: any): void;
+declare function CGPathAddPath(path1: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, path2: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddQuadCurveToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, cpx: number, cpy: number, x: number, y: number): void;
+declare function CGPathAddQuadCurveToPoint(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, cpx: number, cpy: number, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddRect(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, rect: CGRect): void;
+declare function CGPathAddRect(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, rect: CGRect): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathAddRects(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, rects: interop.Pointer | interop.Reference<CGRect>, count: number): void;
+declare function CGPathAddRects(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, rects: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null, count: number): void;
 
 /**
  * @since 5.0
  */
-declare function CGPathAddRelativeArc(path: any, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number, radius: number, startAngle: number, delta: number): void;
+declare function CGPathAddRelativeArc(path: any | null, matrix: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, x: number, y: number, radius: number, startAngle: number, delta: number): void;
 
 /**
  * @since 7.0
  */
-declare function CGPathAddRoundedRect(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>, rect: CGRect, cornerWidth: number, cornerHeight: number): void;
+declare function CGPathAddRoundedRect(path: any | null, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, rect: CGRect, cornerWidth: number, cornerHeight: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathApply(path: any, info: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<CGPathElement>) => void>): void;
+declare function CGPathApply(path: any | null, info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<CGPathElement> | null) => void> | null): void;
 
 /**
  * @since 11.0
  */
-declare function CGPathApplyWithBlock(path: any, block: (p1: interop.Pointer | interop.Reference<CGPathElement>) => void): void;
+declare function CGPathApplyWithBlock(path: any, block: (p1: interop.Pointer | interop.Reference<CGPathElement> | null) => void): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathCloseSubpath(path: any): void;
+declare function CGPathCloseSubpath(path: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathContainsPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, point: CGPoint, eoFill: boolean): boolean;
+declare function CGPathContainsPoint(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, point: CGPoint, eoFill: boolean): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPathCreateCopy(path: any): any;
+declare function CGPathCreateCopy(path: any | null): any | null;
 
 /**
  * @since 5.0
  */
-declare function CGPathCreateCopyByDashingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>, phase: number, lengths: interop.Pointer | interop.Reference<number>, count: number): any;
+declare function CGPathCreateCopyByDashingPath(path: any | null, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, phase: number, lengths: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyByFlattening(path: any, flatteningThreshold: number): any;
+declare function CGPathCreateCopyByFlattening(path: any | null, flatteningThreshold: number): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyByIntersectingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyByIntersectingPath(path: any | null, maskPath: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyByNormalizing(path: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyByNormalizing(path: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 5.0
  */
-declare function CGPathCreateCopyByStrokingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>, lineWidth: number, lineCap: CGLineCap, lineJoin: CGLineJoin, miterLimit: number): any;
+declare function CGPathCreateCopyByStrokingPath(path: any | null, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, lineWidth: number, lineCap: CGLineCap, lineJoin: CGLineJoin, miterLimit: number): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyBySubtractingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyBySubtractingPath(path: any | null, maskPath: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyBySymmetricDifferenceOfPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyBySymmetricDifferenceOfPath(path: any | null, maskPath: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 5.0
  */
-declare function CGPathCreateCopyByTransformingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+declare function CGPathCreateCopyByTransformingPath(path: any | null, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyByUnioningPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyByUnioningPath(path: any | null, maskPath: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyOfLineByIntersectingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyOfLineByIntersectingPath(path: any | null, maskPath: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateCopyOfLineBySubtractingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+declare function CGPathCreateCopyOfLineBySubtractingPath(path: any | null, maskPath: any | null, evenOddFillRule: boolean): any | null;
 
 /**
  * @since 2.0
@@ -2850,32 +2850,32 @@ declare function CGPathCreateMutable(): any;
 /**
  * @since 2.0
  */
-declare function CGPathCreateMutableCopy(path: any): any;
+declare function CGPathCreateMutableCopy(path: any | null): any | null;
 
 /**
  * @since 5.0
  */
-declare function CGPathCreateMutableCopyByTransformingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+declare function CGPathCreateMutableCopyByTransformingPath(path: any | null, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function CGPathCreateSeparateComponents(path: any, evenOddFillRule: boolean): NSArray<any>;
+declare function CGPathCreateSeparateComponents(path: any | null, evenOddFillRule: boolean): NSArray<any> | null;
 
 /**
  * @since 5.0
  */
-declare function CGPathCreateWithEllipseInRect(rect: CGRect, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+declare function CGPathCreateWithEllipseInRect(rect: CGRect, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): any;
 
 /**
  * @since 4.0
  */
-declare function CGPathCreateWithRect(rect: CGRect, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+declare function CGPathCreateWithRect(rect: CGRect, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): any;
 
 /**
  * @since 7.0
  */
-declare function CGPathCreateWithRoundedRect(rect: CGRect, cornerWidth: number, cornerHeight: number, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+declare function CGPathCreateWithRoundedRect(rect: CGRect, cornerWidth: number, cornerHeight: number, transform: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null): any;
 
 declare const enum CGPathDrawingMode {
 
@@ -2892,7 +2892,7 @@ declare const enum CGPathDrawingMode {
 
 interface CGPathElement {
 	type: CGPathElementType;
-	points: interop.Pointer | interop.Reference<CGPoint>;
+	points: interop.Pointer | interop.Reference<CGPoint> | null;
 }
 declare var CGPathElement: interop.StructType<CGPathElement>;
 
@@ -2912,22 +2912,22 @@ declare const enum CGPathElementType {
 /**
  * @since 2.0
  */
-declare function CGPathEqualToPath(path1: any, path2: any): boolean;
+declare function CGPathEqualToPath(path1: any | null, path2: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPathGetBoundingBox(path: any): CGRect;
+declare function CGPathGetBoundingBox(path: any | null): CGRect;
 
 /**
  * @since 2.0
  */
-declare function CGPathGetCurrentPoint(path: any): CGPoint;
+declare function CGPathGetCurrentPoint(path: any | null): CGPoint;
 
 /**
  * @since 4.0
  */
-declare function CGPathGetPathBoundingBox(path: any): CGRect;
+declare function CGPathGetPathBoundingBox(path: any | null): CGRect;
 
 /**
  * @since 2.0
@@ -2937,44 +2937,44 @@ declare function CGPathGetTypeID(): number;
 /**
  * @since 16.0
  */
-declare function CGPathIntersectsPath(path1: any, path2: any, evenOddFillRule: boolean): boolean;
+declare function CGPathIntersectsPath(path1: any | null, path2: any | null, evenOddFillRule: boolean): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPathIsEmpty(path: any): boolean;
+declare function CGPathIsEmpty(path: any | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPathIsRect(path: any, rect: interop.Pointer | interop.Reference<CGRect>): boolean;
+declare function CGPathIsRect(path: any | null, rect: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CGPathMoveToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number): void;
+declare function CGPathMoveToPoint(path: any | null, m: interop.Pointer | interop.Reference<CGAffineTransform> | ArrayBufferLike | ArrayBufferView | null, x: number, y: number): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathRelease(path: any): void;
+declare function CGPathRelease(path: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPathRetain(path: any): any;
+declare function CGPathRetain(path: any | null): any | null;
 
 interface CGPatternCallbacks {
 	version: number;
-	drawPattern: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any) => void>;
-	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	drawPattern: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: any | null) => void> | null;
+	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
 }
 declare var CGPatternCallbacks: interop.StructType<CGPatternCallbacks>;
 
 /**
  * @since 2.0
  */
-declare function CGPatternCreate(info: interop.Pointer | interop.Reference<any>, bounds: CGRect, matrix: CGAffineTransform, xStep: number, yStep: number, tiling: CGPatternTiling, isColored: boolean, callbacks: interop.Pointer | interop.Reference<CGPatternCallbacks>): any;
+declare function CGPatternCreate(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, bounds: CGRect, matrix: CGAffineTransform, xStep: number, yStep: number, tiling: CGPatternTiling, isColored: boolean, callbacks: interop.Pointer | interop.Reference<CGPatternCallbacks> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
@@ -2984,12 +2984,12 @@ declare function CGPatternGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGPatternRelease(pattern: any): void;
+declare function CGPatternRelease(pattern: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGPatternRetain(pattern: any): any;
+declare function CGPatternRetain(pattern: any | null): any | null;
 
 declare const enum CGPatternTiling {
 
@@ -3020,7 +3020,7 @@ declare function CGPointMake(x: number, y: number): CGPoint;
 /**
  * @since 2.0
  */
-declare function CGPointMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, point: interop.Pointer | interop.Reference<CGPoint>): boolean;
+declare function CGPointMakeWithDictionaryRepresentation(dict: NSDictionary<any, any> | null, point: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -3050,7 +3050,7 @@ declare function CGRectCreateDictionaryRepresentation(p1: CGRect): NSDictionary<
 /**
  * @since 2.0
  */
-declare function CGRectDivide(rect: CGRect, slice: interop.Pointer | interop.Reference<CGRect>, remainder: interop.Pointer | interop.Reference<CGRect>, amount: number, edge: CGRectEdge): void;
+declare function CGRectDivide(rect: CGRect, slice: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView, remainder: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView, amount: number, edge: CGRectEdge): void;
 
 /**
  * @since 2.0
@@ -3142,7 +3142,7 @@ declare function CGRectMake(x: number, y: number, width: number, height: number)
 /**
  * @since 2.0
  */
-declare function CGRectMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, rect: interop.Pointer | interop.Reference<CGRect>): boolean;
+declare function CGRectMakeWithDictionaryRepresentation(dict: NSDictionary<any, any> | null, rect: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -3172,17 +3172,17 @@ declare var CGRectZero: CGRect;
 /**
  * @since 26.0
  */
-declare function CGRenderingBufferLockBytePtr(provider: any): interop.Pointer | interop.Reference<any>;
+declare function CGRenderingBufferLockBytePtr(provider: any): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 26.0
  */
-declare function CGRenderingBufferProviderCreate(info: interop.Pointer | interop.Reference<any>, size: number, lockPointer: (p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>, unlockPointer: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void, releaseInfo: (p1: interop.Pointer | interop.Reference<any>) => void): any;
+declare function CGRenderingBufferProviderCreate(info: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, lockPointer: (p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null, unlockPointer: (p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void | null, releaseInfo: (p1: interop.Pointer | interop.Reference<any> | null) => void | null): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGRenderingBufferProviderCreateWithCFData(data: NSData): any;
+declare function CGRenderingBufferProviderCreateWithCFData(data: NSData): any | null;
 
 /**
  * @since 26.0
@@ -3202,27 +3202,27 @@ declare function CGRenderingBufferUnlockBytePtr(provider: any): void;
 /**
  * @since 2.0
  */
-declare function CGShadingCreateAxial(space: any, start: CGPoint, end: CGPoint, _function: any, extendStart: boolean, extendEnd: boolean): any;
+declare function CGShadingCreateAxial(space: any | null, start: CGPoint, end: CGPoint, _function: any | null, extendStart: boolean, extendEnd: boolean): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGShadingCreateAxialWithContentHeadroom(headroom: number, space: any, start: CGPoint, end: CGPoint, _function: any, extendStart: boolean, extendEnd: boolean): any;
+declare function CGShadingCreateAxialWithContentHeadroom(headroom: number, space: any | null, start: CGPoint, end: CGPoint, _function: any | null, extendStart: boolean, extendEnd: boolean): any | null;
 
 /**
  * @since 2.0
  */
-declare function CGShadingCreateRadial(space: any, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any, extendStart: boolean, extendEnd: boolean): any;
+declare function CGShadingCreateRadial(space: any | null, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any | null, extendStart: boolean, extendEnd: boolean): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGShadingCreateRadialWithContentHeadroom(headroom: number, space: any, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any, extendStart: boolean, extendEnd: boolean): any;
+declare function CGShadingCreateRadialWithContentHeadroom(headroom: number, space: any | null, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any | null, extendStart: boolean, extendEnd: boolean): any | null;
 
 /**
  * @since 26.0
  */
-declare function CGShadingGetContentHeadroom(shading: any): number;
+declare function CGShadingGetContentHeadroom(shading: any | null): number;
 
 /**
  * @since 2.0
@@ -3232,12 +3232,12 @@ declare function CGShadingGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CGShadingRelease(shading: any): void;
+declare function CGShadingRelease(shading: any | null): void;
 
 /**
  * @since 2.0
  */
-declare function CGShadingRetain(shading: any): any;
+declare function CGShadingRetain(shading: any | null): any | null;
 
 /**
  * @since 2.0
@@ -3259,7 +3259,7 @@ declare function CGSizeMake(width: number, height: number): CGSize;
 /**
  * @since 2.0
  */
-declare function CGSizeMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, size: interop.Pointer | interop.Reference<CGSize>): boolean;
+declare function CGSizeMakeWithDictionaryRepresentation(dict: NSDictionary<any, any> | null, size: interop.Pointer | interop.Reference<CGSize> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0

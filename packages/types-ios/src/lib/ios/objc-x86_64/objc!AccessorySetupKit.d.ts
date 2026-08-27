@@ -8,11 +8,11 @@ declare class ASAccessory extends NSObject {
 
 	static new(): ASAccessory; // inherited from NSObject
 
-	readonly SSID: string;
+	readonly SSID: string | null;
 
-	readonly bluetoothIdentifier: NSUUID;
+	readonly bluetoothIdentifier: NSUUID | null;
 
-	readonly bluetoothTransportBridgingIdentifier: NSData;
+	readonly bluetoothTransportBridgingIdentifier: NSData | null;
 
 	readonly descriptor: ASDiscoveryDescriptor;
 
@@ -35,9 +35,9 @@ declare class ASAccessoryEvent extends NSObject {
 
 	static new(): ASAccessoryEvent; // inherited from NSObject
 
-	readonly accessory: ASAccessory;
+	readonly accessory: ASAccessory | null;
 
-	readonly error: NSError;
+	readonly error: NSError | null;
 
 	readonly eventType: ASAccessoryEventType;
 }
@@ -57,6 +57,8 @@ declare const enum ASAccessoryEventType {
 	AccessoryRemoved = 31,
 
 	AccessoryChanged = 32,
+
+	AccessoryDiscovered = 33,
 
 	PickerDidPresent = 40,
 
@@ -90,28 +92,38 @@ declare class ASAccessorySession extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	pickerDisplaySettings: ASPickerDisplaySettings;
+	pickerDisplaySettings: ASPickerDisplaySettings | null;
 
 	activateWithQueueEventHandler(queue: NSObject & OS_dispatch_queue, eventHandler: (p1: ASAccessoryEvent) => void): void;
 
-	failAuthorizationCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError) => void): void;
+	failAuthorizationCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError | null) => void): void;
 
-	finishAuthorizationSettingsCompletionHandler(accessory: ASAccessory, settings: ASAccessorySettings, completionHandler: (p1: NSError) => void): void;
+	finishAuthorizationSettingsCompletionHandler(accessory: ASAccessory, settings: ASAccessorySettings, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 26.1
+	 */
+	finishPickerDiscovery(completionHandler: (p1: NSError | null) => void): void;
 
 	invalidate(): void;
 
-	removeAccessoryCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError) => void): void;
+	removeAccessoryCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError | null) => void): void;
 
-	renameAccessoryOptionsCompletionHandler(accessory: ASAccessory, renameOptions: ASAccessoryRenameOptions, completionHandler: (p1: NSError) => void): void;
+	renameAccessoryOptionsCompletionHandler(accessory: ASAccessory, renameOptions: ASAccessoryRenameOptions, completionHandler: (p1: NSError | null) => void): void;
 
-	showPickerForDisplayItemsCompletionHandler(displayItems: NSArray<ASPickerDisplayItem> | ASPickerDisplayItem[], completionHandler: (p1: NSError) => void): void;
+	showPickerForDisplayItemsCompletionHandler(displayItems: NSArray<ASPickerDisplayItem> | ASPickerDisplayItem[], completionHandler: (p1: NSError | null) => void): void;
 
-	showPickerWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	showPickerWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 26.0
 	 */
-	updateAuthorizationDescriptorCompletionHandler(accessory: ASAccessory, descriptor: ASDiscoveryDescriptor, completionHandler: (p1: NSError) => void): void;
+	updateAuthorizationDescriptorCompletionHandler(accessory: ASAccessory, descriptor: ASDiscoveryDescriptor, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 26.1
+	 */
+	updatePickerShowingDiscoveredDisplayItemsCompletionHandler(displayItems: NSArray<ASDiscoveredDisplayItem> | ASDiscoveredDisplayItem[], completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -123,9 +135,9 @@ declare class ASAccessorySettings extends NSObject {
 
 	static new(): ASAccessorySettings; // inherited from NSObject
 
-	SSID: string;
+	SSID: string | null;
 
-	bluetoothTransportBridgingIdentifier: NSData;
+	bluetoothTransportBridgingIdentifier: NSData | null;
 
 	static readonly defaultSettings: ASAccessorySettings;
 }
@@ -149,6 +161,34 @@ declare const enum ASAccessorySupportOptions {
 }
 
 /**
+ * @since 26.1
+ */
+declare class ASDiscoveredAccessory extends ASAccessory {
+
+	static alloc(): ASDiscoveredAccessory; // inherited from NSObject
+
+	static new(): ASDiscoveredAccessory; // inherited from NSObject
+
+	readonly bluetoothAdvertisementData: NSDictionary<any, any> | null;
+
+	readonly bluetoothRSSI: number | null;
+}
+
+/**
+ * @since 26.1
+ */
+declare class ASDiscoveredDisplayItem extends ASPickerDisplayItem {
+
+	static alloc(): ASDiscoveredDisplayItem; // inherited from NSObject
+
+	static new(): ASDiscoveredDisplayItem; // inherited from NSObject
+
+	constructor(o: { name: string; productImage: UIImage; accessory: ASDiscoveredAccessory; });
+
+	initWithNameProductImageAccessory(name: string, productImage: UIImage, accessory: ASDiscoveredAccessory): this;
+}
+
+/**
  * @since 18.0
  */
 declare class ASDiscoveryDescriptor extends NSObject {
@@ -157,17 +197,17 @@ declare class ASDiscoveryDescriptor extends NSObject {
 
 	static new(): ASDiscoveryDescriptor; // inherited from NSObject
 
-	SSID: string;
+	SSID: string | null;
 
-	SSIDPrefix: string;
+	SSIDPrefix: string | null;
 
 	bluetoothCompanyIdentifier: number;
 
-	bluetoothManufacturerDataBlob: NSData;
+	bluetoothManufacturerDataBlob: NSData | null;
 
-	bluetoothManufacturerDataMask: NSData;
+	bluetoothManufacturerDataMask: NSData | null;
 
-	bluetoothNameSubstring: string;
+	bluetoothNameSubstring: string | null;
 
 	/**
 	 * @since 18.2
@@ -176,23 +216,23 @@ declare class ASDiscoveryDescriptor extends NSObject {
 
 	bluetoothRange: ASDiscoveryDescriptorRange;
 
-	bluetoothServiceDataBlob: NSData;
+	bluetoothServiceDataBlob: NSData | null;
 
-	bluetoothServiceDataMask: NSData;
+	bluetoothServiceDataMask: NSData | null;
 
-	bluetoothServiceUUID: CBUUID;
+	bluetoothServiceUUID: CBUUID | null;
 
 	supportedOptions: ASAccessorySupportOptions;
 
 	/**
 	 * @since 26.0
 	 */
-	wifiAwareModelNameMatch: ASPropertyCompareString;
+	wifiAwareModelNameMatch: ASPropertyCompareString | null;
 
 	/**
 	 * @since 26.0
 	 */
-	wifiAwareServiceName: string;
+	wifiAwareServiceName: string | null;
 
 	/**
 	 * @since 26.0
@@ -202,7 +242,7 @@ declare class ASDiscoveryDescriptor extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	wifiAwareVendorNameMatch: ASPropertyCompareString;
+	wifiAwareVendorNameMatch: ASPropertyCompareString | null;
 }
 
 declare const enum ASDiscoveryDescriptorRange {
@@ -260,9 +300,14 @@ declare class ASMigrationDisplayItem extends ASPickerDisplayItem {
 
 	static new(): ASMigrationDisplayItem; // inherited from NSObject
 
-	hotspotSSID: string;
+	hotspotSSID: string | null;
 
-	peripheralIdentifier: NSUUID;
+	peripheralIdentifier: NSUUID | null;
+
+	/**
+	 * @since 26.1
+	 */
+	wifiAwarePairedDeviceID: number;
 }
 
 /**
@@ -309,6 +354,11 @@ declare class ASPickerDisplaySettings extends NSObject {
 
 	discoveryTimeout: number;
 
+	/**
+	 * @since 26.1
+	 */
+	options: ASPickerDisplaySettingsOptions;
+
 	static readonly defaultSettings: ASPickerDisplaySettings;
 }
 
@@ -326,6 +376,16 @@ declare var ASPickerDisplaySettingsDiscoveryTimeoutMedium: number;
  * @since 26.0
  */
 declare var ASPickerDisplaySettingsDiscoveryTimeoutShort: number;
+
+/**
+ * @since 26.1
+ */
+declare var ASPickerDisplaySettingsDiscoveryTimeoutUnbounded: number;
+
+declare const enum ASPickerDisplaySettingsOptions {
+
+	FilterDiscoveryResults = 1
+}
 
 /**
  * @since 26.0

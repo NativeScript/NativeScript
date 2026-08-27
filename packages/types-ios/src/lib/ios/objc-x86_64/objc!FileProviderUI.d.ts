@@ -8,7 +8,7 @@ declare class FPUIActionExtensionContext extends NSExtensionContext {
 
 	static new(): FPUIActionExtensionContext; // inherited from NSObject
 
-	readonly domainIdentifier: string;
+	readonly domainIdentifier: string | null;
 
 	completeRequest(): void;
 }

@@ -12,7 +12,7 @@ declare class IOSurface extends NSObject implements NSSecureCoding {
 
 	readonly allowsPixelSizeCasting: boolean;
 
-	readonly baseAddress: interop.Pointer | interop.Reference<any>;
+	readonly baseAddress: interop.Pointer | interop.Reference<any> | null;
 
 	readonly bytesPerElement: number;
 
@@ -47,11 +47,11 @@ declare class IOSurface extends NSObject implements NSSecureCoding {
 
 	constructor(o: { properties: NSDictionary<string, any>; });
 
-	allAttachments(): NSDictionary<string, any>;
+	allAttachments(): NSDictionary<string, any> | null;
 
-	attachmentForKey(key: string): any;
+	attachmentForKey(key: string): any | null;
 
-	baseAddressOfPlaneAtIndex(planeIndex: number): interop.Pointer | interop.Reference<any>;
+	baseAddressOfPlaneAtIndex(planeIndex: number): interop.Pointer | interop.Reference<any> | null;
 
 	bytesPerElementOfPlaneAtIndex(planeIndex: number): number;
 
@@ -73,7 +73,7 @@ declare class IOSurface extends NSObject implements NSSecureCoding {
 
 	initWithProperties(properties: NSDictionary<string, any>): this;
 
-	lockWithOptionsSeed(options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
+	lockWithOptionsSeed(options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 	removeAllAttachments(): void;
 
@@ -86,9 +86,9 @@ declare class IOSurface extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 11.0
 	 */
-	setPurgeableOldState(newState: IOSurfacePurgeabilityState, oldState: interop.Pointer | interop.Reference<IOSurfacePurgeabilityState>): number;
+	setPurgeableOldState(newState: IOSurfacePurgeabilityState, oldState: interop.Pointer | interop.Reference<IOSurfacePurgeabilityState> | ArrayBufferLike | ArrayBufferView | null): number;
 
-	unlockWithOptionsSeed(options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
+	unlockWithOptionsSeed(options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 	widthOfPlaneAtIndex(planeIndex: number): number;
 }
@@ -149,17 +149,17 @@ declare const enum IOSurfaceComponentType {
 /**
  * @since 11.0
  */
-declare function IOSurfaceCopyAllValues(buffer: IOSurface): NSDictionary<any, any>;
+declare function IOSurfaceCopyAllValues(buffer: IOSurface): NSDictionary<any, any> | null;
 
 /**
  * @since 11.0
  */
-declare function IOSurfaceCopyValue(buffer: IOSurface, key: string): any;
+declare function IOSurfaceCopyValue(buffer: IOSurface, key: string): any | null;
 
 /**
  * @since 11.0
  */
-declare function IOSurfaceCreate(properties: NSDictionary<any, any>): IOSurface;
+declare function IOSurfaceCreate(properties: NSDictionary<any, any>): IOSurface | null;
 
 /**
  * @since 11.0
@@ -179,12 +179,12 @@ declare function IOSurfaceGetAllocSize(buffer: IOSurface): number;
 /**
  * @since 11.0
  */
-declare function IOSurfaceGetBaseAddress(buffer: IOSurface): interop.Pointer | interop.Reference<any>;
+declare function IOSurfaceGetBaseAddress(buffer: IOSurface): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 11.0
  */
-declare function IOSurfaceGetBaseAddressOfPlane(buffer: IOSurface, planeIndex: number): interop.Pointer | interop.Reference<any>;
+declare function IOSurfaceGetBaseAddressOfPlane(buffer: IOSurface, planeIndex: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 11.0
@@ -334,7 +334,7 @@ declare function IOSurfaceIsInUse(buffer: IOSurface): boolean;
 /**
  * @since 11.0
  */
-declare function IOSurfaceLock(buffer: IOSurface, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
+declare function IOSurfaceLock(buffer: IOSurface, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum IOSurfaceLockOptions {
 
@@ -346,12 +346,12 @@ declare const enum IOSurfaceLockOptions {
 /**
  * @since 11.0
  */
-declare function IOSurfaceLookup(csid: number): IOSurface;
+declare function IOSurfaceLookup(csid: number): IOSurface | null;
 
 /**
  * @since 11.0
  */
-declare function IOSurfaceLookupFromMachPort(port: number): IOSurface;
+declare function IOSurfaceLookupFromMachPort(port: number): IOSurface | null;
 
 declare const enum IOSurfaceMemoryLedgerFlags {
 
@@ -516,7 +516,7 @@ declare function IOSurfaceSetOwnershipIdentity(buffer: IOSurface, task_id_token:
 /**
  * @since 11.0
  */
-declare function IOSurfaceSetPurgeable(buffer: IOSurface, newState: number, oldState: interop.Pointer | interop.Reference<number>): number;
+declare function IOSurfaceSetPurgeable(buffer: IOSurface, newState: number, oldState: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 11.0
@@ -544,7 +544,7 @@ declare const enum IOSurfaceSubsampling {
 /**
  * @since 11.0
  */
-declare function IOSurfaceUnlock(buffer: IOSurface, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
+declare function IOSurfaceUnlock(buffer: IOSurface, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 11.0

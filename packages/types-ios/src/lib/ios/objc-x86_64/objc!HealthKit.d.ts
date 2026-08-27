@@ -24,7 +24,7 @@ declare class HKActivityMoveModeObject extends NSObject implements NSCopying, NS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -78,7 +78,7 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 	/**
 	 * @since 16.0
 	 */
-	exerciseTimeGoal: HKQuantity;
+	exerciseTimeGoal: HKQuantity | null;
 
 	/**
 	 * @since 18.0
@@ -88,13 +88,13 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 	/**
 	 * @since 16.0
 	 */
-	standHoursGoal: HKQuantity;
+	standHoursGoal: HKQuantity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	dateComponentsForCalendar(calendar: NSCalendar): NSDateComponents;
 
@@ -112,11 +112,11 @@ declare class HKActivitySummaryQuery extends HKQuery {
 
 	static new(): HKActivitySummaryQuery; // inherited from NSObject
 
-	updateHandler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary>, p3: NSError) => void;
+	updateHandler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary> | null, p3: NSError | null) => void | null;
 
-	constructor(o: { predicate: NSPredicate; resultsHandler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary>, p3: NSError) => void; });
+	constructor(o: { predicate: NSPredicate | null; resultsHandler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary> | null, p3: NSError | null) => void; });
 
-	initWithPredicateResultsHandler(predicate: NSPredicate, handler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary>, p3: NSError) => void): this;
+	initWithPredicateResultsHandler(predicate: NSPredicate | null, handler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary> | null, p3: NSError | null) => void): this;
 }
 
 /**
@@ -141,39 +141,39 @@ declare class HKAnchoredObjectQuery extends HKQuery {
 	/**
 	 * @since 9.0
 	 */
-	updateHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void;
+	updateHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: NSArray<HKDeletedObject> | null, p4: HKQueryAnchor | null, p5: NSError | null) => void | null;
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; anchor: HKQueryAnchor; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void; });
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; anchor: HKQueryAnchor | null; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: NSArray<HKDeletedObject> | null, p4: HKQueryAnchor | null, p5: NSError | null) => void; });
 
 	/**
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	constructor(o: { type: HKSampleType; predicate: NSPredicate; anchor: number; limit: number; completionHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void; });
+	constructor(o: { type: HKSampleType; predicate: NSPredicate | null; anchor: number; limit: number; completionHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: number, p4: NSError | null) => void; });
 
 	/**
 	 * @since 9.0
 	 */
-	constructor(o: { type: HKSampleType; predicate: NSPredicate; anchor: HKQueryAnchor; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void; });
+	constructor(o: { type: HKSampleType; predicate: NSPredicate | null; anchor: HKQueryAnchor | null; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: NSArray<HKDeletedObject> | null, p4: HKQueryAnchor | null, p5: NSError | null) => void; });
 
 	/**
 	 * @since 15.0
 	 */
-	initWithQueryDescriptorsAnchorLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
+	initWithQueryDescriptorsAnchorLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], anchor: HKQueryAnchor | null, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: NSArray<HKDeletedObject> | null, p4: HKQueryAnchor | null, p5: NSError | null) => void): this;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	initWithTypePredicateAnchorLimitCompletionHandler(type: HKSampleType, predicate: NSPredicate, anchor: number, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void): this;
+	initWithTypePredicateAnchorLimitCompletionHandler(type: HKSampleType, predicate: NSPredicate | null, anchor: number, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: number, p4: NSError | null) => void): this;
 
 	/**
 	 * @since 9.0
 	 */
-	initWithTypePredicateAnchorLimitResultsHandler(type: HKSampleType, predicate: NSPredicate, anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
+	initWithTypePredicateAnchorLimitResultsHandler(type: HKSampleType, predicate: NSPredicate | null, anchor: HKQueryAnchor | null, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample> | null, p3: NSArray<HKDeletedObject> | null, p4: HKQueryAnchor | null, p5: NSError | null) => void): this;
 }
 
 /**
@@ -199,7 +199,7 @@ declare const enum HKAppleSleepingBreathingDisturbancesClassification {
 /**
  * @since 18.0
  */
-declare function HKAppleSleepingBreathingDisturbancesClassificationForQuantity(value: HKQuantity): number;
+declare function HKAppleSleepingBreathingDisturbancesClassificationForQuantity(value: HKQuantity): number | null;
 
 /**
  * @since 18.0
@@ -221,7 +221,7 @@ declare const enum HKAppleWalkingSteadinessClassification {
 /**
  * @since 15.0
  */
-declare function HKAppleWalkingSteadinessClassificationForQuantity(value: HKQuantity, classificationOut: interop.Pointer | interop.Reference<HKAppleWalkingSteadinessClassification>, errorOut: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function HKAppleWalkingSteadinessClassificationForQuantity(value: HKQuantity, classificationOut: interop.Pointer | interop.Reference<HKAppleWalkingSteadinessClassification> | ArrayBufferLike | ArrayBufferView, errorOut: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 15.0
@@ -248,7 +248,7 @@ declare class HKAttachment extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly identifier: NSUUID;
 
-	readonly metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any> | null;
 
 	readonly name: string;
 
@@ -258,7 +258,7 @@ declare class HKAttachment extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -276,17 +276,17 @@ declare class HKAttachmentStore extends NSObject {
 
 	constructor(o: { healthStore: HKHealthStore; });
 
-	addAttachmentToObjectNameContentTypeURLMetadataCompletion(object: HKObject, name: string, contentType: UTType, URL: NSURL, metadata: NSDictionary<string, any>, completion: (p1: HKAttachment, p2: NSError) => void): void;
+	addAttachmentToObjectNameContentTypeURLMetadataCompletion(object: HKObject, name: string, contentType: UTType, URL: NSURL, metadata: NSDictionary<string, any> | null, completion: (p1: HKAttachment | null, p2: NSError | null) => void): void;
 
-	getAttachmentsForObjectCompletion(object: HKObject, completion: (p1: NSArray<HKAttachment>, p2: NSError) => void): void;
+	getAttachmentsForObjectCompletion(object: HKObject, completion: (p1: NSArray<HKAttachment> | null, p2: NSError | null) => void): void;
 
-	getDataForAttachmentCompletion(attachment: HKAttachment, completion: (p1: NSData, p2: NSError) => void): NSProgress;
+	getDataForAttachmentCompletion(attachment: HKAttachment, completion: (p1: NSData | null, p2: NSError | null) => void): NSProgress;
 
 	initWithHealthStore(healthStore: HKHealthStore): this;
 
-	removeAttachmentFromObjectCompletion(attachment: HKAttachment, object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
+	removeAttachmentFromObjectCompletion(attachment: HKAttachment, object: HKObject, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	streamDataForAttachmentDataHandler(attachment: HKAttachment, dataHandler: (p1: NSData, p2: NSError, p3: boolean) => void): NSProgress;
+	streamDataForAttachmentDataHandler(attachment: HKAttachment, dataHandler: (p1: NSData | null, p2: NSError | null, p3: boolean) => void): NSProgress;
 }
 
 /**
@@ -307,13 +307,13 @@ declare class HKAudiogramSample extends HKSample {
 	/**
 	 * @since 18.1
 	 */
-	static audiogramSampleWithSensitivityPointsStartDateEndDateDeviceMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKAudiogramSample;
+	static audiogramSampleWithSensitivityPointsStartDateEndDateDeviceMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKAudiogramSample;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 18.1
 	 */
-	static audiogramSampleWithSensitivityPointsStartDateEndDateMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKAudiogramSample;
+	static audiogramSampleWithSensitivityPointsStartDateEndDateMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null): HKAudiogramSample;
 
 	static new(): HKAudiogramSample; // inherited from NSObject
 
@@ -343,7 +343,7 @@ declare class HKAudiogramSensitivityPoint extends NSObject implements NSSecureCo
 	 * @since 13.0
 	 * @deprecated 18.1
 	 */
-	static sensitivityPointWithFrequencyLeftEarSensitivityRightEarSensitivityError(frequency: HKQuantity, leftEarSensitivity: HKQuantity, rightEarSensitivity: HKQuantity, error?: interop.Reference<NSError>): HKAudiogramSensitivityPoint;
+	static sensitivityPointWithFrequencyLeftEarSensitivityRightEarSensitivityError(frequency: HKQuantity, leftEarSensitivity: HKQuantity | null, rightEarSensitivity: HKQuantity | null, error?: interop.Reference<NSError>): HKAudiogramSensitivityPoint;
 
 	/**
 	 * @since 18.1
@@ -356,13 +356,13 @@ declare class HKAudiogramSensitivityPoint extends NSObject implements NSSecureCo
 	 * @since 13.0
 	 * @deprecated 18.1
 	 */
-	readonly leftEarSensitivity: HKQuantity;
+	readonly leftEarSensitivity: HKQuantity | null;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 18.1
 	 */
-	readonly rightEarSensitivity: HKQuantity;
+	readonly rightEarSensitivity: HKQuantity | null;
 
 	/**
 	 * @since 18.1
@@ -385,19 +385,19 @@ declare class HKAudiogramSensitivityPointClampingRange extends NSObject implemen
 
 	static alloc(): HKAudiogramSensitivityPointClampingRange; // inherited from NSObject
 
-	static clampingRangeWithLowerBoundUpperBoundError(lowerBound: number, upperBound: number, error?: interop.Reference<NSError>): HKAudiogramSensitivityPointClampingRange;
+	static clampingRangeWithLowerBoundUpperBoundError(lowerBound: number | null, upperBound: number | null, error?: interop.Reference<NSError>): HKAudiogramSensitivityPointClampingRange;
 
 	static new(): HKAudiogramSensitivityPointClampingRange; // inherited from NSObject
 
-	readonly lowerBound: HKQuantity;
+	readonly lowerBound: HKQuantity | null;
 
-	readonly upperBound: HKQuantity;
+	readonly upperBound: HKQuantity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -413,7 +413,7 @@ declare class HKAudiogramSensitivityTest extends NSObject implements NSCopying, 
 
 	static new(): HKAudiogramSensitivityTest; // inherited from NSObject
 
-	readonly clampingRange: HKAudiogramSensitivityPointClampingRange;
+	readonly clampingRange: HKAudiogramSensitivityPointClampingRange | null;
 
 	readonly masked: boolean;
 
@@ -427,15 +427,15 @@ declare class HKAudiogramSensitivityTest extends NSObject implements NSCopying, 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { sensitivity: HKQuantity; type: HKAudiogramConductionType; masked: boolean; side: HKAudiogramSensitivityTestSide; clampingRange: HKAudiogramSensitivityPointClampingRange; });
+	constructor(o: { sensitivity: HKQuantity; type: HKAudiogramConductionType; masked: boolean; side: HKAudiogramSensitivityTestSide; clampingRange: HKAudiogramSensitivityPointClampingRange | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSensitivityTypeMaskedSideClampingRangeError(sensitivity: HKQuantity, type: HKAudiogramConductionType, masked: boolean, side: HKAudiogramSensitivityTestSide, clampingRange: HKAudiogramSensitivityPointClampingRange, error?: interop.Reference<NSError>): this;
+	initWithSensitivityTypeMaskedSideClampingRangeError(sensitivity: HKQuantity, type: HKAudiogramConductionType, masked: boolean, side: HKAudiogramSensitivityTestSide, clampingRange: HKAudiogramSensitivityPointClampingRange | null, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -501,7 +501,7 @@ declare class HKBiologicalSexObject extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -557,7 +557,7 @@ declare class HKBloodTypeObject extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -616,7 +616,7 @@ declare class HKCDADocument extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	readonly documentData: NSData;
+	readonly documentData: NSData | null;
 
 	/**
 	 * @since 10.0
@@ -634,13 +634,13 @@ declare class HKCDADocument extends NSObject {
  */
 declare class HKCDADocumentSample extends HKDocumentSample {
 
-	static CDADocumentSampleWithDataStartDateEndDateMetadataValidationError(documentData: NSData, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>, error?: interop.Reference<NSError>): HKCDADocumentSample;
+	static CDADocumentSampleWithDataStartDateEndDateMetadataValidationError(documentData: NSData, startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): HKCDADocumentSample;
 
 	static alloc(): HKCDADocumentSample; // inherited from NSObject
 
 	static new(): HKCDADocumentSample; // inherited from NSObject
 
-	readonly document: HKCDADocument;
+	readonly document: HKCDADocument | null;
 }
 
 /**
@@ -655,9 +655,9 @@ declare class HKCategorySample extends HKSample {
 	/**
 	 * @since 9.0
 	 */
-	static categorySampleWithTypeValueStartDateEndDateDeviceMetadata(type: HKCategoryType, value: number, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCategorySample;
+	static categorySampleWithTypeValueStartDateEndDateDeviceMetadata(type: HKCategoryType, value: number, startDate: Date, endDate: Date, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKCategorySample;
 
-	static categorySampleWithTypeValueStartDateEndDateMetadata(type: HKCategoryType, value: number, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCategorySample;
+	static categorySampleWithTypeValueStartDateEndDateMetadata(type: HKCategoryType, value: number, startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null): HKCategorySample;
 
 	static new(): HKCategorySample; // inherited from NSObject
 
@@ -836,6 +836,11 @@ declare var HKCategoryTypeIdentifierHighHeartRateEvent: string;
  * @since 13.6
  */
 declare var HKCategoryTypeIdentifierHotFlashes: string;
+
+/**
+ * @since 26.2
+ */
+declare var HKCategoryTypeIdentifierHypertensionEvent: string;
 
 /**
  * @since 16.0
@@ -1314,21 +1319,21 @@ declare class HKClinicalCoding extends NSObject implements NSCopying, NSSecureCo
 
 	readonly system: string;
 
-	readonly version: string;
+	readonly version: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { system: string; version: string; code: string; });
+	constructor(o: { system: string; version: string | null; code: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSystemVersionCode(system: string, version: string, code: string): this;
+	initWithSystemVersionCode(system: string, version: string | null, code: string): this;
 }
 
 /**
@@ -1340,7 +1345,7 @@ declare class HKClinicalRecord extends HKSample implements NSCopying, NSSecureCo
 
 	static new(): HKClinicalRecord; // inherited from NSObject
 
-	readonly FHIRResource: HKFHIRResource;
+	readonly FHIRResource: HKFHIRResource | null;
 
 	readonly clinicalType: HKClinicalType;
 
@@ -1350,7 +1355,7 @@ declare class HKClinicalRecord extends HKSample implements NSCopying, NSSecureCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1421,23 +1426,23 @@ declare class HKContactsLensSpecification extends HKLensSpecification implements
 
 	static new(): HKContactsLensSpecification; // inherited from NSObject
 
-	readonly baseCurve: HKQuantity;
+	readonly baseCurve: HKQuantity | null;
 
-	readonly diameter: HKQuantity;
+	readonly diameter: HKQuantity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { sphere: HKQuantity; cylinder: HKQuantity; axis: HKQuantity; addPower: HKQuantity; baseCurve: HKQuantity; diameter: HKQuantity; });
+	constructor(o: { sphere: HKQuantity; cylinder: HKQuantity | null; axis: HKQuantity | null; addPower: HKQuantity | null; baseCurve: HKQuantity | null; diameter: HKQuantity | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSphereCylinderAxisAddPowerBaseCurveDiameter(sphere: HKQuantity, cylinder: HKQuantity, axis: HKQuantity, addPower: HKQuantity, baseCurve: HKQuantity, diameter: HKQuantity): this;
+	initWithSphereCylinderAxisAddPowerBaseCurveDiameter(sphere: HKQuantity, cylinder: HKQuantity | null, axis: HKQuantity | null, addPower: HKQuantity | null, baseCurve: HKQuantity | null, diameter: HKQuantity | null): this;
 }
 
 /**
@@ -1449,21 +1454,21 @@ declare class HKContactsPrescription extends HKVisionPrescription implements NSC
 
 	static new(): HKContactsPrescription; // inherited from NSObject
 
-	static prescriptionWithRightEyeSpecificationLeftEyeSpecificationBrandDateIssuedExpirationDateDeviceMetadata(rightEyeSpecification: HKContactsLensSpecification, leftEyeSpecification: HKContactsLensSpecification, brand: string, dateIssued: Date, expirationDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKContactsPrescription;
+	static prescriptionWithRightEyeSpecificationLeftEyeSpecificationBrandDateIssuedExpirationDateDeviceMetadata(rightEyeSpecification: HKContactsLensSpecification | null, leftEyeSpecification: HKContactsLensSpecification | null, brand: string, dateIssued: Date, expirationDate: Date | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKContactsPrescription;
 
-	static prescriptionWithTypeDateIssuedExpirationDateDeviceMetadata(type: HKVisionPrescriptionType, dateIssued: Date, expirationDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKContactsPrescription; // inherited from HKVisionPrescription
+	static prescriptionWithTypeDateIssuedExpirationDateDeviceMetadata(type: HKVisionPrescriptionType, dateIssued: Date, expirationDate: Date | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKContactsPrescription; // inherited from HKVisionPrescription
 
 	readonly brand: string;
 
-	readonly leftEye: HKContactsLensSpecification;
+	readonly leftEye: HKContactsLensSpecification | null;
 
-	readonly rightEye: HKContactsLensSpecification;
+	readonly rightEye: HKContactsLensSpecification | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1482,9 +1487,9 @@ declare class HKCorrelation extends HKSample {
 	/**
 	 * @since 9.0
 	 */
-	static correlationWithTypeStartDateEndDateObjectsDeviceMetadata(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>, device: HKDevice, metadata: NSDictionary<string, any>): HKCorrelation;
+	static correlationWithTypeStartDateEndDateObjectsDeviceMetadata(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKCorrelation;
 
-	static correlationWithTypeStartDateEndDateObjectsMetadata(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>, metadata: NSDictionary<string, any>): HKCorrelation;
+	static correlationWithTypeStartDateEndDateObjectsMetadata(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>, metadata: NSDictionary<string, any> | null): HKCorrelation;
 
 	static new(): HKCorrelation; // inherited from NSObject
 
@@ -1506,11 +1511,11 @@ declare class HKCorrelationQuery extends HKQuery {
 
 	readonly correlationType: HKCorrelationType;
 
-	readonly samplePredicates: NSDictionary<HKSampleType, NSPredicate>;
+	readonly samplePredicates: NSDictionary<HKSampleType, NSPredicate> | null;
 
-	constructor(o: { type: HKCorrelationType; predicate: NSPredicate; samplePredicates: NSDictionary<HKSampleType, NSPredicate>; completion: (p1: HKCorrelationQuery, p2: NSArray<HKCorrelation>, p3: NSError) => void; });
+	constructor(o: { type: HKCorrelationType; predicate: NSPredicate | null; samplePredicates: NSDictionary<HKSampleType, NSPredicate> | null; completion: (p1: HKCorrelationQuery, p2: NSArray<HKCorrelation> | null, p3: NSError | null) => void; });
 
-	initWithTypePredicateSamplePredicatesCompletion(correlationType: HKCorrelationType, predicate: NSPredicate, samplePredicates: NSDictionary<HKSampleType, NSPredicate>, completion: (p1: HKCorrelationQuery, p2: NSArray<HKCorrelation>, p3: NSError) => void): this;
+	initWithTypePredicateSamplePredicatesCompletion(correlationType: HKCorrelationType, predicate: NSPredicate | null, samplePredicates: NSDictionary<HKSampleType, NSPredicate> | null, completion: (p1: HKCorrelationQuery, p2: NSArray<HKCorrelation> | null, p3: NSError | null) => void): this;
 }
 
 /**
@@ -1547,9 +1552,9 @@ declare class HKCumulativeQuantitySample extends HKQuantitySample {
 	/**
 	 * @since 9.0
 	 */
-	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCumulativeQuantitySample; // inherited from HKQuantitySample
+	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKCumulativeQuantitySample; // inherited from HKQuantitySample
 
-	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCumulativeQuantitySample; // inherited from HKQuantitySample
+	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null): HKCumulativeQuantitySample; // inherited from HKQuantitySample
 
 	readonly sumQuantity: HKQuantity;
 }
@@ -1569,9 +1574,9 @@ declare class HKCumulativeQuantitySeriesSample extends HKCumulativeQuantitySampl
 	/**
 	 * @since 9.0
 	 */
-	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
+	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
 
-	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
+	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
 
 	readonly sum: HKQuantity;
 }
@@ -1619,7 +1624,7 @@ declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 11.0
 	 */
-	readonly metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1646,35 +1651,35 @@ declare class HKDevice extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): HKDevice; // inherited from NSObject
 
-	readonly UDIDeviceIdentifier: string;
+	readonly UDIDeviceIdentifier: string | null;
 
-	readonly firmwareVersion: string;
+	readonly firmwareVersion: string | null;
 
-	readonly hardwareVersion: string;
+	readonly hardwareVersion: string | null;
 
-	readonly localIdentifier: string;
+	readonly localIdentifier: string | null;
 
-	readonly manufacturer: string;
+	readonly manufacturer: string | null;
 
-	readonly model: string;
+	readonly model: string | null;
 
-	readonly name: string;
+	readonly name: string | null;
 
-	readonly softwareVersion: string;
+	readonly softwareVersion: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { name: string; manufacturer: string; model: string; hardwareVersion: string; firmwareVersion: string; softwareVersion: string; localIdentifier: string; UDIDeviceIdentifier: string; });
+	constructor(o: { name: string | null; manufacturer: string | null; model: string | null; hardwareVersion: string | null; firmwareVersion: string | null; softwareVersion: string | null; localIdentifier: string | null; UDIDeviceIdentifier: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithNameManufacturerModelHardwareVersionFirmwareVersionSoftwareVersionLocalIdentifierUDIDeviceIdentifier(name: string, manufacturer: string, model: string, hardwareVersion: string, firmwareVersion: string, softwareVersion: string, localIdentifier: string, UDIDeviceIdentifier: string): this;
+	initWithNameManufacturerModelHardwareVersionFirmwareVersionSoftwareVersionLocalIdentifierUDIDeviceIdentifier(name: string | null, manufacturer: string | null, model: string | null, hardwareVersion: string | null, firmwareVersion: string | null, softwareVersion: string | null, localIdentifier: string | null, UDIDeviceIdentifier: string | null): this;
 }
 
 /**
@@ -1745,9 +1750,9 @@ declare class HKDiscreteQuantitySample extends HKQuantitySample {
 	/**
 	 * @since 9.0
 	 */
-	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKDiscreteQuantitySample; // inherited from HKQuantitySample
+	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKDiscreteQuantitySample; // inherited from HKQuantitySample
 
-	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKDiscreteQuantitySample; // inherited from HKQuantitySample
+	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null): HKDiscreteQuantitySample; // inherited from HKQuantitySample
 
 	readonly averageQuantity: HKQuantity;
 
@@ -1773,11 +1778,11 @@ declare class HKDocumentQuery extends HKQuery {
 
 	readonly limit: number;
 
-	readonly sortDescriptors: NSArray<NSSortDescriptor>;
+	readonly sortDescriptors: NSArray<NSSortDescriptor> | null;
 
-	constructor(o: { documentType: HKDocumentType; predicate: NSPredicate; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; includeDocumentData: boolean; resultsHandler: (p1: HKDocumentQuery, p2: NSArray<HKDocumentSample>, p3: boolean, p4: NSError) => void; });
+	constructor(o: { documentType: HKDocumentType; predicate: NSPredicate | null; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[] | null; includeDocumentData: boolean; resultsHandler: (p1: HKDocumentQuery, p2: NSArray<HKDocumentSample> | null, p3: boolean, p4: NSError | null) => void; });
 
-	initWithDocumentTypePredicateLimitSortDescriptorsIncludeDocumentDataResultsHandler(documentType: HKDocumentType, predicate: NSPredicate, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], includeDocumentData: boolean, resultsHandler: (p1: HKDocumentQuery, p2: NSArray<HKDocumentSample>, p3: boolean, p4: NSError) => void): this;
+	initWithDocumentTypePredicateLimitSortDescriptorsIncludeDocumentDataResultsHandler(documentType: HKDocumentType, predicate: NSPredicate | null, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[] | null, includeDocumentData: boolean, resultsHandler: (p1: HKDocumentQuery, p2: NSArray<HKDocumentSample> | null, p3: boolean, p4: NSError | null) => void): this;
 }
 
 /**
@@ -1816,13 +1821,13 @@ declare class HKElectrocardiogram extends HKSample {
 
 	static new(): HKElectrocardiogram; // inherited from NSObject
 
-	readonly averageHeartRate: HKQuantity;
+	readonly averageHeartRate: HKQuantity | null;
 
 	readonly classification: HKElectrocardiogramClassification;
 
 	readonly numberOfVoltageMeasurements: number;
 
-	readonly samplingFrequency: HKQuantity;
+	readonly samplingFrequency: HKQuantity | null;
 
 	readonly symptomsStatus: HKElectrocardiogramSymptomsStatus;
 }
@@ -1866,9 +1871,9 @@ declare class HKElectrocardiogramQuery extends HKQuery {
 
 	static new(): HKElectrocardiogramQuery; // inherited from NSObject
 
-	constructor(o: { electrocardiogram: HKElectrocardiogram; dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement, p3: boolean, p4: NSError) => void; });
+	constructor(o: { electrocardiogram: HKElectrocardiogram; dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement | null, p3: boolean, p4: NSError | null) => void; });
 
-	initWithElectrocardiogramDataHandler(electrocardiogram: HKElectrocardiogram, dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement, p3: boolean, p4: NSError) => void): this;
+	initWithElectrocardiogramDataHandler(electrocardiogram: HKElectrocardiogram, dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement | null, p3: boolean, p4: NSError | null) => void): this;
 }
 
 /**
@@ -1904,9 +1909,9 @@ declare class HKElectrocardiogramVoltageMeasurement extends NSObject implements 
 
 	readonly timeSinceSampleStart: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	quantityForLead(lead: HKElectrocardiogramLead): HKQuantity;
+	quantityForLead(lead: HKElectrocardiogramLead): HKQuantity | null;
 }
 
 /**
@@ -1989,13 +1994,13 @@ declare class HKFHIRResource extends NSObject implements NSCopying, NSSecureCodi
 
 	readonly resourceType: string;
 
-	readonly sourceURL: NSURL;
+	readonly sourceURL: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2091,7 +2096,7 @@ declare class HKFHIRVersion extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2133,7 +2138,7 @@ declare class HKFitzpatrickSkinTypeObject extends NSObject implements NSCopying,
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2149,7 +2154,7 @@ declare class HKGAD7Assessment extends HKScoredAssessment {
 
 	static assessmentWithDateAnswers(date: Date, answers: NSArray<number> | number[]): HKGAD7Assessment;
 
-	static assessmentWithDateAnswersMetadata(date: Date, answers: NSArray<number> | number[], metadata: NSDictionary<string, any>): HKGAD7Assessment;
+	static assessmentWithDateAnswersMetadata(date: Date, answers: NSArray<number> | number[], metadata: NSDictionary<string, any> | null): HKGAD7Assessment;
 
 	static new(): HKGAD7Assessment; // inherited from NSObject
 
@@ -2195,27 +2200,27 @@ declare class HKGlassesLensSpecification extends HKLensSpecification implements 
 
 	static new(): HKGlassesLensSpecification; // inherited from NSObject
 
-	readonly farPupillaryDistance: HKQuantity;
+	readonly farPupillaryDistance: HKQuantity | null;
 
-	readonly nearPupillaryDistance: HKQuantity;
+	readonly nearPupillaryDistance: HKQuantity | null;
 
-	readonly prism: HKVisionPrism;
+	readonly prism: HKVisionPrism | null;
 
-	readonly vertexDistance: HKQuantity;
+	readonly vertexDistance: HKQuantity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { sphere: HKQuantity; cylinder: HKQuantity; axis: HKQuantity; addPower: HKQuantity; vertexDistance: HKQuantity; prism: HKVisionPrism; farPupillaryDistance: HKQuantity; nearPupillaryDistance: HKQuantity; });
+	constructor(o: { sphere: HKQuantity; cylinder: HKQuantity | null; axis: HKQuantity | null; addPower: HKQuantity | null; vertexDistance: HKQuantity | null; prism: HKVisionPrism | null; farPupillaryDistance: HKQuantity | null; nearPupillaryDistance: HKQuantity | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSphereCylinderAxisAddPowerVertexDistancePrismFarPupillaryDistanceNearPupillaryDistance(sphere: HKQuantity, cylinder: HKQuantity, axis: HKQuantity, addPower: HKQuantity, vertexDistance: HKQuantity, prism: HKVisionPrism, farPupillaryDistance: HKQuantity, nearPupillaryDistance: HKQuantity): this;
+	initWithSphereCylinderAxisAddPowerVertexDistancePrismFarPupillaryDistanceNearPupillaryDistance(sphere: HKQuantity, cylinder: HKQuantity | null, axis: HKQuantity | null, addPower: HKQuantity | null, vertexDistance: HKQuantity | null, prism: HKVisionPrism | null, farPupillaryDistance: HKQuantity | null, nearPupillaryDistance: HKQuantity | null): this;
 }
 
 /**
@@ -2227,19 +2232,19 @@ declare class HKGlassesPrescription extends HKVisionPrescription implements NSCo
 
 	static new(): HKGlassesPrescription; // inherited from NSObject
 
-	static prescriptionWithRightEyeSpecificationLeftEyeSpecificationDateIssuedExpirationDateDeviceMetadata(rightEyeSpecification: HKGlassesLensSpecification, leftEyeSpecification: HKGlassesLensSpecification, dateIssued: Date, expirationDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKGlassesPrescription;
+	static prescriptionWithRightEyeSpecificationLeftEyeSpecificationDateIssuedExpirationDateDeviceMetadata(rightEyeSpecification: HKGlassesLensSpecification | null, leftEyeSpecification: HKGlassesLensSpecification | null, dateIssued: Date, expirationDate: Date | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKGlassesPrescription;
 
-	static prescriptionWithTypeDateIssuedExpirationDateDeviceMetadata(type: HKVisionPrescriptionType, dateIssued: Date, expirationDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKGlassesPrescription; // inherited from HKVisionPrescription
+	static prescriptionWithTypeDateIssuedExpirationDateDeviceMetadata(type: HKVisionPrescriptionType, dateIssued: Date, expirationDate: Date | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKGlassesPrescription; // inherited from HKVisionPrescription
 
-	readonly leftEye: HKGlassesLensSpecification;
+	readonly leftEye: HKGlassesLensSpecification | null;
 
-	readonly rightEye: HKGlassesLensSpecification;
+	readonly rightEye: HKGlassesLensSpecification | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2266,7 +2271,7 @@ declare class HKHealthConceptIdentifier extends NSObject implements NSCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2287,122 +2292,122 @@ declare class HKHealthStore extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	authorizationViewControllerPresenter: UIViewController;
+	authorizationViewControllerPresenter: UIViewController | null;
 
 	/**
 	 * @since 17.0
 	 */
-	workoutSessionMirroringStartHandler: (p1: HKWorkoutSession) => void;
+	workoutSessionMirroringStartHandler: (p1: HKWorkoutSession) => void | null;
 
 	/**
 	 * @since 14.0
 	 */
-	activityMoveModeWithError(error?: interop.Reference<NSError>): HKActivityMoveModeObject;
+	activityMoveModeWithError(error?: interop.Reference<NSError>): HKActivityMoveModeObject | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 17.0
 	 */
-	addSamplesToWorkoutCompletion(samples: NSArray<HKSample> | HKSample[], workout: HKWorkout, completion: (p1: boolean, p2: NSError) => void): void;
+	addSamplesToWorkoutCompletion(samples: NSArray<HKSample> | HKSample[], workout: HKWorkout, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	authorizationStatusForType(type: HKObjectType): HKAuthorizationStatus;
 
-	biologicalSexWithError(error?: interop.Reference<NSError>): HKBiologicalSexObject;
+	biologicalSexWithError(error?: interop.Reference<NSError>): HKBiologicalSexObject | null;
 
-	bloodTypeWithError(error?: interop.Reference<NSError>): HKBloodTypeObject;
+	bloodTypeWithError(error?: interop.Reference<NSError>): HKBloodTypeObject | null;
 
 	/**
 	 * @since 10.0
 	 */
-	dateOfBirthComponentsWithError(error?: interop.Reference<NSError>): NSDateComponents;
+	dateOfBirthComponentsWithError(error?: interop.Reference<NSError>): NSDateComponents | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 10.0
 	 */
-	dateOfBirthWithError(error?: interop.Reference<NSError>): Date;
+	dateOfBirthWithError(error?: interop.Reference<NSError>): Date | null;
 
-	deleteObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
-
-	/**
-	 * @since 9.0
-	 */
-	deleteObjectsOfTypePredicateWithCompletion(objectType: HKObjectType, predicate: NSPredicate, completion: (p1: boolean, p2: number, p3: NSError) => void): void;
+	deleteObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 */
-	deleteObjectsWithCompletion(objects: NSArray<HKObject> | HKObject[], completion: (p1: boolean, p2: NSError) => void): void;
+	deleteObjectsOfTypePredicateWithCompletion(objectType: HKObjectType, predicate: NSPredicate, completion: (p1: boolean, p2: number, p3: NSError | null) => void): void;
 
-	disableAllBackgroundDeliveryWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
+	/**
+	 * @since 9.0
+	 */
+	deleteObjectsWithCompletion(objects: NSArray<HKObject> | HKObject[], completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	disableBackgroundDeliveryForTypeWithCompletion(type: HKObjectType, completion: (p1: boolean, p2: NSError) => void): void;
+	disableAllBackgroundDeliveryWithCompletion(completion: (p1: boolean, p2: NSError | null) => void): void;
+
+	disableBackgroundDeliveryForTypeWithCompletion(type: HKObjectType, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 */
 	earliestPermittedSampleDate(): Date;
 
-	enableBackgroundDeliveryForTypeFrequencyWithCompletion(type: HKObjectType, frequency: HKUpdateFrequency, completion: (p1: boolean, p2: NSError) => void): void;
+	enableBackgroundDeliveryForTypeFrequencyWithCompletion(type: HKObjectType, frequency: HKUpdateFrequency, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	executeQuery(query: HKQuery): void;
 
 	/**
 	 * @since 9.0
 	 */
-	fitzpatrickSkinTypeWithError(error?: interop.Reference<NSError>): HKFitzpatrickSkinTypeObject;
+	fitzpatrickSkinTypeWithError(error?: interop.Reference<NSError>): HKFitzpatrickSkinTypeObject | null;
 
 	/**
 	 * @since 12.0
 	 */
-	getRequestStatusForAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: HKAuthorizationRequestStatus, p2: NSError) => void): void;
+	getRequestStatusForAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: HKAuthorizationRequestStatus, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 */
-	handleAuthorizationForExtensionWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
+	handleAuthorizationForExtensionWithCompletion(completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 8.2
 	 */
-	preferredUnitsForQuantityTypesCompletion(quantityTypes: NSSet<HKQuantityType>, completion: (p1: NSDictionary<HKQuantityType, HKUnit>, p2: NSError) => void): void;
+	preferredUnitsForQuantityTypesCompletion(quantityTypes: NSSet<HKQuantityType>, completion: (p1: NSDictionary<HKQuantityType, HKUnit>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 15.0
 	 */
-	recalibrateEstimatesForSampleTypeAtDateCompletion(sampleType: HKSampleType, date: Date, completion: (p1: boolean, p2: NSError) => void): void;
+	recalibrateEstimatesForSampleTypeAtDateCompletion(sampleType: HKSampleType, date: Date, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 26.0
 	 */
-	recoverActiveWorkoutSessionWithCompletion(completion: (p1: HKWorkoutSession, p2: NSError) => void): void;
+	recoverActiveWorkoutSessionWithCompletion(completion: (p1: HKWorkoutSession, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 18.0
 	 */
-	relateWorkoutEffortSampleWithWorkoutActivityCompletion(sample: HKSample, workout: HKWorkout, activity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError) => void): void;
+	relateWorkoutEffortSampleWithWorkoutActivityCompletion(sample: HKSample, workout: HKWorkout, activity: HKWorkoutActivity | null, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	requestAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: boolean, p2: NSError) => void): void;
+	requestAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType> | null, typesToRead: NSSet<HKObjectType> | null, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	requestPerObjectReadAuthorizationForTypePredicateCompletion(objectType: HKObjectType, predicate: NSPredicate, completion: (p1: boolean, p2: NSError) => void): void;
+	requestPerObjectReadAuthorizationForTypePredicateCompletion(objectType: HKObjectType, predicate: NSPredicate | null, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	saveObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
+	saveObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	saveObjectsWithCompletion(objects: NSArray<HKObject> | HKObject[], completion: (p1: boolean, p2: NSError) => void): void;
+	saveObjectsWithCompletion(objects: NSArray<HKObject> | HKObject[], completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 11.0
 	 */
-	splitTotalEnergyStartDateEndDateResultsHandler(totalEnergy: HKQuantity, startDate: Date, endDate: Date, resultsHandler: (p1: HKQuantity, p2: HKQuantity, p3: NSError) => void): void;
+	splitTotalEnergyStartDateEndDateResultsHandler(totalEnergy: HKQuantity, startDate: Date, endDate: Date, resultsHandler: (p1: HKQuantity | null, p2: HKQuantity | null, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 10.0
 	 */
-	startWatchAppWithWorkoutConfigurationCompletion(workoutConfiguration: HKWorkoutConfiguration, completion: (p1: boolean, p2: NSError) => void): void;
+	startWatchAppWithWorkoutConfigurationCompletion(workoutConfiguration: HKWorkoutConfiguration, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	stopQuery(query: HKQuery): void;
 
@@ -2414,12 +2419,12 @@ declare class HKHealthStore extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	unrelateWorkoutEffortSampleFromWorkoutActivityCompletion(sample: HKSample, workout: HKWorkout, activity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError) => void): void;
+	unrelateWorkoutEffortSampleFromWorkoutActivityCompletion(sample: HKSample, workout: HKWorkout, activity: HKWorkoutActivity | null, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 10.0
 	 */
-	wheelchairUseWithError(error?: interop.Reference<NSError>): HKWheelchairUseObject;
+	wheelchairUseWithError(error?: interop.Reference<NSError>): HKWheelchairUseObject | null;
 }
 
 /**
@@ -2477,15 +2482,15 @@ declare class HKHeartbeatSeriesBuilder extends HKSeriesBuilder {
 
 	static readonly maximumCount: number;
 
-	constructor(o: { healthStore: HKHealthStore; device: HKDevice; startDate: Date; });
+	constructor(o: { healthStore: HKHealthStore; device: HKDevice | null; startDate: Date; });
 
-	addHeartbeatWithTimeIntervalSinceSeriesStartDatePrecededByGapCompletion(timeIntervalSinceStart: number, precededByGap: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	addHeartbeatWithTimeIntervalSinceSeriesStartDatePrecededByGapCompletion(timeIntervalSinceStart: number, precededByGap: boolean, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
+	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	finishSeriesWithCompletion(completion: (p1: HKHeartbeatSeriesSample, p2: NSError) => void): void;
+	finishSeriesWithCompletion(completion: (p1: HKHeartbeatSeriesSample | null, p2: NSError | null) => void): void;
 
-	initWithHealthStoreDeviceStartDate(healthStore: HKHealthStore, device: HKDevice, startDate: Date): this;
+	initWithHealthStoreDeviceStartDate(healthStore: HKHealthStore, device: HKDevice | null, startDate: Date): this;
 }
 
 /**
@@ -2497,9 +2502,9 @@ declare class HKHeartbeatSeriesQuery extends HKQuery {
 
 	static new(): HKHeartbeatSeriesQuery; // inherited from NSObject
 
-	constructor(o: { heartbeatSeries: HKHeartbeatSeriesSample; dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError) => void; });
+	constructor(o: { heartbeatSeries: HKHeartbeatSeriesSample; dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError | null) => void; });
 
-	initWithHeartbeatSeriesDataHandler(heartbeatSeries: HKHeartbeatSeriesSample, dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError) => void): this;
+	initWithHeartbeatSeriesDataHandler(heartbeatSeries: HKHeartbeatSeriesSample, dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError | null) => void): this;
 }
 
 /**
@@ -2531,11 +2536,11 @@ declare class HKLensSpecification extends NSObject {
 
 	static new(): HKLensSpecification; // inherited from NSObject
 
-	readonly addPower: HKQuantity;
+	readonly addPower: HKQuantity | null;
 
-	readonly axis: HKQuantity;
+	readonly axis: HKQuantity | null;
 
-	readonly cylinder: HKQuantity;
+	readonly cylinder: HKQuantity | null;
 
 	readonly sphere: HKQuantity;
 }
@@ -2552,17 +2557,17 @@ declare class HKLiveWorkoutBuilder extends HKWorkoutBuilder {
 	/**
 	 * @since 26.0
 	 */
-	readonly currentWorkoutActivity: HKWorkoutActivity;
+	readonly currentWorkoutActivity: HKWorkoutActivity | null;
 
-	dataSource: HKLiveWorkoutDataSource;
+	dataSource: HKLiveWorkoutDataSource | null;
 
-	delegate: HKLiveWorkoutBuilderDelegate;
+	delegate: HKLiveWorkoutBuilderDelegate | null;
 
 	readonly elapsedTime: number;
 
 	shouldCollectWorkoutEvents: boolean;
 
-	readonly workoutSession: HKWorkoutSession;
+	readonly workoutSession: HKWorkoutSession | null;
 }
 
 /**
@@ -2603,13 +2608,13 @@ declare class HKLiveWorkoutDataSource extends NSObject {
 	 */
 	readonly typesToCollect: NSSet<HKQuantityType>;
 
-	constructor(o: { healthStore: HKHealthStore; workoutConfiguration: HKWorkoutConfiguration; });
+	constructor(o: { healthStore: HKHealthStore; workoutConfiguration: HKWorkoutConfiguration | null; });
 
 	disableCollectionForType(quantityType: HKQuantityType): void;
 
-	enableCollectionForTypePredicate(quantityType: HKQuantityType, predicate: NSPredicate): void;
+	enableCollectionForTypePredicate(quantityType: HKQuantityType, predicate: NSPredicate | null): void;
 
-	initWithHealthStoreWorkoutConfiguration(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration): this;
+	initWithHealthStoreWorkoutConfiguration(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration | null): this;
 }
 
 /**
@@ -2633,7 +2638,7 @@ declare class HKMedicationConcept extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2649,7 +2654,7 @@ declare class HKMedicationDoseEvent extends HKSample implements NSCopying, NSSec
 
 	static new(): HKMedicationDoseEvent; // inherited from NSObject
 
-	readonly doseQuantity: number;
+	readonly doseQuantity: number | null;
 
 	readonly logStatus: HKMedicationDoseEventLogStatus;
 
@@ -2659,9 +2664,9 @@ declare class HKMedicationDoseEvent extends HKSample implements NSCopying, NSSec
 
 	readonly scheduleType: HKMedicationDoseEventScheduleType;
 
-	readonly scheduledDate: Date;
+	readonly scheduledDate: Date | null;
 
-	readonly scheduledDoseQuantity: number;
+	readonly scheduledDoseQuantity: number | null;
 
 	readonly unit: HKUnit;
 
@@ -2669,7 +2674,7 @@ declare class HKMedicationDoseEvent extends HKSample implements NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3158,9 +3163,9 @@ declare class HKObject extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	readonly device: HKDevice;
+	readonly device: HKDevice | null;
 
-	readonly metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any> | null;
 
 	/**
 	 * @since 8.0
@@ -3201,21 +3206,21 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 	 */
 	static audiogramSampleType(): HKAudiogramSampleType;
 
-	static categoryTypeForIdentifier(identifier: string): HKCategoryType;
+	static categoryTypeForIdentifier(identifier: string): HKCategoryType | null;
 
-	static characteristicTypeForIdentifier(identifier: string): HKCharacteristicType;
+	static characteristicTypeForIdentifier(identifier: string): HKCharacteristicType | null;
 
 	/**
 	 * @since 12.0
 	 */
-	static clinicalTypeForIdentifier(identifier: string): HKClinicalType;
+	static clinicalTypeForIdentifier(identifier: string): HKClinicalType | null;
 
-	static correlationTypeForIdentifier(identifier: string): HKCorrelationType;
+	static correlationTypeForIdentifier(identifier: string): HKCorrelationType | null;
 
 	/**
 	 * @since 10.0
 	 */
-	static documentTypeForIdentifier(identifier: string): HKDocumentType;
+	static documentTypeForIdentifier(identifier: string): HKDocumentType | null;
 
 	/**
 	 * @since 14.0
@@ -3229,17 +3234,17 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): HKObjectType; // inherited from NSObject
 
-	static quantityTypeForIdentifier(identifier: string): HKQuantityType;
+	static quantityTypeForIdentifier(identifier: string): HKQuantityType | null;
 
 	/**
 	 * @since 18.0
 	 */
-	static scoredAssessmentTypeForIdentifier(identifier: string): HKScoredAssessmentType;
+	static scoredAssessmentTypeForIdentifier(identifier: string): HKScoredAssessmentType | null;
 
 	/**
 	 * @since 11.0
 	 */
-	static seriesTypeForIdentifier(identifier: string): HKSeriesType;
+	static seriesTypeForIdentifier(identifier: string): HKSeriesType | null;
 
 	/**
 	 * @since 18.0
@@ -3264,7 +3269,7 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3288,16 +3293,16 @@ declare class HKObserverQuery extends HKQuery {
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void; });
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType> | null, p3: () => void, p4: NSError | null) => void; });
 
-	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void; });
+	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate | null; updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError | null) => void; });
 
 	/**
 	 * @since 15.0
 	 */
-	initWithQueryDescriptorsUpdateHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void): this;
+	initWithQueryDescriptorsUpdateHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType> | null, p3: () => void, p4: NSError | null) => void): this;
 
-	initWithSampleTypePredicateUpdateHandler(sampleType: HKSampleType, predicate: NSPredicate, updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void): this;
+	initWithSampleTypePredicateUpdateHandler(sampleType: HKSampleType, predicate: NSPredicate | null, updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError | null) => void): this;
 }
 
 /**
@@ -3309,7 +3314,7 @@ declare class HKPHQ9Assessment extends HKScoredAssessment {
 
 	static assessmentWithDateAnswers(date: Date, answers: NSArray<number> | number[]): HKPHQ9Assessment;
 
-	static assessmentWithDateAnswersMetadata(date: Date, answers: NSArray<number> | number[], metadata: NSDictionary<string, any>): HKPHQ9Assessment;
+	static assessmentWithDateAnswersMetadata(date: Date, answers: NSArray<number> | number[], metadata: NSDictionary<string, any> | null): HKPHQ9Assessment;
 
 	static new(): HKPHQ9Assessment; // inherited from NSObject
 
@@ -3677,7 +3682,7 @@ declare class HKQuantity extends NSObject implements NSCopying, NSSecureCoding {
 
 	compare(quantity: HKQuantity): NSComparisonResult;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	doubleValueForUnit(unit: HKUnit): number;
 
@@ -3718,9 +3723,9 @@ declare class HKQuantitySample extends HKSample {
 	/**
 	 * @since 9.0
 	 */
-	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKQuantitySample;
+	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKQuantitySample;
 
-	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKQuantitySample;
+	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any> | null): HKQuantitySample;
 
 	/**
 	 * @since 12.0
@@ -3741,21 +3746,21 @@ declare class HKQuantitySeriesSampleBuilder extends NSObject {
 
 	static new(): HKQuantitySeriesSampleBuilder; // inherited from NSObject
 
-	readonly device: HKDevice;
+	readonly device: HKDevice | null;
 
 	readonly quantityType: HKQuantityType;
 
 	readonly startDate: Date;
 
-	constructor(o: { healthStore: HKHealthStore; quantityType: HKQuantityType; startDate: Date; device: HKDevice; });
+	constructor(o: { healthStore: HKHealthStore; quantityType: HKQuantityType; startDate: Date; device: HKDevice | null; });
 
 	discard(): void;
 
-	finishSeriesWithMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: NSArray<HKQuantitySample>, p2: NSError) => void): void;
+	finishSeriesWithMetadataCompletion(metadata: NSDictionary<string, any> | null, completion: (p1: NSArray<HKQuantitySample> | null, p2: NSError | null) => void): void;
 
-	finishSeriesWithMetadataEndDateCompletion(metadata: NSDictionary<string, any>, endDate: Date, completion: (p1: NSArray<HKQuantitySample>, p2: NSError) => void): void;
+	finishSeriesWithMetadataEndDateCompletion(metadata: NSDictionary<string, any> | null, endDate: Date | null, completion: (p1: NSArray<HKQuantitySample> | null, p2: NSError | null) => void): void;
 
-	initWithHealthStoreQuantityTypeStartDateDevice(healthStore: HKHealthStore, quantityType: HKQuantityType, startDate: Date, device: HKDevice): this;
+	initWithHealthStoreQuantityTypeStartDateDevice(healthStore: HKHealthStore, quantityType: HKQuantityType, startDate: Date, device: HKDevice | null): this;
 
 	insertQuantityDateError(quantity: HKQuantity, date: Date, error?: interop.Reference<NSError>): boolean;
 
@@ -3787,24 +3792,24 @@ declare class HKQuantitySeriesSampleQuery extends HKQuery {
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { quantityType: HKQuantityType; predicate: NSPredicate; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: NSDateInterval, p4: HKQuantitySample, p5: boolean, p6: NSError) => void; });
+	constructor(o: { quantityType: HKQuantityType; predicate: NSPredicate | null; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity | null, p3: NSDateInterval | null, p4: HKQuantitySample | null, p5: boolean, p6: NSError | null) => void; });
 
 	/**
 	 * @since 12.0
 	 * @deprecated 13.0
 	 */
-	constructor(o: { sample: HKQuantitySample; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: Date, p4: boolean, p5: NSError) => void; });
+	constructor(o: { sample: HKQuantitySample; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity | null, p3: Date | null, p4: boolean, p5: NSError | null) => void; });
 
 	/**
 	 * @since 13.0
 	 */
-	initWithQuantityTypePredicateQuantityHandler(quantityType: HKQuantityType, predicate: NSPredicate, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: NSDateInterval, p4: HKQuantitySample, p5: boolean, p6: NSError) => void): this;
+	initWithQuantityTypePredicateQuantityHandler(quantityType: HKQuantityType, predicate: NSPredicate | null, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity | null, p3: NSDateInterval | null, p4: HKQuantitySample | null, p5: boolean, p6: NSError | null) => void): this;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 13.0
 	 */
-	initWithSampleQuantityHandler(quantitySample: HKQuantitySample, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: Date, p4: boolean, p5: NSError) => void): this;
+	initWithSampleQuantityHandler(quantitySample: HKQuantitySample, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity | null, p3: Date | null, p4: boolean, p5: NSError | null) => void): this;
 }
 
 /**
@@ -4487,7 +4492,7 @@ declare class HKQuery extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	static predicateForMedicationDoseEventWithScheduledStartDateEndDate(startDate: Date, endDate: Date): NSPredicate;
+	static predicateForMedicationDoseEventWithScheduledStartDateEndDate(startDate: Date | null, endDate: Date | null): NSPredicate;
 
 	/**
 	 * @since 26.0
@@ -4539,7 +4544,7 @@ declare class HKQuery extends NSObject {
 
 	static predicateForQuantitySamplesWithOperatorTypeQuantity(operatorType: NSPredicateOperatorType, quantity: HKQuantity): NSPredicate;
 
-	static predicateForSamplesWithStartDateEndDateOptions(startDate: Date, endDate: Date, options: HKQueryOptions): NSPredicate;
+	static predicateForSamplesWithStartDateEndDateOptions(startDate: Date | null, endDate: Date | null, options: HKQueryOptions): NSPredicate;
 
 	static predicateForStatesOfMindWithAssociation(association: HKStateOfMindAssociation): NSPredicate;
 
@@ -4592,7 +4597,7 @@ declare class HKQuery extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	static predicateForWorkoutActivitiesWithStartDateEndDateOptions(startDate: Date, endDate: Date, options: HKQueryOptions): NSPredicate;
+	static predicateForWorkoutActivitiesWithStartDateEndDateOptions(startDate: Date | null, endDate: Date | null, options: HKQueryOptions): NSPredicate;
 
 	/**
 	 * @since 16.0
@@ -4602,7 +4607,7 @@ declare class HKQuery extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	static predicateForWorkoutEffortSamplesRelatedToWorkoutActivity(workout: HKWorkout, activity: HKWorkoutActivity): NSPredicate;
+	static predicateForWorkoutEffortSamplesRelatedToWorkoutActivity(workout: HKWorkout, activity: HKWorkoutActivity | null): NSPredicate;
 
 	/**
 	 * @since 16.0
@@ -4660,15 +4665,15 @@ declare class HKQuery extends NSObject {
 	/**
 	 * @since 9.3
 	 */
-	readonly objectType: HKObjectType;
+	readonly objectType: HKObjectType | null;
 
-	readonly predicate: NSPredicate;
+	readonly predicate: NSPredicate | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 9.3
 	 */
-	readonly sampleType: HKSampleType;
+	readonly sampleType: HKSampleType | null;
 }
 
 /**
@@ -4686,7 +4691,7 @@ declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4702,7 +4707,7 @@ declare class HKQueryDescriptor extends NSObject implements NSCopying, NSSecureC
 
 	static new(): HKQueryDescriptor; // inherited from NSObject
 
-	readonly predicate: NSPredicate;
+	readonly predicate: NSPredicate | null;
 
 	readonly sampleType: HKSampleType;
 
@@ -4710,15 +4715,15 @@ declare class HKQueryDescriptor extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; });
+	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSampleTypePredicate(sampleType: HKSampleType, predicate: NSPredicate): this;
+	initWithSampleTypePredicate(sampleType: HKSampleType, predicate: NSPredicate | null): this;
 }
 
 /**
@@ -4765,31 +4770,31 @@ declare class HKSampleQuery extends HKQuery {
 
 	readonly limit: number;
 
-	readonly sortDescriptors: NSArray<NSSortDescriptor>;
+	readonly sortDescriptors: NSArray<NSSortDescriptor> | null;
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample> | null, p3: NSError | null) => void; });
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample> | null, p3: NSError | null) => void; });
 
-	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
-
-	/**
-	 * @since 15.0
-	 */
-	initWithQueryDescriptorsLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
+	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate | null; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[] | null; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample> | null, p3: NSError | null) => void; });
 
 	/**
 	 * @since 15.0
 	 */
-	initWithQueryDescriptorsLimitSortDescriptorsResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
+	initWithQueryDescriptorsLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample> | null, p3: NSError | null) => void): this;
 
-	initWithSampleTypePredicateLimitSortDescriptorsResultsHandler(sampleType: HKSampleType, predicate: NSPredicate, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
+	/**
+	 * @since 15.0
+	 */
+	initWithQueryDescriptorsLimitSortDescriptorsResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample> | null, p3: NSError | null) => void): this;
+
+	initWithSampleTypePredicateLimitSortDescriptorsResultsHandler(sampleType: HKSampleType, predicate: NSPredicate | null, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[] | null, resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample> | null, p3: NSError | null) => void): this;
 }
 
 /**
@@ -4852,7 +4857,7 @@ declare class HKScoredAssessment extends HKSample implements NSCopying, NSSecure
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4933,7 +4938,7 @@ declare class HKSource extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4949,9 +4954,9 @@ declare class HKSourceQuery extends HKQuery {
 
 	static new(): HKSourceQuery; // inherited from NSObject
 
-	constructor(o: { sampleType: HKSampleType; samplePredicate: NSPredicate; completionHandler: (p1: HKSourceQuery, p2: NSSet<HKSource>, p3: NSError) => void; });
+	constructor(o: { sampleType: HKSampleType; samplePredicate: NSPredicate | null; completionHandler: (p1: HKSourceQuery, p2: NSSet<HKSource> | null, p3: NSError | null) => void; });
 
-	initWithSampleTypeSamplePredicateCompletionHandler(sampleType: HKSampleType, objectPredicate: NSPredicate, completionHandler: (p1: HKSourceQuery, p2: NSSet<HKSource>, p3: NSError) => void): this;
+	initWithSampleTypeSamplePredicateCompletionHandler(sampleType: HKSampleType, objectPredicate: NSPredicate | null, completionHandler: (p1: HKSourceQuery, p2: NSSet<HKSource> | null, p3: NSError | null) => void): this;
 }
 
 /**
@@ -4971,35 +4976,35 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 	/**
 	 * @since 11.0
 	 */
-	readonly productType: string;
+	readonly productType: string | null;
 
 	readonly source: HKSource;
 
-	readonly version: string;
+	readonly version: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { source: HKSource; version: string; });
+	constructor(o: { source: HKSource; version: string | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { source: HKSource; version: string; productType: string; operatingSystemVersion: NSOperatingSystemVersion; });
+	constructor(o: { source: HKSource; version: string | null; productType: string | null; operatingSystemVersion: NSOperatingSystemVersion; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSourceVersion(source: HKSource, version: string): this;
+	initWithSourceVersion(source: HKSource, version: string | null): this;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithSourceVersionProductTypeOperatingSystemVersion(source: HKSource, version: string, productType: string, operatingSystemVersion: NSOperatingSystemVersion): this;
+	initWithSourceVersionProductTypeOperatingSystemVersion(source: HKSource, version: string | null, productType: string | null, operatingSystemVersion: NSOperatingSystemVersion): this;
 }
 
 /**
@@ -5028,7 +5033,7 @@ declare class HKStateOfMind extends HKSample implements NSCopying, NSSecureCodin
 
 	static stateOfMindWithDateKindValenceLabelsAssociations(date: Date, kind: HKStateOfMindKind, valence: number, labels: NSArray<number> | number[], associations: NSArray<number> | number[]): HKStateOfMind;
 
-	static stateOfMindWithDateKindValenceLabelsAssociationsMetadata(date: Date, kind: HKStateOfMindKind, valence: number, labels: NSArray<number> | number[], associations: NSArray<number> | number[], metadata: NSDictionary<string, any>): HKStateOfMind;
+	static stateOfMindWithDateKindValenceLabelsAssociationsMetadata(date: Date, kind: HKStateOfMindKind, valence: number, labels: NSArray<number> | number[], associations: NSArray<number> | number[], metadata: NSDictionary<string, any> | null): HKStateOfMind;
 
 	readonly associations: NSArray<number>;
 
@@ -5044,7 +5049,7 @@ declare class HKStateOfMind extends HKSample implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5215,7 +5220,7 @@ declare const enum HKStateOfMindValenceClassification {
 	VeryPleasant = 7
 }
 
-declare function HKStateOfMindValenceClassificationForValence(valence: number): number;
+declare function HKStateOfMindValenceClassificationForValence(valence: number): number | null;
 
 /**
  * @since 8.0
@@ -5230,7 +5235,7 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly quantityType: HKQuantityType;
 
-	readonly sources: NSArray<HKSource>;
+	readonly sources: NSArray<HKSource> | null;
 
 	readonly startDate: Date;
 
@@ -5238,57 +5243,57 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	averageQuantity(): HKQuantity;
+	averageQuantity(): HKQuantity | null;
 
-	averageQuantityForSource(source: HKSource): HKQuantity;
+	averageQuantityForSource(source: HKSource): HKQuantity | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	/**
-	 * @since 13.0
-	 */
-	duration(): HKQuantity;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 13.0
 	 */
-	durationForSource(source: HKSource): HKQuantity;
+	duration(): HKQuantity | null;
+
+	/**
+	 * @since 13.0
+	 */
+	durationForSource(source: HKSource): HKQuantity | null;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	maximumQuantity(): HKQuantity;
+	maximumQuantity(): HKQuantity | null;
 
-	maximumQuantityForSource(source: HKSource): HKQuantity;
+	maximumQuantityForSource(source: HKSource): HKQuantity | null;
 
-	minimumQuantity(): HKQuantity;
+	minimumQuantity(): HKQuantity | null;
 
-	minimumQuantityForSource(source: HKSource): HKQuantity;
-
-	/**
-	 * @since 12.0
-	 */
-	mostRecentQuantity(): HKQuantity;
+	minimumQuantityForSource(source: HKSource): HKQuantity | null;
 
 	/**
 	 * @since 12.0
 	 */
-	mostRecentQuantityDateInterval(): NSDateInterval;
+	mostRecentQuantity(): HKQuantity | null;
 
 	/**
 	 * @since 12.0
 	 */
-	mostRecentQuantityDateIntervalForSource(source: HKSource): NSDateInterval;
+	mostRecentQuantityDateInterval(): NSDateInterval | null;
 
 	/**
 	 * @since 12.0
 	 */
-	mostRecentQuantityForSource(source: HKSource): HKQuantity;
+	mostRecentQuantityDateIntervalForSource(source: HKSource): NSDateInterval | null;
 
-	sumQuantity(): HKQuantity;
+	/**
+	 * @since 12.0
+	 */
+	mostRecentQuantityForSource(source: HKSource): HKQuantity | null;
 
-	sumQuantityForSource(source: HKSource): HKQuantity;
+	sumQuantity(): HKQuantity | null;
+
+	sumQuantityForSource(source: HKSource): HKQuantity | null;
 }
 
 /**
@@ -5300,13 +5305,13 @@ declare class HKStatisticsCollection extends NSObject {
 
 	static new(): HKStatisticsCollection; // inherited from NSObject
 
-	enumerateStatisticsFromDateToDateWithBlock(startDate: Date, endDate: Date, block: (p1: HKStatistics, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateStatisticsFromDateToDateWithBlock(startDate: Date, endDate: Date, block: (p1: HKStatistics, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	sources(): NSSet<HKSource>;
 
 	statistics(): NSArray<HKStatistics>;
 
-	statisticsForDate(date: Date): HKStatistics;
+	statisticsForDate(date: Date): HKStatistics | null;
 }
 
 /**
@@ -5320,17 +5325,17 @@ declare class HKStatisticsCollectionQuery extends HKQuery {
 
 	readonly anchorDate: Date;
 
-	initialResultsHandler: (p1: HKStatisticsCollectionQuery, p2: HKStatisticsCollection, p3: NSError) => void;
+	initialResultsHandler: (p1: HKStatisticsCollectionQuery, p2: HKStatisticsCollection | null, p3: NSError | null) => void | null;
 
 	readonly intervalComponents: NSDateComponents;
 
 	readonly options: HKStatisticsOptions;
 
-	statisticsUpdateHandler: (p1: HKStatisticsCollectionQuery, p2: HKStatistics, p3: HKStatisticsCollection, p4: NSError) => void;
+	statisticsUpdateHandler: (p1: HKStatisticsCollectionQuery, p2: HKStatistics | null, p3: HKStatisticsCollection | null, p4: NSError | null) => void | null;
 
-	constructor(o: { quantityType: HKQuantityType; quantitySamplePredicate: NSPredicate; options: HKStatisticsOptions; anchorDate: Date; intervalComponents: NSDateComponents; });
+	constructor(o: { quantityType: HKQuantityType; quantitySamplePredicate: NSPredicate | null; options: HKStatisticsOptions; anchorDate: Date; intervalComponents: NSDateComponents; });
 
-	initWithQuantityTypeQuantitySamplePredicateOptionsAnchorDateIntervalComponents(quantityType: HKQuantityType, quantitySamplePredicate: NSPredicate, options: HKStatisticsOptions, anchorDate: Date, intervalComponents: NSDateComponents): this;
+	initWithQuantityTypeQuantitySamplePredicateOptionsAnchorDateIntervalComponents(quantityType: HKQuantityType, quantitySamplePredicate: NSPredicate | null, options: HKStatisticsOptions, anchorDate: Date, intervalComponents: NSDateComponents): this;
 }
 
 /**
@@ -5366,9 +5371,9 @@ declare class HKStatisticsQuery extends HKQuery {
 
 	static new(): HKStatisticsQuery; // inherited from NSObject
 
-	constructor(o: { quantityType: HKQuantityType; quantitySamplePredicate: NSPredicate; options: HKStatisticsOptions; completionHandler: (p1: HKStatisticsQuery, p2: HKStatistics, p3: NSError) => void; });
+	constructor(o: { quantityType: HKQuantityType; quantitySamplePredicate: NSPredicate | null; options: HKStatisticsOptions; completionHandler: (p1: HKStatisticsQuery, p2: HKStatistics | null, p3: NSError | null) => void; });
 
-	initWithQuantityTypeQuantitySamplePredicateOptionsCompletionHandler(quantityType: HKQuantityType, quantitySamplePredicate: NSPredicate, options: HKStatisticsOptions, handler: (p1: HKStatisticsQuery, p2: HKStatistics, p3: NSError) => void): this;
+	initWithQuantityTypeQuantitySamplePredicateOptionsCompletionHandler(quantityType: HKQuantityType, quantitySamplePredicate: NSPredicate | null, options: HKStatisticsOptions, handler: (p1: HKStatisticsQuery, p2: HKStatistics | null, p3: NSError | null) => void): this;
 }
 
 /**
@@ -5617,7 +5622,7 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5663,13 +5668,13 @@ declare class HKUserAnnotatedMedication extends NSObject implements NSCopying, N
 
 	readonly medication: HKMedicationConcept;
 
-	readonly nickname: string;
+	readonly nickname: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5695,9 +5700,9 @@ declare class HKUserAnnotatedMedicationQuery extends HKQuery {
 
 	static new(): HKUserAnnotatedMedicationQuery; // inherited from NSObject
 
-	constructor(o: { predicate: NSPredicate; limit: number; resultsHandler: (p1: HKUserAnnotatedMedicationQuery, p2: HKUserAnnotatedMedication, p3: boolean, p4: NSError) => void; });
+	constructor(o: { predicate: NSPredicate | null; limit: number; resultsHandler: (p1: HKUserAnnotatedMedicationQuery, p2: HKUserAnnotatedMedication | null, p3: boolean, p4: NSError | null) => void; });
 
-	initWithPredicateLimitResultsHandler(predicate: NSPredicate, limit: number, resultsHandler: (p1: HKUserAnnotatedMedicationQuery, p2: HKUserAnnotatedMedication, p3: boolean, p4: NSError) => void): this;
+	initWithPredicateLimitResultsHandler(predicate: NSPredicate | null, limit: number, resultsHandler: (p1: HKUserAnnotatedMedicationQuery, p2: HKUserAnnotatedMedication | null, p3: boolean, p4: NSError | null) => void): this;
 }
 
 /**
@@ -5761,7 +5766,7 @@ declare class HKVerifiableClinicalRecord extends HKSample {
 	 */
 	readonly dataRepresentation: NSData;
 
-	readonly expirationDate: Date;
+	readonly expirationDate: Date | null;
 
 	readonly issuedDate: Date;
 
@@ -5776,7 +5781,7 @@ declare class HKVerifiableClinicalRecord extends HKSample {
 	/**
 	 * @since 15.4
 	 */
-	readonly sourceType: string;
+	readonly sourceType: string | null;
 
 	readonly subject: HKVerifiableClinicalRecordSubject;
 }
@@ -5817,19 +5822,19 @@ declare class HKVerifiableClinicalRecordQuery extends HKQuery {
 	 */
 	readonly sourceTypes: NSArray<string>;
 
-	constructor(o: { recordTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
+	constructor(o: { recordTypes: NSArray<string> | string[]; predicate: NSPredicate | null; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord> | null, p3: NSError | null) => void; });
 
 	/**
 	 * @since 15.4
 	 */
-	constructor(o: { recordTypes: NSArray<string> | string[]; sourceTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
+	constructor(o: { recordTypes: NSArray<string> | string[]; sourceTypes: NSArray<string> | string[]; predicate: NSPredicate | null; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord> | null, p3: NSError | null) => void; });
 
-	initWithRecordTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
+	initWithRecordTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], predicate: NSPredicate | null, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord> | null, p3: NSError | null) => void): this;
 
 	/**
 	 * @since 15.4
 	 */
-	initWithRecordTypesSourceTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], sourceTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
+	initWithRecordTypesSourceTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], sourceTypes: NSArray<string> | string[], predicate: NSPredicate | null, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord> | null, p3: NSError | null) => void): this;
 }
 
 /**
@@ -5851,7 +5856,7 @@ declare class HKVerifiableClinicalRecordSubject extends NSObject implements NSCo
 
 	static new(): HKVerifiableClinicalRecordSubject; // inherited from NSObject
 
-	readonly dateOfBirthComponents: NSDateComponents;
+	readonly dateOfBirthComponents: NSDateComponents | null;
 
 	readonly fullName: string;
 
@@ -5859,7 +5864,7 @@ declare class HKVerifiableClinicalRecordSubject extends NSObject implements NSCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5885,11 +5890,11 @@ declare class HKVisionPrescription extends HKSample implements NSCopying, NSSecu
 
 	static new(): HKVisionPrescription; // inherited from NSObject
 
-	static prescriptionWithTypeDateIssuedExpirationDateDeviceMetadata(type: HKVisionPrescriptionType, dateIssued: Date, expirationDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKVisionPrescription;
+	static prescriptionWithTypeDateIssuedExpirationDateDeviceMetadata(type: HKVisionPrescriptionType, dateIssued: Date, expirationDate: Date | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKVisionPrescription;
 
 	readonly dateIssued: Date;
 
-	readonly expirationDate: Date;
+	readonly expirationDate: Date | null;
 
 	readonly prescriptionType: HKVisionPrescriptionType;
 
@@ -5897,7 +5902,7 @@ declare class HKVisionPrescription extends HKSample implements NSCopying, NSSecu
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -5950,7 +5955,7 @@ declare class HKVisionPrism extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { verticalAmount: HKQuantity; verticalBase: HKPrismBase; horizontalAmount: HKQuantity; horizontalBase: HKPrismBase; eye: HKVisionEye; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6060,7 +6065,7 @@ declare class HKWheelchairUseObject extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6086,37 +6091,37 @@ declare class HKWorkout extends HKSample {
 	 * @since 9.0
 	 * @deprecated 17.0
 	 */
-	static workoutWithActivityTypeStartDateEndDateDurationTotalEnergyBurnedTotalDistanceDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, duration: number, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
+	static workoutWithActivityTypeStartDateEndDateDurationTotalEnergyBurnedTotalDistanceDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, duration: number, totalEnergyBurned: HKQuantity | null, totalDistance: HKQuantity | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKWorkout;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 17.0
 	 */
-	static workoutWithActivityTypeStartDateEndDateDurationTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, duration: number, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, metadata: NSDictionary<string, any>): HKWorkout;
+	static workoutWithActivityTypeStartDateEndDateDurationTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, duration: number, totalEnergyBurned: HKQuantity | null, totalDistance: HKQuantity | null, metadata: NSDictionary<string, any> | null): HKWorkout;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 17.0
 	 */
-	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
+	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[] | null, totalEnergyBurned: HKQuantity | null, totalDistance: HKQuantity | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKWorkout;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 17.0
 	 */
-	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, metadata: NSDictionary<string, any>): HKWorkout;
+	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[] | null, totalEnergyBurned: HKQuantity | null, totalDistance: HKQuantity | null, metadata: NSDictionary<string, any> | null): HKWorkout;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 17.0
 	 */
-	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalFlightsClimbedDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalFlightsClimbed: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
+	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalFlightsClimbedDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[] | null, totalEnergyBurned: HKQuantity | null, totalDistance: HKQuantity | null, totalFlightsClimbed: HKQuantity | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKWorkout;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 17.0
 	 */
-	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalSwimmingStrokeCountDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalSwimmingStrokeCount: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
+	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalSwimmingStrokeCountDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[] | null, totalEnergyBurned: HKQuantity | null, totalDistance: HKQuantity | null, totalSwimmingStrokeCount: HKQuantity | null, device: HKDevice | null, metadata: NSDictionary<string, any> | null): HKWorkout;
 
 	/**
 	 * @since 16.0
@@ -6129,25 +6134,25 @@ declare class HKWorkout extends HKSample {
 	 * @since 8.0
 	 * @deprecated 100000
 	 */
-	readonly totalDistance: HKQuantity;
+	readonly totalDistance: HKQuantity | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 18.0
 	 */
-	readonly totalEnergyBurned: HKQuantity;
+	readonly totalEnergyBurned: HKQuantity | null;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	readonly totalFlightsClimbed: HKQuantity;
+	readonly totalFlightsClimbed: HKQuantity | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 18.0
 	 */
-	readonly totalSwimmingStrokeCount: HKQuantity;
+	readonly totalSwimmingStrokeCount: HKQuantity | null;
 
 	/**
 	 * @since 16.0
@@ -6156,12 +6161,12 @@ declare class HKWorkout extends HKSample {
 
 	readonly workoutActivityType: HKWorkoutActivityType;
 
-	readonly workoutEvents: NSArray<HKWorkoutEvent>;
+	readonly workoutEvents: NSArray<HKWorkoutEvent> | null;
 
 	/**
 	 * @since 16.0
 	 */
-	statisticsForType(quantityType: HKQuantityType): HKStatistics;
+	statisticsForType(quantityType: HKQuantityType): HKStatistics | null;
 }
 
 /**
@@ -6182,9 +6187,9 @@ declare class HKWorkoutActivity extends NSObject implements NSCopying, NSSecureC
 
 	readonly duration: number;
 
-	readonly endDate: Date;
+	readonly endDate: Date | null;
 
-	readonly metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any> | null;
 
 	readonly startDate: Date;
 
@@ -6196,17 +6201,17 @@ declare class HKWorkoutActivity extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { workoutConfiguration: HKWorkoutConfiguration; startDate: Date; endDate: Date; metadata: NSDictionary<string, any>; });
+	constructor(o: { workoutConfiguration: HKWorkoutConfiguration; startDate: Date; endDate: Date | null; metadata: NSDictionary<string, any> | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithWorkoutConfigurationStartDateEndDateMetadata(workoutConfiguration: HKWorkoutConfiguration, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): this;
+	initWithWorkoutConfigurationStartDateEndDateMetadata(workoutConfiguration: HKWorkoutConfiguration, startDate: Date, endDate: Date | null, metadata: NSDictionary<string, any> | null): this;
 
-	statisticsForType(quantityType: HKQuantityType): HKStatistics;
+	statisticsForType(quantityType: HKQuantityType): HKStatistics | null;
 }
 
 /**
@@ -6397,13 +6402,13 @@ declare class HKWorkoutBuilder extends NSObject {
 	 */
 	readonly allStatistics: NSDictionary<HKQuantityType, HKStatistics>;
 
-	readonly device: HKDevice;
+	readonly device: HKDevice | null;
 
-	readonly endDate: Date;
+	readonly endDate: Date | null;
 
 	readonly metadata: NSDictionary<string, any>;
 
-	readonly startDate: Date;
+	readonly startDate: Date | null;
 
 	/**
 	 * @since 16.0
@@ -6414,44 +6419,44 @@ declare class HKWorkoutBuilder extends NSObject {
 
 	readonly workoutEvents: NSArray<HKWorkoutEvent>;
 
-	constructor(o: { healthStore: HKHealthStore; configuration: HKWorkoutConfiguration; device: HKDevice; });
+	constructor(o: { healthStore: HKHealthStore; configuration: HKWorkoutConfiguration; device: HKDevice | null; });
 
-	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
+	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	addSamplesCompletion(samples: NSArray<HKSample> | HKSample[], completion: (p1: boolean, p2: NSError) => void): void;
+	addSamplesCompletion(samples: NSArray<HKSample> | HKSample[], completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	addWorkoutActivityCompletion(workoutActivity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError) => void): void;
+	addWorkoutActivityCompletion(workoutActivity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	addWorkoutEventsCompletion(workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], completion: (p1: boolean, p2: NSError) => void): void;
+	addWorkoutEventsCompletion(workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	beginCollectionWithStartDateCompletion(startDate: Date, completion: (p1: boolean, p2: NSError) => void): void;
+	beginCollectionWithStartDateCompletion(startDate: Date, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	discardWorkout(): void;
 
 	elapsedTimeAtDate(date: Date): number;
 
-	endCollectionWithEndDateCompletion(endDate: Date, completion: (p1: boolean, p2: NSError) => void): void;
+	endCollectionWithEndDateCompletion(endDate: Date, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	finishWorkoutWithCompletion(completion: (p1: HKWorkout, p2: NSError) => void): void;
+	finishWorkoutWithCompletion(completion: (p1: HKWorkout, p2: NSError | null) => void): void;
 
-	initWithHealthStoreConfigurationDevice(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration, device: HKDevice): this;
+	initWithHealthStoreConfigurationDevice(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration, device: HKDevice | null): this;
 
-	seriesBuilderForType(seriesType: HKSeriesType): HKSeriesBuilder;
+	seriesBuilderForType(seriesType: HKSeriesType): HKSeriesBuilder | null;
 
-	statisticsForType(quantityType: HKQuantityType): HKStatistics;
-
-	/**
-	 * @since 16.0
-	 */
-	updateActivityWithUUIDAddMedatataCompletion(UUID: NSUUID, metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
+	statisticsForType(quantityType: HKQuantityType): HKStatistics | null;
 
 	/**
 	 * @since 16.0
 	 */
-	updateActivityWithUUIDEndDateCompletion(UUID: NSUUID, endDate: Date, completion: (p1: boolean, p2: NSError) => void): void;
+	updateActivityWithUUIDAddMedatataCompletion(UUID: NSUUID, metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 16.0
+	 */
+	updateActivityWithUUIDEndDateCompletion(UUID: NSUUID, endDate: Date, completion: (p1: boolean, p2: NSError | null) => void): void;
 }
 
 /**
@@ -6465,7 +6470,7 @@ declare class HKWorkoutConfiguration extends NSObject implements NSCopying, NSSe
 
 	activityType: HKWorkoutActivityType;
 
-	lapLength: HKQuantity;
+	lapLength: HKQuantity | null;
 
 	locationType: HKWorkoutSessionLocationType;
 
@@ -6475,7 +6480,7 @@ declare class HKWorkoutConfiguration extends NSObject implements NSCopying, NSSe
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6491,9 +6496,9 @@ declare class HKWorkoutEffortRelationship extends NSObject implements NSCopying,
 
 	static new(): HKWorkoutEffortRelationship; // inherited from NSObject
 
-	readonly activity: HKWorkoutActivity;
+	readonly activity: HKWorkoutActivity | null;
 
-	readonly samples: NSArray<HKSample>;
+	readonly samples: NSArray<HKSample> | null;
 
 	readonly workout: HKWorkout;
 
@@ -6501,7 +6506,7 @@ declare class HKWorkoutEffortRelationship extends NSObject implements NSCopying,
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6517,9 +6522,9 @@ declare class HKWorkoutEffortRelationshipQuery extends HKQuery {
 
 	static new(): HKWorkoutEffortRelationshipQuery; // inherited from NSObject
 
-	constructor(o: { predicate: NSPredicate; anchor: HKQueryAnchor; options: HKWorkoutEffortRelationshipQueryOptions; resultsHandler: (p1: HKWorkoutEffortRelationshipQuery, p2: NSArray<HKWorkoutEffortRelationship>, p3: HKQueryAnchor, p4: NSError) => void; });
+	constructor(o: { predicate: NSPredicate | null; anchor: HKQueryAnchor | null; options: HKWorkoutEffortRelationshipQueryOptions; resultsHandler: (p1: HKWorkoutEffortRelationshipQuery, p2: NSArray<HKWorkoutEffortRelationship> | null, p3: HKQueryAnchor | null, p4: NSError | null) => void; });
 
-	initWithPredicateAnchorOptionsResultsHandler(predicate: NSPredicate, anchor: HKQueryAnchor, options: HKWorkoutEffortRelationshipQueryOptions, resultsHandler: (p1: HKWorkoutEffortRelationshipQuery, p2: NSArray<HKWorkoutEffortRelationship>, p3: HKQueryAnchor, p4: NSError) => void): this;
+	initWithPredicateAnchorOptionsResultsHandler(predicate: NSPredicate | null, anchor: HKQueryAnchor | null, options: HKWorkoutEffortRelationshipQueryOptions, resultsHandler: (p1: HKWorkoutEffortRelationshipQuery, p2: NSArray<HKWorkoutEffortRelationship> | null, p3: HKQueryAnchor | null, p4: NSError | null) => void): this;
 }
 
 /**
@@ -6550,7 +6555,7 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 11.0
 	 */
-	static workoutEventWithTypeDateIntervalMetadata(type: HKWorkoutEventType, dateInterval: NSDateInterval, metadata: NSDictionary<string, any>): HKWorkoutEvent;
+	static workoutEventWithTypeDateIntervalMetadata(type: HKWorkoutEventType, dateInterval: NSDateInterval, metadata: NSDictionary<string, any> | null): HKWorkoutEvent;
 
 	/**
 	 * @since 10.0
@@ -6572,7 +6577,7 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 10.0
 	 */
-	readonly metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any> | null;
 
 	readonly type: HKWorkoutEventType;
 
@@ -6580,7 +6585,7 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6628,15 +6633,15 @@ declare class HKWorkoutRouteBuilder extends HKSeriesBuilder {
 
 	static new(): HKWorkoutRouteBuilder; // inherited from NSObject
 
-	constructor(o: { healthStore: HKHealthStore; device: HKDevice; });
+	constructor(o: { healthStore: HKHealthStore; device: HKDevice | null; });
 
-	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
+	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError | null) => void): void;
 
-	finishRouteWithWorkoutMetadataCompletion(workout: HKWorkout, metadata: NSDictionary<string, any>, completion: (p1: HKWorkoutRoute, p2: NSError) => void): void;
+	finishRouteWithWorkoutMetadataCompletion(workout: HKWorkout, metadata: NSDictionary<string, any> | null, completion: (p1: HKWorkoutRoute | null, p2: NSError | null) => void): void;
 
-	initWithHealthStoreDevice(healthStore: HKHealthStore, device: HKDevice): this;
+	initWithHealthStoreDevice(healthStore: HKHealthStore, device: HKDevice | null): this;
 
-	insertRouteDataCompletion(routeData: NSArray<CLLocation> | CLLocation[], completion: (p1: boolean, p2: NSError) => void): void;
+	insertRouteDataCompletion(routeData: NSArray<CLLocation> | CLLocation[], completion: (p1: boolean, p2: NSError | null) => void): void;
 }
 
 /**
@@ -6648,19 +6653,19 @@ declare class HKWorkoutRouteQuery extends HKQuery {
 
 	static new(): HKWorkoutRouteQuery; // inherited from NSObject
 
-	constructor(o: { route: HKWorkoutRoute; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void; });
+	constructor(o: { route: HKWorkoutRoute; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation> | null, p3: boolean, p4: NSError | null) => void; });
 
 	/**
 	 * @since 16.0
 	 */
-	constructor(o: { route: HKWorkoutRoute; dateInterval: NSDateInterval; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void; });
+	constructor(o: { route: HKWorkoutRoute; dateInterval: NSDateInterval; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation> | null, p3: boolean, p4: NSError | null) => void; });
 
-	initWithRouteDataHandler(workoutRoute: HKWorkoutRoute, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void): this;
+	initWithRouteDataHandler(workoutRoute: HKWorkoutRoute, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation> | null, p3: boolean, p4: NSError | null) => void): this;
 
 	/**
 	 * @since 16.0
 	 */
-	initWithRouteDateIntervalDataHandler(workoutRoute: HKWorkoutRoute, dateInterval: NSDateInterval, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void): this;
+	initWithRouteDateIntervalDataHandler(workoutRoute: HKWorkoutRoute, dateInterval: NSDateInterval, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation> | null, p3: boolean, p4: NSError | null) => void): this;
 }
 
 /**
@@ -6684,13 +6689,13 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 	 */
 	readonly currentActivity: HKWorkoutActivity;
 
-	delegate: HKWorkoutSessionDelegate;
+	delegate: HKWorkoutSessionDelegate | null;
 
-	readonly endDate: Date;
+	readonly endDate: Date | null;
 
 	readonly locationType: HKWorkoutSessionLocationType;
 
-	readonly startDate: Date;
+	readonly startDate: Date | null;
 
 	readonly state: HKWorkoutSessionState;
 
@@ -6721,7 +6726,7 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 17.0
 	 */
-	beginNewActivityWithConfigurationDateMetadata(workoutConfiguration: HKWorkoutConfiguration, date: Date, metadata: NSDictionary<string, any>): void;
+	beginNewActivityWithConfigurationDateMetadata(workoutConfiguration: HKWorkoutConfiguration, date: Date, metadata: NSDictionary<string, any> | null): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -6760,17 +6765,17 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 17.0
 	 */
-	sendDataToRemoteWorkoutSessionCompletion(data: NSData, completion: (p1: boolean, p2: NSError) => void): void;
+	sendDataToRemoteWorkoutSessionCompletion(data: NSData, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 17.0
 	 */
-	startActivityWithDate(date: Date): void;
+	startActivityWithDate(date: Date | null): void;
 
 	/**
 	 * @since 17.0
 	 */
-	stopActivityWithDate(date: Date): void;
+	stopActivityWithDate(date: Date | null): void;
 }
 
 /**
@@ -6788,7 +6793,7 @@ interface HKWorkoutSessionDelegate extends NSObjectProtocol {
 	/**
 	 * @since 17.0
 	 */
-	workoutSessionDidDisconnectFromRemoteDeviceWithError?(workoutSession: HKWorkoutSession, error: NSError): void;
+	workoutSessionDidDisconnectFromRemoteDeviceWithError?(workoutSession: HKWorkoutSession, error: NSError | null): void;
 
 	/**
 	 * @since 17.0

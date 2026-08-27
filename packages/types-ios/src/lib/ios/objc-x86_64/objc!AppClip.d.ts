@@ -8,15 +8,15 @@ declare class APActivationPayload extends NSObject implements NSCopying, NSSecur
 
 	static new(): APActivationPayload; // inherited from NSObject
 
-	readonly URL: NSURL;
+	readonly URL: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	confirmAcquiredInRegionCompletionHandler(region: CLRegion, completionHandler: (p1: boolean, p2: NSError) => void): void;
+	confirmAcquiredInRegionCompletionHandler(region: CLRegion, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

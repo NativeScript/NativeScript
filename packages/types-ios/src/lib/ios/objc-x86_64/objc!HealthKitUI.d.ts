@@ -17,7 +17,7 @@ declare class HKActivityRingView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): HKActivityRingView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): HKActivityRingView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -28,7 +28,7 @@ declare class HKActivityRingView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): HKActivityRingView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): HKActivityRingView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -37,7 +37,7 @@ declare class HKActivityRingView extends UIView {
 
 	static new(): HKActivityRingView; // inherited from NSObject
 
-	activitySummary: HKActivitySummary;
+	activitySummary: HKActivitySummary | null;
 
-	setActivitySummaryAnimated(activitySummary: HKActivitySummary, animated: boolean): void;
+	setActivitySummaryAnimated(activitySummary: HKActivitySummary | null, animated: boolean): void;
 }

@@ -26,9 +26,9 @@ declare class GKAgent extends GKComponent implements NSSecureCoding {
 
 	static new(): GKAgent; // inherited from NSObject
 
-	behavior: GKBehavior;
+	behavior: GKBehavior | null;
 
-	delegate: GKAgentDelegate;
+	delegate: GKAgentDelegate | null;
 
 	mass: number;
 
@@ -123,11 +123,11 @@ declare class GKBehavior extends NSObject implements NSCopying, NSFastEnumeratio
 	[index: number]: GKGoal;
 	[Symbol.iterator](): Iterator<any>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	objectAtIndexedSubscript(idx: number): GKGoal;
 
-	objectForKeyedSubscript(goal: GKGoal): number;
+	objectForKeyedSubscript(goal: GKGoal): number | null;
 
 	removeAllGoals(): void;
 
@@ -229,13 +229,13 @@ declare class GKComponent extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): GKComponent; // inherited from NSObject
 
-	readonly entity: GKEntity;
+	readonly entity: GKEntity | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	didAddToEntity(): void;
 
@@ -381,7 +381,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	randomSource: GKRandomSource;
 
-	readonly rootNode: GKDecisionNode;
+	readonly rootNode: GKDecisionNode | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -391,13 +391,13 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	constructor(o: { examples: NSArray<NSArray<NSObjectProtocol>> | NSArray<NSObjectProtocol>[]; actions: NSArray<NSObjectProtocol> | NSObjectProtocol[]; attributes: NSArray<NSObjectProtocol> | NSObjectProtocol[]; });
 
-	constructor(o: { URL: NSURL; error: NSError; });
+	constructor(o: { URL: NSURL; error: NSError | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	exportToURLError(url: NSURL, error: NSError): boolean;
+	exportToURLError(url: NSURL, error: NSError | null): boolean;
 
-	findActionForAnswers(answers: NSDictionary<NSObjectProtocol, NSObjectProtocol>): NSObjectProtocol;
+	findActionForAnswers(answers: NSDictionary<NSObjectProtocol, NSObjectProtocol>): NSObjectProtocol | null;
 
 	initWithAttribute(attribute: NSObjectProtocol): this;
 
@@ -405,7 +405,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	initWithExamplesActionsAttributes(examples: NSArray<NSArray<NSObjectProtocol>> | NSArray<NSObjectProtocol>[], actions: NSArray<NSObjectProtocol> | NSObjectProtocol[], attributes: NSArray<NSObjectProtocol> | NSObjectProtocol[]): this;
 
-	initWithURLError(url: NSURL, error: NSError): this;
+	initWithURLError(url: NSURL, error: NSError | null): this;
 }
 
 /**
@@ -427,9 +427,9 @@ declare class GKEntity extends NSObject implements NSCopying, NSSecureCoding {
 
 	addComponent(component: GKComponent): void;
 
-	componentForClass(componentClass: typeof NSObject): GKComponent;
+	componentForClass(componentClass: typeof NSObject): GKComponent | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -442,13 +442,13 @@ declare class GKEntity extends NSObject implements NSCopying, NSSecureCoding {
 
 interface GKGameModel extends NSCopying, NSObjectProtocol {
 
-	activePlayer: GKGameModelPlayer;
+	activePlayer: GKGameModelPlayer | null;
 
-	players: NSArray<GKGameModelPlayer>;
+	players: NSArray<GKGameModelPlayer> | null;
 
 	applyGameModelUpdate(gameModelUpdate: GKGameModelUpdate): void;
 
-	gameModelUpdatesForPlayer(player: GKGameModelPlayer): NSArray<GKGameModelUpdate>;
+	gameModelUpdatesForPlayer(player: GKGameModelPlayer): NSArray<GKGameModelUpdate> | null;
 
 	isLossForPlayer?(player: GKGameModelPlayer): boolean;
 
@@ -546,7 +546,7 @@ declare class GKGoal extends NSObject implements NSCopying {
 
 	static new(): GKGoal; // inherited from NSObject
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -560,7 +560,7 @@ declare class GKGraph extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): GKGraph; // inherited from NSObject
 
-	readonly nodes: NSArray<GKGraphNode>;
+	readonly nodes: NSArray<GKGraphNode> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -572,7 +572,7 @@ declare class GKGraph extends NSObject implements NSCopying, NSSecureCoding {
 
 	connectNodeToLowestCostNodeBidirectional(node: GKGraphNode, bidirectional: boolean): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -688,7 +688,7 @@ declare class GKGridGraph<NodeType> extends GKGraph {
 
 	initFromGridStartingAtWidthHeightDiagonalsAllowedNodeClass(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean, nodeClass: typeof NSObject): this;
 
-	nodeAtGridPosition(position: interop.Reference<number>): GKGridGraphNode;
+	nodeAtGridPosition(position: interop.Reference<number>): GKGridGraphNode | null;
 }
 
 /**
@@ -809,21 +809,21 @@ declare class GKMinmaxStrategist extends NSObject implements GKStrategist {
 
 	readonly description: string; // inherited from NSObjectProtocol
 
-	gameModel: GKGameModel; // inherited from GKStrategist
+	gameModel: GKGameModel | null; // inherited from GKStrategist
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	randomSource: GKRandom; // inherited from GKStrategist
+	randomSource: GKRandom | null; // inherited from GKStrategist
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	readonly  // inherited from NSObjectProtocol
 
-	bestMoveForActivePlayer(): GKGameModelUpdate;
+	bestMoveForActivePlayer(): GKGameModelUpdate | null;
 
-	bestMoveForPlayer(player: GKGameModelPlayer): GKGameModelUpdate;
+	bestMoveForPlayer(player: GKGameModelPlayer): GKGameModelUpdate | null;
 
 	class(): typeof NSObject;
 
@@ -841,7 +841,7 @@ declare class GKMinmaxStrategist extends NSObject implements GKStrategist {
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	randomMoveForPlayerFromNumberOfBestMoves(player: GKGameModelPlayer, numMovesToConsider: number): GKGameModelUpdate;
+	randomMoveForPlayerFromNumberOfBestMoves(player: GKGameModelPlayer, numMovesToConsider: number): GKGameModelUpdate | null;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -867,19 +867,19 @@ declare class GKMonteCarloStrategist extends NSObject implements GKStrategist {
 
 	readonly description: string; // inherited from NSObjectProtocol
 
-	gameModel: GKGameModel; // inherited from GKStrategist
+	gameModel: GKGameModel | null; // inherited from GKStrategist
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	randomSource: GKRandom; // inherited from GKStrategist
+	randomSource: GKRandom | null; // inherited from GKStrategist
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	readonly  // inherited from NSObjectProtocol
 
-	bestMoveForActivePlayer(): GKGameModelUpdate;
+	bestMoveForActivePlayer(): GKGameModelUpdate | null;
 
 	class(): typeof NSObject;
 
@@ -1146,11 +1146,11 @@ declare class GKPath extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	static pathWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
+	static pathWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, count: number, radius: number, cyclical: boolean): GKPath;
 
 	static pathWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode> | GKGraphNode[], radius: number): GKPath;
 
-	static pathWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
+	static pathWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, count: number, radius: number, cyclical: boolean): GKPath;
 
 	cyclical: boolean;
 
@@ -1161,11 +1161,11 @@ declare class GKPath extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	constructor(o: { float3Points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
+	constructor(o: { float3Points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView; count: number; radius: number; cyclical: boolean; });
 
 	constructor(o: { graphNodes: NSArray<GKGraphNode> | GKGraphNode[]; radius: number; });
 
-	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
+	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView; count: number; radius: number; cyclical: boolean; });
 
 	/**
 	 * @since 10.0
@@ -1180,11 +1180,11 @@ declare class GKPath extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	initWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
+	initWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, count: number, radius: number, cyclical: boolean): this;
 
 	initWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode> | GKGraphNode[], radius: number): this;
 
-	initWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
+	initWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, count: number, radius: number, cyclical: boolean): this;
 
 	/**
 	 * @since 9.0
@@ -1220,7 +1220,7 @@ declare class GKPolygonObstacle extends GKObstacle implements NSSecureCoding {
 
 	static new(): GKPolygonObstacle; // inherited from NSObject
 
-	static obstacleWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>>, numPoints: number): GKPolygonObstacle;
+	static obstacleWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, numPoints: number): GKPolygonObstacle;
 
 	readonly vertexCount: number;
 
@@ -1228,13 +1228,13 @@ declare class GKPolygonObstacle extends GKObstacle implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; });
+	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView; count: number; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>>, numPoints: number): this;
+	initWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView, numPoints: number): this;
 
 	vertexAtIndex(index: number): interop.Reference<number>;
 }
@@ -1388,7 +1388,7 @@ declare class GKRandomSource extends NSObject implements GKRandom, NSCopying, NS
 
 	arrayByShufflingObjectsInArray(array: NSArray<any> | any[]): NSArray<any>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1614,7 +1614,7 @@ declare class GKScene extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly graphs: NSDictionary<string, GKGraph>;
 
-	rootNode: GKSceneRootNodeType;
+	rootNode: GKSceneRootNodeType | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1624,7 +1624,7 @@ declare class GKScene extends NSObject implements NSCopying, NSSecureCoding {
 
 	addGraphName(graph: GKGraph, name: string): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1709,9 +1709,9 @@ declare class GKState extends NSObject {
 
 	static state(): GKState;
 
-	readonly stateMachine: GKStateMachine;
+	readonly stateMachine: GKStateMachine | null;
 
-	didEnterWithPreviousState(previousState: GKState): void;
+	didEnterWithPreviousState(previousState: GKState | null): void;
 
 	isValidNextState(stateClass: typeof NSObject): boolean;
 
@@ -1731,7 +1731,7 @@ declare class GKStateMachine extends NSObject {
 
 	static stateMachineWithStates(states: NSArray<GKState> | GKState[]): GKStateMachine;
 
-	readonly currentState: GKState;
+	readonly currentState: GKState | null;
 
 	constructor(o: { states: NSArray<GKState> | GKState[]; });
 
@@ -1741,18 +1741,18 @@ declare class GKStateMachine extends NSObject {
 
 	initWithStates(states: NSArray<GKState> | GKState[]): this;
 
-	stateForClass(stateClass: typeof NSObject): GKState;
+	stateForClass(stateClass: typeof NSObject): GKState | null;
 
 	updateWithDeltaTime(sec: number): void;
 }
 
 interface GKStrategist extends NSObjectProtocol {
 
-	gameModel: GKGameModel;
+	gameModel: GKGameModel | null;
 
-	randomSource: GKRandom;
+	randomSource: GKRandom | null;
 
-	bestMoveForActivePlayer(): GKGameModelUpdate;
+	bestMoveForActivePlayer(): GKGameModelUpdate | null;
 }
 declare var GKStrategist: {
 

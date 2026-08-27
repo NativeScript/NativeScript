@@ -24,7 +24,7 @@ declare class VNDocumentCameraViewController extends UIViewController {
 
 	static new(): VNDocumentCameraViewController; // inherited from NSObject
 
-	delegate: VNDocumentCameraViewControllerDelegate;
+	delegate: VNDocumentCameraViewControllerDelegate | null;
 
 	static readonly supported: boolean;
 }

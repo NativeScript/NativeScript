@@ -17,7 +17,7 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): INUIAddVoiceShortcutButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): INUIAddVoiceShortcutButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -28,7 +28,7 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): INUIAddVoiceShortcutButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): INUIAddVoiceShortcutButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -38,35 +38,35 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 	/**
 	 * @since 15.0
 	 */
-	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction | null): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	static buttonWithType(buttonType: UIButtonType): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	/**
 	 * @since 14.0
 	 */
-	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
+	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction | null): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	static new(): INUIAddVoiceShortcutButton; // inherited from NSObject
 
 	/**
 	 * @since 13.0
 	 */
-	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): INUIAddVoiceShortcutButton; // inherited from UIButton
+	static systemButtonWithImageTargetAction(image: UIImage, target: any | null, action: string | null): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	/**
 	 * @since 14.0
 	 */
-	static systemButtonWithPrimaryAction(primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
+	static systemButtonWithPrimaryAction(primaryAction: UIAction | null): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	/**
 	 * @since 13.0
 	 */
 	cornerRadius: number;
 
-	delegate: INUIAddVoiceShortcutButtonDelegate;
+	delegate: INUIAddVoiceShortcutButtonDelegate | null;
 
-	shortcut: INShortcut;
+	shortcut: INShortcut | null;
 
 	readonly style: INUIAddVoiceShortcutButtonStyle;
 
@@ -121,7 +121,7 @@ declare class INUIAddVoiceShortcutViewController extends UIViewController {
 
 	static new(): INUIAddVoiceShortcutViewController; // inherited from NSObject
 
-	delegate: INUIAddVoiceShortcutViewControllerDelegate;
+	delegate: INUIAddVoiceShortcutViewControllerDelegate | null;
 
 	constructor(o: { shortcut: INShortcut; });
 
@@ -135,7 +135,7 @@ interface INUIAddVoiceShortcutViewControllerDelegate extends NSObjectProtocol {
 
 	addVoiceShortcutViewControllerDidCancel(controller: INUIAddVoiceShortcutViewController): void;
 
-	addVoiceShortcutViewControllerDidFinishWithVoiceShortcutError(controller: INUIAddVoiceShortcutViewController, voiceShortcut: INVoiceShortcut, error: NSError): void;
+	addVoiceShortcutViewControllerDidFinishWithVoiceShortcutError(controller: INUIAddVoiceShortcutViewController, voiceShortcut: INVoiceShortcut | null, error: NSError | null): void;
 }
 declare var INUIAddVoiceShortcutViewControllerDelegate: {
 
@@ -151,7 +151,7 @@ declare class INUIEditVoiceShortcutViewController extends UIViewController {
 
 	static new(): INUIEditVoiceShortcutViewController; // inherited from NSObject
 
-	delegate: INUIEditVoiceShortcutViewControllerDelegate;
+	delegate: INUIEditVoiceShortcutViewControllerDelegate | null;
 
 	constructor(o: { voiceShortcut: INVoiceShortcut; });
 
@@ -167,7 +167,7 @@ interface INUIEditVoiceShortcutViewControllerDelegate extends NSObjectProtocol {
 
 	editVoiceShortcutViewControllerDidDeleteVoiceShortcutWithIdentifier(controller: INUIEditVoiceShortcutViewController, deletedVoiceShortcutIdentifier: NSUUID): void;
 
-	editVoiceShortcutViewControllerDidUpdateVoiceShortcutError(controller: INUIEditVoiceShortcutViewController, voiceShortcut: INVoiceShortcut, error: NSError): void;
+	editVoiceShortcutViewControllerDidUpdateVoiceShortcutError(controller: INUIEditVoiceShortcutViewController, voiceShortcut: INVoiceShortcut | null, error: NSError | null): void;
 }
 declare var INUIEditVoiceShortcutViewControllerDelegate: {
 

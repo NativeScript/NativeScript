@@ -66,12 +66,12 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	static typeWithTagTagClassConformingToType(tag: string, tagClass: string, supertype: UTType): UTType;
+	static typeWithTagTagClassConformingToType(tag: string, tagClass: string, supertype: UTType | null): UTType;
 
 	/**
 	 * @since 14.0
 	 */
-	static typesWithTagTagClassConformingToType(tag: string, tagClass: string, supertype: UTType): NSArray<UTType>;
+	static typesWithTagTagClassConformingToType(tag: string, tagClass: string, supertype: UTType | null): NSArray<UTType>;
 
 	/**
 	 * @since 14.0
@@ -91,17 +91,17 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	readonly localizedDescription: string;
+	readonly localizedDescription: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly preferredFilenameExtension: string;
+	readonly preferredFilenameExtension: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly preferredMIMEType: string;
+	readonly preferredMIMEType: string | null;
 
 	/**
 	 * @since 14.0
@@ -111,7 +111,7 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	readonly referenceURL: NSURL;
+	readonly referenceURL: NSURL | null;
 
 	/**
 	 * @since 14.0
@@ -126,7 +126,7 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	readonly version: number;
+	readonly version: number | null;
 
 	static readonly SHCustomCatalogContentType: UTType;
 
@@ -141,7 +141,7 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	conformsToType(type: UTType): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

@@ -4,7 +4,7 @@
  */
 interface CHHapticAdvancedPatternPlayer extends CHHapticPatternPlayer {
 
-	completionHandler: (p1: NSError) => void;
+	completionHandler: (p1: NSError | null) => void;
 
 	loopEnabled: boolean;
 
@@ -42,9 +42,9 @@ interface CHHapticDeviceCapability {
 
 	supportsHaptics: boolean;
 
-	attributesForDynamicParameterError(inParameter: string, error?: interop.Reference<NSError>): CHHapticParameterAttributes;
+	attributesForDynamicParameterError(inParameter: string, error?: interop.Reference<NSError>): CHHapticParameterAttributes | null;
 
-	attributesForEventParameterEventTypeError(inParameter: string, type: string, error?: interop.Reference<NSError>): CHHapticParameterAttributes;
+	attributesForEventParameterEventTypeError(inParameter: string, type: string, error?: interop.Reference<NSError>): CHHapticParameterAttributes | null;
 }
 declare var CHHapticDeviceCapability: {
 
@@ -163,17 +163,17 @@ declare class CHHapticEngine extends NSObject {
 
 	constructor();
 
-	constructor(o: { audioSession: AVAudioSession; });
+	constructor(o: { audioSession: AVAudioSession | null; });
 
-	createAdvancedPlayerWithPatternError(pattern: CHHapticPattern, error?: interop.Reference<NSError>): CHHapticAdvancedPatternPlayer;
+	createAdvancedPlayerWithPatternError(pattern: CHHapticPattern, error?: interop.Reference<NSError>): CHHapticAdvancedPatternPlayer | null;
 
-	createPlayerWithPatternError(pattern: CHHapticPattern, error?: interop.Reference<NSError>): CHHapticPatternPlayer;
+	createPlayerWithPatternError(pattern: CHHapticPattern, error?: interop.Reference<NSError>): CHHapticPatternPlayer | null;
 
 	initAndReturnError(error?: interop.Reference<NSError>): this;
 
-	initWithAudioSessionError(audioSession: AVAudioSession, error?: interop.Reference<NSError>): this;
+	initWithAudioSessionError(audioSession: AVAudioSession | null, error?: interop.Reference<NSError>): this;
 
-	notifyWhenPlayersFinished(finishedHandler: (p1: NSError) => CHHapticEngineFinishedAction): void;
+	notifyWhenPlayersFinished(finishedHandler: (p1: NSError | null) => CHHapticEngineFinishedAction): void;
 
 	playPatternFromDataError(data: NSData, error?: interop.Reference<NSError>): boolean;
 
@@ -183,9 +183,9 @@ declare class CHHapticEngine extends NSObject {
 
 	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
-	startWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	startWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
-	stopWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	stopWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
 	unregisterAudioResourceError(resourceID: number, error?: interop.Reference<NSError>): boolean;
 }
@@ -463,7 +463,7 @@ declare class CHHapticPattern extends NSObject {
 
 	constructor(o: { events: NSArray<CHHapticEvent> | CHHapticEvent[]; parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[]; });
 
-	exportDictionaryAndReturnError(error?: interop.Reference<NSError>): NSDictionary<string, any>;
+	exportDictionaryAndReturnError(error?: interop.Reference<NSError>): NSDictionary<string, any> | null;
 
 	/**
 	 * @since 16.0

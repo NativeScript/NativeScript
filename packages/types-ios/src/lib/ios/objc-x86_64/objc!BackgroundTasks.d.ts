@@ -176,7 +176,7 @@ declare class BGTask extends NSObject {
 
 	static new(): BGTask; // inherited from NSObject
 
-	expirationHandler: () => void;
+	expirationHandler: () => void | null;
 
 	readonly identifier: string;
 
@@ -192,11 +192,11 @@ declare class BGTaskRequest extends NSObject implements NSCopying {
 
 	static new(): BGTaskRequest; // inherited from NSObject
 
-	earliestBeginDate: Date;
+	earliestBeginDate: Date | null;
 
 	readonly identifier: string;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -221,7 +221,7 @@ declare class BGTaskScheduler extends NSObject {
 
 	getPendingTaskRequestsWithCompletionHandler(completionHandler: (p1: NSArray<BGTaskRequest>) => void): void;
 
-	registerForTaskWithIdentifierUsingQueueLaunchHandler(identifier: string, queue: NSObject & OS_dispatch_queue, launchHandler: (p1: BGTask) => void): boolean;
+	registerForTaskWithIdentifierUsingQueueLaunchHandler(identifier: string, queue: NSObject & OS_dispatch_queue | null, launchHandler: (p1: BGTask) => void): boolean;
 
 	submitTaskRequestError(taskRequest: BGTaskRequest, error?: interop.Reference<NSError>): boolean;
 }

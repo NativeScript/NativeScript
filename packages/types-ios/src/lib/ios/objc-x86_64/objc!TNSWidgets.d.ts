@@ -1,8 +1,4 @@
 
-declare interface UIView {
-	setPassThroughParent(value: boolean): void;
-}
-
 declare class TNSLabel extends UILabel {
 
 	static alloc(): TNSLabel; // inherited from NSObject
@@ -18,7 +14,7 @@ declare class TNSLabel extends UILabel {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): TNSLabel; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): TNSLabel; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -29,7 +25,7 @@ declare class TNSLabel extends UILabel {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): TNSLabel; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): TNSLabel; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0

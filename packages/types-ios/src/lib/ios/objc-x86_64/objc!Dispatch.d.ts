@@ -209,7 +209,7 @@ declare function dispatch_after(when: number, queue: NSObject & OS_dispatch_queu
 /**
  * @since 4.0
  */
-declare function dispatch_after_f(when: number, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_after_f(when: number, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 17.4
@@ -219,12 +219,12 @@ declare function dispatch_allow_send_signals(preserve_signum: number): number;
 /**
  * @since 4.0
  */
-declare function dispatch_apply(iterations: number, queue: NSObject & OS_dispatch_queue, block: (p1: number) => void): void;
+declare function dispatch_apply(iterations: number, queue: NSObject & OS_dispatch_queue | null, block: (p1: number) => void): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_apply_f(iterations: number, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>): void;
+declare function dispatch_apply_f(iterations: number, queue: NSObject & OS_dispatch_queue | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => void>): void;
 
 /**
  * @since 10.0
@@ -254,12 +254,12 @@ declare function dispatch_async_and_wait(queue: NSObject & OS_dispatch_queue, bl
 /**
  * @since 12.0
  */
-declare function dispatch_async_and_wait_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_async_and_wait_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_async_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_async_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 declare const enum dispatch_autorelease_frequency_t {
 
@@ -283,12 +283,12 @@ declare function dispatch_barrier_async_and_wait(queue: NSObject & OS_dispatch_q
 /**
  * @since 12.0
  */
-declare function dispatch_barrier_async_and_wait_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_barrier_async_and_wait_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 4.3
  */
-declare function dispatch_barrier_async_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_barrier_async_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 4.3
@@ -298,7 +298,7 @@ declare function dispatch_barrier_sync(queue: NSObject & OS_dispatch_queue, bloc
 /**
  * @since 4.3
  */
-declare function dispatch_barrier_sync_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_barrier_sync_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 8.0
@@ -353,17 +353,17 @@ declare function dispatch_block_wait(block: () => void, timeout: number): number
 /**
  * @since 5.0
  */
-declare function dispatch_data_apply(data: NSObject & OS_dispatch_data, applier: (p1: NSObject & OS_dispatch_data, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number) => boolean): boolean;
+declare function dispatch_data_apply(data: NSObject & OS_dispatch_data, applier: (p1: NSObject & OS_dispatch_data, p2: number, p3: interop.Pointer | interop.Reference<any> | null, p4: number) => boolean): boolean;
 
 /**
  * @since 5.0
  */
-declare function dispatch_data_copy_region(data: NSObject & OS_dispatch_data, location: number, offset_ptr: interop.Pointer | interop.Reference<number>): NSObject & OS_dispatch_data;
+declare function dispatch_data_copy_region(data: NSObject & OS_dispatch_data, location: number, offset_ptr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): NSObject & OS_dispatch_data;
 
 /**
  * @since 5.0
  */
-declare function dispatch_data_create(buffer: interop.Pointer | interop.Reference<any>, size: number, queue: NSObject & OS_dispatch_queue, destructor: () => void): NSObject & OS_dispatch_data;
+declare function dispatch_data_create(buffer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, size: number, queue: NSObject & OS_dispatch_queue | null, destructor: () => void | null): NSObject & OS_dispatch_data;
 
 /**
  * @since 5.0
@@ -373,7 +373,7 @@ declare function dispatch_data_create_concat(data1: NSObject & OS_dispatch_data,
 /**
  * @since 5.0
  */
-declare function dispatch_data_create_map(data: NSObject & OS_dispatch_data, buffer_ptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size_ptr: interop.Pointer | interop.Reference<number>): NSObject & OS_dispatch_data;
+declare function dispatch_data_create_map(data: NSObject & OS_dispatch_data, buffer_ptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, size_ptr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_dispatch_data;
 
 /**
  * @since 5.0
@@ -388,7 +388,7 @@ declare function dispatch_data_get_size(data: NSObject & OS_dispatch_data): numb
 /**
  * @since 4.0
  */
-declare function dispatch_get_context(object: NSObject & OS_dispatch_object): interop.Pointer | interop.Reference<any>;
+declare function dispatch_get_context(object: NSObject & OS_dispatch_object): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.0
@@ -404,7 +404,7 @@ declare function dispatch_get_global_queue(identifier: number, flags: number): N
 /**
  * @since 5.0
  */
-declare function dispatch_get_specific(key: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function dispatch_get_specific(key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.0
@@ -414,7 +414,7 @@ declare function dispatch_group_async(group: NSObject & OS_dispatch_group, queue
 /**
  * @since 4.0
  */
-declare function dispatch_group_async_f(group: NSObject & OS_dispatch_group, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_group_async_f(group: NSObject & OS_dispatch_group, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 4.0
@@ -439,7 +439,7 @@ declare function dispatch_group_notify(group: NSObject & OS_dispatch_group, queu
 /**
  * @since 4.0
  */
-declare function dispatch_group_notify_f(group: NSObject & OS_dispatch_group, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_group_notify_f(group: NSObject & OS_dispatch_group, queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 4.0
@@ -469,7 +469,7 @@ declare function dispatch_io_create_with_io(type: number, io: NSObject & OS_disp
 /**
  * @since 5.0
  */
-declare function dispatch_io_create_with_path(type: number, path: string | interop.Pointer | interop.Reference<any>, oflag: number, mode: number, queue: NSObject & OS_dispatch_queue, cleanup_handler: (p1: number) => void): NSObject & OS_dispatch_io;
+declare function dispatch_io_create_with_path(type: number, path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, oflag: number, mode: number, queue: NSObject & OS_dispatch_queue, cleanup_handler: (p1: number) => void): NSObject & OS_dispatch_io;
 
 /**
  * @since 5.0
@@ -479,7 +479,7 @@ declare function dispatch_io_get_descriptor(channel: NSObject & OS_dispatch_io):
 /**
  * @since 5.0
  */
-declare function dispatch_io_read(channel: NSObject & OS_dispatch_io, offset: number, length: number, queue: NSObject & OS_dispatch_queue, io_handler: (p1: boolean, p2: NSObject & OS_dispatch_data, p3: number) => void): void;
+declare function dispatch_io_read(channel: NSObject & OS_dispatch_io, offset: number, length: number, queue: NSObject & OS_dispatch_queue, io_handler: (p1: boolean, p2: NSObject & OS_dispatch_data | null, p3: number) => void): void;
 
 /**
  * @since 5.0
@@ -499,7 +499,7 @@ declare function dispatch_io_set_low_water(channel: NSObject & OS_dispatch_io, l
 /**
  * @since 5.0
  */
-declare function dispatch_io_write(channel: NSObject & OS_dispatch_io, offset: number, data: NSObject & OS_dispatch_data, queue: NSObject & OS_dispatch_queue, io_handler: (p1: boolean, p2: NSObject & OS_dispatch_data, p3: number) => void): void;
+declare function dispatch_io_write(channel: NSObject & OS_dispatch_io, offset: number, data: NSObject & OS_dispatch_data, queue: NSObject & OS_dispatch_queue, io_handler: (p1: boolean, p2: NSObject & OS_dispatch_data | null, p3: number) => void): void;
 
 /**
  * @since 4.0
@@ -509,57 +509,57 @@ declare function dispatch_main(): never;
 /**
  * @since 4.0
  */
-declare function dispatch_once(predicate: interop.Pointer | interop.Reference<number>, block: () => void): void;
+declare function dispatch_once(predicate: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, block: () => void): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_once_f(predicate: interop.Pointer | interop.Reference<number>, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_once_f(predicate: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 10.0
  */
-declare function dispatch_queue_attr_make_initially_inactive(attr: NSObject & OS_dispatch_queue_attr): NSObject & OS_dispatch_queue_attr;
+declare function dispatch_queue_attr_make_initially_inactive(attr: NSObject & OS_dispatch_queue_attr | null): NSObject & OS_dispatch_queue_attr;
 
 /**
  * @since 10.0
  */
-declare function dispatch_queue_attr_make_with_autorelease_frequency(attr: NSObject & OS_dispatch_queue_attr, frequency: dispatch_autorelease_frequency_t): NSObject & OS_dispatch_queue_attr;
+declare function dispatch_queue_attr_make_with_autorelease_frequency(attr: NSObject & OS_dispatch_queue_attr | null, frequency: dispatch_autorelease_frequency_t): NSObject & OS_dispatch_queue_attr;
 
 /**
  * @since 8.0
  */
-declare function dispatch_queue_attr_make_with_qos_class(attr: NSObject & OS_dispatch_queue_attr, qos_class: qos_class_t, relative_priority: number): NSObject & OS_dispatch_queue_attr;
+declare function dispatch_queue_attr_make_with_qos_class(attr: NSObject & OS_dispatch_queue_attr | null, qos_class: qos_class_t, relative_priority: number): NSObject & OS_dispatch_queue_attr;
 
 /**
  * @since 4.0
  */
-declare function dispatch_queue_create(label: string | interop.Pointer | interop.Reference<any>, attr: NSObject & OS_dispatch_queue_attr): NSObject & OS_dispatch_queue;
+declare function dispatch_queue_create(label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, attr: NSObject & OS_dispatch_queue_attr | null): NSObject & OS_dispatch_queue;
 
 /**
  * @since 10.0
  */
-declare function dispatch_queue_create_with_target(label: string | interop.Pointer | interop.Reference<any>, attr: NSObject & OS_dispatch_queue_attr, target: NSObject & OS_dispatch_queue): NSObject & OS_dispatch_queue;
+declare function dispatch_queue_create_with_target(label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, attr: NSObject & OS_dispatch_queue_attr | null, target: NSObject & OS_dispatch_queue | null): NSObject & OS_dispatch_queue;
 
 /**
  * @since 4.0
  */
-declare function dispatch_queue_get_label(queue: NSObject & OS_dispatch_queue): interop.Pointer | interop.Reference<any>;
+declare function dispatch_queue_get_label(queue: NSObject & OS_dispatch_queue | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 8.0
  */
-declare function dispatch_queue_get_qos_class(queue: NSObject & OS_dispatch_queue, relative_priority_ptr: interop.Pointer | interop.Reference<number>): qos_class_t;
+declare function dispatch_queue_get_qos_class(queue: NSObject & OS_dispatch_queue, relative_priority_ptr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): qos_class_t;
 
 /**
  * @since 5.0
  */
-declare function dispatch_queue_get_specific(queue: NSObject & OS_dispatch_queue, key: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function dispatch_queue_get_specific(queue: NSObject & OS_dispatch_queue, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 5.0
  */
-declare function dispatch_queue_set_specific(queue: NSObject & OS_dispatch_queue, key: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, destructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_queue_set_specific(queue: NSObject & OS_dispatch_queue, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null): void;
 
 /**
  * @since 5.0
@@ -599,12 +599,12 @@ declare function dispatch_semaphore_wait(dsema: NSObject & OS_dispatch_semaphore
 /**
  * @since 4.0
  */
-declare function dispatch_set_context(object: NSObject & OS_dispatch_object, context: interop.Pointer | interop.Reference<any>): void;
+declare function dispatch_set_context(object: NSObject & OS_dispatch_object, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_set_finalizer_f(object: NSObject & OS_dispatch_object, finalizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_set_finalizer_f(object: NSObject & OS_dispatch_object, finalizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null): void;
 
 /**
  * @since 12.0
@@ -614,7 +614,7 @@ declare function dispatch_set_qos_class_floor(object: NSObject & OS_dispatch_obj
 /**
  * @since 4.0
  */
-declare function dispatch_set_target_queue(object: NSObject & OS_dispatch_object, queue: NSObject & OS_dispatch_queue): void;
+declare function dispatch_set_target_queue(object: NSObject & OS_dispatch_object, queue: NSObject & OS_dispatch_queue | null): void;
 
 /**
  * @since 4.0
@@ -624,7 +624,7 @@ declare function dispatch_source_cancel(source: NSObject & OS_dispatch_source): 
 /**
  * @since 4.0
  */
-declare function dispatch_source_create(type: interop.Pointer | interop.Reference<any>, handle: number, mask: number, queue: NSObject & OS_dispatch_queue): NSObject & OS_dispatch_source;
+declare function dispatch_source_create(type: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, handle: number, mask: number, queue: NSObject & OS_dispatch_queue | null): NSObject & OS_dispatch_source;
 
 /**
  * @since 4.0
@@ -649,32 +649,32 @@ declare function dispatch_source_merge_data(source: NSObject & OS_dispatch_sourc
 /**
  * @since 4.0
  */
-declare function dispatch_source_set_cancel_handler(source: NSObject & OS_dispatch_source, handler: () => void): void;
+declare function dispatch_source_set_cancel_handler(source: NSObject & OS_dispatch_source, handler: () => void | null): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_source_set_cancel_handler_f(source: NSObject & OS_dispatch_source, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_source_set_cancel_handler_f(source: NSObject & OS_dispatch_source, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_source_set_event_handler(source: NSObject & OS_dispatch_source, handler: () => void): void;
+declare function dispatch_source_set_event_handler(source: NSObject & OS_dispatch_source, handler: () => void | null): void;
 
 /**
  * @since 4.0
  */
-declare function dispatch_source_set_event_handler_f(source: NSObject & OS_dispatch_source, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_source_set_event_handler_f(source: NSObject & OS_dispatch_source, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null): void;
 
 /**
  * @since 4.3
  */
-declare function dispatch_source_set_registration_handler(source: NSObject & OS_dispatch_source, handler: () => void): void;
+declare function dispatch_source_set_registration_handler(source: NSObject & OS_dispatch_source, handler: () => void | null): void;
 
 /**
  * @since 4.3
  */
-declare function dispatch_source_set_registration_handler_f(source: NSObject & OS_dispatch_source, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_source_set_registration_handler_f(source: NSObject & OS_dispatch_source, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null): void;
 
 /**
  * @since 4.0
@@ -699,7 +699,7 @@ declare function dispatch_sync(queue: NSObject & OS_dispatch_queue, block: () =>
 /**
  * @since 4.0
  */
-declare function dispatch_sync_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function dispatch_sync_f(queue: NSObject & OS_dispatch_queue, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
 /**
  * @since 4.0
@@ -709,17 +709,17 @@ declare function dispatch_time(when: number, delta: number): number;
 /**
  * @since 4.0
  */
-declare function dispatch_walltime(when: interop.Pointer | interop.Reference<timespec>, delta: number): number;
+declare function dispatch_walltime(when: interop.Pointer | interop.Reference<timespec> | ArrayBufferLike | ArrayBufferView | null, delta: number): number;
 
 /**
  * @since 12.0
  */
-declare function dispatch_workloop_create(label: string | interop.Pointer | interop.Reference<any>): NSObject & OS_dispatch_workloop;
+declare function dispatch_workloop_create(label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): NSObject & OS_dispatch_workloop;
 
 /**
  * @since 12.0
  */
-declare function dispatch_workloop_create_inactive(label: string | interop.Pointer | interop.Reference<any>): NSObject & OS_dispatch_workloop;
+declare function dispatch_workloop_create_inactive(label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): NSObject & OS_dispatch_workloop;
 
 /**
  * @since 12.0
@@ -734,4 +734,4 @@ declare function dispatch_workloop_set_os_workgroup(workloop: NSObject & OS_disp
 /**
  * @since 5.0
  */
-declare function dispatch_write(fd: number, data: NSObject & OS_dispatch_data, queue: NSObject & OS_dispatch_queue, handler: (p1: NSObject & OS_dispatch_data, p2: number) => void): void;
+declare function dispatch_write(fd: number, data: NSObject & OS_dispatch_data, queue: NSObject & OS_dispatch_queue, handler: (p1: NSObject & OS_dispatch_data | null, p2: number) => void): void;

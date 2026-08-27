@@ -368,7 +368,7 @@ declare class OSLogMessageComponent extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 15.0
 	 */
-	readonly argumentDataValue: NSData;
+	readonly argumentDataValue: NSData | null;
 
 	/**
 	 * @since 15.0
@@ -383,12 +383,12 @@ declare class OSLogMessageComponent extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 15.0
 	 */
-	readonly argumentNumberValue: number;
+	readonly argumentNumberValue: number | null;
 
 	/**
 	 * @since 15.0
 	 */
-	readonly argumentStringValue: string;
+	readonly argumentStringValue: string | null;
 
 	/**
 	 * @since 15.0
@@ -464,12 +464,12 @@ declare class OSLogStore extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	entriesEnumeratorAndReturnError(error?: interop.Reference<NSError>): OSLogEnumerator;
+	entriesEnumeratorAndReturnError(error?: interop.Reference<NSError>): OSLogEnumerator | null;
 
 	/**
 	 * @since 15.0
 	 */
-	entriesEnumeratorWithOptionsPositionPredicateError(options: OSLogEnumeratorOptions, position: OSLogPosition, predicate: NSPredicate, error?: interop.Reference<NSError>): OSLogEnumerator;
+	entriesEnumeratorWithOptionsPositionPredicateError(options: OSLogEnumeratorOptions, position: OSLogPosition | null, predicate: NSPredicate | null, error?: interop.Reference<NSError>): OSLogEnumerator | null;
 
 	/**
 	 * @since 15.0

@@ -45,7 +45,7 @@ declare class ICCameraDevice extends ICDevice {
 	/**
 	 * @since 13.0
 	 */
-	readonly contents: NSArray<ICCameraItem>;
+	readonly contents: NSArray<ICCameraItem> | null;
 
 	/**
 	 * @since 13.0
@@ -65,7 +65,7 @@ declare class ICCameraDevice extends ICDevice {
 	/**
 	 * @since 13.0
 	 */
-	readonly mediaFiles: NSArray<ICCameraItem>;
+	readonly mediaFiles: NSArray<ICCameraItem> | null;
 
 	/**
 	 * @since 14.0
@@ -84,7 +84,7 @@ declare class ICCameraDevice extends ICDevice {
 	/**
 	 * @since 13.0
 	 */
-	filesOfType(fileUTType: string): NSArray<string>;
+	filesOfType(fileUTType: string): NSArray<string> | null;
 
 	/**
 	 * @since 13.0
@@ -94,27 +94,27 @@ declare class ICCameraDevice extends ICDevice {
 	/**
 	 * @since 13.0
 	 */
-	requestDeleteFilesDeleteFailedCompletion(files: NSArray<ICCameraItem> | ICCameraItem[], deleteFailed: (p1: NSDictionary<string, ICCameraItem>) => void, completion: (p1: NSDictionary<string, NSArray<ICCameraItem>>, p2: NSError) => void): NSProgress;
+	requestDeleteFilesDeleteFailedCompletion(files: NSArray<ICCameraItem> | ICCameraItem[], deleteFailed: (p1: NSDictionary<string, ICCameraItem>) => void, completion: (p1: NSDictionary<string, NSArray<ICCameraItem>>, p2: NSError | null) => void): NSProgress | null;
 
 	/**
 	 * @since 13.0
 	 */
-	requestDownloadFileOptionsDownloadDelegateDidDownloadSelectorContextInfo(file: ICCameraFile, options: NSDictionary<string, any>, downloadDelegate: ICCameraDeviceDownloadDelegate, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
+	requestDownloadFileOptionsDownloadDelegateDidDownloadSelectorContextInfo(file: ICCameraFile, options: NSDictionary<string, any>, downloadDelegate: ICCameraDeviceDownloadDelegate, selector: string, contextInfo: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 	/**
 	 * @since 15.2
 	 */
-	requestReadDataFromFileAtOffsetLengthReadDelegateDidReadDataSelectorContextInfo(file: ICCameraFile, offset: number, length: number, readDelegate: any, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
+	requestReadDataFromFileAtOffsetLengthReadDelegateDidReadDataSelectorContextInfo(file: ICCameraFile, offset: number, length: number, readDelegate: any, selector: string, contextInfo: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestSendPTPCommandOutDataCompletion(ptpCommand: NSData, ptpData: NSData, completion: (p1: NSData, p2: NSData, p3: NSError) => void): void;
+	requestSendPTPCommandOutDataCompletion(ptpCommand: NSData, ptpData: NSData | null, completion: (p1: NSData, p2: NSData, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 15.2
 	 */
-	requestSendPTPCommandOutDataSendCommandDelegateDidSendCommandSelectorContextInfo(command: NSData, data: NSData, sendCommandDelegate: any, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
+	requestSendPTPCommandOutDataSendCommandDelegateDidSendCommandSelectorContextInfo(command: NSData, data: NSData | null, sendCommandDelegate: any, selector: string, contextInfo: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 }
 
 /**
@@ -169,7 +169,7 @@ interface ICCameraDeviceDelegate extends ICDeviceDelegate {
 	/**
 	 * @since 13.0
 	 */
-	cameraDeviceDidCompleteDeleteFilesWithError?(camera: ICCameraDevice, error: NSError): void;
+	cameraDeviceDidCompleteDeleteFilesWithError?(camera: ICCameraDevice, error: NSError | null): void;
 
 	cameraDeviceDidEnableAccessRestriction(device: ICDevice): void;
 
@@ -178,7 +178,7 @@ interface ICCameraDeviceDelegate extends ICDeviceDelegate {
 	/**
 	 * @since 13.0
 	 */
-	cameraDeviceDidReceiveMetadataForItemError(camera: ICCameraDevice, metadata: NSDictionary<any, any>, item: ICCameraItem, error: NSError): void;
+	cameraDeviceDidReceiveMetadataForItemError(camera: ICCameraDevice, metadata: NSDictionary<any, any> | null, item: ICCameraItem, error: NSError | null): void;
 
 	/**
 	 * @since 13.0
@@ -190,7 +190,7 @@ interface ICCameraDeviceDelegate extends ICDeviceDelegate {
 	/**
 	 * @since 13.0
 	 */
-	cameraDeviceDidReceiveThumbnailForItemError(camera: ICCameraDevice, thumbnail: any, item: ICCameraItem, error: NSError): void;
+	cameraDeviceDidReceiveThumbnailForItemError(camera: ICCameraDevice, thumbnail: any | null, item: ICCameraItem, error: NSError | null): void;
 
 	cameraDeviceDidRemoveAccessRestriction(device: ICDevice): void;
 
@@ -228,7 +228,7 @@ declare var ICCameraDeviceDelegate: {
 
 interface ICCameraDeviceDownloadDelegate extends NSObjectProtocol {
 
-	didDownloadFileErrorOptionsContextInfo?(file: ICCameraFile, error: NSError, options: NSDictionary<string, any>, contextInfo: interop.Pointer | interop.Reference<any>): void;
+	didDownloadFileErrorOptionsContextInfo?(file: ICCameraFile, error: NSError | null, options: NSDictionary<string, any>, contextInfo: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 	/**
 	 * @since 13.0
@@ -252,7 +252,7 @@ declare class ICCameraFile extends ICCameraItem {
 
 	static alloc(): ICCameraFile; // inherited from NSObject
 
-	static fingerprintForFileAtURL(url: NSURL): string;
+	static fingerprintForFileAtURL(url: NSURL): string | null;
 
 	static new(): ICCameraFile; // inherited from NSObject
 
@@ -269,12 +269,12 @@ declare class ICCameraFile extends ICCameraItem {
 	/**
 	 * @since 13.0
 	 */
-	readonly burstUUID: string;
+	readonly burstUUID: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly createdFilename: string;
+	readonly createdFilename: string | null;
 
 	/**
 	 * @since 13.0
@@ -284,29 +284,29 @@ declare class ICCameraFile extends ICCameraItem {
 	/**
 	 * @since 13.0
 	 */
-	readonly exifCreationDate: Date;
+	readonly exifCreationDate: Date | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly exifModificationDate: Date;
+	readonly exifModificationDate: Date | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly fileCreationDate: Date;
+	readonly fileCreationDate: Date | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly fileModificationDate: Date;
+	readonly fileModificationDate: Date | null;
 
 	/**
 	 * @since 13.0
 	 */
 	readonly fileSize: number;
 
-	readonly fingerprint: string;
+	readonly fingerprint: string | null;
 
 	/**
 	 * @since 13.0
@@ -316,12 +316,12 @@ declare class ICCameraFile extends ICCameraItem {
 	/**
 	 * @since 13.0
 	 */
-	readonly gpsString: string;
+	readonly gpsString: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly groupUUID: string;
+	readonly groupUUID: string | null;
 
 	/**
 	 * @since 13.0
@@ -341,27 +341,27 @@ declare class ICCameraFile extends ICCameraItem {
 	/**
 	 * @since 13.0
 	 */
-	readonly originalFilename: string;
+	readonly originalFilename: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly originatingAssetID: string;
+	readonly originatingAssetID: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly pairedRawImage: ICCameraFile;
+	readonly pairedRawImage: ICCameraFile | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly relatedUUID: string;
+	readonly relatedUUID: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly sidecarFiles: NSArray<ICCameraItem>;
+	readonly sidecarFiles: NSArray<ICCameraItem> | null;
 
 	/**
 	 * @since 13.0
@@ -376,32 +376,32 @@ declare class ICCameraFile extends ICCameraItem {
 	/**
 	 * @since 13.0
 	 */
-	requestDownloadWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: string, p2: NSError) => void): NSProgress;
+	requestDownloadWithOptionsCompletion(options: NSDictionary<string, any> | null, completion: (p1: string | null, p2: NSError | null) => void): NSProgress | null;
 
 	/**
 	 * @since 18.0
 	 */
-	requestFingerprintWithCompletion(completion: (p1: string, p2: NSError) => void): void;
+	requestFingerprintWithCompletion(completion: (p1: string | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestMetadataDictionaryWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSDictionary<any, any>, p2: NSError) => void): void;
+	requestMetadataDictionaryWithOptionsCompletion(options: NSDictionary<string, any> | null, completion: (p1: NSDictionary<any, any> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestReadDataAtOffsetLengthCompletion(offset: number, length: number, completion: (p1: NSData, p2: NSError) => void): void;
+	requestReadDataAtOffsetLengthCompletion(offset: number, length: number, completion: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 17.0
 	 */
-	requestSecurityScopedURLWithCompletion(completion: (p1: NSURL, p2: NSError) => void): void;
+	requestSecurityScopedURLWithCompletion(completion: (p1: NSURL | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestThumbnailDataWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSData, p2: NSError) => void): void;
+	requestThumbnailDataWithOptionsCompletion(options: NSDictionary<string, any> | null, completion: (p1: NSData | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -416,7 +416,7 @@ declare class ICCameraFolder extends ICCameraItem {
 	/**
 	 * @since 13.0
 	 */
-	readonly contents: NSArray<ICCameraItem>;
+	readonly contents: NSArray<ICCameraItem> | null;
 }
 
 /**
@@ -431,7 +431,7 @@ declare class ICCameraItem extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly UTI: string;
+	readonly UTI: string | null;
 
 	/**
 	 * @since 13.0
@@ -441,19 +441,19 @@ declare class ICCameraItem extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly creationDate: Date;
+	readonly creationDate: Date | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly device: ICCameraDevice;
+	readonly device: ICCameraDevice | null;
 
 	/**
 	 * @since 13.0
 	 */
 	readonly inTemporaryStore: boolean;
 
-	readonly largeThumbnailIfAvailable: any;
+	readonly largeThumbnailIfAvailable: any | null;
 
 	/**
 	 * @since 13.0
@@ -463,24 +463,24 @@ declare class ICCameraItem extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly metadata: NSDictionary<any, any>;
+	readonly metadata: NSDictionary<any, any> | null;
 
-	readonly metadataIfAvailable: NSDictionary<string, any>;
-
-	/**
-	 * @since 13.0
-	 */
-	readonly modificationDate: Date;
+	readonly metadataIfAvailable: NSDictionary<string, any> | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly name: string;
+	readonly modificationDate: Date | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly parentFolder: ICCameraFolder;
+	readonly name: string | null;
+
+	/**
+	 * @since 13.0
+	 */
+	readonly parentFolder: ICCameraFolder | null;
 
 	/**
 	 * @since 13.0
@@ -495,14 +495,14 @@ declare class ICCameraItem extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly thumbnail: any;
+	readonly thumbnail: any | null;
 
-	readonly thumbnailIfAvailable: any;
+	readonly thumbnailIfAvailable: any | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly userData: NSMutableDictionary<any, any>;
+	readonly userData: NSMutableDictionary<any, any> | null;
 
 	/**
 	 * @since 13.0
@@ -577,7 +577,7 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly UUIDString: string;
+	readonly UUIDString: string | null;
 
 	/**
 	 * @since 13.0
@@ -587,7 +587,7 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	delegate: ICDeviceDelegate;
+	delegate: ICDeviceDelegate | null;
 
 	/**
 	 * @since 13.0
@@ -597,27 +597,27 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly icon: any;
+	readonly icon: any | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly name: string;
+	readonly name: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly productKind: string;
+	readonly productKind: string | null;
 
 	/**
 	 * @since 15.2
 	 */
-	readonly systemSymbolName: string;
+	readonly systemSymbolName: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly transportType: string;
+	readonly transportType: string | null;
 
 	/**
 	 * @since 13.0
@@ -642,7 +642,7 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly userData: NSMutableDictionary<any, any>;
+	readonly userData: NSMutableDictionary<any, any> | null;
 
 	/**
 	 * @since 13.0
@@ -652,7 +652,7 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	requestCloseSessionWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSError) => void): void;
+	requestCloseSessionWithOptionsCompletion(options: NSDictionary<string, any> | null, completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
@@ -662,7 +662,7 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	requestEjectWithCompletion(completion: (p1: NSError) => void): void;
+	requestEjectWithCompletion(completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
@@ -672,7 +672,7 @@ declare class ICDevice extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	requestOpenSessionWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSError) => void): void;
+	requestOpenSessionWithOptionsCompletion(options: NSDictionary<string, any> | null, completion: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -701,12 +701,12 @@ declare class ICDeviceBrowser extends NSObject {
 	 */
 	readonly controlAuthorizationStatus: string;
 
-	delegate: ICDeviceBrowserDelegate;
+	delegate: ICDeviceBrowserDelegate | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly devices: NSArray<ICDevice>;
+	readonly devices: NSArray<ICDevice> | null;
 
 	/**
 	 * @since 14.0
@@ -803,22 +803,22 @@ interface ICDeviceDelegate extends NSObjectProtocol {
 	/**
 	 * @since 13.0
 	 */
-	deviceDidCloseSessionWithError(device: ICDevice, error: NSError): void;
+	deviceDidCloseSessionWithError(device: ICDevice, error: NSError | null): void;
 
 	/**
 	 * @since 13.0
 	 */
-	deviceDidEjectWithError?(device: ICDevice, error: NSError): void;
+	deviceDidEjectWithError?(device: ICDevice, error: NSError | null): void;
 
 	/**
 	 * @since 13.0
 	 */
-	deviceDidEncounterError?(device: ICDevice, error: NSError): void;
+	deviceDidEncounterError?(device: ICDevice, error: NSError | null): void;
 
 	/**
 	 * @since 13.0
 	 */
-	deviceDidOpenSessionWithError(device: ICDevice, error: NSError): void;
+	deviceDidOpenSessionWithError(device: ICDevice, error: NSError | null): void;
 
 	/**
 	 * @since 13.0

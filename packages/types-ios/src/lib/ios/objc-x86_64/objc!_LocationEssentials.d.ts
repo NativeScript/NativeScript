@@ -14,7 +14,7 @@ declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -52,14 +52,14 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 	/**
 	 * @since 8.0
 	 */
-	readonly floor: CLFloor;
+	readonly floor: CLFloor | null;
 
 	readonly horizontalAccuracy: number;
 
 	/**
 	 * @since 15.0
 	 */
-	readonly sourceInformation: CLLocationSourceInformation;
+	readonly sourceInformation: CLLocationSourceInformation | null;
 
 	/**
 	 * @since 2.2
@@ -114,7 +114,7 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 3.2
@@ -209,7 +209,7 @@ declare class CLLocationSourceInformation extends NSObject implements NSCopying,
 
 	constructor(o: { softwareSimulationState: boolean; andExternalAccessoryState: boolean; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

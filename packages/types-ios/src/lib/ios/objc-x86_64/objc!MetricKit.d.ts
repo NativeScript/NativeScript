@@ -236,20 +236,20 @@ declare class MXCrashDiagnostic extends MXDiagnostic {
 
 	readonly callStackTree: MXCallStackTree;
 
-	readonly exceptionCode: number;
+	readonly exceptionCode: number | null;
 
 	/**
 	 * @since 17.0
 	 */
-	readonly exceptionReason: MXCrashDiagnosticObjectiveCExceptionReason;
+	readonly exceptionReason: MXCrashDiagnosticObjectiveCExceptionReason | null;
 
-	readonly exceptionType: number;
+	readonly exceptionType: number | null;
 
-	readonly signal: number;
+	readonly signal: number | null;
 
-	readonly terminationReason: string;
+	readonly terminationReason: string | null;
 
-	readonly virtualMemoryRegionInfo: string;
+	readonly virtualMemoryRegionInfo: string | null;
 }
 
 /**
@@ -302,7 +302,7 @@ declare class MXDiagnostic extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 17.0
 	 */
-	readonly signpostData: NSArray<MXSignpostRecord>;
+	readonly signpostData: NSArray<MXSignpostRecord> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -329,15 +329,15 @@ declare class MXDiagnosticPayload extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 16.0
 	 */
-	readonly appLaunchDiagnostics: NSArray<MXAppLaunchDiagnostic>;
+	readonly appLaunchDiagnostics: NSArray<MXAppLaunchDiagnostic> | null;
 
-	readonly cpuExceptionDiagnostics: NSArray<MXCPUExceptionDiagnostic>;
+	readonly cpuExceptionDiagnostics: NSArray<MXCPUExceptionDiagnostic> | null;
 
-	readonly crashDiagnostics: NSArray<MXCrashDiagnostic>;
+	readonly crashDiagnostics: NSArray<MXCrashDiagnostic> | null;
 
-	readonly diskWriteExceptionDiagnostics: NSArray<MXDiskWriteExceptionDiagnostic>;
+	readonly diskWriteExceptionDiagnostics: NSArray<MXDiskWriteExceptionDiagnostic> | null;
 
-	readonly hangDiagnostics: NSArray<MXHangDiagnostic>;
+	readonly hangDiagnostics: NSArray<MXHangDiagnostic> | null;
 
 	readonly timeStampBegin: Date;
 
@@ -417,7 +417,7 @@ declare class MXDisplayMetric extends MXMetric {
 
 	static new(): MXDisplayMetric; // inherited from NSObject
 
-	readonly averagePixelLuminance: MXAverage<MXUnitAveragePixelLuminance>;
+	readonly averagePixelLuminance: MXAverage<MXUnitAveragePixelLuminance> | null;
 }
 
 /**
@@ -740,47 +740,47 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	readonly animationMetrics: MXAnimationMetric;
+	readonly animationMetrics: MXAnimationMetric | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly applicationExitMetrics: MXAppExitMetric;
+	readonly applicationExitMetrics: MXAppExitMetric | null;
 
-	readonly applicationLaunchMetrics: MXAppLaunchMetric;
+	readonly applicationLaunchMetrics: MXAppLaunchMetric | null;
 
-	readonly applicationResponsivenessMetrics: MXAppResponsivenessMetric;
+	readonly applicationResponsivenessMetrics: MXAppResponsivenessMetric | null;
 
-	readonly applicationTimeMetrics: MXAppRunTimeMetric;
+	readonly applicationTimeMetrics: MXAppRunTimeMetric | null;
 
-	readonly cellularConditionMetrics: MXCellularConditionMetric;
+	readonly cellularConditionMetrics: MXCellularConditionMetric | null;
 
-	readonly cpuMetrics: MXCPUMetric;
+	readonly cpuMetrics: MXCPUMetric | null;
 
-	readonly diskIOMetrics: MXDiskIOMetric;
+	readonly diskIOMetrics: MXDiskIOMetric | null;
 
 	/**
 	 * @since 26.0
 	 */
-	readonly diskSpaceUsageMetrics: MXDiskSpaceUsageMetric;
+	readonly diskSpaceUsageMetrics: MXDiskSpaceUsageMetric | null;
 
-	readonly displayMetrics: MXDisplayMetric;
+	readonly displayMetrics: MXDisplayMetric | null;
 
-	readonly gpuMetrics: MXGPUMetric;
+	readonly gpuMetrics: MXGPUMetric | null;
 
 	readonly includesMultipleApplicationVersions: boolean;
 
 	readonly latestApplicationVersion: string;
 
-	readonly locationActivityMetrics: MXLocationActivityMetric;
+	readonly locationActivityMetrics: MXLocationActivityMetric | null;
 
-	readonly memoryMetrics: MXMemoryMetric;
+	readonly memoryMetrics: MXMemoryMetric | null;
 
-	readonly metaData: MXMetaData;
+	readonly metaData: MXMetaData | null;
 
-	readonly networkTransferMetrics: MXNetworkTransferMetric;
+	readonly networkTransferMetrics: MXNetworkTransferMetric | null;
 
-	readonly signpostMetrics: NSArray<MXSignpostMetric>;
+	readonly signpostMetrics: NSArray<MXSignpostMetric> | null;
 
 	readonly timeStampBegin: Date;
 
@@ -835,16 +835,16 @@ declare class MXSignpostIntervalData extends NSObject implements NSSecureCoding 
 
 	static new(): MXSignpostIntervalData; // inherited from NSObject
 
-	readonly averageMemory: MXAverage<NSUnitInformationStorage>;
+	readonly averageMemory: MXAverage<NSUnitInformationStorage> | null;
 
-	readonly cumulativeCPUTime: NSMeasurement<NSUnitDuration>;
+	readonly cumulativeCPUTime: NSMeasurement<NSUnitDuration> | null;
 
 	/**
 	 * @since 15.0
 	 */
-	readonly cumulativeHitchTimeRatio: NSMeasurement<NSUnit>;
+	readonly cumulativeHitchTimeRatio: NSMeasurement<NSUnit> | null;
 
-	readonly cumulativeLogicalWrites: NSMeasurement<NSUnitInformationStorage>;
+	readonly cumulativeLogicalWrites: NSMeasurement<NSUnitInformationStorage> | null;
 
 	readonly histogrammedSignpostDuration: MXHistogram<NSUnitDuration>;
 
@@ -868,7 +868,7 @@ declare class MXSignpostMetric extends MXMetric {
 
 	readonly signpostCategory: string;
 
-	readonly signpostIntervalData: MXSignpostIntervalData;
+	readonly signpostIntervalData: MXSignpostIntervalData | null;
 
 	readonly signpostName: string;
 
@@ -888,9 +888,9 @@ declare class MXSignpostRecord extends NSObject implements NSSecureCoding {
 
 	readonly category: string;
 
-	readonly duration: NSMeasurement<NSUnitDuration>;
+	readonly duration: NSMeasurement<NSUnitDuration> | null;
 
-	readonly endTimeStamp: Date;
+	readonly endTimeStamp: Date | null;
 
 	readonly isInterval: boolean;
 

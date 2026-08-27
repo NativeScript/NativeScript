@@ -19,7 +19,7 @@ declare class ADClient extends NSObject {
 	 * @since 9.0
 	 * @deprecated 14.5
 	 */
-	requestAttributionDetailsWithBlock(completionHandler: (p1: NSDictionary<string, NSObject>, p2: NSError) => void): void;
+	requestAttributionDetailsWithBlock(completionHandler: (p1: NSDictionary<string, NSObject> | null, p2: NSError | null) => void): void;
 }
 
 /**

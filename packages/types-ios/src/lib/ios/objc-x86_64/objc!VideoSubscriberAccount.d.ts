@@ -40,11 +40,11 @@ declare class VSAccountManager extends NSObject {
 
 	static new(): VSAccountManager; // inherited from NSObject
 
-	delegate: VSAccountManagerDelegate;
+	delegate: VSAccountManagerDelegate | null;
 
-	checkAccessStatusWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: VSAccountAccessStatus, p2: NSError) => void): void;
+	checkAccessStatusWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: VSAccountAccessStatus, p2: NSError | null) => void): void;
 
-	enqueueAccountMetadataRequestCompletionHandler(request: VSAccountMetadataRequest, completionHandler: (p1: VSAccountMetadata, p2: NSError) => void): VSAccountManagerResult;
+	enqueueAccountMetadataRequestCompletionHandler(request: VSAccountMetadataRequest, completionHandler: (p1: VSAccountMetadata | null, p2: NSError | null) => void): VSAccountManagerResult;
 }
 
 /**
@@ -84,18 +84,18 @@ declare class VSAccountMetadata extends NSObject {
 
 	static new(): VSAccountMetadata; // inherited from NSObject
 
-	readonly SAMLAttributeQueryResponse: string;
+	readonly SAMLAttributeQueryResponse: string | null;
 
-	readonly accountProviderIdentifier: string;
+	readonly accountProviderIdentifier: string | null;
 
 	/**
 	 * @since 10.2
 	 */
-	readonly accountProviderResponse: VSAccountProviderResponse;
+	readonly accountProviderResponse: VSAccountProviderResponse | null;
 
-	readonly authenticationExpirationDate: Date;
+	readonly authenticationExpirationDate: Date | null;
 
-	readonly verificationData: NSData;
+	readonly verificationData: NSData | null;
 }
 
 /**
@@ -110,16 +110,16 @@ declare class VSAccountMetadataRequest extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	accountProviderAuthenticationToken: string;
+	accountProviderAuthenticationToken: string | null;
 
 	/**
 	 * @since 14.2
 	 */
-	applicationAccountProviders: NSArray<VSAccountApplicationProvider>;
+	applicationAccountProviders: NSArray<VSAccountApplicationProvider> | null;
 
 	attributeNames: NSArray<string>;
 
-	channelIdentifier: string;
+	channelIdentifier: string | null;
 
 	/**
 	 * @since 11.0
@@ -134,7 +134,7 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	interruptionAllowed: boolean;
 
-	localizedVideoTitle: string;
+	localizedVideoTitle: string | null;
 
 	supportedAccountProviderIdentifiers: NSArray<string>;
 
@@ -143,7 +143,7 @@ declare class VSAccountMetadataRequest extends NSObject {
 	 */
 	supportedAuthenticationSchemes: NSArray<string>;
 
-	verificationToken: string;
+	verificationToken: string | null;
 }
 
 /**
@@ -167,9 +167,9 @@ declare class VSAccountProviderResponse extends NSObject {
 
 	readonly authenticationScheme: string;
 
-	readonly body: string;
+	readonly body: string | null;
 
-	readonly status: string;
+	readonly status: string | null;
 }
 
 /**
@@ -213,7 +213,7 @@ declare class VSAutoSignInToken extends NSObject implements NSSecureCoding {
 
 	readonly authorization: VSAutoSignInAuthorization;
 
-	readonly value: string;
+	readonly value: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -318,7 +318,7 @@ declare class VSSubscription extends NSObject {
 	/**
 	 * @since 11.3
 	 */
-	billingIdentifier: string;
+	billingIdentifier: string | null;
 
 	expirationDate: Date;
 
@@ -350,7 +350,7 @@ declare class VSSubscriptionRegistrationCenter extends NSObject {
 
 	static new(): VSSubscriptionRegistrationCenter; // inherited from NSObject
 
-	setCurrentSubscription(currentSubscription: VSSubscription): void;
+	setCurrentSubscription(currentSubscription: VSSubscription | null): void;
 }
 
 /**
@@ -362,38 +362,38 @@ declare class VSUserAccount extends NSObject {
 
 	static new(): VSUserAccount; // inherited from NSObject
 
-	accountProviderIdentifier: string;
+	accountProviderIdentifier: string | null;
 
 	accountType: VSUserAccountType;
 
 	/**
 	 * @since 17.4
 	 */
-	appleSubscription: VSAppleSubscription;
+	appleSubscription: VSAppleSubscription | null;
 
-	authenticationData: string;
+	authenticationData: string | null;
 
-	billingIdentifier: string;
+	billingIdentifier: string | null;
 
 	readonly deviceCategory: VSOriginatingDeviceCategory;
 
 	readonly fromCurrentDevice: boolean;
 
-	identifier: string;
+	identifier: string | null;
 
 	requiresSystemTrust: boolean;
 
 	signedOut: boolean;
 
-	subscriptionBillingCycleEndDate: Date;
+	subscriptionBillingCycleEndDate: Date | null;
 
-	tierIdentifiers: NSArray<string>;
+	tierIdentifiers: NSArray<string> | null;
 
-	updateURL: NSURL;
+	updateURL: NSURL | null;
 
-	constructor(o: { accountType: VSUserAccountType; updateURL: NSURL; });
+	constructor(o: { accountType: VSUserAccountType; updateURL: NSURL | null; });
 
-	initWithAccountTypeUpdateURL(accountType: VSUserAccountType, url: NSURL): this;
+	initWithAccountTypeUpdateURL(accountType: VSUserAccountType, url: NSURL | null): this;
 }
 
 /**
@@ -410,26 +410,26 @@ declare class VSUserAccountManager extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	deleteAutoSignInTokenWithCompletionHandler(completion: (p1: NSError) => void): void;
+	deleteAutoSignInTokenWithCompletionHandler(completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 26.0
 	 */
-	queryAutoSignInTokenWithCompletionHandler(completion: (p1: VSAutoSignInToken, p2: NSError) => void): void;
+	queryAutoSignInTokenWithCompletionHandler(completion: (p1: VSAutoSignInToken | null, p2: NSError | null) => void): void;
 
-	queryUserAccountsWithOptionsCompletion(options: VSUserAccountQueryOptions, completion: (p1: NSArray<VSUserAccount>, p2: NSError) => void): void;
-
-	/**
-	 * @since 26.0
-	 */
-	requestAutoSignInAuthorizationWithCompletionHandler(completion: (p1: VSAutoSignInTokenUpdateContext, p2: NSError) => void): void;
+	queryUserAccountsWithOptionsCompletion(options: VSUserAccountQueryOptions, completion: (p1: NSArray<VSUserAccount> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 26.0
 	 */
-	updateAutoSignInTokenUpdateContextCompletionHandler(autoSignInToken: string, context: VSAutoSignInTokenUpdateContext, completion: (p1: NSError) => void): void;
+	requestAutoSignInAuthorizationWithCompletionHandler(completion: (p1: VSAutoSignInTokenUpdateContext | null, p2: NSError | null) => void): void;
 
-	updateUserAccountCompletion(account: VSUserAccount, completion: (p1: NSError) => void): void;
+	/**
+	 * @since 26.0
+	 */
+	updateAutoSignInTokenUpdateContextCompletionHandler(autoSignInToken: string, context: VSAutoSignInTokenUpdateContext, completion: (p1: NSError | null) => void): void;
+
+	updateUserAccountCompletion(account: VSUserAccount, completion: (p1: NSError | null) => void | null): void;
 }
 
 /**

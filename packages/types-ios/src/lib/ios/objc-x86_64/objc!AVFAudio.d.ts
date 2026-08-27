@@ -213,15 +213,15 @@ declare class AVAudioBuffer extends NSObject implements NSCopying, NSMutableCopy
 
 	static new(): AVAudioBuffer; // inherited from NSObject
 
-	readonly audioBufferList: interop.Pointer | interop.Reference<AudioBufferList>;
+	readonly audioBufferList: interop.Pointer | interop.Reference<AudioBufferList> | null;
 
 	readonly format: AVAudioFormat;
 
-	readonly mutableAudioBufferList: interop.Pointer | interop.Reference<AudioBufferList>;
+	readonly mutableAudioBufferList: interop.Pointer | interop.Reference<AudioBufferList> | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -231,7 +231,7 @@ declare class AVAudioChannelLayout extends NSObject implements NSSecureCoding {
 
 	static alloc(): AVAudioChannelLayout; // inherited from NSObject
 
-	static layoutWithLayout(layout: interop.Pointer | interop.Reference<AudioChannelLayout>): AVAudioChannelLayout;
+	static layoutWithLayout(layout: interop.Pointer | interop.Reference<AudioChannelLayout> | ArrayBufferLike | ArrayBufferView): AVAudioChannelLayout;
 
 	static layoutWithLayoutTag(layoutTag: number): AVAudioChannelLayout;
 
@@ -239,7 +239,7 @@ declare class AVAudioChannelLayout extends NSObject implements NSSecureCoding {
 
 	readonly channelCount: number;
 
-	readonly layout: interop.Pointer | interop.Reference<AudioChannelLayout>;
+	readonly layout: interop.Pointer | interop.Reference<AudioChannelLayout> | null;
 
 	readonly layoutTag: number;
 
@@ -247,7 +247,7 @@ declare class AVAudioChannelLayout extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { layout: interop.Pointer | interop.Reference<AudioChannelLayout>; });
+	constructor(o: { layout: interop.Pointer | interop.Reference<AudioChannelLayout> | ArrayBufferLike | ArrayBufferView; });
 
 	constructor(o: { layoutTag: number; });
 
@@ -255,7 +255,7 @@ declare class AVAudioChannelLayout extends NSObject implements NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithLayout(layout: interop.Pointer | interop.Reference<AudioChannelLayout>): this;
+	initWithLayout(layout: interop.Pointer | interop.Reference<AudioChannelLayout> | ArrayBufferLike | ArrayBufferView): this;
 
 	initWithLayoutTag(layoutTag: number): this;
 }
@@ -295,7 +295,7 @@ declare class AVAudioCompressedBuffer extends AVAudioBuffer {
 	 */
 	byteLength: number;
 
-	readonly data: interop.Pointer | interop.Reference<any>;
+	readonly data: interop.Pointer | interop.Reference<any> | null;
 
 	readonly maximumPacketSize: number;
 
@@ -306,9 +306,9 @@ declare class AVAudioCompressedBuffer extends AVAudioBuffer {
 	/**
 	 * @since 26.0
 	 */
-	readonly packetDependencies: interop.Pointer | interop.Reference<AudioStreamPacketDependencyDescription>;
+	readonly packetDependencies: interop.Pointer | interop.Reference<AudioStreamPacketDependencyDescription> | null;
 
-	readonly packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>;
+	readonly packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription> | null;
 
 	constructor(o: { format: AVAudioFormat; packetCapacity: number; });
 
@@ -330,7 +330,7 @@ declare class AVAudioConnectionPoint extends NSObject {
 
 	readonly bus: number;
 
-	readonly node: AVAudioNode;
+	readonly node: AVAudioNode | null;
 
 	constructor(o: { node: AVAudioNode; bus: number; });
 
@@ -396,24 +396,24 @@ declare class AVAudioConverter extends NSObject {
 
 	static new(): AVAudioConverter; // inherited from NSObject
 
-	readonly applicableEncodeBitRates: NSArray<number>;
+	readonly applicableEncodeBitRates: NSArray<number> | null;
 
-	readonly applicableEncodeSampleRates: NSArray<number>;
+	readonly applicableEncodeSampleRates: NSArray<number> | null;
 
 	/**
 	 * @since 26.0
 	 */
 	audioSyncPacketFrequency: number;
 
-	readonly availableEncodeBitRates: NSArray<number>;
+	readonly availableEncodeBitRates: NSArray<number> | null;
 
-	readonly availableEncodeChannelLayoutTags: NSArray<number>;
+	readonly availableEncodeChannelLayoutTags: NSArray<number> | null;
 
-	readonly availableEncodeSampleRates: NSArray<number>;
+	readonly availableEncodeSampleRates: NSArray<number> | null;
 
 	bitRate: number;
 
-	bitRateStrategy: string;
+	bitRateStrategy: string | null;
 
 	channelMap: NSArray<number>;
 
@@ -433,7 +433,7 @@ declare class AVAudioConverter extends NSObject {
 
 	readonly inputFormat: AVAudioFormat;
 
-	magicCookie: NSData;
+	magicCookie: NSData | null;
 
 	readonly maximumOutputPacketSize: number;
 
@@ -443,13 +443,13 @@ declare class AVAudioConverter extends NSObject {
 
 	primeMethod: AVAudioConverterPrimeMethod;
 
-	sampleRateConverterAlgorithm: string;
+	sampleRateConverterAlgorithm: string | null;
 
 	sampleRateConverterQuality: number;
 
 	constructor(o: { fromFormat: AVAudioFormat; toFormat: AVAudioFormat; });
 
-	convertToBufferErrorWithInputFromBlock(outputBuffer: AVAudioBuffer, outError: interop.Pointer | interop.Reference<NSError>, inputBlock: (p1: number, p2: interop.Pointer | interop.Reference<AVAudioConverterInputStatus>) => AVAudioBuffer): AVAudioConverterOutputStatus;
+	convertToBufferErrorWithInputFromBlock(outputBuffer: AVAudioBuffer, outError: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, inputBlock: (p1: number, p2: interop.Pointer | interop.Reference<AVAudioConverterInputStatus> | null) => AVAudioBuffer | null): AVAudioConverterOutputStatus;
 
 	convertToBufferFromBufferError(outputBuffer: AVAudioPCMBuffer, inputBuffer: AVAudioPCMBuffer, error?: interop.Reference<NSError>): boolean;
 
@@ -546,7 +546,7 @@ declare class AVAudioEngine extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	readonly manualRenderingBlock: (p1: number, p2: interop.Pointer | interop.Reference<AudioBufferList>, p3: interop.Pointer | interop.Reference<number>) => AVAudioEngineManualRenderingStatus;
+	readonly manualRenderingBlock: (p1: number, p2: interop.Pointer | interop.Reference<AudioBufferList> | null, p3: interop.Pointer | interop.Reference<number> | null) => AVAudioEngineManualRenderingStatus;
 
 	/**
 	 * @since 11.0
@@ -568,7 +568,7 @@ declare class AVAudioEngine extends NSObject {
 	 */
 	readonly manualRenderingSampleTime: number;
 
-	musicSequence: interop.Pointer | interop.Reference<any>;
+	musicSequence: interop.Pointer | interop.Reference<any> | null;
 
 	readonly outputNode: AVAudioOutputNode;
 
@@ -580,32 +580,32 @@ declare class AVAudioEngine extends NSObject {
 	 * @since 13.0
 	 * @deprecated 16.0
 	 */
-	connectMIDIToFormatBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => number): void;
+	connectMIDIToFormatBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | null) => number | null): void;
 
 	/**
 	 * @since 16.0
 	 */
-	connectMIDIToFormatEventListBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number): void;
+	connectMIDIToFormatEventListBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList> | null) => number | null): void;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 16.0
 	 */
-	connectMIDIToNodesFormatBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => number): void;
+	connectMIDIToNodesFormatBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | null) => number | null): void;
 
 	/**
 	 * @since 16.0
 	 */
-	connectMIDIToNodesFormatEventListBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number): void;
+	connectMIDIToNodesFormatEventListBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList> | null) => number | null): void;
 
 	/**
 	 * @since 9.0
 	 */
-	connectToConnectionPointsFromBusFormat(sourceNode: AVAudioNode, destNodes: NSArray<AVAudioConnectionPoint> | AVAudioConnectionPoint[], sourceBus: number, format: AVAudioFormat): void;
+	connectToConnectionPointsFromBusFormat(sourceNode: AVAudioNode, destNodes: NSArray<AVAudioConnectionPoint> | AVAudioConnectionPoint[], sourceBus: number, format: AVAudioFormat | null): void;
 
-	connectToFormat(node1: AVAudioNode, node2: AVAudioNode, format: AVAudioFormat): void;
+	connectToFormat(node1: AVAudioNode, node2: AVAudioNode, format: AVAudioFormat | null): void;
 
-	connectToFromBusToBusFormat(node1: AVAudioNode, node2: AVAudioNode, bus1: number, bus2: number, format: AVAudioFormat): void;
+	connectToFromBusToBusFormat(node1: AVAudioNode, node2: AVAudioNode, bus1: number, bus2: number, format: AVAudioFormat | null): void;
 
 	detachNode(node: AVAudioNode): void;
 
@@ -650,7 +650,7 @@ declare class AVAudioEngine extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	inputConnectionPointForNodeInputBus(node: AVAudioNode, bus: number): AVAudioConnectionPoint;
+	inputConnectionPointForNodeInputBus(node: AVAudioNode, bus: number): AVAudioConnectionPoint | null;
 
 	/**
 	 * @since 9.0
@@ -824,7 +824,7 @@ declare class AVAudioEnvironmentNode extends AVAudioNode implements AVAudioMixin
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	isEqual(object: any): boolean;
 
@@ -945,7 +945,7 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 
 	readonly channelCount: number;
 
-	readonly channelLayout: AVAudioChannelLayout;
+	readonly channelLayout: AVAudioChannelLayout | null;
 
 	readonly commonFormat: AVAudioCommonFormat;
 
@@ -959,7 +959,7 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 10.0
 	 */
-	magicCookie: NSData;
+	magicCookie: NSData | null;
 
 	readonly sampleRate: number;
 
@@ -967,7 +967,7 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 
 	readonly standard: boolean;
 
-	readonly streamDescription: interop.Pointer | interop.Reference<AudioStreamBasicDescription>;
+	readonly streamDescription: interop.Pointer | interop.Reference<AudioStreamBasicDescription> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -988,9 +988,9 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 
 	constructor(o: { settings: NSDictionary<string, any>; });
 
-	constructor(o: { streamDescription: interop.Pointer | interop.Reference<AudioStreamBasicDescription>; });
+	constructor(o: { streamDescription: interop.Pointer | interop.Reference<AudioStreamBasicDescription> | ArrayBufferLike | ArrayBufferView; });
 
-	constructor(o: { streamDescription: interop.Pointer | interop.Reference<AudioStreamBasicDescription>; channelLayout: AVAudioChannelLayout; });
+	constructor(o: { streamDescription: interop.Pointer | interop.Reference<AudioStreamBasicDescription> | ArrayBufferLike | ArrayBufferView; channelLayout: AVAudioChannelLayout | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1011,9 +1011,9 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 
 	initWithSettings(settings: NSDictionary<string, any>): this;
 
-	initWithStreamDescription(asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription>): this;
+	initWithStreamDescription(asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription> | ArrayBufferLike | ArrayBufferView): this;
 
-	initWithStreamDescriptionChannelLayout(asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, layout: AVAudioChannelLayout): this;
+	initWithStreamDescriptionChannelLayout(asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription> | ArrayBufferLike | ArrayBufferView, layout: AVAudioChannelLayout | null): this;
 }
 
 /**
@@ -1025,7 +1025,7 @@ declare class AVAudioIONode extends AVAudioNode {
 
 	static new(): AVAudioIONode; // inherited from NSObject
 
-	readonly audioUnit: interop.Pointer | interop.Reference<any>;
+	readonly audioUnit: interop.Pointer | interop.Reference<any> | null;
 
 	readonly presentationLatency: number;
 
@@ -1114,7 +1114,7 @@ declare class AVAudioInputNode extends AVAudioIONode implements AVAudioMixing {
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	isEqual(object: any): boolean;
 
@@ -1137,12 +1137,12 @@ declare class AVAudioInputNode extends AVAudioIONode implements AVAudioMixing {
 	/**
 	 * @since 11.0
 	 */
-	setManualRenderingInputPCMFormatInputBlock(format: AVAudioFormat, block: (p1: number) => interop.Pointer | interop.Reference<AudioBufferList>): boolean;
+	setManualRenderingInputPCMFormatInputBlock(format: AVAudioFormat, block: (p1: number) => interop.Pointer | interop.Reference<AudioBufferList> | null): boolean;
 
 	/**
 	 * @since 17.0
 	 */
-	setMutedSpeechActivityEventListener(listenerBlock: (p1: AVAudioVoiceProcessingSpeechActivityEvent) => void): boolean;
+	setMutedSpeechActivityEventListener(listenerBlock: (p1: AVAudioVoiceProcessingSpeechActivityEvent) => void | null): boolean;
 }
 
 /**
@@ -1203,7 +1203,7 @@ declare class AVAudioMixerNode extends AVAudioNode implements AVAudioMixing {
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	isEqual(object: any): boolean;
 
@@ -1234,7 +1234,7 @@ interface AVAudioMixing extends AVAudio3DMixing, AVAudioStereoMixing {
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 }
 declare var AVAudioMixing: {
 
@@ -1297,7 +1297,7 @@ declare class AVAudioMixingDestination extends NSObject implements AVAudioMixing
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	isEqual(object: any): boolean;
 
@@ -1332,9 +1332,9 @@ declare class AVAudioNode extends NSObject {
 	 */
 	readonly AUAudioUnit: AUAudioUnit;
 
-	readonly engine: AVAudioEngine;
+	readonly engine: AVAudioEngine | null;
 
-	readonly lastRenderTime: AVAudioTime;
+	readonly lastRenderTime: AVAudioTime | null;
 
 	/**
 	 * @since 11.0
@@ -1352,11 +1352,11 @@ declare class AVAudioNode extends NSObject {
 
 	inputFormatForBus(bus: number): AVAudioFormat;
 
-	installTapOnBusBufferSizeFormatBlock(bus: number, bufferSize: number, format: AVAudioFormat, tapBlock: (p1: AVAudioPCMBuffer, p2: AVAudioTime) => void): void;
+	installTapOnBusBufferSizeFormatBlock(bus: number, bufferSize: number, format: AVAudioFormat | null, tapBlock: (p1: AVAudioPCMBuffer, p2: AVAudioTime) => void): void;
 
-	nameForInputBus(bus: number): string;
+	nameForInputBus(bus: number): string | null;
 
-	nameForOutputBus(bus: number): string;
+	nameForOutputBus(bus: number): string | null;
 
 	outputFormatForBus(bus: number): AVAudioFormat;
 
@@ -1384,29 +1384,29 @@ declare class AVAudioPCMBuffer extends AVAudioBuffer {
 
 	static new(): AVAudioPCMBuffer; // inherited from NSObject
 
-	readonly floatChannelData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>;
+	readonly floatChannelData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | null;
 
 	readonly frameCapacity: number;
 
 	frameLength: number;
 
-	readonly int16ChannelData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>;
+	readonly int16ChannelData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | null;
 
-	readonly int32ChannelData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>;
+	readonly int32ChannelData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | null;
 
 	readonly stride: number;
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { PCMFormat: AVAudioFormat; bufferListNoCopy: interop.Pointer | interop.Reference<AudioBufferList>; deallocator: (p1: interop.Pointer | interop.Reference<AudioBufferList>) => void; });
+	constructor(o: { PCMFormat: AVAudioFormat; bufferListNoCopy: interop.Pointer | interop.Reference<AudioBufferList> | ArrayBufferLike | ArrayBufferView; deallocator: (p1: interop.Pointer | interop.Reference<AudioBufferList> | null) => void | null; });
 
 	constructor(o: { PCMFormat: AVAudioFormat; frameCapacity: number; });
 
 	/**
 	 * @since 15.0
 	 */
-	initWithPCMFormatBufferListNoCopyDeallocator(format: AVAudioFormat, bufferList: interop.Pointer | interop.Reference<AudioBufferList>, deallocator: (p1: interop.Pointer | interop.Reference<AudioBufferList>) => void): this;
+	initWithPCMFormatBufferListNoCopyDeallocator(format: AVAudioFormat, bufferList: interop.Pointer | interop.Reference<AudioBufferList> | ArrayBufferLike | ArrayBufferView, deallocator: (p1: interop.Pointer | interop.Reference<AudioBufferList> | null) => void | null): this;
 
 	initWithPCMFormatFrameCapacity(format: AVAudioFormat, frameCapacity: number): this;
 }
@@ -1423,13 +1423,13 @@ declare class AVAudioPlayer extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	channelAssignments: NSArray<AVAudioSessionChannelDescription>;
+	channelAssignments: NSArray<AVAudioSessionChannelDescription> | null;
 
 	currentTime: number;
 
-	readonly data: NSData;
+	readonly data: NSData | null;
 
-	delegate: AVAudioPlayerDelegate;
+	delegate: AVAudioPlayerDelegate | null;
 
 	/**
 	 * @since 4.0
@@ -1471,7 +1471,7 @@ declare class AVAudioPlayer extends NSObject {
 	 */
 	readonly settings: NSDictionary<string, any>;
 
-	readonly url: NSURL;
+	readonly url: NSURL | null;
 
 	volume: number;
 
@@ -1480,14 +1480,14 @@ declare class AVAudioPlayer extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	constructor(o: { contentsOfURL: NSURL; fileTypeHint: string; });
+	constructor(o: { contentsOfURL: NSURL; fileTypeHint: string | null; });
 
 	constructor(o: { data: NSData; });
 
 	/**
 	 * @since 7.0
 	 */
-	constructor(o: { data: NSData; fileTypeHint: string; });
+	constructor(o: { data: NSData; fileTypeHint: string | null; });
 
 	averagePowerForChannel(channelNumber: number): number;
 
@@ -1496,14 +1496,14 @@ declare class AVAudioPlayer extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	initWithContentsOfURLFileTypeHintError(url: NSURL, utiString: string, error?: interop.Reference<NSError>): this;
+	initWithContentsOfURLFileTypeHintError(url: NSURL, utiString: string | null, error?: interop.Reference<NSError>): this;
 
 	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 7.0
 	 */
-	initWithDataFileTypeHintError(data: NSData, utiString: string, error?: interop.Reference<NSError>): this;
+	initWithDataFileTypeHintError(data: NSData, utiString: string | null, error?: interop.Reference<NSError>): this;
 
 	pause(): void;
 
@@ -1536,7 +1536,7 @@ interface AVAudioPlayerDelegate extends NSObjectProtocol {
 	 */
 	audioPlayerBeginInterruption?(player: AVAudioPlayer): void;
 
-	audioPlayerDecodeErrorDidOccurError?(player: AVAudioPlayer, error: NSError): void;
+	audioPlayerDecodeErrorDidOccurError?(player: AVAudioPlayer, error: NSError | null): void;
 
 	audioPlayerDidFinishPlayingSuccessfully?(player: AVAudioPlayer, flag: boolean): void;
 
@@ -1619,7 +1619,7 @@ declare class AVAudioPlayerNode extends AVAudioNode implements AVAudioMixing {
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	isEqual(object: any): boolean;
 
@@ -1627,7 +1627,7 @@ declare class AVAudioPlayerNode extends AVAudioNode implements AVAudioMixing {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	nodeTimeForPlayerTime(playerTime: AVAudioTime): AVAudioTime;
+	nodeTimeForPlayerTime(playerTime: AVAudioTime): AVAudioTime | null;
 
 	pause(): void;
 
@@ -1639,9 +1639,9 @@ declare class AVAudioPlayerNode extends AVAudioNode implements AVAudioMixing {
 
 	play(): void;
 
-	playAtTime(when: AVAudioTime): void;
+	playAtTime(when: AVAudioTime | null): void;
 
-	playerTimeForNodeTime(nodeTime: AVAudioTime): AVAudioTime;
+	playerTimeForNodeTime(nodeTime: AVAudioTime): AVAudioTime | null;
 
 	prepareWithFrameCount(frameCount: number): void;
 
@@ -1652,30 +1652,30 @@ declare class AVAudioPlayerNode extends AVAudioNode implements AVAudioMixing {
 	/**
 	 * @since 11.0
 	 */
-	scheduleBufferAtTimeOptionsCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, when: AVAudioTime, options: AVAudioPlayerNodeBufferOptions, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void): void;
+	scheduleBufferAtTimeOptionsCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, when: AVAudioTime | null, options: AVAudioPlayerNodeBufferOptions, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void | null): void;
 
-	scheduleBufferAtTimeOptionsCompletionHandler(buffer: AVAudioPCMBuffer, when: AVAudioTime, options: AVAudioPlayerNodeBufferOptions, completionHandler: () => void): void;
-
-	/**
-	 * @since 11.0
-	 */
-	scheduleBufferCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void): void;
-
-	scheduleBufferCompletionHandler(buffer: AVAudioPCMBuffer, completionHandler: () => void): void;
+	scheduleBufferAtTimeOptionsCompletionHandler(buffer: AVAudioPCMBuffer, when: AVAudioTime | null, options: AVAudioPlayerNodeBufferOptions, completionHandler: () => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	scheduleFileAtTimeCompletionCallbackTypeCompletionHandler(file: AVAudioFile, when: AVAudioTime, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void): void;
+	scheduleBufferCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void | null): void;
 
-	scheduleFileAtTimeCompletionHandler(file: AVAudioFile, when: AVAudioTime, completionHandler: () => void): void;
+	scheduleBufferCompletionHandler(buffer: AVAudioPCMBuffer, completionHandler: () => void | null): void;
 
 	/**
 	 * @since 11.0
 	 */
-	scheduleSegmentStartingFrameFrameCountAtTimeCompletionCallbackTypeCompletionHandler(file: AVAudioFile, startFrame: number, numberFrames: number, when: AVAudioTime, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void): void;
+	scheduleFileAtTimeCompletionCallbackTypeCompletionHandler(file: AVAudioFile, when: AVAudioTime | null, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void | null): void;
 
-	scheduleSegmentStartingFrameFrameCountAtTimeCompletionHandler(file: AVAudioFile, startFrame: number, numberFrames: number, when: AVAudioTime, completionHandler: () => void): void;
+	scheduleFileAtTimeCompletionHandler(file: AVAudioFile, when: AVAudioTime | null, completionHandler: () => void | null): void;
+
+	/**
+	 * @since 11.0
+	 */
+	scheduleSegmentStartingFrameFrameCountAtTimeCompletionCallbackTypeCompletionHandler(file: AVAudioFile, startFrame: number, numberFrames: number, when: AVAudioTime | null, callbackType: AVAudioPlayerNodeCompletionCallbackType, completionHandler: (p1: AVAudioPlayerNodeCompletionCallbackType) => void | null): void;
+
+	scheduleSegmentStartingFrameFrameCountAtTimeCompletionHandler(file: AVAudioFile, startFrame: number, numberFrames: number, when: AVAudioTime | null, completionHandler: () => void | null): void;
 
 	self(): this;
 
@@ -1725,11 +1725,11 @@ declare class AVAudioRecorder extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	channelAssignments: NSArray<AVAudioSessionChannelDescription>;
+	channelAssignments: NSArray<AVAudioSessionChannelDescription> | null;
 
 	readonly currentTime: number;
 
-	delegate: AVAudioRecorderDelegate;
+	delegate: AVAudioRecorderDelegate | null;
 
 	/**
 	 * @since 6.0
@@ -1805,7 +1805,7 @@ interface AVAudioRecorderDelegate extends NSObjectProtocol {
 
 	audioRecorderDidFinishRecordingSuccessfully?(recorder: AVAudioRecorder, flag: boolean): void;
 
-	audioRecorderEncodeErrorDidOccurError?(recorder: AVAudioRecorder, error: NSError): void;
+	audioRecorderEncodeErrorDidOccurError?(recorder: AVAudioRecorder, error: NSError | null): void;
 
 	/**
 	 * @since 2.2
@@ -1900,7 +1900,7 @@ declare class AVAudioSequencer extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	setUserCallback(userCallback: (p1: AVMusicTrack, p2: NSData, p3: number) => void): void;
+	setUserCallback(userCallback: (p1: AVMusicTrack, p2: NSData, p3: number) => void | null): void;
 
 	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
@@ -2051,7 +2051,7 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	readonly availableInputs: NSArray<AVAudioSessionPortDescription>;
+	readonly availableInputs: NSArray<AVAudioSessionPortDescription> | null;
 
 	/**
 	 * @since 9.0
@@ -2095,7 +2095,7 @@ declare class AVAudioSession extends NSObject {
 	 * @since 4.0
 	 * @deprecated 6.0
 	 */
-	delegate: AVAudioSessionDelegate;
+	delegate: AVAudioSessionDelegate | null;
 
 	/**
 	 * @since 6.0
@@ -2105,12 +2105,12 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 6.0
 	 */
-	readonly inputDataSource: AVAudioSessionDataSourceDescription;
+	readonly inputDataSource: AVAudioSessionDataSourceDescription | null;
 
 	/**
 	 * @since 6.0
 	 */
-	readonly inputDataSources: NSArray<AVAudioSessionDataSourceDescription>;
+	readonly inputDataSources: NSArray<AVAudioSessionDataSourceDescription> | null;
 
 	/**
 	 * @since 6.0
@@ -2181,12 +2181,12 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 6.0
 	 */
-	readonly outputDataSource: AVAudioSessionDataSourceDescription;
+	readonly outputDataSource: AVAudioSessionDataSourceDescription | null;
 
 	/**
 	 * @since 6.0
 	 */
-	readonly outputDataSources: NSArray<AVAudioSessionDataSourceDescription>;
+	readonly outputDataSources: NSArray<AVAudioSessionDataSourceDescription> | null;
 
 	/**
 	 * @since 6.0
@@ -2222,7 +2222,7 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	readonly preferredInput: AVAudioSessionPortDescription;
+	readonly preferredInput: AVAudioSessionPortDescription | null;
 
 	/**
 	 * @since 7.0
@@ -2367,7 +2367,7 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 6.0
 	 */
-	setInputDataSourceError(dataSource: AVAudioSessionDataSourceDescription, error?: interop.Reference<NSError>): boolean;
+	setInputDataSourceError(dataSource: AVAudioSessionDataSourceDescription | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 6.0
@@ -2382,7 +2382,7 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 6.0
 	 */
-	setOutputDataSourceError(dataSource: AVAudioSessionDataSourceDescription, error?: interop.Reference<NSError>): boolean;
+	setOutputDataSourceError(dataSource: AVAudioSessionDataSourceDescription | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 26.0
@@ -2403,7 +2403,7 @@ declare class AVAudioSession extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	setPreferredInputError(inPort: AVAudioSessionPortDescription, error?: interop.Reference<NSError>): boolean;
+	setPreferredInputError(inPort: AVAudioSessionPortDescription | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
@@ -2511,6 +2511,8 @@ declare const enum AVAudioSessionCategoryOptions {
 
 	OverrideMutedMicrophoneInterruption = 128,
 
+	FarFieldInput = 262144,
+
 	BluetoothHighQualityRecording = 524288
 }
 
@@ -2586,32 +2588,32 @@ declare class AVAudioSessionDataSourceDescription extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	readonly location: string;
+	readonly location: string | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly orientation: string;
+	readonly orientation: string | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly preferredPolarPattern: string;
+	readonly preferredPolarPattern: string | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly selectedPolarPattern: string;
+	readonly selectedPolarPattern: string | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly supportedPolarPatterns: NSArray<string>;
+	readonly supportedPolarPatterns: NSArray<string> | null;
 
 	/**
 	 * @since 7.0
 	 */
-	setPreferredPolarPatternError(pattern: string, error?: interop.Reference<NSError>): boolean;
+	setPreferredPolarPatternError(pattern: string | null, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -2735,6 +2737,11 @@ declare const enum AVAudioSessionMicrophoneInjectionMode {
  * @since 5.0
  */
 declare var AVAudioSessionModeDefault: string;
+
+/**
+ * @since 26.2
+ */
+declare var AVAudioSessionModeDualRoute: string;
 
 /**
  * @since 5.0
@@ -2908,17 +2915,17 @@ declare class AVAudioSessionPortDescription extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	readonly bluetoothMicrophoneExtension: AVAudioSessionPortExtensionBluetoothMicrophone;
+	readonly bluetoothMicrophoneExtension: AVAudioSessionPortExtensionBluetoothMicrophone | null;
 
 	/**
 	 * @since 6.0
 	 */
-	readonly channels: NSArray<AVAudioSessionChannelDescription>;
+	readonly channels: NSArray<AVAudioSessionChannelDescription> | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly dataSources: NSArray<AVAudioSessionDataSourceDescription>;
+	readonly dataSources: NSArray<AVAudioSessionDataSourceDescription> | null;
 
 	/**
 	 * @since 10.0
@@ -2938,12 +2945,12 @@ declare class AVAudioSessionPortDescription extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	readonly preferredDataSource: AVAudioSessionDataSourceDescription;
+	readonly preferredDataSource: AVAudioSessionDataSourceDescription | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly selectedDataSource: AVAudioSessionDataSourceDescription;
+	readonly selectedDataSource: AVAudioSessionDataSourceDescription | null;
 
 	/**
 	 * @since 15.0
@@ -2953,7 +2960,7 @@ declare class AVAudioSessionPortDescription extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	setPreferredDataSourceError(dataSource: AVAudioSessionDataSourceDescription, error?: interop.Reference<NSError>): boolean;
+	setPreferredDataSourceError(dataSource: AVAudioSessionDataSourceDescription | null, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -3195,9 +3202,9 @@ declare class AVAudioSinkNode extends AVAudioNode {
 
 	static new(): AVAudioSinkNode; // inherited from NSObject
 
-	constructor(o: { receiverBlock: (p1: interop.Pointer | interop.Reference<AudioTimeStamp>, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList>) => number; });
+	constructor(o: { receiverBlock: (p1: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
 
-	initWithReceiverBlock(block: (p1: interop.Pointer | interop.Reference<AudioTimeStamp>, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList>) => number): this;
+	initWithReceiverBlock(block: (p1: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 }
 
 /**
@@ -3247,9 +3254,9 @@ declare class AVAudioSourceNode extends AVAudioNode implements AVAudioMixing {
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { format: AVAudioFormat; renderBlock: (p1: interop.Pointer | interop.Reference<boolean>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList>) => number; });
+	constructor(o: { format: AVAudioFormat; renderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
 
-	constructor(o: { renderBlock: (p1: interop.Pointer | interop.Reference<boolean>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList>) => number; });
+	constructor(o: { renderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
 
 	class(): typeof NSObject;
 
@@ -3258,11 +3265,11 @@ declare class AVAudioSourceNode extends AVAudioNode implements AVAudioMixing {
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
-	initWithFormatRenderBlock(format: AVAudioFormat, block: (p1: interop.Pointer | interop.Reference<boolean>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList>) => number): this;
+	initWithFormatRenderBlock(format: AVAudioFormat, block: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 
-	initWithRenderBlock(block: (p1: interop.Pointer | interop.Reference<boolean>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList>) => number): this;
+	initWithRenderBlock(block: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 
 	isEqual(object: any): boolean;
 
@@ -3321,7 +3328,7 @@ declare class AVAudioTime extends NSObject {
 
 	static secondsForHostTime(hostTime: number): number;
 
-	static timeWithAudioTimeStampSampleRate(ts: interop.Pointer | interop.Reference<AudioTimeStamp>, sampleRate: number): AVAudioTime;
+	static timeWithAudioTimeStampSampleRate(ts: interop.Pointer | interop.Reference<AudioTimeStamp> | ArrayBufferLike | ArrayBufferView, sampleRate: number): AVAudioTime;
 
 	static timeWithHostTime(hostTime: number): AVAudioTime;
 
@@ -3341,7 +3348,7 @@ declare class AVAudioTime extends NSObject {
 
 	readonly sampleTimeValid: boolean;
 
-	constructor(o: { audioTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>; sampleRate: number; });
+	constructor(o: { audioTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp> | ArrayBufferLike | ArrayBufferView; sampleRate: number; });
 
 	constructor(o: { hostTime: number; });
 
@@ -3349,9 +3356,9 @@ declare class AVAudioTime extends NSObject {
 
 	constructor(o: { sampleTime: number; atRate: number; });
 
-	extrapolateTimeFromAnchor(anchorTime: AVAudioTime): AVAudioTime;
+	extrapolateTimeFromAnchor(anchorTime: AVAudioTime): AVAudioTime | null;
 
-	initWithAudioTimeStampSampleRate(ts: interop.Pointer | interop.Reference<AudioTimeStamp>, sampleRate: number): this;
+	initWithAudioTimeStampSampleRate(ts: interop.Pointer | interop.Reference<AudioTimeStamp> | ArrayBufferLike | ArrayBufferView, sampleRate: number): this;
 
 	initWithHostTime(hostTime: number): this;
 
@@ -3370,13 +3377,13 @@ declare class AVAudioUnit extends AVAudioNode {
 	/**
 	 * @since 9.0
 	 */
-	static instantiateWithComponentDescriptionOptionsCompletionHandler(audioComponentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions, completionHandler: (p1: AVAudioUnit, p2: NSError) => void): void;
+	static instantiateWithComponentDescriptionOptionsCompletionHandler(audioComponentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions, completionHandler: (p1: AVAudioUnit | null, p2: NSError | null) => void): void;
 
 	static new(): AVAudioUnit; // inherited from NSObject
 
 	readonly audioComponentDescription: AudioComponentDescription;
 
-	readonly audioUnit: interop.Pointer | interop.Reference<any>;
+	readonly audioUnit: interop.Pointer | interop.Reference<any> | null;
 
 	readonly manufacturerName: string;
 
@@ -3398,7 +3405,7 @@ declare class AVAudioUnitComponent extends NSObject {
 
 	readonly allTagNames: NSArray<string>;
 
-	readonly audioComponent: interop.Pointer | interop.Reference<any>;
+	readonly audioComponent: interop.Pointer | interop.Reference<any> | null;
 
 	readonly audioComponentDescription: AudioComponentDescription;
 
@@ -3414,7 +3421,7 @@ declare class AVAudioUnitComponent extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	readonly icon: UIImage;
+	readonly icon: UIImage | null;
 
 	readonly localizedTypeName: string;
 
@@ -3455,7 +3462,7 @@ declare class AVAudioUnitComponentManager extends NSObject {
 
 	componentsMatchingPredicate(predicate: NSPredicate): NSArray<AVAudioUnitComponent>;
 
-	componentsPassingTest(testHandler: (p1: AVAudioUnitComponent, p2: interop.Pointer | interop.Reference<boolean>) => boolean): NSArray<AVAudioUnitComponent>;
+	componentsPassingTest(testHandler: (p1: AVAudioUnitComponent, p2: interop.Pointer | interop.Reference<boolean> | null) => boolean): NSArray<AVAudioUnitComponent>;
 }
 
 /**
@@ -3692,7 +3699,7 @@ declare class AVAudioUnitGenerator extends AVAudioUnit implements AVAudioMixing 
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	initWithAudioComponentDescription(audioComponentDescription: AudioComponentDescription): this;
 
@@ -3771,7 +3778,7 @@ declare class AVAudioUnitMIDIInstrument extends AVAudioUnit implements AVAudioMi
 	/**
 	 * @since 9.0
 	 */
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
+	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
 	initWithAudioComponentDescription(description: AudioComponentDescription): this;
 
@@ -3802,7 +3809,7 @@ declare class AVAudioUnitMIDIInstrument extends AVAudioUnit implements AVAudioMi
 	/**
 	 * @since 16.0
 	 */
-	sendMIDIEventList(eventList: interop.Pointer | interop.Reference<MIDIEventList>): void;
+	sendMIDIEventList(eventList: interop.Pointer | interop.Reference<MIDIEventList> | ArrayBufferLike | ArrayBufferView): void;
 
 	sendMIDISysExEvent(midiData: NSData): void;
 
@@ -4391,15 +4398,15 @@ declare class AVMIDIPlayer extends NSObject {
 
 	rate: number;
 
-	constructor(o: { contentsOfURL: NSURL; soundBankURL: NSURL; });
+	constructor(o: { contentsOfURL: NSURL; soundBankURL: NSURL | null; });
 
-	constructor(o: { data: NSData; soundBankURL: NSURL; });
+	constructor(o: { data: NSData; soundBankURL: NSURL | null; });
 
-	initWithContentsOfURLSoundBankURLError(inURL: NSURL, bankURL: NSURL, error?: interop.Reference<NSError>): this;
+	initWithContentsOfURLSoundBankURLError(inURL: NSURL, bankURL: NSURL | null, error?: interop.Reference<NSError>): this;
 
-	initWithDataSoundBankURLError(data: NSData, bankURL: NSURL, error?: interop.Reference<NSError>): this;
+	initWithDataSoundBankURLError(data: NSData, bankURL: NSURL | null, error?: interop.Reference<NSError>): this;
 
-	play(completionHandler: () => void): void;
+	play(completionHandler: () => void | null): void;
 
 	prepareToPlay(): void;
 
@@ -4482,7 +4489,7 @@ declare class AVMusicTrack extends NSObject {
 
 	static new(): AVMusicTrack; // inherited from NSObject
 
-	destinationAudioUnit: AVAudioUnit;
+	destinationAudioUnit: AVAudioUnit | null;
 
 	destinationMIDIEndpoint: number;
 
@@ -4516,7 +4523,7 @@ declare class AVMusicTrack extends NSObject {
 
 	cutEventsInRange(range: AVBeatRange): void;
 
-	enumerateEventsInRangeUsingBlock(range: AVBeatRange, block: (p1: AVMusicEvent, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateEventsInRangeUsingBlock(range: AVBeatRange, block: (p1: AVMusicEvent, p2: interop.Pointer | interop.Reference<number> | null, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	moveEventsInRangeByAmount(range: AVBeatRange, beatAmount: number): void;
 }
@@ -4678,7 +4685,7 @@ declare class AVSpeechSynthesisMarker extends NSObject implements NSCopying, NSS
 	 */
 	constructor(o: { wordRange: NSRange; atByteSampleOffset: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4751,7 +4758,7 @@ declare class AVSpeechSynthesisProviderAudioUnit extends AUAudioUnit {
 
 	static new(): AVSpeechSynthesisProviderAudioUnit; // inherited from NSObject
 
-	speechSynthesisOutputMetadataBlock: (p1: NSArray<AVSpeechSynthesisMarker>, p2: AVSpeechSynthesisProviderRequest) => void;
+	speechSynthesisOutputMetadataBlock: (p1: NSArray<AVSpeechSynthesisMarker>, p2: AVSpeechSynthesisProviderRequest) => void | null;
 
 	speechVoices: NSArray<AVSpeechSynthesisProviderVoice>;
 
@@ -4779,7 +4786,7 @@ declare class AVSpeechSynthesisProviderRequest extends NSObject implements NSCop
 
 	constructor(o: { SSMLRepresentation: string; voice: AVSpeechSynthesisProviderVoice; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4821,7 +4828,7 @@ declare class AVSpeechSynthesisProviderVoice extends NSObject implements NSCopyi
 
 	constructor(o: { name: string; identifier: string; primaryLanguages: NSArray<string> | string[]; supportedLanguages: NSArray<string> | string[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4846,9 +4853,9 @@ declare class AVSpeechSynthesisVoice extends NSObject implements NSSecureCoding 
 	/**
 	 * @since 9.0
 	 */
-	static voiceWithIdentifier(identifier: string): AVSpeechSynthesisVoice;
+	static voiceWithIdentifier(identifier: string): AVSpeechSynthesisVoice | null;
 
-	static voiceWithLanguage(languageCode: string): AVSpeechSynthesisVoice;
+	static voiceWithLanguage(languageCode: string | null): AVSpeechSynthesisVoice | null;
 
 	/**
 	 * @since 13.0
@@ -4946,7 +4953,7 @@ declare class AVSpeechSynthesizer extends NSObject {
 	 */
 	static requestPersonalVoiceAuthorizationWithCompletionHandler(handler: (p1: AVSpeechSynthesisPersonalVoiceAuthorizationStatus) => void): void;
 
-	delegate: AVSpeechSynthesizerDelegate;
+	delegate: AVSpeechSynthesizerDelegate | null;
 
 	/**
 	 * @since 13.0
@@ -4956,7 +4963,7 @@ declare class AVSpeechSynthesizer extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	outputChannels: NSArray<AVAudioSessionChannelDescription>;
+	outputChannels: NSArray<AVAudioSessionChannelDescription> | null;
 
 	readonly paused: boolean;
 
@@ -5074,7 +5081,7 @@ declare class AVSpeechUtterance extends NSObject implements NSCopying, NSSecureC
 
 	readonly speechString: string;
 
-	voice: AVSpeechSynthesisVoice;
+	voice: AVSpeechSynthesisVoice | null;
 
 	volume: number;
 
@@ -5094,7 +5101,7 @@ declare class AVSpeechUtterance extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { string: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

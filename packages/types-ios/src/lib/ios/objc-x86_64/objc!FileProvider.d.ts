@@ -48,7 +48,7 @@ declare const enum NSFileProviderCreateItemOptions {
  */
 interface NSFileProviderCustomAction extends NSObjectProtocol {
 
-	performActionWithIdentifierOnItemsWithIdentifiersCompletionHandler(actionIdentifier: string, itemIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError) => void): NSProgress;
+	performActionWithIdentifierOnItemsWithIdentifiersCompletionHandler(actionIdentifier: string, itemIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError | null) => void): NSProgress;
 }
 declare var NSFileProviderCustomAction: {
 
@@ -75,7 +75,7 @@ declare class NSFileProviderDomain extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	readonly backingStoreIdentity: NSData;
+	readonly backingStoreIdentity: NSData | null;
 
 	readonly displayName: string;
 
@@ -192,7 +192,7 @@ declare class NSFileProviderDomainVersion extends NSObject implements NSSecureCo
  */
 interface NSFileProviderEnumerating extends NSObjectProtocol {
 
-	enumeratorForContainerItemIdentifierRequestError(containerItemIdentifier: string, request: NSFileProviderRequest, error?: interop.Reference<NSError>): NSFileProviderEnumerator;
+	enumeratorForContainerItemIdentifierRequestError(containerItemIdentifier: string, request: NSFileProviderRequest, error?: interop.Reference<NSError>): NSFileProviderEnumerator | null;
 }
 declare var NSFileProviderEnumerating: {
 
@@ -211,7 +211,7 @@ interface NSFileProviderEnumerationObserver extends NSObjectProtocol {
 
 	didEnumerateItems(updatedItems: NSArray<NSFileProviderItem> | NSFileProviderItem[]): void;
 
-	finishEnumeratingUpToPage(nextPage: NSData): void;
+	finishEnumeratingUpToPage(nextPage: NSData | null): void;
 
 	finishEnumeratingWithError(error: NSError): void;
 }
@@ -225,7 +225,7 @@ declare var NSFileProviderEnumerationObserver: {
  */
 interface NSFileProviderEnumerator extends NSObjectProtocol {
 
-	currentSyncAnchorWithCompletionHandler?(completionHandler: (p1: NSData) => void): void;
+	currentSyncAnchorWithCompletionHandler?(completionHandler: (p1: NSData | null) => void): void;
 
 	enumerateChangesForObserverFromSyncAnchor?(observer: NSFileProviderChangeObserver, syncAnchor: NSData): void;
 
@@ -340,7 +340,7 @@ declare class NSFileProviderExtension extends NSObject {
 	 */
 	readonly documentStorageURL: NSURL;
 
-	readonly domain: NSFileProviderDomain;
+	readonly domain: NSFileProviderDomain | null;
 
 	/**
 	 * @since 8.0
@@ -348,54 +348,54 @@ declare class NSFileProviderExtension extends NSObject {
 	 */
 	readonly providerIdentifier: string;
 
-	URLForItemWithPersistentIdentifier(identifier: string): NSURL;
+	URLForItemWithPersistentIdentifier(identifier: string): NSURL | null;
 
-	createDirectoryWithNameInParentItemIdentifierCompletionHandler(directoryName: string, parentItemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	createDirectoryWithNameInParentItemIdentifierCompletionHandler(directoryName: string, parentItemIdentifier: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	deleteItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError) => void): void;
+	deleteItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError | null) => void): void;
 
-	enumeratorForContainerItemIdentifierError(containerItemIdentifier: string, error?: interop.Reference<NSError>): NSFileProviderEnumerator;
+	enumeratorForContainerItemIdentifierError(containerItemIdentifier: string, error?: interop.Reference<NSError>): NSFileProviderEnumerator | null;
 
 	/**
 	 * @since 11.0
 	 */
-	fetchThumbnailsForItemIdentifiersRequestedSizePerThumbnailCompletionHandlerCompletionHandler(itemIdentifiers: NSArray<string> | string[], size: CGSize, perThumbnailCompletionHandler: (p1: string, p2: NSData, p3: NSError) => void, completionHandler: (p1: NSError) => void): NSProgress;
+	fetchThumbnailsForItemIdentifiersRequestedSizePerThumbnailCompletionHandlerCompletionHandler(itemIdentifiers: NSArray<string> | string[], size: CGSize, perThumbnailCompletionHandler: (p1: string, p2: NSData | null, p3: NSError | null) => void, completionHandler: (p1: NSError | null) => void): NSProgress;
 
-	importDocumentAtURLToParentItemIdentifierCompletionHandler(fileURL: NSURL, parentItemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	importDocumentAtURLToParentItemIdentifierCompletionHandler(fileURL: NSURL, parentItemIdentifier: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
 	itemChangedAtURL(url: NSURL): void;
 
 	/**
 	 * @since 11.0
 	 */
-	itemForIdentifierError(identifier: string, error?: interop.Reference<NSError>): NSFileProviderItem;
+	itemForIdentifierError(identifier: string, error?: interop.Reference<NSError>): NSFileProviderItem | null;
 
-	persistentIdentifierForItemAtURL(url: NSURL): string;
+	persistentIdentifierForItemAtURL(url: NSURL): string | null;
 
-	providePlaceholderAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+	providePlaceholderAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError | null) => void): void;
 
-	renameItemWithIdentifierToNameCompletionHandler(itemIdentifier: string, itemName: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	renameItemWithIdentifierToNameCompletionHandler(itemIdentifier: string, itemName: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	reparentItemWithIdentifierToParentItemWithIdentifierNewNameCompletionHandler(itemIdentifier: string, parentItemIdentifier: string, newName: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	reparentItemWithIdentifierToParentItemWithIdentifierNewNameCompletionHandler(itemIdentifier: string, parentItemIdentifier: string, newName: string | null, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	setFavoriteRankForItemIdentifierCompletionHandler(favoriteRank: number, itemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	setFavoriteRankForItemIdentifierCompletionHandler(favoriteRank: number | null, itemIdentifier: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	setLastUsedDateForItemIdentifierCompletionHandler(lastUsedDate: Date, itemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	setLastUsedDateForItemIdentifierCompletionHandler(lastUsedDate: Date | null, itemIdentifier: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	setTagDataForItemIdentifierCompletionHandler(tagData: NSData, itemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	setTagDataForItemIdentifierCompletionHandler(tagData: NSData | null, itemIdentifier: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	startProvidingItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+	startProvidingItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError | null) => void): void;
 
 	stopProvidingItemAtURL(url: NSURL): void;
 
 	/**
 	 * @since 11.0
 	 */
-	supportedServiceSourcesForItemIdentifierError(itemIdentifier: string, error?: interop.Reference<NSError>): NSArray<NSFileProviderServiceSource>;
+	supportedServiceSourcesForItemIdentifierError(itemIdentifier: string, error?: interop.Reference<NSError>): NSArray<NSFileProviderServiceSource> | null;
 
-	trashItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	trashItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 
-	untrashItemWithIdentifierToParentItemIdentifierCompletionHandler(itemIdentifier: string, parentItemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
+	untrashItemWithIdentifierToParentItemIdentifierCompletionHandler(itemIdentifier: string, parentItemIdentifier: string | null, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -421,7 +421,7 @@ declare const enum NSFileProviderFileSystemFlags {
  */
 interface NSFileProviderIncrementalContentFetching extends NSObjectProtocol {
 
-	fetchContentsForItemWithIdentifierVersionUsingExistingContentsAtURLExistingVersionRequestCompletionHandler(itemIdentifier: string, requestedVersion: NSFileProviderItemVersion, existingContents: NSURL, existingVersion: NSFileProviderItemVersion, request: NSFileProviderRequest, completionHandler: (p1: NSURL, p2: NSFileProviderItem, p3: NSError) => void): NSProgress;
+	fetchContentsForItemWithIdentifierVersionUsingExistingContentsAtURLExistingVersionRequestCompletionHandler(itemIdentifier: string, requestedVersion: NSFileProviderItemVersion | null, existingContents: NSURL, existingVersion: NSFileProviderItemVersion, request: NSFileProviderRequest, completionHandler: (p1: NSURL | null, p2: NSFileProviderItem | null, p3: NSError | null) => void): NSProgress;
 }
 declare var NSFileProviderIncrementalContentFetching: {
 
@@ -445,9 +445,9 @@ interface NSFileProviderItem extends NSObjectProtocol {
 
 	capabilities?: NSFileProviderItemCapabilities;
 
-	childItemCount?: number;
+	childItemCount?: number | null;
 
-	contentModificationDate?: Date;
+	contentModificationDate?: Date | null;
 
 	/**
 	 * @since 16.0
@@ -459,15 +459,15 @@ interface NSFileProviderItem extends NSObjectProtocol {
 	 */
 	contentType?: UTType;
 
-	creationDate?: Date;
+	creationDate?: Date | null;
 
-	documentSize?: number;
+	documentSize?: number | null;
 
 	downloaded?: boolean;
 
 	downloading?: boolean;
 
-	downloadingError?: NSError;
+	downloadingError?: NSError | null;
 
 	/**
 	 * @since 16.0
@@ -477,7 +477,7 @@ interface NSFileProviderItem extends NSObjectProtocol {
 	/**
 	 * @since 11.0
 	 */
-	favoriteRank?: number;
+	favoriteRank?: number | null;
 
 	/**
 	 * @since 16.0
@@ -493,13 +493,13 @@ interface NSFileProviderItem extends NSObjectProtocol {
 	 */
 	itemVersion?: NSFileProviderItemVersion;
 
-	lastUsedDate?: Date;
+	lastUsedDate?: Date | null;
 
-	mostRecentEditorNameComponents?: NSPersonNameComponents;
+	mostRecentEditorNameComponents?: NSPersonNameComponents | null;
 
 	mostRecentVersionDownloaded?: boolean;
 
-	ownerNameComponents?: NSPersonNameComponents;
+	ownerNameComponents?: NSPersonNameComponents | null;
 
 	parentItemIdentifier: string;
 
@@ -510,9 +510,9 @@ interface NSFileProviderItem extends NSObjectProtocol {
 	/**
 	 * @since 16.0
 	 */
-	symlinkTargetPath?: string;
+	symlinkTargetPath?: string | null;
 
-	tagData?: NSData;
+	tagData?: NSData | null;
 
 	/**
 	 * @since 11.0
@@ -534,14 +534,14 @@ interface NSFileProviderItem extends NSObjectProtocol {
 
 	uploading?: boolean;
 
-	uploadingError?: NSError;
+	uploadingError?: NSError | null;
 
-	userInfo?: NSDictionary<any, any>;
+	userInfo?: NSDictionary<any, any> | null;
 
 	/**
 	 * @since 11.0
 	 */
-	versionIdentifier?: NSData;
+	versionIdentifier?: NSData | null;
 }
 declare var NSFileProviderItem: {
 
@@ -578,7 +578,7 @@ declare const enum NSFileProviderItemCapabilities {
  */
 interface NSFileProviderItemDecorating extends NSFileProviderItem {
 
-	decorations: NSArray<string>;
+	decorations: NSArray<string> | null;
 }
 declare var NSFileProviderItemDecorating: {
 
@@ -648,21 +648,21 @@ declare const enum NSFileProviderKnownFolders {
  */
 declare class NSFileProviderManager extends NSObject {
 
-	static addDomainCompletionHandler(domain: NSFileProviderDomain, completionHandler: (p1: NSError) => void): void;
+	static addDomainCompletionHandler(domain: NSFileProviderDomain, completionHandler: (p1: NSError | null) => void): void;
 
 	static alloc(): NSFileProviderManager; // inherited from NSObject
 
-	static getDomainsWithCompletionHandler(completionHandler: (p1: NSArray<NSFileProviderDomain>, p2: NSError) => void): void;
+	static getDomainsWithCompletionHandler(completionHandler: (p1: NSArray<NSFileProviderDomain>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	static getIdentifierForUserVisibleFileAtURLCompletionHandler(url: NSURL, completionHandler: (p1: string, p2: string, p3: NSError) => void): void;
+	static getIdentifierForUserVisibleFileAtURLCompletionHandler(url: NSURL, completionHandler: (p1: string | null, p2: string | null, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	static importDomainFromDirectoryAtURLCompletionHandler(domain: NSFileProviderDomain, url: NSURL, completionHandler: (p1: NSError) => void): void;
+	static importDomainFromDirectoryAtURLCompletionHandler(domain: NSFileProviderDomain, url: NSURL, completionHandler: (p1: NSError | null) => void): void;
 
 	static managerForDomain(domain: NSFileProviderDomain): NSFileProviderManager;
 
@@ -673,14 +673,14 @@ declare class NSFileProviderManager extends NSObject {
 	 */
 	static placeholderURLForURL(url: NSURL): NSURL;
 
-	static removeAllDomainsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	static removeAllDomainsWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
-	static removeDomainCompletionHandler(domain: NSFileProviderDomain, completionHandler: (p1: NSError) => void): void;
+	static removeDomainCompletionHandler(domain: NSFileProviderDomain, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	static removeDomainModeCompletionHandler(domain: NSFileProviderDomain, mode: NSFileProviderDomainRemovalMode, completionHandler: (p1: NSURL, p2: NSError) => void): void;
+	static removeDomainModeCompletionHandler(domain: NSFileProviderDomain, mode: NSFileProviderDomainRemovalMode, completionHandler: (p1: NSURL, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
@@ -712,14 +712,14 @@ declare class NSFileProviderManager extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	evictItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError) => void): void;
+	evictItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError | null) => void): void;
 
-	getServiceWithNameItemIdentifierCompletionHandler(serviceName: string, itemIdentifier: string, completionHandler: (p1: NSFileProviderService, p2: NSError) => void): void;
+	getServiceWithNameItemIdentifierCompletionHandler(serviceName: string, itemIdentifier: string, completionHandler: (p1: NSFileProviderService, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	getUserVisibleURLForItemIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSURL, p2: NSError) => void): void;
+	getUserVisibleURLForItemIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSURL | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
@@ -729,46 +729,46 @@ declare class NSFileProviderManager extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	listAvailableTestingOperationsWithError(error?: interop.Reference<NSError>): NSArray<NSFileProviderTestingOperation>;
+	listAvailableTestingOperationsWithError(error?: interop.Reference<NSError>): NSArray<NSFileProviderTestingOperation> | null;
 
-	registerURLSessionTaskForItemWithIdentifierCompletionHandler(task: NSURLSessionTask, identifier: string, completion: (p1: NSError) => void): void;
-
-	/**
-	 * @since 16.0
-	 */
-	reimportItemsBelowItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError) => void): void;
+	registerURLSessionTaskForItemWithIdentifierCompletionHandler(task: NSURLSessionTask, identifier: string, completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	requestModificationOfFieldsForItemWithIdentifierOptionsCompletionHandler(fields: NSFileProviderItemFields, itemIdentifier: string, options: NSFileProviderModifyItemOptions, completionHandler: (p1: NSError) => void): void;
+	reimportItemsBelowItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	runTestingOperationsError(operations: NSArray<NSFileProviderTestingOperation> | NSFileProviderTestingOperation[], error?: interop.Reference<NSError>): NSDictionary<NSFileProviderTestingOperation, NSError>;
-
-	signalEnumeratorForContainerItemIdentifierCompletionHandler(containerItemIdentifier: string, completion: (p1: NSError) => void): void;
+	requestModificationOfFieldsForItemWithIdentifierOptionsCompletionHandler(fields: NSFileProviderItemFields, itemIdentifier: string, options: NSFileProviderModifyItemOptions, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	signalErrorResolvedCompletionHandler(error: NSError, completionHandler: (p1: NSError) => void): void;
+	runTestingOperationsError(operations: NSArray<NSFileProviderTestingOperation> | NSFileProviderTestingOperation[], error?: interop.Reference<NSError>): NSDictionary<NSFileProviderTestingOperation, NSError> | null;
+
+	signalEnumeratorForContainerItemIdentifierCompletionHandler(containerItemIdentifier: string, completion: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	temporaryDirectoryURLWithError(error?: interop.Reference<NSError>): NSURL;
+	signalErrorResolvedCompletionHandler(error: NSError, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	waitForChangesOnItemsBelowItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError) => void): void;
+	temporaryDirectoryURLWithError(error?: interop.Reference<NSError>): NSURL | null;
 
 	/**
 	 * @since 16.0
 	 */
-	waitForStabilizationWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	waitForChangesOnItemsBelowItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 16.0
+	 */
+	waitForStabilizationWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -798,7 +798,7 @@ declare var NSFileProviderPendingSetDidChange: string;
  */
 interface NSFileProviderPendingSetEnumerator extends NSFileProviderEnumerator {
 
-	domainVersion: NSFileProviderDomainVersion;
+	domainVersion: NSFileProviderDomainVersion | null;
 
 	/**
 	 * @since 16.0
@@ -817,11 +817,11 @@ declare var NSFileProviderPendingSetEnumerator: {
  */
 interface NSFileProviderReplicatedExtension extends NSFileProviderEnumerating, NSObjectProtocol {
 
-	createItemBasedOnTemplateFieldsContentsOptionsRequestCompletionHandler(itemTemplate: NSFileProviderItem, fields: NSFileProviderItemFields, url: NSURL, options: NSFileProviderCreateItemOptions, request: NSFileProviderRequest, completionHandler: (p1: NSFileProviderItem, p2: NSFileProviderItemFields, p3: boolean, p4: NSError) => void): NSProgress;
+	createItemBasedOnTemplateFieldsContentsOptionsRequestCompletionHandler(itemTemplate: NSFileProviderItem, fields: NSFileProviderItemFields, url: NSURL | null, options: NSFileProviderCreateItemOptions, request: NSFileProviderRequest, completionHandler: (p1: NSFileProviderItem | null, p2: NSFileProviderItemFields, p3: boolean, p4: NSError | null) => void): NSProgress;
 
-	deleteItemWithIdentifierBaseVersionOptionsRequestCompletionHandler(identifier: string, version: NSFileProviderItemVersion, options: NSFileProviderDeleteItemOptions, request: NSFileProviderRequest, completionHandler: (p1: NSError) => void): NSProgress;
+	deleteItemWithIdentifierBaseVersionOptionsRequestCompletionHandler(identifier: string, version: NSFileProviderItemVersion, options: NSFileProviderDeleteItemOptions, request: NSFileProviderRequest, completionHandler: (p1: NSError | null) => void): NSProgress;
 
-	fetchContentsForItemWithIdentifierVersionRequestCompletionHandler(itemIdentifier: string, requestedVersion: NSFileProviderItemVersion, request: NSFileProviderRequest, completionHandler: (p1: NSURL, p2: NSFileProviderItem, p3: NSError) => void): NSProgress;
+	fetchContentsForItemWithIdentifierVersionRequestCompletionHandler(itemIdentifier: string, requestedVersion: NSFileProviderItemVersion | null, request: NSFileProviderRequest, completionHandler: (p1: NSURL | null, p2: NSFileProviderItem | null, p3: NSError | null) => void): NSProgress;
 
 	importDidFinishWithCompletionHandler?(completionHandler: () => void): void;
 
@@ -829,11 +829,11 @@ interface NSFileProviderReplicatedExtension extends NSFileProviderEnumerating, N
 
 	invalidate(): void;
 
-	itemForIdentifierRequestCompletionHandler(identifier: string, request: NSFileProviderRequest, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): NSProgress;
+	itemForIdentifierRequestCompletionHandler(identifier: string, request: NSFileProviderRequest, completionHandler: (p1: NSFileProviderItem | null, p2: NSError | null) => void): NSProgress;
 
 	materializedItemsDidChangeWithCompletionHandler?(completionHandler: () => void): void;
 
-	modifyItemBaseVersionChangedFieldsContentsOptionsRequestCompletionHandler(item: NSFileProviderItem, version: NSFileProviderItemVersion, changedFields: NSFileProviderItemFields, newContents: NSURL, options: NSFileProviderModifyItemOptions, request: NSFileProviderRequest, completionHandler: (p1: NSFileProviderItem, p2: NSFileProviderItemFields, p3: boolean, p4: NSError) => void): NSProgress;
+	modifyItemBaseVersionChangedFieldsContentsOptionsRequestCompletionHandler(item: NSFileProviderItem, version: NSFileProviderItemVersion, changedFields: NSFileProviderItemFields, newContents: NSURL | null, options: NSFileProviderModifyItemOptions, request: NSFileProviderRequest, completionHandler: (p1: NSFileProviderItem | null, p2: NSFileProviderItemFields, p3: boolean, p4: NSError | null) => void): NSProgress;
 
 	/**
 	 * @since 16.0
@@ -857,7 +857,7 @@ declare class NSFileProviderRequest extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	readonly domainVersion: NSFileProviderDomainVersion;
+	readonly domainVersion: NSFileProviderDomainVersion | null;
 
 	readonly isFileViewerRequest: boolean;
 
@@ -881,7 +881,7 @@ interface NSFileProviderServiceSource {
 
 	serviceName: string;
 
-	makeListenerEndpointAndReturnError(error?: interop.Reference<NSError>): NSXPCListenerEndpoint;
+	makeListenerEndpointAndReturnError(error?: interop.Reference<NSError>): NSXPCListenerEndpoint | null;
 }
 declare var NSFileProviderServiceSource: {
 
@@ -893,7 +893,7 @@ declare var NSFileProviderServiceSource: {
  */
 interface NSFileProviderServicing extends NSObjectProtocol {
 
-	supportedServiceSourcesForItemIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSArray<NSFileProviderServiceSource>, p2: NSError) => void): NSProgress;
+	supportedServiceSourcesForItemIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSArray<NSFileProviderServiceSource> | null, p2: NSError | null) => void): NSProgress;
 }
 declare var NSFileProviderServicing: {
 
@@ -947,7 +947,7 @@ declare var NSFileProviderTestingContentFetch: {
  */
 interface NSFileProviderTestingCreation extends NSFileProviderTestingOperation {
 
-	domainVersion: NSFileProviderDomainVersion;
+	domainVersion: NSFileProviderDomainVersion | null;
 
 	sourceItem: NSFileProviderItem;
 
@@ -963,7 +963,7 @@ declare var NSFileProviderTestingCreation: {
  */
 interface NSFileProviderTestingDeletion extends NSFileProviderTestingOperation {
 
-	domainVersion: NSFileProviderDomainVersion;
+	domainVersion: NSFileProviderDomainVersion | null;
 
 	sourceItemIdentifier: string;
 
@@ -983,7 +983,7 @@ declare var NSFileProviderTestingDeletion: {
  */
 interface NSFileProviderTestingIngestion extends NSFileProviderTestingOperation {
 
-	item: NSFileProviderItem;
+	item: NSFileProviderItem | null;
 
 	itemIdentifier: string;
 
@@ -1015,7 +1015,7 @@ interface NSFileProviderTestingModification extends NSFileProviderTestingOperati
 
 	changedFields: NSFileProviderItemFields;
 
-	domainVersion: NSFileProviderDomainVersion;
+	domainVersion: NSFileProviderDomainVersion | null;
 
 	sourceItem: NSFileProviderItem;
 
@@ -1037,21 +1037,21 @@ interface NSFileProviderTestingOperation extends NSObjectProtocol {
 
 	type: NSFileProviderTestingOperationType;
 
-	asChildrenEnumeration(): NSFileProviderTestingChildrenEnumeration;
+	asChildrenEnumeration(): NSFileProviderTestingChildrenEnumeration | null;
 
-	asCollisionResolution(): NSFileProviderTestingCollisionResolution;
+	asCollisionResolution(): NSFileProviderTestingCollisionResolution | null;
 
-	asContentFetch(): NSFileProviderTestingContentFetch;
+	asContentFetch(): NSFileProviderTestingContentFetch | null;
 
-	asCreation(): NSFileProviderTestingCreation;
+	asCreation(): NSFileProviderTestingCreation | null;
 
-	asDeletion(): NSFileProviderTestingDeletion;
+	asDeletion(): NSFileProviderTestingDeletion | null;
 
-	asIngestion(): NSFileProviderTestingIngestion;
+	asIngestion(): NSFileProviderTestingIngestion | null;
 
-	asLookup(): NSFileProviderTestingLookup;
+	asLookup(): NSFileProviderTestingLookup | null;
 
-	asModification(): NSFileProviderTestingModification;
+	asModification(): NSFileProviderTestingModification | null;
 }
 declare var NSFileProviderTestingOperation: {
 
@@ -1095,7 +1095,7 @@ declare const enum NSFileProviderTestingOperationType {
  */
 interface NSFileProviderThumbnailing extends NSObjectProtocol {
 
-	fetchThumbnailsForItemIdentifiersRequestedSizePerThumbnailCompletionHandlerCompletionHandler(itemIdentifiers: NSArray<string> | string[], size: CGSize, perThumbnailCompletionHandler: (p1: string, p2: NSData, p3: NSError) => void, completionHandler: (p1: NSError) => void): NSProgress;
+	fetchThumbnailsForItemIdentifiersRequestedSizePerThumbnailCompletionHandlerCompletionHandler(itemIdentifiers: NSArray<string> | string[], size: CGSize, perThumbnailCompletionHandler: (p1: string, p2: NSData | null, p3: NSError | null) => void, completionHandler: (p1: NSError | null) => void): NSProgress;
 }
 declare var NSFileProviderThumbnailing: {
 

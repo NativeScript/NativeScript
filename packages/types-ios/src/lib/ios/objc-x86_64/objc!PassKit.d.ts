@@ -11,14 +11,19 @@ declare class PKAddCarKeyPassConfiguration extends PKAddSecureElementPassConfigu
 	/**
 	 * @since 16.0
 	 */
-	manufacturerIdentifier: string;
+	manufacturerIdentifier: string | null;
 
 	password: string;
 
 	/**
+	 * @since 26.4
+	 */
+	productPlanIdentifier: string | null;
+
+	/**
 	 * @since 16.0
 	 */
-	provisioningTemplateIdentifier: string;
+	provisioningTemplateIdentifier: string | null;
 
 	/**
 	 * @since 14.5
@@ -33,7 +38,7 @@ declare class PKAddIdentityDocumentConfiguration extends PKAddSecureElementPassC
 
 	static alloc(): PKAddIdentityDocumentConfiguration; // inherited from NSObject
 
-	static configurationForMetadataCompletion(metadata: PKIdentityDocumentMetadata, completion: (p1: PKAddIdentityDocumentConfiguration, p2: NSError) => void): void;
+	static configurationForMetadataCompletion(metadata: PKIdentityDocumentMetadata, completion: (p1: PKAddIdentityDocumentConfiguration | null, p2: NSError | null) => void): void;
 
 	static new(): PKAddIdentityDocumentConfiguration; // inherited from NSObject
 
@@ -85,7 +90,7 @@ declare class PKAddPassButton extends UIButton {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PKAddPassButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -96,7 +101,7 @@ declare class PKAddPassButton extends UIButton {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PKAddPassButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -106,26 +111,26 @@ declare class PKAddPassButton extends UIButton {
 	/**
 	 * @since 15.0
 	 */
-	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): PKAddPassButton; // inherited from UIButton
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction | null): PKAddPassButton; // inherited from UIButton
 
 	static buttonWithType(buttonType: UIButtonType): PKAddPassButton; // inherited from UIButton
 
 	/**
 	 * @since 14.0
 	 */
-	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction): PKAddPassButton; // inherited from UIButton
+	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction | null): PKAddPassButton; // inherited from UIButton
 
 	static new(): PKAddPassButton; // inherited from NSObject
 
 	/**
 	 * @since 13.0
 	 */
-	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): PKAddPassButton; // inherited from UIButton
+	static systemButtonWithImageTargetAction(image: UIImage, target: any | null, action: string | null): PKAddPassButton; // inherited from UIButton
 
 	/**
 	 * @since 14.0
 	 */
-	static systemButtonWithPrimaryAction(primaryAction: UIAction): PKAddPassButton; // inherited from UIButton
+	static systemButtonWithPrimaryAction(primaryAction: UIAction | null): PKAddPassButton; // inherited from UIButton
 
 	addPassButtonStyle: PKAddPassButtonStyle;
 
@@ -155,9 +160,9 @@ declare class PKAddPassMetadataPreview extends NSObject {
 
 	static previewWithPassThumbnailLocalizedDescription(passThumbnail: any, description: string): PKAddPassMetadataPreview;
 
-	readonly localizedDescription: string;
+	readonly localizedDescription: string | null;
 
-	readonly passThumbnailImage: any;
+	readonly passThumbnailImage: any | null;
 
 	constructor(o: { passThumbnail: any; localizedDescription: string; });
 
@@ -178,7 +183,7 @@ declare class PKAddPassesViewController extends UIViewController {
 
 	static new(): PKAddPassesViewController; // inherited from NSObject
 
-	delegate: PKAddPassesViewControllerDelegate;
+	delegate: PKAddPassesViewControllerDelegate | null;
 
 	/**
 	 * @since 16.4
@@ -235,13 +240,13 @@ declare class PKAddPaymentPassRequest extends NSObject {
 
 	static new(): PKAddPaymentPassRequest; // inherited from NSObject
 
-	activationData: NSData;
+	activationData: NSData | null;
 
-	encryptedPassData: NSData;
+	encryptedPassData: NSData | null;
 
-	ephemeralPublicKey: NSData;
+	ephemeralPublicKey: NSData | null;
 
-	wrappedKey: NSData;
+	wrappedKey: NSData | null;
 }
 
 /**
@@ -258,17 +263,17 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 	 */
 	cardDetails: NSArray<PKLabeledValue>;
 
-	cardholderName: string;
+	cardholderName: string | null;
 
 	readonly encryptionScheme: string;
 
-	localizedDescription: string;
+	localizedDescription: string | null;
 
-	paymentNetwork: string;
+	paymentNetwork: string | null;
 
-	primaryAccountIdentifier: string;
+	primaryAccountIdentifier: string | null;
 
-	primaryAccountSuffix: string;
+	primaryAccountSuffix: string | null;
 
 	/**
 	 * @since 12.3
@@ -311,11 +316,11 @@ declare class PKAddPaymentPassViewController extends UIViewController {
 
 	static new(): PKAddPaymentPassViewController; // inherited from NSObject
 
-	delegate: PKAddPaymentPassViewControllerDelegate;
+	delegate: PKAddPaymentPassViewControllerDelegate | null;
 
-	constructor(o: { requestConfiguration: PKAddPaymentPassRequestConfiguration; delegate: PKAddPaymentPassViewControllerDelegate; });
+	constructor(o: { requestConfiguration: PKAddPaymentPassRequestConfiguration; delegate: PKAddPaymentPassViewControllerDelegate | null; });
 
-	initWithRequestConfigurationDelegate(configuration: PKAddPaymentPassRequestConfiguration, delegate: PKAddPaymentPassViewControllerDelegate): this;
+	initWithRequestConfigurationDelegate(configuration: PKAddPaymentPassRequestConfiguration, delegate: PKAddPaymentPassViewControllerDelegate | null): this;
 }
 
 /**
@@ -323,7 +328,7 @@ declare class PKAddPaymentPassViewController extends UIViewController {
  */
 interface PKAddPaymentPassViewControllerDelegate extends NSObjectProtocol {
 
-	addPaymentPassViewControllerDidFinishAddingPaymentPassError(controller: PKAddPaymentPassViewController, pass: PKPaymentPass, error: NSError): void;
+	addPaymentPassViewControllerDidFinishAddingPaymentPassError(controller: PKAddPaymentPassViewController, pass: PKPaymentPass | null, error: NSError | null): void;
 
 	addPaymentPassViewControllerGenerateRequestWithCertificateChainNonceNonceSignatureCompletionHandler(controller: PKAddPaymentPassViewController, certificates: NSArray<NSData> | NSData[], nonce: NSData, nonceSignature: NSData, handler: (p1: PKAddPaymentPassRequest) => void): void;
 }
@@ -341,9 +346,9 @@ declare class PKAddSecureElementPassConfiguration extends NSObject {
 
 	static new(): PKAddSecureElementPassConfiguration; // inherited from NSObject
 
-	issuerIdentifier: string;
+	issuerIdentifier: string | null;
 
-	localizedDescription: string;
+	localizedDescription: string | null;
 }
 
 /**
@@ -384,11 +389,11 @@ declare class PKAddSecureElementPassViewController extends UIViewController {
 
 	static new(): PKAddSecureElementPassViewController; // inherited from NSObject
 
-	delegate: PKAddSecureElementPassViewControllerDelegate;
+	delegate: PKAddSecureElementPassViewControllerDelegate | null;
 
-	constructor(o: { configuration: PKAddSecureElementPassConfiguration; delegate: PKAddSecureElementPassViewControllerDelegate; });
+	constructor(o: { configuration: PKAddSecureElementPassConfiguration; delegate: PKAddSecureElementPassViewControllerDelegate | null; });
 
-	initWithConfigurationDelegate(configuration: PKAddSecureElementPassConfiguration, delegate: PKAddSecureElementPassViewControllerDelegate): this;
+	initWithConfigurationDelegate(configuration: PKAddSecureElementPassConfiguration, delegate: PKAddSecureElementPassViewControllerDelegate | null): this;
 }
 
 /**
@@ -400,9 +405,9 @@ interface PKAddSecureElementPassViewControllerDelegate extends NSObjectProtocol 
 	 * @since 13.4
 	 * @deprecated 14.0
 	 */
-	addSecureElementPassViewControllerDidFinishAddingSecureElementPassError?(controller: PKAddSecureElementPassViewController, pass: PKSecureElementPass, error: NSError): void;
+	addSecureElementPassViewControllerDidFinishAddingSecureElementPassError?(controller: PKAddSecureElementPassViewController, pass: PKSecureElementPass | null, error: NSError | null): void;
 
-	addSecureElementPassViewControllerDidFinishAddingSecureElementPassesError(controller: PKAddSecureElementPassViewController, passes: NSArray<PKSecureElementPass> | PKSecureElementPass[], error: NSError): void;
+	addSecureElementPassViewControllerDidFinishAddingSecureElementPassesError(controller: PKAddSecureElementPassViewController, passes: NSArray<PKSecureElementPass> | PKSecureElementPass[] | null, error: NSError | null): void;
 }
 declare var PKAddSecureElementPassViewControllerDelegate: {
 
@@ -419,13 +424,13 @@ declare class PKAddShareablePassConfiguration extends PKAddSecureElementPassConf
 	/**
 	 * @since 16.0
 	 */
-	static configurationForPassMetadataPrimaryActionCompletion(passMetadata: NSArray<PKShareablePassMetadata> | PKShareablePassMetadata[], action: PKAddShareablePassConfigurationPrimaryAction, completion: (p1: PKAddShareablePassConfiguration, p2: NSError) => void): void;
+	static configurationForPassMetadataPrimaryActionCompletion(passMetadata: NSArray<PKShareablePassMetadata> | PKShareablePassMetadata[], action: PKAddShareablePassConfigurationPrimaryAction, completion: (p1: PKAddShareablePassConfiguration | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 * @deprecated 16.0
 	 */
-	static configurationForPassMetadataProvisioningPolicyIdentifierPrimaryActionCompletion(passMetadata: NSArray<PKShareablePassMetadata> | PKShareablePassMetadata[], provisioningPolicyIdentifier: string, action: PKAddShareablePassConfigurationPrimaryAction, completion: (p1: PKAddShareablePassConfiguration, p2: NSError) => void): void;
+	static configurationForPassMetadataProvisioningPolicyIdentifierPrimaryActionCompletion(passMetadata: NSArray<PKShareablePassMetadata> | PKShareablePassMetadata[], provisioningPolicyIdentifier: string, action: PKAddShareablePassConfigurationPrimaryAction, completion: (p1: PKAddShareablePassConfiguration | null, p2: NSError | null) => void): void;
 
 	static new(): PKAddShareablePassConfiguration; // inherited from NSObject
 
@@ -508,13 +513,13 @@ declare class PKAutomaticReloadPaymentRequest extends NSObject {
 
 	automaticReloadBilling: PKAutomaticReloadPaymentSummaryItem;
 
-	billingAgreement: string;
+	billingAgreement: string | null;
 
 	managementURL: NSURL;
 
 	paymentDescription: string;
 
-	tokenNotificationURL: NSURL;
+	tokenNotificationURL: NSURL | null;
 
 	constructor(o: { paymentDescription: string; automaticReloadBilling: PKAutomaticReloadPaymentSummaryItem; managementURL: NSURL; });
 
@@ -653,19 +658,19 @@ declare class PKContact extends NSObject {
 
 	static new(): PKContact; // inherited from NSObject
 
-	emailAddress: string;
+	emailAddress: string | null;
 
-	name: NSPersonNameComponents;
+	name: NSPersonNameComponents | null;
 
-	phoneNumber: CNPhoneNumber;
+	phoneNumber: CNPhoneNumber | null;
 
-	postalAddress: CNPostalAddress;
+	postalAddress: CNPostalAddress | null;
 
 	/**
 	 * @since 9.2
 	 * @deprecated 10.3
 	 */
-	supplementarySubLocality: string;
+	supplementarySubLocality: string | null;
 }
 
 /**
@@ -712,7 +717,7 @@ declare class PKDateComponentsRange extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { startDateComponents: NSDateComponents; endDateComponents: NSDateComponents; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -730,19 +735,19 @@ declare class PKDeferredPaymentRequest extends NSObject {
 
 	static new(): PKDeferredPaymentRequest; // inherited from NSObject
 
-	billingAgreement: string;
+	billingAgreement: string | null;
 
 	deferredBilling: PKDeferredPaymentSummaryItem;
 
-	freeCancellationDate: Date;
+	freeCancellationDate: Date | null;
 
-	freeCancellationDateTimeZone: NSTimeZone;
+	freeCancellationDateTimeZone: NSTimeZone | null;
 
 	managementURL: NSURL;
 
 	paymentDescription: string;
 
-	tokenNotificationURL: NSURL;
+	tokenNotificationURL: NSURL | null;
 
 	constructor(o: { paymentDescription: string; deferredBilling: PKDeferredPaymentSummaryItem; managementURL: NSURL; });
 
@@ -799,19 +804,24 @@ declare class PKDisbursementRequest extends NSObject {
 
 	static disbursementCardUnsupportedError(): NSError;
 
-	static disbursementContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string): NSError;
+	static disbursementContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string | null): NSError;
 
 	static new(): PKDisbursementRequest; // inherited from NSObject
 
-	applicationData: NSData;
+	applicationData: NSData | null;
 
 	currencyCode: string;
+
+	/**
+	 * @since 26.4
+	 */
+	isDelegatedRequest: boolean;
 
 	merchantCapabilities: PKMerchantCapability;
 
 	merchantIdentifier: string;
 
-	recipientContact: PKContact;
+	recipientContact: PKContact | null;
 
 	regionCode: string;
 
@@ -821,7 +831,7 @@ declare class PKDisbursementRequest extends NSObject {
 
 	supportedNetworks: NSArray<string>;
 
-	supportedRegions: NSArray<string>;
+	supportedRegions: NSArray<string> | null;
 
 	constructor(o: { merchantIdentifier: string; currencyCode: string; regionCode: string; supportedNetworks: NSArray<string> | string[]; merchantCapabilities: PKMerchantCapability; summaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
 
@@ -890,7 +900,7 @@ declare class PKIdentityAnyOfDescriptor extends NSObject implements PKIdentityDo
 
 	initWithDescriptors(descriptors: NSArray<PKIdentityDocumentDescriptor> | PKIdentityDocumentDescriptor[]): this;
 
-	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore | null;
 
 	isEqual(object: any): boolean;
 
@@ -924,7 +934,7 @@ declare class PKIdentityAuthorizationController extends NSObject {
 
 	checkCanRequestDocumentCompletion(descriptor: PKIdentityDocumentDescriptor, completion: (p1: boolean) => void): void;
 
-	requestDocumentCompletion(request: PKIdentityRequest, completion: (p1: PKIdentityDocument, p2: NSError) => void): void;
+	requestDocumentCompletion(request: PKIdentityRequest, completion: (p1: PKIdentityDocument | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -945,7 +955,7 @@ declare class PKIdentityButton extends UIControl {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKIdentityButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PKIdentityButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -956,7 +966,7 @@ declare class PKIdentityButton extends UIControl {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKIdentityButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PKIdentityButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1019,7 +1029,7 @@ interface PKIdentityDocumentDescriptor extends NSObjectProtocol {
 
 	addElementsWithIntentToStore(elements: NSArray<PKIdentityElement> | PKIdentityElement[], intentToStore: PKIdentityIntentToStore): void;
 
-	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore | null;
 }
 declare var PKIdentityDocumentDescriptor: {
 
@@ -1085,7 +1095,7 @@ declare class PKIdentityDriversLicenseDescriptor extends NSObject implements PKI
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore | null;
 
 	isEqual(object: any): boolean;
 
@@ -1124,6 +1134,11 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	static readonly dateOfBirthElement: PKIdentityElement;
 
 	/**
+	 * @since 26.4
+	 */
+	static readonly dhsTemporaryLawfulStatusElement: PKIdentityElement;
+
+	/**
 	 * @since 17.2
 	 */
 	static readonly documentDHSComplianceStatusElement: PKIdentityElement;
@@ -1158,9 +1173,19 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	static readonly issuingAuthorityElement: PKIdentityElement;
 
 	/**
+	 * @since 26.4
+	 */
+	static readonly nationalityElement: PKIdentityElement;
+
+	/**
 	 * @since 26.0
 	 */
 	static readonly organDonorStatusElement: PKIdentityElement;
+
+	/**
+	 * @since 26.4
+	 */
+	static readonly placeOfBirthElement: PKIdentityElement;
 
 	static readonly portraitElement: PKIdentityElement;
 
@@ -1168,6 +1193,11 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	 * @since 17.2
 	 */
 	static readonly sexElement: PKIdentityElement;
+
+	/**
+	 * @since 26.4
+	 */
+	static readonly signatureUsualMarkElement: PKIdentityElement;
 
 	/**
 	 * @since 26.0
@@ -1179,7 +1209,7 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	 */
 	static readonly weightElement: PKIdentityElement;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1226,7 +1256,7 @@ declare class PKIdentityIntentToStore extends NSObject implements NSCopying {
 
 	static readonly willNotStoreIntent: PKIdentityIntentToStore;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1238,7 +1268,7 @@ declare class PKIdentityNationalIDCardDescriptor extends NSObject implements PKI
 
 	static new(): PKIdentityNationalIDCardDescriptor; // inherited from NSObject
 
-	regionCode: string;
+	regionCode: string | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1260,7 +1290,7 @@ declare class PKIdentityNationalIDCardDescriptor extends NSObject implements PKI
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore | null;
 
 	isEqual(object: any): boolean;
 
@@ -1310,7 +1340,7 @@ declare class PKIdentityPhotoIDDescriptor extends NSObject implements PKIdentity
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore | null;
 
 	isEqual(object: any): boolean;
 
@@ -1340,11 +1370,16 @@ declare class PKIdentityRequest extends NSObject {
 
 	static new(): PKIdentityRequest; // inherited from NSObject
 
-	descriptor: PKIdentityDocumentDescriptor;
+	descriptor: PKIdentityDocumentDescriptor | null;
 
-	merchantIdentifier: string;
+	merchantIdentifier: string | null;
 
-	nonce: NSData;
+	nonce: NSData | null;
+
+	/**
+	 * @since 26.2
+	 */
+	usageDescriptionKey: string | null;
 }
 
 /**
@@ -1369,7 +1404,7 @@ declare class PKInstantFundsOutFeeSummaryItem extends PKPaymentSummaryItem {
  */
 interface PKIssuerProvisioningExtensionAuthorizationProviding extends NSObjectProtocol {
 
-	completionHandler: (p1: PKIssuerProvisioningExtensionAuthorizationResult) => void;
+	completionHandler: (p1: PKIssuerProvisioningExtensionAuthorizationResult) => void | null;
 }
 declare var PKIssuerProvisioningExtensionAuthorizationProviding: {
 
@@ -1395,7 +1430,7 @@ declare class PKIssuerProvisioningExtensionHandler extends NSObject {
 
 	static new(): PKIssuerProvisioningExtensionHandler; // inherited from NSObject
 
-	generateAddPaymentPassRequestForPassEntryWithIdentifierConfigurationCertificateChainNonceNonceSignatureCompletionHandler(identifier: string, configuration: PKAddPaymentPassRequestConfiguration, certificates: NSArray<NSData> | NSData[], nonce: NSData, nonceSignature: NSData, completion: (p1: PKAddPaymentPassRequest) => void): void;
+	generateAddPaymentPassRequestForPassEntryWithIdentifierConfigurationCertificateChainNonceNonceSignatureCompletionHandler(identifier: string, configuration: PKAddPaymentPassRequestConfiguration, certificates: NSArray<NSData> | NSData[], nonce: NSData, nonceSignature: NSData, completion: (p1: PKAddPaymentPassRequest | null) => void): void;
 
 	passEntriesWithCompletion(completion: (p1: NSArray<PKIssuerProvisioningExtensionPassEntry>) => void): void;
 
@@ -1461,11 +1496,11 @@ declare class PKJapanIndividualNumberCardMetadata extends PKIdentityDocumentMeta
 
 	static new(): PKJapanIndividualNumberCardMetadata; // inherited from NSObject
 
-	authenticationPassword: string;
+	authenticationPassword: string | null;
 
 	preview: PKAddPassMetadataPreview;
 
-	signingPassword: string;
+	signingPassword: string | null;
 
 	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; cardConfigurationIdentifier: string; preview: PKAddPassMetadataPreview; });
 
@@ -1528,7 +1563,7 @@ declare class PKPass extends PKObject {
 
 	static new(): PKPass; // inherited from NSObject
 
-	readonly authenticationToken: string;
+	readonly authenticationToken: string | null;
 
 	/**
 	 * @since 9.0
@@ -1550,19 +1585,19 @@ declare class PKPass extends PKObject {
 
 	readonly passTypeIdentifier: string;
 
-	readonly passURL: NSURL;
+	readonly passURL: NSURL | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 100000
 	 */
-	readonly paymentPass: PKPaymentPass;
+	readonly paymentPass: PKPaymentPass | null;
 
 	/**
 	 * @since 6.0
 	 * @deprecated 18.0
 	 */
-	readonly relevantDate: Date;
+	readonly relevantDate: Date | null;
 
 	/**
 	 * @since 18.0
@@ -1577,22 +1612,22 @@ declare class PKPass extends PKObject {
 	/**
 	 * @since 13.4
 	 */
-	readonly secureElementPass: PKSecureElementPass;
+	readonly secureElementPass: PKSecureElementPass | null;
 
 	readonly serialNumber: string;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any> | null;
 
-	readonly webServiceURL: NSURL;
+	readonly webServiceURL: NSURL | null;
 
 	constructor(o: { data: NSData; });
 
 	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
-	localizedValueForFieldKey(key: string): any;
+	localizedValueForFieldKey(key: string): any | null;
 }
 
 /**
@@ -1665,23 +1700,23 @@ declare class PKPassLibrary extends NSObject {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	activatePaymentPassWithActivationCodeCompletion(paymentPass: PKPaymentPass, activationCode: string, completion: (p1: boolean, p2: NSError) => void): void;
+	activatePaymentPassWithActivationCodeCompletion(paymentPass: PKPaymentPass, activationCode: string, completion: (p1: boolean, p2: NSError) => void | null): void;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 100000
 	 */
-	activatePaymentPassWithActivationDataCompletion(paymentPass: PKPaymentPass, activationData: NSData, completion: (p1: boolean, p2: NSError) => void): void;
+	activatePaymentPassWithActivationDataCompletion(paymentPass: PKPaymentPass, activationData: NSData, completion: (p1: boolean, p2: NSError) => void | null): void;
 
 	/**
 	 * @since 13.4
 	 */
-	activateSecureElementPassWithActivationDataCompletion(secureElementPass: PKSecureElementPass, activationData: NSData, completion: (p1: boolean, p2: NSError) => void): void;
+	activateSecureElementPassWithActivationDataCompletion(secureElementPass: PKSecureElementPass, activationData: NSData, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 7.0
 	 */
-	addPassesWithCompletionHandler(passes: NSArray<PKPass> | PKPass[], completion: (p1: PKPassLibraryAddPassesStatus) => void): void;
+	addPassesWithCompletionHandler(passes: NSArray<PKPass> | PKPass[], completion: (p1: PKPassLibraryAddPassesStatus) => void | null): void;
 
 	/**
 	 * @since 26.0
@@ -1709,7 +1744,7 @@ declare class PKPassLibrary extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	encryptedServiceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSDictionary<any, any>, p2: NSError) => void): void;
+	encryptedServiceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSDictionary<any, any> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
@@ -1722,7 +1757,12 @@ declare class PKPassLibrary extends NSObject {
 	 */
 	openPaymentSetup(): void;
 
-	passWithPassTypeIdentifierSerialNumber(identifier: string, serialNumber: string): PKPass;
+	/**
+	 * @since 26.4
+	 */
+	openPaymentSetupWithMerchantIdentifier(merchantIdentifier: string): void;
+
+	passWithPassTypeIdentifierSerialNumber(identifier: string, serialNumber: string): PKPass | null;
 
 	passes(): NSArray<PKPass>;
 
@@ -1762,12 +1802,12 @@ declare class PKPassLibrary extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	serviceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSData, p2: NSError) => void): void;
+	serviceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.4
 	 */
-	signDataWithSecureElementPassCompletion(signData: NSData, secureElementPass: PKSecureElementPass, completion: (p1: NSData, p2: NSData, p3: NSError) => void): void;
+	signDataWithSecureElementPassCompletion(signData: NSData, secureElementPass: PKSecureElementPass, completion: (p1: NSData | null, p2: NSData | null, p3: NSError | null) => void): void;
 }
 
 /**
@@ -1850,9 +1890,9 @@ declare class PKPassRelevantDate extends NSObject {
 
 	static new(): PKPassRelevantDate; // inherited from NSObject
 
-	readonly date: Date;
+	readonly date: Date | null;
 
-	readonly interval: NSDateInterval;
+	readonly interval: NSDateInterval | null;
 }
 
 /**
@@ -1916,7 +1956,7 @@ declare class PKPayLaterView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKPayLaterView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PKPayLaterView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1927,7 +1967,7 @@ declare class PKPayLaterView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKPayLaterView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PKPayLaterView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1976,25 +2016,25 @@ declare class PKPayment extends NSObject {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	readonly billingAddress: any;
+	readonly billingAddress: any | null;
 
 	/**
 	 * @since 9.0
 	 */
-	readonly billingContact: PKContact;
+	readonly billingContact: PKContact | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	readonly shippingAddress: any;
+	readonly shippingAddress: any | null;
 
 	/**
 	 * @since 9.0
 	 */
-	readonly shippingContact: PKContact;
+	readonly shippingContact: PKContact | null;
 
-	readonly shippingMethod: PKShippingMethod;
+	readonly shippingMethod: PKShippingMethod | null;
 
 	readonly token: PKPaymentToken;
 }
@@ -2029,7 +2069,7 @@ declare class PKPaymentAuthorizationController extends NSObject {
 	 */
 	static supportsDisbursementsUsingNetworksCapabilities(supportedNetworks: NSArray<string> | string[], capabilties: PKMerchantCapability): boolean;
 
-	delegate: PKPaymentAuthorizationControllerDelegate;
+	delegate: PKPaymentAuthorizationControllerDelegate | null;
 
 	/**
 	 * @since 17.0
@@ -2038,7 +2078,7 @@ declare class PKPaymentAuthorizationController extends NSObject {
 
 	constructor(o: { paymentRequest: PKPaymentRequest; });
 
-	dismissWithCompletion(completion: () => void): void;
+	dismissWithCompletion(completion: () => void | null): void;
 
 	/**
 	 * @since 17.0
@@ -2047,7 +2087,7 @@ declare class PKPaymentAuthorizationController extends NSObject {
 
 	initWithPaymentRequest(request: PKPaymentRequest): this;
 
-	presentWithCompletion(completion: (p1: boolean) => void): void;
+	presentWithCompletion(completion: (p1: boolean) => void | null): void;
 }
 
 interface PKPaymentAuthorizationControllerDelegate extends NSObjectProtocol {
@@ -2113,7 +2153,7 @@ interface PKPaymentAuthorizationControllerDelegate extends NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	presentationWindowForPaymentAuthorizationController?(controller: PKPaymentAuthorizationController): UIWindow;
+	presentationWindowForPaymentAuthorizationController?(controller: PKPaymentAuthorizationController): UIWindow | null;
 }
 declare var PKPaymentAuthorizationControllerDelegate: {
 
@@ -2134,13 +2174,13 @@ declare class PKPaymentAuthorizationResult extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	orderDetails: PKPaymentOrderDetails;
+	orderDetails: PKPaymentOrderDetails | null;
 
 	status: PKPaymentAuthorizationStatus;
 
-	constructor(o: { status: PKPaymentAuthorizationStatus; errors: NSArray<NSError> | NSError[]; });
+	constructor(o: { status: PKPaymentAuthorizationStatus; errors: NSArray<NSError> | NSError[] | null; });
 
-	initWithStatusErrors(status: PKPaymentAuthorizationStatus, errors: NSArray<NSError> | NSError[]): this;
+	initWithStatusErrors(status: PKPaymentAuthorizationStatus, errors: NSArray<NSError> | NSError[] | null): this;
 }
 
 /**
@@ -2198,7 +2238,7 @@ declare class PKPaymentAuthorizationViewController extends UIViewController {
 	 */
 	static supportsDisbursementsUsingNetworksCapabilities(supportedNetworks: NSArray<string> | string[], capabilities: PKMerchantCapability): boolean;
 
-	delegate: PKPaymentAuthorizationViewControllerDelegate;
+	delegate: PKPaymentAuthorizationViewControllerDelegate | null;
 
 	/**
 	 * @since 17.0
@@ -2307,7 +2347,7 @@ declare class PKPaymentButton extends UIButton {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PKPaymentButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2318,7 +2358,7 @@ declare class PKPaymentButton extends UIButton {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PKPaymentButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2328,14 +2368,14 @@ declare class PKPaymentButton extends UIButton {
 	/**
 	 * @since 15.0
 	 */
-	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): PKPaymentButton; // inherited from UIButton
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction | null): PKPaymentButton; // inherited from UIButton
 
 	static buttonWithType(buttonType: UIButtonType): PKPaymentButton; // inherited from UIButton
 
 	/**
 	 * @since 14.0
 	 */
-	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction): PKPaymentButton; // inherited from UIButton
+	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction | null): PKPaymentButton; // inherited from UIButton
 
 	static buttonWithTypeStyle(buttonType: PKPaymentButtonType, buttonStyle: PKPaymentButtonStyle): PKPaymentButton;
 
@@ -2349,12 +2389,12 @@ declare class PKPaymentButton extends UIButton {
 	/**
 	 * @since 13.0
 	 */
-	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): PKPaymentButton; // inherited from UIButton
+	static systemButtonWithImageTargetAction(image: UIImage, target: any | null, action: string | null): PKPaymentButton; // inherited from UIButton
 
 	/**
 	 * @since 14.0
 	 */
-	static systemButtonWithPrimaryAction(primaryAction: UIAction): PKPaymentButton; // inherited from UIButton
+	static systemButtonWithPrimaryAction(primaryAction: UIAction | null): PKPaymentButton; // inherited from UIButton
 
 	/**
 	 * @since 12.0
@@ -2518,22 +2558,22 @@ declare class PKPaymentMethod extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	readonly billingAddress: CNContact;
+	readonly billingAddress: CNContact | null;
 
-	readonly displayName: string;
+	readonly displayName: string | null;
 
-	readonly network: string;
+	readonly network: string | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 100000
 	 */
-	readonly paymentPass: PKPaymentPass;
+	readonly paymentPass: PKPaymentPass | null;
 
 	/**
 	 * @since 13.4
 	 */
-	readonly secureElementPass: PKSecureElementPass;
+	readonly secureElementPass: PKSecureElementPass | null;
 
 	readonly type: PKPaymentMethodType;
 }
@@ -2563,7 +2603,6 @@ declare var PKPaymentNetworkAmex: string;
 
 /**
  * @since 16.0
- * @deprecated 17.0
  */
 declare var PKPaymentNetworkBancomat: string;
 
@@ -2605,6 +2644,11 @@ declare var PKPaymentNetworkCartesBancaires: string;
 declare var PKPaymentNetworkChinaUnionPay: string;
 
 /**
+ * @since 26.2
+ */
+declare var PKPaymentNetworkConecs: string;
+
+/**
  * @since 15.1
  */
 declare var PKPaymentNetworkDankort: string;
@@ -2618,6 +2662,11 @@ declare var PKPaymentNetworkDiscover: string;
  * @since 12.0
  */
 declare var PKPaymentNetworkEftpos: string;
+
+/**
+ * @since 26.4
+ */
+declare var PKPaymentNetworkElCorteIngles: string;
 
 /**
  * @since 12.0
@@ -2701,6 +2750,7 @@ declare var PKPaymentNetworkNanaco: string;
 
 /**
  * @since 17.0
+ * @deprecated 26.4
  */
 declare var PKPaymentNetworkPagoBancomat: string;
 
@@ -2816,74 +2866,79 @@ declare class PKPaymentRequest extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	static paymentBillingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string): NSError;
+	static paymentBillingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string | null): NSError;
 
 	/**
 	 * @since 11.0
 	 */
-	static paymentContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string): NSError;
+	static paymentContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string | null): NSError;
 
 	/**
 	 * @since 15.0
 	 */
-	static paymentCouponCodeExpiredErrorWithLocalizedDescription(localizedDescription: string): NSError;
+	static paymentCouponCodeExpiredErrorWithLocalizedDescription(localizedDescription: string | null): NSError;
 
 	/**
 	 * @since 15.0
 	 */
-	static paymentCouponCodeInvalidErrorWithLocalizedDescription(localizedDescription: string): NSError;
+	static paymentCouponCodeInvalidErrorWithLocalizedDescription(localizedDescription: string | null): NSError;
 
 	/**
 	 * @since 11.0
 	 */
-	static paymentShippingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string): NSError;
+	static paymentShippingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string | null): NSError;
 
 	/**
 	 * @since 11.0
 	 */
-	static paymentShippingAddressUnserviceableErrorWithLocalizedDescription(localizedDescription: string): NSError;
+	static paymentShippingAddressUnserviceableErrorWithLocalizedDescription(localizedDescription: string | null): NSError;
 
 	/**
 	 * @since 17.0
 	 */
 	applePayLaterAvailability: PKApplePayLaterAvailability;
 
-	applicationData: NSData;
+	applicationData: NSData | null;
 
 	/**
 	 * @since 26.0
 	 */
-	attributionIdentifier: string;
+	attributionIdentifier: string | null;
 
 	/**
 	 * @since 16.0
 	 */
-	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest;
+	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	billingAddress: any;
+	billingAddress: any | null;
 
 	/**
 	 * @since 9.0
 	 */
-	billingContact: PKContact;
+	billingContact: PKContact | null;
 
 	countryCode: string;
 
 	/**
 	 * @since 15.0
 	 */
-	couponCode: string;
+	couponCode: string | null;
 
 	currencyCode: string;
 
 	/**
 	 * @since 16.4
 	 */
-	deferredPaymentRequest: PKDeferredPaymentRequest;
+	deferredPaymentRequest: PKDeferredPaymentRequest | null;
+
+	/**
+	 * @since 26.4
+	 */
+	isDelegatedRequest: boolean;
 
 	merchantCapabilities: PKMerchantCapability;
 
@@ -2904,7 +2959,7 @@ declare class PKPaymentRequest extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	recurringPaymentRequest: PKRecurringPaymentRequest;
+	recurringPaymentRequest: PKRecurringPaymentRequest | null;
 
 	/**
 	 * @since 8.0
@@ -2932,19 +2987,19 @@ declare class PKPaymentRequest extends NSObject {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	shippingAddress: any;
+	shippingAddress: any | null;
 
 	/**
 	 * @since 9.0
 	 */
-	shippingContact: PKContact;
+	shippingContact: PKContact | null;
 
 	/**
 	 * @since 15.0
 	 */
 	shippingContactEditingMode: PKShippingContactEditingMode;
 
-	shippingMethods: NSArray<PKShippingMethod>;
+	shippingMethods: NSArray<PKShippingMethod> | null;
 
 	/**
 	 * @since 8.3
@@ -2954,7 +3009,7 @@ declare class PKPaymentRequest extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	supportedCountries: NSSet<string>;
+	supportedCountries: NSSet<string> | null;
 
 	supportedNetworks: NSArray<string>;
 
@@ -2975,9 +3030,9 @@ declare class PKPaymentRequestCouponCodeUpdate extends PKPaymentRequestUpdate {
 
 	errors: NSArray<NSError>;
 
-	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
+	constructor(o: { errors: NSArray<NSError> | NSError[] | null; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
 
-	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
+	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[] | null, paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
 }
 
 /**
@@ -2989,13 +3044,13 @@ declare class PKPaymentRequestMerchantSessionUpdate extends NSObject {
 
 	static new(): PKPaymentRequestMerchantSessionUpdate; // inherited from NSObject
 
-	session: PKPaymentMerchantSession;
+	session: PKPaymentMerchantSession | null;
 
 	status: PKPaymentAuthorizationStatus;
 
-	constructor(o: { status: PKPaymentAuthorizationStatus; merchantSession: PKPaymentMerchantSession; });
+	constructor(o: { status: PKPaymentAuthorizationStatus; merchantSession: PKPaymentMerchantSession | null; });
 
-	initWithStatusMerchantSession(status: PKPaymentAuthorizationStatus, session: PKPaymentMerchantSession): this;
+	initWithStatusMerchantSession(status: PKPaymentAuthorizationStatus, session: PKPaymentMerchantSession | null): this;
 }
 
 /**
@@ -3009,9 +3064,9 @@ declare class PKPaymentRequestPaymentMethodUpdate extends PKPaymentRequestUpdate
 
 	errors: NSArray<NSError>;
 
-	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
+	constructor(o: { errors: NSArray<NSError> | NSError[] | null; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
 
-	initWithErrorsPaymentSummaryItems(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
+	initWithErrorsPaymentSummaryItems(errors: NSArray<NSError> | NSError[] | null, paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
 }
 
 /**
@@ -3025,9 +3080,9 @@ declare class PKPaymentRequestShippingContactUpdate extends PKPaymentRequestUpda
 
 	errors: NSArray<NSError>;
 
-	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
+	constructor(o: { errors: NSArray<NSError> | NSError[] | null; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
 
-	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
+	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[] | null, paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
 }
 
 /**
@@ -3052,24 +3107,24 @@ declare class PKPaymentRequestUpdate extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest;
+	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest | null;
 
 	/**
 	 * @since 16.4
 	 */
-	deferredPaymentRequest: PKDeferredPaymentRequest;
+	deferredPaymentRequest: PKDeferredPaymentRequest | null;
 
 	/**
 	 * @since 16.0
 	 */
-	multiTokenContexts: NSArray<PKPaymentTokenContext>;
+	multiTokenContexts: NSArray<PKPaymentTokenContext> | null;
 
 	paymentSummaryItems: NSArray<PKPaymentSummaryItem>;
 
 	/**
 	 * @since 16.0
 	 */
-	recurringPaymentRequest: PKRecurringPaymentRequest;
+	recurringPaymentRequest: PKRecurringPaymentRequest | null;
 
 	/**
 	 * @since 15.0
@@ -3163,15 +3218,15 @@ declare class PKPaymentTokenContext extends NSObject {
 
 	externalIdentifier: string;
 
-	merchantDomain: string;
+	merchantDomain: string | null;
 
 	merchantIdentifier: string;
 
 	merchantName: string;
 
-	constructor(o: { merchantIdentifier: string; externalIdentifier: string; merchantName: string; merchantDomain: string; amount: NSDecimalNumber; });
+	constructor(o: { merchantIdentifier: string; externalIdentifier: string; merchantName: string; merchantDomain: string | null; amount: NSDecimalNumber; });
 
-	initWithMerchantIdentifierExternalIdentifierMerchantNameMerchantDomainAmount(merchantIdentifier: string, externalIdentifier: string, merchantName: string, merchantDomain: string, amount: NSDecimalNumber): this;
+	initWithMerchantIdentifierExternalIdentifierMerchantNameMerchantDomainAmount(merchantIdentifier: string, externalIdentifier: string, merchantName: string, merchantDomain: string | null, amount: NSDecimalNumber): this;
 }
 
 /**
@@ -3195,7 +3250,7 @@ declare class PKRecurringPaymentRequest extends NSObject {
 
 	static new(): PKRecurringPaymentRequest; // inherited from NSObject
 
-	billingAgreement: string;
+	billingAgreement: string | null;
 
 	managementURL: NSURL;
 
@@ -3203,9 +3258,9 @@ declare class PKRecurringPaymentRequest extends NSObject {
 
 	regularBilling: PKRecurringPaymentSummaryItem;
 
-	tokenNotificationURL: NSURL;
+	tokenNotificationURL: NSURL | null;
 
-	trialBilling: PKRecurringPaymentSummaryItem;
+	trialBilling: PKRecurringPaymentSummaryItem | null;
 
 	constructor(o: { paymentDescription: string; regularBilling: PKRecurringPaymentSummaryItem; managementURL: NSURL; });
 
@@ -3228,13 +3283,13 @@ declare class PKRecurringPaymentSummaryItem extends PKPaymentSummaryItem {
 	 */
 	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKRecurringPaymentSummaryItem; // inherited from PKPaymentSummaryItem
 
-	endDate: Date;
+	endDate: Date | null;
 
 	intervalCount: number;
 
 	intervalUnit: NSCalendarUnit;
 
-	startDate: Date;
+	startDate: Date | null;
 }
 
 /**
@@ -3250,9 +3305,9 @@ declare class PKSecureElementPass extends PKPass {
 
 	readonly deviceAccountNumberSuffix: string;
 
-	readonly devicePassIdentifier: string;
+	readonly devicePassIdentifier: string | null;
 
-	readonly pairedTerminalIdentifier: string;
+	readonly pairedTerminalIdentifier: string | null;
 
 	readonly passActivationState: PKSecureElementPassActivationState;
 
@@ -3313,13 +3368,13 @@ declare class PKShareSecureElementPassViewController extends UIViewController {
 
 	static new(): PKShareSecureElementPassViewController; // inherited from NSObject
 
-	delegate: PKShareSecureElementPassViewControllerDelegate;
+	delegate: PKShareSecureElementPassViewControllerDelegate | null;
 
 	promptToShareURL: boolean;
 
-	constructor(o: { secureElementPass: PKSecureElementPass; delegate: PKShareSecureElementPassViewControllerDelegate; });
+	constructor(o: { secureElementPass: PKSecureElementPass; delegate: PKShareSecureElementPassViewControllerDelegate | null; });
 
-	initWithSecureElementPassDelegate(pass: PKSecureElementPass, delegate: PKShareSecureElementPassViewControllerDelegate): this;
+	initWithSecureElementPassDelegate(pass: PKSecureElementPass, delegate: PKShareSecureElementPassViewControllerDelegate | null): this;
 }
 
 /**
@@ -3327,7 +3382,7 @@ declare class PKShareSecureElementPassViewController extends UIViewController {
  */
 interface PKShareSecureElementPassViewControllerDelegate extends NSObjectProtocol {
 
-	shareSecureElementPassViewControllerDidCreateShareURLActivationCode?(controller: PKShareSecureElementPassViewController, universalShareURL: NSURL, activationCode: string): void;
+	shareSecureElementPassViewControllerDidCreateShareURLActivationCode?(controller: PKShareSecureElementPassViewController, universalShareURL: NSURL | null, activationCode: string | null): void;
 
 	shareSecureElementPassViewControllerDidFinishWithResult(controller: PKShareSecureElementPassViewController, result: PKShareSecureElementPassResult): void;
 }
@@ -3463,9 +3518,9 @@ declare class PKShareablePassMetadataPreview extends PKAddPassMetadataPreview {
 
 	static previewWithTemplateIdentifier(templateIdentifier: string): PKShareablePassMetadataPreview;
 
-	ownerDisplayName: string;
+	ownerDisplayName: string | null;
 
-	readonly provisioningTemplateIdentifier: string;
+	readonly provisioningTemplateIdentifier: string | null;
 
 	constructor(o: { templateIdentifier: string; });
 
@@ -3503,11 +3558,11 @@ declare class PKShippingMethod extends PKPaymentSummaryItem {
 	/**
 	 * @since 15.0
 	 */
-	dateComponentsRange: PKDateComponentsRange;
+	dateComponentsRange: PKDateComponentsRange | null;
 
-	detail: string;
+	detail: string | null;
 
-	identifier: string;
+	identifier: string | null;
 }
 
 /**
@@ -3537,9 +3592,9 @@ declare class PKStoredValuePassBalance extends NSObject {
 
 	readonly balanceType: string;
 
-	readonly currencyCode: string;
+	readonly currencyCode: string | null;
 
-	readonly expiryDate: Date;
+	readonly expiryDate: Date | null;
 
 	isEqualToBalance(balance: PKStoredValuePassBalance): boolean;
 }
@@ -3578,7 +3633,7 @@ declare class PKStoredValuePassProperties extends NSObject {
 	 */
 	readonly blocked: boolean;
 
-	readonly expirationDate: Date;
+	readonly expirationDate: Date | null;
 }
 
 /**
@@ -3665,11 +3720,11 @@ declare class PKVehicleConnectionSession extends NSObject {
 
 	static new(): PKVehicleConnectionSession; // inherited from NSObject
 
-	static sessionForPassDelegateCompletion(pass: PKSecureElementPass, delegate: PKVehicleConnectionDelegate, completion: (p1: PKVehicleConnectionSession, p2: NSError) => void): void;
+	static sessionForPassDelegateCompletion(pass: PKSecureElementPass, delegate: PKVehicleConnectionDelegate, completion: (p1: PKVehicleConnectionSession | null, p2: NSError | null) => void): void;
 
 	readonly connectionStatus: PKVehicleConnectionSessionConnectionState;
 
-	readonly delegate: PKVehicleConnectionDelegate;
+	readonly delegate: PKVehicleConnectionDelegate | null;
 
 	invalidate(): void;
 

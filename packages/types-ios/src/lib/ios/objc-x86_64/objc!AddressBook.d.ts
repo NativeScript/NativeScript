@@ -3,7 +3,7 @@
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABAddressBookAddRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABAddressBookAddRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -69,7 +69,7 @@ declare function ABAddressBookCreate(): interop.Unmanaged<any>;
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABAddressBookCreateWithOptions(options: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<any>;
+declare function ABAddressBookCreateWithOptions(options: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
@@ -123,13 +123,13 @@ declare function ABAddressBookHasUnsavedChanges(addressBook: any): boolean;
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABAddressBookRegisterExternalChangeCallback(addressBook: any, callback: interop.FunctionReference<(p1: any, p2: NSDictionary<any, any>, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
+declare function ABAddressBookRegisterExternalChangeCallback(addressBook: any, callback: interop.FunctionReference<(p1: any, p2: NSDictionary<any, any>, p3: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABAddressBookRemoveRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABAddressBookRemoveRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -147,13 +147,13 @@ declare function ABAddressBookRevert(addressBook: any): void;
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABAddressBookSave(addressBook: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABAddressBookSave(addressBook: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABAddressBookUnregisterExternalChangeCallback(addressBook: any, callback: interop.FunctionReference<(p1: any, p2: NSDictionary<any, any>, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
+declare function ABAddressBookUnregisterExternalChangeCallback(addressBook: any, callback: interop.FunctionReference<(p1: any, p2: NSDictionary<any, any>, p3: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
@@ -174,7 +174,7 @@ declare const enum ABAuthorizationStatus {
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABGroupAddMember(group: any, person: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABGroupAddMember(group: any, person: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -210,13 +210,13 @@ declare function ABGroupCreateInSource(source: any): interop.Unmanaged<any>;
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABGroupRemoveMember(group: any, member: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABGroupRemoveMember(group: any, member: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABMultiValueAddValueAndLabel(multiValue: any, value: any, label: string, outIdentifier: interop.Pointer | interop.Reference<number>): boolean;
+declare function ABMultiValueAddValueAndLabel(multiValue: any, value: any, label: string, outIdentifier: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -282,7 +282,7 @@ declare function ABMultiValueGetPropertyType(multiValue: any): number;
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABMultiValueInsertValueAndLabelAtIndex(multiValue: any, value: any, label: string, index: number, outIdentifier: interop.Pointer | interop.Reference<number>): boolean;
+declare function ABMultiValueInsertValueAndLabelAtIndex(multiValue: any, value: any, label: string, index: number, outIdentifier: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -409,13 +409,13 @@ declare const enum ABPersonImageFormat {
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABPersonRemoveImageData(person: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABPersonRemoveImageData(person: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABPersonSetImageData(person: any, imageData: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABPersonSetImageData(person: any, imageData: NSData, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -445,13 +445,13 @@ declare function ABRecordGetRecordType(record: any): number;
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABRecordRemoveValue(record: any, property: number, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABRecordRemoveValue(record: any, property: number, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function ABRecordSetValue(record: any, property: number, value: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABRecordSetValue(record: any, property: number, value: any, error: interop.Pointer | interop.Reference<NSError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 declare const kABDateTimePropertyType: number;
 

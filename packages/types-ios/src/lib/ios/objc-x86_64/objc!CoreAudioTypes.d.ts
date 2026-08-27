@@ -37,7 +37,7 @@ declare const AVAudioSessionErrorInsufficientPriority: number;
 interface _AudioBuffer {
 	mNumberChannels: number;
 	mDataByteSize: number;
-	mData: interop.Pointer | interop.Reference<any>;
+	mData: interop.Pointer | interop.Reference<any> | null;
 }
 declare var _AudioBuffer: interop.StructType<_AudioBuffer>;
 
@@ -221,9 +221,9 @@ interface AudioValueRange {
 declare var AudioValueRange: interop.StructType<AudioValueRange>;
 
 interface AudioValueTranslation {
-	mInputData: interop.Pointer | interop.Reference<any>;
+	mInputData: interop.Pointer | interop.Reference<any> | null;
 	mInputDataSize: number;
-	mOutputData: interop.Pointer | interop.Reference<any>;
+	mOutputData: interop.Pointer | interop.Reference<any> | null;
 	mOutputDataSize: number;
 }
 declare var AudioValueTranslation: interop.StructType<AudioValueTranslation>;

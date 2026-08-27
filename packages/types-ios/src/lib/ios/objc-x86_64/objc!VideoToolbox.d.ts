@@ -2,7 +2,7 @@
 /**
  * @since 8.0
  */
-declare function VTCompressionSessionBeginPass(session: any, beginPassFlags: VTCompressionSessionOptionFlags, reserved: interop.Pointer | interop.Reference<number>): number;
+declare function VTCompressionSessionBeginPass(session: any, beginPassFlags: VTCompressionSessionOptionFlags, reserved: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
@@ -12,42 +12,42 @@ declare function VTCompressionSessionCompleteFrames(session: any, completeUntilP
 /**
  * @since 8.0
  */
-declare function VTCompressionSessionCreate(allocator: any, width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, sourceImageBufferAttributes: NSDictionary<any, any>, compressedDataAllocator: any, outputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTEncodeInfoFlags, p5: any) => void>, outputCallbackRefCon: interop.Pointer | interop.Reference<any>, compressionSessionOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTCompressionSessionCreate(allocator: any | null, width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any> | null, sourceImageBufferAttributes: NSDictionary<any, any> | null, compressedDataAllocator: any | null, outputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: VTEncodeInfoFlags, p5: any | null) => void> | null, outputCallbackRefCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, compressionSessionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefcon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>): number;
+declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any> | null, sourceFrameRefcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 9.0
  */
-declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
+declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any> | null, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any | null) => void): number;
 
 /**
  * @since 17.0
  */
-declare function VTCompressionSessionEncodeMultiImageFrame(session: any, taggedBufferGroup: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefcon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>): number;
+declare function VTCompressionSessionEncodeMultiImageFrame(session: any, taggedBufferGroup: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any> | null, sourceFrameRefcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
  */
-declare function VTCompressionSessionEncodeMultiImageFrameWithOutputHandler(session: any, taggedBufferGroup: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
+declare function VTCompressionSessionEncodeMultiImageFrameWithOutputHandler(session: any, taggedBufferGroup: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any> | null, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any | null) => void): number;
 
 /**
  * @since 8.0
  */
-declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string | interop.Pointer | interop.Reference<any>, reserved: interop.Pointer | interop.Reference<number>): number;
+declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, reserved: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
  */
-declare function VTCompressionSessionGetPixelBufferPool(session: any): any;
+declare function VTCompressionSessionGetPixelBufferPool(session: any): any | null;
 
 /**
  * @since 8.0
  */
-declare function VTCompressionSessionGetTimeRangesForNextPass(session: any, timeRangeCountOut: interop.Pointer | interop.Reference<number>, timeRangeArrayOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<CMTimeRange>>): number;
+declare function VTCompressionSessionGetTimeRangesForNextPass(session: any, timeRangeCountOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, timeRangeArrayOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<CMTimeRange> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -75,17 +75,17 @@ declare function VTCompressionSessionPrepareToEncodeFrames(session: any): number
 /**
  * @since 11.0
  */
-declare function VTCopySupportedPropertyDictionaryForEncoder(width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, encoderIDOut: interop.Pointer | interop.Reference<string>, supportedPropertiesOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function VTCopySupportedPropertyDictionaryForEncoder(width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any> | null, encoderIDOut: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView | null, supportedPropertiesOut: interop.Pointer | interop.Reference<NSDictionary<any, any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
  */
-declare function VTCopyVideoEncoderList(options: NSDictionary<any, any>, listOfVideoEncodersOut: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function VTCopyVideoEncoderList(options: NSDictionary<any, any> | null, listOfVideoEncodersOut: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 9.0
  */
-declare function VTCreateCGImageFromCVPixelBuffer(pixelBuffer: any, options: NSDictionary<any, any>, imageOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTCreateCGImageFromCVPixelBuffer(pixelBuffer: any, options: NSDictionary<any, any> | null, imageOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 declare const enum VTDecodeFrameFlags {
 
@@ -115,8 +115,8 @@ declare const enum VTDecodeInfoFlags {
  * @since 8.0
  */
 interface VTDecompressionOutputCallbackRecord {
-	decompressionOutputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTDecodeInfoFlags, p5: any, p6: CMTime, p7: CMTime) => void>;
-	decompressionOutputRefCon: interop.Pointer | interop.Reference<any>;
+	decompressionOutputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: VTDecodeInfoFlags, p5: any | null, p6: CMTime, p7: CMTime) => void> | null;
+	decompressionOutputRefCon: interop.Pointer | interop.Reference<any> | null;
 }
 declare var VTDecompressionOutputCallbackRecord: interop.StructType<VTDecompressionOutputCallbackRecord>;
 
@@ -128,37 +128,37 @@ declare function VTDecompressionSessionCanAcceptFormatDescription(session: any, 
 /**
  * @since 8.0
  */
-declare function VTDecompressionSessionCopyBlackPixelBuffer(session: any, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTDecompressionSessionCopyBlackPixelBuffer(session: any, pixelBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function VTDecompressionSessionCreate(allocator: any, videoFormatDescription: any, videoDecoderSpecification: NSDictionary<any, any>, destinationImageBufferAttributes: NSDictionary<any, any>, outputCallback: interop.Pointer | interop.Reference<VTDecompressionOutputCallbackRecord>, decompressionSessionOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTDecompressionSessionCreate(allocator: any | null, videoFormatDescription: any, videoDecoderSpecification: NSDictionary<any, any> | null, destinationImageBufferAttributes: NSDictionary<any, any> | null, outputCallback: interop.Pointer | interop.Reference<VTDecompressionOutputCallbackRecord> | ArrayBufferLike | ArrayBufferView | null, decompressionSessionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function VTDecompressionSessionDecodeFrame(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>): number;
+declare function VTDecompressionSessionDecodeFrame(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, sourceFrameRefCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
  */
-declare function VTDecompressionSessionDecodeFrameWithMultiImageCapableOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, multiImageCapableOutputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: any, p5: CMTime, p6: CMTime) => void): number;
+declare function VTDecompressionSessionDecodeFrameWithMultiImageCapableOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null, multiImageCapableOutputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any | null, p4: any | null, p5: CMTime, p6: CMTime) => void): number;
 
 /**
  * @since 18.0
  */
-declare function VTDecompressionSessionDecodeFrameWithOptions(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, frameOptions: NSDictionary<any, any>, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>): number;
+declare function VTDecompressionSessionDecodeFrameWithOptions(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, frameOptions: NSDictionary<any, any> | null, sourceFrameRefCon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.0
  */
-declare function VTDecompressionSessionDecodeFrameWithOptionsAndOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, frameOptions: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
+declare function VTDecompressionSessionDecodeFrameWithOptionsAndOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, frameOptions: NSDictionary<any, any> | null, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any | null, p4: CMTime, p5: CMTime) => void): number;
 
 /**
  * @since 9.0
  */
-declare function VTDecompressionSessionDecodeFrameWithOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
+declare function VTDecompressionSessionDecodeFrameWithOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags> | ArrayBufferLike | ArrayBufferView | null, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any | null, p4: CMTime, p5: CMTime) => void): number;
 
 /**
  * @since 8.0
@@ -178,7 +178,7 @@ declare function VTDecompressionSessionInvalidate(session: any): void;
 /**
  * @since 17.0
  */
-declare function VTDecompressionSessionSetMultiImageCallback(decompressionSession: any, outputMultiImageCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTDecodeInfoFlags, p5: any, p6: CMTime, p7: CMTime) => void>, outputMultiImageRefcon: interop.Pointer | interop.Reference<any>): number;
+declare function VTDecompressionSessionSetMultiImageCallback(decompressionSession: any, outputMultiImageCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: VTDecodeInfoFlags, p5: any | null, p6: CMTime, p7: CMTime) => void>, outputMultiImageRefcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
@@ -205,11 +205,11 @@ declare class VTFrameProcessor extends NSObject {
 
 	processWithCommandBufferParameters(commandBuffer: MTLCommandBuffer, parameters: VTFrameProcessorParameters): void;
 
-	processWithParametersCompletionHandler(parameters: VTFrameProcessorParameters, completionHandler: (p1: VTFrameProcessorParameters, p2: NSError) => void): void;
+	processWithParametersCompletionHandler(parameters: VTFrameProcessorParameters, completionHandler: (p1: VTFrameProcessorParameters, p2: NSError | null) => void): void;
 
 	processWithParametersError(parameters: VTFrameProcessorParameters, error?: interop.Reference<NSError>): boolean;
 
-	processWithParametersFrameOutputHandler(parameters: VTFrameProcessorParameters, frameOutputHandler: (p1: VTFrameProcessorParameters, p2: CMTime, p3: boolean, p4: NSError) => void): void;
+	processWithParametersFrameOutputHandler(parameters: VTFrameProcessorParameters, frameOutputHandler: (p1: VTFrameProcessorParameters, p2: CMTime, p3: boolean, p4: NSError | null) => void): void;
 
 	startSessionWithConfigurationError(configuration: VTFrameProcessorConfiguration, error?: interop.Reference<NSError>): boolean;
 }
@@ -335,17 +335,17 @@ declare function VTFrameSiloCallBlockForEachSampleBuffer(silo: any, timeRange: C
 /**
  * @since 8.0
  */
-declare function VTFrameSiloCallFunctionForEachSampleBuffer(silo: any, timeRange: CMTimeRange, refcon: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any) => number>): number;
+declare function VTFrameSiloCallFunctionForEachSampleBuffer(silo: any, timeRange: CMTimeRange, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: any) => number>): number;
 
 /**
  * @since 8.0
  */
-declare function VTFrameSiloCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, frameSiloOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTFrameSiloCreate(allocator: any | null, fileURL: NSURL | null, timeRange: CMTimeRange, options: NSDictionary<any, any> | null, frameSiloOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function VTFrameSiloGetProgressOfCurrentPass(silo: any, progressOut: interop.Pointer | interop.Reference<number>): number;
+declare function VTFrameSiloGetProgressOfCurrentPass(silo: any, progressOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -355,7 +355,7 @@ declare function VTFrameSiloGetTypeID(): number;
 /**
  * @since 8.0
  */
-declare function VTFrameSiloSetTimeRangesForNextPass(silo: any, timeRangeCount: number, timeRangeArray: interop.Pointer | interop.Reference<CMTimeRange>): number;
+declare function VTFrameSiloSetTimeRangesForNextPass(silo: any, timeRangeCount: number, timeRangeArray: interop.Pointer | interop.Reference<CMTimeRange> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 18.0
@@ -365,7 +365,7 @@ declare function VTHDRPerFrameMetadataGenerationSessionAttachMetadata(hdrPerFram
 /**
  * @since 18.0
  */
-declare function VTHDRPerFrameMetadataGenerationSessionCreate(allocator: any, framesPerSecond: number, options: NSDictionary<any, any>, hdrPerFrameMetadataGenerationSessionOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTHDRPerFrameMetadataGenerationSessionCreate(allocator: any | null, framesPerSecond: number, options: NSDictionary<any, any> | null, hdrPerFrameMetadataGenerationSessionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 18.0
@@ -417,17 +417,17 @@ declare function VTMotionEstimationSessionCompleteFrames(session: any): number;
 /**
  * @since 26.0
  */
-declare function VTMotionEstimationSessionCopySourcePixelBufferAttributes(motionEstimationSession: any, attributesOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function VTMotionEstimationSessionCopySourcePixelBufferAttributes(motionEstimationSession: any, attributesOut: interop.Pointer | interop.Reference<NSDictionary<any, any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 26.0
  */
-declare function VTMotionEstimationSessionCreate(allocator: any, motionVectorProcessorSelectionOptions: NSDictionary<any, any>, width: number, height: number, motionEstimationSessionOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTMotionEstimationSessionCreate(allocator: any | null, motionVectorProcessorSelectionOptions: NSDictionary<any, any> | null, width: number, height: number, motionEstimationSessionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 26.0
  */
-declare function VTMotionEstimationSessionEstimateMotionVectors(session: any, referenceImage: any, currentImage: any, motionEstimationFrameFlags: VTMotionEstimationFrameFlags, additionalFrameOptions: NSDictionary<any, any>, outputHandler: (p1: number, p2: VTMotionEstimationInfoFlags, p3: NSDictionary<any, any>, p4: any) => void): number;
+declare function VTMotionEstimationSessionEstimateMotionVectors(session: any, referenceImage: any, currentImage: any, motionEstimationFrameFlags: VTMotionEstimationFrameFlags, additionalFrameOptions: NSDictionary<any, any> | null, outputHandler: (p1: number, p2: VTMotionEstimationInfoFlags, p3: NSDictionary<any, any> | null, p4: any | null) => void): number;
 
 /**
  * @since 26.0
@@ -447,7 +447,7 @@ declare function VTMultiPassStorageClose(multiPassStorage: any): number;
 /**
  * @since 8.0
  */
-declare function VTMultiPassStorageCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, multiPassStorageOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTMultiPassStorageCreate(allocator: any | null, fileURL: NSURL | null, timeRange: CMTimeRange, options: NSDictionary<any, any> | null, multiPassStorageOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -457,7 +457,7 @@ declare function VTMultiPassStorageGetTypeID(): number;
 /**
  * @since 16.0
  */
-declare function VTPixelRotationSessionCreate(allocator: any, pixelRotationSessionOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTPixelRotationSessionCreate(allocator: any | null, pixelRotationSessionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 16.0
@@ -477,7 +477,7 @@ declare function VTPixelRotationSessionRotateImage(session: any, sourceBuffer: a
 /**
  * @since 16.0
  */
-declare function VTPixelTransferSessionCreate(allocator: any, pixelTransferSessionOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTPixelTransferSessionCreate(allocator: any | null, pixelTransferSessionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 16.0
@@ -495,19 +495,24 @@ declare function VTPixelTransferSessionInvalidate(session: any): void;
 declare function VTPixelTransferSessionTransferImage(session: any, sourceBuffer: any, destinationBuffer: any): number;
 
 /**
- * @since 8.0
+ * @since 26.2
  */
-declare function VTSessionCopyProperty(session: any, propertyKey: string, allocator: any, propertyValueOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTRegisterSupplementalVideoDecoderIfAvailable(codecType: number): void;
 
 /**
  * @since 8.0
  */
-declare function VTSessionCopySerializableProperties(session: any, allocator: any, dictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function VTSessionCopyProperty(session: any, propertyKey: string, allocator: any | null, propertyValueOut: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
  */
-declare function VTSessionCopySupportedPropertyDictionary(session: any, supportedPropertyDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function VTSessionCopySerializableProperties(session: any, allocator: any | null, dictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any> | null> | ArrayBufferLike | ArrayBufferView): number;
+
+/**
+ * @since 8.0
+ */
+declare function VTSessionCopySupportedPropertyDictionary(session: any, supportedPropertyDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -517,7 +522,7 @@ declare function VTSessionSetProperties(session: any, propertyDictionary: NSDict
 /**
  * @since 8.0
  */
-declare function VTSessionSetProperty(session: any, propertyKey: string, propertyValue: any): number;
+declare function VTSessionSetProperty(session: any, propertyKey: string, propertyValue: any | null): number;
 
 declare const kVTAllocationFailedErr: number;
 

@@ -64,17 +64,17 @@ declare var HVFTranslation: interop.StructType<HVFTranslation>;
 /**
  * @since 18.4
  */
-declare function HVF_clear_part_cache(renderer: interop.Pointer | interop.Reference<any>): number;
+declare function HVF_clear_part_cache(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.4
  */
-declare function HVF_close_part_renderer(renderer: interop.Pointer | interop.Reference<any>): number;
+declare function HVF_close_part_renderer(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.4
  */
-declare function HVF_glyph_count(renderer: interop.Pointer | interop.Reference<any>): number;
+declare function HVF_glyph_count(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.4
@@ -84,12 +84,12 @@ declare function HVF_library_version(): HVFLibraryVersion;
 /**
  * @since 18.4
  */
-declare function HVF_open_part_renderer(hvgl: interop.Pointer | interop.Reference<any>, hvglSize: number, hvpm: interop.Pointer | interop.Reference<any>, hvpmSize: number, storage: interop.Pointer | interop.Reference<any>, storageSize: number): number;
+declare function HVF_open_part_renderer(hvgl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, hvglSize: number, hvpm: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, hvpmSize: number, storage: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, storageSize: number): number;
 
 /**
  * @since 18.4
  */
-declare function HVF_part_count(renderer: interop.Pointer | interop.Reference<any>): number;
+declare function HVF_part_count(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.4
@@ -99,19 +99,19 @@ declare function HVF_part_renderer_storage_size(): number;
 /**
  * @since 18.4
  */
-declare function HVF_render_part_axis_count(renderer: interop.Pointer | interop.Reference<any>): number;
+declare function HVF_render_part_axis_count(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 18.4
  */
-declare function HVF_set_axis_value(renderer: interop.Pointer | interop.Reference<any>, axis: number, value: number): number;
+declare function HVF_set_axis_value(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, axis: number, value: number): number;
 
 /**
  * @since 18.4
  */
-declare function HVF_set_render_part(renderer: interop.Pointer | interop.Reference<any>, partIndex: number): number;
+declare function HVF_set_render_part(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, partIndex: number): number;
 
 /**
  * @since 18.4
  */
-declare function HVF_table_version(renderer: interop.Pointer | interop.Reference<any>): HVFTableVersion;
+declare function HVF_table_version(renderer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): HVFTableVersion;

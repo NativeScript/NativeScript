@@ -8,13 +8,13 @@ declare class PTChannelDescriptor extends NSObject {
 
 	static new(): PTChannelDescriptor; // inherited from NSObject
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
 	readonly name: string;
 
-	constructor(o: { name: string; image: UIImage; });
+	constructor(o: { name: string; image: UIImage | null; });
 
-	initWithNameImage(name: string, image: UIImage): this;
+	initWithNameImage(name: string, image: UIImage | null): this;
 }
 
 /**
@@ -79,11 +79,11 @@ declare class PTChannelManager extends NSObject {
 
 	static alloc(): PTChannelManager; // inherited from NSObject
 
-	static channelManagerWithDelegateRestorationDelegateCompletionHandler(delegate: PTChannelManagerDelegate, restorationDelegate: PTChannelRestorationDelegate, completionHandler: (p1: PTChannelManager, p2: NSError) => void): void;
+	static channelManagerWithDelegateRestorationDelegateCompletionHandler(delegate: PTChannelManagerDelegate, restorationDelegate: PTChannelRestorationDelegate, completionHandler: (p1: PTChannelManager | null, p2: NSError | null) => void): void;
 
 	static new(): PTChannelManager; // inherited from NSObject
 
-	readonly activeChannelUUID: NSUUID;
+	readonly activeChannelUUID: NSUUID | null;
 
 	leaveChannelWithUUID(channelUUID: NSUUID): void;
 
@@ -94,15 +94,15 @@ declare class PTChannelManager extends NSObject {
 	/**
 	 * @since 17.0
 	 */
-	setAccessoryButtonEventsEnabledForChannelUUIDCompletionHandler(enabled: boolean, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+	setAccessoryButtonEventsEnabledForChannelUUIDCompletionHandler(enabled: boolean, channelUUID: NSUUID, completionHandler: (p1: NSError | null) => void | null): void;
 
-	setActiveRemoteParticipantForChannelUUIDCompletionHandler(participant: PTParticipant, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+	setActiveRemoteParticipantForChannelUUIDCompletionHandler(participant: PTParticipant | null, channelUUID: NSUUID, completionHandler: (p1: NSError | null) => void | null): void;
 
-	setChannelDescriptorForChannelUUIDCompletionHandler(channelDescriptor: PTChannelDescriptor, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+	setChannelDescriptorForChannelUUIDCompletionHandler(channelDescriptor: PTChannelDescriptor, channelUUID: NSUUID, completionHandler: (p1: NSError | null) => void | null): void;
 
-	setServiceStatusForChannelUUIDCompletionHandler(status: PTServiceStatus, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+	setServiceStatusForChannelUUIDCompletionHandler(status: PTServiceStatus, channelUUID: NSUUID, completionHandler: (p1: NSError | null) => void | null): void;
 
-	setTransmissionModeForChannelUUIDCompletionHandler(transmissionMode: PTTransmissionMode, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+	setTransmissionModeForChannelUUIDCompletionHandler(transmissionMode: PTTransmissionMode, channelUUID: NSUUID, completionHandler: (p1: NSError | null) => void | null): void;
 
 	stopTransmittingWithChannelUUID(channelUUID: NSUUID): void;
 }
@@ -204,13 +204,13 @@ declare class PTParticipant extends NSObject {
 
 	static new(): PTParticipant; // inherited from NSObject
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
 	readonly name: string;
 
-	constructor(o: { name: string; image: UIImage; });
+	constructor(o: { name: string; image: UIImage | null; });
 
-	initWithNameImage(name: string, image: UIImage): this;
+	initWithNameImage(name: string, image: UIImage | null): this;
 }
 
 /**

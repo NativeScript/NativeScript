@@ -61,17 +61,17 @@ declare class PHASEAssetRegistry extends NSObject {
 
 	readonly globalMetaParameters: NSDictionary<string, PHASEMetaParameter>;
 
-	assetForIdentifier(identifier: string): PHASEAsset;
+	assetForIdentifier(identifier: string): PHASEAsset | null;
 
-	registerGlobalMetaParameterError(metaParameterDefinition: PHASEMetaParameterDefinition, error?: interop.Reference<NSError>): PHASEGlobalMetaParameterAsset;
+	registerGlobalMetaParameterError(metaParameterDefinition: PHASEMetaParameterDefinition, error?: interop.Reference<NSError>): PHASEGlobalMetaParameterAsset | null;
 
-	registerSoundAssetAtURLIdentifierAssetTypeChannelLayoutNormalizationModeError(url: NSURL, identifier: string, assetType: PHASEAssetType, channelLayout: AVAudioChannelLayout, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset;
+	registerSoundAssetAtURLIdentifierAssetTypeChannelLayoutNormalizationModeError(url: NSURL, identifier: string | null, assetType: PHASEAssetType, channelLayout: AVAudioChannelLayout | null, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset | null;
 
-	registerSoundAssetWithDataIdentifierFormatNormalizationModeError(data: NSData, identifier: string, format: AVAudioFormat, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset;
+	registerSoundAssetWithDataIdentifierFormatNormalizationModeError(data: NSData, identifier: string | null, format: AVAudioFormat, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset | null;
 
-	registerSoundEventAssetWithRootNodeIdentifierError(rootNode: PHASESoundEventNodeDefinition, identifier: string, error?: interop.Reference<NSError>): PHASESoundEventNodeAsset;
+	registerSoundEventAssetWithRootNodeIdentifierError(rootNode: PHASESoundEventNodeDefinition, identifier: string | null, error?: interop.Reference<NSError>): PHASESoundEventNodeAsset | null;
 
-	unregisterAssetWithIdentifierCompletion(identifier: string, handler: (p1: boolean) => void): void;
+	unregisterAssetWithIdentifierCompletion(identifier: string, handler: (p1: boolean) => void | null): void;
 }
 
 declare const enum PHASEAssetType {
@@ -100,9 +100,9 @@ declare class PHASEBlendNodeDefinition extends PHASESoundEventNodeDefinition {
 
 	static new(): PHASEBlendNodeDefinition; // inherited from NSObject
 
-	readonly blendParameterDefinition: PHASENumberMetaParameterDefinition;
+	readonly blendParameterDefinition: PHASENumberMetaParameterDefinition | null;
 
-	readonly spatialMixerDefinitionForDistance: PHASESpatialMixerDefinition;
+	readonly spatialMixerDefinitionForDistance: PHASESpatialMixerDefinition | null;
 
 	constructor(o: { distanceBlendWithSpatialMixerDefinition: PHASESpatialMixerDefinition; });
 
@@ -327,7 +327,7 @@ declare class PHASEDistanceModelParameters extends NSObject {
 
 	static new(): PHASEDistanceModelParameters; // inherited from NSObject
 
-	fadeOutParameters: PHASEDistanceModelFadeOutParameters;
+	fadeOutParameters: PHASEDistanceModelFadeOutParameters | null;
 }
 
 /**
@@ -375,7 +375,7 @@ declare class PHASEEngine extends NSObject {
 
 	static new(): PHASEEngine; // inherited from NSObject
 
-	readonly activeGroupPreset: PHASEGroupPreset;
+	readonly activeGroupPreset: PHASEGroupPreset | null;
 
 	readonly assetRegistry: PHASEAssetRegistry;
 
@@ -390,7 +390,7 @@ declare class PHASEEngine extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	readonly lastRenderTime: AVAudioTime;
+	readonly lastRenderTime: AVAudioTime | null;
 
 	outputSpatializationMode: PHASESpatializationMode;
 
@@ -495,9 +495,9 @@ declare class PHASEGeneratorNodeDefinition extends PHASESoundEventNodeDefinition
 
 	readonly calibrationMode: PHASECalibrationMode;
 
-	gainMetaParameterDefinition: PHASENumberMetaParameterDefinition;
+	gainMetaParameterDefinition: PHASENumberMetaParameterDefinition | null;
 
-	group: PHASEGroup;
+	group: PHASEGroup | null;
 
 	readonly level: number;
 
@@ -505,7 +505,7 @@ declare class PHASEGeneratorNodeDefinition extends PHASESoundEventNodeDefinition
 
 	rate: number;
 
-	rateMetaParameterDefinition: PHASENumberMetaParameterDefinition;
+	rateMetaParameterDefinition: PHASENumberMetaParameterDefinition | null;
 
 	setCalibrationModeLevel(calibrationMode: PHASECalibrationMode, level: number): void;
 }
@@ -746,7 +746,7 @@ declare class PHASEMixer extends NSObject {
 
 	readonly gain: number;
 
-	readonly gainMetaParameter: PHASEMetaParameter;
+	readonly gainMetaParameter: PHASEMetaParameter | null;
 
 	readonly identifier: string;
 }
@@ -762,7 +762,7 @@ declare class PHASEMixerDefinition extends PHASEDefinition {
 
 	gain: number;
 
-	gainMetaParameterDefinition: PHASENumberMetaParameterDefinition;
+	gainMetaParameterDefinition: PHASENumberMetaParameterDefinition | null;
 }
 
 /**
@@ -861,7 +861,7 @@ declare class PHASEObject extends NSObject implements NSCopying {
 
 	readonly children: NSArray<PHASEObject>;
 
-	readonly parent: PHASEObject;
+	readonly parent: PHASEObject | null;
 
 	transform: simd_float4x4;
 
@@ -877,7 +877,7 @@ declare class PHASEObject extends NSObject implements NSCopying {
 
 	addChildError(child: PHASEObject, error?: interop.Reference<NSError>): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithEngine(engine: PHASEEngine): this;
 
@@ -918,7 +918,7 @@ declare class PHASEPullStreamNode extends PHASEStreamNode {
 
 	static new(): PHASEPullStreamNode; // inherited from NSObject
 
-	renderBlock: (p1: interop.Pointer | interop.Reference<boolean>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList>) => number;
+	renderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number;
 }
 
 /**
@@ -970,9 +970,9 @@ declare class PHASEPushStreamNode extends PHASEStreamNode {
 
 	scheduleBuffer(buffer: AVAudioPCMBuffer): void;
 
-	scheduleBufferAtTimeOptions(buffer: AVAudioPCMBuffer, when: AVAudioTime, options: PHASEPushStreamBufferOptions): void;
+	scheduleBufferAtTimeOptions(buffer: AVAudioPCMBuffer, when: AVAudioTime | null, options: PHASEPushStreamBufferOptions): void;
 
-	scheduleBufferAtTimeOptionsCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, when: AVAudioTime, options: PHASEPushStreamBufferOptions, completionCallbackType: PHASEPushStreamCompletionCallbackCondition, completionHandler: (p1: PHASEPushStreamCompletionCallbackCondition) => void): void;
+	scheduleBufferAtTimeOptionsCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, when: AVAudioTime | null, options: PHASEPushStreamBufferOptions, completionCallbackType: PHASEPushStreamCompletionCallbackCondition, completionHandler: (p1: PHASEPushStreamCompletionCallbackCondition) => void): void;
 
 	scheduleBufferCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, completionCallbackType: PHASEPushStreamCompletionCallbackCondition, completionHandler: (p1: PHASEPushStreamCompletionCallbackCondition) => void): void;
 }
@@ -1094,7 +1094,7 @@ declare class PHASEShape extends NSObject implements NSCopying {
 
 	constructor(o: { engine: PHASEEngine; mesh: MDLMesh; materials: NSArray<PHASEMaterial> | PHASEMaterial[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithEngineMesh(engine: PHASEEngine, mesh: MDLMesh): this;
 
@@ -1110,7 +1110,7 @@ declare class PHASEShapeElement extends NSObject {
 
 	static new(): PHASEShapeElement; // inherited from NSObject
 
-	material: PHASEMaterial;
+	material: PHASEMaterial | null;
 }
 
 /**
@@ -1122,11 +1122,11 @@ declare class PHASESoundAsset extends PHASEAsset {
 
 	static new(): PHASESoundAsset; // inherited from NSObject
 
-	readonly data: NSData;
+	readonly data: NSData | null;
 
 	readonly type: PHASEAssetType;
 
-	readonly url: NSURL;
+	readonly url: NSURL | null;
 }
 
 /**
@@ -1165,28 +1165,28 @@ declare class PHASESoundEvent extends NSObject {
 
 	pause(): void;
 
-	prepareWithCompletion(handler: (p1: PHASESoundEventPrepareHandlerReason) => void): void;
+	prepareWithCompletion(handler: (p1: PHASESoundEventPrepareHandlerReason) => void | null): void;
 
 	resume(): void;
 
 	/**
 	 * @since 26.0
 	 */
-	resumeAtTime(time: AVAudioTime): void;
+	resumeAtTime(time: AVAudioTime | null): void;
 
-	seekToTimeCompletion(time: number, handler: (p1: PHASESoundEventSeekHandlerReason) => void): void;
-
-	/**
-	 * @since 26.0
-	 */
-	seekToTimeResumeAtEngineTimeCompletion(time: number, engineTime: AVAudioTime, handler: (p1: PHASESoundEventSeekHandlerReason) => void): void;
+	seekToTimeCompletion(time: number, handler: (p1: PHASESoundEventSeekHandlerReason) => void | null): void;
 
 	/**
 	 * @since 26.0
 	 */
-	startAtTimeCompletion(when: AVAudioTime, handler: (p1: PHASESoundEventStartHandlerReason) => void): void;
+	seekToTimeResumeAtEngineTimeCompletion(time: number, engineTime: AVAudioTime, handler: (p1: PHASESoundEventSeekHandlerReason) => void | null): void;
 
-	startWithCompletion(handler: (p1: PHASESoundEventStartHandlerReason) => void): void;
+	/**
+	 * @since 26.0
+	 */
+	startAtTimeCompletion(when: AVAudioTime | null, handler: (p1: PHASESoundEventStartHandlerReason) => void | null): void;
+
+	startWithCompletion(handler: (p1: PHASESoundEventStartHandlerReason) => void | null): void;
 
 	stopAndInvalidate(): void;
 }
@@ -1299,11 +1299,11 @@ declare class PHASESpatialMixerDefinition extends PHASEMixerDefinition {
 
 	static new(): PHASESpatialMixerDefinition; // inherited from NSObject
 
-	distanceModelParameters: PHASEDistanceModelParameters;
+	distanceModelParameters: PHASEDistanceModelParameters | null;
 
-	listenerDirectivityModelParameters: PHASEDirectivityModelParameters;
+	listenerDirectivityModelParameters: PHASEDirectivityModelParameters | null;
 
-	sourceDirectivityModelParameters: PHASEDirectivityModelParameters;
+	sourceDirectivityModelParameters: PHASEDirectivityModelParameters | null;
 
 	readonly spatialPipeline: PHASESpatialPipeline;
 
@@ -1345,7 +1345,7 @@ declare class PHASESpatialPipelineEntry extends NSObject {
 
 	sendLevel: number;
 
-	sendLevelMetaParameterDefinition: PHASENumberMetaParameterDefinition;
+	sendLevelMetaParameterDefinition: PHASENumberMetaParameterDefinition | null;
 }
 
 declare const enum PHASESpatialPipelineFlags {
@@ -1377,11 +1377,11 @@ declare class PHASEStreamNode extends NSObject {
 
 	readonly format: AVAudioFormat;
 
-	readonly gainMetaParameter: PHASENumberMetaParameter;
+	readonly gainMetaParameter: PHASENumberMetaParameter | null;
 
 	readonly mixer: PHASEMixer;
 
-	readonly rateMetaParameter: PHASENumberMetaParameter;
+	readonly rateMetaParameter: PHASENumberMetaParameter | null;
 }
 
 /**
