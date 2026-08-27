@@ -1,3 +1,13 @@
+## 9.1.0-rc.3 (2026-08-27)
+
+### 🩹 Fixes
+
+- **core:** restore the per-side padding setNative protocol ([#11368](https://github.com/NativeScript/NativeScript/pull/11368))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 9.1.0-rc.2 (2026-08-26)
 
 ### 🚀 Features
