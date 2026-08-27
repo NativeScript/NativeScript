@@ -131384,7 +131384,7 @@ declare module java {
 			public static MAX_EXPONENT: 127;
 			public static MAX_VALUE: 3.4028235E38;
 			public static MIN_EXPONENT: -126;
-			public static MIN_NORMAL: 1.1754944E-38;
+			public static MIN_NORMAL: 1.17549435E-38;
 			public static MIN_VALUE: 1.4E-45;
 			public static NEGATIVE_INFINITY: typeof Infinity;
 			public static NaN: typeof NaN;
