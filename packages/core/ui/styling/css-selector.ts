@@ -428,10 +428,11 @@ export class AttributeSelector extends SimpleSelector {
 		return false;
 	}
 	public mayMatch(node: Node): boolean {
-		// Registered properties live on the prototype and anything already assigned is
-		// an own value; an attribute on neither can never start matching without the
-		// css state being invalidated anyway.
-		return this.attribute in node;
+		// An attribute the node does not carry yet cannot be ruled out: assigning a
+		// plain instance value (Angular's `_ngcontent-*` markers, `[attr.x]` bindings)
+		// neither raises a change event nor invalidates the match, so a selector
+		// dropped here would never be reconsidered.
+		return true;
 	}
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
 		if (attributeNotifiesChanges(node, this.attribute)) {
