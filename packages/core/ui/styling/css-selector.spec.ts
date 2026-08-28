@@ -364,7 +364,20 @@ describe('css-selector', () => {
 			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
 			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
 
-			expect(rule.selectors[0].accumulateChanges(<any>node, undefined)).toBe(false);
+			expect(rule.selectors[0].match(<any>node)).toBe(false);
+		});
+
+		it('stays a candidate so it can match once the attribute is assigned', () => {
+			// Assigning a plain instance value raises no change event, so a selector
+			// dropped from the match would never be reconsidered.
+			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
+			const node: any = { cssType: 'label', cssClasses: new Set(['title']) };
+
+			expect(rule.selectors[0].accumulateChanges(node, undefined)).toBe(true);
+
+			node['_ngcontent-c7'] = '';
+
+			expect(rule.selectors[0].match(node)).toBe(true);
 		});
 
 		it('matches a node carrying the attribute', () => {
