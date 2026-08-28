@@ -374,6 +374,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			scene: windowScene,
 		} as SceneEventData);
 
+		Application.ios._setWindowActive(nativeWindow, true, windowScene);
+
 		const rootView = nativeWindow?.rootView;
 		if (rootView && !rootView.isLoaded) {
 			rootView.callLoaded();
@@ -400,6 +402,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			window: nativeWindow,
 			scene: windowScene,
 		} as SceneEventData);
+
+		Application.ios._setWindowActive(nativeWindow, false, windowScene);
 	}
 
 	sceneWillEnterForeground(scene: UIScene): void {
@@ -422,6 +426,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			window: nativeWindow,
 			scene: windowScene,
 		} as SceneEventData);
+
+		Application.ios._setWindowInForeground(nativeWindow, true, windowScene);
 	}
 
 	sceneDidEnterBackground(scene: UIScene): void {
@@ -445,6 +451,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			scene: windowScene,
 		} as SceneEventData);
 
+		Application.ios._setWindowInForeground(nativeWindow, false, windowScene);
+
 		const rootView = nativeWindow?.rootView;
 		if (rootView && rootView.isLoaded) {
 			rootView.callUnloaded();
@@ -454,6 +462,12 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	sceneDidDisconnect(scene: UIScene): void {
 		const windowScene = scene as UIWindowScene;
 		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+
+		// A scene can disconnect without first resigning or backgrounding, so the window has
+		// to leave the app-level aggregates here as well.
+		Application.ios._setWindowActive(nativeWindow, false, windowScene);
+		Application.ios._setWindowInForeground(nativeWindow, false, windowScene);
+
 		if (nativeWindow) {
 			// A disconnect only ends the window session when the app asked for it —
 			// otherwise iOS may reconnect the same session later. A window with no session
@@ -586,6 +600,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	// The window whose root view the app-level root view state mirrors.
 	private _mirroredWindow: NativeWindow;
+
+	// Application-role windows currently in the foreground / currently active. Membership,
+	// not a count, so a repeated or missing scene callback cannot drift the aggregate.
+	private _foregroundWindows = new Set<NativeWindow>();
+	private _activeWindows = new Set<NativeWindow>();
 
 	private _notificationObservers: NotificationObserver[] = [];
 
@@ -1263,14 +1282,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			pendingWindowContentResolve();
 		}
 
-		const additionalData = {
-			ios: UIApplication.sharedApplication,
-		};
-		this.setInBackground(false, additionalData);
-		this.setSuspended(false, additionalData);
-
-		// In scene mode the root view belongs to a window, so the scene delegate loads it.
+		// A scene app derives app-level state from its windows, so this notification must not
+		// drive it as well. In scene mode the root view belongs to a window too, so the scene
+		// delegate loads it.
 		if (!this.supportsScenes()) {
+			const additionalData = {
+				ios: UIApplication.sharedApplication,
+			};
+			this.setInBackground(false, additionalData);
+			this.setSuspended(false, additionalData);
+
 			const rootView = this._rootView;
 			if (rootView && !rootView.isLoaded) {
 				rootView.callLoaded();
@@ -1279,13 +1300,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private didEnterBackground(notification: NSNotification) {
-		const additionalData = {
-			ios: UIApplication.sharedApplication,
-		};
-		this.setInBackground(true, additionalData);
-		this.setSuspended(true, additionalData);
-
+		// See didBecomeActive: in scene mode the windows drive app-level state.
 		if (!this.supportsScenes()) {
+			const additionalData = {
+				ios: UIApplication.sharedApplication,
+			};
+			this.setInBackground(true, additionalData);
+			this.setSuspended(true, additionalData);
+
 			const rootView = this._rootView;
 			if (rootView && rootView.isLoaded) {
 				rootView.callUnloaded();
@@ -1390,6 +1412,55 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 */
 	_getWindowForScene(scene: UIWindowScene): IOSNativeWindow | undefined {
 		return this._windows.find((nw) => nw.ios?.scene === scene) as IOSNativeWindow | undefined;
+	}
+
+	/**
+	 * @internal - Feeds a window's foreground state into the application-level
+	 * 'foreground'/'background' events, which describe the app as a whole: they are raised
+	 * when the first application-role window enters the foreground and when the last one
+	 * leaves it. Windows in any other role never speak for the app.
+	 */
+	_setWindowInForeground(nativeWindow: NativeWindow | undefined, inForeground: boolean, scene?: UIScene): void {
+		if (this._trackWindowState(this._foregroundWindows, nativeWindow, inForeground)) {
+			this.setInBackground(!inForeground, {
+				ios: UIApplication.sharedApplication,
+				scene,
+			});
+		}
+	}
+
+	/**
+	 * @internal - Feeds a window's active state into the application-level 'resume'/'suspend'
+	 * events, raised when the first application-role window becomes active and when the last
+	 * active one resigns.
+	 */
+	_setWindowActive(nativeWindow: NativeWindow | undefined, active: boolean, scene?: UIScene): void {
+		if (this._trackWindowState(this._activeWindows, nativeWindow, active)) {
+			this.setSuspended(!active, {
+				ios: UIApplication.sharedApplication,
+				scene,
+			});
+		}
+	}
+
+	/**
+	 * @returns whether the set flipped between empty and non-empty, which is the only point
+	 * at which app-level state changes.
+	 */
+	private _trackWindowState(windows: Set<NativeWindow>, nativeWindow: NativeWindow | undefined, member: boolean): boolean {
+		if (nativeWindow?.role !== 'application') {
+			return false;
+		}
+
+		const wasPopulated = windows.size > 0;
+
+		if (member) {
+			windows.add(nativeWindow);
+		} else {
+			windows.delete(nativeWindow);
+		}
+
+		return wasPopulated !== windows.size > 0;
 	}
 
 	protected _onWindowRegistered(nativeWindow: NativeWindow): void {
