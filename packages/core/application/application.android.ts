@@ -148,6 +148,11 @@ function initNativeScriptLifecycleCallbacks() {
 
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
+				// Android always pauses before destroying, so the window has normally left the
+				// active aggregate already; this only keeps a dropped pause from stranding it
+				// there and wedging the app as never-suspended.
+				Application.android._setWindowActive(nativeWindow, false, activity);
+
 				// A destroyed activity only ends the window session when it is finishing —
 				// otherwise Android is recreating it and the same window is reused.
 				const isClosing = activity.isFinishing();
@@ -195,15 +200,14 @@ function initNativeScriptLifecycleCallbacks() {
 		@profile
 		public onActivityPaused(activity: androidx.appcompat.app.AppCompatActivity): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivityPaused');
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+
+			// `onActivityCreated` registers a window for every activity in the process, so the
+			// window's role cannot tell a NativeScript activity from a third-party one.
 			if ('isNativeScriptActivity' in activity) {
-				Application.setSuspended(true, {
-					// todo: deprecate event.android in favor of event.activity
-					android: activity,
-					activity,
-				});
+				Application.android._setWindowActive(nativeWindow, false, activity);
 			}
 
-			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
 				// Emit activityPaused on NativeWindow
@@ -518,6 +522,11 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	private lifecycleCallbacks: NativeScriptLifecycleCallbacks;
 	private componentCallbacks: NativeScriptComponentCallbacks;
 
+	// Windows currently active. Membership, not a count, so a repeated or missing lifecycle
+	// callback cannot drift the aggregate. The registry owns window lifetime, so nothing here
+	// outlives the window itself.
+	private _activeWindows = new Set<NativeWindow>();
+
 	init(nativeApp: android.app.Application): void {
 		if (this.nativeApp === nativeApp) {
 			return;
@@ -707,6 +716,44 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	 */
 	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): AndroidNativeWindow | undefined {
 		return this._windows.find((nw) => nw.android?.activity === activity) as AndroidNativeWindow | undefined;
+	}
+
+	/**
+	 * @internal - Feeds a window's active state into the application-level 'resume'/'suspend'
+	 * events, which describe the app as a whole: they are raised when the first window becomes
+	 * active and when the last active one resigns. Callers decide which activities may speak
+	 * for the app; every window reaching here participates.
+	 */
+	_setWindowActive(nativeWindow: NativeWindow | undefined, active: boolean, activity?: androidx.appcompat.app.AppCompatActivity): void {
+		if (this._trackWindowActive(nativeWindow, active)) {
+			this.setSuspended(!active, {
+				// todo: deprecate event.android in favor of event.activity
+				android: activity,
+				activity,
+			});
+		}
+	}
+
+	/**
+	 * @returns whether the set flipped between empty and non-empty, which is the only point
+	 * at which app-level state changes.
+	 */
+	private _trackWindowActive(nativeWindow: NativeWindow | undefined, active: boolean): boolean {
+		const wasPopulated = this._activeWindows.size > 0;
+
+		// An activity with no registered window cannot join the aggregate, so it only speaks
+		// for the app while no window holds the state.
+		if (!nativeWindow) {
+			return !wasPopulated;
+		}
+
+		if (active) {
+			this._activeWindows.add(nativeWindow);
+		} else {
+			this._activeWindows.delete(nativeWindow);
+		}
+
+		return wasPopulated !== this._activeWindows.size > 0;
 	}
 
 	// --- Multi-window support ---
