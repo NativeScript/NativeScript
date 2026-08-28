@@ -267,6 +267,12 @@ export class Style extends Observable {
 
 	public viewRef: WeakRef<ViewBase>;
 
+	/**
+	 * Bumped on every local write. A local value takes the slot of the css value it
+	 * shadows, so this is what tells the css state its recorded values may be stale.
+	 */
+	public _localValueVersion: number;
+
 	public get view(): ViewBase {
 		if (this.viewRef) {
 			return this.viewRef.get();
@@ -278,3 +284,4 @@ export class Style extends Observable {
 Style.prototype.PropertyBag = class {
 	[property: string]: string;
 };
+Style.prototype._localValueVersion = 0;

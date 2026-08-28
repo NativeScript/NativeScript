@@ -35,6 +35,26 @@ const enum ValueSource {
 	Keyframe = 4,
 }
 
+/** `sourceKey` of every registered `CssProperty`, by css name. */
+const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
+
+/**
+ * Whether the style still carries what the cascade last wrote for the property.
+ * A `CssProperty` keeps one value: a local value both suppresses the css write and
+ * takes the slot, so clearing it leaves the property at its default with the css
+ * value gone. The cascade has to write it again rather than skip it as unchanged.
+ */
+export function _isCssValueStillApplied(style: unknown, cssLocalName: string, value: unknown): boolean {
+	const sourceKey = cssValueSourceKeys[cssLocalName];
+	if (sourceKey === undefined) {
+		// Applied through the view rather than the style; nothing to verify.
+		return true;
+	}
+
+	// A reset leaves no source behind, so it is in effect precisely when nothing else claimed the property.
+	return style[sourceKey] === (isResetValue(value) ? undefined : ValueSource.Css);
+}
+
 function print(map) {
 	const symbols = Object.getOwnPropertySymbols(map);
 	for (const symbol of symbols) {
@@ -755,6 +775,8 @@ export class CssProperty<T extends Style, U> {
 				return;
 			}
 
+			this._localValueVersion++;
+
 			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
@@ -939,6 +961,8 @@ export class CssProperty<T extends Style, U> {
 		if (this.cssLocalName !== this.cssName) {
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
+
+		cssValueSourceKeys[this.cssLocalName] = this.sourceKey;
 	}
 
 	public isSet(instance: T): boolean {
@@ -1205,12 +1229,18 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			}
 		};
 
-		const setFunc = (valueSource: ValueSource) =>
-			function (this: T, boxedValue: any): void {
+		const setFunc = (valueSource: ValueSource) => {
+			const isLocalWrite = valueSource === ValueSource.Local;
+
+			return function (this: T, boxedValue: any): void {
 				const view = this.viewRef.get();
 				if (!view) {
 					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 					return;
+				}
+
+				if (isLocalWrite) {
+					this._localValueVersion++;
 				}
 
 				const reset = isResetValue(boxedValue) || boxedValue === '';
@@ -1314,6 +1344,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 					});
 				}
 			};
+		};
 
 		const setDefaultFunc = setFunc(ValueSource.Default);
 		const setInheritedFunc = setFunc(ValueSource.Inherited);
