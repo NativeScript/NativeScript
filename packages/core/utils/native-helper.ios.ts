@@ -5,6 +5,7 @@ import { Color } from '../color';
 import { Trace } from '../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './animation-helpers';
 import { SDK_VERSION } from './constants';
+import { getActiveWindow, getiOSWindow } from '../application/helpers-common';
 
 export function dataDeserialize(nativeData?: any) {
 	if (isNullOrUndefined(nativeData)) {
@@ -122,7 +123,7 @@ declare let UIImagePickerControllerSourceType: any;
 const radToDeg = Math.PI / 180;
 
 function isOrientationLandscape(orientation: number) {
-	return orientation === UIDeviceOrientation.LandscapeLeft /* 3 */ || orientation === UIDeviceOrientation.LandscapeRight /* 4 */;
+	return orientation === UIDeviceOrientation.LandscapeLeft /* 3 */ || orientation === UIDeviceOrientation.LandscapeRight; /* 4 */
 }
 
 function openFileAtRootModule(filePath: string): boolean {
@@ -177,7 +178,27 @@ function getRootViewController(): UIViewController {
 	return vc;
 }
 
+/**
+ * The UIWindow NativeScript is driving.
+ *
+ * Resolved from the active window, then the recorded primary window, then UIKit's own
+ * key window lookups. The UIKit lookups come last because `UIApplication.keyWindow` is
+ * deprecated and, in a scene-based app, key status can sit on any connected scene's
+ * window - including one NativeScript does not own.
+ */
 export function getWindow(): UIWindow {
+	const activeWindow = getActiveWindow();
+	// A detached window keeps its UIWindow reference until a surface re-attaches, but that
+	// surface is gone - only an attached window can answer for the app.
+	if (activeWindow?.state === 'attached' && activeWindow.ios?.uiWindow) {
+		return activeWindow.ios.uiWindow;
+	}
+
+	const iosWindow = getiOSWindow();
+	if (iosWindow) {
+		return iosWindow;
+	}
+
 	let window: UIWindow;
 	if (SDK_VERSION >= 15 && typeof NativeScriptViewFactory !== 'undefined') {
 		// UIWindowScene.keyWindow is only available 15+
