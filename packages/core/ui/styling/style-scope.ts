@@ -688,6 +688,7 @@ export class CssState {
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
 	private _appliedPropertyValues: Record<string, unknown> = CssState.emptyPropertyBag;
+	private _appliedLocalValueVersion = -1;
 	_appliedAnimations: ReadonlyArray<KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
@@ -865,6 +866,11 @@ export class CssState {
 		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
 		const oldProperties = this._appliedPropertyValues;
+		// A local write is the only thing that can drop a value the cascade already
+		// applied, so the recorded values only have to be verified after one.
+		const localValueVersion = view.style._localValueVersion;
+		const verifyApplied = localValueVersion !== this._appliedLocalValueVersion;
+
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
@@ -898,7 +904,7 @@ export class CssState {
 
 			// Whatever is left in oldProperties after these loops was removed and gets unset.
 			const hadOldValue = property in oldProperties;
-			const unchanged = hadOldValue && oldProperties[property] === value && _isCssValueStillApplied(view.style, property, value);
+			const unchanged = hadOldValue && oldProperties[property] === value && (!verifyApplied || _isCssValueStillApplied(view.style, property, value));
 			if (hadOldValue) {
 				delete oldProperties[property];
 			}
@@ -942,7 +948,7 @@ export class CssState {
 				newPropertyValues[property] = value;
 			}
 
-			if (hadOldValue && oldValue === value && _isCssValueStillApplied(view.style, property, value)) {
+			if (hadOldValue && oldValue === value && (!verifyApplied || _isCssValueStillApplied(view.style, property, value))) {
 				continue;
 			}
 
@@ -980,7 +986,7 @@ export class CssState {
 				newPropertyValues[property] = value;
 			}
 
-			if (hadOldValue && oldValue === value && _isCssValueStillApplied(view.style, property, value)) {
+			if (hadOldValue && oldValue === value && (!verifyApplied || _isCssValueStillApplied(view.style, property, value))) {
 				continue;
 			}
 
@@ -1016,6 +1022,7 @@ export class CssState {
 		}
 
 		this._appliedPropertyValues = newPropertyValues;
+		this._appliedLocalValueVersion = view.style._localValueVersion;
 	}
 
 	private subscribeForDynamicUpdates(): void {

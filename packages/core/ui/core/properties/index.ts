@@ -775,6 +775,8 @@ export class CssProperty<T extends Style, U> {
 				return;
 			}
 
+			this._localValueVersion++;
+
 			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
@@ -1227,12 +1229,18 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			}
 		};
 
-		const setFunc = (valueSource: ValueSource) =>
-			function (this: T, boxedValue: any): void {
+		const setFunc = (valueSource: ValueSource) => {
+			const isLocalWrite = valueSource === ValueSource.Local;
+
+			return function (this: T, boxedValue: any): void {
 				const view = this.viewRef.get();
 				if (!view) {
 					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 					return;
+				}
+
+				if (isLocalWrite) {
+					this._localValueVersion++;
 				}
 
 				const reset = isResetValue(boxedValue) || boxedValue === '';
@@ -1336,6 +1344,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 					});
 				}
 			};
+		};
 
 		const setDefaultFunc = setFunc(ValueSource.Default);
 		const setInheritedFunc = setFunc(ValueSource.Inherited);
