@@ -969,11 +969,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		// and raising the application resume event there causes issues like
 		// https://github.com/NativeScript/NativeScript/issues/6708
 		if ((<any>activity).isNativeScriptActivity) {
-			Application.setSuspended(false, {
-				// todo: deprecate in favor of using event.activity instead.
-				android: activity,
-				activity,
-			});
+			Application.android._setWindowActive(Application.android._getWindowForActivity(activity), true, activity);
 		}
 	}
 

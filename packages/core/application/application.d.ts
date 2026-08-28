@@ -156,6 +156,12 @@ export class AndroidApplication extends ApplicationCommon {
 	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): NativeWindow | undefined;
 
 	/**
+	 * @internal - Feeds a window's active state into the application-level 'resume'/'suspend'
+	 * events, raised when the first window becomes active and when the last active one resigns.
+	 */
+	_setWindowActive(nativeWindow: NativeWindow | undefined, active: boolean, activity?: androidx.appcompat.app.AppCompatActivity): void;
+
+	/**
 	 * Opens a new window by launching the start activity into its own task.
 	 *
 	 * @param options Options for the new window. `options.data` is put on the launch
