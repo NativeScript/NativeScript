@@ -1,7 +1,7 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssShorthand, _isCssPendingSubstitution, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssShorthand, _isCssPendingSubstitution, _isCssValueStillApplied, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
@@ -898,7 +898,7 @@ export class CssState {
 
 			// Whatever is left in oldProperties after these loops was removed and gets unset.
 			const hadOldValue = property in oldProperties;
-			const unchanged = hadOldValue && oldProperties[property] === value;
+			const unchanged = hadOldValue && oldProperties[property] === value && _isCssValueStillApplied(view.style, property, value);
 			if (hadOldValue) {
 				delete oldProperties[property];
 			}
@@ -942,7 +942,7 @@ export class CssState {
 				newPropertyValues[property] = value;
 			}
 
-			if (hadOldValue && oldValue === value) {
+			if (hadOldValue && oldValue === value && _isCssValueStillApplied(view.style, property, value)) {
 				continue;
 			}
 
@@ -980,7 +980,7 @@ export class CssState {
 				newPropertyValues[property] = value;
 			}
 
-			if (hadOldValue && oldValue === value) {
+			if (hadOldValue && oldValue === value && _isCssValueStillApplied(view.style, property, value)) {
 				continue;
 			}
 

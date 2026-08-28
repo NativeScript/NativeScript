@@ -35,6 +35,26 @@ const enum ValueSource {
 	Keyframe = 4,
 }
 
+/** `sourceKey` of every registered `CssProperty`, by css name. */
+const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
+
+/**
+ * Whether the style still carries what the cascade last wrote for the property.
+ * A `CssProperty` keeps one value: a local value both suppresses the css write and
+ * takes the slot, so clearing it leaves the property at its default with the css
+ * value gone. The cascade has to write it again rather than skip it as unchanged.
+ */
+export function _isCssValueStillApplied(style: unknown, cssLocalName: string, value: unknown): boolean {
+	const sourceKey = cssValueSourceKeys[cssLocalName];
+	if (sourceKey === undefined) {
+		// Applied through the view rather than the style; nothing to verify.
+		return true;
+	}
+
+	// A reset leaves no source behind, so it is in effect precisely when nothing else claimed the property.
+	return style[sourceKey] === (isResetValue(value) ? undefined : ValueSource.Css);
+}
+
 function print(map) {
 	const symbols = Object.getOwnPropertySymbols(map);
 	for (const symbol of symbols) {
@@ -939,6 +959,8 @@ export class CssProperty<T extends Style, U> {
 		if (this.cssLocalName !== this.cssName) {
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
+
+		cssValueSourceKeys[this.cssLocalName] = this.sourceKey;
 	}
 
 	public isSet(instance: T): boolean {
