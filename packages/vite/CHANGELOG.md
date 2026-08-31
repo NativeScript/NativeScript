@@ -1,3 +1,13 @@
+## 8.0.1-dev.0 (2026-08-31)
+
+### 🩹 Fixes
+
+- **vite:** settings-only pnpm-workspace.yaml is not a monorepo root marker ([25a16ea39](https://github.com/NativeScript/NativeScript/commit/25a16ea39))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 # 8.0.0 (2026-08-27)
 
 ### 🚀 Features

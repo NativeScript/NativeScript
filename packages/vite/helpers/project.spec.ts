@@ -73,6 +73,32 @@ describe('findMonorepoWorkspaceRoot', () => {
 		}
 	});
 
+	it('walks past a settings-only pnpm-workspace.yaml (no packages key) to the real root', () => {
+		const { root, cleanup } = createTempTree();
+		try {
+			const appDir = join(root, 'apps', 'a');
+			mkdirSync(appDir, { recursive: true });
+			writeFileSync(join(root, 'nx.json'), '{}');
+			// pnpm >= 10 settings file pinning install behavior for the app only.
+			writeFileSync(join(appDir, 'pnpm-workspace.yaml'), 'nodeLinker: hoisted\nignoreScripts: true\n');
+			expect(findMonorepoWorkspaceRoot(appDir)).toBe(root);
+		} finally {
+			cleanup();
+		}
+	});
+
+	it('does not treat a settings-only pnpm-workspace.yaml as a workspace root by itself', () => {
+		const { root, cleanup } = createTempTree();
+		try {
+			const appDir = join(root, 'apps', 'a');
+			mkdirSync(appDir, { recursive: true });
+			writeFileSync(join(root, 'pnpm-workspace.yaml'), 'nodeLinker: hoisted\n');
+			expect(findMonorepoWorkspaceRoot(appDir)).toBe(null);
+		} finally {
+			cleanup();
+		}
+	});
+
 	it('detects npm/yarn workspace via package.json#workspaces', () => {
 		const { root, cleanup } = createTempTree();
 		try {
