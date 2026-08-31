@@ -1,3 +1,20 @@
+## 9.1.1 (2026-08-31)
+
+### 🚀 Features
+
+- iOS 26.5 types, Android API Level 36 + 37 ([#11369](https://github.com/NativeScript/NativeScript/pull/11369))
+
+### 🩹 Fixes
+
+- **core:** scene session discard no longer retires a live window ([#11376](https://github.com/NativeScript/NativeScript/pull/11376))
+- **core:** restore application lifecycle events and window resolution under UIScene ([#11373](https://github.com/NativeScript/NativeScript/pull/11373))
+- **core:** css lost to a local value or a late attribute assignment ([#11371](https://github.com/NativeScript/NativeScript/pull/11371))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+
 ## 9.1.0 (2026-08-27)
 
 ### 🚀 Features
