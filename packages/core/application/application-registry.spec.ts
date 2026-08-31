@@ -112,6 +112,15 @@ describe('ApplicationCommon window registry', () => {
 		setActiveWindow(undefined);
 	});
 
+	/**
+	 * Retires a window the way a platform does: the disconnect callback records that the
+	 * surface is gone, and only then is the window unregistered.
+	 */
+	function retire(window: WindowBase): void {
+		window._surfaceGone = true;
+		app._unregisterWindow(asWindow(window));
+	}
+
 	function record(...eventNames: string[]): Array<{ eventName: string; window: WindowBase }> {
 		const recorded: Array<{ eventName: string; window: WindowBase }> = [];
 		for (const eventName of eventNames) {
@@ -224,7 +233,7 @@ describe('ApplicationCommon window registry', () => {
 			app._registerWindow(window);
 			const recorded = record('windowClose');
 
-			app._unregisterWindow(window);
+			retire(window);
 
 			expect(recorded.map((entry) => entry.window)).toEqual([window]);
 			expect(app.getWindows()).toEqual([]);
@@ -244,7 +253,7 @@ describe('ApplicationCommon window registry', () => {
 			detached._detach();
 
 			const recorded = record('windowClose', 'primaryWindowChanged');
-			app._unregisterWindow(primary);
+			retire(primary);
 
 			expect(events).toEqual(['windowClose', 'primaryWindowChanged']);
 			expect(recorded[1].window).toBe(successor);
@@ -261,7 +270,7 @@ describe('ApplicationCommon window registry', () => {
 			detached._detach();
 
 			record('windowClose', 'primaryWindowChanged');
-			app._unregisterWindow(primary);
+			retire(primary);
 
 			expect(events).toEqual(['windowClose']);
 			expect(primary.isPrimary).toBe(false);
@@ -275,7 +284,7 @@ describe('ApplicationCommon window registry', () => {
 			app._registerWindow(secondary);
 
 			record('windowClose', 'primaryWindowChanged');
-			app._unregisterWindow(secondary);
+			retire(secondary);
 
 			expect(events).toEqual(['windowClose']);
 			expect(app.primaryWindow).toBe(primary);
@@ -308,7 +317,7 @@ describe('ApplicationCommon window registry', () => {
 		it('falls back to the primary window once the active one closes', () => {
 			secondary._notifyEvent(NativeWindowEvents.activate);
 
-			app._unregisterWindow(secondary);
+			retire(secondary);
 
 			expect(app.activeWindow).toBe(primary);
 		});
@@ -318,6 +327,82 @@ describe('ApplicationCommon window registry', () => {
 			secondary._detach();
 
 			expect(app.activeWindow).toBe(primary);
+		});
+	});
+
+	describe('discarded window sessions', () => {
+		let attached: TestWindow;
+		let detached: TestWindow;
+
+		beforeEach(() => {
+			attached = new TestWindow('scene-live', true).withContent();
+			detached = new TestWindow('scene-gone').withContent();
+
+			app._registerWindow(attached);
+			app._registerWindow(detached);
+
+			detached._detach();
+		});
+
+		it('retires a window whose surface is already gone', () => {
+			record('windowClose');
+
+			// The window drops its listeners in `_destroy`, so a listener only sees `close`
+			// if it is raised before the window is unregistered.
+			let closed = false;
+			detached.on(NativeWindowEvents.close, () => {
+				closed = true;
+			});
+
+			app._retireDiscardedWindows(['scene-gone']);
+
+			expect(app.getWindowById('scene-gone')).toBeUndefined();
+			expect(closed).toBe(true);
+			expect(events).toEqual(['windowClose']);
+		});
+
+		/**
+		 * iOS reports sessions discarded in an earlier run on the next launch, and such an
+		 * id can name the session driving the app now. Retiring on the id alone would unload
+		 * the live root view and every frame under it, and nothing reloads a root view whose
+		 * window has left the registry - navigation then queues forever behind `Frame.isLoaded`.
+		 */
+		it('leaves an attached window alone when a discarded id names it', () => {
+			const rootView = attached.rootView as any;
+			let unloaded = false;
+
+			rootView.isLoaded = true;
+			rootView.callUnloaded = () => {
+				unloaded = true;
+			};
+
+			app._retireDiscardedWindows(['scene-live']);
+
+			expect(app.getWindowById('scene-live')).toBe(attached);
+			expect(attached.state).toBe('attached');
+			expect(unloaded).toBe(false);
+			expect(events).toEqual([]);
+		});
+
+		it('ignores ids that match no window', () => {
+			record('windowClose');
+
+			app._retireDiscardedWindows(['scene-never-seen']);
+
+			expect(app.getWindows()).toEqual([attached, detached]);
+			expect(events).toEqual([]);
+		});
+
+		it('retires every detached window named in one discard', () => {
+			const alsoDetached = new TestWindow('scene-gone-too').withContent();
+			app._registerWindow(alsoDetached);
+			alsoDetached._detach();
+
+			app._retireDiscardedWindows(['scene-gone', 'scene-live', 'scene-gone-too']);
+
+			expect(app.getWindowById('scene-gone')).toBeUndefined();
+			expect(app.getWindowById('scene-gone-too')).toBeUndefined();
+			expect(app.getWindowById('scene-live')).toBe(attached);
 		});
 	});
 });
