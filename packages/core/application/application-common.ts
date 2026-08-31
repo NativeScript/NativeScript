@@ -541,6 +541,36 @@ export class ApplicationCommon {
 	}
 
 	/**
+	 * @internal - retire the windows behind discarded window-session ids.
+	 *
+	 * A session id can only stand in for a window whose native surface is already gone.
+	 * iOS reports sessions discarded while the app was not running on the next launch,
+	 * and such an id can name the session driving the app now, so an id match alone is
+	 * no evidence that the window is finished with. Retiring an attached window tears
+	 * down the UI in use - its root view unloads and nothing ever reloads it - so only
+	 * detached windows are retired. Ids matching no window are ignored: they routinely
+	 * belong to windows this JS context has never seen.
+	 */
+	_retireDiscardedWindows(ids: string[]): void {
+		for (const id of ids) {
+			const nativeWindow = id ? this.getWindowById(id) : undefined;
+
+			if (!nativeWindow) {
+				continue;
+			}
+
+			if (nativeWindow.state === 'attached') {
+				Trace.write(`Ignoring a discarded session for window '${id}': its surface is still attached.`, Trace.categories.NativeLifecycle, Trace.messageType.warn);
+
+				continue;
+			}
+
+			nativeWindow._notifyEvent(NativeWindowEvents.close);
+			this._unregisterWindow(nativeWindow);
+		}
+	}
+
+	/**
 	 * @internal - Unregister a NativeWindow when its native surface is gone for good.
 	 */
 	_unregisterWindow(nativeWindow: NativeWindow): void {
