@@ -189,6 +189,17 @@ describe('WindowBase lifecycle', () => {
 		expect(events).toEqual(['attached', 'detached', 'attached', 'close', 'deactivate']);
 	});
 
+	it('records the surface as gone on detach and clears it on re-attach', () => {
+		const window = new TestWindow();
+		expect(window._surfaceGone).toBe(false);
+
+		window._detach();
+		expect(window._surfaceGone).toBe(true);
+
+		window._setState('attached');
+		expect(window._surfaceGone).toBe(false);
+	});
+
 	it('keeps listeners through a detach so a re-attached window still notifies them', () => {
 		const window = new TestWindow();
 		const events: string[] = [];

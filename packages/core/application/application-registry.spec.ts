@@ -112,6 +112,15 @@ describe('ApplicationCommon window registry', () => {
 		setActiveWindow(undefined);
 	});
 
+	/**
+	 * Retires a window the way a platform does: the disconnect callback records that the
+	 * surface is gone, and only then is the window unregistered.
+	 */
+	function retire(window: WindowBase): void {
+		window._surfaceGone = true;
+		app._unregisterWindow(asWindow(window));
+	}
+
 	function record(...eventNames: string[]): Array<{ eventName: string; window: WindowBase }> {
 		const recorded: Array<{ eventName: string; window: WindowBase }> = [];
 		for (const eventName of eventNames) {
@@ -224,7 +233,7 @@ describe('ApplicationCommon window registry', () => {
 			app._registerWindow(window);
 			const recorded = record('windowClose');
 
-			app._unregisterWindow(window);
+			retire(window);
 
 			expect(recorded.map((entry) => entry.window)).toEqual([window]);
 			expect(app.getWindows()).toEqual([]);
@@ -244,7 +253,7 @@ describe('ApplicationCommon window registry', () => {
 			detached._detach();
 
 			const recorded = record('windowClose', 'primaryWindowChanged');
-			app._unregisterWindow(primary);
+			retire(primary);
 
 			expect(events).toEqual(['windowClose', 'primaryWindowChanged']);
 			expect(recorded[1].window).toBe(successor);
@@ -261,7 +270,7 @@ describe('ApplicationCommon window registry', () => {
 			detached._detach();
 
 			record('windowClose', 'primaryWindowChanged');
-			app._unregisterWindow(primary);
+			retire(primary);
 
 			expect(events).toEqual(['windowClose']);
 			expect(primary.isPrimary).toBe(false);
@@ -275,7 +284,7 @@ describe('ApplicationCommon window registry', () => {
 			app._registerWindow(secondary);
 
 			record('windowClose', 'primaryWindowChanged');
-			app._unregisterWindow(secondary);
+			retire(secondary);
 
 			expect(events).toEqual(['windowClose']);
 			expect(app.primaryWindow).toBe(primary);
@@ -308,7 +317,7 @@ describe('ApplicationCommon window registry', () => {
 		it('falls back to the primary window once the active one closes', () => {
 			secondary._notifyEvent(NativeWindowEvents.activate);
 
-			app._unregisterWindow(secondary);
+			retire(secondary);
 
 			expect(app.activeWindow).toBe(primary);
 		});

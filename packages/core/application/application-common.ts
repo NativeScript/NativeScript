@@ -574,6 +574,10 @@ export class ApplicationCommon {
 	 * @internal - Unregister a NativeWindow when its native surface is gone for good.
 	 */
 	_unregisterWindow(nativeWindow: NativeWindow): void {
+		if (!nativeWindow._surfaceGone) {
+			Trace.write(`Unregistering window '${nativeWindow.id}' while its native surface is still live. A window may only be retired once the platform has reported the surface gone.`, Trace.categories.NativeLifecycle, Trace.messageType.error);
+		}
+
 		const idx = this._windows.indexOf(nativeWindow);
 		if (idx >= 0) {
 			this._windows.splice(idx, 1);

@@ -469,6 +469,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		Application.ios._setWindowInForeground(nativeWindow, false, windowScene);
 
 		if (nativeWindow) {
+			nativeWindow._surfaceGone = true;
+
 			// A disconnect only ends the window session when the app asked for it —
 			// otherwise iOS may reconnect the same session later. A window with no session
 			// identity is the exception: a reconnect could never be matched back to it.
