@@ -153,6 +153,8 @@ function initNativeScriptLifecycleCallbacks() {
 				// there and wedging the app as never-suspended.
 				Application.android._setWindowActive(nativeWindow, false, activity);
 
+				nativeWindow._surfaceGone = true;
+
 				// A destroyed activity only ends the window session when it is finishing —
 				// otherwise Android is recreating it and the same window is reused.
 				const isClosing = activity.isFinishing();

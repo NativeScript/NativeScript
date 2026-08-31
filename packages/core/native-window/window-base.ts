@@ -35,6 +35,15 @@ export abstract class WindowBase extends Observable {
 	private _state: WindowState = 'attached';
 	private _isPrimary: boolean;
 
+	/**
+	 * @internal – whether the native surface behind this window is known to be gone.
+	 *
+	 * Only the platform's disconnect callback can establish this, and {@link state} cannot
+	 * stand in for it: a disconnect that ends the session unregisters the window while it is
+	 * still `attached`, so an attached window is not necessarily a live one.
+	 */
+	_surfaceGone = false;
+
 	constructor(id?: string, isPrimary = false, role: WindowRole = 'application') {
 		super();
 		this._id = id || `window-${++_windowIdCounter}`;
@@ -69,6 +78,12 @@ export abstract class WindowBase extends Observable {
 	 * @internal
 	 */
 	_setState(value: WindowState): void {
+		// A window only ever attaches to a surface that exists, so attaching is what clears
+		// the record of the previous one going away.
+		if (value === 'attached') {
+			this._surfaceGone = false;
+		}
+
 		this._state = value;
 	}
 

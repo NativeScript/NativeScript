@@ -29,7 +29,12 @@ export class IOSNativeWindow extends NativeWindow {
 
 	constructor(scene: UIWindowScene | undefined, window: UIWindow, id?: string, isPrimary = false, role: WindowRole = 'application') {
 		super(id, isPrimary, role);
-		this._hasSessionIdentity = !!id;
+
+		// Only an id taken from the scene's session can be matched back to that session.
+		// Hand-minted ids ('main', 'embedded-main') are ids all the same, so their mere
+		// presence says nothing.
+		const sessionId = scene?.session?.persistentIdentifier;
+		this._hasSessionIdentity = !!sessionId && id === `${sessionId}`;
 		this._scene = scene;
 		this._window = window;
 	}

@@ -469,6 +469,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		Application.ios._setWindowInForeground(nativeWindow, false, windowScene);
 
 		if (nativeWindow) {
+			nativeWindow._surfaceGone = true;
+
 			// A disconnect only ends the window session when the app asked for it —
 			// otherwise iOS may reconnect the same session later. A window with no session
 			// identity is the exception: a reconnect could never be matched back to it.
@@ -1386,8 +1388,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	// --- NativeWindow registry ---
 
 	/**
-	 * @internal - iOS reports discarded sessions for windows this JS context may never
-	 * have seen (they can arrive on a later launch), so unknown ids are ignored.
+	 * @internal - hands the discarded sessions' ids to the window registry, which decides
+	 * which of them name a window that is actually finished with.
 	 */
 	_onSceneSessionsDiscarded(sessions: NSSet<UISceneSession>): void {
 		const all = sessions?.allObjects;
@@ -1395,16 +1397,17 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 
+		const ids: string[] = [];
+
 		for (let i = 0; i < all.count; i++) {
 			const persistentIdentifier = all.objectAtIndex(i)?.persistentIdentifier;
-			const nativeWindow = persistentIdentifier ? this.getWindowById(`${persistentIdentifier}`) : undefined;
-			if (!nativeWindow) {
-				continue;
-			}
 
-			nativeWindow._notifyEvent(NativeWindowEvents.close);
-			this._unregisterWindow(nativeWindow);
+			if (persistentIdentifier) {
+				ids.push(`${persistentIdentifier}`);
+			}
 		}
+
+		this._retireDiscardedWindows(ids);
 	}
 
 	/**
