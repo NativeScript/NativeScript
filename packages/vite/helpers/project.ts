@@ -76,13 +76,31 @@ function denoConfigHasWorkspace(dir: string): boolean {
  *  - `turbo.json`     (Turborepo)
  *  - `deno.json` / `deno.jsonc` containing a `workspace` field
  *  - `package.json` containing a `workspaces` field (npm/yarn workspaces)
+ *
+ * `pnpm-workspace.yaml` counts only when it declares a top-level `packages:`
+ * list. pnpm >= 10 uses the file as its general settings file, so a nested
+ * project can legitimately carry a settings-only one (e.g. to pin its own
+ * install behavior inside a hoisted monorepo) without being a workspace root.
  */
+function pnpmWorkspaceDeclaresPackages(filePath: string): boolean {
+	if (!existsSync(filePath)) return false;
+	try {
+		return /^packages\s*:/m.test(readFileSync(filePath, 'utf-8'));
+	} catch {
+		return false;
+	}
+}
+
 export function findMonorepoWorkspaceRoot(start: string = getProjectRootPath()): string | null {
 	let current = resolve(start);
 	while (true) {
 		for (const marker of MONOREPO_WORKSPACE_MARKERS) {
 			if (marker.startsWith('deno.')) {
 				if (denoConfigHasWorkspace(current)) return current;
+				continue;
+			}
+			if (marker.startsWith('pnpm-workspace.')) {
+				if (pnpmWorkspaceDeclaresPackages(join(current, marker))) return current;
 				continue;
 			}
 			if (existsSync(join(current, marker))) return current;
