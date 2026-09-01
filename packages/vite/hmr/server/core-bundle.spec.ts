@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { CORE_BUNDLE_PATH, buildCoreBundleEntryCode, buildCoreMainShimCode, buildCoreSubShimCode, computeCoreBundleCacheKey, createCoreBundleService, enumerateCoreModuleSubpaths, generateCoreBundle, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, resolveCoreRootForBundle, saveCoreBundleToDisk, tryLoadCoreBundleFromDisk } from './core-bundle.js';
+import { CORE_BUNDLE_PATH, buildCoreBundleEntryCode, buildCoreMainShimCode, buildCoreSubShimCode, computeCoreBundleCacheKey, createCoreBundleService, enumerateCoreModuleSubpaths, generateCoreBundle, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, readCorePatchesSignature, resolveCoreRootForBundle, saveCoreBundleToDisk, tryLoadCoreBundleFromDisk } from './core-bundle.js';
 
 describe('isCorePerModuleServingEnabled', () => {
 	const standalone = () => false;
@@ -208,6 +208,12 @@ describe('core bundle disk cache', () => {
 		expect(computeCoreBundleCacheKey({ ...baseKeyInput, nsConfigJson: '{"profiling":"timeline"}' })).not.toBe(key);
 	});
 
+	it('cache key changes with the core patch signature', () => {
+		const key = computeCoreBundleCacheKey(baseKeyInput);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, corePatches: '' })).toBe(key);
+		expect(computeCoreBundleCacheKey({ ...baseKeyInput, corePatches: '@nativescript+core+9.1.1.patch:965:1' })).not.toBe(key);
+	});
+
 	it('round-trips a saved bundle and misses on key change', () => {
 		const key = computeCoreBundleCacheKey(baseKeyInput);
 		const state = makeState('export const core = 1;');
@@ -290,4 +296,24 @@ describe('generateCoreBundle (integration)', () => {
 		},
 		120000,
 	);
+});
+
+describe('readCorePatchesSignature', () => {
+	it('reflects only patch-package patches of core, and their edits', () => {
+		const root = mkdtempSync(path.join(tmpdir(), 'ns-core-patches-'));
+		try {
+			expect(readCorePatchesSignature(root)).toBe('');
+			mkdirSync(path.join(root, 'patches'));
+			writeFileSync(path.join(root, 'patches', '@nativescript+tailwind+4.0.9.patch'), 'tailwind');
+			expect(readCorePatchesSignature(root)).toBe('');
+			const corePatch = path.join(root, 'patches', '@nativescript+core+9.1.1.patch');
+			writeFileSync(corePatch, 'one');
+			const first = readCorePatchesSignature(root);
+			expect(first).toContain('@nativescript+core+9.1.1.patch');
+			writeFileSync(corePatch, 'one more');
+			expect(readCorePatchesSignature(root)).not.toBe(first);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
 });

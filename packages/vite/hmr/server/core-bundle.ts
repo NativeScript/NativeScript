@@ -250,9 +250,10 @@ export function buildCoreBundleEntryCode(subs: readonly string[]): string {
 // rarely change between dev-server starts, so the built payload is persisted
 // under `node_modules/.ns-vite/` and reloaded when the cache key matches.
 // See computeCoreBundleCacheKey for the exact inputs (corePkgMtimeMs detects
-// reinstalls; the schema counter is bumped when the generation pipeline
-// changes). Opt out with `NS_CORE_BUNDLE_NO_DISK_CACHE=1` (e.g. when
-// hand-editing core inside node_modules).
+// reinstalls, corePatches detects patch-package patches of core; the schema
+// counter is bumped when the generation pipeline changes). Opt out with
+// `NS_CORE_BUNDLE_NO_DISK_CACHE=1` (e.g. when hand-editing core inside
+// node_modules).
 // ============================================================================
 
 const CORE_BUNDLE_DISK_CACHE_SCHEMA = 1;
@@ -262,12 +263,13 @@ function isCoreBundleDiskCacheDisabled(env: NodeJS.ProcessEnv = process.env): bo
 	return v === '1' || v === 'true';
 }
 
-export function computeCoreBundleCacheKey(input: { coreRoot: string; coreVersion: string; corePkgMtimeMs: number; platform: string; mode: string; flavor: string; defines: Record<string, string>; nsConfigJson: string; subs: readonly string[]; vitePackageVersion: string }): string {
+export function computeCoreBundleCacheKey(input: { coreRoot: string; coreVersion: string; corePkgMtimeMs: number; corePatches?: string; platform: string; mode: string; flavor: string; defines: Record<string, string>; nsConfigJson: string; subs: readonly string[]; vitePackageVersion: string }): string {
 	const payload = JSON.stringify({
 		schema: CORE_BUNDLE_DISK_CACHE_SCHEMA,
 		coreRoot: input.coreRoot.replace(/\\/g, '/'),
 		coreVersion: input.coreVersion,
 		corePkgMtimeMs: input.corePkgMtimeMs,
+		corePatches: input.corePatches ?? '',
 		platform: input.platform,
 		mode: input.mode,
 		flavor: input.flavor,
@@ -277,6 +279,28 @@ export function computeCoreBundleCacheKey(input: { coreRoot: string; coreVersion
 		vitePackageVersion: input.vitePackageVersion,
 	});
 	return createHash('sha1').update(payload).digest('hex');
+}
+
+/**
+ * patch-package rewrites files inside `node_modules/@nativescript/core` without
+ * touching its package.json, so `corePkgMtimeMs` cannot see a core patch land,
+ * change or go away. The project's `patches/@nativescript+core*.patch` files
+ * stand in for it: their names, sizes and mtimes join the cache key.
+ */
+export function readCorePatchesSignature(projectRoot: string): string {
+	try {
+		const dir = path.join(projectRoot, 'patches');
+		return readdirSync(dir)
+			.filter((name) => name.startsWith('@nativescript+core+') && name.endsWith('.patch'))
+			.sort()
+			.map((name) => {
+				const stat = statSync(path.join(dir, name));
+				return `${name}:${stat.size}:${Math.round(stat.mtimeMs)}`;
+			})
+			.join(';');
+	} catch {
+		return '';
+	}
 }
 
 function getCoreBundleCacheDir(projectRoot: string): string {
@@ -473,6 +497,7 @@ export async function generateCoreBundle(options: GenerateCoreBundleOptions): Pr
 			coreRoot,
 			coreVersion,
 			corePkgMtimeMs,
+			corePatches: readCorePatchesSignature(projectRoot),
 			platform: String(platform),
 			mode: String(mode),
 			flavor: flavor ?? '',
