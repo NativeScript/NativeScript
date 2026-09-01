@@ -80,7 +80,7 @@
 		"jest": "30.0.5",
 		"jest-environment-jsdom": "30.0.5",
 		"jest-util": "30.0.5",
-		"jiti": "2.4.2",
+		"jiti": "2.7.0",
 		"jsdom": "~22.1.0",
 		"lint-staged": "^15.2.0",
 		"loader-utils": "^2.0.0 || ^3.0.0",
