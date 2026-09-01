@@ -57,7 +57,7 @@
 		"@vitejs/plugin-vue": "^6.0.5",
 		"@vitejs/plugin-vue-jsx": "^5.1.5",
 		"@vitest/coverage-v8": "4.0.9",
-		"@vitest/ui": "4.0.9",
+		"@vitest/ui": "4.1.11",
 		"@vue/compiler-sfc": "^3.5.24",
 		"acorn": "^8.15.0",
 		"acorn-stage3": "^4.0.0",
