@@ -10,6 +10,6 @@
 		"prepack": "tsc || echo ok"
 	},
 	"devDependencies": {
-		"@nativescript/core": "9.1.0-next.4"
+		"@nativescript/core": "9.1.0"
 	}
 }
