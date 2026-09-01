@@ -224,7 +224,18 @@ function collectImportDependencies(code: string, importerPath: string): Set<stri
 /**
  * Clean code: remove Vite/Vue noise, rewrite to vendor
  */
-function cleanCode(code: string, strategy: FrameworkServerStrategy): string {
+export interface CleanCodeOptions {
+	/**
+	 * The module evaluates in a worker realm. The main realm installs
+	 * `@nativescript/core/globals` once from the entry, so a served module's
+	 * own globals import is redundant there and is stripped; a worker realm
+	 * has no entry but the worker script itself, and that import is its only
+	 * source of timers, `console` and the other runtime globals.
+	 */
+	workerRealm?: boolean;
+}
+
+function cleanCode(code: string, strategy: FrameworkServerStrategy, options?: CleanCodeOptions): string {
 	let result = code;
 
 	// Remove Vite client and hot module noise ('$1' keeps the preceding
@@ -272,7 +283,7 @@ function cleanCode(code: string, strategy: FrameworkServerStrategy): string {
 
 	// Clean up HMR noise
 	result = strategy.postClean?.(result) ?? result;
-	result = stripCoreGlobalsImports(result);
+	if (!options?.workerRealm) result = stripCoreGlobalsImports(result);
 
 	return result;
 }

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'node:module';
-import { determineProjectFlavor } from './flavor.js';
+import { determineProjectFlavor, findDeclaredViteFlavor } from './flavor.js';
 import { getProjectFilePath, getProjectRootPath } from './project.js';
 
 const require = createRequire(import.meta.url);
@@ -90,12 +90,25 @@ function getFlavorImportAndConfig(flavor: string): { importLine: string; configE
 				configExpr: 'typescriptConfig({ mode })',
 			};
 		case 'javascript':
-		default:
-			return {
-				importLine: "import { javascriptConfig } from '@nativescript/vite/javascript';",
-				configExpr: 'javascriptConfig({ mode })',
-			};
+			return javascriptImportAndConfig();
+		default: {
+			const declared = findDeclaredViteFlavor();
+			if (declared?.flavor === flavor && declared.config) {
+				return {
+					importLine: `import { ${declared.config.import} } from '${declared.config.from}';`,
+					configExpr: `${declared.config.import}({ mode })`,
+				};
+			}
+			return javascriptImportAndConfig();
+		}
 	}
+}
+
+function javascriptImportAndConfig(): { importLine: string; configExpr: string } {
+	return {
+		importLine: "import { javascriptConfig } from '@nativescript/vite/javascript';",
+		configExpr: 'javascriptConfig({ mode })',
+	};
 }
 
 function ensureViteConfig() {

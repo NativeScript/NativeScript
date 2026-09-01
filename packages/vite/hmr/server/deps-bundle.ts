@@ -70,7 +70,7 @@ import { getVendorManifest, setVendorRuntimeModuleProvider } from '../shared/ven
 import { collectVendorModules } from '../shared/vendor/manifest-collect.js';
 import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.js';
 import { getAngularLinkerFactory, runAngularLinker } from '../frameworks/angular/build/shared-linker.js';
-import { getBlockedDeviceNodeModulesReason, resolveCandidateFilePath } from './websocket-module-specifiers.js';
+import { getBlockedDeviceNodeModulesReason, isFlavorClientPackageSpecifier, resolveCandidateFilePath } from './websocket-module-specifiers.js';
 import { extractDirectExportedNames, JS_IDENTIFIER_RE, parseExportSpecList } from './websocket-core-bridge.js';
 import { hasExistingDefaultExport } from './ns-core-cjs-shape.js';
 import { loadPersistedBootRecording } from './boot-recording.js';
@@ -382,7 +382,7 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 				if (/^@nativescript\/core(?:\/|$)/.test(spec)) {
 					return { path: spec, external: true };
 				}
-				if (/^@nativescript\/vite(?:\/|$)/.test(spec)) {
+				if (/^@nativescript\/vite(?:\/|$)/.test(spec) || isFlavorClientPackageSpecifier(spec)) {
 					return { path: `/ns/m/node_modules/${spec.replace(SCRIPT_EXT_RE, '')}`, external: true };
 				}
 				if (flavor === 'solid' && spec === 'solid-js') {

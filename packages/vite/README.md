@@ -44,7 +44,7 @@ npx nativescript-vite init
 
 This will:
 
-- Generate a `vite.config.mts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper subpath from `@nativescript/vite`.
+- Generate a `vite.config.mts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript — or a flavor a dependency declares, see below) and the corresponding helper subpath from `@nativescript/vite`.
 - Add the dependency `@valor/nativescript-websockets`.
 - Append `.ns-vite-build` to `.gitignore` if it is not already present.
 
@@ -151,6 +151,22 @@ import { reactConfig } from '@nativescript/vite/react';
 import { solidConfig } from '@nativescript/vite/solid';
 import { vueConfig } from '@nativescript/vite/vue';
 ```
+
+### Flavors from other packages
+
+A framework can ship its own flavor — config helper, server strategy and device-side
+client strategy — as a package, using `@nativescript/vite/framework` and
+`@nativescript/vite/hmr/client/framework.js`. `init` and flavor detection pick it up from a
+`nativescript.vite` declaration in that package's `package.json`. The Octane flavor,
+[`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane), is built this way:
+
+```ts
+import { octaneConfig } from '@nativescript-community/vite-octane';
+
+export default defineConfig(({ mode }) => octaneConfig({ mode }));
+```
+
+See [docs/framework-flavors.md](./docs/framework-flavors.md) for the full walkthrough.
 
 2) Update `nativescript.config.ts`:
 

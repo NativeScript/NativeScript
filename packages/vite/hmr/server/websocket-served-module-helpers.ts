@@ -193,6 +193,19 @@ export function buildBootProgressSnippet(bootModuleLabel: string): string {
 	return [`const __nsBootGlobal=globalThis;`, `try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1;__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};}}catch(__nsBootErr){}`, ''].join('\n');
 }
 
+/**
+ * A worker entry served under HMR evaluates in a fresh isolate where nothing
+ * has installed the runtime globals — `setTimeout`, `console` formatting,
+ * `fetch` — that the main realm's entry installs once from
+ * `@nativescript/core/globals`. The production worker build bundles that
+ * module in; the dev serve adds the import when the script does not carry it
+ * itself, so a worker behaves the same way on both paths.
+ */
+export function ensureWorkerEntryGlobalsImport(code: string): string {
+	if (/^\s*import\s+(?:[^'"\n]*from\s+)?["'][^"']*(?:@nativescript(?:[/_-])core(?:[/_-])globals|\/ns\/core\/globals)[^"']*["']/m.test(code)) return code;
+	return `import '@nativescript/core/globals';\n${code}`;
+}
+
 export function stripCoreGlobalsImports(code: string): string {
 	const pattern = /^\s*(?:import\s+(?:[^'"\n]*from\s+)?|export\s+\*\s+from\s+)["'][^"']*(?:@nativescript(?:[/_-])core(?:[\/_-])globals|@nativescript_core_globals)[^"']*["'];?\s*$/gm;
 	return code.replace(pattern, '');

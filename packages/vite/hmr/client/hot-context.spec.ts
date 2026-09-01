@@ -67,3 +67,71 @@ describe('hot-context custom-event listener lifecycle', () => {
 		expect(cb).not.toHaveBeenCalled();
 	});
 });
+
+describe('hot-context accept callbacks', () => {
+	it('exposes the current evaluation’s accept callbacks (a bare accept() counts)', () => {
+		const registry = getNsHotRegistry();
+		const hot = registry.createHotContext('/src/accept-one.tsx');
+		const cb = vi.fn();
+		hot.accept(cb);
+		hot.accept();
+
+		const callbacks = registry.getAcceptCallbacks('/src/accept-one');
+		expect(callbacks).toHaveLength(2);
+		callbacks[0]({ fresh: true });
+		expect(cb).toHaveBeenCalledWith({ fresh: true });
+	});
+
+	it('returns a copy keyed canonically, and a fresh evaluation resets the list', () => {
+		const registry = getNsHotRegistry();
+		registry.createHotContext('/src/accept-two.tsx').accept(() => {});
+		const snapshot = registry.getAcceptCallbacks('http://localhost:5173/ns/m/src/accept-two?t=1');
+		expect(snapshot).toHaveLength(1);
+
+		// The re-evaluated body has not called accept yet → nothing registered,
+		// while the snapshot taken before eviction is unaffected.
+		registry.createHotContext('/src/accept-two.tsx');
+		expect(registry.getAcceptCallbacks('/src/accept-two')).toEqual([]);
+		expect(snapshot).toHaveLength(1);
+	});
+
+	it('returns an empty list for a module that never evaluated', () => {
+		expect(getNsHotRegistry().getAcceptCallbacks('/src/never-seen')).toEqual([]);
+	});
+});
+
+describe('hot-context dependency accepts', () => {
+	it('resolves relative dependency paths against the owner and indexes the acceptor', () => {
+		const registry = getNsHotRegistry();
+		const cb = vi.fn();
+		registry.createHotContext('/src/features/flame.ts').accept('./flame.worker', cb);
+		registry.createHotContext('/src/features/other.ts').accept(['../util/shared.ts'], () => {});
+
+		expect(registry.acceptsDep('/src/features/flame', '/src/features/flame.worker')).toBe(true);
+		expect(registry.acceptsDep('/src/features/other', '/src/util/shared')).toBe(true);
+		expect(registry.acceptsDep('/src/features/flame', '/src/util/shared')).toBe(false);
+
+		const acceptors = registry.getDepAcceptors('http://localhost:5173/ns/m/src/features/flame.worker?t=1');
+		expect(acceptors.map((a) => a.owner)).toEqual(['/src/features/flame']);
+		acceptors[0].callback([undefined]);
+		expect(cb).toHaveBeenCalledWith([undefined]);
+	});
+
+	it('does not treat a dependency accept as a self accept, and drops it on re-evaluation', () => {
+		const registry = getNsHotRegistry();
+		registry.createHotContext('/src/spawner.ts').accept('./spawner.worker', () => {});
+		expect(registry.getAcceptCallbacks('/src/spawner')).toEqual([]);
+		expect(registry.getDepAcceptors('/src/spawner.worker')).toHaveLength(1);
+
+		registry.createHotContext('/src/spawner.ts');
+		expect(registry.getDepAcceptors('/src/spawner.worker')).toEqual([]);
+		expect(registry.acceptsDep('/src/spawner', '/src/spawner.worker')).toBe(false);
+	});
+
+	it('ignores bare specifiers in the dependency form', () => {
+		const registry = getNsHotRegistry();
+		registry.createHotContext('/src/bare.ts').accept('octane', () => {});
+		expect(registry.getAcceptCallbacks('/src/bare')).toEqual([]);
+		expect(registry.getDepAcceptors('octane')).toEqual([]);
+	});
+});
