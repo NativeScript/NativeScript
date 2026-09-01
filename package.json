@@ -110,7 +110,7 @@
 		"typedoc": "^0.28.14",
 		"typescript": "5.9.3",
 		"vite": "^8.0.0",
-		"vite-plugin-solid": "^2.11.11",
+		"vite-plugin-solid": "^2.11.14",
 		"vite-plugin-static-copy": "^4.1.1",
 		"vitest": "4.0.9",
 		"vue-loader": "^15.0.0 <= 15.9.8",
