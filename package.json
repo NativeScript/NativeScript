@@ -69,7 +69,7 @@
 		"dotenv": "~16.4.0",
 		"dotenv-webpack": "^7.0.0",
 		"emoji-regex": "^10.3.0",
-		"enhanced-resolve": "^5.18.3",
+		"enhanced-resolve": "^5.24.5",
 		"esbuild": "^0.27.4",
 		"eslint": "~8.57.0",
 		"eslint-config-prettier": "^10.0.0",
