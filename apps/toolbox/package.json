@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@nativescript/android": "9.1.0-alpha.4",
-    "@nativescript/ios": "9.1.0-alpha.6",
+    "@nativescript/ios": "9.1.0",
     "@nativescript/visionos": "~9.0.0",
     "@nativescript/vite": "file:../../dist/packages/vite",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
