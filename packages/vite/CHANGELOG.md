@@ -1,3 +1,13 @@
+## 8.0.2 (2026-09-01)
+
+### 🚀 Features
+
+- **vite:** framework registration API ([#11358](https://github.com/NativeScript/NativeScript/pull/11358))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.1 (2026-08-31)
 
 ### 🩹 Fixes
