@@ -13,6 +13,6 @@
 	"license": "Apache-2.0",
 	"dependencies": {
 		"@nativescript/types-ios": "9.1.0",
-		"@nativescript/types-android": "9.1.0"
+		"@nativescript/types-android": "9.1.1"
 	}
 }
