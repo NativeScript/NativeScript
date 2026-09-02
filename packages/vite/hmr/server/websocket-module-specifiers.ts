@@ -742,7 +742,13 @@ export function resolveInternalRuntimePluginBareSpecifier(spec: string, projectR
 
 	const reverseMap = getExportsReverseMap(packageName, projectRoot);
 	const originalSpec = reverseMap.get(subpath);
-	if (originalSpec && originalSpec !== packageName) {
+	// The device vendor registry serves plugins by bare package id, so the file
+	// the root export resolves to must fold back onto that id whether the
+	// package declares it through `exports` or `main`.
+	if (originalSpec === packageName) {
+		return packageName;
+	}
+	if (originalSpec) {
 		return null;
 	}
 
