@@ -1,3 +1,13 @@
+## 8.0.3 (2026-09-02)
+
+### 🩹 Fixes
+
+- **vite:** rebuild the cached core bundle when a patch-package core patch changes ([#11408](https://github.com/NativeScript/NativeScript/pull/11408))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.2 (2026-09-01)
 
 ### 🚀 Features
