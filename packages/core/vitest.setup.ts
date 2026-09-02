@@ -53,6 +53,14 @@ global.NSData = {
 	},
 };
 global.NSMutableData = { ...global.NSData };
+// Security's CSPRNG entry point, which the crypto shim feeds a typed array directly. The stub
+// fills it so specs can prove the bytes reach the caller's own view, and records the call.
+global.errSecSuccess = 0;
+global.kSecRandomDefault = { native: 'kSecRandomDefault' };
+global.SecRandomCopyBytes = (rnd: any, count: number, bytes: Uint8Array) => {
+	bytes.fill(0xab);
+	return 0;
+};
 global.NSCCrypto = {
 	randomUUID() {
 		return 'native-uuid';

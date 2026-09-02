@@ -26,11 +26,14 @@ export class Crypto {
 			(<any>org).nativescript.winter_tc.Crypto.getRandomValues(bytes);
 		}
 		if (__IOS__) {
-			// The pointer is V8-owned: freeWhenDone must stay NO, or Foundation and V8's
-			// ArrayBufferSweeper both free the same allocation.
-			const data = NSMutableData.dataWithBytesNoCopyLengthFreeWhenDone(bytes as never, bytes.byteLength, false);
-
-			NSCCrypto.getRandomValues(data);
+			// The view goes to Security directly: the runtime hands over V8's backing store at
+			// the view's byte offset, so the bytes land in the caller's array. No NSData may
+			// sit in between — NSMutableData copies bytes it does not own, so a no-copy wrapper
+			// fills a private copy, and one that owns them frees V8's allocation.
+			const status = SecRandomCopyBytes(kSecRandomDefault, bytes.byteLength, bytes);
+			if (status !== errSecSuccess) {
+				throw new Error(`getRandomValues: SecRandomCopyBytes failed (${status})`);
+			}
 		}
 
 		return typedArray;
