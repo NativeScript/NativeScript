@@ -153,17 +153,27 @@ export class ScrollView extends ScrollViewBase {
 		this.updateContentInsetAdjustmentBehavior(value);
 	}
 
+	// The offset is set directly rather than through scrollRectToVisible with a
+	// viewport-sized rect: that rect cannot fit inside a content inset, so UIKit
+	// would land contentInset.bottom (or .right) past the requested offset. The
+	// value is clamped to the range a user scroll can reach.
 	public scrollToVerticalOffset(value: number, animated: boolean) {
-		if (this.nativeViewProtected && this.orientation === 'vertical' && this.isScrollEnabled) {
-			const bounds = this.nativeViewProtected.bounds.size;
-			this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
+		const nativeView = this.nativeViewProtected;
+		if (nativeView && this.orientation === 'vertical' && this.isScrollEnabled) {
+			const inset = nativeView.adjustedContentInset;
+			const min = -inset.top;
+			const max = Math.max(min, nativeView.contentSize.height + inset.bottom - nativeView.bounds.size.height);
+			nativeView.setContentOffsetAnimated(CGPointMake(nativeView.contentOffset.x, Math.min(Math.max(value, min), max)), animated);
 		}
 	}
 
 	public scrollToHorizontalOffset(value: number, animated: boolean) {
-		if (this.nativeViewProtected && this.orientation === 'horizontal' && this.isScrollEnabled) {
-			const bounds = this.nativeViewProtected.bounds.size;
-			this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
+		const nativeView = this.nativeViewProtected;
+		if (nativeView && this.orientation === 'horizontal' && this.isScrollEnabled) {
+			const inset = nativeView.adjustedContentInset;
+			const min = -inset.left;
+			const max = Math.max(min, nativeView.contentSize.width + inset.right - nativeView.bounds.size.width);
+			nativeView.setContentOffsetAnimated(CGPointMake(Math.min(Math.max(value, min), max), nativeView.contentOffset.y), animated);
 		}
 	}
 
