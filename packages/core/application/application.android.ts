@@ -50,7 +50,7 @@ import { androidGetForegroundActivity, androidGetStartActivity, androidSetForegr
 import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import type { AndroidApplication as IAndroidApplication } from './application';
-import { enableEdgeToEdge } from '../utils/native-helper-for-android';
+import { enableEdgeToEdge, refreshEdgeToEdge } from '../utils/native-helper-for-android';
 import lazy from '../utils/lazy';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
@@ -561,6 +561,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this._pendingReceiverRegistrations.length = 0;
 	}
 
+	private edgeToEdgeAppearance: 'dark' | 'light' | null = null;
+
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
 		// The application context reports the app-wide configuration, which a window on a
 		// second display or in split-screen does not necessarily share, so the primary
@@ -570,6 +572,17 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this.setOrientation(primaryWindow?.orientation() ?? this.getOrientationValue(configuration));
 		this.setSystemAppearance(primaryWindow?.systemAppearance() ?? this.getSystemAppearanceValue(configuration));
 		this.setLayoutDirection(primaryWindow?.layoutDirection() ?? this.getLayoutDirectionValue(configuration));
+	}
+
+	protected setSystemAppearance(value: 'dark' | 'light') {
+		super.setSystemAppearance(value);
+		// The activity survives the switch (uiMode is a handled config change),
+		// so the edge-to-edge system bar style must be applied again to pick up
+		// the icon appearance for the new theme.
+		if (this.edgeToEdgeAppearance !== value) {
+			this.edgeToEdgeAppearance = value;
+			refreshEdgeToEdge(this.foregroundActivity ?? this.startActivity);
+		}
 	}
 
 	getNativeApplication() {

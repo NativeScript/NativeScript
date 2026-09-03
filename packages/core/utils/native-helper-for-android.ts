@@ -310,6 +310,24 @@ interface ISystemColor {
 }
 const systemColors = new WeakMap<androidx.appcompat.app.AppCompatActivity, ISystemColor>();
 
+/**
+ * Re-applies the activity's edge-to-edge styling. The system bar icon
+ * appearance is decided from the theme at the time the style is applied, so
+ * an activity that survives a dark-mode switch keeps the old icons until this
+ * runs again.
+ */
+export function refreshEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity): void {
+	if (!activity) {
+		return;
+	}
+	const existingColors = systemColors.get(activity);
+	if (existingColors) {
+		setEnableEdgeToEdge(activity, existingColors);
+	} else {
+		enableEdgeToEdge(activity);
+	}
+}
+
 function setEnableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity, existingColors: ISystemColor) {
 	enableEdgeToEdge(activity, {
 		statusBarLightColor: existingColors.statusBarLight,
