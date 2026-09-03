@@ -1,4 +1,6 @@
-import { ViewBase } from '../view-base';
+// Type-only on purpose: `ViewBase` imports this module back, and the cycle only holds while
+// nothing here needs `ViewBase` at runtime.
+import type { ViewBase } from '../view-base';
 import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
@@ -6,6 +8,9 @@ import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
 import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
+import { Invalidation } from '../native-updates/invalidation';
+import { NativeUpdateBatch } from '../native-updates/batch';
+import type { NativeUpdateEntry } from '../native-updates/batch';
 import { calc } from '@csstools/css-calc';
 
 // Backwards compatibility
@@ -334,15 +339,25 @@ function applyNativeValue(view: ViewBase, store: any, property: NativeProperty, 
 	}
 }
 
+let defaultCommitNativeUpdates: unknown;
+
 /**
- * The single native routing point of every property setter: apply the write now, or record the
- * property as dirty while the view is holding native updates back.
+ * Registered by `ViewBase` at load. Setters compare a node's hook against it to tell whether its
+ * class takes part in commit ordering, which they cannot ask `ViewBase` for directly.
+ * @private
  */
-function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty, value: any, write: NativeWrite): void {
-	if (view._suspendNativeUpdatesCount !== 0) {
-		if (view._suspendedUpdates && view[property.setNative]) {
-			view._suspendedUpdates[property.name] = property;
-		}
+export function _setDefaultCommitNativeUpdates(commit: unknown): void {
+	defaultCommitNativeUpdates = commit;
+}
+
+/**
+ * The single native routing point of every property setter. A live view whose class takes no part
+ * in commit ordering writes straight through; anything else records the property as dirty and lets
+ * a commit apply it, right away when nothing is holding native updates back.
+ */
+function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty, value: any, write: NativeWrite, oldValue: any): void {
+	if (view._suspendNativeUpdatesCount !== 0 || view.commitNativeUpdates !== defaultCommitNativeUpdates) {
+		queueNativeUpdate(view, property, oldValue);
 
 		return;
 	}
@@ -364,6 +379,29 @@ function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty
 		view[setNative](value);
 	} else if (write !== NativeWrite.None) {
 		applyNativeValue(view, store, property, value, write);
+	}
+}
+
+function queueNativeUpdate(view: ViewBase, property: NativeProperty, oldValue: any): void {
+	const dirty = view._suspendedUpdates;
+	if (dirty && view[property.setNative]) {
+		// `NativeUpdateBatch.previous` is only reachable from a commit hook, so a node whose class
+		// does not define one records nothing.
+		if (view.commitNativeUpdates !== defaultCommitNativeUpdates) {
+			let previous = view._pendingPrevious;
+			if (!previous) {
+				previous = view._pendingPrevious = new Map();
+			}
+			if (!previous.has(property)) {
+				previous.set(property, oldValue);
+			}
+		}
+
+		dirty[property.name] = property;
+	}
+
+	if (view._suspendNativeUpdatesCount === 0) {
+		initNativeView(view);
 	}
 }
 
@@ -466,7 +504,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 					valueChanged(this, oldValue, value);
 				}
 
-				queueOrApplyNative(this, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
+				queueOrApplyNative(this, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value, oldValue);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -621,7 +659,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 					valueChanged(this, oldValue, value);
 				}
 
-				queueOrApplyNative(this, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
+				queueOrApplyNative(this, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value, oldValue);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -833,7 +871,7 @@ export class CssProperty<T extends Style, U> {
 					valueChanged(this, oldValue, value);
 				}
 
-				queueOrApplyNative(view, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
+				queueOrApplyNative(view, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value, oldValue);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -891,7 +929,7 @@ export class CssProperty<T extends Style, U> {
 					valueChanged(this, oldValue, value);
 				}
 
-				queueOrApplyNative(view, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
+				queueOrApplyNative(view, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value, oldValue);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -1079,7 +1117,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					}
 
 					if (computedValueChanged || isSet !== wasSet) {
-						queueOrApplyNative(view, this, property, value, isSet ? (wasSet ? NativeWrite.ValueNoCapture : NativeWrite.Value) : wasSet ? NativeWrite.DefaultNoRelease : NativeWrite.None);
+						queueOrApplyNative(view, this, property, value, isSet ? (wasSet ? NativeWrite.ValueNoCapture : NativeWrite.Value) : wasSet ? NativeWrite.DefaultNoRelease : NativeWrite.None, oldValue);
 					}
 
 					if (computedValueChanged && this.hasListeners(eventName)) {
@@ -1250,7 +1288,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 						valueChanged(this, oldValue, value);
 					}
 
-					queueOrApplyNative(view, this, property, value, unsetNativeValue ? NativeWrite.Default : NativeWrite.Value);
+					queueOrApplyNative(view, this, property, value, unsetNativeValue ? NativeWrite.Default : NativeWrite.Value, oldValue);
 
 					if (this.hasListeners(eventName)) {
 						this.notify<PropertyChangeData>({
@@ -1425,14 +1463,80 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
 
 type PropertyInterface = Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 
-export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
-	if (view._suspendedUpdates) {
-		applyPendingNativeSetters(view);
+/** What a commit has to apply, in the order `ViewBase.commitNativeUpdates` will apply it. */
+function collectNativeUpdateEntries(view: ViewBase, isMount: boolean): NativeUpdateEntry[] {
+	const entries: NativeUpdateEntry[] = [];
+
+	if (isMount) {
+		let symbols = Object.getOwnPropertySymbols(view);
+		for (const symbol of symbols) {
+			const property: Property<any, any> = symbolPropertyMap[symbol];
+			if (property) {
+				entries.push(property);
+			}
+		}
+
+		symbols = Object.getOwnPropertySymbols(view.style);
+		for (const symbol of symbols) {
+			const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
+			if (property) {
+				entries.push(property);
+			}
+		}
 	} else {
-		applyAllNativeSetters(view);
+		const suspendedUpdates = view._suspendedUpdates;
+		for (const propertyName in suspendedUpdates) {
+			if (HAS_OWN.call(suspendedUpdates, propertyName)) {
+				entries.push(<PropertyInterface>suspendedUpdates[propertyName]);
+			}
+		}
 	}
+
+	const invalidations = view._pendingInvalidations;
+	if (invalidations) {
+		for (const invalidation of invalidations) {
+			entries.push(invalidation);
+		}
+	}
+
+	return entries;
+}
+
+function applyNativeUpdate(batch: NativeUpdateBatch, entry: NativeUpdateEntry): void {
+	const view = batch.node;
+
+	if (entry instanceof Invalidation) {
+		const handler = view[entry.apply];
+		if (handler) {
+			handler.call(view, batch);
+		}
+
+		return;
+	}
+
+	if (batch.isMount) {
+		applyMountedNativeSetter(view, entry);
+	} else {
+		applyPendingNativeSetter(view, entry);
+	}
+}
+
+/**
+ * Builds the batch of everything dirty on the view and hands it to `commitNativeUpdates`.
+ * @deprecated Override `ViewBase.commitNativeUpdates` to order a class's native writes, or call
+ * `ViewBase.flushNativeUpdates` to push what is pending.
+ */
+export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
+	const isMount = view._suspendedUpdates === undefined;
+	const batch = new NativeUpdateBatch(view, isMount, collectNativeUpdateEntries(view, isMount), view._pendingPrevious, applyNativeUpdate);
+
+	// Dropped before the commit runs so that a write made from a handler queues against a fresh set.
 	// Would it be faster to delete all members of the old object?
 	view._suspendedUpdates = {};
+	view._pendingPrevious = undefined;
+	view._pendingInvalidations = undefined;
+
+	view.commitNativeUpdates(batch);
 });
 
 /**
@@ -1477,6 +1581,10 @@ function applyMountedNativeSetter(view: ViewBase, property: PropertyInterface): 
 	}
 }
 
+/**
+ * @deprecated Superseded by `ViewBase.commitNativeUpdates`, which applies the same dirty set
+ * through a `NativeUpdateBatch` the class can reorder.
+ */
 export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
 	const suspendedUpdates = view._suspendedUpdates;
@@ -1486,6 +1594,9 @@ export function applyPendingNativeSetters(view: ViewBase): void {
 	}
 }
 
+/**
+ * @deprecated Superseded by `ViewBase.commitNativeUpdates` with a batch whose `isMount` is set.
+ */
 export function applyAllNativeSetters(view: ViewBase): void {
 	let symbols = Object.getOwnPropertySymbols(view);
 	for (const symbol of symbols) {

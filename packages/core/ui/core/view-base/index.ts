@@ -1,7 +1,9 @@
 import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
 import { CoreTypes, Trace } from '../../styling/styling-shared';
-import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView, _setDefaultCommitNativeUpdates } from '../properties';
+import type { NativeUpdateBatch, NativeUpdateProperty } from '../native-updates/batch';
+import type { Invalidation } from '../native-updates/invalidation';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug-source';
 import { Binding } from '../bindable';
@@ -453,6 +455,17 @@ export abstract class ViewBase extends Observable {
 	public _suspendedUpdates: {
 		[propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 	};
+	/**
+	 * The value each dirty property held at the last commit, behind `NativeUpdateBatch.previous`.
+	 * Only recorded for a node whose class can read it back, and dropped by the commit.
+	 * @private
+	 */
+	public _pendingPrevious: Map<NativeUpdateProperty, unknown>;
+	/**
+	 * Aggregate invalidations raised since the last commit by properties declaring `invalidates`.
+	 * @private
+	 */
+	public _pendingInvalidations: Set<Invalidation>;
 	//@endprivate
 	/**
 	 * Determines the depth of suspended updates.
@@ -1454,6 +1467,21 @@ export abstract class ViewBase extends Observable {
 		}
 	}
 
+	/**
+	 * Applies a batch of pending native updates. Override to apply what this class needs in the
+	 * order it needs, then call `super` to apply everything still pending in the batch.
+	 *
+	 * Overriding opts the class out of the setter fast path: every write then reaches native
+	 * through a commit rather than straight from the setter.
+	 */
+	public commitNativeUpdates(batch: NativeUpdateBatch): void {
+		batch._applyRemaining();
+	}
+
+	/**
+	 * @deprecated Override `commitNativeUpdates` instead; this only builds the batch and hands
+	 * it over. Existing overrides keep working as long as they call `super`.
+	 */
 	public onResumeNativeUpdates(): void {
 		// Apply native setters...
 		initNativeView(this, undefined, undefined);
@@ -1588,6 +1616,7 @@ ViewBase.prototype.recycleNativeView = 'never';
 ViewBase.prototype.reusable = false;
 
 ViewBase.prototype._suspendNativeUpdatesCount = SuspendType.Loaded | SuspendType.NativeView | SuspendType.UISetup;
+_setDefaultCommitNativeUpdates(ViewBase.prototype.commitNativeUpdates);
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({
 	name: 'bindingContext',
