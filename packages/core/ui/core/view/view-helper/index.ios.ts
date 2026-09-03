@@ -312,6 +312,23 @@ export class IOSHelper {
 		return rootView.safeAreaLayoutGuide;
 	}
 
+	/**
+	 * Add `childNativeView` to `parentNativeView` at subview index `atIndex`, or
+	 * append it when the index is absent or past the end. Never done with
+	 * `insertSubview:atIndex:`: UIKit resolves that index against the layer's
+	 * sublayers, which also hold the non-view layers core installs (a gradient
+	 * background at sublayer 0, an outer shadow layer per shadowed child), so the
+	 * view lands below the sibling it should precede.
+	 */
+	static insertSubview(parentNativeView: UIView, childNativeView: UIView, atIndex?: number): void {
+		const subviews = parentNativeView.subviews;
+		if (typeof atIndex !== 'number' || atIndex >= subviews.count) {
+			parentNativeView.addSubview(childNativeView);
+		} else {
+			parentNativeView.insertSubviewBelowSubview(childNativeView, subviews.objectAtIndex(atIndex));
+		}
+	}
+
 	static layoutView(controller: UIViewController, owner: View): void {
 		let layoutGuide = controller.view.safeAreaLayoutGuide;
 		if (!layoutGuide) {
