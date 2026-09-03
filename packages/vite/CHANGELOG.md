@@ -1,3 +1,13 @@
+## 8.0.4 (2026-09-03)
+
+### 🩹 Fixes
+
+- **vite:** fold an exports-map plugin's root entry onto its bare package id ([#11411](https://github.com/NativeScript/NativeScript/pull/11411))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.3 (2026-09-02)
 
 ### 🩹 Fixes
