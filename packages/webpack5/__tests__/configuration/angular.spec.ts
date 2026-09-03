@@ -83,6 +83,19 @@ describe('angular configuration', () => {
 		});
 	}
 
+	it('skips NativeClass platformTransformers when disableNativeClassTransformer is set', () => {
+		init({
+			ios: true,
+			disableNativeClassTransformer: true,
+		});
+		const config = angular(new Config());
+
+		config.plugin('AngularCompilerPlugin').tap((args) => {
+			expect(args[0].platformTransformers).toEqual([]);
+			return args;
+		});
+	});
+
 	it(`loads polyfills.ts into the bundle entry if it exists `, () => {
 		polyfillsPath = `__jest__/src/polyfills.ts`;
 

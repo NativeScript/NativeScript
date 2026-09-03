@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite';
 import ts from 'typescript';
-import { isNativeESClassesEnabled, transformNativeClassSource } from './nativeclass-transform.js';
+import { isNativeClassTransformerDisabled, shouldSkipNativeClassTransform, transformNativeClassSource } from './nativeclass-transform.js';
 import { resolvePlatform } from './cli-flags.js';
 
 /**
@@ -277,6 +277,10 @@ export function postCleanupNativeClass(code: string, bareId: string, verbose = f
  * Wraps NativeClass TS transformer into a Vite plugin.
  */
 export function createNativeClassTransformerPlugin(): Plugin[] {
+	if (isNativeClassTransformerDisabled()) {
+		return [];
+	}
+
 	const verbose = !!process.env.NS_DEBUG_NATIVECLASS;
 
 	return [
@@ -335,7 +339,7 @@ export function createNativeClassTransformerPlugin(): Plugin[] {
 			transform(code: string, id: string) {
 				// Native ES class mode (Apple targets only): the runtime handles ES classes and
 				// the NativeClass decorator directly, so no post-phase strip/downlevel either.
-				if (isNativeESClassesEnabled(resolvePlatform())) return null;
+				if (shouldSkipNativeClassTransform(resolvePlatform())) return null;
 				const bareId = id.split('?')[0];
 				if (!/\.(ts|tsx|js|mjs)$/.test(bareId)) return null;
 				return postCleanupNativeClass(code, bareId, verbose);

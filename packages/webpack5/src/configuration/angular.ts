@@ -7,6 +7,7 @@ import { getTypescript, readTsConfig } from '../helpers/typescript';
 import { getDependencyVersion } from '../helpers/dependencies';
 import { getProjectTSConfigPath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
+import { isNativeClassTransformerDisabled } from '../helpers/nativeClassTransformer';
 import { warnOnce } from '../helpers/log';
 import {
 	getEntryDirPath,
@@ -32,6 +33,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const platform = getPlatformName();
 	const tsConfigPath = getProjectTSConfigPath();
 	const disableAOT = !!env.disableAOT;
+	const skipNativeClassTransformer = isNativeClassTransformerDisabled(env);
+	const nativeClassTransformers = skipNativeClassTransformer
+		? []
+		: [require('../transformers/NativeClass').default];
 
 	// remove default ts rule
 	config.module.rules.delete('ts');
@@ -140,7 +145,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					// just return the original path otherwise
 					return path;
 				},
-				platformTransformers: [require('../transformers/NativeClass').default],
+				platformTransformers: nativeClassTransformers,
 			},
 		]);
 	}
@@ -150,27 +155,29 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// angular no longer supports transformers.
 		// so we patch their method until they do
 		// https://github.com/angular/angular-cli/pull/21046
-		const originalCreateFileEmitter =
-			angularWebpackPlugin.prototype.createFileEmitter;
-		angularWebpackPlugin.prototype.createFileEmitter = function (
-			...args: any[]
-		) {
-			let transformers = args[1] || {};
-			if (!transformers.before) {
-				transformers.before = [];
-			}
-			if (this.pluginOptions.jitMode) {
-				transformers.before.unshift(
-					require('../transformers/NativeClass').default,
-				);
-			} else {
-				transformers.before.push(
-					require('../transformers/NativeClass').default,
-				);
-			}
-			args[1] = transformers;
-			return originalCreateFileEmitter.apply(this, args);
-		};
+		if (!skipNativeClassTransformer) {
+			const originalCreateFileEmitter =
+				angularWebpackPlugin.prototype.createFileEmitter;
+			angularWebpackPlugin.prototype.createFileEmitter = function (
+				...args: any[]
+			) {
+				let transformers = args[1] || {};
+				if (!transformers.before) {
+					transformers.before = [];
+				}
+				if (this.pluginOptions.jitMode) {
+					transformers.before.unshift(
+						require('../transformers/NativeClass').default,
+					);
+				} else {
+					transformers.before.push(
+						require('../transformers/NativeClass').default,
+					);
+				}
+				args[1] = transformers;
+				return originalCreateFileEmitter.apply(this, args);
+			};
+		}
 		config.plugin('AngularWebpackPlugin').use(angularWebpackPlugin, [
 			{
 				tsconfig: tsConfigPath,
