@@ -1554,7 +1554,24 @@ function applyNativeUpdate(batch: NativeUpdateBatch, entry: NativeUpdateEntry): 
  * `ViewBase.flushNativeUpdates` to push what is pending.
  */
 export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
-	const isMount = view._suspendedUpdates === undefined;
+	const dirty = view._suspendedUpdates;
+	const isMount = dirty === undefined;
+
+	if (view._pendingInvalidations === undefined && view.commitNativeUpdates === defaultCommitNativeUpdates) {
+		// Nothing on this node can reach a batch, so the sweep runs straight off the dirty set,
+		// which is dropped first as on the batch path.
+		view._suspendedUpdates = {};
+		view._pendingPrevious = undefined;
+
+		if (isMount) {
+			applyAllNativeSetters(view);
+		} else {
+			applyDirtyNativeSetters(view, dirty);
+		}
+
+		return;
+	}
+
 	const batch = new NativeUpdateBatch(view, isMount, collectNativeUpdateEntries(view, isMount), view._pendingPrevious, applyNativeUpdate);
 
 	// Dropped before the commit runs so that a write made from a handler queues against a fresh set.
@@ -1612,13 +1629,16 @@ function applyMountedNativeSetter(view: ViewBase, property: PropertyInterface): 
  * @deprecated Superseded by `ViewBase.commitNativeUpdates`, which applies the same dirty set
  * through a `NativeUpdateBatch` the class can reorder.
  */
-export function applyPendingNativeSetters(view: ViewBase): void {
+function applyDirtyNativeSetters(view: ViewBase, dirty: ViewBase['_suspendedUpdates']): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
-	const suspendedUpdates = view._suspendedUpdates;
-	for (const propertyName in suspendedUpdates) {
-		if (!HAS_OWN.call(suspendedUpdates, propertyName)) continue;
-		applyPendingNativeSetter(view, <PropertyInterface>suspendedUpdates[propertyName]);
+	for (const propertyName in dirty) {
+		if (!HAS_OWN.call(dirty, propertyName)) continue;
+		applyPendingNativeSetter(view, <PropertyInterface>dirty[propertyName]);
 	}
+}
+
+export function applyPendingNativeSetters(view: ViewBase): void {
+	applyDirtyNativeSetters(view, view._suspendedUpdates);
 }
 
 /**

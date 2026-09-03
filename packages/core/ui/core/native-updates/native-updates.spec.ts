@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { View } from '../view';
 import { Style } from '../../styling/style';
@@ -165,6 +165,81 @@ describe('commitNativeUpdates', () => {
 		});
 
 		expect(log).toEqual(['one=a']);
+	});
+});
+
+describe('committing without a batch', () => {
+	it('builds no batch for a node whose class can neither order nor observe one', () => {
+		const plain: any = loaded(new TestView());
+		const ordered: any = loaded(new OrderedView());
+		const applyRemaining = vi.spyOn(NativeUpdateBatch.prototype, '_applyRemaining');
+
+		try {
+			plain._batchUpdate(() => {
+				plain.two = 'b';
+				plain.one = 'a';
+			});
+			NativeUpdates.batch(() => {
+				plain.one = 'c';
+			});
+			plain.callUnloaded();
+			plain.two = 'd';
+			plain.flushNativeUpdates({ force: true });
+			plain.callLoaded();
+
+			expect(log).toEqual(['two=b', 'one=a', 'one=c', 'two=d']);
+			expect(applyRemaining).not.toHaveBeenCalled();
+
+			log.length = 0;
+			ordered._batchUpdate(() => {
+				ordered.two = 'b';
+				ordered.one = 'a';
+			});
+
+			expect(log).toEqual(['commit', 'two=b', 'one=a']);
+			expect(applyRemaining).toHaveBeenCalledTimes(1);
+		} finally {
+			applyRemaining.mockRestore();
+		}
+	});
+
+	it('sweeps a mount in the same order the batch path does', () => {
+		function mounted(view: any): string[] {
+			log.length = 0;
+			view.two = 'b';
+			view.style.three = 'c';
+			view.one = 'a';
+			view._setupUI({});
+			view.callLoaded();
+
+			return log.filter((entry) => entry !== 'commit');
+		}
+
+		const withoutBatch = mounted(new TestView());
+		const withBatch = mounted(new OrderedView());
+
+		expect(withoutBatch).toEqual(['two=b', 'one=a', 'three=c']);
+		expect(withBatch).toEqual(withoutBatch);
+	});
+
+	it('sweeps a dirty set in the same order the batch path does', () => {
+		function reloaded(view: any): string[] {
+			loaded(view);
+			view.callUnloaded();
+			view.two = 'b';
+			view.style.three = 'c';
+			view.one = 'a';
+			log.length = 0;
+			view.callLoaded();
+
+			return log.filter((entry) => entry !== 'commit');
+		}
+
+		const withoutBatch = reloaded(new TestView());
+		const withBatch = reloaded(new OrderedView());
+
+		expect(withoutBatch).toEqual(['two=b', 'three=c', 'one=a']);
+		expect(withBatch).toEqual(withoutBatch);
 	});
 });
 
