@@ -283,6 +283,90 @@ function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>
 	return props;
 }
 
+type NativeProperty = Property<any, any> | CssProperty<any, any> | CssAnimationProperty<any, any>;
+
+/**
+ * What a setter asks of the native view. The `store` a write is made against is where the
+ * captured native default lives: the view for view properties, the style for css ones.
+ */
+const enum NativeWrite {
+	/** Nothing to push; the write only has to be recorded while updates are suspended. */
+	None,
+	/** Push the value, capturing the native default first when nothing captured it yet. */
+	Value,
+	/** Push the value without capturing: the slot doubles as `CssAnimationProperty`'s `default:` value. */
+	ValueNoCapture,
+	/** Push the captured native default back and drop the capture. */
+	Default,
+	/** Push the captured native default back, keeping it for the same reason as `ValueNoCapture`. */
+	DefaultNoRelease,
+}
+
+function captureNativeDefault(view: ViewBase, store: any, property: NativeProperty): void {
+	const defaultValueKey = property.defaultValueKey;
+	if (!(defaultValueKey in store)) {
+		const getDefault = property.getDefault;
+		store[defaultValueKey] = view[getDefault] ? view[getDefault]() : property.defaultValue;
+	}
+}
+
+function applyNativeValue(view: ViewBase, store: any, property: NativeProperty, value: any, write: NativeWrite): void {
+	const setNative = property.setNative;
+
+	if (write === NativeWrite.Value || write === NativeWrite.ValueNoCapture) {
+		if (write === NativeWrite.Value) {
+			captureNativeDefault(view, store, property);
+		}
+
+		view[setNative](value);
+
+		return;
+	}
+
+	const defaultValueKey = property.defaultValueKey;
+	if (defaultValueKey in store) {
+		view[setNative](store[defaultValueKey]);
+		if (write === NativeWrite.Default) {
+			delete store[defaultValueKey];
+		}
+	} else {
+		view[setNative](property.defaultValue);
+	}
+}
+
+/**
+ * The single native routing point of every property setter: apply the write now, or record the
+ * property as dirty while the view is holding native updates back.
+ */
+function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty, value: any, write: NativeWrite): void {
+	if (view._suspendNativeUpdatesCount !== 0) {
+		if (view._suspendedUpdates && view[property.setNative]) {
+			view._suspendedUpdates[property.name] = property;
+		}
+
+		return;
+	}
+
+	const setNative = property.setNative;
+	if (!view[setNative]) {
+		return;
+	}
+
+	// The plain write is spelled out rather than delegated: it is the one every live set takes,
+	// and a call per set is measurable on an interpreter-only engine.
+	if (write === NativeWrite.Value) {
+		const defaultValueKey = property.defaultValueKey;
+		if (!(defaultValueKey in store)) {
+			const getDefault = property.getDefault;
+			store[defaultValueKey] = view[getDefault] ? view[getDefault]() : property.defaultValue;
+		}
+
+		view[setNative](value);
+	} else if (write !== NativeWrite.None) {
+		applyNativeValue(view, store, property, value, write);
+	}
+}
+
 export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, Property<T, U> {
 	private registered: boolean;
 
@@ -374,39 +458,15 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 				if (reset) {
 					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							this[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							this[setNative](defaultValue);
-						}
-					}
 				} else {
 					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
-							}
-							this[setNative](value);
-						}
-					}
 				}
+
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				queueOrApplyNative(this, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -490,9 +550,6 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 
 		const propertyName = options.name;
 		const key = this.key;
-		const getDefault: symbol = this.getDefault;
-		const setNative: symbol = this.setNative;
-		const defaultValueKey = this.defaultValueKey;
 		const defaultValue: U = this.defaultValue;
 
 		const coerceKey = Symbol(propertyName + ':coerceKey');
@@ -556,41 +613,15 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 			if (wrapped || changed) {
 				if (reset) {
 					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							this[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							this[setNative](defaultValue);
-						}
-					}
 				} else {
 					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
-							}
-							this[setNative](value);
-						}
-					}
 				}
+
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				queueOrApplyNative(this, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -794,41 +825,15 @@ export class CssProperty<T extends Style, U> {
 			if (changed) {
 				if (reset) {
 					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							view[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							view[setNative](defaultValue);
-						}
-					}
 				} else {
 					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-							}
-							view[setNative](value);
-						}
-					}
 				}
+
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				queueOrApplyNative(view, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -878,41 +883,15 @@ export class CssProperty<T extends Style, U> {
 			if (changed) {
 				if (reset) {
 					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							view[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							view[setNative](defaultValue);
-						}
-					}
 				} else {
 					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-							}
-							view[setNative](value);
-						}
-					}
 				}
+
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				queueOrApplyNative(view, this, property, value, reset ? NativeWrite.Default : NativeWrite.Value);
 
 				if (this.hasListeners(eventName)) {
 					this.notify<PropertyChangeData>({
@@ -1034,8 +1013,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		this.source = computedSource;
 
 		this.getDefault = Symbol(propertyName + ':getDefault');
-		const getDefault = this.getDefault;
-		const setNative = (this.setNative = Symbol(propertyName + ':setNative'));
+		this.setNative = Symbol(propertyName + ':setNative');
 		const eventName = propertyName + 'Change';
 
 		const property = this;
@@ -1100,25 +1078,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 						options.valueChanged(this, oldValue, value);
 					}
 
-					if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (isSet) {
-								if (!wasSet && !(defaultValueKey in this)) {
-									this[defaultValueKey] = view[getDefault] ? view[getDefault]() : options.defaultValue;
-								}
-								view[setNative](value);
-							} else if (wasSet) {
-								if (defaultValueKey in this) {
-									view[setNative](this[defaultValueKey]);
-								} else {
-									view[setNative](options.defaultValue);
-								}
-							}
-						}
+					if (computedValueChanged || isSet !== wasSet) {
+						queueOrApplyNative(view, this, property, value, isSet ? (wasSet ? NativeWrite.ValueNoCapture : NativeWrite.Value) : wasSet ? NativeWrite.DefaultNoRelease : NativeWrite.None);
 					}
 
 					if (computedValueChanged && this.hasListeners(eventName)) {
@@ -1199,9 +1160,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 		const key = this.key;
 		const sourceKey = this.sourceKey;
-		const getDefault = this.getDefault;
-		const setNative = this.setNative;
-		const defaultValueKey = this.defaultValueKey;
 		const eventName = propertyName + 'Change';
 		const defaultValue: U = options.defaultValue;
 
@@ -1292,26 +1250,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 						valueChanged(this, oldValue, value);
 					}
 
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else if (unsetNativeValue) {
-							if (defaultValueKey in this) {
-								view[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								view[setNative](defaultValue);
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-							}
-
-							view[setNative](value);
-						}
-					}
+					queueOrApplyNative(view, this, property, value, unsetNativeValue ? NativeWrite.Default : NativeWrite.Value);
 
 					if (this.hasListeners(eventName)) {
 						this.notify<PropertyChangeData>({
@@ -1496,39 +1435,54 @@ export const initNativeView = profile('"properties".initNativeView', function in
 	view._suspendedUpdates = {};
 });
 
+/**
+ * One entry of `applyPendingNativeSetters`: the value is re-read from its store, so a property
+ * dirtied several times while suspended reaches native once, with the value it ended up at.
+ */
+function applyPendingNativeSetter(view: ViewBase, property: PropertyInterface): void {
+	const setNative = property.setNative;
+	if (!view[setNative]) {
+		return;
+	}
+
+	const store = property.isStyleProperty ? view.style : view;
+	if ((<any>property).isSet(store)) {
+		captureNativeDefault(view, store, property);
+		// TODO: Only if value is different from the value before the scope was created.
+		view[setNative](store[property.name]);
+	} else {
+		view[setNative](store[property.defaultValueKey]);
+	}
+}
+
+/** One entry of `applyAllNativeSetters`: every value the instance carries is dirty. */
+function applyMountedNativeSetter(view: ViewBase, property: PropertyInterface): void {
+	const setNative = property.setNative;
+
+	if (property.isStyleProperty) {
+		if (!view[setNative]) {
+			return;
+		}
+
+		const style = view.style;
+		captureNativeDefault(view, style, property);
+		view[setNative](style[property.key]);
+	} else {
+		if (!(setNative in view)) {
+			return;
+		}
+
+		captureNativeDefault(view, view, property);
+		view[setNative](view[property.key]);
+	}
+}
+
 export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
 	const suspendedUpdates = view._suspendedUpdates;
 	for (const propertyName in suspendedUpdates) {
 		if (!HAS_OWN.call(suspendedUpdates, propertyName)) continue;
-		const property = <PropertyInterface>suspendedUpdates[propertyName];
-		const setNative = property.setNative;
-		if (view[setNative]) {
-			const { getDefault, isStyleProperty, defaultValueKey, defaultValue } = property;
-			let value;
-			if (isStyleProperty) {
-				const style = view.style;
-				if ((<CssProperty<Style, any> | CssAnimationProperty<Style, any>>property).isSet(view.style)) {
-					if (!(defaultValueKey in style)) {
-						style[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-					}
-					value = view.style[propertyName];
-				} else {
-					value = style[defaultValueKey];
-				}
-			} else {
-				if ((<Property<ViewBase, any>>property).isSet(view)) {
-					if (!(defaultValueKey in view)) {
-						view[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-					}
-					value = view[propertyName];
-				} else {
-					value = view[defaultValueKey];
-				}
-			}
-			// TODO: Only if value is different from the value before the scope was created.
-			view[setNative](value);
-		}
+		applyPendingNativeSetter(view, <PropertyInterface>suspendedUpdates[propertyName]);
 	}
 }
 
@@ -1536,39 +1490,16 @@ export function applyAllNativeSetters(view: ViewBase): void {
 	let symbols = Object.getOwnPropertySymbols(view);
 	for (const symbol of symbols) {
 		const property: Property<any, any> = symbolPropertyMap[symbol];
-		if (!property) {
-			continue;
-		}
-
-		const setNative = property.setNative;
-		const getDefault = property.getDefault;
-		if (setNative in view) {
-			const defaultValueKey = property.defaultValueKey;
-			if (!(defaultValueKey in view)) {
-				view[defaultValueKey] = view[getDefault] ? view[getDefault]() : property.defaultValue;
-			}
-
-			const value = view[symbol];
-			view[setNative](value);
+		if (property) {
+			applyMountedNativeSetter(view, property);
 		}
 	}
 
-	const style = view.style;
-	symbols = Object.getOwnPropertySymbols(style);
+	symbols = Object.getOwnPropertySymbols(view.style);
 	for (const symbol of symbols) {
 		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
-		if (!property) {
-			continue;
-		}
-
-		if (view[property.setNative]) {
-			const defaultValueKey = property.defaultValueKey;
-			if (!(defaultValueKey in style)) {
-				style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
-			}
-
-			const value = style[symbol];
-			view[property.setNative](value);
+		if (property) {
+			applyMountedNativeSetter(view, property);
 		}
 	}
 }
