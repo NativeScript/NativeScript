@@ -2,6 +2,7 @@
 /// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!CFNetwork.d.ts" />
 /// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!CoreText.d.ts" />
 /// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!Darwin.d.ts" />
+/// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!Security.d.ts" />
 /// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!_DarwinFoundation1.d.ts" />
 /// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!_DarwinFoundation2.d.ts" />
 /// <reference path="../types-ios/src/lib/ios/objc-x86_64/objc!_DarwinFoundation3.d.ts" />
