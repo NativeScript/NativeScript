@@ -4,6 +4,8 @@ import { CoreTypes, Trace } from '../../styling/styling-shared';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView, _setDefaultCommitNativeUpdates } from '../properties';
 import type { NativeUpdateBatch, NativeUpdateProperty } from '../native-updates/batch';
 import type { Invalidation } from '../native-updates/invalidation';
+import type { FlushNativeUpdatesOptions } from '../native-updates/scheduler';
+import { SuspendType } from './suspend-type';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug-source';
 import { Binding } from '../bindable';
@@ -287,20 +289,6 @@ enum Flags {
 	superOnUnloadedCalled = 'Unloaded',
 }
 
-enum SuspendType {
-	Incremental = 0,
-	Loaded = 1 << 20,
-	NativeView = 1 << 21,
-	UISetup = 1 << 22,
-	IncrementalCountMask = ~((1 << 20) + (1 << 21) + (1 << 22)),
-}
-
-namespace SuspendType {
-	export function toString(type: SuspendType): string {
-		return (type ? 'suspended' : 'resumed') + '(' + 'Incremental: ' + (type & SuspendType.IncrementalCountMask) + ', ' + 'Loaded: ' + !(type & SuspendType.Loaded) + ', ' + 'NativeView: ' + !(type & SuspendType.NativeView) + ', ' + 'UISetup: ' + !(type & SuspendType.UISetup) + ')';
-	}
-}
-
 const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
 
 /**
@@ -450,6 +438,9 @@ export abstract class ViewBase extends Observable {
 	 * Native setters that had to execute while there was no native view,
 	 * or the view was detached from the visual tree etc. will accumulate in this object,
 	 * and will be applied when all prerequisites are met.
+	 *
+	 * @deprecated The dirty set behind `NativeUpdateBatch`; read it from the batch a commit is
+	 * given rather than from here.
 	 * @private
 	 */
 	public _suspendedUpdates: {
@@ -793,6 +784,10 @@ export abstract class ViewBase extends Observable {
 		// Overridden
 	}
 
+	/**
+	 * @deprecated Use `NativeUpdates.batch()` to coalesce writes across nodes, or `_batchUpdate`
+	 * for a single one.
+	 */
 	public _suspendNativeUpdates(type: SuspendType): void {
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount | type;
@@ -800,6 +795,9 @@ export abstract class ViewBase extends Observable {
 			this._suspendNativeUpdatesCount++;
 		}
 	}
+	/**
+	 * @deprecated The counterpart of `_suspendNativeUpdates`; see the note there.
+	 */
 	public _resumeNativeUpdates(type: SuspendType): void {
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount & ~type;
@@ -1476,6 +1474,47 @@ export abstract class ViewBase extends Observable {
 	 */
 	public commitNativeUpdates(batch: NativeUpdateBatch): void {
 		batch._applyRemaining();
+	}
+
+	/**
+	 * Pushes whatever is pending on this node to its native view now, and returns whether it
+	 * could. In `sync` mode nothing is normally pending, so this only has work to do inside a
+	 * batch, or with `force`.
+	 *
+	 * `force` pushes to a native view that already exists even though the node is not loaded yet
+	 * - Android builds native views at `onCreate`, one lifecycle step before load - and leaves
+	 * the holds themselves in place. Values pushed this way are not pushed again on load.
+	 */
+	public flushNativeUpdates(options?: FlushNativeUpdatesOptions): boolean {
+		let flushed = false;
+
+		if (this.nativeViewProtected) {
+			const holds = this._suspendNativeUpdatesCount;
+			// Anything outside the incremental count is a reason the node is not ready for native
+			// writes at all, which only `force` overrides.
+			if (holds === 0) {
+				flushed = true;
+			} else if (options?.force || (holds & ~SuspendType.IncrementalCountMask) === 0) {
+				this._suspendNativeUpdatesCount = 0;
+				try {
+					this.onResumeNativeUpdates();
+				} finally {
+					this._suspendNativeUpdatesCount = holds;
+				}
+
+				flushed = true;
+			}
+		}
+
+		if (options?.subtree) {
+			this.eachChild((child) => {
+				child.flushNativeUpdates(options);
+
+				return true;
+			});
+		}
+
+		return flushed;
 	}
 
 	/**

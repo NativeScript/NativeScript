@@ -4,6 +4,10 @@ import { View } from '../view';
 import { Style } from '../../styling/style';
 import { CssProperty, Property } from '../properties';
 import { NativeUpdateBatch } from './batch';
+import { NativeUpdates } from './scheduler';
+
+/** `SuspendType.Loaded`; the enum is internal but the bit is part of the field's contract. */
+const Loaded = 1 << 20;
 
 const log: string[] = [];
 
@@ -144,14 +148,25 @@ describe('the batch', () => {
 	}
 
 	it('reports what is pending and what was handled', () => {
-		const view: any = loaded(new OrderedView());
+		const seen: boolean[] = [];
 
+		class ReportingView extends TestView {
+			public commitNativeUpdates(batch: NativeUpdateBatch): void {
+				this.commits.push(batch);
+				seen.push(batch.has(oneProperty), batch.has(twoProperty));
+				batch.apply(oneProperty);
+				seen.push(batch.has(oneProperty));
+				super.commitNativeUpdates(batch);
+				seen.push(batch.has(oneProperty));
+			}
+		}
+
+		const view: any = loaded(new ReportingView());
+		seen.length = 0;
 		view.one = 'a';
 
-		const batch = commitOf(view);
-		expect(batch.node).toBe(view);
-		expect(batch.has(oneProperty)).toBe(false);
-		expect(batch.has(twoProperty)).toBe(false);
+		expect(commitOf(view).node).toBe(view);
+		expect(seen).toEqual([true, false, false, false]);
 	});
 
 	it('lists everything it applies, in commit order', () => {
@@ -227,5 +242,147 @@ describe('the batch', () => {
 		const { children } = commitOf(view);
 		expect(children).toEqual([]);
 		expect(Object.isFrozen(children)).toBe(true);
+	});
+});
+
+describe('the scheduler', () => {
+	it('only implements the sync mode', () => {
+		expect(NativeUpdates.mode).toBe('sync');
+
+		NativeUpdates.mode = 'sync';
+		expect(NativeUpdates.mode).toBe('sync');
+
+		expect(() => {
+			(<any>NativeUpdates).mode = 'microtask';
+		}).toThrow(/'sync' is the only mode/);
+	});
+
+	it('coalesces the writes made to a node inside a batch', () => {
+		const view: any = loaded(new TestView());
+
+		NativeUpdates.batch(() => {
+			view.two = 'b';
+			view.one = 'a';
+			view.two = 'b2';
+
+			expect(log).toEqual([]);
+			expect(view._pendingPrevious).toBeUndefined();
+		});
+
+		expect(log).toEqual(['two=b2', 'one=a']);
+		expect(view._suspendNativeUpdatesCount).toBe(0);
+	});
+
+	it('commits touched nodes in the order they were first written to', () => {
+		const first: any = loaded(new TestView());
+		const second: any = loaded(new TestView());
+
+		NativeUpdates.batch(() => {
+			second.one = 'second';
+			first.one = 'first';
+			second.two = 'second-two';
+		});
+
+		expect(log).toEqual(['one=second', 'two=second-two', 'one=first']);
+	});
+
+	it('commits only when the outermost batch closes', () => {
+		const view: any = loaded(new TestView());
+
+		NativeUpdates.batch(() => {
+			NativeUpdates.batch(() => {
+				view.one = 'a';
+			});
+
+			expect(log).toEqual([]);
+			expect(NativeUpdates._depth).toBe(1);
+		});
+
+		expect(log).toEqual(['one=a']);
+		expect(NativeUpdates._depth).toBe(0);
+	});
+
+	it('closes the batch when the callback throws', () => {
+		const view: any = loaded(new TestView());
+
+		expect(() =>
+			NativeUpdates.batch(() => {
+				view.one = 'a';
+				throw new Error('boom');
+			}),
+		).toThrow('boom');
+
+		expect(log).toEqual(['one=a']);
+		expect(NativeUpdates._depth).toBe(0);
+	});
+
+	it('rejects an unmatched end', () => {
+		expect(() => NativeUpdates.end()).toThrow(/without a matching begin/);
+	});
+});
+
+describe('flushNativeUpdates', () => {
+	it('pushes what a batch is holding and leaves the batch open', () => {
+		const view: any = loaded(new TestView());
+
+		NativeUpdates.batch(() => {
+			view.one = 'a';
+			expect(view.flushNativeUpdates()).toBe(true);
+			expect(log).toEqual(['one=a']);
+			expect(view._suspendNativeUpdatesCount).toBe(1);
+
+			view.two = 'b';
+		});
+
+		expect(log).toEqual(['one=a', 'two=b']);
+	});
+
+	it('reports nothing to push to when the node has no native view', () => {
+		const view: any = new TestView();
+		view.one = 'a';
+
+		expect(view.flushNativeUpdates()).toBe(false);
+		expect(view.flushNativeUpdates({ force: true })).toBe(false);
+		expect(log).toEqual([]);
+	});
+
+	it('leaves an unloaded node alone without force', () => {
+		const view: any = new TestView();
+		view.one = 'a';
+		view._setupUI({});
+
+		expect(view.flushNativeUpdates()).toBe(false);
+		expect(log).toEqual([]);
+	});
+
+	it('pushes to an unloaded node with force, keeping the holds', () => {
+		const view: any = new TestView();
+		view.one = 'a';
+		view._setupUI({});
+
+		expect(view.flushNativeUpdates({ force: true })).toBe(true);
+		expect(log).toEqual(['one=a']);
+		expect(view._suspendNativeUpdatesCount).toBe(Loaded);
+
+		log.length = 0;
+		view.two = 'b';
+		view.callLoaded();
+
+		expect(log).toEqual(['two=b']);
+	});
+
+	it('flushes a subtree after each node', () => {
+		const parent: any = loaded(new TestView());
+		const child: any = loaded(new TestView());
+		parent.eachChildView = (callback: any) => callback(child);
+
+		NativeUpdates.batch(() => {
+			child.one = 'child';
+			parent.one = 'parent';
+
+			expect(NativeUpdates.flush(parent)).toBe(true);
+		});
+
+		expect(log).toEqual(['one=parent', 'one=child']);
 	});
 });

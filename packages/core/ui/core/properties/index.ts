@@ -10,6 +10,7 @@ import { profile } from '../../../profiling';
 import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
 import { Invalidation } from '../native-updates/invalidation';
 import { NativeUpdateBatch } from '../native-updates/batch';
+import { NativeUpdates } from '../native-updates/scheduler';
 import type { NativeUpdateEntry } from '../native-updates/batch';
 import { calc } from '@csstools/css-calc';
 
@@ -339,6 +340,10 @@ function applyNativeValue(view: ViewBase, store: any, property: NativeProperty, 
 	}
 }
 
+// Bound once: the setters read the batch depth on every write, and going through the module
+// namespace on each of them is measurable.
+const scheduler = NativeUpdates;
+
 let defaultCommitNativeUpdates: unknown;
 
 /**
@@ -356,7 +361,7 @@ export function _setDefaultCommitNativeUpdates(commit: unknown): void {
  * a commit apply it, right away when nothing is holding native updates back.
  */
 function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty, value: any, write: NativeWrite, oldValue: any): void {
-	if (view._suspendNativeUpdatesCount !== 0 || view.commitNativeUpdates !== defaultCommitNativeUpdates) {
+	if (view._suspendNativeUpdatesCount !== 0 || scheduler._depth !== 0 || view.commitNativeUpdates !== defaultCommitNativeUpdates) {
 		queueNativeUpdate(view, property, oldValue);
 
 		return;
@@ -383,6 +388,10 @@ function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty
 }
 
 function queueNativeUpdate(view: ViewBase, property: NativeProperty, oldValue: any): void {
+	if (scheduler._depth !== 0) {
+		scheduler._hold(view);
+	}
+
 	const dirty = view._suspendedUpdates;
 	if (dirty && view[property.setNative]) {
 		// `NativeUpdateBatch.previous` is only reachable from a commit hook, so a node whose class
