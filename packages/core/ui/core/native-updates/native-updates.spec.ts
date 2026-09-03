@@ -5,6 +5,7 @@ import { Style } from '../../styling/style';
 import { CssProperty, Property } from '../properties';
 import { NativeUpdateBatch } from './batch';
 import { NativeUpdates } from './scheduler';
+import { Invalidation, InvalidationPhase } from './invalidation';
 
 /** `SuspendType.Loaded`; the enum is internal but the bit is part of the field's contract. */
 const Loaded = 1 << 20;
@@ -49,6 +50,31 @@ trackNative(twoProperty, TestView);
 const threeProperty = new CssProperty<Style, string>({ name: 'three', cssName: 'three', defaultValue: 'three-default' });
 threeProperty.register(Style);
 trackNative(threeProperty, TestView);
+
+const Content = new Invalidation('content', { phase: InvalidationPhase.Content });
+
+/** Raises `Content` and has a `[setNative]` of its own. */
+const fourProperty = new Property<TestView, string>({ name: 'four', defaultValue: 'four-default', invalidates: [Content] });
+fourProperty.register(TestView);
+trackNative(fourProperty, TestView);
+
+/** Raises `Content` and nothing else: no `[setNative]` is installed for it. */
+const fiveProperty = new Property<TestView, string>({ name: 'five', defaultValue: 'five-default', invalidates: [Content] });
+fiveProperty.register(TestView);
+
+/** Raises `Content` on a class that handles neither the property nor the invalidation. */
+class BareView extends View {
+	createNativeView(): Object {
+		return {};
+	}
+}
+
+const sixProperty = new Property<BareView, string>({ name: 'six', defaultValue: 'six-default', invalidates: [Content] });
+sixProperty.register(BareView);
+
+(TestView.prototype as any)[Content.apply] = function (batch: NativeUpdateBatch) {
+	log.push(`content(${String(batch.node.constructor.name)})`);
+};
 
 function loaded<T extends TestView>(view: T): T {
 	(<any>view)._setupUI({});
@@ -384,5 +410,83 @@ describe('flushNativeUpdates', () => {
 		});
 
 		expect(log).toEqual(['one=parent', 'one=child']);
+	});
+});
+
+describe('invalidates', () => {
+	it('runs the aggregate handler after the property write', () => {
+		const view: any = loaded(new TestView());
+
+		view.four = 'a';
+
+		expect(log).toEqual(['four=a', 'content(TestView)']);
+	});
+
+	it('runs the aggregate handler for a property with no native setter of its own', () => {
+		const view: any = loaded(new TestView());
+
+		view.five = 'a';
+
+		expect(log).toEqual(['content(TestView)']);
+	});
+
+	it('runs the aggregate handler once however many properties raised it', () => {
+		const view: any = loaded(new TestView());
+
+		NativeUpdates.batch(() => {
+			view.four = 'a';
+			view.five = 'b';
+			view.one = 'c';
+		});
+
+		expect(log).toEqual(['four=a', 'one=c', 'content(TestView)']);
+	});
+
+	it('is a batch target an override can pre-empt or drop', () => {
+		const pending: boolean[] = [];
+
+		class ContentFirstView extends TestView {
+			public commitNativeUpdates(batch: NativeUpdateBatch): void {
+				pending.push(batch.has(Content));
+				batch.apply(Content);
+				batch.skip(fourProperty);
+				super.commitNativeUpdates(batch);
+			}
+		}
+		const view: any = loaded(new ContentFirstView());
+		pending.length = 0;
+
+		view.four = 'a';
+
+		expect(pending).toEqual([true]);
+		expect(log).toEqual(['content(ContentFirstView)']);
+	});
+
+	it('gives the aggregate handler the value the property held at the last commit', () => {
+		const seen: unknown[] = [];
+
+		class ContentReadingView extends TestView {}
+		(ContentReadingView.prototype as any)[Content.apply] = function (batch: NativeUpdateBatch) {
+			seen.push(batch.previous(fourProperty));
+		};
+
+		const view: any = loaded(new ContentReadingView());
+		seen.length = 0;
+
+		view.four = 'a';
+		view.four = 'b';
+
+		expect(seen).toEqual(['four-default', 'a']);
+	});
+
+	it('does nothing on a node with no handler for the invalidation', () => {
+		const view: any = new BareView();
+		view._setupUI({});
+		view.callLoaded();
+		log.length = 0;
+
+		view.six = 'a';
+
+		expect(log).toEqual([]);
 	});
 });

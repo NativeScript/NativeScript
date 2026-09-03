@@ -361,7 +361,7 @@ export function _setDefaultCommitNativeUpdates(commit: unknown): void {
  * a commit apply it, right away when nothing is holding native updates back.
  */
 function queueOrApplyNative(view: ViewBase, store: any, property: NativeProperty, value: any, write: NativeWrite, oldValue: any): void {
-	if (view._suspendNativeUpdatesCount !== 0 || scheduler._depth !== 0 || view.commitNativeUpdates !== defaultCommitNativeUpdates) {
+	if (view._suspendNativeUpdatesCount !== 0 || scheduler._depth !== 0 || view.commitNativeUpdates !== defaultCommitNativeUpdates || property.invalidates !== undefined) {
 		queueNativeUpdate(view, property, oldValue);
 
 		return;
@@ -392,11 +392,12 @@ function queueNativeUpdate(view: ViewBase, property: NativeProperty, oldValue: a
 		scheduler._hold(view);
 	}
 
+	const invalidates = property.invalidates;
 	const dirty = view._suspendedUpdates;
 	if (dirty && view[property.setNative]) {
-		// `NativeUpdateBatch.previous` is only reachable from a commit hook, so a node whose class
-		// does not define one records nothing.
-		if (view.commitNativeUpdates !== defaultCommitNativeUpdates) {
+		// `NativeUpdateBatch.previous` is only reachable from a commit hook or an aggregate
+		// handler, so a node with neither records nothing.
+		if (invalidates !== undefined || view.commitNativeUpdates !== defaultCommitNativeUpdates) {
 			let previous = view._pendingPrevious;
 			if (!previous) {
 				previous = view._pendingPrevious = new Map();
@@ -407,6 +408,17 @@ function queueNativeUpdate(view: ViewBase, property: NativeProperty, oldValue: a
 		}
 
 		dirty[property.name] = property;
+	}
+
+	if (invalidates) {
+		let pending = view._pendingInvalidations;
+		if (!pending) {
+			pending = view._pendingInvalidations = new Set();
+		}
+
+		for (let i = 0, length = invalidates.length; i < length; i++) {
+			pending.add(invalidates[i]);
+		}
 	}
 
 	if (view._suspendNativeUpdatesCount === 0) {
@@ -425,6 +437,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 	public readonly defaultValueKey: symbol;
 	public readonly defaultValue: U;
+	public readonly invalidates: readonly Invalidation[] | undefined;
 	public readonly nativeValueChange: (owner: T, value: U) => void;
 
 	public isStyleProperty: boolean;
@@ -453,6 +466,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 		const defaultValue: U = options.defaultValue;
 		this.defaultValue = defaultValue;
+		this.invalidates = options.invalidates;
 
 		const eventName = propertyName + 'Change';
 
@@ -787,6 +801,7 @@ export class CssProperty<T extends Style, U> {
 	public readonly sourceKey: symbol;
 	public readonly defaultValueKey: symbol;
 	public readonly defaultValue: U;
+	public readonly invalidates: readonly Invalidation[] | undefined;
 
 	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
 
@@ -819,6 +834,7 @@ export class CssProperty<T extends Style, U> {
 
 		const defaultValue: U = options.defaultValue;
 		this.defaultValue = defaultValue;
+		this.invalidates = options.invalidates;
 
 		const eventName = propertyName + 'Change';
 		let affectsLayout: boolean = options.affectsLayout;
@@ -1013,6 +1029,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 	private readonly source: symbol;
 
 	public readonly defaultValue: U;
+	public readonly invalidates: readonly Invalidation[] | undefined;
 
 	public isStyleProperty: boolean;
 
@@ -1050,6 +1067,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		this.defaultValueKey = defaultValueKey;
 
 		this.defaultValue = options.defaultValue;
+		this.invalidates = options.invalidates;
 
 		const cssValue = Symbol(cssName);
 		const styleValue = Symbol(`local:${propertyName}`);
