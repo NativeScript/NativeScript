@@ -1,5 +1,5 @@
 import { View } from '../core/view';
-import { LinearGradient } from './linear-gradient';
+import { LinearGradient, resolveGradientStopOffsets } from './linear-gradient';
 import { ClipPathFunction } from './clip-path-function';
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
 import { CSSValue, parse } from '../../css-value/reworkcss-value';
@@ -15,13 +15,10 @@ function fromBase64(source: string): android.graphics.Bitmap {
 function fromGradient(gradient: LinearGradient): org.nativescript.widgets.LinearGradientDefinition {
 	const colors = Array.create('int', gradient.colorStops.length);
 	const stops = Array.create('float', gradient.colorStops.length);
-	let hasStops = false;
+	const offsets = resolveGradientStopOffsets(gradient.colorStops);
 	gradient.colorStops.forEach((stop, index) => {
 		colors[index] = stop.color.android;
-		if (stop.offset) {
-			stops[index] = stop.offset.value;
-			hasStops = true;
-		}
+		stops[index] = offsets[index];
 	});
 
 	const alpha = gradient.angle / (Math.PI * 2);
@@ -30,7 +27,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 	const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
 	const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
 
-	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
+	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, stops);
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;

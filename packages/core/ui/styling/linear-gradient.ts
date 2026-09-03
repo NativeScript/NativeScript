@@ -7,6 +7,46 @@ export interface ColorStop {
 	offset?: CoreTypes.LengthPercentUnit;
 }
 
+/**
+ * Positions for every color stop, per CSS: a first stop without a position
+ * sits at 0, a last one at 1, a run of unpositioned stops is spread evenly
+ * between its positioned neighbours, and a position lower than one before it
+ * is raised to that value.
+ */
+export function resolveGradientStopOffsets(colorStops: readonly ColorStop[]): number[] {
+	const count = colorStops.length;
+	if (count === 0) {
+		return [];
+	}
+	const offsets: (number | undefined)[] = colorStops.map((stop) => (stop.offset ? stop.offset.value : undefined));
+	if (offsets[0] === undefined) {
+		offsets[0] = 0;
+	}
+	if (offsets[count - 1] === undefined) {
+		offsets[count - 1] = 1;
+	}
+	let highest = offsets[0];
+	for (let i = 1; i < count; i++) {
+		const offset = offsets[i];
+		if (offset !== undefined) {
+			offsets[i] = Math.max(offset, highest);
+			highest = offsets[i];
+		}
+	}
+	let start = 0;
+	for (let i = 1; i < count; i++) {
+		if (offsets[i] === undefined) {
+			continue;
+		}
+		const gap = i - start;
+		for (let k = start + 1; k < i; k++) {
+			offsets[k] = offsets[start] + ((offsets[i] - offsets[start]) * (k - start)) / gap;
+		}
+		start = i;
+	}
+	return offsets as number[];
+}
+
 export class LinearGradient {
 	public angle: number;
 	public colorStops: ColorStop[];

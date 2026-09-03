@@ -1,6 +1,6 @@
 ﻿import { Screen } from '../platform';
 import * as utils from '../utils';
-import { LinearGradient } from './styling/linear-gradient';
+import { LinearGradient, resolveGradientStopOffsets } from './styling/linear-gradient';
 import { NativeScriptUIView } from './utils';
 
 export namespace ios {
@@ -52,21 +52,14 @@ export namespace ios {
 
 		const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
 		const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
-		let hasStops = false;
-
-		gradient.colorStops.forEach((stop) => {
+		const offsets = resolveGradientStopOffsets(gradient.colorStops);
+		gradient.colorStops.forEach((stop, index) => {
 			iosColors.addObject(stop.color.ios.CGColor);
-			if (stop.offset) {
-				iosStops.addObject(stop.offset.value);
-				hasStops = true;
-			}
+			iosStops.addObject(offsets[index]);
 		});
 
 		gradientLayer.colors = iosColors;
-
-		if (hasStops) {
-			gradientLayer.locations = iosStops;
-		}
+		gradientLayer.locations = iosStops;
 
 		const alpha = gradient.angle / (Math.PI * 2);
 		const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
