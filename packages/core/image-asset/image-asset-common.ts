@@ -87,7 +87,7 @@ export function getRequestedImageSize(src: { width: number; height: number }, op
 	}
 
 	return {
-		width: reqWidth,
-		height: reqHeight,
+		width: Number(reqWidth),
+		height: Number(reqHeight),
 	};
 }
