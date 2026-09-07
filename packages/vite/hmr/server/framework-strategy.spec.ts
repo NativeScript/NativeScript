@@ -4,9 +4,10 @@ import { typescriptServerStrategy } from '../frameworks/typescript/server/strate
 import { vueServerStrategy } from '../frameworks/vue/server/strategy.js';
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
+import { javascriptServerStrategy } from '../frameworks/javascript/server/strategy.js';
 
 // Mirrors the production STRATEGY_REGISTRY in websocket.ts.
-const REGISTRY: FrameworkServerStrategy[] = [typescriptServerStrategy, vueServerStrategy, angularServerStrategy, solidServerStrategy];
+const REGISTRY: FrameworkServerStrategy[] = [typescriptServerStrategy, vueServerStrategy, angularServerStrategy, solidServerStrategy, javascriptServerStrategy];
 
 describe('FrameworkServerStrategy contract', () => {
 	it('every registered strategy implements the required surface', () => {
@@ -28,6 +29,7 @@ describe('FrameworkServerStrategy contract', () => {
 		// + its own tail); the WebSocket plugin calls the active strategy's hook
 		// directly — there is no shared inline dispatcher tail left.
 		expect(typeof typescriptServerStrategy.handleHotUpdate).toBe('function');
+		expect(typeof javascriptServerStrategy.handleHotUpdate).toBe('function');
 		expect(typeof solidServerStrategy.handleHotUpdate).toBe('function');
 		expect(typeof vueServerStrategy.handleHotUpdate).toBe('function');
 		expect(typeof angularServerStrategy.handleHotUpdate).toBe('function');

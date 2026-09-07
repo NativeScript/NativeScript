@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
-import { createTsConfigPathsResolver, getTsConfigAliasRoots } from './ts-config-paths.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createTsConfigPathsResolver, getTsConfigAliasRoots, getTsConfigData } from './ts-config-paths.js';
 
 const tempDirs: string[] = [];
 
@@ -82,5 +82,48 @@ describe('getTsConfigAliasRoots', () => {
 	it('returns an empty array when there are no paths', () => {
 		expect(getTsConfigAliasRoots({})).toEqual([]);
 		expect(getTsConfigAliasRoots({ paths: {} })).toEqual([]);
+	});
+});
+
+describe('getTsConfigData', () => {
+	const cwd = process.cwd();
+
+	function createProject(): { root: string; realRoot: string } {
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-tsconfig-data-'));
+		tempDirs.push(root);
+		return { root, realRoot: fs.realpathSync(root) };
+	}
+
+	afterEach(() => {
+		process.chdir(cwd);
+	});
+
+	it('reads path aliases from jsconfig.json when the project has no tsconfig', () => {
+		const { root, realRoot } = createProject();
+		fs.writeFileSync(path.join(root, 'jsconfig.json'), JSON.stringify({ compilerOptions: { baseUrl: './', paths: { '~/*': ['app/*'] } } }));
+		process.chdir(root);
+
+		expect(getTsConfigData({ platform: 'ios' }).paths).toEqual({ '~/*': [path.join(realRoot, 'app', '*')] });
+	});
+
+	it('prefers tsconfig.json over jsconfig.json', () => {
+		const { root, realRoot } = createProject();
+		fs.writeFileSync(path.join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: { paths: { '@ts/*': ['src/*'] } } }));
+		fs.writeFileSync(path.join(root, 'jsconfig.json'), JSON.stringify({ compilerOptions: { paths: { '@js/*': ['app/*'] } } }));
+		process.chdir(root);
+
+		expect(getTsConfigData({ platform: 'ios' }).paths).toEqual({ '@ts/*': [path.join(realRoot, 'src', '*')] });
+	});
+
+	it('returns no aliases without warning when the project has neither file', () => {
+		const { root } = createProject();
+		process.chdir(root);
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		try {
+			expect(getTsConfigData({ platform: 'ios' })).toEqual({ paths: {}, baseUrl: '.' });
+			expect(warn).not.toHaveBeenCalled();
+		} finally {
+			warn.mockRestore();
+		}
 	});
 });

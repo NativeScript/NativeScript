@@ -284,7 +284,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 					// and this is an application module under the virtual app root,
 					// upsert it into the HMR graph so ns:hmr-full-graph is non-empty.
 					try {
-						if (strategy?.flavor === 'typescript' || strategy?.flavor === 'react') {
+						if (strategy?.flavor === 'typescript' || strategy?.flavor === 'javascript' || strategy?.flavor === 'react') {
 							const id = (resolvedCandidate || spec).replace(/[?#].*$/, '');
 							// Only track app modules (under APP_VIRTUAL_WITH_SLASH) and ts/js/tsx/jsx/mjs.
 							const isApp = id.startsWith(APP_VIRTUAL_WITH_SLASH) || id.startsWith('/app/');

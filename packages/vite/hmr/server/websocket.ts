@@ -13,6 +13,7 @@ import { angularServerStrategy } from '../frameworks/angular/server/strategy.js'
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { reactServerStrategy } from '../frameworks/react/server/strategy.js';
+import { javascriptServerStrategy } from '../frameworks/javascript/server/strategy.js';
 import { getFrameworkFlavor } from '../framework-flavors.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
@@ -121,6 +122,7 @@ const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['solid', solidServerStrategy],
 	['react', reactServerStrategy],
 	['typescript', typescriptServerStrategy],
+	['javascript', javascriptServerStrategy],
 ]);
 
 function getHmrSocketRoleFromRequestUrl(requestUrl: string | undefined): string {

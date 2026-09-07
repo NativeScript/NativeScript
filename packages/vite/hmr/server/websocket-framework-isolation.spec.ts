@@ -10,4 +10,10 @@ describe('framework dependency isolation', () => {
 
 		expect(hmrWebSocketPluginForFlavor('angular', {})).toBeDefined();
 	});
+
+	it('installs the device routes for plain JavaScript apps without loading the Vue compiler', async () => {
+		const { hmrWebSocketPluginForFlavor } = await import('./websocket.js');
+
+		expect(hmrWebSocketPluginForFlavor('javascript', {})).toBeDefined();
+	});
 });

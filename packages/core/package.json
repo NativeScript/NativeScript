@@ -68,6 +68,7 @@
 		"css-tree": "^3.1.0",
 		"css-what": "^7.0.0",
 		"emoji-regex": "^10.2.1",
+		"semver": "^7.0.0",
 		"source-map": "0.7.6",
 		"source-map-js": "^1.2.1",
 		"tslib": "^2.0.0"

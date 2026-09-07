@@ -5,7 +5,8 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import replace from '@rollup/plugin-replace';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import ts from 'typescript';
+// Plain JavaScript apps load this file without `typescript` installed: never import
+// it here or in anything this file pulls in; go through helpers/typescript.ts.
 import { getCliFlags } from '../helpers/cli-flags.js';
 import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';

@@ -46,13 +46,14 @@ function resolveTargetFlavor(): string | undefined {
 
 export const TARGET_FLAVOR = resolveTargetFlavor();
 
-// React reuses the generic TypeScript HMR path on BOTH server and client: it has
-// no Fast Refresh, so a module edit drives a plain module reload / root reset
-// (the React tree re-renders), exactly like the `typescript` flavor. The server
-// strategy is `{ ...typescriptServerStrategy, flavor: 'react' }`; this mirrors that
-// on the client so the `typescript`-gated update branches also run for React
-// (otherwise a React edit is received but never applied — the overlay sticks).
-export const TS_LIKE_FLAVOR = TARGET_FLAVOR === 'typescript' || TARGET_FLAVOR === 'react';
+// React and plain JavaScript reuse the generic TypeScript HMR path on BOTH server
+// and client: a module edit drives a plain module reload / root reset (React has
+// no Fast Refresh; JavaScript is the XML flavor without a compile step), exactly
+// like the `typescript` flavor. Their server strategies are
+// `{ ...typescriptServerStrategy, flavor }`; this mirrors that on the client so
+// the `typescript`-gated update branches also run for them (otherwise an edit is
+// received but never applied — the overlay sticks).
+export const TS_LIKE_FLAVOR = TARGET_FLAVOR === 'typescript' || TARGET_FLAVOR === 'react' || TARGET_FLAVOR === 'javascript';
 
 try {
 	if (TARGET_FLAVOR && !globalThis.__NS_TARGET_FLAVOR__) {
@@ -66,9 +67,9 @@ try {
 // projects.
 export const APP_ROOT_VIRTUAL = (typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__) || (typeof getGlobalScope().__NS_APP_ROOT_VIRTUAL__ === 'string' && getGlobalScope().__NS_APP_ROOT_VIRTUAL__) || '/src';
 export const APP_VIRTUAL_WITH_SLASH = APP_ROOT_VIRTUAL.endsWith('/') ? APP_ROOT_VIRTUAL : `${APP_ROOT_VIRTUAL}/`;
-export const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
+export const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}${TARGET_FLAVOR === 'javascript' ? 'app.js' : 'app.ts'}`;
 
-const CLIENT_STRATEGY_FLAVORS = new Set(['vue', 'angular', 'solid', 'typescript', 'react']);
+const CLIENT_STRATEGY_FLAVORS = new Set(['vue', 'angular', 'solid', 'typescript', 'react', 'javascript']);
 let CLIENT_STRATEGY: FrameworkClientStrategy | undefined;
 
 // A flavor registered from outside the package (`registerFrameworkFlavor`)

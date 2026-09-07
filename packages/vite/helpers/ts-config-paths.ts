@@ -4,12 +4,10 @@ import type { Plugin } from 'vite';
 import { getProjectFilePath, getProjectRootPath } from './project.js';
 import { normalizeModuleId } from './normalize-id.js';
 
-let tsConfigPath: string;
-
 const projectRoot = getProjectRootPath();
 
 // Read TypeScript path mappings
-function getTsConfigPaths(debugViteLogs: boolean = false) {
+function getTsConfigPaths(tsConfigPath: string, debugViteLogs: boolean = false) {
 	try {
 		if (debugViteLogs) console.log('📁 Parsing tsconfig at:', tsConfigPath);
 		// The configDir should be the directory of the starting tsconfig file
@@ -395,17 +393,14 @@ type TsConfigOptions = {
 export const getTsConfigData = (options: TsConfigOptions) => {
 	const verbose = !!options.verbose;
 
-	let candidatePath = getProjectFilePath('tsconfig.app.json');
-	if (!fs.existsSync(candidatePath)) {
-		candidatePath = getProjectFilePath('tsconfig.json');
-	}
-	tsConfigPath = candidatePath;
+	// jsconfig.json is where a plain JavaScript app keeps the same `paths` aliases.
+	const candidatePath = ['tsconfig.app.json', 'tsconfig.json', 'jsconfig.json'].map(getProjectFilePath).find((candidate) => fs.existsSync(candidate)) ?? null;
 
 	if (!cachedConfig || cachedPath !== candidatePath) {
-		cachedConfig = getTsConfigPaths(verbose);
+		cachedConfig = candidatePath ? getTsConfigPaths(candidatePath, verbose) : { paths: {}, baseUrl: '.' };
 		cachedPath = candidatePath;
 		if (verbose) {
-			console.log('📁 Loaded TypeScript path configuration');
+			console.log(candidatePath ? '📁 Loaded TypeScript path configuration' : '📁 No tsconfig.json or jsconfig.json found; no path aliases configured');
 		}
 	}
 

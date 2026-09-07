@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { FrameworkClientStrategy } from './framework-client-strategy.js';
 import { vueClientStrategy } from '../frameworks/vue/client/strategy.js';
 import { angularClientStrategy } from '../frameworks/angular/client/strategy.js';
+import { typescriptClientStrategy } from '../frameworks/typescript/client/strategy.js';
+import { javascriptClientStrategy } from '../frameworks/javascript/client/strategy.js';
 
 // Mirrors the production CLIENT_STRATEGY selection in client/index.ts: only Vue
 // and Angular ship a client module. Solid and TypeScript have none and resolve
@@ -34,6 +36,14 @@ describe('FrameworkClientStrategy contract', () => {
 		const sharedDefaultHooks = ['installBackWrapper', 'selectMountCandidate', 'loadComponentForMount', 'createRoot', 'recordPayloadChanges', 'refreshAfterBatch', 'handleSfcRegistry', 'handleSfcRegistryUpdate'] as const;
 		for (const hook of sharedDefaultHooks) {
 			expect(angularClientStrategy[hook]).toBeUndefined();
+		}
+	});
+
+	it('JavaScript reuses the TypeScript client strategy under its own flavor name', () => {
+		expect(javascriptClientStrategy.flavor).toBe('javascript');
+		const sharedHooks = ['install', 'createRoot', 'afterModuleReimport', 'refreshAfterBatch'] as const;
+		for (const hook of sharedHooks) {
+			expect(javascriptClientStrategy[hook]).toBe(typescriptClientStrategy[hook]);
 		}
 	});
 

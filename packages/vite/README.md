@@ -152,6 +152,14 @@ import { solidConfig } from '@nativescript/vite/solid';
 import { vueConfig } from '@nativescript/vite/vue';
 ```
 
+Plain JavaScript apps use the JavaScript helper and do not need `typescript` installed:
+
+```ts
+import { javascriptConfig } from '@nativescript/vite/javascript';
+```
+
+The TypeScript compiler is loaded only when a source needs the `@NativeClass` ES5 downlevel or when build-time type checking runs. If a plugin ships `@NativeClass`-decorated code and `typescript` is missing, the build logs a warning asking you to add `typescript` as a devDependency. Path aliases for JavaScript apps are read from `jsconfig.json` when there is no `tsconfig.json`.
+
 ### Flavors from other packages
 
 A framework can ship its own flavor — config helper, server strategy and device-side

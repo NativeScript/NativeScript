@@ -1,4 +1,5 @@
-import ts from 'typescript';
+import type * as TS from 'typescript';
+import { loadTypeScript, warnNativeClassSkipped } from './typescript.js';
 // This is the active NativeClass transform: a localized textual + AST-assisted
 // downlevel that avoids edge corruption of computed property names (e.g.
 // ['frame-in']). It is the single production implementation in this package.
@@ -53,12 +54,19 @@ export function transformNativeClassSource(code: string, fileName: string) {
 	// If this is JS and we see a __decorate* call that references NativeClass, strip it safely.
 	const isJS = /\.(js|mjs|cjs)$/.test(fileName);
 	if (isJS && /__decorate[a-zA-Z$]*\s*\(/.test(code) && /\bNativeClass\b/.test(code)) {
+		const ts = loadTypeScript();
+		if (!ts) {
+			// Note: can remove when https://github.com/NativeScript/ios/pull/403 lands.
+			// Might be worth a log or version detection on runtime version to ensure supported "nativeclass" runtime handling (without transformers).
+			warnNativeClassSkipped(fileName);
+			return null;
+		}
 		try {
 			const sfJS = ts.createSourceFile(fileName, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
 			let mutated = false;
-			const transformer: ts.TransformerFactory<ts.SourceFile> = (ctx) => {
+			const transformer: TS.TransformerFactory<TS.SourceFile> = (ctx) => {
 				const factory = ctx.factory ?? ts.factory;
-				const visit: ts.Visitor = (node) => {
+				const visit: TS.Visitor = (node) => {
 					if (ts.isCallExpression(node)) {
 						const callee = node.expression;
 						const calleeName = ts.isIdentifier(callee) ? callee.text : ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) ? `${callee.expression.text}.${callee.name.text}` : undefined;
@@ -69,7 +77,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 								if (kept.length !== firstArg.elements.length) {
 									mutated = true;
 									if (kept.length === 0 && node.arguments.length >= 2) {
-										return ts.visitNode(node.arguments[1], visit) as ts.Expression;
+										return ts.visitNode(node.arguments[1], visit) as TS.Expression;
 									}
 									const newArr = factory.updateArrayLiteralExpression(firstArg, kept as any);
 									return factory.updateCallExpression(node, node.expression, node.typeArguments, [newArr, ...node.arguments.slice(1)]);
@@ -79,9 +87,9 @@ export function transformNativeClassSource(code: string, fileName: string) {
 					}
 					return ts.visitEachChild(node, visit, ctx);
 				};
-				return (node) => ts.visitNode(node, visit) as ts.SourceFile;
+				return (node) => ts.visitNode(node, visit) as TS.SourceFile;
 			};
-			const res = ts.transform<ts.SourceFile>(sfJS, [transformer]);
+			const res = ts.transform<TS.SourceFile>(sfJS, [transformer]);
 			const transformed = res.transformed[0];
 			if (!mutated) {
 				res.dispose();
@@ -110,11 +118,17 @@ export function transformNativeClassSource(code: string, fileName: string) {
 
 	// If neither original nor marker is present, skip transform early.
 	if (!working.includes('@NativeClass') && !working.includes('/*__NativeClass__*/')) return null;
+	const ts = loadTypeScript();
+	if (!ts) {
+		// Note: can remove when https://github.com/NativeScript/ios/pull/403 lands.
+		warnNativeClassSkipped(fileName);
+		return null;
+	}
 	try {
 		const sf = ts.createSourceFile(fileName, working, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 		const edits: { start: number; end: number; text: string }[] = [];
 		// Collect all class declarations (top-level or nested) for potential transform
-		const collect = (node: ts.Node) => {
+		const collect = (node: TS.Node) => {
 			if (ts.isClassDeclaration(node)) {
 				const fullStart = (node as any).getFullStart ? (node as any).getFullStart() : node.pos;
 				const preamble = working.slice(fullStart, Math.min(node.getStart(sf) + 64, node.end));
@@ -136,7 +150,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 						.outputText.replace(/enumerable:\s*false/g, 'enumerable: true');
 					let cleaned = down.replace(/export \{\};?\s*$/m, '');
 					if (hadExport) {
-						const name = (node as ts.ClassDeclaration).name?.text;
+						const name = (node as TS.ClassDeclaration).name?.text;
 						if (name && !new RegExp(`export\\s*\\{\\s*${name}\\s*\\}`, 'm').test(cleaned)) {
 							cleaned += `\nexport { ${name} };\n`;
 						}

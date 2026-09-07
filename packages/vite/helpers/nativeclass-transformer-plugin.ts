@@ -1,13 +1,14 @@
 import type { Plugin } from 'vite';
-import ts from 'typescript';
+import type * as TS from 'typescript';
 import { isNativeESClassesEnabled, transformNativeClassSource } from './nativeclass-transform.js';
 import { resolvePlatform } from './cli-flags.js';
+import { loadTypeScript, warnNativeClassSkipped, type TypeScript } from './typescript.js';
 
 /**
  * Look for `NativeClass` either as a bare identifier or as a `NativeClass(...)` call expression
  * inside a `__decorate` array element. Returns true if the element is a NativeClass marker.
  */
-function isNativeClassDecoratorElement(el: ts.Expression): boolean {
+function isNativeClassDecoratorElement(ts: TypeScript, el: TS.Expression): boolean {
 	if (ts.isIdentifier(el) && el.text === 'NativeClass') return true;
 	if (ts.isCallExpression(el) && ts.isIdentifier(el.expression) && el.expression.text === 'NativeClass') return true;
 	return false;
@@ -28,11 +29,11 @@ function isNativeClassDecoratorElement(el: ts.Expression): boolean {
  * decorators in the array (e.g. `__metadata("design:paramtypes", [])`), which
  * Angular's compiler always emits when a class has a constructor.
  */
-function collectNativeClassDecorateEdits(code: string, sf: ts.SourceFile): { edits: Array<{ start: number; end: number; text: string }>; classNames: Set<string> } {
+function collectNativeClassDecorateEdits(ts: TypeScript, code: string, sf: TS.SourceFile): { edits: Array<{ start: number; end: number; text: string }>; classNames: Set<string> } {
 	const edits: Array<{ start: number; end: number; text: string }> = [];
 	const classNames = new Set<string>();
 
-	const visit = (node: ts.Node): void => {
+	const visit = (node: TS.Node): void => {
 		if (ts.isCallExpression(node)) {
 			const callee = node.expression;
 			const calleeName = ts.isIdentifier(callee) ? callee.text : ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && ts.isIdentifier(callee.name) ? `${callee.expression.text}.${callee.name.text}` : undefined;
@@ -40,7 +41,7 @@ function collectNativeClassDecorateEdits(code: string, sf: ts.SourceFile): { edi
 				const firstArg = node.arguments[0];
 				const secondArg = node.arguments[1];
 				if (ts.isArrayLiteralExpression(firstArg) && ts.isIdentifier(secondArg)) {
-					const remaining = firstArg.elements.filter((el) => !isNativeClassDecoratorElement(el));
+					const remaining = firstArg.elements.filter((el) => !isNativeClassDecoratorElement(ts, el));
 					if (remaining.length !== firstArg.elements.length) {
 						classNames.add(secondArg.text);
 						const callStart = node.getStart(sf);
@@ -79,10 +80,10 @@ function collectNativeClassDecorateEdits(code: string, sf: ts.SourceFile): { edi
  * runtime global, so any pre-existing tslib `__extends` named import is removed
  * from this file's `tslib` import.
  */
-function stripExtendsImportFromTslib(code: string): string {
+function stripExtendsImportFromTslib(ts: TypeScript, code: string): string {
 	if (!/\b__extends\b/.test(code)) return code;
 
-	let sf: ts.SourceFile;
+	let sf: TS.SourceFile;
 	try {
 		sf = ts.createSourceFile('extends-import-check.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
 	} catch {
@@ -136,16 +137,21 @@ function stripExtendsImportFromTslib(code: string): string {
  */
 export function postCleanupNativeClass(code: string, bareId: string, verbose = false): { code: string; map: null } | null {
 	if (!code) return null;
-	if (!code.includes('__decorate') || !code.includes('NativeClass')) return null;
+	if (!code.includes('__decorate') || !/\bNativeClass\b/.test(code)) return null;
+	const ts = loadTypeScript();
+	if (!ts) {
+		warnNativeClassSkipped(bareId);
+		return null;
+	}
 
-	let sf: ts.SourceFile;
+	let sf: TS.SourceFile;
 	try {
 		sf = ts.createSourceFile(bareId + '.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
 	} catch {
 		return null;
 	}
 
-	const { edits: decorateEdits, classNames: classNamesToDownlevel } = collectNativeClassDecorateEdits(code, sf);
+	const { edits: decorateEdits, classNames: classNamesToDownlevel } = collectNativeClassDecorateEdits(ts, code, sf);
 
 	if (!classNamesToDownlevel.size) return null;
 
@@ -167,13 +173,13 @@ export function postCleanupNativeClass(code: string, bareId: string, verbose = f
 		try {
 			// Use TypeScript AST to find and extract the class expression reliably
 			const sf = ts.createSourceFile(bareId + '.js', output, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-			let classNode: ts.ClassExpression | ts.ClassDeclaration | undefined;
+			let classNode: TS.ClassExpression | TS.ClassDeclaration | undefined;
 			let baseName = '';
 			let varDeclStart = -1;
 			let varDeclEnd = -1;
 			let aliasName = ''; // e.g. PDFViewDelegateImpl_1
 
-			const findClass = (node: ts.Node) => {
+			const findClass = (node: TS.Node) => {
 				if (classNode) return;
 				// Match: var X = class X extends Y { ... }
 				// or: var X = X_1 = class X extends Y { ... }
@@ -261,7 +267,7 @@ export function postCleanupNativeClass(code: string, bareId: string, verbose = f
 	// `_super.call(this)` runs. Let the bare `__extends(...)` reference fall
 	// through to the runtime global.
 	if (downleveledAtLeastOne) {
-		output = stripExtendsImportFromTslib(output);
+		output = stripExtendsImportFromTslib(ts, output);
 	}
 
 	if (output !== code) {

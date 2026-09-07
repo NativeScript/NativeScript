@@ -2,10 +2,11 @@ import type { Plugin } from 'vite';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import ts from 'typescript';
+import type * as TS from 'typescript';
 import { getCliFlags, resolvePlatform } from './cli-flags.js';
 import { getProjectTSConfigPath } from './project.js';
 import type { Platform } from './platform-types.js';
+import { loadTypeScript, type TypeScript } from './typescript.js';
 
 const require = createRequire(import.meta.url);
 
@@ -52,7 +53,7 @@ function getModuleSuffixes(platform: PlatformType | undefined): string[] {
 	return ['.native', ''];
 }
 
-function getFormatHost(): ts.FormatDiagnosticsHost {
+function getFormatHost(ts: TypeScript): TS.FormatDiagnosticsHost {
 	return {
 		getCanonicalFileName: (fileName) => fileName,
 		getCurrentDirectory: () => process.cwd(),
@@ -123,7 +124,7 @@ function applyTypeCheckMode(base: ResolvedTypeCheckOptions, mode: TypeCheckMode)
 	}
 }
 
-function shouldFailOnTypeCheckError(opts: { failOnError?: boolean }, parsedConfig: ts.ParsedCommandLine): boolean {
+function shouldFailOnTypeCheckError(opts: { failOnError?: boolean }, parsedConfig: TS.ParsedCommandLine): boolean {
 	if (typeof opts.failOnError === 'boolean') {
 		return opts.failOnError;
 	}
@@ -199,11 +200,11 @@ function getTypeCheckOptions(setting?: TypeCheckSetting): ResolvedTypeCheckOptio
 	return resolved;
 }
 
-function collectDiagnostics(program: ts.Program, parsedConfig: ts.ParsedCommandLine): readonly ts.Diagnostic[] {
+function collectDiagnostics(ts: TypeScript, program: TS.Program, parsedConfig: TS.ParsedCommandLine): readonly TS.Diagnostic[] {
 	return ts.sortAndDeduplicateDiagnostics([...parsedConfig.errors, ...program.getOptionsDiagnostics(), ...program.getGlobalDiagnostics(), ...program.getSyntacticDiagnostics(), ...program.getSemanticDiagnostics()]);
 }
 
-function isProjectDiagnostic(diagnostic: ts.Diagnostic, projectRoot: string): boolean {
+function isProjectDiagnostic(diagnostic: TS.Diagnostic, projectRoot: string): boolean {
 	if (!diagnostic.file) {
 		return true;
 	}
@@ -213,7 +214,7 @@ function isProjectDiagnostic(diagnostic: ts.Diagnostic, projectRoot: string): bo
 	return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
 }
 
-function isPlatformRelevantDiagnostic(diagnostic: ts.Diagnostic, platform: PlatformType | undefined): boolean {
+function isPlatformRelevantDiagnostic(diagnostic: TS.Diagnostic, platform: PlatformType | undefined): boolean {
 	if (!diagnostic.file) {
 		return true;
 	}
@@ -221,7 +222,11 @@ function isPlatformRelevantDiagnostic(diagnostic: ts.Diagnostic, platform: Platf
 	return !shouldSkipFileForPlatform(diagnostic.file.fileName, platform);
 }
 
-function getParsedConfig(tsConfigPath: string, platform: PlatformType | undefined): ts.ParsedCommandLine {
+function warnTypeCheckSkipped(): void {
+	console.warn("[ns-vite] Skipping type check: the 'typescript' package is not installed.");
+}
+
+function getParsedConfig(ts: TypeScript, tsConfigPath: string, platform: PlatformType | undefined): TS.ParsedCommandLine {
 	const parsedConfig = ts.getParsedCommandLineOfConfigFile(
 		tsConfigPath,
 		{
@@ -232,7 +237,7 @@ function getParsedConfig(tsConfigPath: string, platform: PlatformType | undefine
 		{
 			...ts.sys,
 			onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
-				throw new Error(ts.formatDiagnosticsWithColorAndContext([diagnostic], getFormatHost()));
+				throw new Error(ts.formatDiagnosticsWithColorAndContext([diagnostic], getFormatHost(ts)));
 			},
 		},
 	);
@@ -273,9 +278,14 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 			if (!tsConfigPath) {
 				return;
 			}
+			const ts = loadTypeScript();
+			if (!ts) {
+				warnTypeCheckSkipped();
+				return;
+			}
 
 			const projectRoot = path.resolve(process.cwd());
-			const parsedConfig = getParsedConfig(tsConfigPath, opts.platform);
+			const parsedConfig = getParsedConfig(ts, tsConfigPath, opts.platform);
 			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
 			const rootNames = parsedConfig.fileNames.filter((fileName) => !shouldSkipFileForPlatform(fileName, opts.platform));
 			const program = ts.createProgram({
@@ -283,7 +293,7 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 				options: parsedConfig.options,
 				projectReferences: parsedConfig.projectReferences,
 			});
-			const diagnostics = collectDiagnostics(program, parsedConfig).filter((diagnostic) => isProjectDiagnostic(diagnostic, projectRoot) && isPlatformRelevantDiagnostic(diagnostic, opts.platform));
+			const diagnostics = collectDiagnostics(ts, program, parsedConfig).filter((diagnostic) => isProjectDiagnostic(diagnostic, projectRoot) && isPlatformRelevantDiagnostic(diagnostic, opts.platform));
 
 			if (!diagnostics.length) {
 				if (opts.verbose) {
@@ -293,7 +303,7 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 			}
 
 			if (opts.logDiagnostics !== false) {
-				const output = ts.formatDiagnosticsWithColorAndContext(diagnostics, getFormatHost());
+				const output = ts.formatDiagnosticsWithColorAndContext(diagnostics, getFormatHost(ts));
 				(failOnError ? console.error : console.warn)(output);
 			}
 			const errorCount = diagnostics.length;
@@ -316,8 +326,13 @@ export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: bo
 			if (!tsConfigPath) {
 				return;
 			}
+			const ts = loadTypeScript();
+			if (!ts) {
+				warnTypeCheckSkipped();
+				return;
+			}
 
-			const parsedConfig = getParsedConfig(tsConfigPath, opts.platform);
+			const parsedConfig = getParsedConfig(ts, tsConfigPath, opts.platform);
 			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
 
 			const vueTscBinPath = getVueTscBinPath();

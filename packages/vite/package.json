@@ -122,6 +122,7 @@
 		"@vitejs/plugin-vue-jsx": "^5.1.5",
 		"@vue/compiler-sfc": "^3.5.0",
 		"react-reconciler": "^0.32.0",
+		"typescript": "*",
 		"vite-plugin-solid": "^2.11.11",
 		"vue-tsc": "^3.2.0"
 	},
@@ -142,6 +143,9 @@
 			"optional": true
 		},
 		"react-reconciler": {
+			"optional": true
+		},
+		"typescript": {
 			"optional": true
 		},
 		"vite-plugin-solid": {
