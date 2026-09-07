@@ -1,3 +1,13 @@
+## 8.0.5 (2026-09-07)
+
+### 🚀 Features
+
+- **vite:** support plain javascript ([d0f3e7654](https://github.com/NativeScript/NativeScript/commit/d0f3e7654))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.4 (2026-09-03)
 
 ### 🩹 Fixes
