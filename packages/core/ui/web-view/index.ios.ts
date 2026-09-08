@@ -8,7 +8,8 @@ import { booleanConverter } from '../core/view-base';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
-	public static ObjCProtocols = [WKNavigationDelegate];
+	// WebKit does not exist on tvOS; keep this module loadable there (ui/index imports it eagerly).
+	public static ObjCProtocols = typeof WKNavigationDelegate !== 'undefined' ? [WKNavigationDelegate] : [];
 	public static initWithOwner(owner: WeakRef<WebView>): WKNavigationDelegateImpl {
 		const handler = <WKNavigationDelegateImpl>WKNavigationDelegateImpl.new();
 		handler._owner = owner;
@@ -99,7 +100,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 
 @NativeClass
 class WKUIDelegateImpl extends NSObject implements WKUIDelegate {
-	public static ObjCProtocols = [WKUIDelegate];
+	public static ObjCProtocols = typeof WKUIDelegate !== 'undefined' ? [WKUIDelegate] : [];
 	public static initWithOwner(owner: WeakRef<WebView>): WKUIDelegateImpl {
 		const handler = <WKUIDelegateImpl>WKUIDelegateImpl.new();
 		handler._owner = owner;
@@ -179,6 +180,9 @@ export class WebView extends WebViewBase {
 	}
 
 	createNativeView() {
+		if (typeof WKWebView === 'undefined') {
+			throw new Error('WebView is not available on this platform (WebKit is missing, e.g. tvOS).');
+		}
 		const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
 		const wkUScript = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScript, WKUserScriptInjectionTime.AtDocumentEnd, true);
 		const wkUController = WKUserContentController.new();

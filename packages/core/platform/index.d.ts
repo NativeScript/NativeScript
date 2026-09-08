@@ -24,6 +24,11 @@ export const isApple: boolean;
  */
 export const isVisionOS: boolean;
 
+/**
+ * Gets a value indicating if the app is running on the tvOS platform.
+ */
+export const isTvOS: boolean;
+
 export * from './common';
 export * from './device';
 export * from './screen';

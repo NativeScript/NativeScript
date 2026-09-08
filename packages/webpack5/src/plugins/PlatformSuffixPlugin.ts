@@ -32,7 +32,9 @@ export class PlatformSuffixPlugin {
 	}
 
 	apply(compiler: any) {
-		const platformRE = new RegExp(`\\.${this.extensions.join('|')}\\.`);
+		// grouped: with several suffixes an ungrouped `\.a|b\.` matched `.tvos` or `ios.` and turned
+		// `page.ios.js` into `page..js`
+		const platformRE = new RegExp(`\\.(?:${this.extensions.join('|')})\\.`);
 
 		// require.context
 		compiler.hooks.contextModuleFactory.tap(id, (cmf) => {
