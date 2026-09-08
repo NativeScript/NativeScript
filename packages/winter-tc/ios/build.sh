@@ -72,6 +72,32 @@ xcodebuild \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     -quiet
 
+echo "Build for tvOS Simulator"
+xcodebuild \
+    -project NSCWinterTC/NSCWinterTC.xcodeproj \
+    -scheme NSCWinterTC \
+    -configuration Release \
+    -destination "generic/platform=tvOS Simulator" \
+    clean build \
+    BUILD_DIR=$BUILD_DIR \
+    SKIP_INSTALL=NO \
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    -quiet
+
+echo "Build for tvOS"
+xcodebuild \
+    -project NSCWinterTC/NSCWinterTC.xcodeproj \
+    -scheme NSCWinterTC \
+    -configuration Release \
+    -destination "generic/platform=tvOS" \
+    clean build \
+    BUILD_DIR=$BUILD_DIR \
+    CODE_SIGN_IDENTITY="" \
+    CODE_SIGNING_REQUIRED=NO \
+    SKIP_INSTALL=NO \
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    -quiet
+
 echo "Creating XCFramework"
 BASE=$BUILD_DIR/Release
 xcodebuild \
@@ -86,4 +112,8 @@ xcodebuild \
     -debug-symbols $BASE-xrsimulator/NSCWinterTC.framework.dSYM \
     -framework     $BASE-xros/NSCWinterTC.framework \
     -debug-symbols $BASE-xros/NSCWinterTC.framework.dSYM \
+    -framework     $BASE-appletvos/NSCWinterTC.framework \
+    -debug-symbols $BASE-appletvos/NSCWinterTC.framework.dSYM \
+    -framework     $BASE-appletvsimulator/NSCWinterTC.framework \
+    -debug-symbols $BASE-appletvsimulator/NSCWinterTC.framework.dSYM \
     -output        $BUILD_DIR/NSCWinterTC.xcframework

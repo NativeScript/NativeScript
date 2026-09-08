@@ -87,15 +87,24 @@ const minHeightQualifier: QualifierSpec = {
 
 const platformQualifier: QualifierSpec = {
 	isMatch: function (path: string): boolean {
-		return path.includes('.android') || path.includes('.ios');
+		return path.includes('.android') || path.includes('.ios') || path.includes('.tvos');
 	},
 	getMatchOccurences: function (path: string): Array<string> {
-		return path.match(new RegExp('\\.android|\\.ios', 'g'));
+		return path.match(new RegExp('\\.android|\\.ios|\\.tvos', 'g'));
 	},
 	getMatchValue(value: string, context: PlatformContext): number {
 		const val = value.substring(1);
+		const os = context.os.toLowerCase();
+		if (val === os) {
+			// exact platform: .tvos on tvOS, .ios on iOS, .android on Android
+			return 2;
+		}
+		if (val === 'ios' && os === 'tvos') {
+			// tvOS falls back to .ios files, below an explicit .tvos candidate
+			return 1;
+		}
 
-		return val === context.os.toLowerCase() ? 1 : -1;
+		return -1;
 	},
 };
 

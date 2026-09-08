@@ -84,6 +84,34 @@ xcodebuild \
     OTHER_CFLAGS="$CUSTOM_OTHER_CFLAGS" \
     -quiet
 
+echo "Build for tvOS Simulator"
+xcodebuild \
+    -project TNSWidgets/TNSWidgets.xcodeproj \
+    -scheme TNSWidgets \
+    -configuration Release \
+    -destination "generic/platform=tvOS Simulator" \
+    clean build \
+    BUILD_DIR=$BUILD_DIR \
+    SKIP_INSTALL=NO \
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    OTHER_CFLAGS="$CUSTOM_OTHER_CFLAGS" \
+    -quiet
+
+echo "Build for tvOS"
+xcodebuild \
+    -project TNSWidgets/TNSWidgets.xcodeproj \
+    -scheme TNSWidgets \
+    -configuration Release \
+    -destination "generic/platform=tvOS" \
+    clean build \
+    BUILD_DIR=$BUILD_DIR \
+    CODE_SIGN_IDENTITY="" \
+    CODE_SIGNING_REQUIRED=NO \
+    SKIP_INSTALL=NO \
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    OTHER_CFLAGS="$CUSTOM_OTHER_CFLAGS" \
+    -quiet
+
 echo "Creating XCFramework"
 BASE=$BUILD_DIR/Release
 xcodebuild \
@@ -98,6 +126,10 @@ xcodebuild \
     -debug-symbols $BASE-xrsimulator/TNSWidgets.framework.dSYM \
     -framework     $BASE-xros/TNSWidgets.framework \
     -debug-symbols $BASE-xros/TNSWidgets.framework.dSYM \
+    -framework     $BASE-appletvos/TNSWidgets.framework \
+    -debug-symbols $BASE-appletvos/TNSWidgets.framework.dSYM \
+    -framework     $BASE-appletvsimulator/TNSWidgets.framework \
+    -debug-symbols $BASE-appletvsimulator/TNSWidgets.framework.dSYM \
     -output        $BUILD_DIR/TNSWidgets.xcframework
 
 XCFRAMEWORK=$BUILD_DIR/TNSWidgets.xcframework

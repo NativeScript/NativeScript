@@ -31,15 +31,15 @@ exports[`javascript configuration for android 1`] = `
   },
   resolve: {
     fallback: {
-      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+      module: '<webpack-root>/src/polyfills/module.ts'
     },
     fullySpecified: false,
     symlinks: true,
     alias: {
-      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
-      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
-      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
-      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
+      'mdn-data/css/properties.json': '<webpack-root>/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '<webpack-root>/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '<webpack-root>/src/polyfills/mdn-data-at-rules.ts',
+      module: '<webpack-root>/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src'
     },
@@ -256,12 +256,6 @@ exports[`javascript configuration for android 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('FixSourceMapUrlPlugin') */
-    new FixSourceMapUrlPlugin(
-      {
-        outputPath: '__jest__/platforms/android/app/src/main/assets/app'
-      }
-    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -285,7 +279,7 @@ exports[`javascript configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /.(ios|visionos).(w+)$/
+      /.(ios|visionos|tvos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new CompatDefinePlugin(
@@ -301,10 +295,12 @@ exports[`javascript configuration for android 1`] = `
         __ANDROID__: true,
         __IOS__: false,
         __VISIONOS__: false,
+        __TVOS__: false,
         __APPLE__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
         'global.isVisionOS': false,
+        'global.isTvOS': false,
         process: 'global.process'
       }
     ),
@@ -393,15 +389,15 @@ exports[`javascript configuration for ios 1`] = `
   },
   resolve: {
     fallback: {
-      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+      module: '<webpack-root>/src/polyfills/module.ts'
     },
     fullySpecified: false,
     symlinks: true,
     alias: {
-      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
-      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
-      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
-      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
+      'mdn-data/css/properties.json': '<webpack-root>/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '<webpack-root>/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '<webpack-root>/src/polyfills/mdn-data-at-rules.ts',
+      module: '<webpack-root>/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src'
     },
@@ -618,12 +614,6 @@ exports[`javascript configuration for ios 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('FixSourceMapUrlPlugin') */
-    new FixSourceMapUrlPlugin(
-      {
-        outputPath: '__jest__/platforms/ios/jest/app'
-      }
-    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -647,7 +637,7 @@ exports[`javascript configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /.(android|visionos).(w+)$/
+      /.(android|visionos|tvos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new CompatDefinePlugin(
@@ -663,10 +653,12 @@ exports[`javascript configuration for ios 1`] = `
         __ANDROID__: false,
         __IOS__: true,
         __VISIONOS__: false,
+        __TVOS__: false,
         __APPLE__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
         'global.isVisionOS': false,
+        'global.isTvOS': false,
         process: 'global.process'
       }
     ),

@@ -47,6 +47,7 @@ async function parseXML(content: string): Promise<ParseResult> {
 	// // Register platform prefixes as namespaces to avoid "unbound xml namespace" errors
 	(saxParser as any).ns['ios'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['visionos'] = 'http://schemas.nativescript.org/tns.xsd';
+	(saxParser as any).ns['tvos'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['apple'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['macos'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['win'] = 'http://schemas.nativescript.org/tns.xsd';
