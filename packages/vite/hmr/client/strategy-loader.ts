@@ -137,6 +137,17 @@ export const CLIENT_STRATEGY_READY: Promise<void> =
 				})
 		: Promise.resolve();
 
+// Settle the bootstrap's deferred readiness, or publish ours directly.
+try {
+	const g = getGlobalScope();
+	const settle = g.__NS_CLIENT_STRATEGY_RESOLVE__;
+	if (typeof settle === 'function') {
+		CLIENT_STRATEGY_READY.then(settle, settle);
+	} else {
+		g.__NS_CLIENT_STRATEGY_READY__ = CLIENT_STRATEGY_READY;
+	}
+} catch {}
+
 /** Undefined until `CLIENT_STRATEGY_READY` resolves (or when the flavor ships no client strategy). */
 export function getClientStrategy(): FrameworkClientStrategy | undefined {
 	return CLIENT_STRATEGY;
