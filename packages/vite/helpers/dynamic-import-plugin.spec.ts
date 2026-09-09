@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { transformDynamicImports } from './dynamic-import-plugin.js';
+import { dynamicImportPlugin, transformDynamicImports } from './dynamic-import-plugin.js';
 
 const vitePreloadHelper = `const scriptRel = /* @__PURE__ */ (function detectScriptRel() {
   const relList = typeof document !== "undefined" && document.createElement("link").relList;
@@ -36,5 +36,24 @@ describe('dynamic import plugin', () => {
 	it('leaves chunks without dynamic imports or the Vite helper unchanged', () => {
 		const source = 'export const value = 42;';
 		expect(transformDynamicImports(source)).toBe(source);
+	});
+
+	// Minified builds rename __vitePreload before generateBundle; the browser
+	// helper then survived and its window.dispatchEvent masked every dynamic
+	// import failure as "window is not defined".
+	it('replaces the helper in renderChunk as a post plugin, ahead of esbuild minification', () => {
+		const plugin = dynamicImportPlugin() as any;
+		expect(plugin.enforce).toBe('post');
+		expect(plugin.generateBundle).toBeUndefined();
+		const result = plugin.renderChunk(`${vitePreloadHelper}\nconst page = () => __vitePreload(() => import('./page.js'), []);`);
+		expect(result.code).not.toContain('document');
+		expect(result.code).toContain("import('~/page.js')");
+	});
+
+	it('returns null from renderChunk when nothing changes, including on already-transformed code', () => {
+		const plugin = dynamicImportPlugin() as any;
+		expect(plugin.renderChunk('export const value = 42;')).toBeNull();
+		const once = transformDynamicImports(`${vitePreloadHelper}\nexport const page = () => __vitePreload(() => import('./page.js'), []);`);
+		expect(plugin.renderChunk(once)).toBeNull();
 	});
 });
