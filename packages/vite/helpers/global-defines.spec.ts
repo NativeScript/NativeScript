@@ -1,6 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { getGlobalDefines, isHmrProgressOverlayEnabled } from './global-defines.js';
+import { getGlobalDefines, getUserDefineEntries, isHmrProgressOverlayEnabled, setUserDefineEntries } from './global-defines.js';
+
+describe('setUserDefineEntries / getUserDefineEntries', () => {
+	afterEach(() => setUserDefineEntries(undefined));
+
+	it('captures __FOO__ keys as [key, expression] pairs, JSON-encoding non-string values', () => {
+		setUserDefineEntries({ __VUE_OPTIONS_API__: true, __APP_VERSION__: '"1.2.3"', 'process.env.FOO': '"bar"', 'global.isIOS': 'true', __not_a_define: '1' });
+		expect(getUserDefineEntries()).toEqual([
+			['__VUE_OPTIONS_API__', 'true'],
+			['__APP_VERSION__', '"1.2.3"'],
+		]);
+	});
+
+	it('is empty when no config has been captured', () => {
+		setUserDefineEntries(undefined);
+		expect(getUserDefineEntries()).toEqual([]);
+	});
+});
 
 describe('isHmrProgressOverlayEnabled (NS_VITE_PROGRESS_OVERLAY)', () => {
 	it('defaults to enabled when the env var is unset', () => {
