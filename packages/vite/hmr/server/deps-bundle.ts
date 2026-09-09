@@ -401,6 +401,28 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 	};
 }
 
+/** Bare import edges esbuild resolved inside the bundle, keyed by importer. */
+function collectBareImportEdges(inputs: Record<string, { imports?: { path: string; kind?: string; external?: boolean; original?: string }[] }>, projectRoot: string, bundledKeys: ReadonlySet<string>): Map<string, Record<string, string>> {
+	const edges = new Map<string, Record<string, string>>();
+	for (const [input, info] of Object.entries(inputs)) {
+		if (input === '<stdin>' || input.includes(':')) continue;
+		const importerKey = depsRegistryKeyForFile(path.resolve(projectRoot, input));
+		if (!importerKey || !bundledKeys.has(importerKey)) continue;
+		for (const imp of info.imports ?? []) {
+			const spec = imp.original;
+			// Static ESM edges only: `require()` resolves the `require` condition.
+			if (!spec || imp.external || imp.kind !== 'import-statement' || spec.startsWith('.') || spec.startsWith('/')) continue;
+			if (imp.path.includes(':')) continue;
+			const targetKey = depsRegistryKeyForFile(path.resolve(projectRoot, imp.path));
+			if (!targetKey || !bundledKeys.has(targetKey)) continue;
+			let record = edges.get(importerKey);
+			if (!record) edges.set(importerKey, (record = {}));
+			record[spec] = targetKey;
+		}
+	}
+	return edges;
+}
+
 /**
  * Angular partial-declaration linker for the deps bundle. Broader than the
  * vendor build's `@angular/`-scoped pass: recorded closures include partial-
@@ -444,6 +466,13 @@ export interface DepsBundleState {
 	keyToFile: Map<string, string>;
 	/** Vendor-manifest specifier → registry key (backs __nsVendorRegistry). */
 	vendorSpecToKey: Map<string, string>;
+	/**
+	 * Importer registry key → bare specifier → resolved registry key, from
+	 * esbuild's metafile. Records how the bundle actually resolved each bare
+	 * import edge, so shim export discovery can follow `export * from 'pkg'`
+	 * to the exact file esbuild bundled for that importer.
+	 */
+	bareImportEdges: Map<string, Record<string, string>>;
 	hash: string;
 	builtAt: number;
 	buildMs: number;
@@ -465,7 +494,7 @@ export interface GenerateDepsBundleOptions {
 // with `NS_DEPS_BUNDLE_NO_DISK_CACHE=1`.
 // ============================================================================
 
-const DEPS_BUNDLE_DISK_CACHE_SCHEMA = 4;
+const DEPS_BUNDLE_DISK_CACHE_SCHEMA = 5;
 
 function isDepsBundleDiskCacheDisabled(env: NodeJS.ProcessEnv = process.env): boolean {
 	const v = env.NS_DEPS_BUNDLE_NO_DISK_CACHE;
@@ -505,6 +534,18 @@ function depsBundleCacheFileBase(platform: string, key: string): string {
 	return `deps-bundle-${platform}-${key.slice(0, 12)}`;
 }
 
+const isStringRecord = (v: unknown): v is Record<string, string> => !!v && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every((x) => typeof x === 'string');
+
+function readBareImportEdges(raw: unknown): Map<string, Record<string, string>> | null {
+	if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+	const edges = new Map<string, Record<string, string>>();
+	for (const [importer, record] of Object.entries(raw as Record<string, unknown>)) {
+		if (!isStringRecord(record)) return null;
+		edges.set(importer, record);
+	}
+	return edges;
+}
+
 export function tryLoadDepsBundleFromDisk(projectRoot: string, platform: string, key: string): DepsBundleState | null {
 	try {
 		const dir = depsBundleCacheDir(projectRoot);
@@ -515,6 +556,8 @@ export function tryLoadDepsBundleFromDisk(projectRoot: string, platform: string,
 		const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
 		if (!meta || meta.schema !== DEPS_BUNDLE_DISK_CACHE_SCHEMA || meta.key !== key) return null;
 		if (!Array.isArray(meta.keys) || typeof meta.specToKey !== 'object' || typeof meta.keyToFile !== 'object' || typeof meta.vendorSpecToKey !== 'object') return null;
+		const bareImportEdges = readBareImportEdges(meta.bareImportEdges);
+		if (!bareImportEdges) return null;
 		const code = readFileSync(codePath, 'utf-8');
 		const hash = createHash('sha1').update(code).digest('hex');
 		if (hash !== meta.hash) return null;
@@ -524,6 +567,7 @@ export function tryLoadDepsBundleFromDisk(projectRoot: string, platform: string,
 			specToKey: new Map(Object.entries(meta.specToKey as Record<string, string>)),
 			keyToFile: new Map(Object.entries(meta.keyToFile as Record<string, string>)),
 			vendorSpecToKey: new Map(Object.entries(meta.vendorSpecToKey as Record<string, string>)),
+			bareImportEdges,
 			hash,
 			builtAt: typeof meta.builtAt === 'number' ? meta.builtAt : Date.now(),
 			buildMs: typeof meta.buildMs === 'number' ? meta.buildMs : 0,
@@ -558,6 +602,7 @@ export function saveDepsBundleToDisk(projectRoot: string, platform: string, key:
 				specToKey: Object.fromEntries(state.specToKey),
 				keyToFile: Object.fromEntries(state.keyToFile),
 				vendorSpecToKey: Object.fromEntries(state.vendorSpecToKey),
+				bareImportEdges: Object.fromEntries(state.bareImportEdges),
 			}),
 		);
 	} catch (error: any) {
@@ -686,7 +731,8 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	});
 
 	const files: { key: string; absPath: string }[] = entries.map(({ key, absPath }) => ({ key, absPath }));
-	for (const input of Object.keys(discovery.metafile?.inputs ?? {})) {
+	const metaInputs = discovery.metafile?.inputs ?? {};
+	for (const input of Object.keys(metaInputs)) {
 		if (input === '<stdin>' || input.includes(':') || !input.includes('node_modules/')) continue;
 		const absPath = path.resolve(projectRoot, input);
 		if (!existsSync(absPath)) continue;
@@ -695,6 +741,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 		entryKeySet.add(key);
 		files.push({ key, absPath });
 	}
+	const bareImportEdges = collectBareImportEdges(metaInputs, projectRoot, entryKeySet);
 
 	const buildResult = await esbuild.build({
 		...sharedBuildOptions,
@@ -721,6 +768,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 		specToKey: new Map(entries.map((e) => [e.spec, e.key])),
 		keyToFile: new Map(files.map((f) => [f.key, f.absPath])),
 		vendorSpecToKey: vendorSeed.vendorSpecToKey,
+		bareImportEdges,
 		hash,
 		builtAt: Date.now(),
 		buildMs: Date.now() - t0,
@@ -799,11 +847,18 @@ function collectCjsExportInfo(code: string): DepsModuleExportInfo {
  * statically enumerable — with two DIFFERENT consequences downstream:
  * CJS/UMD files additionally carry `opaqueCjs: true` and still get a
  * default-only shim (their bundled namespace has nothing but `default`);
- * ESM files with a bare `export * from 'pkg'` or an unresolvable relative
- * `export *` target keep per-module serving, where the transform pipeline
- * resolves the star through the import map.
+ * ESM files with an unresolvable `export *` target keep per-module serving,
+ * where the transform pipeline resolves the star through the import map. A
+ * bare `export * from 'pkg'` is followed only through `resolveBare`, which the
+ * bundle service backs with esbuild's own resolved import edges — so the shim
+ * enumerates exactly the file esbuild bundled for that importer, never a
+ * scanner guess. Without it a root such as nativescript-vue's
+ * (`export * from '@vue/runtime-core'`) was served per-module and evaluated —
+ * with its module-scope `init()` — a second time next to the bundle's copy.
  */
-export function collectDepsModuleExportInfo(absPath: string, platform: string, seen: Set<string> = new Set()): DepsModuleExportInfo {
+export type BareReExportResolver = (spec: string, importerAbsPath: string) => string | null;
+
+export function collectDepsModuleExportInfo(absPath: string, platform: string, seen: Set<string> = new Set(), resolveBare?: BareReExportResolver): DepsModuleExportInfo {
 	if (seen.has(absPath)) return { names: [], hasDefault: false };
 	seen.add(absPath);
 	let code = '';
@@ -828,10 +883,9 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["']/gm;
 	while ((match = starRe.exec(code)) !== null) {
 		const spec = match[1];
-		if (!spec.startsWith('.')) return { names: null, hasDefault: false };
-		const target = resolveLocalReExportTarget(spec, absPath, platform);
+		const target = spec.startsWith('.') ? resolveLocalReExportTarget(spec, absPath, platform) : resolveBare ? resolveBare(spec, absPath) : null;
 		if (!target) return { names: null, hasDefault: false };
-		const child = collectDepsModuleExportInfo(target, platform, seen);
+		const child = collectDepsModuleExportInfo(target, platform, seen, resolveBare);
 		if (child.names === null) return { names: null, hasDefault: false };
 		for (const name of child.names) names.add(name);
 	}
@@ -966,6 +1020,14 @@ export function createDepsBundleService(options: CreateDepsBundleServiceOptions)
 		return building;
 	};
 
+	// Follow `export * from 'pkg'` along the edge esbuild recorded for this importer.
+	const resolveBareReExport: BareReExportResolver = (spec, importerAbsPath) => {
+		if (!state) return null;
+		const importerKey = depsRegistryKeyForFile(importerAbsPath);
+		const targetKey = importerKey ? state.bareImportEdges.get(importerKey)?.[spec] : undefined;
+		return targetKey ? (state.keyToFile.get(targetKey) ?? null) : null;
+	};
+
 	const keyForSpec = (spec: string): string | null => {
 		if (!state) return null;
 		const direct = state.specToKey.get(spec);
@@ -989,7 +1051,7 @@ export function createDepsBundleService(options: CreateDepsBundleServiceOptions)
 			const key = keyForSpec(spec);
 			if (key) {
 				const file = state.keyToFile.get(key);
-				const info: DepsModuleExportInfo = file ? collectDepsModuleExportInfo(file, String(options.platform)) : { names: null, hasDefault: false };
+				const info: DepsModuleExportInfo = file ? collectDepsModuleExportInfo(file, String(options.platform), new Set(), resolveBareReExport) : { names: null, hasDefault: false };
 				if (info.names !== null) {
 					shim = buildDepsShimCode(key, info.names, info.hasDefault);
 				} else if (info.opaqueCjs) {

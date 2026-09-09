@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection } from './deps-bundle.js';
+import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection, tryLoadDepsBundleFromDisk } from './deps-bundle.js';
 
 describe('isDepsPerModuleServingEnabled', () => {
 	it('is off by default and on for 1/true', () => {
@@ -120,12 +120,37 @@ describe('collectDepsModuleExportInfo', () => {
 		expect(collectDepsModuleExportInfo(abs, 'android', new Set()).names).toEqual(['AndroidCanvas', 'own']);
 	});
 
-	it('bails to null for bare export * (name set lives in another package) WITHOUT the opaqueCjs flag', () => {
+	it('bails to null for bare export * without a resolver (name set lives in another package) WITHOUT the opaqueCjs flag', () => {
 		// ESM bails must stay per-module: their bundled namespace has real named
 		// exports the server cannot enumerate, so a default-only shim would
 		// break `import { x }` consumers. Only CJS bails get opaqueCjs.
 		const abs = write('bare-star.js', `export * from 'other-pkg';\nexport const own = 1;\n`);
 		const info = collectDepsModuleExportInfo(abs, 'ios');
+		expect(info.names).toBeNull();
+		expect(info.opaqueCjs).toBeUndefined();
+	});
+
+	it('follows bare export * through the resolver and merges the target names', () => {
+		const leaf = write('bare/leaf.esm.js', `const ref = () => {};\nconst h = () => {};\nexport { h, ref };\n`);
+		const abs = write('bare/root.js', `export * from './local.js';\nexport * from 'leaf-pkg';\nexport { own } from './x';\n`);
+		write('bare/local.js', `export const init = () => {};\n`);
+		const resolver = (spec: string, importer: string) => (spec === 'leaf-pkg' && importer === abs ? leaf : null);
+		const info = collectDepsModuleExportInfo(abs, 'ios', new Set(), resolver);
+		expect(info.names).toEqual(['h', 'init', 'own', 'ref']);
+		expect(info.hasDefault).toBe(false);
+	});
+
+	it('bails to null when the resolver has no edge for the importer', () => {
+		const abs = write('bare/no-edge.js', `export * from 'leaf-pkg';\n`);
+		expect(collectDepsModuleExportInfo(abs, 'ios', new Set(), () => null).names).toBeNull();
+	});
+
+	it('bails to null when the bare export * target is opaque CJS', () => {
+		// A default-only namespace cannot satisfy `export *`.
+		const umd = write('bare/umd.js', `module.exports = (function () { return { a: 1 }; })();\n`);
+		expect(collectDepsModuleExportInfo(umd, 'ios').opaqueCjs).toBe(true);
+		const abs = write('bare/umd-root.js', `export * from 'umd-pkg';\nexport const own = 1;\n`);
+		const info = collectDepsModuleExportInfo(abs, 'ios', new Set(), () => umd);
 		expect(info.names).toBeNull();
 		expect(info.opaqueCjs).toBeUndefined();
 	});
@@ -243,6 +268,16 @@ function createFixtureProject(): string {
 	write('node_modules/pkg-i/index.js', `export const I = 'i';\n`);
 	write('node_modules/pkg-h/package.json', JSON.stringify({ name: 'pkg-h', version: '1.0.0', module: 'index.js' }));
 	write('node_modules/pkg-h/index.js', `import { StoreToken } from 'pkg-g';\nimport { I } from 'pkg-i';\nexport const H = StoreToken + I;\n`);
+	// Root re-exporting another package bare (nativescript-vue's
+	// `export * from '@vue/runtime-core'` shape): must shim, not serve per-module.
+	write('node_modules/pkg-k/package.json', JSON.stringify({ name: 'pkg-k', version: '1.0.0', module: 'index.js' }));
+	write('node_modules/pkg-k/index.js', `export * from 'pkg-i';\nexport const K = 'k';\n`);
+	// Conditional exports: the star must follow the `import` edge, never the
+	// `require` edge a CJS call in the same file resolves.
+	write('node_modules/pkg-l/package.json', JSON.stringify({ name: 'pkg-l', version: '1.0.0', exports: { '.': { require: './cjs.js', import: './esm.js' } } }));
+	write('node_modules/pkg-l/esm.js', `export const fromEsm = 'esm';\n`);
+	write('node_modules/pkg-l/cjs.js', `exports.fromCjs = 'cjs';\n`);
+	write('node_modules/pkg-m/index.js', `export * from 'pkg-l';\nconst viaRequire = require('pkg-l');\nexport const M = viaRequire.fromCjs;\n`);
 	// Package shipping a stray root `index.ts` SOURCE whose relative imports
 	// don't exist in the published package (solid-navigation shape) — the
 	// declared entry (`main`) must win over the index fan-out.
@@ -260,6 +295,7 @@ const recordedPaths = [
 	'/ns/m/node_modules/pkg-d', // platform-suffixed package root
 	'/ns/m/node_modules/pkg-d/impl', // extensionless platform-suffixed file
 	'/ns/m/node_modules/pkg-e/index.js', // transpiled CJS
+	'/ns/m/node_modules/pkg-k/index.js', // bare `export *` root
 	'/ns/m/node_modules/@nativescript/core/ui/frame', // owned by /ns/core bridge
 	'/ns/m/node_modules/@nativescript/vite/hmr/client', // never-bundled dev tooling
 	'/ns/m/node_modules/pkg-a/styles.css', // non-script asset
@@ -273,7 +309,7 @@ describe('resolveDepsEntriesFromRecording', () => {
 	it('maps recorded node_modules paths to deduped entries and skips core/blocked/assets/app code', () => {
 		const entries = resolveDepsEntriesFromRecording(recordedPaths, projectRoot, null, 'ios');
 		const keys = entries.map((e) => e.key);
-		expect(keys).toEqual(['node_modules/pkg-a/index.js', 'node_modules/pkg-b/index.js', 'node_modules/pkg-c/dist/entry.mjs', 'node_modules/pkg-d/index.ios.js', 'node_modules/pkg-d/impl.ios.js', 'node_modules/pkg-e/index.js']);
+		expect(keys).toEqual(['node_modules/pkg-a/index.js', 'node_modules/pkg-b/index.js', 'node_modules/pkg-c/dist/entry.mjs', 'node_modules/pkg-d/index.ios.js', 'node_modules/pkg-d/impl.ios.js', 'node_modules/pkg-e/index.js', 'node_modules/pkg-k/index.js']);
 		const rootEntry = entries.find((e) => e.spec === '/node_modules/pkg-c');
 		expect(rootEntry?.absPath).toBe(path.join(projectRoot, 'node_modules/pkg-c/dist/entry.mjs'));
 	});
@@ -318,6 +354,33 @@ describe('generateDepsBundle', () => {
 		expect(second!.hash).toBe(first!.hash);
 		expect(second!.code).toBe(first!.code);
 		expect(second!.keys).toEqual(first!.keys);
+		expect(second!.bareImportEdges).toEqual(first!.bareImportEdges);
+	});
+
+	it('records the bare import edges esbuild resolved, keyed by importer', async () => {
+		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths });
+		expect(state!.bareImportEdges.get('node_modules/pkg-k/index.js')).toEqual({ 'pkg-i': 'node_modules/pkg-i/index.js' });
+		// Relative edges are not recorded; the collector resolves those itself.
+		expect(state!.bareImportEdges.get('node_modules/pkg-a/index.js')).toBeUndefined();
+	});
+
+	it('records the import-statement edge, not the require() edge, for a conditional-exports package', async () => {
+		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths: ['/ns/m/node_modules/pkg-m/index.js'] });
+		expect(state!.bareImportEdges.get('node_modules/pkg-m/index.js')).toEqual({ 'pkg-l': 'node_modules/pkg-l/esm.js' });
+	});
+
+	it('rejects a cached bundle whose edge table is malformed', async () => {
+		await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths });
+		const cacheDir = path.join(projectRoot, 'node_modules', '.ns-vite');
+		const metaName = readdirSync(cacheDir).find((f) => f.startsWith('deps-bundle-ios-') && f.endsWith('.json'))!;
+		const metaPath = path.join(cacheDir, metaName);
+		const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
+		expect(tryLoadDepsBundleFromDisk(projectRoot, 'ios', meta.key)).not.toBeNull();
+		writeFileSync(metaPath, JSON.stringify({ ...meta, bareImportEdges: [] }));
+		expect(tryLoadDepsBundleFromDisk(projectRoot, 'ios', meta.key)).toBeNull();
+		writeFileSync(metaPath, JSON.stringify({ ...meta, bareImportEdges: { importer: { spec: 42 } } }));
+		expect(tryLoadDepsBundleFromDisk(projectRoot, 'ios', meta.key)).toBeNull();
+		writeFileSync(metaPath, JSON.stringify(meta));
 	});
 
 	it('returns null when the recording has no bundleable node_modules entries', async () => {
@@ -468,6 +531,27 @@ describe('createDepsBundleService', () => {
 		expect(service.getShimForSpec('/node_modules/pkg-a/index')).toContain('export const A = ');
 		// Discovered (non-recorded) closure file is also shim-servable.
 		expect(service.getShimForSpec('/node_modules/pkg-a/helper.js')).toContain('export const helper = ');
+	});
+
+	it('serves a shim for a root whose export * target is another package (nativescript-vue shape)', async () => {
+		// Names come from the file esbuild actually bundled for that edge, so the
+		// shim matches the bundle namespace; before, this root was served
+		// per-module and its module-scope side effects ran a second time.
+		const service = makeService();
+		await service.ensureBuilt();
+		const shim = service.getShimForSpec('/node_modules/pkg-k/index.js');
+		expect(shim).toContain('export const K = ');
+		expect(shim).toContain('export const I = ');
+		expect(service.getShimForSpec('/node_modules/pkg-k')).toContain('export const I = ');
+	});
+
+	it('shims a star over a conditional-exports package with the ESM names esbuild bundled', async () => {
+		const service = makeService(['/ns/m/node_modules/pkg-m/index.js']);
+		await service.ensureBuilt();
+		const shim = service.getShimForSpec('/node_modules/pkg-m/index.js');
+		expect(shim).toContain('export const fromEsm = ');
+		expect(shim).toContain('export const M = ');
+		expect(shim).not.toContain('fromCjs');
 	});
 
 	it('serves shims for platform-suffixed packages and transpiled CJS', async () => {
