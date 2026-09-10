@@ -1,3 +1,16 @@
+## 8.0.6 (2026-09-10)
+
+### 🩹 Fixes
+
+- **vite:** await the client strategy before /ns/rt $navigateTo reports the navigator missing ([#11424](https://github.com/NativeScript/NativeScript/pull/11424), [#11422](https://github.com/NativeScript/NativeScript/issues/11422))
+- **vite:** replace the browser preload helper before esbuild minifies it ([#11425](https://github.com/NativeScript/NativeScript/pull/11425), [#11423](https://github.com/NativeScript/NativeScript/issues/11423))
+- **vite:** serve deps-bundle shims for barrels that re-export a bare package ([#11427](https://github.com/NativeScript/NativeScript/pull/11427))
+
+### ❤️ Thank You
+
+- Nathan Walker
+- Steve McNiven-Scott
+
 ## 8.0.5 (2026-09-07)
 
 ### 🚀 Features
