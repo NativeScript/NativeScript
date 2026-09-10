@@ -117,7 +117,7 @@
 	},
 	"peerDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.0",
-		"@angular/build": "^21.0.0",
+		"@angular/build": "^21.0.0 || ^22.0.0",
 		"@vitejs/plugin-vue": "^6.0.5",
 		"@vitejs/plugin-vue-jsx": "^5.1.5",
 		"@vue/compiler-sfc": "^3.5.0",
