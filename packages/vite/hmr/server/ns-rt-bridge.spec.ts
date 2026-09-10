@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { buildNsRtBridgeModule, discoverNsvBridgeExports } from './ns-rt-bridge.js';
 
@@ -108,6 +108,86 @@ describe('/ns/rt bridge builder', () => {
 		expect(code).not.toContain('has-hyphen');
 		expect(code).not.toContain('123starts-with-digit');
 		expect(code).not.toContain('with.dot');
+	});
+
+	// Regression: root-mount navigation raced the strategy's dynamic import.
+	describe('$navigateTo waits for the client strategy before declaring the navigator missing', () => {
+		// Evaluates the served text, not a re-implementation.
+		function loadNavigateTo(g: Record<string, any>) {
+			const code = buildNsRtBridgeModule({ rtVer: '0', requireGuardSnippet: '', vendorExports: [] });
+			const pick = (re: RegExp) => {
+				const m = re.exec(code);
+				if (!m) throw new Error(`bridge text lost: ${re}`);
+				return m[0];
+			};
+			const navigateTo = pick(/^export const \$navigateTo = .*$/m).replace(/^export const /, 'const ');
+			const helpers = pick(/^function __navigateNow\(a\).*$/m) + '\n' + pick(/^function __navigatorMissing\(\).*$/m);
+			const factory = new Function('g', `${helpers}\nconst __ns_core_bridge = null; const __cached_vm = {}; const __ensure = () => ({});\n${navigateTo}\nreturn $navigateTo;`);
+			return factory(g) as (...a: any[]) => any;
+		}
+		const quiet = () => {
+			const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+			return () => spy.mockRestore();
+		};
+
+		it('calls the navigator synchronously when it is already installed', () => {
+			const calls: any[] = [];
+			const g = { Frame: {}, __nsNavigateUsingApp: (...a: any[]) => (calls.push(a), 'page') };
+			expect(loadNavigateTo(g)({ name: 'Home' }, { props: { a: 1 } })).toBe('page');
+			expect(calls).toEqual([[{ name: 'Home' }, { props: { a: 1 } }]]);
+		});
+
+		it('waits for __NS_CLIENT_STRATEGY_READY__ and then navigates when the strategy installs the navigator late', async () => {
+			const calls: any[] = [];
+			const g: Record<string, any> = { Frame: {} };
+			let installed!: () => void;
+			g.__NS_CLIENT_STRATEGY_READY__ = new Promise<void>((resolve) => {
+				installed = () => {
+					g.__nsNavigateUsingApp = (...a: any[]) => (calls.push(a), 'page');
+					resolve();
+				};
+			});
+			const pending = loadNavigateTo(g)({ name: 'Home' });
+			expect(typeof pending.then).toBe('function');
+			expect(calls).toEqual([]);
+			installed();
+			await expect(pending).resolves.toBe('page');
+			expect(calls).toEqual([[{ name: 'Home' }]]);
+		});
+
+		it('rejects only after the strategy has settled without installing a navigator', async () => {
+			const restore = quiet();
+			try {
+				const g = { Frame: {}, __NS_CLIENT_STRATEGY_READY__: Promise.resolve() };
+				await expect(loadNavigateTo(g)({ name: 'Home' })).rejects.toThrow('app navigator missing');
+			} finally {
+				restore();
+			}
+		});
+
+		it('still throws synchronously when there is no readiness promise to wait for', () => {
+			const restore = quiet();
+			try {
+				expect(() => loadNavigateTo({ Frame: {} })({ name: 'Home' })).toThrow('app navigator missing');
+			} finally {
+				restore();
+			}
+		});
+
+		it('surfaces navigator errors unchanged', () => {
+			const restore = quiet();
+			try {
+				const g = {
+					Frame: {},
+					__nsNavigateUsingApp: () => {
+						throw new Error('boom');
+					},
+				};
+				expect(() => loadNavigateTo(g)({ name: 'Home' })).toThrow('boom');
+			} finally {
+				restore();
+			}
+		});
 	});
 
 	it('discoverNsvBridgeExports returns an empty set when nativescript-vue is not resolvable from the project root', () => {

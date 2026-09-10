@@ -200,4 +200,27 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).not.toContain('10.0.2.2');
 		expect(code).not.toContain('orderedHosts');
 	});
+
+	it('publishes a deferred client-strategy readiness promise before the app entry can navigate', () => {
+		// The full client (and its strategy) loads only after boot-complete,
+		// which flips after the app entry evaluates. The wrapper evaluates
+		// before the entry, so it owns the promise `/ns/rt` awaits.
+		const code = createNsDevClientBootstrapCode({
+			wsUrl: 'ws://127.0.0.1:5173/__ns_dev__/ws',
+			origin: 'http://127.0.0.1:5173',
+			clientImport: '/ns/m/node_modules/@nativescript/vite/hmr/client/index.js',
+		});
+		const deferredAt = code.indexOf('globalThis.__NS_CLIENT_STRATEGY_READY__ = new Promise');
+		// The first `__nsBrowserRuntimeConnectSocket();` in the emitted code sits
+		// inside the reconnect timer's function body, not the boot call site —
+		// take the last occurrence, which is the top-level boot call.
+		const socketAt = code.lastIndexOf('__nsBrowserRuntimeConnectSocket();');
+		expect(deferredAt).toBeGreaterThan(-1);
+		expect(deferredAt).toBeLessThan(socketAt);
+		expect(code).toContain('globalThis.__NS_CLIENT_STRATEGY_RESOLVE__ = resolve');
+		// A failed full-client start must settle it, never leave callers hanging.
+		expect(code).toContain('globalThis.__NS_CLIENT_STRATEGY_RESOLVE__?.()');
+		// So must an entry import failure observed by the boot poller.
+		expect(code).toContain('else if (globalThis.__NS_ENTRY_ERROR__)');
+	});
 });

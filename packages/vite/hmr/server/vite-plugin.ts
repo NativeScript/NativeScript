@@ -551,6 +551,8 @@ async function __nsBrowserRuntimeEnsureFullClientStarted() {
 			})
 			.catch((error) => {
 				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = false;
+				// Settle readiness so pending navigations fail instead of hanging.
+				try { globalThis.__NS_CLIENT_STRATEGY_RESOLVE__?.(); } catch {}
 				console.error('[ns-browser-runtime-client] failed to start full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__, error);
 				throw error;
 			});
@@ -564,6 +566,12 @@ __nsBrowserRuntimeEnsureVendorBootstrap();
 if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
 	globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = true;
 	globalThis.__NS_HTTP_ORIGIN__ = __NS_BROWSER_RUNTIME_ORIGIN__;
+	// Deferred strategy readiness; the full client settles it later.
+	if (!globalThis.__NS_CLIENT_STRATEGY_READY__) {
+		globalThis.__NS_CLIENT_STRATEGY_READY__ = new Promise((resolve) => {
+			globalThis.__NS_CLIENT_STRATEGY_RESOLVE__ = resolve;
+		});
+	}
 	__nsBrowserRuntimeConnectSocket();
 	const __nsBrowserRuntimeBootWaitStartedAt = Date.now();
 	const __nsBrowserRuntimeWaitForBoot = () => {
@@ -573,6 +581,10 @@ if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
 			}
 			void __nsBrowserRuntimeReplaySeededCss();
 			void __nsBrowserRuntimeEnsureFullClientStarted();
+		} else if (globalThis.__NS_ENTRY_ERROR__) {
+			// Boot failed; settle readiness so pending navigations reject.
+			try { globalThis.__NS_CLIENT_STRATEGY_RESOLVE__?.(); } catch {}
+			setTimeout(__nsBrowserRuntimeWaitForBoot, 100);
 		} else {
 			if (!__nsBrowserRuntimeBootWaitWarningIssued && Date.now() - __nsBrowserRuntimeBootWaitStartedAt >= 10000) {
 				__nsBrowserRuntimeBootWaitWarningIssued = true;

@@ -108,6 +108,8 @@ declare global {
 	var __NS_HMR_WORKER_TRACKING_INSTALLED__: boolean | undefined;
 	var __NS_UPDATE_ANGULAR_APP_OPTIONS__: any;
 	var __nsNavigateUsingApp: any;
+	var __NS_CLIENT_STRATEGY_READY__: Promise<void> | undefined;
+	var __NS_CLIENT_STRATEGY_RESOLVE__: (() => void) | undefined;
 	var __nsRequire: any;
 	var __nsVendorRequire: any;
 	var __nsVendorRegistry: any;
