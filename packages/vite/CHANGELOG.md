@@ -1,3 +1,13 @@
+## 8.0.7 (2026-09-10)
+
+### 🩹 Fixes
+
+- **vite:** give HMR-navigated Vue pages the root app's registrations and fresh reloads ([29ef51474](https://github.com/NativeScript/NativeScript/commit/29ef51474))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.6 (2026-09-10)
 
 ### 🩹 Fixes
