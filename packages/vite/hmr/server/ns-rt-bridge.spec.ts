@@ -90,10 +90,25 @@ describe('/ns/rt bridge builder', () => {
 		expect(code).not.toMatch(/export const \$navigateBack = \(__ensure\(\)\.\$navigateBack\);/);
 		expect(code).not.toMatch(/export const \$showModal = \(__ensure\(\)\.\$showModal\);/);
 		expect(code).not.toMatch(/export const vite__injectQuery = \(__ensure\(\)\.vite__injectQuery\);/);
+		expect(code).not.toMatch(/export const createApp = \(__ensure\(\)\.createApp\);/);
 		// But the HMR-routed shims ARE present (their bodies reference __nsNavigateUsingApp).
 		expect(code).toContain('__nsNavigateUsingApp');
-		// And ordinary exports are still emitted from the same input.
-		expect(code).toContain('export const createApp = (__ensure().createApp);');
+	});
+
+	// The navigator builds a fresh Vue app per page and has to inherit the root
+	// app's registrations (app.component / app.use). Nothing else observes the
+	// app created by app code, so the bridge's createApp records it.
+	it('emits createApp as a recording wrapper that publishes the root app for the HMR navigator', () => {
+		const code = buildNsRtBridgeModule({ rtVer: '0', requireGuardSnippet: '', vendorExports: ['createApp', 'ref'] });
+		const line = code.split('\n').find((l) => l.startsWith('export const createApp = '));
+		expect(line).toBeTruthy();
+		expect(line).toContain('__ensure().createApp(...a)');
+		expect(line).toContain('g.__NS_VUE_ROOT_APP__ = app');
+		expect(line).toMatch(/return app;/);
+		// Ordinary exports keep the constant-binding shape and the default listing carries both.
+		expect(code).toContain('export const ref = (__ensure().ref);');
+		expect(code).toMatch(/export default \{[^}]*\bcreateApp\b[^}]*\};/);
+		expect(code).toMatch(/export default \{[^}]*\bref\b[^}]*\};/);
 	});
 
 	it('filters non-identifier names (e.g. property strings with hyphens) from the auto-emitted exports', () => {

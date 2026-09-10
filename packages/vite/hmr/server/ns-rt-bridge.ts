@@ -4,7 +4,7 @@ import { enumeratePackageExports } from '../helpers/package-exports.js';
 // must not emit a plain passthrough for these names or the override would be
 // shadowed and navigation would silently fall back to the vendor's native
 // version (which doesn't know about the HMR app navigator).
-const NSV_SHIM_OVERRIDES: ReadonlySet<string> = new Set(['$navigateTo', '$navigateBack', '$showModal', 'vite__injectQuery']);
+const NSV_SHIM_OVERRIDES: ReadonlySet<string> = new Set(['createApp', '$navigateTo', '$navigateBack', '$showModal', 'vite__injectQuery']);
 
 // Bridge-internal identifiers that would clash with the emitted preamble if
 // the vendor package happens to publish a colliding name.
@@ -45,11 +45,12 @@ export interface NsRtBridgeOptions {
  * `__nsVendorRegistry`), and the bridge resolves the same `nativescript-vue`
  * record everyone else uses.
  *
- * HMR-specific shims (`$navigateTo`, `$navigateBack`, `$showModal`) and the
- * Vite client polyfill (`vite__injectQuery`) are emitted as overrides that
- * replace the would-be passthrough — those exports route through the HMR
- * navigator instead of the vendor's native version, so the bridge must
- * provide the override, not the discovered original.
+ * HMR-specific shims (`$navigateTo`, `$navigateBack`, `$showModal`), the
+ * root-app recording `createApp`, and the Vite client polyfill
+ * (`vite__injectQuery`) are emitted as overrides that replace the would-be
+ * passthrough — those exports route through the HMR navigator (or feed it)
+ * instead of the vendor's native version, so the bridge must provide the
+ * override, not the discovered original.
  */
 export function buildNsRtBridgeModule(options: NsRtBridgeOptions): string {
 	// Sort for stable output — useful for diffing the served bridge across requests.
@@ -62,7 +63,7 @@ export function buildNsRtBridgeModule(options: NsRtBridgeOptions): string {
 	const passthroughNames = Array.from(passthrough).sort();
 
 	const passthroughExports = passthroughNames.map((n) => `export const ${n} = (__ensure().${n});`).join('\n');
-	const defaultListing = passthroughNames.concat(['$navigateTo', '$navigateBack', '$showModal', 'vite__injectQuery']).join(', ');
+	const defaultListing = passthroughNames.concat(['createApp', '$navigateTo', '$navigateBack', '$showModal', 'vite__injectQuery']).join(', ');
 
 	const code =
 		`// [ns-rt][v2.4] NativeScript-Vue runtime bridge (module-scoped cache, no globals)\n` +
@@ -124,6 +125,9 @@ export function buildNsRtBridgeModule(options: NsRtBridgeOptions): string {
 		// Await the client strategy before declaring the navigator missing.
 		`function __navigateNow(a) { try { return g.__nsNavigateUsingApp(...a); } catch (e) { console.error('[ns-rt] $navigateTo app navigator error', e); throw e; } }\n` +
 		`function __navigatorMissing() { console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); throw new Error('$navigateTo unavailable: app navigator missing'); }\n` +
+		// The app's registrations (app.component/use) live on this instance; the
+		// HMR navigator copies them onto every page app it builds.
+		`export const createApp = (...a) => { const app = __ensure().createApp(...a); try { g.__NS_VUE_ROOT_APP__ = app; } catch {} return app; };\n` +
 		`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
 		`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { } return undefined; }\n` +
 		// Vite client polyfill — see the comment in websocket.ts for full rationale.

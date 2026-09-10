@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { installNavigatedPageHmrReload } from './navigate-app';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { inheritAppContext, installNavigatedPageHmrReload, installVueNavigateUsingApp } from './navigate-app';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -42,7 +42,7 @@ describe('__nsNavigateUsingApp prop forwarding', () => {
 		expect(callMatch).toBeTruthy();
 		const argList = callMatch![1];
 		// Two top-level arguments: component, props
-		expect(argList).toContain('normalizeComponent(comp,');
+		expect(argList).toContain('normalizeComponent(target,');
 		expect(argList).toMatch(/,\s*opts\s*&&\s*\(opts\s*as\s*any\)\.props\s*$/);
 	});
 
@@ -50,7 +50,111 @@ describe('__nsNavigateUsingApp prop forwarding', () => {
 		// Regression guard: a prior refactor passed `comp` directly to AppFactory
 		// which broke <script setup> destinations. The normalizeComponent wrap
 		// must stay in place.
-		expect(navigateSrc).toMatch(/AppFactory\(normalizeComponent\(comp,/);
+		expect(navigateSrc).toMatch(/AppFactory\(normalizeComponent\(target,/);
+	});
+});
+
+describe('inheritAppContext', () => {
+	it('fills in components, directives, mixins and globalProperties the page app lacks, never overriding its own', () => {
+		const Widget = { name: 'Widget' };
+		const Own = { name: 'Own' };
+		const mixin = { created() {} };
+		const focus = {};
+		const base = { components: { Widget, Own: { name: 'RootOwn' } }, directives: { focus }, mixins: [mixin], config: { globalProperties: { $http: 'http', $navigateTo: 'root-nav' } } };
+		const ctx: any = { components: { Own }, directives: {}, mixins: [mixin], config: { globalProperties: { $navigateTo: 'page-nav' } } };
+		inheritAppContext(ctx, base);
+		expect(ctx.components.Widget).toBe(Widget);
+		expect(ctx.components.Own).toBe(Own);
+		expect(ctx.directives.focus).toBe(focus);
+		expect(ctx.mixins).toEqual([mixin]);
+		expect(ctx.config.globalProperties).toEqual({ $navigateTo: 'page-nav', $http: 'http' });
+	});
+
+	it('tolerates a missing side', () => {
+		expect(() => inheritAppContext(null, { components: {} })).not.toThrow();
+		expect(() => inheritAppContext({}, null)).not.toThrow();
+	});
+});
+
+/**
+ * Drives the installed navigator with a Vue-shaped factory: like Vue's
+ * createApp, it clones a non-function root component, and the mounted root
+ * instance's `type` is that clone — the object Vue's HMR `reload` mutates.
+ */
+describe('__nsNavigateUsingApp page apps', () => {
+	const g: any = globalThis;
+	const apps: any[] = [];
+
+	function installFakeVue() {
+		apps.length = 0;
+		g.NSVRoot = class NSVRoot {};
+		g.createApp = vi.fn((rootComponent: any, rootProps?: any) => {
+			const type = typeof rootComponent === 'function' ? rootComponent : { ...rootComponent };
+			const _context: any = { app: null, config: { globalProperties: { $navigateTo: 'page-nav' } }, mixins: [], components: {}, directives: {}, provides: {} };
+			const app: any = {
+				_context,
+				rootProps,
+				mount: vi.fn(() => ({ $el: { nativeView: { constructor: { name: 'Page' } } }, $: { type } })),
+				unmount: vi.fn(),
+			};
+			_context.app = app;
+			apps.push(app);
+			return app;
+		});
+	}
+
+	function makeFrame() {
+		const frame: any = {
+			currentPage: null,
+			replacePage: vi.fn(),
+			once: vi.fn(),
+			navigate: vi.fn((entry: any) => {
+				const page = entry.create();
+				page.frame = frame;
+				frame.currentPage = page;
+			}),
+		};
+		return frame;
+	}
+
+	afterEach(() => {
+		delete g.createApp;
+		delete g.NSVRoot;
+		delete g.__NS_VUE_ROOT_APP__;
+	});
+
+	it('inherits the root app recorded by the bridge when no app has navigated yet', () => {
+		installFakeVue();
+		const Widget = { name: 'Widget' };
+		g.__NS_VUE_ROOT_APP__ = { _context: { components: { Widget }, directives: {}, mixins: [], provides: {}, config: { globalProperties: { $http: 'http' } } } };
+		installVueNavigateUsingApp();
+		g.__nsNavigateUsingApp({ name: 'Home', render: () => 'v1' }, { frame: makeFrame() });
+		expect(apps).toHaveLength(1);
+		expect(apps[0]._context.components.Widget).toBe(Widget);
+		expect(apps[0]._context.config.globalProperties.$http).toBe('http');
+		expect(apps[0]._context.config.globalProperties.$navigateTo).toBe('page-nav');
+	});
+
+	it('rebuilds a hot-reloaded page from the mounted type Vue mutated, not from the original component', () => {
+		installFakeVue();
+		installVueNavigateUsingApp();
+		const frame = makeFrame();
+		const Home = { name: 'Home', render: () => 'v1' };
+		g.__nsNavigateUsingApp(Home, { frame });
+		const pageApp = apps[0];
+		const mountedType = pageApp.mount.mock.results[0].value.$.type;
+		expect(mountedType).not.toBe(Home);
+
+		// Vue's HMR reload mutates instance.type in place; the original is untouched.
+		mountedType.render = () => 'v2';
+		pageApp._context.reload();
+
+		expect(frame.replacePage).toHaveBeenCalledTimes(1);
+		frame.replacePage.mock.calls[0][0].create();
+		expect(apps).toHaveLength(2);
+		const rebuiltFrom = g.createApp.mock.calls[1][0];
+		expect(rebuiltFrom.render()).toBe('v2');
+		expect(Home.render()).toBe('v1');
 	});
 });
 
