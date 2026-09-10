@@ -19,6 +19,16 @@ export interface EventDataValue extends EventData {
 }
 
 /**
+ * How a property change was produced.
+ * - `script`: written by application code, including the local value of a style property.
+ * - `native`: reported by the native view, e.g. after user interaction.
+ * - `css`: applied from a css declaration.
+ * - `inherited`: propagated from the parent's value.
+ * - `animation`: written by a css keyframe animation.
+ */
+export type PropertyChangeOrigin = 'script' | 'native' | 'css' | 'inherited' | 'animation';
+
+/**
  * Data for the "propertyChange" event.
  */
 export interface PropertyChangeData extends EventData {
@@ -34,6 +44,10 @@ export interface PropertyChangeData extends EventData {
 	 * The previous value of the property.
 	 */
 	oldValue?: any;
+	/**
+	 * How the change was produced. `undefined` for plain Observable.notifyPropertyChange callers.
+	 */
+	origin?: PropertyChangeOrigin;
 }
 
 interface ListenerEntry {
