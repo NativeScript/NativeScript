@@ -1,3 +1,13 @@
+## 8.0.8 (2026-09-10)
+
+### 🩹 Fixes
+
+- **vite:** accept @angular/build 22 as an optional peer ([4df777fa5](https://github.com/NativeScript/NativeScript/commit/4df777fa5))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.7 (2026-09-10)
 
 ### 🩹 Fixes
