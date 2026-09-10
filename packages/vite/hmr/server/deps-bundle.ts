@@ -58,7 +58,7 @@ import * as esbuild from 'esbuild';
 import type { ViteDevServer } from 'vite';
 
 import { resolvePlatform } from '../../helpers/cli-flags.js';
-import { getGlobalDefines } from '../../helpers/global-defines.js';
+import { getGlobalDefines, getUserDefineEntries } from '../../helpers/global-defines.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuild-plugin.js';
@@ -132,6 +132,35 @@ export function buildDepsCandidateSpecs(spec: string, platform: string): string[
 	return [...(hasExt ? [spec] : []), ...exts.map((ext) => baseNoExt + ext), ...exts.map((ext) => baseNoExt + '/index' + ext)];
 }
 
+function collectExportsMapTargets(node: unknown, out: string[]): void {
+	if (!node) return;
+	if (typeof node === 'string') {
+		out.push(node);
+		return;
+	}
+	if (typeof node === 'object' && !Array.isArray(node)) {
+		// Prefer client/ESM conditions in the order esbuild would.
+		for (const cond of ['module', 'import', 'browser', 'default', 'require']) {
+			const next = (node as Record<string, unknown>)[cond];
+			if (next !== undefined) collectExportsMapTargets(next, out);
+		}
+	}
+}
+
+function resolvePackageFileCandidates(pkgDir: string, candidates: readonly string[], platform: string): string | null {
+	const exts = platformResolveExtensions(platform);
+	for (const cand of candidates) {
+		const abs = path.resolve(pkgDir, cand);
+		if (!abs.startsWith(pkgDir + path.sep)) continue;
+		if (existsSync(abs) && statSync(abs).isFile()) return abs;
+		const base = abs.replace(SCRIPT_EXT_RE, '');
+		for (const candidate of [...exts.map((ext) => base + ext), ...exts.map((ext) => base + '/index' + ext)]) {
+			if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+		}
+	}
+	return null;
+}
+
 /**
  * Resolve a package ROOT spec (`/node_modules/<pkg>`) to its entry file via
  * the package's own `exports['.']`/`module`/`main`, honoring platform
@@ -154,34 +183,41 @@ function resolvePackageRootEntry(spec: string, roots: readonly string[], platfor
 			continue;
 		}
 		const candidates: string[] = [];
-		const visitExports = (node: any) => {
-			if (!node) return;
-			if (typeof node === 'string') {
-				candidates.push(node);
-				return;
-			}
-			if (typeof node === 'object' && !Array.isArray(node)) {
-				// Prefer client/ESM conditions in the order esbuild would.
-				for (const cond of ['module', 'import', 'browser', 'default', 'require']) {
-					if (node[cond] !== undefined) visitExports(node[cond]);
-				}
-			}
-		};
-		visitExports(pkg.exports?.['.'] ?? (typeof pkg.exports === 'string' ? pkg.exports : undefined));
+		collectExportsMapTargets(pkg.exports?.['.'] ?? (typeof pkg.exports === 'string' ? pkg.exports : undefined), candidates);
 		if (typeof pkg.module === 'string') candidates.push(pkg.module);
 		if (typeof pkg.main === 'string') candidates.push(pkg.main);
 		candidates.push('index');
-		for (const cand of candidates) {
-			const abs = path.resolve(pkgDir, cand);
-			if (!abs.startsWith(pkgDir + path.sep)) continue;
-			if (existsSync(abs) && statSync(abs).isFile()) return abs;
-			const base = abs.replace(SCRIPT_EXT_RE, '');
-			for (const ext of platformResolveExtensions(platform)) {
-				if (existsSync(base + ext)) return base + ext;
-			}
-		}
+		const resolved = resolvePackageFileCandidates(pkgDir, candidates, platform);
+		if (resolved) return resolved;
 	}
 	return null;
+}
+
+function resolvePackageSubpathEntry(pkgDir: string, subpath: string, platform: string): string | null {
+	const candidates: string[] = [];
+	try {
+		const pkg = JSON.parse(readFileSync(path.join(pkgDir, 'package.json'), 'utf-8'));
+		const exportsMap = pkg.exports && typeof pkg.exports === 'object' && !Array.isArray(pkg.exports) ? (pkg.exports as Record<string, unknown>) : null;
+		if (exportsMap) {
+			const key = `./${subpath}`;
+			collectExportsMapTargets(exportsMap[key], candidates);
+			for (const [pattern, target] of Object.entries(exportsMap)) {
+				const star = pattern.indexOf('*');
+				if (star === -1) continue;
+				const prefix = pattern.slice(0, star);
+				const suffix = pattern.slice(star + 1);
+				if (key.length < prefix.length + suffix.length || !key.startsWith(prefix) || !key.endsWith(suffix)) continue;
+				const captured = key.slice(prefix.length, key.length - suffix.length);
+				const targets: string[] = [];
+				collectExportsMapTargets(target, targets);
+				for (const t of targets) candidates.push(t.split('*').join(captured));
+			}
+		}
+	} catch {
+		// Unreadable manifest: fall through to the on-disk lookup.
+	}
+	candidates.push(subpath);
+	return resolvePackageFileCandidates(pkgDir, candidates, platform);
 }
 
 /** `/node_modules/<pkg>` or `/node_modules/@scope/<pkg>` with no subpath. */
@@ -567,6 +603,19 @@ export function saveDepsBundleToDisk(projectRoot: string, platform: string, key:
 	}
 }
 
+// esbuild `define` takes JSON literals or identifier/member chains only.
+const DEFINE_IDENTIFIER_CHAIN_RE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/;
+
+function isEsbuildDefineValue(expr: string): boolean {
+	if (DEFINE_IDENTIFIER_CHAIN_RE.test(expr)) return true;
+	try {
+		JSON.parse(expr);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 export async function generateDepsBundle(options: GenerateDepsBundleOptions): Promise<DepsBundleState | null> {
 	const { projectRoot, platform, mode, flavor, verbose } = options;
 	const t0 = Date.now();
@@ -605,6 +654,10 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 		// substitutes free references, so CJS-wrapped code (where `module` is a
 		// bound variable) is untouched.
 		out['module.hot'] = 'undefined';
+		// App `__FOO__` defines reach dep code here exactly as in bundle.mjs.
+		for (const [key, expr] of getUserDefineEntries()) {
+			if (out[key] === undefined && isEsbuildDefineValue(expr)) out[key] = expr;
+		}
 		return out;
 	})();
 
@@ -770,6 +823,23 @@ function resolveLocalReExportTarget(spec: string, importerPath: string, platform
 	return null;
 }
 
+// Node-style resolution from the importer: nearest node_modules ancestor wins.
+function resolveBareReExportTarget(spec: string, importerPath: string, platform: string): string | null {
+	const match = /^((?:@[^/]+\/)?[^/]+)(?:\/(.+))?$/.exec(spec);
+	if (!match) return null;
+	const [, pkgName, subpath] = match;
+	let dir = path.dirname(importerPath);
+	for (;;) {
+		const pkgDir = path.join(dir, 'node_modules', pkgName);
+		if (existsSync(path.join(pkgDir, 'package.json'))) {
+			return subpath ? resolvePackageSubpathEntry(pkgDir, subpath, platform) : resolvePackageRootEntry(`/node_modules/${pkgName}`, [dir], platform);
+		}
+		const parent = path.dirname(dir);
+		if (parent === dir) return null;
+		dir = parent;
+	}
+}
+
 // Static CJS export-name discovery: `exports.NAME = ...` and
 // `Object.defineProperty(exports, "NAME", ...)` assignments (transpiled-to-CJS
 // packages like downsample). UMD factories (`module.exports = fn()`) expose no
@@ -792,16 +862,18 @@ function collectCjsExportInfo(code: string): DepsModuleExportInfo {
 
 /**
  * Static export-name discovery for a node_modules file. ESM: direct exports
- * plus recursion through RELATIVE `export * from` chains (the shape deep
- * package barrels like rxjs's index take). CJS: `exports.NAME` assignment
- * scanning (esbuild's interop exposes those names on the bundled namespace at
- * runtime). Returns `names: null` for files whose export surface is not
- * statically enumerable — with two DIFFERENT consequences downstream:
- * CJS/UMD files additionally carry `opaqueCjs: true` and still get a
- * default-only shim (their bundled namespace has nothing but `default`);
- * ESM files with a bare `export * from 'pkg'` or an unresolvable relative
- * `export *` target keep per-module serving, where the transform pipeline
- * resolves the star through the import map.
+ * plus recursion through `export * from` chains — relative targets (the
+ * shape deep package barrels like rxjs's index take) and bare package targets
+ * resolved from the importer like Node would (nativescript-vue re-exporting
+ * `@vue/runtime-core`). CJS: `exports.NAME` assignment scanning (esbuild's
+ * interop exposes those names on the bundled namespace at runtime). Returns
+ * `names: null` for files whose export surface is not statically enumerable —
+ * with two DIFFERENT consequences downstream: CJS/UMD files additionally carry
+ * `opaqueCjs: true` and still get a default-only shim (their bundled
+ * namespace has nothing but `default`); ESM files with an `export *` target
+ * that resolves nowhere on disk keep per-module serving, where the transform
+ * pipeline resolves the star through the import map. A BUNDLED file served
+ * per-module evaluates a second time, so any resolvable star must be followed.
  */
 export function collectDepsModuleExportInfo(absPath: string, platform: string, seen: Set<string> = new Set()): DepsModuleExportInfo {
 	if (seen.has(absPath)) return { names: [], hasDefault: false };
@@ -828,8 +900,7 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["']/gm;
 	while ((match = starRe.exec(code)) !== null) {
 		const spec = match[1];
-		if (!spec.startsWith('.')) return { names: null, hasDefault: false };
-		const target = resolveLocalReExportTarget(spec, absPath, platform);
+		const target = spec.startsWith('.') ? resolveLocalReExportTarget(spec, absPath, platform) : resolveBareReExportTarget(spec, absPath, platform);
 		if (!target) return { names: null, hasDefault: false };
 		const child = collectDepsModuleExportInfo(target, platform, seen);
 		if (child.names === null) return { names: null, hasDefault: false };

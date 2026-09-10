@@ -215,6 +215,11 @@ export function setUserDefineEntries(define: Record<string, unknown> | undefined
 	userProcessEnvDefineEntries = envEntries;
 }
 
+/** The captured `__FOO__` define entries as `[key, expression]` pairs (see setUserDefineEntries). */
+export function getUserDefineEntries(): ReadonlyArray<[string, string]> {
+	return userDefineEntries;
+}
+
 /** The captured `process.env.<KEY>` define values (see setUserDefineEntries). */
 export function getUserProcessEnvDefineEntries(): Record<string, string> {
 	return userProcessEnvDefineEntries;

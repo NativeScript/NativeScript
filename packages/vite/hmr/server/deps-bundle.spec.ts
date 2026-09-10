@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
+import { setUserDefineEntries } from '../../helpers/global-defines.js';
 import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection } from './deps-bundle.js';
 
 describe('isDepsPerModuleServingEnabled', () => {
@@ -120,10 +121,41 @@ describe('collectDepsModuleExportInfo', () => {
 		expect(collectDepsModuleExportInfo(abs, 'android', new Set()).names).toEqual(['AndroidCanvas', 'own']);
 	});
 
-	it('bails to null for bare export * (name set lives in another package) WITHOUT the opaqueCjs flag', () => {
-		// ESM bails must stay per-module: their bundled namespace has real named
-		// exports the server cannot enumerate, so a default-only shim would
-		// break `import { x }` consumers. Only CJS bails get opaqueCjs.
+	it('follows a bare export * into the package it resolves to (nativescript-vue → @vue/runtime-core shape)', () => {
+		// A bundled barrel with no shim is evaluated a second time per-module.
+		write('node_modules/star-peer/package.json', JSON.stringify({ name: 'star-peer', module: 'dist/peer.mjs' }));
+		write('node_modules/star-peer/dist/peer.mjs', `export const peerA = 1;\nexport * from './peer-more.mjs';\n`);
+		write('node_modules/star-peer/dist/peer-more.mjs', `export const peerB = 2;\n`);
+		const abs = write('node_modules/star-root/index.js', `export * from 'star-peer';\nexport const own = 1;\n`);
+		const info = collectDepsModuleExportInfo(abs, 'ios');
+		expect(info.names).toEqual(['own', 'peerA', 'peerB']);
+		expect(info.hasDefault).toBe(false);
+	});
+
+	it('resolves bare export * subpaths through exports maps (exact and pattern entries) and platform suffixes', () => {
+		write('node_modules/sub-peer/package.json', JSON.stringify({ name: 'sub-peer', exports: { '.': './index.js', './exact': { import: './dist/exact.mjs' }, './lib/*': './dist/lib/*.mjs' } }));
+		write('node_modules/sub-peer/index.js', `export const root = 1;\n`);
+		write('node_modules/sub-peer/dist/exact.mjs', `export const exact = 1;\n`);
+		write('node_modules/sub-peer/dist/lib/deep.mjs', `export const deep = 1;\n`);
+		write('node_modules/plat-peer/package.json', JSON.stringify({ name: 'plat-peer', main: 'index.js' }));
+		write('node_modules/plat-peer/impl.ios.js', `export const impl = 'ios';\n`);
+		write('node_modules/plat-peer/impl.android.js', `export const androidImpl = 'android';\n`);
+		const abs = write('node_modules/sub-root/index.js', `export * from 'sub-peer/exact';\nexport * from 'sub-peer/lib/deep';\nexport * from 'plat-peer/impl';\n`);
+		expect(collectDepsModuleExportInfo(abs, 'ios').names).toEqual(['deep', 'exact', 'impl']);
+		expect(collectDepsModuleExportInfo(abs, 'android').names).toEqual(['androidImpl', 'deep', 'exact']);
+	});
+
+	it('resolves a bare export * from the nearest node_modules ancestor, like Node', () => {
+		write('node_modules/nested-peer/package.json', JSON.stringify({ name: 'nested-peer', main: 'index.js' }));
+		write('node_modules/nested-peer/index.js', `export const hoisted = 1;\n`);
+		write('node_modules/nested-root/node_modules/nested-peer/package.json', JSON.stringify({ name: 'nested-peer', main: 'index.js' }));
+		write('node_modules/nested-root/node_modules/nested-peer/index.js', `export const nested = 1;\n`);
+		const abs = write('node_modules/nested-root/index.js', `export * from 'nested-peer';\n`);
+		expect(collectDepsModuleExportInfo(abs, 'ios').names).toEqual(['nested']);
+	});
+
+	it('bails to null for a bare export * that resolves nowhere, WITHOUT the opaqueCjs flag', () => {
+		// Unresolvable ESM stars keep per-module serving; only CJS bails get opaqueCjs.
 		const abs = write('bare-star.js', `export * from 'other-pkg';\nexport const own = 1;\n`);
 		const info = collectDepsModuleExportInfo(abs, 'ios');
 		expect(info.names).toBeNull();
@@ -249,6 +281,9 @@ function createFixtureProject(): string {
 	write('node_modules/pkg-j/package.json', JSON.stringify({ name: 'pkg-j', version: '1.0.0', main: 'dist/index.js' }));
 	write('node_modules/pkg-j/index.ts', `export * from './src/not-shipped';\n`);
 	write('node_modules/pkg-j/dist/index.js', `export const J = 'j-dist';\n`);
+	// Dep code reading app-level `__FOO__` defines (Vue feature-flag shape).
+	write('node_modules/pkg-flags/package.json', JSON.stringify({ name: 'pkg-flags', version: '1.0.0', module: 'index.js' }));
+	write('node_modules/pkg-flags/index.js', `export const optionsApi = typeof __VUE_OPTIONS_API__ === 'boolean' ? __VUE_OPTIONS_API__ : 'unset';\nexport const bad = typeof __BAD_DEFINE__ === 'undefined' ? 'unset' : __BAD_DEFINE__;\n`);
 	return projectRoot;
 }
 
@@ -359,6 +394,18 @@ describe('generateDepsBundle', () => {
 	it('prepends platform polyfills to the payload', async () => {
 		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths });
 		expect(state!.code).toContain('platform polyfills');
+	});
+
+	it("substitutes the app's __FOO__ defines in bundled dep code, skipping values esbuild cannot define", async () => {
+		setUserDefineEntries({ __VUE_OPTIONS_API__: true, __BAD_DEFINE__: 'compute()' });
+		try {
+			const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'vue', recordedPaths: ['/ns/m/node_modules/pkg-flags/index.js'] });
+			expect(state).not.toBeNull();
+			expect(state!.code).not.toContain('__VUE_OPTIONS_API__');
+			expect(state!.code).toContain('__BAD_DEFINE__');
+		} finally {
+			setUserDefineEntries(undefined);
+		}
 	});
 });
 
@@ -528,6 +575,32 @@ describe('createDepsBundleService', () => {
 		expect(state!.vendorSpecToKey.get('nativescript-widgets')).toBe('node_modules/nativescript-widgets/index.ios.js');
 		expect(service.getShimForSpec('/node_modules/pkg-c')).toContain('export const C = ');
 		rmSync(seedRoot, { recursive: true, force: true });
+	});
+
+	it('serves shims for a bundled root whose barrel re-exports a bare dependency (nativescript-vue shape)', async () => {
+		// Per-module serving here would re-run the root's top-level init().
+		const root = mkdtempSync(path.join(realpathSync(tmpdir()), 'ns-deps-bare-star-'));
+		const write = (rel: string, contents: string) => {
+			const abs = path.join(root, rel);
+			mkdirSync(path.dirname(abs), { recursive: true });
+			writeFileSync(abs, contents);
+		};
+		write('package.json', JSON.stringify({ name: 'fixture-app', version: '1.0.0' }));
+		write('node_modules/ns-framework/package.json', JSON.stringify({ name: 'ns-framework', version: '1.0.0', main: 'dist/index.js' }));
+		write('node_modules/ns-framework/dist/index.js', `import { init } from './runtime.js';\ninit();\nexport * from 'ns-framework-core';\nexport { init };\n`);
+		write('node_modules/ns-framework/dist/runtime.js', `export function init() {}\n`);
+		write('node_modules/ns-framework-core/package.json', JSON.stringify({ name: 'ns-framework-core', version: '1.0.0', module: 'dist/core.mjs' }));
+		write('node_modules/ns-framework-core/dist/core.mjs', `export const ref = () => 1;\nexport const createApp = () => 2;\n`);
+		const service = createDepsBundleService({ projectRoot: root, platform: 'ios', mode: 'development', flavor: 'vue', getRecordedPaths: () => ['/ns/m/node_modules/ns-framework'] });
+		await service.ensureBuilt();
+		for (const spec of ['/node_modules/ns-framework', '/node_modules/ns-framework/dist/index.js']) {
+			const shim = service.getShimForSpec(spec);
+			expect(shim).toContain(`import "${DEPS_BUNDLE_PATH}";`);
+			expect(shim).toContain('export const init = ');
+			expect(shim).toContain('export const createApp = ');
+			expect(shim).toContain('export const ref = ');
+		}
+		rmSync(root, { recursive: true, force: true });
 	});
 
 	it('stops handing out new shims after disableServingForSession but keeps the payload servable', async () => {
