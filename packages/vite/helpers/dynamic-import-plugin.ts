@@ -62,15 +62,18 @@ export function transformDynamicImports(code: string) {
 // Fix NativeScript dynamic imports by transforming paths and simplifying __vitePreload.
 // Vite still emits its browser preload helper when modulePreload is disabled:
 // https://github.com/vitejs/vite/issues/13952
+// Runs in renderChunk as a post plugin: user post plugins precede Vite's
+// esbuild minifier, so `__vitePreload` is still named when we look for it.
 export function dynamicImportPlugin() {
 	return {
 		name: 'nativescript-dynamic-import-fix',
-		generateBundle(_options, bundle) {
-			for (const chunk of Object.values(bundle) as any) {
-				if (chunk.type === 'chunk') {
-					chunk.code = transformDynamicImports(chunk.code);
-				}
+		enforce: 'post' as const,
+		renderChunk(code: string) {
+			const transformed = transformDynamicImports(code);
+			if (transformed === code) {
+				return null;
 			}
+			return { code: transformed, map: null };
 		},
 	};
 }
