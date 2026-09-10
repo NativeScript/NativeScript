@@ -20,6 +20,8 @@ export type { Template, KeyedTemplate, AddArrayFromBuilder, AddChildFromBuilder,
 export type { ShownModallyData, Size, AndroidOverflowInsetData } from './core/view/view-interfaces';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, makeParser, makeValidator } from './core/properties';
 export { unsetValue } from './core/properties/property-shared';
+export { Invalidation, InvalidationPhase, NativeUpdateBatch, NativeUpdates } from './core/native-updates';
+export type { ChildMutation, FlushNativeUpdatesOptions, InvalidationOptions, NativeUpdatesMode, NativeUpdateEntry } from './core/native-updates';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
 export { DatePicker } from './date-picker';
 

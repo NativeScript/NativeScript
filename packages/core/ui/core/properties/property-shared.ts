@@ -1,6 +1,8 @@
 // Shared property types, interfaces, and value helpers for properties and view-base modules.
 // Only put platform-agnostic logic here.
 
+import type { Invalidation } from '../native-updates/invalidation';
+
 /**
  * Value specifying that Property should be set to its initial value.
  */
@@ -13,6 +15,11 @@ export interface PropertyOptions<T, U> {
 	readonly equalityComparer?: (x: U, y: U) => boolean;
 	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	readonly valueConverter?: (value: string) => U;
+	/**
+	 * Aggregate invalidations this property raises, applied by the node's commit after the
+	 * property's own `[setNative]`, once per commit however many properties raised them.
+	 */
+	readonly invalidates?: readonly Invalidation[];
 }
 
 export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
@@ -48,6 +55,8 @@ export interface CssAnimationPropertyOptions<T, U> {
 	readonly equalityComparer?: (x: U, y: U) => boolean;
 	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	readonly valueConverter?: (value: string) => U;
+	/** @see PropertyOptions.invalidates */
+	readonly invalidates?: readonly Invalidation[];
 }
 
 export function isCssUnsetValue(value: any): boolean {
