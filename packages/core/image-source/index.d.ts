@@ -1,7 +1,131 @@
-﻿import { ImageAsset } from '../image-asset';
+import { ImageAsset } from '../image-asset';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 import type { ImageBase } from '../ui/image/image-common';
+import type { View } from '../ui/core/view';
+
+/**
+ * Encoded image formats supported on both platforms.
+ */
+export type ImageFormat = 'png' | 'jpeg' | 'jpg';
+
+/**
+ * Options for the file/data loaders.
+ */
+export interface ImageLoadOptions {
+	/**
+	 * Decode so the longest edge is at most this many pixels. The decoder sub-samples
+	 * while reading, so a 12 MP photo loaded with maxSize 200 never occupies 12 MP of memory.
+	 */
+	maxSize?: number;
+}
+
+/**
+ * Information read from an image file without decoding its pixels.
+ */
+export interface ImageMetadata {
+	/** Pixel width after EXIF orientation is applied. */
+	width: number;
+	/** Pixel height after EXIF orientation is applied. */
+	height: number;
+	/** Raw EXIF orientation value 1-8 (1 = upright). */
+	orientation: number;
+	/** MIME type such as image/jpeg when known. */
+	mimeType?: string;
+	/** True when the format carries an alpha channel. */
+	hasAlpha: boolean;
+	/** Embedded colour profile name when present, e.g. "sRGB IEC61966-2.1" or "Display P3". */
+	colorSpace?: string;
+	/** Horizontal resolution in dots per inch when recorded. */
+	dpi?: number;
+	/** EXIF capture time when recorded. */
+	dateTaken?: Date;
+	/** GPS position when recorded. */
+	gps?: { latitude: number; longitude: number };
+}
+
+/**
+ * A rectangle in pixels.
+ */
+export interface ImageCropRect {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
+export type ImageFlipAxis = 'horizontal' | 'vertical' | 'both';
+
+/**
+ * How resizeTo() maps the source onto an exact width x height.
+ * fit: scale to fit inside, padding the remainder with background (letterbox).
+ * fill: scale to cover and centre-crop the overflow.
+ * stretch: ignore the aspect ratio.
+ */
+export type ImageResizeMode = 'fit' | 'fill' | 'stretch';
+
+export interface ImageResizeToOptions {
+	/** Defaults to 'fit'. */
+	mode?: ImageResizeMode;
+	/** Padding colour for 'fit'. Defaults to transparent. */
+	background?: Color | string;
+}
+
+/**
+ * Steps applied by transform(), always in this order: normalize orientation, crop, rotate, flip, resize.
+ */
+export interface ImageTransformOptions {
+	crop?: ImageCropRect;
+	/** Degrees, clockwise. */
+	rotate?: number;
+	flip?: ImageFlipAxis;
+	resize?: { maxSize: number } | ({ width: number; height: number } & ImageResizeToOptions);
+}
+
+/**
+ * Colour and blur adjustments for applyFilters().
+ * grayscale: remove all colour.
+ * sepia: warm brown tone; amount 0..1, default 1.
+ * invert: negative.
+ * brightness: amount -1..1, 0 = unchanged.
+ * contrast: amount 0..2, 1 = unchanged.
+ * saturation: amount 0..2, 1 = unchanged.
+ * blur: gaussian blur; radius in pixels.
+ */
+export type ImageFilter = { type: 'grayscale' } | { type: 'sepia'; amount?: number } | { type: 'invert' } | { type: 'brightness'; amount: number } | { type: 'contrast'; amount: number } | { type: 'saturation'; amount: number } | { type: 'blur'; radius: number };
+
+export interface ImageOverlayOptions {
+	/** Left edge of the overlay in pixels. Defaults to 0. */
+	x?: number;
+	/** Top edge of the overlay in pixels. Defaults to 0. */
+	y?: number;
+	/** 0..1, defaults to 1. */
+	opacity?: number;
+}
+
+export interface ImageDrawTextOptions {
+	/** Left edge of the text in pixels. */
+	x: number;
+	/** Top edge of the text in pixels. */
+	y: number;
+	/** Font to draw with. Defaults to the system font. */
+	font?: Font;
+	/** Point size in pixels. Defaults to the font's size, or 16. */
+	fontSize?: number;
+	/** Defaults to black. */
+	color?: Color | string;
+}
+
+/**
+ * Result of compressToFit().
+ */
+export interface ImageCompressResult {
+	/** Encoded bytes at or under the requested budget. */
+	data: ArrayBuffer;
+	/** The quality (1-100) that satisfied the budget. */
+	quality: number;
+}
+
 /**
  * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
@@ -24,12 +148,12 @@ export class ImageSource {
 	/**
 	 * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
 	 */
-	ios: any /* UIImage */;
+	ios: any; /* UIImage */
 
 	/**
 	 * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
 	 */
-	android: any /* android.graphics.Bitmap */;
+	android: any; /* android.graphics.Bitmap */
 
 	/**
 	 * Loads this instance from the specified asset asynchronously.
@@ -77,13 +201,13 @@ export class ImageSource {
 	 * Loads this instance from the specified file.
 	 * @param path The location of the file on the file system.
 	 */
-	static fromFileSync(path: string): ImageSource;
+	static fromFileSync(path: string, options?: ImageLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified file asynchronously.
 	 * @param path The location of the file on the file system.
 	 */
-	static fromFile(path: string): Promise<ImageSource>;
+	static fromFile(path: string, options?: ImageLoadOptions): Promise<ImageSource>;
 
 	/**
 	 * Creates a new ImageSource instance and loads it from the specified local file or resource (if specified with the "res://" prefix).
@@ -95,25 +219,47 @@ export class ImageSource {
 	 * Loads this instance from the specified native image data.
 	 * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
 	 */
-	static fromDataSync(data: any): ImageSource;
+	static fromDataSync(data: any | ArrayBuffer | Uint8Array, options?: ImageLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified native image data asynchronously.
 	 * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
 	 */
-	static fromData(data: any): Promise<ImageSource>;
+	static fromData(data: any | ArrayBuffer | Uint8Array, options?: ImageLoadOptions): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified base64 encoded string.
 	 * @param source The Base64 string to load the image from.
 	 */
-	static fromBase64Sync(source: string): ImageSource;
+	static fromBase64Sync(source: string, options?: ImageLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified base64 encoded string asynchronously.
 	 * @param source The Base64 string to load the image from.
 	 */
-	static fromBase64(source: string): Promise<ImageSource>;
+	static fromBase64(source: string, options?: ImageLoadOptions): Promise<ImageSource>;
+
+	/**
+	 * Reads size, orientation, colour profile, capture date and GPS from an image file
+	 * without decoding its pixels.
+	 * @param path The location of the file on the file system.
+	 * @returns The metadata, or null when the file is not a readable image.
+	 */
+	static getMetadataSync(path: string): ImageMetadata;
+
+	/**
+	 * Reads size, orientation, colour profile, capture date and GPS from an image file
+	 * without decoding its pixels, asynchronously.
+	 * @param path The location of the file on the file system.
+	 */
+	static getMetadata(path: string): Promise<ImageMetadata>;
+
+	/**
+	 * Renders a NativeScript view exactly as it appears on screen into a new ImageSource.
+	 * @param view A view that is currently laid out.
+	 * @param scale Pixel density multiplier. Defaults to the screen scale.
+	 */
+	static fromView(view: View, scale?: number): ImageSource;
 
 	/**
 	 * Creates a new ImageSource instance and loads it from the specified font icon code.
@@ -216,6 +362,8 @@ export class ImageSource {
 
 	/**
 	 * Saves this instance to the specified file, using the provided image format and quality.
+	 * The write is atomic: the file is either fully written or absent, never partial.
+	 * Encoding from pixels never carries EXIF, so the saved file contains no camera or GPS metadata.
 	 * @param path The path of the file on the file system to save to.
 	 * @param format The format (encoding) of the image.
 	 * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
@@ -269,6 +417,147 @@ export class ImageSource {
 	 *     bilinear filtering is typically minimal and the improved image quality is significant.
 	 */
 	resizeAsync(maxSize: number, options?: any): Promise<ImageSource>;
+
+	/**
+	 * The true size of the image in pixels on both platforms. (width/height report points on iOS.)
+	 */
+	getPixelSize(): { width: number; height: number };
+
+	/**
+	 * Encodes the image and returns the bytes in memory.
+	 * @param format The format (encoding) of the image.
+	 * @param quality 0-100 for jpeg. Defaults to 100.
+	 * @returns The encoded bytes, or null when this instance has no native image.
+	 */
+	toData(format: ImageFormat, quality?: number): ArrayBuffer;
+
+	/**
+	 * Encodes the image on a background thread and returns the bytes in memory.
+	 * @param format The format (encoding) of the image.
+	 * @param quality 0-100 for jpeg. Defaults to 100.
+	 */
+	toDataAsync(format: ImageFormat, quality?: number): Promise<ArrayBuffer>;
+
+	/**
+	 * Re-encodes at decreasing JPEG quality until the result is at or under maxBytes.
+	 * @param maxBytes The byte budget.
+	 * @param format Defaults to 'jpeg'. For 'png' the quality search is skipped.
+	 * @returns The bytes and the quality that fit, or null when this instance has no native image
+	 *          or even the lowest quality exceeds the budget (resize first in that case).
+	 */
+	compressToFit(maxBytes: number, format?: ImageFormat): ImageCompressResult;
+
+	/**
+	 * Re-encodes on a background thread at decreasing JPEG quality until the result is at or under maxBytes.
+	 * Rejects when even the lowest quality exceeds the budget.
+	 * @param maxBytes The byte budget.
+	 * @param format Defaults to 'jpeg'. For 'png' the quality search is skipped.
+	 */
+	compressToFitAsync(maxBytes: number, format?: ImageFormat): Promise<ImageCompressResult>;
+
+	/**
+	 * Returns a copy whose pixels are upright and whose orientation flag is cleared, so
+	 * every later operation and save sees the image the way a viewer displays it.
+	 */
+	normalizeOrientation(): ImageSource;
+
+	/**
+	 * Returns a new ImageSource containing only the given rectangle.
+	 * @throws When the rectangle falls outside the image.
+	 */
+	crop(x: number, y: number, width: number, height: number): ImageSource;
+
+	/**
+	 * Returns a new ImageSource rotated clockwise by the given degrees.
+	 */
+	rotate(degrees: number): ImageSource;
+
+	/**
+	 * Returns a new ImageSource mirrored on the given axis.
+	 */
+	flip(axis: ImageFlipAxis): ImageSource;
+
+	/**
+	 * Returns a new ImageSource of exactly width x height pixels.
+	 * @param width Output width in pixels.
+	 * @param height Output height in pixels.
+	 * @param options mode ('fit' | 'fill' | 'stretch', default 'fit') and background colour for 'fit'.
+	 */
+	resizeTo(width: number, height: number, options?: ImageResizeToOptions): ImageSource;
+
+	/**
+	 * Applies normalize orientation, crop, rotate, flip and resize in a single native call,
+	 * in that fixed order, without round-tripping intermediate results through JavaScript.
+	 */
+	transform(options: ImageTransformOptions): ImageSource;
+
+	/**
+	 * Applies normalize orientation, crop, rotate, flip and resize in a single native call on a background thread.
+	 */
+	transformAsync(options: ImageTransformOptions): Promise<ImageSource>;
+
+	/**
+	 * Returns a new ImageSource with transparent rounded corners.
+	 * @param radius Corner radius in pixels.
+	 */
+	roundCorners(radius: number): ImageSource;
+
+	/**
+	 * Returns a new ImageSource masked to the largest centred circle.
+	 */
+	circleCrop(): ImageSource;
+
+	/**
+	 * Returns a new ImageSource with another image drawn on top.
+	 * @param other The image to draw.
+	 * @param options Position in pixels and opacity.
+	 */
+	overlay(other: ImageSource, options?: ImageOverlayOptions): ImageSource;
+
+	/**
+	 * Returns a new ImageSource with text drawn onto it.
+	 */
+	drawText(text: string, options: ImageDrawTextOptions): ImageSource;
+
+	/**
+	 * Returns a new ImageSource with every visible pixel set to the given colour, keeping transparency.
+	 */
+	tint(color: Color | string): ImageSource;
+
+	/**
+	 * Returns a new ImageSource with the filters applied in order.
+	 */
+	applyFilters(filters: ImageFilter[]): ImageSource;
+
+	/**
+	 * Returns a new ImageSource with the filters applied in order, computed on a background thread.
+	 */
+	applyFiltersAsync(filters: ImageFilter[]): Promise<ImageSource>;
+
+	/**
+	 * The mean colour of the image. Fully transparent pixels are ignored.
+	 * @returns The colour, or null when the image is empty or fully transparent.
+	 */
+	averageColor(): Color;
+
+	/**
+	 * The most frequent colours in the image, most common first.
+	 * @param count Maximum number of colours to return. Defaults to 5.
+	 */
+	dominantColors(count?: number): Color[];
+
+	/**
+	 * A 64-bit difference hash of the image as 16 hex characters. Visually similar
+	 * images (including resized copies) produce hashes that differ in only a few bits.
+	 */
+	perceptualHash(): string;
+
+	/**
+	 * True when the perceptual hashes of the two images differ in at most threshold bits.
+	 * @param other The image to compare with.
+	 * @param threshold Maximum differing bits, 0-64. Defaults to 10.
+	 */
+	isSimilarTo(other: ImageSource, threshold?: number): boolean;
 }
 
 /**
