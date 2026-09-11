@@ -123,6 +123,13 @@ export const android: {
 	 */
 	setStatusBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void;
 	/**
+	 * Re-applies the activity's edge-to-edge styling. The system bar icon
+	 * appearance is decided from the theme at the time the style is applied, so
+	 * an activity that survives a dark-mode switch keeps the old icons until this
+	 * runs again.
+	 */
+	refreshEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity): void;
+	/**
 	 * Enables edge-to-edge navigation for the provided activity.
 	 * @param activity The activity to enable edge-to-edge navigation for.
 	 * @param options Optional configuration for status and navigation bar colors.

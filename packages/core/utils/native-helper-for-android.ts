@@ -310,6 +310,18 @@ interface ISystemColor {
 }
 const systemColors = new WeakMap<androidx.appcompat.app.AppCompatActivity, ISystemColor>();
 
+export function refreshEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity): void {
+	if (!activity) {
+		return;
+	}
+	const existingColors = systemColors.get(activity);
+	if (existingColors) {
+		setEnableEdgeToEdge(activity, existingColors);
+	} else {
+		enableEdgeToEdge(activity);
+	}
+}
+
 function setEnableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity, existingColors: ISystemColor) {
 	enableEdgeToEdge(activity, {
 		statusBarLightColor: existingColors.statusBarLight,
