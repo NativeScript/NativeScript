@@ -419,7 +419,7 @@ public class Utils {
 		}
 	}
 
-	private static int calculateAngleFromFile(String filename) {
+	public static int calculateAngleFromFile(String filename) {
 		int rotationAngle = 0;
 		ExifInterface ei;
 		try {
@@ -444,7 +444,7 @@ public class Utils {
 	}
 
 
-	private static int calculateAngleFromFileDescriptor(FileDescriptor fd) {
+	public static int calculateAngleFromFileDescriptor(FileDescriptor fd) {
 		int rotationAngle = 0;
 		ExifInterface ei;
 		try {
@@ -476,6 +476,7 @@ public class Utils {
 				BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
 				bitmapOptions.inJustDecodeBounds = true;
 
+				final ParcelFileDescriptor[] pfdHolder = new ParcelFileDescriptor[1];
 				try {
 					Bitmap bitmap;
 					ParcelFileDescriptor pfd = null;
@@ -484,6 +485,7 @@ public class Utils {
 						ContentResolver resolver = context.getContentResolver();
 						try {
 							pfd = resolver.openFileDescriptor(uri, "r");
+							pfdHolder[0] = pfd;
 						} catch (final FileNotFoundException e) {
 							mHandler.post(new Runnable() {
 								@Override
@@ -576,6 +578,8 @@ public class Utils {
 							callback.onError(ex);
 						}
 					});
+				} finally {
+					closePfd(pfdHolder[0]);
 				}
 			}
 		});
@@ -635,8 +639,12 @@ public class Utils {
 
 					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
 
-					try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)) {
+					try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+						// Base64OutputStream only emits its final (padded) bytes on close(), so
+						// close it BEFORE reading the buffer or the tail of the string is lost.
+						Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP);
 						bitmap.compress(targetFormat, quality, base64Stream);
+						base64Stream.close();
 						result = outputStream.toString();
 					} catch (Exception e) {
 						exception = e;
@@ -687,11 +695,11 @@ public class Utils {
 				Exception exception = null;
 				if (bitmap != null) {
 					Pair<Integer, Integer> dim = getScaledDimensions(bitmap.getWidth(), bitmap.getHeight(), maxSize);
-					boolean filter = false;
+					boolean filter = true;
 					if (options != null) {
 						try {
 							JSONObject json = new JSONObject(options);
-							filter = json.optBoolean("filter", false);
+							filter = json.optBoolean("filter", true);
 						} catch (JSONException ignored) {
 						}
 					}
