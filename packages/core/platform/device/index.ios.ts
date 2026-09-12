@@ -1,4 +1,4 @@
-import { platformNames } from '../common';
+import { isTvOS, platformNames } from '../common';
 
 type DeviceType = 'Phone' | 'Tablet' | 'Vision';
 
@@ -15,6 +15,8 @@ class DeviceRef {
 	get os(): string {
 		if (__VISIONOS__) {
 			return platformNames.visionos;
+		} else if (isTvOS) {
+			return platformNames.tvos;
 		} else {
 			return platformNames.ios;
 		}

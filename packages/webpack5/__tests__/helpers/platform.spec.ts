@@ -82,3 +82,23 @@ describe('getDistPath', () => {
 		getValueMock.mockImplementation(getValueMockImpl);
 	});
 });
+
+describe('tvOS output directory', () => {
+	it('honors the native project name and custom build directory', () => {
+		env.ios = false;
+		env.tvos = true;
+		env.buildPath = 'custom-build';
+		const mock = getValue as jest.Mock;
+		const original = mock.getMockImplementation();
+		mock.mockImplementation((key) =>
+			key === 'projectName' ? 'TVOSReview' : undefined,
+		);
+		try {
+			expect(getDistPath()).toEqual('custom-build/tvos/TVOSReview/app');
+		} finally {
+			mock.mockImplementation(original);
+			delete env.tvos;
+			delete env.buildPath;
+		}
+	});
+});

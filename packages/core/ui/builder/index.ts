@@ -40,6 +40,7 @@ if (typeof global.__metadata === 'undefined') {
 export const ios = platformNames.ios.toLowerCase();
 export const android = platformNames.android.toLowerCase();
 export const visionos = platformNames.visionos.toLowerCase();
+export const tvos = platformNames.tvos.toLowerCase();
 export const apple = platformNames.apple.toLowerCase();
 export const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
@@ -439,7 +440,7 @@ export namespace xml2ui {
 			if (value) {
 				const toLower = value.toLowerCase();
 
-				return toLower === android || toLower === ios || toLower === visionos || toLower === apple;
+				return toLower === android || toLower === ios || toLower === visionos || toLower === tvos || toLower === apple;
 			}
 
 			return false;

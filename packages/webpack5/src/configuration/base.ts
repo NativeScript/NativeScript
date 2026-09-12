@@ -61,10 +61,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	if (
 		hasDependency('@nativescript/ios') ||
 		hasDependency('@nativescript/visionos') ||
+		hasDependency('@nativescript/tvos') ||
 		hasDependency('@nativescript/android')
 	) {
 		const iosVersion = getDependencyVersion('@nativescript/ios');
 		const visionosVersion = getDependencyVersion('@nativescript/visionos');
+		const tvosVersion = getDependencyVersion('@nativescript/tvos');
 		const androidVersion = getDependencyVersion('@nativescript/android');
 
 		if (platform === 'ios') {
@@ -86,6 +88,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				visionosVersion ??
 				undefined;
 			if (isVersionGteConsideringPrerelease(visionosResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'tvos') {
+			const tvosResolved =
+				getResolvedDependencyVersionForCheck('@nativescript/tvos', '9.0.0') ??
+				tvosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(tvosResolved, '9.0.0')) {
 				useSourceMapFiles();
 			} else {
 				env.commonjs = true;
@@ -377,14 +389,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(`.${platform}.json`)
 		.add('.json');
 
-	if (platform === 'visionos') {
-		// visionOS allows for both .ios and .visionos extensions
+	if (platform === 'visionos' || platform === 'tvos') {
+		// visionOS / tvOS allow for both .ios and .visionos / .tvos extensions
 		const extensions = config.resolve.extensions.values();
 		const newExtensions = [];
 		extensions.forEach((ext) => {
 			newExtensions.push(ext);
-			if (ext.includes('visionos')) {
-				newExtensions.push(ext.replace('visionos', 'ios'));
+			if (ext.includes(platform)) {
+				newExtensions.push(ext.replace(platform, 'ios'));
 			}
 		});
 
@@ -522,7 +534,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
 						resolve(id, baseDir, importOptions) {
 							const extensions =
-								platform === 'visionos' ? [platform, 'ios'] : [platform];
+								platform === 'visionos' || platform === 'tvos'
+									? [platform, 'ios']
+									: [platform];
 							for (const platformTarget of extensions) {
 								const ext = extname(id);
 								const platformExt = ext ? `.${platformTarget}${ext}` : '';
@@ -601,9 +615,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// 	}
 	// ])
 
+	// visionOS and tvOS fall back to .ios files (see the resolve.extensions handling above)
+	const iosFallback = platform === 'visionos' || platform === 'tvos';
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
-			extensions: platform === 'visionos' ? [platform, 'ios'] : [platform],
+			extensions: iosFallback ? [platform, 'ios'] : [platform],
 		},
 	]);
 
@@ -615,8 +631,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Makes sure that require.context will never include code from
 	// another platform (ie .android.ts when building for ios)
+	// (.ios files are still valid for the platforms that fall back to them)
 	const otherPlatformsRE = getAvailablePlatforms()
 		.filter((platform) => platform !== getPlatformName())
+		.filter((platform) => !(iosFallback && platform === 'ios'))
 		.join('|');
 
 	config
@@ -658,11 +676,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				__ANDROID__: platform === 'android',
 				__IOS__: platform === 'ios',
 				__VISIONOS__: platform === 'visionos',
-				__APPLE__: platform === 'ios' || platform === 'visionos',
+				__TVOS__: platform === 'tvos',
+				__APPLE__:
+					platform === 'ios' || platform === 'visionos' || platform === 'tvos',
 				/* for compat only */ 'global.isAndroid': platform === 'android',
 				/* for compat only */ 'global.isIOS':
-					platform === 'ios' || platform === 'visionos',
+					platform === 'ios' || platform === 'visionos' || platform === 'tvos',
 				/* for compat only */ 'global.isVisionOS': platform === 'visionos',
+				/* for compat only */ 'global.isTvOS': platform === 'tvos',
 				process: 'global.process',
 			},
 		] as any,

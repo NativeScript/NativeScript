@@ -10,7 +10,7 @@ var hasMainInit = false
 var hasMainBoot = false
 var hasMainSetMainScene = false
 
-@available(iOS 14.0, *)
+@available(iOS 14.0, tvOS 14.0, *)
 struct NativeScriptMainWindow: Scene {
     
     #if os(visionOS)
@@ -144,7 +144,7 @@ final class NativeScriptWindowCommandCoordinator {
 }
 #endif
 
-@available(iOS 13.0, *)
+@available(iOS 13.0, tvOS 13.0, *)
 struct NativeScriptAppView: UIViewRepresentable {
     /// A closure that's called when the window is found.
     var found: ((UIWindowScene?) -> Void)
@@ -173,7 +173,7 @@ struct NativeScriptAppView: UIViewRepresentable {
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13.0, tvOS 13.0, *)
 @objc public class NativeScriptViewFactory: NSObject, NativeScriptEmbedderDelegate {
     @objc static var shared: NativeScriptViewFactory?
     @objc static var app: NativeScriptContainerCtrl?
@@ -195,7 +195,7 @@ struct NativeScriptAppView: UIViewRepresentable {
         return views!.object(forKey: id) as! UIView
     }
     
-    @available(iOS 15.0, *)
+    @available(iOS 15.0, tvOS 15.0, *)
     @objc public static func getKeyWindow() -> UIWindow? {
         return UIApplication
             .shared
