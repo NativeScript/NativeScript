@@ -1,3 +1,20 @@
+## 9.2.0-tvos.0 (2026-09-13)
+
+### 🚀 Features
+
+- add tvOS core and webpack support ([bc1e4ea95](https://github.com/NativeScript/NativeScript/commit/bc1e4ea95))
+- **vite:** support plain javascript ([d0f3e7654](https://github.com/NativeScript/NativeScript/commit/d0f3e7654))
+
+### 🩹 Fixes
+
+- **core:** getRandomValues fills the caller's typed array on iOS ([#11405](https://github.com/NativeScript/NativeScript/pull/11405))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Lorenzo Nuvoletta
+- Nathan Walker
+
 ## 9.1.1 (2026-08-31)
 
 ### 🚀 Features
