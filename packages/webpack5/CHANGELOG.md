@@ -1,3 +1,18 @@
+## 5.0.39-tvos.0 (2026-09-13)
+
+### 🚀 Features
+
+- add tvOS core and webpack support ([bc1e4ea95](https://github.com/NativeScript/NativeScript/commit/bc1e4ea95))
+
+### 🩹 Fixes
+
+- **webpack:** downlevel NativeClass classes in files updated by earlier transformers ([#11314](https://github.com/NativeScript/NativeScript/pull/11314))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Lorenzo Nuvoletta
+
 ## 5.0.38 (2026-07-22)
 
 This was a version bump only for webpack5 to align it with other projects, there were no code changes.
