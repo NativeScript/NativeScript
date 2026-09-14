@@ -1,3 +1,19 @@
+## 9.1.2 (2026-09-14)
+
+### 🚀 Features
+
+- **vite:** support plain javascript ([d0f3e7654](https://github.com/NativeScript/NativeScript/commit/d0f3e7654))
+
+### 🩹 Fixes
+
+- **android:** back press navigates nested frames with history again ([#11432](https://github.com/NativeScript/NativeScript/pull/11432))
+- **core:** getRandomValues fills the caller's typed array on iOS ([#11405](https://github.com/NativeScript/NativeScript/pull/11405))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+
 ## 9.1.1 (2026-08-31)
 
 ### 🚀 Features
