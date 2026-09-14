@@ -542,18 +542,20 @@ class PanGestureRecognizer extends UIPanGestureRecognizer {
 	private _startY: number = 0;
 
 	override touchesBeganWithEvent(touches: NSSet<any>, event: any): void {
+		super.touchesBeganWithEvent(touches, event);
+
+		// At this point, the super call has finished executing and it's safe to get the view location
 		const viewPoint = this.locationInView(this.view);
 
 		this._startX = viewPoint.x;
 		this._startY = viewPoint.y;
-
-		super.touchesBeganWithEvent(touches, event);
 	}
 
 	override reset(): void {
+		super.reset();
+
 		this._startX = 0;
 		this._startY = 0;
-		super.reset();
 	}
 
 	public getStartX(): number {
