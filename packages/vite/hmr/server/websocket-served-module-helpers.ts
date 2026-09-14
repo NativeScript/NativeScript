@@ -93,6 +93,17 @@ export function classifyServedModule(p: string | undefined | null): ServedModule
 	return 'app';
 }
 
+/**
+ * Classifies a served request from both its spec and its resolved id.
+ * @param spec Request spec, such as `/node_modules/pkg`.
+ * @param resolvedId Resolved module id, if any.
+ */
+export function classifyServedRequest(spec: string | undefined | null, resolvedId: string | undefined | null): ServedModuleKind {
+	// A symlinked package resolves to a real path outside node_modules
+	if (classifyServedModule(resolvedId) === 'library') return 'library';
+	return classifyServedModule(spec);
+}
+
 export const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
 
 export type TopLevelImportRecord = {

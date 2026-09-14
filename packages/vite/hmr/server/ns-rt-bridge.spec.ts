@@ -212,4 +212,20 @@ describe('/ns/rt bridge builder', () => {
 		const names = discoverNsvBridgeExports('/tmp/__no_such_project__');
 		expect(names.size).toBe(0);
 	});
+
+	it('does not cache a registry miss in __ensure() and warns once', () => {
+		// The bridge can be evaluated before the vendor module is registered
+		// (a served module importing /ns/rt); caching `{}` then leaves every
+		// binding undefined for the life of the session.
+		const code = buildNsRtBridgeModule({ rtVer: '1', requireGuardSnippet: '', vendorExports: ['defineComponent'] });
+		const ensure = code.slice(code.indexOf('function __ensure(){'), code.indexOf('export const __realm'));
+		expect(ensure).toContain('if (!vm) {');
+		expect(ensure).toMatch(/if \(!vm\) \{[^\n]*return \{\};/);
+		expect(ensure).toContain('__NS_RT_MISS_WARNED__');
+		expect(ensure).toContain("console.warn('[ns-rt] nativescript-vue is not registered");
+		const missIndex = ensure.indexOf('if (!vm) {');
+		const cacheIndex = ensure.indexOf('__cached_rt = rt;');
+		expect(missIndex).toBeGreaterThan(-1);
+		expect(cacheIndex).toBeGreaterThan(missIndex);
+	});
 });

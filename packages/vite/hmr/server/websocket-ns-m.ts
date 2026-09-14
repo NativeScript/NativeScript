@@ -11,7 +11,7 @@ import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport } from './websocket-served-module-helpers.js';
+import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
@@ -360,7 +360,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// must skip the app-source passes inside processCodeForDevice (AST
 			// normalization, /ns/rt helper-alias injection). One classification
 			// point — see classifyServedModule for the full case list.
-			const isNodeMod = classifyServedModule(resolvedCandidate || spec) === 'library';
+			const isNodeMod = classifyServedRequest(spec, resolvedCandidate) === 'library';
 			code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec, isWorkerRealmRequest ? { workerRealm: true } : undefined);
 			// import.meta.hot is JS-owned: cleanCode() strips Vite's browser
 			// __vite__createHotContext assignment and processCodeForDevice
