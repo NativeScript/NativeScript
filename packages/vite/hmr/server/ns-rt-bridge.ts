@@ -91,7 +91,9 @@ export function buildNsRtBridgeModule(options: NsRtBridgeOptions): string {
 		`  let vm = null;\n` +
 		`  try { vm = reg && reg.has && reg.has('nativescript-vue') ? reg.get('nativescript-vue') : (typeof req==='function' ? req('nativescript-vue') : null); } catch {}\n` +
 		`  if (!vm) { try { vm = reg && reg.has && reg.has('vue') ? reg.get('vue') : (typeof req==='function' ? req('vue') : null); } catch {} }\n` +
-		`  const rt = (vm && (vm.default ?? vm)) || {};\n` +
+		// A miss is not cached so a later call can pick up the registration
+		`  if (!vm) { if (!g.__NS_RT_MISS_WARNED__) { g.__NS_RT_MISS_WARNED__ = true; console.warn('[ns-rt] nativescript-vue is not registered in the vendor registry yet; bindings read from /ns/rt now are undefined'); } return {}; }\n` +
+		`  const rt = vm.default ?? vm;\n` +
 		`  __cached_vm = vm;\n` +
 		`  __cached_rt = rt;\n` +
 		`  return rt;\n` +
