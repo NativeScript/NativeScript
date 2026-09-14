@@ -1,3 +1,14 @@
+## 8.0.9 (2026-09-14)
+
+### 🩹 Fixes
+
+- **vite:** alias vue through resolve.alias so the Vue flavor builds under rolldown ([#11431](https://github.com/NativeScript/NativeScript/pull/11431))
+- **vite:** serve a symlinked nativescript-vue as library code in HMR ([#11430](https://github.com/NativeScript/NativeScript/pull/11430))
+
+### ❤️ Thank You
+
+- Igor Randjelovic
+
 ## 8.0.8 (2026-09-10)
 
 ### 🩹 Fixes
