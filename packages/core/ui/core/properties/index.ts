@@ -669,7 +669,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 						const childValueSource = child[sourceKey] || ValueSource.Default;
 						if (reset) {
 							if (childValueSource === ValueSource.Inherited) {
-								setFunc.call(child, unsetValue);
+								setInheritedValue.call(child, unsetValue);
 							}
 						} else {
 							if (childValueSource <= ValueSource.Inherited) {
