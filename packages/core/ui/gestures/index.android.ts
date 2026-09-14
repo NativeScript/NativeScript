@@ -18,8 +18,9 @@ export * from './touch-manager';
 type MotionEventCoordinates = {
 	rawX: number;
 	rawY: number;
-	x: number;
-	y: number;
+	// Use arrow functions to avoid unneeded native calls
+	getViewX(): number;
+	getViewY(): number;
 };
 
 interface TapAndDoubleTapGestureListener {
@@ -135,7 +136,7 @@ function initializePinchGestureListener() {
 		public onScaleBegin(detector: android.view.ScaleGestureDetector): boolean {
 			this._scale = detector.getScaleFactor();
 
-			const args = _getPinchArgs(this._scale, this._target, GestureStateTypes.began, detector);
+			const args = new PinchGestureEventDataImpl(this._target, detector, this._scale, this._target, GestureStateTypes.began);
 			_executeCallback(this._observer, args);
 
 			return true;
@@ -144,7 +145,7 @@ function initializePinchGestureListener() {
 		public onScale(detector: android.view.ScaleGestureDetector): boolean {
 			this._scale *= detector.getScaleFactor();
 
-			const args = _getPinchArgs(this._scale, this._target, GestureStateTypes.changed, detector);
+			const args = new PinchGestureEventDataImpl(this._target, detector, this._scale, this._target, GestureStateTypes.changed);
 			_executeCallback(this._observer, args);
 
 			return true;
@@ -153,7 +154,7 @@ function initializePinchGestureListener() {
 		public onScaleEnd(detector: android.view.ScaleGestureDetector): void {
 			this._scale *= detector.getScaleFactor();
 
-			const args = _getPinchArgs(this._scale, this._target, GestureStateTypes.ended, detector);
+			const args = new PinchGestureEventDataImpl(this._target, detector, this._scale, this._target, GestureStateTypes.ended);
 			_executeCallback(this._observer, args);
 		}
 	}
@@ -429,21 +430,6 @@ function _getSwipeArgs(direction: SwipeDirection, view: View, initialEvent: andr
 	};
 }
 
-function _getPinchArgs(scale: number, view: View, state: GestureStateTypes, currentEvent: android.view.ScaleGestureDetector): PinchGestureEventData {
-	return {
-		type: GestureTypes.pinch,
-		view: view,
-		getFocusX: () => layout.toDeviceIndependentPixels(currentEvent.getFocusX()),
-		getFocusY: () => layout.toDeviceIndependentPixels(currentEvent.getFocusY()),
-		scale,
-		android: currentEvent,
-		ios: undefined,
-		state,
-		object: view,
-		eventName: toString(GestureTypes.pinch),
-	};
-}
-
 function _executeCallback(observer: GesturesObserver, args: GestureEventData) {
 	if (observer && observer.callback) {
 		observer.callback.call(observer.context, args);
@@ -470,18 +456,16 @@ class CustomPanGestureDetector extends CustomGestureDetector {
 	private _isTracking: boolean = false;
 	private _deltaX: number;
 	private _deltaY: number;
-	private _startRawX: number;
-	private _startRawY: number;
-	private _startX: number;
-	private _startY: number;
-
-	private _initialEventPosCache: MotionEventCoordinates;
+	private _startRawX: number = 0;
+	private _startRawY: number = 0;
+	private _startX: number = 0;
+	private _startY: number = 0;
 
 	protected override get _isTrackingGesture(): boolean {
 		return this._isTracking;
 	}
 
-	public onTouchEvent(event: android.view.MotionEvent) {
+	public override onTouchEvent(event: android.view.MotionEvent) {
 		switch (event.getActionMasked()) {
 			case android.view.MotionEvent.ACTION_UP:
 			case android.view.MotionEvent.ACTION_CANCEL:
@@ -492,6 +476,10 @@ class CustomPanGestureDetector extends CustomGestureDetector {
 			case android.view.MotionEvent.ACTION_DOWN:
 			case android.view.MotionEvent.ACTION_POINTER_DOWN:
 			case android.view.MotionEvent.ACTION_POINTER_UP:
+				if (this._isTrackingGesture) {
+					this._trackStop(event);
+				}
+
 				this._trackInit(event);
 				break;
 			case android.view.MotionEvent.ACTION_MOVE:
@@ -529,7 +517,12 @@ class CustomPanGestureDetector extends CustomGestureDetector {
 			this._trackStop(currentEvent);
 		}
 
-		this._initialEventPosCache = this._getEventCoordinates(currentEvent, true);
+		const initialPos = this._getEventCoordinates(currentEvent);
+
+		this._startRawX = initialPos.rawX;
+		this._startRawY = initialPos.rawY;
+		this._startX = initialPos.getViewX();
+		this._startY = initialPos.getViewY();
 	}
 
 	private _trackStop(currentEvent: android.view.MotionEvent) {
@@ -537,17 +530,14 @@ class CustomPanGestureDetector extends CustomGestureDetector {
 
 		this._deltaX = undefined;
 		this._deltaY = undefined;
+		this._startRawX = 0;
+		this._startRawY = 0;
+		this._startX = 0;
+		this._startY = 0;
 		this._isTracking = false;
-		this._initialEventPosCache = undefined;
 	}
 
 	private _trackStart(currentEvent: android.view.MotionEvent) {
-		const initialPos = this._initialEventPosCache ?? this._getEventCoordinates(currentEvent, true);
-
-		this._startRawX = initialPos.rawX;
-		this._startRawY = initialPos.rawY;
-		this._startX = initialPos.x;
-		this._startY = initialPos.y;
 		this._deltaX = 0;
 		this._deltaY = 0;
 		this._isTracking = true;
@@ -556,8 +546,7 @@ class CustomPanGestureDetector extends CustomGestureDetector {
 	}
 
 	private _trackChange(currentEvent: android.view.MotionEvent) {
-		// Use screen coordinates for smoothness
-		const currentPos = this._getEventCoordinates(currentEvent, false);
+		const currentPos = this._getEventCoordinates(currentEvent);
 
 		this._deltaX = currentPos.rawX - this._startRawX;
 		this._deltaY = currentPos.rawY - this._startRawY;
@@ -565,47 +554,41 @@ class CustomPanGestureDetector extends CustomGestureDetector {
 		this._notifyEvent(GestureStateTypes.changed, currentEvent);
 	}
 
-	private _getEventCoordinates(event: android.view.MotionEvent, includeLocInView: boolean): MotionEventCoordinates {
-		const res = { rawX: 0, rawY: 0, x: undefined, y: undefined };
+	private _getEventCoordinates(event: android.view.MotionEvent): MotionEventCoordinates {
 		const count = event.getPointerCount();
+		let res: MotionEventCoordinates;
 
 		if (count === 1) {
-			res.rawX = event.getRawX() / this._density;
-			res.rawY = event.getRawY() / this._density;
-
-			if (includeLocInView) {
-				res.x = event.getX() / this._density;
-				res.y = event.getY() / this._density;
-			}
+			res = {
+				rawX: event.getRawX() / this._density,
+				rawY: event.getRawY() / this._density,
+				getViewX: () => event.getX() / this._density,
+				getViewY: () => event.getY() / this._density,
+			};
 		} else {
 			const offX = event.getRawX() - event.getX();
 			const offY = event.getRawY() - event.getY();
-
-			if (includeLocInView) {
-				res.x = 0;
-				res.y = 0;
-			}
+			let rawX: number = 0;
+			let rawY: number = 0;
+			let viewX: number = 0;
+			let viewY: number = 0;
 
 			for (let i = 0; i < count; i++) {
 				const x = event.getX(i);
 				const y = event.getY(i);
 
-				res.rawX += x + offX;
-				res.rawY += y + offY;
-
-				if (includeLocInView) {
-					res.x += x;
-					res.y += y;
-				}
+				rawX += x + offX;
+				rawY += y + offY;
+				viewX += x;
+				viewY += y;
 			}
 
-			res.rawX /= count * this._density;
-			res.rawY /= count * this._density;
-
-			if (includeLocInView) {
-				res.x /= count * this._density;
-				res.y /= count * this._density;
-			}
+			res = {
+				rawX: (rawX / count) * this._density,
+				rawY: (rawY / count) * this._density,
+				getViewX: () => (viewX / count) * this._density,
+				getViewY: () => (viewY / count) * this._density,
+			};
 		}
 
 		return res;
@@ -623,7 +606,7 @@ class CustomRotateGestureDetector extends CustomGestureDetector {
 		return this._trackedPtrId1 !== INVALID_POINTER_ID && this._trackedPtrId2 !== INVALID_POINTER_ID;
 	}
 
-	public onTouchEvent(event: android.view.MotionEvent) {
+	public override onTouchEvent(event: android.view.MotionEvent) {
 		const pointerID = event.getPointerId(event.getActionIndex());
 		const wasTracking = this._isTrackingGesture;
 
@@ -642,14 +625,14 @@ class CustomRotateGestureDetector extends CustomGestureDetector {
 				if (assigned && this._isTrackingGesture) {
 					// We have started tracking 2 pointers
 					this._angle = 0;
-					this._initalPointersAngle = this.getPointersAngle(event);
+					this._initalPointersAngle = this._getPointersAngle(event);
 					this._notifyEvent(GestureStateTypes.began, event);
 				}
 				break;
 			}
 			case android.view.MotionEvent.ACTION_MOVE:
 				if (this._isTrackingGesture) {
-					this.updateAngle(event);
+					this._updateAngle(event);
 					this._notifyEvent(GestureStateTypes.changed, event);
 				}
 				break;
@@ -693,8 +676,8 @@ class CustomRotateGestureDetector extends CustomGestureDetector {
 		_executeCallback(this._observer, args);
 	}
 
-	private updateAngle(event: android.view.MotionEvent) {
-		const newPointersAngle = this.getPointersAngle(event);
+	private _updateAngle(event: android.view.MotionEvent) {
+		const newPointersAngle = this._getPointersAngle(event);
 		let result = ((newPointersAngle - this._initalPointersAngle) * TO_DEGREES) % 360;
 
 		if (result < -180) {
@@ -707,7 +690,7 @@ class CustomRotateGestureDetector extends CustomGestureDetector {
 		this._angle = result;
 	}
 
-	private getPointersAngle(event: android.view.MotionEvent) {
+	private _getPointersAngle(event: android.view.MotionEvent) {
 		const firstX = event.getX(event.findPointerIndex(this._trackedPtrId1));
 		const firstY = event.getY(event.findPointerIndex(this._trackedPtrId1));
 		const secondX = event.getX(event.findPointerIndex(this._trackedPtrId2));
@@ -737,7 +720,28 @@ class Pointer {
 	}
 }
 
-export class TouchGestureEventData {
+class PinchGestureEventDataImpl implements PinchGestureEventData {
+	public type = GestureTypes.pinch;
+	public eventName = toString(GestureTypes.pinch);
+	public ios;
+
+	constructor(
+		public view: View,
+		public android: android.view.ScaleGestureDetector,
+		public scale: number,
+		public object: any,
+		public state: GestureStateTypes,
+	) {}
+
+	getFocusX(): number {
+		return this.android.getFocusX() / layout.getDisplayDensity();
+	}
+	getFocusY(): number {
+		return this.android.getFocusY() / layout.getDisplayDensity();
+	}
+}
+
+export class TouchGestureEventData implements GestureEventData {
 	eventName: string = toString(GestureTypes.touch);
 	type: GestureTypes = GestureTypes.touch;
 	ios: any = undefined;
