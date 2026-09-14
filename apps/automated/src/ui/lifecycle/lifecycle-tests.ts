@@ -1,6 +1,7 @@
 import * as helper from '../../ui-helper';
 import * as btnCounter from './pages/button-counter';
 import * as TKUnit from '../../tk-unit';
+import { NativeUpdates } from '@nativescript/core';
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.
 
@@ -72,6 +73,72 @@ export function test_setting_one_property_while_suspedned_does_not_call_other_pr
 
 	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'backgroundInternal.setNative at step4');
 	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 2, 'fontInternal.setNative at step4');
+}
+
+export function test_native_updates_batch_coalesces_like_batch_update() {
+	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
+	const btn1 = page.getViewById<btnCounter.Button>('btn1');
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 1, 'backgroundInternal.setNative at step1');
+	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 1, 'fontInternal.setNative at step1');
+
+	NativeUpdates.batch(() => {
+		// None
+	});
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 1, 'backgroundInternal.setNative at step2');
+	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 1, 'fontInternal.setNative at step2');
+
+	NativeUpdates.batch(() => {
+		btn1.style.borderWidth = '22';
+	});
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'backgroundInternal.setNative at step3');
+	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 1, 'fontInternal.setNative at step3');
+
+	NativeUpdates.batch(() => {
+		btn1.style.fontSize = 69;
+	});
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'backgroundInternal.setNative at step4');
+	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 2, 'fontInternal.setNative at step4');
+}
+
+export function test_flush_native_updates_pushes_what_a_batch_is_holding() {
+	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
+	const btn1 = page.getViewById<btnCounter.Button>('btn1');
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 1, 'backgroundInternal.setNative after inflation');
+
+	NativeUpdates.batch(() => {
+		btn1.style.borderWidth = '22';
+		TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 1, 'nothing is pushed while the batch is open');
+
+		TKUnit.assertTrue(btn1.flushNativeUpdates(), 'the flush should reach the native view');
+		TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'the flush pushes what is pending');
+	});
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'closing the batch does not push again');
+}
+
+export function test_flush_native_updates_force_pushes_while_unloaded() {
+	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
+	// btn1 matches no selector in page-one.css, so loading it back does not write css values.
+	const btn1 = page.getViewById<btnCounter.Button>('btn1');
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 1, 'backgroundInternal.setNative after inflation');
+
+	btn1.callUnloaded();
+	btn1.style.borderWidth = '22';
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 1, 'nothing is pushed while unloaded');
+
+	TKUnit.assertTrue(btn1.flushNativeUpdates({ force: true }), 'a forced flush should reach the existing native view');
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'the forced flush pushes what is pending');
+
+	btn1.callLoaded();
+
+	TKUnit.assertEqual(btn1.backgroundInternalSetNativeCount, 2, 'loading does not push the flushed value again');
 }
 
 //
