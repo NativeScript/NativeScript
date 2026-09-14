@@ -127,6 +127,33 @@ describe('FrameBase.goBack', () => {
 
 		expect(frameStack).toEqual([only]);
 	});
+
+	it("navigates a nested frame with history when given the window's topmost frame", () => {
+		const window = createWindow('a');
+		const root = createFrameInWindow(window);
+		const nested = createFrame(true);
+		nested.parent = root;
+		nested._nativeWindow = window;
+		_pushInFrameStack(nested);
+
+		expect(FrameBase.goBack(FrameBase.topmost(window))).toBe(true);
+
+		expect(isNavigatingBack(nested)).toBe(true);
+		expect(isNavigatingBack(root)).toBe(false);
+	});
+
+	it('does not reach a nested frame with history when given its root frame', () => {
+		const window = createWindow('a');
+		const root = createFrameInWindow(window);
+		const nested = createFrame(true);
+		nested.parent = root;
+		nested._nativeWindow = window;
+		_pushInFrameStack(nested);
+
+		expect(FrameBase.goBack(root)).toBe(false);
+
+		expect(isNavigatingBack(nested)).toBe(false);
+	});
 });
 
 /**
