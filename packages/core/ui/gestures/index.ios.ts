@@ -359,7 +359,7 @@ function _getUIGestureRecognizerType(type: GestureTypes): typeof UIGestureRecogn
 		case GestureTypes.pinch:
 			return UIPinchGestureRecognizer;
 		case GestureTypes.pan:
-			return UIPanGestureRecognizer;
+			return PanGestureRecognizer;
 		case GestureTypes.swipe:
 			return UISwipeGestureRecognizer;
 		case GestureTypes.rotation:
@@ -447,13 +447,15 @@ function _getSwipeData(args: GestureEventData): SwipeGestureEventData {
 }
 
 function _getPanData(args: GestureEventData, view: UIView): PanGestureEventData {
-	const recognizer = <UIPanGestureRecognizer>args.ios;
+	const recognizer = <PanGestureRecognizer>args.ios;
 
 	return <PanGestureEventData>{
 		type: args.type,
 		view: args.view,
 		ios: args.ios,
 		android: undefined,
+		startX: recognizer.getStartX(),
+		startY: recognizer.getStartY(),
 		deltaX: recognizer.translationInView(view).x,
 		deltaY: recognizer.translationInView(view).y,
 		object: args.view,
@@ -531,6 +533,37 @@ class TouchGestureRecognizer extends UIGestureRecognizer {
 
 		this._eventData.prepare(this.observer.target, action, touches, event);
 		this.observer._executeCallback(this._eventData);
+	}
+}
+
+@NativeClass
+class PanGestureRecognizer extends UIPanGestureRecognizer {
+	private _startX: number = 0;
+	private _startY: number = 0;
+
+	override touchesBeganWithEvent(touches: NSSet<any>, event: any): void {
+		super.touchesBeganWithEvent(touches, event);
+
+		// At this point, the super call has finished executing and it's safe to get the view location
+		const viewPoint = this.locationInView(this.view);
+
+		this._startX = viewPoint.x;
+		this._startY = viewPoint.y;
+	}
+
+	override reset(): void {
+		super.reset();
+
+		this._startX = 0;
+		this._startY = 0;
+	}
+
+	public getStartX(): number {
+		return this._startX;
+	}
+
+	public getStartY(): number {
+		return this._startY;
 	}
 }
 
