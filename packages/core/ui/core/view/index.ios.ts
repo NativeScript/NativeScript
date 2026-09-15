@@ -1003,6 +1003,19 @@ export class View extends ViewCommon {
 		IOSHelper.invalidateStatusBarAppearance(ownerController, `View.updateStatusBarStyle:${value}`);
 	}
 
+	public _childIndexToNativeChildIndex(index?: number): number {
+		if (typeof index !== 'number') {
+			return index;
+		}
+		// The glass effect view is a subview but not a child: it sits at subview
+		// 0, so every child's subview index is one past its child index.
+		const effectView = this._glassEffectView;
+		if (effectView && effectView.superview === this.nativeViewProtected) {
+			return index + 1;
+		}
+		return index;
+	}
+
 	[iosGlassEffectProperty.setNative](value: GlassEffectType) {
 		if (!this.nativeViewProtected || !supportsGlass()) {
 			return;
