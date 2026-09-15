@@ -226,6 +226,7 @@ function initializeDialogFragment() {
 		private _animated: boolean;
 		private _stretched: boolean;
 		private _cancelable: boolean;
+		private _nightMode: number;
 		private _shownCallback: () => void;
 		private _dismissCallback: () => void;
 		private activity: WeakRef<android.app.Activity>;
@@ -264,6 +265,7 @@ function initializeDialogFragment() {
 			const dialog = new DialogImpl(this, this.getActivity(), theme);
 
 			if (this._fullscreen) {
+				this._nightMode = this.getNightMode();
 				Utils.android.enableEdgeToEdge(this.getActivity(), dialog.getWindow());
 			}
 
@@ -324,6 +326,33 @@ function initializeDialogFragment() {
 			}
 
 			this._shownCallback();
+		}
+
+		private getNightMode(): number {
+			return this.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+		}
+
+		public onConfigurationChanged(newConfig: android.content.res.Configuration): void {
+			super.onConfigurationChanged(newConfig);
+
+			if (!this._fullscreen) {
+				return;
+			}
+
+			// A fullscreen modal styles its own window, which the activity-level refresh
+			// never reaches, so without this the bar icons stay on whichever theme was
+			// active when the modal opened.
+			const nightMode = newConfig.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+			if (this._nightMode === nightMode) {
+				return;
+			}
+			this._nightMode = nightMode;
+
+			const activity = this.getActivity();
+			const window = this.getDialog()?.getWindow();
+			if (activity && window) {
+				Utils.android.enableEdgeToEdge(activity, window);
+			}
 		}
 
 		public onDismiss(dialog: android.content.DialogInterface): void {
