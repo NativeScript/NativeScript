@@ -338,10 +338,12 @@ function snapshotView(view: UIView, scale: number): UIImage {
 		CATransaction.setDisableActions(true);
 		view.layer.opacity = 1;
 	}
-	UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, scale);
-	view.layer.renderInContext(UIGraphicsGetCurrentContext());
-	const image = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
+	// UIGraphicsImageRenderer replaces the UIGraphicsBeginImageContext family, which
+	// is deprecated since iOS 17 and can return nil for wide-gamut content.
+	const renderer = UIGraphicsImageRenderer.alloc().initWithSizeFormat(CGSizeMake(view.frame.size.width, view.frame.size.height), NativeScriptUtils.rendererFormatWithScaleOpaque(scale, false));
+	const image = renderer.imageWithActions((context) => {
+		view.layer.renderInContext(context.CGContext);
+	});
 	if (needsBump) {
 		view.layer.opacity = originalOpacity;
 		CATransaction.commit();

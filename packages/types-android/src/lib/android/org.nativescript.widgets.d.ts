@@ -775,10 +775,61 @@ declare module org {
 declare module org {
 	export module nativescript {
 		export module widgets {
+			export class ImageUtils {
+				public static class: java.lang.Class<org.nativescript.widgets.ImageUtils>;
+				public static decodeFile(path: string, maxSize: number): globalAndroid.graphics.Bitmap;
+				public static decodeFileAsync(path: string, maxSize: number, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static decodeBytes(bytes: native.Array<number>, maxSize: number): globalAndroid.graphics.Bitmap;
+				public static decodeBuffer(buffer: java.nio.ByteBuffer, maxSize: number): globalAndroid.graphics.Bitmap;
+				public static decodeBufferAsync(buffer: java.nio.ByteBuffer, maxSize: number, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static decodeBase64(source: string, maxSize: number): globalAndroid.graphics.Bitmap;
+				public static decodeBase64Async(source: string, maxSize: number, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static readExifOrientation(path: string): number;
+				public static rotationForExifOrientation(orientation: number): number;
+				public static applyExifOrientation(bitmap: globalAndroid.graphics.Bitmap, orientation: number): globalAndroid.graphics.Bitmap;
+				public static applyRotation(bitmap: globalAndroid.graphics.Bitmap, rotationAngle: number): globalAndroid.graphics.Bitmap;
+				public static getMetadata(path: string): string;
+				public static encodeToBytes(bitmap: globalAndroid.graphics.Bitmap, format: string, quality: number): native.Array<number>;
+				public static encode(bitmap: globalAndroid.graphics.Bitmap, format: string, quality: number): java.nio.ByteBuffer;
+				public static encodeAsync(bitmap: globalAndroid.graphics.Bitmap, format: string, quality: number, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static compressToFit(bitmap: globalAndroid.graphics.Bitmap, maxBytes: number, format: string): org.nativescript.widgets.ImageUtils.CompressResult;
+				public static compressToFitAsync(bitmap: globalAndroid.graphics.Bitmap, maxBytes: number, format: string, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static saveToFile(bitmap: globalAndroid.graphics.Bitmap, path: string, format: string, quality: number): boolean;
+				public static saveToFileAsync(bitmap: globalAndroid.graphics.Bitmap, path: string, format: string, quality: number, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static crop(bitmap: globalAndroid.graphics.Bitmap, x: number, y: number, width: number, height: number): globalAndroid.graphics.Bitmap;
+				public static rotate(bitmap: globalAndroid.graphics.Bitmap, degrees: number): globalAndroid.graphics.Bitmap;
+				public static flip(bitmap: globalAndroid.graphics.Bitmap, horizontal: boolean, vertical: boolean): globalAndroid.graphics.Bitmap;
+				public static resize(bitmap: globalAndroid.graphics.Bitmap, maxSize: number, filter: boolean): globalAndroid.graphics.Bitmap;
+				public static resizeTo(bitmap: globalAndroid.graphics.Bitmap, width: number, height: number, mode: string, background: number): globalAndroid.graphics.Bitmap;
+				public static transform(bitmap: globalAndroid.graphics.Bitmap, rotationAngle: number, optionsJson: string): globalAndroid.graphics.Bitmap;
+				public static transformAsync(bitmap: globalAndroid.graphics.Bitmap, rotationAngle: number, optionsJson: string, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static roundCorners(bitmap: globalAndroid.graphics.Bitmap, radius: number): globalAndroid.graphics.Bitmap;
+				public static overlay(base: globalAndroid.graphics.Bitmap, other: globalAndroid.graphics.Bitmap, x: number, y: number, opacity: number): globalAndroid.graphics.Bitmap;
+				public static drawText(bitmap: globalAndroid.graphics.Bitmap, text: string, x: number, y: number, typeface: globalAndroid.graphics.Typeface, textSize: number, color: number): globalAndroid.graphics.Bitmap;
+				public static tint(bitmap: globalAndroid.graphics.Bitmap, color: number): globalAndroid.graphics.Bitmap;
+				public static fromView(view: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
+				public static applyFilters(bitmap: globalAndroid.graphics.Bitmap, filtersJson: string): globalAndroid.graphics.Bitmap;
+				public static applyFiltersAsync(bitmap: globalAndroid.graphics.Bitmap, filtersJson: string, callback: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static stackBlur(source: globalAndroid.graphics.Bitmap, radius: number): globalAndroid.graphics.Bitmap;
+				public static averageColor(bitmap: globalAndroid.graphics.Bitmap): number;
+				public static dominantColors(bitmap: globalAndroid.graphics.Bitmap, count: number): native.Array<number>;
+				public static perceptualHash(bitmap: globalAndroid.graphics.Bitmap): string;
+				public static hammingDistance(a: string, b: string): number;
+			}
+
+			export module ImageUtils {
+				export class CompressResult {
+					public static class: java.lang.Class<org.nativescript.widgets.ImageUtils.CompressResult>;
+					public data: java.nio.ByteBuffer;
+					public quality: number;
+				}
+			}
+
 			export class Utils {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
                 public static getBitmapFromDrawable(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.Bitmap;
                 public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
+                public static calculateAngleFromFile(filename: string): number;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static clipCanvasOutPath(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Path): void;
 				public static drawBoxShadow(param0: globalAndroid.view.View, param1: number[]): void;

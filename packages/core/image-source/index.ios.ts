@@ -1,13 +1,15 @@
-import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
+import { ImageSource as ImageSourceDefinition, iosSymbolScaleType, ImageCompressResult, ImageDrawTextOptions, ImageFilter, ImageFlipAxis, ImageFormat, ImageLoadOptions, ImageMetadata, ImageOverlayOptions, ImageResizeToOptions, ImageTransformOptions } from '.';
 import { ImageAsset } from '../image-asset';
 import type { ImageBase } from '../ui/image/image-common';
+import type { View } from '../ui/core/view';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 import { Trace } from '../trace';
 import { path as fsPath, knownFolders } from '../file-system';
 import { requestInternal as httpRequest } from '../http/http-request-internal';
 import { isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../utils';
-import { getScaledDimensions } from './image-source-common';
+import { dataDeserialize } from '../utils/native-helper';
+import { assertPositiveInteger, hammingDistance, normalizeFilters, normalizeFormat, normalizeQuality, normalizeTransformOptions, toImageMetadata } from './image-source-common';
 
 export { isFileOrResourcePath };
 
@@ -94,6 +96,7 @@ export class ImageSource implements ImageSourceDefinition {
 				} else {
 					image = UIImage.systemImageNamed(name);
 				}
+
 				if (image) {
 					resolve(new ImageSource(image));
 				} else {
@@ -116,19 +119,23 @@ export class ImageSource implements ImageSourceDefinition {
 
 		return nativeSource ? new ImageSource(nativeSource) : null;
 	}
+
 	static fromResource(name: string): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				UIImage.tns_safeDecodeImageNamedCompletion(name, (image) => {
 					if (image) {
 						resolve(new ImageSource(image));
-					} else {
-						UIImage.tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
-							if (img) {
-								resolve(new ImageSource(img));
-							}
-						});
+						return;
 					}
+
+					UIImage.tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
+						if (img) {
+							resolve(new ImageSource(img));
+						} else {
+							reject(new Error(`Failed to load resource image with name: ${name}`));
+						}
+					});
 				});
 			} catch (ex) {
 				reject(ex);
@@ -136,19 +143,35 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	static fromFileSync(path: string): ImageSource {
-		const uiImage = UIImage.imageWithContentsOfFile(getFileName(path));
+	static fromFileSync(path: string, options?: ImageLoadOptions): ImageSource {
+		const fileName = getFileName(path);
+		let uiImage: UIImage;
+		if (options?.maxSize > 0) {
+			uiImage = NativeScriptUtils.decodeImageAtPathMaxSize(fileName, assertPositiveInteger(options.maxSize, 'maxSize'));
+		} else {
+			uiImage = UIImage.imageWithContentsOfFile(fileName);
+		}
 
 		return uiImage ? new ImageSource(uiImage) : null;
 	}
-	static fromFile(path: string): Promise<ImageSource> {
+
+	static fromFile(path: string, options?: ImageLoadOptions): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				UIImage.tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
+				const fileName = getFileName(path);
+				const done = (uiImage: UIImage) => {
 					if (uiImage) {
 						resolve(new ImageSource(uiImage));
+					} else {
+						reject(new Error(`Failed to decode image at path: ${fileName}`));
 					}
-				});
+				};
+
+				if (options?.maxSize > 0) {
+					NativeScriptUtils.decodeImageAtPathMaxSizeCompletion(fileName, assertPositiveInteger(options.maxSize, 'maxSize'), done);
+				} else {
+					UIImage.tns_decodeImageWidthContentsOfFileCompletion(fileName, done);
+				}
 			} catch (ex) {
 				reject(ex);
 			}
@@ -160,12 +183,14 @@ export class ImageSource implements ImageSourceDefinition {
 			if (Trace.isEnabled()) {
 				Trace.write('Path "' + path + '" is not a valid file or resource.', Trace.categories.Binding, Trace.messageType.error);
 			}
+
 			return null;
 		}
 
 		if (path.indexOf(RESOURCE_PREFIX) === 0) {
 			return ImageSource.fromResourceSync(path.slice(RESOURCE_PREFIX.length));
 		}
+
 		if (path.indexOf(SYSTEM_PREFIX) === 0) {
 			return ImageSource.fromSystemImageSync(path.slice(SYSTEM_PREFIX.length));
 		}
@@ -173,50 +198,100 @@ export class ImageSource implements ImageSourceDefinition {
 		return ImageSource.fromFileSync(path);
 	}
 
-	static fromDataSync(data: any): ImageSource {
-		const uiImage = UIImage.imageWithData(data);
+	static fromDataSync(data: any, options?: ImageLoadOptions): ImageSource {
+		const nsData = toNSData(data);
+		if (!nsData) {
+			return null;
+		}
 
-		return uiImage ? new ImageSource(uiImage) : null;
-	}
-	static fromData(data: any): Promise<ImageSource> {
-		return new Promise<ImageSource>((resolve, reject) => {
-			try {
-				UIImage.tns_decodeImageWithDataCompletion(data, (uiImage) => {
-					if (uiImage) {
-						resolve(new ImageSource(uiImage));
-					}
-				});
-			} catch (ex) {
-				reject(ex);
-			}
-		});
-	}
-
-	static fromBase64Sync(source: string): ImageSource {
 		let uiImage: UIImage;
-		if (typeof source === 'string') {
-			const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-			uiImage = UIImage.imageWithData(data);
+		if (options?.maxSize > 0) {
+			uiImage = NativeScriptUtils.decodeImageWithDataMaxSize(nsData, assertPositiveInteger(options.maxSize, 'maxSize'));
+		} else {
+			uiImage = UIImage.imageWithData(nsData);
 		}
 
 		return uiImage ? new ImageSource(uiImage) : null;
 	}
-	static fromBase64(source: string): Promise<ImageSource> {
+
+	static fromData(data: any, options?: ImageLoadOptions): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-				const main_queue = dispatch_get_current_queue();
-				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
-				dispatch_async(background_queue, () => {
-					const uiImage = UIImage.imageWithData(data);
-					dispatch_async(main_queue, () => {
+				const nsData = toNSData(data);
+				if (!nsData) {
+					reject(new Error('fromData expects NSData, an ArrayBuffer or a typed array'));
+					return;
+				}
+
+				const done = (uiImage: UIImage) => {
+					if (uiImage) {
 						resolve(new ImageSource(uiImage));
-					});
-				});
+					} else {
+						reject(new Error('Failed to decode image from data'));
+					}
+				};
+
+				if (options?.maxSize > 0) {
+					NativeScriptUtils.decodeImageWithDataMaxSizeCompletion(nsData, assertPositiveInteger(options.maxSize, 'maxSize'), done);
+				} else {
+					UIImage.tns_decodeImageWithDataCompletion(nsData, done);
+				}
 			} catch (ex) {
 				reject(ex);
 			}
 		});
+	}
+
+	static fromBase64Sync(source: string, options?: ImageLoadOptions): ImageSource {
+		if (typeof source !== 'string') {
+			return null;
+		}
+
+		const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
+
+		return ImageSource.fromDataSync(data, options);
+	}
+
+	static fromBase64(source: string, options?: ImageLoadOptions): Promise<ImageSource> {
+		if (typeof source !== 'string') {
+			return Promise.reject(new Error('fromBase64 expects a base64 encoded string'));
+		}
+
+		const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
+
+		return ImageSource.fromData(data, options);
+	}
+
+	static getMetadataSync(path: string): ImageMetadata {
+		const dictionary = NativeScriptUtils.imageMetadataAtPath(getFileName(path));
+
+		return toImageMetadata(dictionary ? dataDeserialize(dictionary) : null);
+	}
+
+	static getMetadata(path: string): Promise<ImageMetadata> {
+		return new Promise<ImageMetadata>((resolve, reject) => {
+			try {
+				const metadata = ImageSource.getMetadataSync(path);
+				if (metadata) {
+					resolve(metadata);
+				} else {
+					reject(new Error(`Failed to read image metadata at path: ${path}`));
+				}
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	static fromView(view: View, scale?: number): ImageSource {
+		const nativeView = view?.ios as UIView;
+		if (!nativeView) {
+			return null;
+		}
+
+		const image = NativeScriptUtils.snapshotViewScale(nativeView, scale > 0 ? scale : 0);
+
+		return image ? new ImageSource(image) : null;
 	}
 
 	static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
@@ -232,12 +307,15 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		const attributedString = NSAttributedString.alloc().initWithStringAttributes(source, <NSDictionary<string, any>>attributes);
+		const size = attributedString.size();
+		if (size.width < 1 || size.height < 1) {
+			return null;
+		}
 
-		UIGraphicsBeginImageContextWithOptions(attributedString.size(), false, 0.0);
-		attributedString.drawAtPoint(CGPointMake(0, 0));
-
-		const iconImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
+		const renderer = UIGraphicsImageRenderer.alloc().initWithSizeFormat(size, NativeScriptUtils.rendererFormatWithScaleOpaque(0, false));
+		const iconImage = renderer.imageWithActions(() => {
+			attributedString.drawAtPoint(CGPointMake(0, 0));
+		});
 
 		return iconImage ? new ImageSource(iconImage) : null;
 	}
@@ -347,49 +425,31 @@ export class ImageSource implements ImageSourceDefinition {
 		} else if (source instanceof UIImage) {
 			this.ios = source;
 		} else {
+			this.ios = null;
 			if (Trace.isEnabled()) {
 				Trace.write('The method setNativeSource() expects UIImage instance.', Trace.categories.Binding, Trace.messageType.error);
 			}
 		}
 	}
 
-	public saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): boolean {
+	public saveToFile(path: string, format: ImageFormat, quality?: number): boolean {
 		if (!this.ios) {
 			return false;
 		}
 
-		if (quality) {
-			quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
-		}
-
-		const data = getImageData(this.ios, format, quality);
-		if (data) {
-			return NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
-		}
-
-		return false;
+		return NativeScriptUtils.saveImageToPathFormatQuality(this.ios, path, normalizeFormat(format), normalizeQuality(quality) / 100);
 	}
 
-	public saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<boolean> {
+	public saveToFileAsync(path: string, format: ImageFormat, quality?: number): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			if (!this.ios) {
-				reject(false);
+				reject(new Error('ImageSource has no native image to save'));
+				return;
 			}
-			let isSuccess = false;
+
 			try {
-				if (quality) {
-					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
-				}
-				const main_queue = dispatch_get_current_queue();
-				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
-				dispatch_async(background_queue, () => {
-					const data = getImageData(this.ios, format, quality);
-					if (data) {
-						isSuccess = NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
-					}
-					dispatch_async(main_queue, () => {
-						resolve(isSuccess);
-					});
+				NativeScriptUtils.saveImageToPathFormatQualityCompletion(this.ios, path, normalizeFormat(format), normalizeQuality(quality) / 100, (success) => {
+					resolve(success);
 				});
 			} catch (ex) {
 				reject(ex);
@@ -397,44 +457,93 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	public toBase64String(format: 'png' | 'jpeg' | 'jpg', quality?: number): string {
-		let res = null;
+	public toBase64String(format: ImageFormat, quality?: number): string {
 		if (!this.ios) {
-			return res;
-		}
-
-		if (quality) {
-			quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
+			return null;
 		}
 
 		const data = getImageData(this.ios, format, quality);
-		if (data) {
-			res = data.base64Encoding();
-		}
 
-		return res;
+		return data ? data.base64EncodedStringWithOptions(0 as NSDataBase64EncodingOptions) : null;
 	}
 
-	public toBase64StringAsync(format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<string> {
+	public toBase64StringAsync(format: ImageFormat, quality?: number): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			if (!this.ios) {
-				reject(null);
+				reject(new Error('ImageSource has no native image to encode'));
+				return;
 			}
-			let result = null;
+
 			try {
-				if (quality) {
-					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
-				}
-				const main_queue = dispatch_get_current_queue();
-				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
-				dispatch_async(background_queue, () => {
-					const data = getImageData(this.ios, format, quality);
+				NativeScriptUtils.getImageDataFormatQualityCompletion(this.ios, normalizeFormat(format), normalizeQuality(quality) / 100, (data) => {
 					if (data) {
-						result = data.base64Encoding();
+						resolve(data.base64EncodedStringWithOptions(0 as NSDataBase64EncodingOptions));
+					} else {
+						reject(new Error(`Failed to encode image as ${format}`));
 					}
-					dispatch_async(main_queue, () => {
-						resolve(result);
-					});
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public toData(format: ImageFormat, quality?: number): ArrayBuffer {
+		if (!this.ios) {
+			return null;
+		}
+
+		const data = getImageData(this.ios, format, quality);
+
+		return data ? interop.bufferFromData(data) : null;
+	}
+
+	public toDataAsync(format: ImageFormat, quality?: number): Promise<ArrayBuffer> {
+		return new Promise<ArrayBuffer>((resolve, reject) => {
+			if (!this.ios) {
+				reject(new Error('ImageSource has no native image to encode'));
+				return;
+			}
+
+			try {
+				NativeScriptUtils.getImageDataFormatQualityCompletion(this.ios, normalizeFormat(format), normalizeQuality(quality) / 100, (data) => {
+					if (data) {
+						resolve(interop.bufferFromData(data));
+					} else {
+						reject(new Error(`Failed to encode image as ${format}`));
+					}
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public compressToFit(maxBytes: number, format: ImageFormat = 'jpeg'): ImageCompressResult {
+		if (!this.ios) {
+			return null;
+		}
+
+		const result = NativeScriptUtils.compressImageToFitFormat(this.ios, assertPositiveInteger(maxBytes, 'maxBytes'), normalizeFormat(format));
+
+		return toCompressResult(result);
+	}
+
+	public compressToFitAsync(maxBytes: number, format: ImageFormat = 'jpeg'): Promise<ImageCompressResult> {
+		return new Promise<ImageCompressResult>((resolve, reject) => {
+			if (!this.ios) {
+				reject(new Error('ImageSource has no native image to encode'));
+				return;
+			}
+
+			try {
+				NativeScriptUtils.compressImageToFitFormatCompletion(this.ios, assertPositiveInteger(maxBytes, 'maxBytes'), normalizeFormat(format), (result) => {
+					const converted = toCompressResult(result);
+					if (converted) {
+						resolve(converted);
+					} else {
+						reject(new Error(`Unable to fit image under ${maxBytes} bytes as ${format}; resize it first`));
+					}
 				});
 			} catch (ex) {
 				reject(ex);
@@ -443,44 +552,218 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	public resize(maxSize: number, options?: any): ImageSource {
-		const size: CGSize = this.ios.size;
-		const dim = getScaledDimensions(size.width, size.height, maxSize);
+		if (!this.ios) {
+			return null;
+		}
 
-		const newSize: CGSize = CGSizeMake(dim.width, dim.height);
+		const resizedImage = NativeScriptUtils.resizeImageMaxSizeOpaque(this.ios, assertPositiveInteger(maxSize, 'maxSize'), options?.opaque ?? false);
 
-		UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
-		this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
-
-		const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
-
-		return new ImageSource(resizedImage);
+		return resizedImage ? new ImageSource(resizedImage) : null;
 	}
 
 	public resizeAsync(maxSize: number, options?: any): Promise<ImageSource> {
-		return new Promise((resolve, reject) => {
+		return new Promise<ImageSource>((resolve, reject) => {
 			if (!this.ios) {
-				reject(null);
+				reject(new Error('ImageSource has no native image to resize'));
+				return;
 			}
-			const main_queue = dispatch_get_current_queue();
-			const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
-			dispatch_async(background_queue, () => {
-				const size: CGSize = this.ios.size;
-				const dim = getScaledDimensions(size.width, size.height, maxSize);
 
-				const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-
-				UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
-				this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
-
-				const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-				UIGraphicsEndImageContext();
-				dispatch_async(main_queue, () => {
-					resolve(new ImageSource(resizedImage));
+			try {
+				NativeScriptUtils.resizeImageMaxSizeOpaqueCompletion(this.ios, assertPositiveInteger(maxSize, 'maxSize'), options?.opaque ?? false, (resizedImage) => {
+					if (resizedImage) {
+						resolve(new ImageSource(resizedImage));
+					} else {
+						reject(new Error('Failed to resize image'));
+					}
 				});
-			});
+			} catch (ex) {
+				reject(ex);
+			}
 		});
 	}
+
+	public getPixelSize(): { width: number; height: number } {
+		if (!this.ios) {
+			return { width: NaN, height: NaN };
+		}
+
+		const size = NativeScriptUtils.pixelSize(this.ios);
+
+		return { width: size.width, height: size.height };
+	}
+
+	public normalizeOrientation(): ImageSource {
+		return wrap(this.ios ? NativeScriptUtils.normalizeOrientation(this.ios) : null);
+	}
+
+	public crop(x: number, y: number, width: number, height: number): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		const image = NativeScriptUtils.cropImageXYWidthHeight(this.ios, Math.round(x), Math.round(y), assertPositiveInteger(width, 'width'), assertPositiveInteger(height, 'height'));
+		if (!image) {
+			const size = this.getPixelSize();
+			throw new Error(`Crop rect ${x},${y} ${width}x${height} is outside the ${size.width}x${size.height} image`);
+		}
+
+		return new ImageSource(image);
+	}
+
+	public rotate(degrees: number): ImageSource {
+		return wrap(this.ios ? NativeScriptUtils.rotateImageDegrees(this.ios, degrees) : null);
+	}
+
+	public flip(axis: ImageFlipAxis): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		const horizontal = axis === 'horizontal' || axis === 'both';
+		const vertical = axis === 'vertical' || axis === 'both';
+
+		return wrap(NativeScriptUtils.flipImageHorizontalVertical(this.ios, horizontal, vertical));
+	}
+
+	public resizeTo(width: number, height: number, options?: ImageResizeToOptions): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		return wrap(NativeScriptUtils.resizeImageWidthHeightModeBackground(this.ios, assertPositiveInteger(width, 'width'), assertPositiveInteger(height, 'height'), options?.mode || 'fit', toUIColor(options?.background)));
+	}
+
+	public transform(options: ImageTransformOptions): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		return wrap(NativeScriptUtils.transformImageOptions(this.ios, toTransformDictionary(options)));
+	}
+
+	public transformAsync(options: ImageTransformOptions): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			if (!this.ios) {
+				reject(new Error('ImageSource has no native image to transform'));
+				return;
+			}
+
+			try {
+				NativeScriptUtils.transformImageOptionsCompletion(this.ios, toTransformDictionary(options), (image) => {
+					if (image) {
+						resolve(new ImageSource(image));
+					} else {
+						reject(new Error('Failed to transform image; check that the crop rect is inside the image'));
+					}
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public roundCorners(radius: number): ImageSource {
+		return wrap(this.ios ? NativeScriptUtils.roundCornersRadius(this.ios, Math.max(0, radius)) : null);
+	}
+
+	public circleCrop(): ImageSource {
+		return wrap(this.ios ? NativeScriptUtils.roundCornersRadius(this.ios, -1) : null);
+	}
+
+	public overlay(other: ImageSource, options?: ImageOverlayOptions): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		return wrap(NativeScriptUtils.overlayImageWithXYOpacity(this.ios, other?.ios ?? null, options?.x ?? 0, options?.y ?? 0, options?.opacity ?? 1));
+	}
+
+	public drawText(text: string, options: ImageDrawTextOptions): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		const fontSize = options?.fontSize ?? options?.font?.fontSize ?? 16;
+		const uiFont = options?.font ? options.font.getUIFont(UIFont.systemFontOfSize(fontSize)) : UIFont.systemFontOfSize(fontSize);
+		const sizedFont = options?.fontSize ? uiFont.fontWithSize(options.fontSize) : uiFont;
+
+		return wrap(NativeScriptUtils.drawTextOnImageXYFontColor(text ?? '', this.ios, options?.x ?? 0, options?.y ?? 0, sizedFont, toUIColor(options?.color) ?? UIColor.blackColor));
+	}
+
+	public tint(color: Color | string): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		return wrap(NativeScriptUtils.tintImageColor(this.ios, toUIColor(color)));
+	}
+
+	public applyFilters(filters: ImageFilter[]): ImageSource {
+		if (!this.ios) {
+			return null;
+		}
+
+		return wrap(NativeScriptUtils.applyFiltersFilters(this.ios, normalizeFilters(filters) as any));
+	}
+
+	public applyFiltersAsync(filters: ImageFilter[]): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			if (!this.ios) {
+				reject(new Error('ImageSource has no native image to filter'));
+				return;
+			}
+
+			try {
+				NativeScriptUtils.applyFiltersFiltersCompletion(this.ios, normalizeFilters(filters) as any, (image) => {
+					if (image) {
+						resolve(new ImageSource(image));
+					} else {
+						reject(new Error('Failed to apply image filters'));
+					}
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public averageColor(): Color {
+		if (!this.ios) {
+			return null;
+		}
+
+		const uiColor = NativeScriptUtils.averageColor(this.ios);
+
+		return uiColor ? Color.fromIosColor(uiColor) : null;
+	}
+
+	public dominantColors(count: number = 5): Color[] {
+		if (!this.ios) {
+			return [];
+		}
+
+		const colors = NativeScriptUtils.dominantColorsCount(this.ios, assertPositiveInteger(count, 'count'));
+		const result: Color[] = [];
+		for (let i = 0; i < colors.count; i++) {
+			result.push(Color.fromIosColor(colors.objectAtIndex(i)));
+		}
+
+		return result;
+	}
+
+	public perceptualHash(): string {
+		return this.ios ? NativeScriptUtils.perceptualHash(this.ios) : null;
+	}
+
+	public isSimilarTo(other: ImageSource, threshold: number = 10): boolean {
+		const distance = hammingDistance(this.perceptualHash(), other?.perceptualHash());
+
+		return distance >= 0 && distance <= threshold;
+	}
+}
+
+function wrap(image: UIImage): ImageSource {
+	return image ? new ImageSource(image) : null;
 }
 
 function getFileName(path: string): string {
@@ -492,8 +775,61 @@ function getFileName(path: string): string {
 	return fileName;
 }
 
-function getImageData(instance: UIImage, format: 'png' | 'jpeg' | 'jpg', quality = 0.9): NSData {
-	return NativeScriptUtils.getImageDataFormatQuality(instance, format, quality);
+function getImageData(instance: UIImage, format: ImageFormat, quality: number | undefined): NSData {
+	return NativeScriptUtils.getImageDataFormatQuality(instance, normalizeFormat(format), normalizeQuality(quality) / 100);
+}
+
+function toNSData(data: any): NSData {
+	if (!data) {
+		return null;
+	}
+
+	if (data instanceof NSData) {
+		return data;
+	}
+
+	if (data instanceof ArrayBuffer) {
+		return NSData.dataWithData(data as any);
+	}
+
+	if (ArrayBuffer.isView(data)) {
+		// The view marshals to its backing store + byteOffset; copying keeps the bytes V8-owned.
+		return NSData.dataWithBytesLength(data as any, data.byteLength);
+	}
+
+	return null;
+}
+
+function toUIColor(color: Color | string | undefined): UIColor {
+	if (!color) {
+		return null;
+	}
+
+	return (color instanceof Color ? color : new Color(color)).ios;
+}
+
+function toTransformDictionary(options: ImageTransformOptions): NSDictionary<any, any> {
+	const normalized = normalizeTransformOptions(options);
+	const dictionary: any = { ...normalized };
+	if (normalized.resize && 'width' in normalized.resize) {
+		dictionary.resize = { ...normalized.resize, background: toUIColor(normalized.resize.background) };
+	}
+
+	return dictionary as NSDictionary<any, any>;
+}
+
+function toCompressResult(result: NSDictionary<any, any>): ImageCompressResult {
+	if (!result) {
+		return null;
+	}
+
+	const data = result.objectForKey('data') as NSData;
+	const quality = result.objectForKey('quality') as number;
+	if (!data) {
+		return null;
+	}
+
+	return { data: interop.bufferFromData(data), quality: Number(quality) };
 }
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
