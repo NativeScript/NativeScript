@@ -232,7 +232,10 @@ public abstract class LayoutBase extends ViewGroup {
 			appliedLeft += edgeInsets.left;
 			appliedTop += edgeInsets.top;
 			appliedRight += edgeInsets.right;
-			appliedBottom += edgeInsets.bottom;
+			// The inset pass applies max(navigation bar, ime) at the bottom, so re-adding only
+			// edgeInsets.bottom here would drop the keyboard gap on any setPadding() while the
+			// keyboard is open.
+			appliedBottom += Math.max(edgeInsets.bottom, imeInsets.bottom);
 		}
 		super.setPadding(appliedLeft, appliedTop, appliedRight, appliedBottom);
 	}
@@ -246,12 +249,42 @@ public abstract class LayoutBase extends ViewGroup {
 	}
 
 	private void resetInset() {
-		getInsetBuffer().position(0);
-		getInsetBuffer().put(EMPTY_INSETS, 0, EMPTY_INSETS.length);
+		ByteBuffer buffer = getInsetBuffer();
+		buffer.position(0);
+		buffer.put(EMPTY_INSETS, 0, EMPTY_INSETS.length);
+		buffer.position(0);
+	}
+
+	/**
+	 * Drops the insets this view baked into its padding and restores the padding the
+	 * owner asked for. Used when the view stops taking part in inset distribution, or
+	 * when a pass reports no insets at all.
+	 */
+	private void clearEdgeInsets() {
+		if (edgeInsets == Insets.NONE && imeInsets == Insets.NONE) {
+			return;
+		}
+
+		edgeInsets = Insets.NONE;
+		imeInsets = Insets.NONE;
+
+		applyingEdges = true;
+		setPadding(mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom);
+		applyingEdges = false;
 	}
 
 	public void setOverflowEdge(int value) {
+		int previous = overflowEdge;
 		overflowEdge = value;
+
+		if (value == OverflowEdgeIgnore) {
+			// The listener stays installed but returns insets untouched from here on, so
+			// nothing would ever give back the padding an earlier pass applied.
+			if (previous != OverflowEdgeIgnore) {
+				clearEdgeInsets();
+			}
+			return;
+		}
 
 		if (windowInsetsListener == null) {
 			windowInsetsListener = new androidx.core.view.OnApplyWindowInsetsListener() {
@@ -261,20 +294,23 @@ public abstract class LayoutBase extends ViewGroup {
 					@NonNull View v,
 					@NonNull WindowInsetsCompat insets
 				) {
-					if (insets.isConsumed() || overflowEdge == OverflowEdgeIgnore) {
+					if (!(v instanceof LayoutBase)) return insets;
+					LayoutBase base = (LayoutBase) v;
+
+					if (overflowEdge == OverflowEdgeIgnore) {
 						return insets;
 					}
 
-					if (!(v instanceof LayoutBase)) return insets;
-					LayoutBase base = (LayoutBase) v;
+					if (insets.isConsumed()) {
+						// An ancestor took everything, so there is nothing left to hand out -
+						// give back the padding an earlier pass applied here.
+						base.clearEdgeInsets();
+						return insets;
+					}
 
 					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 					Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 					Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
-
-					if (systemBars == Insets.NONE && ime == Insets.NONE) {
-						return WindowInsetsCompat.CONSUMED;
-					}
 
 					int insetLeft = systemBars.left;
 					int insetRight = systemBars.right;
