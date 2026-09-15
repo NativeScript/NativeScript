@@ -1,0 +1,31 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" androidOverflowEdge="none" backgroundColor="#3f0d12">
+  <Page.actionBar>
+    <ActionBar title="Edge to Edge tests" class="action-bar" />
+  </Page.actionBar>
+  <ScrollView>
+    <StackLayout class="p-20">
+      <Label text="{{ device }}" textWrap="true" color="#fca5a5" fontSize="13" marginBottom="4" />
+      <Label text="{{ windowInsets }}" textWrap="true" color="#fca5a5" fontSize="13" fontFamily="monospace" marginBottom="16" />
+
+      <Label text="Colour legend" color="#ffffff" fontWeight="bold" marginBottom="6" />
+      <GridLayout columns="auto, *" rows="auto, auto, auto, auto" marginBottom="20">
+        <StackLayout row="0" col="0" width="24" height="24" backgroundColor="#3f0d12" borderWidth="1" borderColor="#ffffff" margin="2" />
+        <Label row="0" col="1" text="backdrop - nothing reached here" color="#ffffff" marginLeft="8" verticalAlignment="center" />
+        <StackLayout row="1" col="0" width="24" height="24" backgroundColor="#166534" margin="2" />
+        <Label row="1" col="1" text="probe - the ring you see is its padding" color="#ffffff" marginLeft="8" verticalAlignment="center" />
+        <StackLayout row="2" col="0" width="24" height="24" backgroundColor="#1d4ed8" margin="2" />
+        <Label row="2" col="1" text="inner - what is left after the probe padded" color="#ffffff" marginLeft="8" verticalAlignment="center" />
+        <StackLayout row="3" col="0" width="24" height="24" backgroundColor="#b45309" margin="2" />
+        <Label row="3" col="1" text="core - third level, for the nested tests" color="#ffffff" marginLeft="8" verticalAlignment="center" />
+      </GridLayout>
+
+      <Button text="1. Edge matrix" tap="{{ open }}" id="ete/edges" class="btn btn-primary btn-view-demo" />
+      <Button text="2. Nested consume (dont-apply)" tap="{{ open }}" id="ete/nested" class="btn btn-primary btn-view-demo" />
+      <Button text="3. Keyboard insets" tap="{{ open }}" id="ete/ime" class="btn btn-primary btn-view-demo" />
+      <Button text="4. Lifecycle and reset" tap="{{ open }}" id="ete/lifecycle" class="btn btn-primary btn-view-demo" />
+      <Button text="5. Modals" tap="{{ open }}" id="ete/modals" class="btn btn-primary btn-view-demo" />
+      <Button text="6. System bars" tap="{{ open }}" id="ete/bars" class="btn btn-primary btn-view-demo" />
+      <Button text="7. Scrolling content" tap="{{ open }}" id="ete/scroll" class="btn btn-primary btn-view-demo" />
+    </StackLayout>
+  </ScrollView>
+</Page>

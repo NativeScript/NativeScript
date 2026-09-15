@@ -5,7 +5,7 @@
 		"artifactHash": "sha256:71ac91f0e4290e8a38d253649a73cdeef87e5bfa10e013ead5f61eecd57aff70"
 	},
 	"android": {
-		"sourceHash": "sha256:a90aaa2d98aa88ef7410cc875dc26b19fc3d6402f57c94c76e892e828dfe951b",
-		"artifactHash": "sha256:19c79bb864e7ac4888d09dd92650c87ff214da98d19c8ee58e77e2dec228809e"
+		"sourceHash": "sha256:205ba541f47e249772e24cf9b38bd1d4552c9fabfcaa089335d03bafb1900e59",
+		"artifactHash": "sha256:54ab3d40c9cf143717664c627ea810f0e8f3383b96eac2ef578fc3f78301f2d7"
 	}
 }
