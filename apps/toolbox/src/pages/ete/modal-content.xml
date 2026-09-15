@@ -1,0 +1,20 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" shownModally="shownModally" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <GridLayout id="probe" backgroundColor="#166534" androidOverflowEdge="{{ edge }}">
+    <GridLayout backgroundColor="#b45309" rows="auto, auto, *">
+      <StackLayout row="0" padding="12">
+        <Label text="{{ title }}" color="#ffffff" fontWeight="bold" fontSize="17" textWrap="true" />
+      </StackLayout>
+      <!-- Close sits above the content, not pinned to the bottom: with a bottom overflow
+           a bottom-pinned button ends up under the navigation bar and cannot be tapped. -->
+      <Button row="1" text="close" tap="{{ close }}" color="#ffffff" backgroundColor="#7c2d12" margin="8" />
+      <ScrollView row="2">
+        <StackLayout padding="12">
+          <Label text="probe padding" color="#ffffff" fontWeight="bold" />
+          <Label text="{{ padding }}" color="#fed7aa" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="window insets" color="#ffffff" fontWeight="bold" marginTop="10" />
+          <Label text="{{ windowInsets }}" color="#fed7aa" fontFamily="monospace" fontSize="13" textWrap="true" />
+        </StackLayout>
+      </ScrollView>
+    </GridLayout>
+  </GridLayout>
+</Page>
