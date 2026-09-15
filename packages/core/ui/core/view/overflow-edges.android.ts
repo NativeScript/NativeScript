@@ -20,6 +20,12 @@ export const OverflowEdgeAllButLeft = 1 << 10;
 export const OverflowEdgeAllButTop = 1 << 11;
 export const OverflowEdgeAllButRight = 1 << 12;
 export const OverflowEdgeAllButBottom = 1 << 13;
+/**
+ * Not an edge: a modifier that folds the display cutout into the insets being
+ * distributed. Type.systemBars() leaves the cutout out, which only shows up once the
+ * device is rotated and the camera moves to an edge that has no bar.
+ */
+export const OverflowEdgeCutout = 1 << 14;
 
 const edgeMap: Record<string, number> = {
 	none: OverflowEdgeNone,
@@ -37,6 +43,7 @@ const edgeMap: Record<string, number> = {
 	'all-but-top': OverflowEdgeAllButTop,
 	'all-but-right': OverflowEdgeAllButRight,
 	'all-but-bottom': OverflowEdgeAllButBottom,
+	cutout: OverflowEdgeCutout,
 };
 
 /**
@@ -55,7 +62,9 @@ export function parseEdges(edges: string): number | null {
 
 		matched = true;
 		// `dont-apply` and `ignore` are sentinels rather than bit flags, so OR-ing them
-		// with an edge would corrupt both. The first one wins outright.
+		// with an edge would corrupt both. The first one wins outright - which also means
+		// `cutout` alongside either of them is dropped. `dont-apply` hands the raw cutout
+		// values to JS regardless, and `ignore` distributes nothing at all.
 		if (value === OverflowEdgeDontApply || value === OverflowEdgeIgnore) {
 			return value;
 		}

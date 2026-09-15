@@ -10,7 +10,14 @@ export namespace CoreTypes {
 	type AndroidOverflowSingle = 'ignore' | 'none' | 'dont-apply';
 	type AndroidOverflowMultiple = 'left' | 'right' | 'top' | 'bottom' | 'left-dont-consume' | 'top-dont-consume' | 'right-dont-consume' | 'bottom-dont-consume' | 'all-but-left' | 'all-but-top' | 'all-but-right' | 'all-but-bottom';
 	type AndroidOverflowStacked = AndroidOverflowSingle | `${AndroidOverflowSingle},${AndroidOverflowSingle}` | `${AndroidOverflowSingle},${AndroidOverflowMultiple}` | `${AndroidOverflowMultiple},${AndroidOverflowSingle}` | `${AndroidOverflowMultiple},${AndroidOverflowMultiple}`;
-	export type AndroidOverflow = AndroidOverflowSingle | AndroidOverflowMultiple | AndroidOverflowStacked;
+	type AndroidOverflowBase = AndroidOverflowSingle | AndroidOverflowMultiple | AndroidOverflowStacked;
+	/**
+	 * `cutout` is a modifier rather than an edge: append it to any value to fold the
+	 * display cutout into the insets being distributed. Without it only the system bars
+	 * are used, so in landscape a camera on an edge with no bar is not accounted for.
+	 * It has no effect alongside `ignore` or `dont-apply`.
+	 */
+	export type AndroidOverflow = AndroidOverflowBase | 'cutout' | `${AndroidOverflowBase},cutout`;
 	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
 
 	/**

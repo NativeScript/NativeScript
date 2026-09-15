@@ -26,6 +26,8 @@ const CASES: Case[] = [
 	{ edge: 'dont-apply', description: 'hands the insets to JS and pads nothing - expect no green ring' },
 	{ edge: 'none,none', description: 'a stacked value that resolves to none - must behave exactly like the first case' },
 	{ edge: 'ignore,bottom', description: 'ignore wins over anything after it - must behave exactly like ignore' },
+	{ edge: 'none,cutout', description: 'like none, but the display cutout counts too - rotate to landscape, where the camera sits on an edge with no system bar' },
+	{ edge: 'top,cutout', description: 'overflows the top while still keeping clear of the cutout on the other edges' },
 ];
 
 class EdgeMatrix extends Observable {

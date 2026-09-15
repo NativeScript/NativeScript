@@ -266,6 +266,7 @@
                 public static OverflowEdgeAllButTop: number;
                 public static OverflowEdgeAllButRight: number;
                 public static OverflowEdgeAllButBottom: number;
+                public static OverflowEdgeCutout: number;
                 constructor(context: android.content.Context);
                 public getOverflowEdge(): number;
                 public setOverflowEdge(value: number): void;
