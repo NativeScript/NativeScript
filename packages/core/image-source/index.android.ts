@@ -1,5 +1,6 @@
-import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
+import { ImageSource as ImageSourceDefinition, iosSymbolScaleType, ImageCompressResult, ImageDrawTextOptions, ImageFilter, ImageFlipAxis, ImageFormat, ImageLoadOptions, ImageMetadata, ImageOverlayOptions, ImageResizeToOptions, ImageTransformOptions } from '.';
 import { ImageAsset } from '../image-asset';
+import type { View } from '../ui/core/view';
 import { path as fsPath, knownFolders } from '../file-system';
 import { requestInternal as httpRequest } from '../http/http-request-internal';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
@@ -7,7 +8,7 @@ import { getNativeApp } from '../application/helpers-common';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 
-import { getScaledDimensions } from './image-source-common';
+import { assertPositiveInteger, hammingDistance, normalizeFilters, normalizeFormat, normalizeQuality, normalizeTransformOptions, toImageMetadata } from './image-source-common';
 
 export { isFileOrResourcePath };
 
@@ -81,32 +82,47 @@ export class ImageSource implements ImageSourceDefinition {
 
 		return null;
 	}
+
 	static fromResource(name: string): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
-			resolve(ImageSource.fromResourceSync(name));
+			try {
+				const imageSource = ImageSource.fromResourceSync(name);
+				if (imageSource) {
+					resolve(imageSource);
+				} else {
+					reject(new Error(`Failed to load resource image with name: ${name}`));
+				}
+			} catch (ex) {
+				reject(ex);
+			}
 		});
 	}
 
-	static fromFileSync(path: string): ImageSource {
-		let fileName = typeof path === 'string' ? path.trim() : '';
-		if (fileName.indexOf('~/') === 0) {
-			fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace('~/', ''));
-		}
-
-		const bitmap = android.graphics.BitmapFactory.decodeFile(fileName, null);
-		if (bitmap) {
-			const result = new ImageSource(bitmap);
-			result.rotationAngle = getRotationAngleFromFile(fileName);
-
-			return result;
-		} else {
+	static fromFileSync(path: string, options?: ImageLoadOptions): ImageSource {
+		const fileName = getFileName(path);
+		const bitmap = org.nativescript.widgets.ImageUtils.decodeFile(fileName, options?.maxSize > 0 ? assertPositiveInteger(options.maxSize, 'maxSize') : 0);
+		if (!bitmap) {
 			return null;
 		}
+
+		// decodeFile bakes the EXIF orientation into the pixels, so no rotation is pending.
+		const result = new ImageSource(bitmap);
+		result.rotationAngle = 0;
+
+		return result;
 	}
 
-	static fromFile(path: string): Promise<ImageSource> {
+	static fromFile(path: string, options?: ImageLoadOptions): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
-			resolve(ImageSource.fromFileSync(path));
+			try {
+				org.nativescript.widgets.ImageUtils.decodeFileAsync(
+					getFileName(path),
+					options?.maxSize > 0 ? assertPositiveInteger(options.maxSize, 'maxSize') : 0,
+					asyncCallback(resolve, reject, (bitmap) => new ImageSource(bitmap)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
 		});
 	}
 
@@ -134,32 +150,115 @@ export class ImageSource implements ImageSourceDefinition {
 		return ImageSource.fromResource(name);
 	}
 
-	static fromDataSync(data: any): ImageSource {
-		const bitmap = android.graphics.BitmapFactory.decodeStream(data);
-
-		return bitmap ? new ImageSource(bitmap) : null;
-	}
-
-	static fromData(data: any): Promise<ImageSource> {
-		return new Promise<ImageSource>((resolve, reject) => {
-			resolve(ImageSource.fromDataSync(data));
-		});
-	}
-
-	static fromBase64Sync(source: string): ImageSource {
+	static fromDataSync(data: any, options?: ImageLoadOptions): ImageSource {
+		const maxSize = options?.maxSize > 0 ? assertPositiveInteger(options.maxSize, 'maxSize') : 0;
 		let bitmap: android.graphics.Bitmap;
-
-		if (typeof source === 'string') {
-			const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
-			bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+		if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+			bitmap = org.nativescript.widgets.ImageUtils.decodeBuffer(toByteBuffer(data), maxSize);
+		} else if (data) {
+			// Legacy contract: a java.io.InputStream.
+			bitmap = android.graphics.BitmapFactory.decodeStream(data);
+			if (bitmap && maxSize > 0) {
+				bitmap = org.nativescript.widgets.ImageUtils.resize(bitmap, maxSize, true);
+			}
 		}
 
 		return bitmap ? new ImageSource(bitmap) : null;
 	}
-	static fromBase64(source: string): Promise<ImageSource> {
+
+	static fromData(data: any, options?: ImageLoadOptions): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
-			resolve(ImageSource.fromBase64Sync(source));
+			try {
+				if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+					const maxSize = options?.maxSize > 0 ? assertPositiveInteger(options.maxSize, 'maxSize') : 0;
+					org.nativescript.widgets.ImageUtils.decodeBufferAsync(
+						toByteBuffer(data),
+						maxSize,
+						asyncCallback(resolve, reject, (bitmap) => new ImageSource(bitmap)),
+					);
+					return;
+				}
+
+				// InputStream cannot be handed to another thread safely; decode inline.
+				const imageSource = ImageSource.fromDataSync(data, options);
+				if (imageSource) {
+					resolve(imageSource);
+				} else {
+					reject(new Error('Failed to decode image from data'));
+				}
+			} catch (ex) {
+				reject(ex);
+			}
 		});
+	}
+
+	static fromBase64Sync(source: string, options?: ImageLoadOptions): ImageSource {
+		if (typeof source !== 'string') {
+			return null;
+		}
+
+		const bitmap = org.nativescript.widgets.ImageUtils.decodeBase64(source, options?.maxSize > 0 ? assertPositiveInteger(options.maxSize, 'maxSize') : 0);
+
+		return bitmap ? new ImageSource(bitmap) : null;
+	}
+
+	static fromBase64(source: string, options?: ImageLoadOptions): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			if (typeof source !== 'string') {
+				reject(new Error('fromBase64 expects a base64 encoded string'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.ImageUtils.decodeBase64Async(
+					source,
+					options?.maxSize > 0 ? assertPositiveInteger(options.maxSize, 'maxSize') : 0,
+					asyncCallback(resolve, reject, (bitmap) => new ImageSource(bitmap)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	static getMetadataSync(path: string): ImageMetadata {
+		const json = org.nativescript.widgets.ImageUtils.getMetadata(getFileName(path));
+
+		return toImageMetadata(json ? JSON.parse(json) : null);
+	}
+
+	static getMetadata(path: string): Promise<ImageMetadata> {
+		return new Promise<ImageMetadata>((resolve, reject) => {
+			try {
+				const metadata = ImageSource.getMetadataSync(path);
+				if (metadata) {
+					resolve(metadata);
+				} else {
+					reject(new Error(`Failed to read image metadata at path: ${path}`));
+				}
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	static fromView(view: View, scale?: number): ImageSource {
+		const nativeView = view?.android as android.view.View;
+		if (!nativeView) {
+			return null;
+		}
+
+		let bitmap = org.nativescript.widgets.ImageUtils.fromView(nativeView);
+		if (bitmap && scale > 0) {
+			const density = layout.getDisplayDensity();
+			if (density > 0 && Math.abs(scale - density) > 0.01) {
+				const width = Math.max(1, Math.round((bitmap.getWidth() / density) * scale));
+				const height = Math.max(1, Math.round((bitmap.getHeight() / density) * scale));
+				bitmap = org.nativescript.widgets.ImageUtils.resizeTo(bitmap, width, height, 'stretch', 0);
+			}
+		}
+
+		return bitmap ? new ImageSource(bitmap) : null;
 	}
 
 	static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
@@ -226,6 +325,7 @@ export class ImageSource implements ImageSourceDefinition {
 
 		const imgSource = ImageSource.fromFileSync(path);
 		this.android = imgSource ? imgSource.android : null;
+		this.rotationAngle = imgSource ? imgSource.rotationAngle : 0;
 
 		return !!this.android;
 	}
@@ -289,145 +389,422 @@ export class ImageSource implements ImageSourceDefinition {
 		} else {
 			throw new Error('The method setNativeSource() expects an android.graphics.Bitmap or android.graphics.drawable.Drawable instance.');
 		}
+
+		this._rotationAngle = 0;
 	}
 
-	public saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality = 100): boolean {
+	public saveToFile(path: string, format: ImageFormat, quality?: number): boolean {
 		if (!this.android) {
 			return false;
 		}
 
-		const targetFormat = getTargetFormat(format);
-
-		// TODO add exception handling
-		const outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
-
-		const res = this.android.compress(targetFormat, quality, outputStream);
-		outputStream.close();
-
-		return res;
+		return org.nativescript.widgets.ImageUtils.saveToFile(this.uprightBitmap(), path, normalizeFormat(format), normalizeQuality(quality));
 	}
 
-	public saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality = 100): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			org.nativescript.widgets.Utils.saveToFileAsync(
-				this.android,
-				path,
-				format,
-				quality,
-				new org.nativescript.widgets.Utils.AsyncImageCallback({
-					onSuccess(param0: boolean) {
-						resolve(param0);
-					},
-					onError(param0: java.lang.Exception) {
-						if (param0) {
-							reject(param0.getMessage());
-						} else {
-							reject();
-						}
-					},
-				}),
-			);
+	public saveToFileAsync(path: string, format: ImageFormat, quality?: number): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to save'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.ImageUtils.saveToFileAsync(
+					this.uprightBitmap(),
+					path,
+					normalizeFormat(format),
+					normalizeQuality(quality),
+					asyncCallback(resolve, reject, (saved) => !!saved),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
 		});
 	}
 
-	public toBase64String(format: 'png' | 'jpeg' | 'jpg', quality = 100): string {
+	public toBase64String(format: ImageFormat, quality?: number): string {
 		if (!this.android) {
 			return null;
 		}
 
-		const targetFormat = getTargetFormat(format);
+		const bytes = org.nativescript.widgets.ImageUtils.encodeToBytes(this.uprightBitmap(), normalizeFormat(format), normalizeQuality(quality));
 
-		const outputStream = new java.io.ByteArrayOutputStream();
-		const base64Stream = new android.util.Base64OutputStream(outputStream, android.util.Base64.NO_WRAP);
-
-		this.android.compress(targetFormat, quality, base64Stream);
-
-		base64Stream.close();
-		outputStream.close();
-
-		return outputStream.toString();
+		return bytes ? android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP) : null;
 	}
 
-	public toBase64StringAsync(format: 'png' | 'jpeg' | 'jpg', quality = 100): Promise<string> {
-		return new Promise((resolve, reject) => {
-			org.nativescript.widgets.Utils.toBase64StringAsync(
-				this.android,
-				format,
-				quality,
-				new org.nativescript.widgets.Utils.AsyncImageCallback({
-					onSuccess(param0: string) {
-						resolve(param0);
-					},
-					onError(param0: java.lang.Exception) {
-						if (param0) {
-							reject(param0.getMessage());
-						} else {
-							reject();
-						}
-					},
-				}),
-			);
+	public toBase64StringAsync(format: ImageFormat, quality?: number): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to encode'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.Utils.toBase64StringAsync(
+					this.uprightBitmap(),
+					normalizeFormat(format),
+					normalizeQuality(quality),
+					asyncCallback(resolve, reject, (value) => String(value)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public toData(format: ImageFormat, quality?: number): ArrayBuffer {
+		if (!this.android) {
+			return null;
+		}
+
+		const buffer = org.nativescript.widgets.ImageUtils.encode(this.uprightBitmap(), normalizeFormat(format), normalizeQuality(quality));
+
+		return buffer ? toArrayBuffer(buffer) : null;
+	}
+
+	public toDataAsync(format: ImageFormat, quality?: number): Promise<ArrayBuffer> {
+		return new Promise<ArrayBuffer>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to encode'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.ImageUtils.encodeAsync(
+					this.uprightBitmap(),
+					normalizeFormat(format),
+					normalizeQuality(quality),
+					asyncCallback(resolve, reject, (buffer) => toArrayBuffer(buffer)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public compressToFit(maxBytes: number, format: ImageFormat = 'jpeg'): ImageCompressResult {
+		if (!this.android) {
+			return null;
+		}
+
+		const result = org.nativescript.widgets.ImageUtils.compressToFit(this.uprightBitmap(), assertPositiveInteger(maxBytes, 'maxBytes'), normalizeFormat(format));
+
+		return toCompressResult(result);
+	}
+
+	public compressToFitAsync(maxBytes: number, format: ImageFormat = 'jpeg'): Promise<ImageCompressResult> {
+		return new Promise<ImageCompressResult>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to encode'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.ImageUtils.compressToFitAsync(
+					this.uprightBitmap(),
+					assertPositiveInteger(maxBytes, 'maxBytes'),
+					normalizeFormat(format),
+					asyncCallback(resolve, reject, (result) => toCompressResult(result)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
 		});
 	}
 
 	public resize(maxSize: number, options?: any): ImageSource {
-		const dim = getScaledDimensions(this.android.getWidth(), this.android.getHeight(), maxSize);
-		const bm: android.graphics.Bitmap = android.graphics.Bitmap.createScaledBitmap(this.android, dim.width, dim.height, options && options.filter);
+		if (!this.android) {
+			return null;
+		}
 
-		return new ImageSource(bm);
+		const filter = options && typeof options.filter === 'boolean' ? options.filter : true;
+		const bitmap = org.nativescript.widgets.ImageUtils.resize(this.uprightBitmap(), assertPositiveInteger(maxSize, 'maxSize'), filter);
+
+		return wrap(bitmap);
 	}
 
 	public resizeAsync(maxSize: number, options?: any): Promise<ImageSource> {
-		return new Promise((resolve, reject) => {
-			org.nativescript.widgets.Utils.resizeAsync(
-				this.android,
-				maxSize,
-				JSON.stringify(options || {}),
-				new org.nativescript.widgets.Utils.AsyncImageCallback({
-					onSuccess(param0: any) {
-						resolve(new ImageSource(param0));
-					},
-					onError(param0: java.lang.Exception) {
-						if (param0) {
-							reject(param0.getMessage());
-						} else {
-							reject();
-						}
-					},
-				}),
-			);
+		return new Promise<ImageSource>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to resize'));
+				return;
+			}
+
+			try {
+				const filter = options && typeof options.filter === 'boolean' ? options.filter : true;
+				org.nativescript.widgets.Utils.resizeAsync(
+					this.uprightBitmap(),
+					assertPositiveInteger(maxSize, 'maxSize'),
+					JSON.stringify({ filter }),
+					asyncCallback(resolve, reject, (bitmap) => new ImageSource(bitmap)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
 		});
 	}
-}
 
-function getTargetFormat(format: 'png' | 'jpeg' | 'jpg'): android.graphics.Bitmap.CompressFormat {
-	switch (format) {
-		case 'jpeg':
-		case 'jpg':
-			return android.graphics.Bitmap.CompressFormat.JPEG;
-		default:
-			return android.graphics.Bitmap.CompressFormat.PNG;
+	public getPixelSize(): { width: number; height: number } {
+		if (!this.android) {
+			return { width: NaN, height: NaN };
+		}
+
+		const swapped = this.rotationAngle === 90 || this.rotationAngle === 270;
+
+		return {
+			width: swapped ? this.android.getHeight() : this.android.getWidth(),
+			height: swapped ? this.android.getWidth() : this.android.getHeight(),
+		};
+	}
+
+	public normalizeOrientation(): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.rotate(this.android, this.rotationAngle || 0));
+	}
+
+	public crop(x: number, y: number, width: number, height: number): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.crop(this.uprightBitmap(), Math.round(x), Math.round(y), assertPositiveInteger(width, 'width'), assertPositiveInteger(height, 'height')));
+	}
+
+	public rotate(degrees: number): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.rotate(this.uprightBitmap(), degrees));
+	}
+
+	public flip(axis: ImageFlipAxis): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		const horizontal = axis === 'horizontal' || axis === 'both';
+		const vertical = axis === 'vertical' || axis === 'both';
+
+		return wrap(org.nativescript.widgets.ImageUtils.flip(this.uprightBitmap(), horizontal, vertical));
+	}
+
+	public resizeTo(width: number, height: number, options?: ImageResizeToOptions): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.resizeTo(this.uprightBitmap(), assertPositiveInteger(width, 'width'), assertPositiveInteger(height, 'height'), options?.mode || 'fit', toAndroidColor(options?.background)));
+	}
+
+	public transform(options: ImageTransformOptions): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.transform(this.android, this.rotationAngle || 0, toTransformJson(options)));
+	}
+
+	public transformAsync(options: ImageTransformOptions): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to transform'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.ImageUtils.transformAsync(
+					this.android,
+					this.rotationAngle || 0,
+					toTransformJson(options),
+					asyncCallback(resolve, reject, (bitmap) => new ImageSource(bitmap)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public roundCorners(radius: number): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.roundCorners(this.uprightBitmap(), Math.max(0, radius)));
+	}
+
+	public circleCrop(): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.roundCorners(this.uprightBitmap(), -1));
+	}
+
+	public overlay(other: ImageSource, options?: ImageOverlayOptions): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.overlay(this.uprightBitmap(), other ? other.uprightBitmap() : null, Math.round(options?.x ?? 0), Math.round(options?.y ?? 0), options?.opacity ?? 1));
+	}
+
+	public drawText(text: string, options: ImageDrawTextOptions): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		const fontSize = options?.fontSize ?? options?.font?.fontSize ?? 16;
+		const typeface = options?.font ? options.font.getAndroidTypeface() : null;
+		const color = options?.color ? toAndroidColor(options.color) : android.graphics.Color.BLACK;
+
+		return wrap(org.nativescript.widgets.ImageUtils.drawText(this.uprightBitmap(), text ?? '', options?.x ?? 0, options?.y ?? 0, typeface, fontSize, color));
+	}
+
+	public tint(color: Color | string): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.tint(this.uprightBitmap(), toAndroidColor(color)));
+	}
+
+	public applyFilters(filters: ImageFilter[]): ImageSource {
+		if (!this.android) {
+			return null;
+		}
+
+		return wrap(org.nativescript.widgets.ImageUtils.applyFilters(this.uprightBitmap(), JSON.stringify(normalizeFilters(filters))));
+	}
+
+	public applyFiltersAsync(filters: ImageFilter[]): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			if (!this.android) {
+				reject(new Error('ImageSource has no native image to filter'));
+				return;
+			}
+
+			try {
+				org.nativescript.widgets.ImageUtils.applyFiltersAsync(
+					this.uprightBitmap(),
+					JSON.stringify(normalizeFilters(filters)),
+					asyncCallback(resolve, reject, (bitmap) => new ImageSource(bitmap)),
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public averageColor(): Color {
+		if (!this.android) {
+			return null;
+		}
+
+		const argb = org.nativescript.widgets.ImageUtils.averageColor(this.android);
+
+		return argb ? new Color(argb) : null;
+	}
+
+	public dominantColors(count: number = 5): Color[] {
+		if (!this.android) {
+			return [];
+		}
+
+		const values = org.nativescript.widgets.ImageUtils.dominantColors(this.android, assertPositiveInteger(count, 'count'));
+		const result: Color[] = [];
+		for (let i = 0; i < values.length; i++) {
+			result.push(new Color(values[i]));
+		}
+
+		return result;
+	}
+
+	public perceptualHash(): string {
+		return this.android ? org.nativescript.widgets.ImageUtils.perceptualHash(this.uprightBitmap()) : null;
+	}
+
+	public isSimilarTo(other: ImageSource, threshold: number = 10): boolean {
+		const distance = hammingDistance(this.perceptualHash(), other?.perceptualHash());
+
+		return distance >= 0 && distance <= threshold;
+	}
+
+	/**
+	 * The bitmap with any pending rotationAngle baked into its pixels, so every
+	 * pixel operation and encoder sees the image the way it is displayed.
+	 */
+	private uprightBitmap(): android.graphics.Bitmap {
+		return org.nativescript.widgets.ImageUtils.applyRotation(this.android, this.rotationAngle || 0);
 	}
 }
 
-function getRotationAngleFromFile(filename: string): number {
-	let result = 0;
-	const ei = new android.media.ExifInterface(filename);
-	const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+function wrap(bitmap: android.graphics.Bitmap): ImageSource {
+	return bitmap ? new ImageSource(bitmap) : null;
+}
 
-	switch (orientation) {
-		case android.media.ExifInterface.ORIENTATION_ROTATE_90:
-			result = 90;
-			break;
-		case android.media.ExifInterface.ORIENTATION_ROTATE_180:
-			result = 180;
-			break;
-		case android.media.ExifInterface.ORIENTATION_ROTATE_270:
-			result = 270;
-			break;
+function getFileName(path: string): string {
+	let fileName = typeof path === 'string' ? path.trim() : '';
+	if (fileName.indexOf('~/') === 0) {
+		fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace('~/', ''));
 	}
 
-	return result;
+	return fileName;
+}
+
+function asyncCallback<T>(resolve: (value: T) => void, reject: (reason: any) => void, map: (value: any) => T) {
+	return new org.nativescript.widgets.Utils.AsyncImageCallback({
+		onSuccess(value: any) {
+			try {
+				resolve(map(value));
+			} catch (ex) {
+				reject(ex);
+			}
+		},
+		onError(error: java.lang.Exception) {
+			reject(new Error(error ? error.getMessage() : 'Image operation failed'));
+		},
+	});
+}
+
+function toByteBuffer(data: ArrayBuffer | ArrayBufferView): java.nio.ByteBuffer {
+	const buffer = data instanceof ArrayBuffer ? data : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+
+	// The runtime exposes the backing store of an ArrayBuffer as a direct java.nio.ByteBuffer.
+	return ((buffer as any).nativeObject || buffer) as java.nio.ByteBuffer;
+}
+
+function toArrayBuffer(buffer: java.nio.ByteBuffer): ArrayBuffer {
+	return (ArrayBuffer as any).from(buffer) as ArrayBuffer;
+}
+
+function toAndroidColor(color: Color | string | undefined): number {
+	if (!color) {
+		return 0;
+	}
+
+	return (color instanceof Color ? color : new Color(color)).android;
+}
+
+function toTransformJson(options: ImageTransformOptions): string {
+	const normalized = normalizeTransformOptions(options);
+	const json: any = { ...normalized };
+	if (normalized.resize && 'width' in normalized.resize) {
+		json.resize = { ...normalized.resize, background: toAndroidColor(normalized.resize.background) };
+	}
+
+	return JSON.stringify(json);
+}
+
+function toCompressResult(result: org.nativescript.widgets.ImageUtils.CompressResult): ImageCompressResult {
+	if (!result || !result.data) {
+		return null;
+	}
+
+	return { data: toArrayBuffer(result.data), quality: result.quality };
 }
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
