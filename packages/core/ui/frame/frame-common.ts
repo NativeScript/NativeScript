@@ -134,6 +134,15 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
 	@profile
 	public onLoaded() {
+		/**
+		 * In android 12 and newer, back press can exit app without finishing activity but still removes the frame from stack.
+		 * In that case, we rely on loaded lifecycle to add the frame back.
+		 * Also, make sure the loaded lifecycle does not attempt to push the frame when it's already in the stack but is not the topmost.
+		 */
+		if (this._currentEntry && !this._isInFrameStack) {
+			this._pushInFrameStack();
+		}
+
 		super.onLoaded();
 		this._processNextNavigationEntry();
 	}
