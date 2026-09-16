@@ -1,3 +1,13 @@
+## 8.0.10 (2026-09-16)
+
+### 🩹 Fixes
+
+- **vite:** declare @babel/traverse and @babel/types as dependencies ([ba45aefcd](https://github.com/NativeScript/NativeScript/commit/ba45aefcd))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.9 (2026-09-14)
 
 ### 🩹 Fixes
