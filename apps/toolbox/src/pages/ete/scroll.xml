@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" androidOverflowEdge="bottom" backgroundColor="#3f0d12">
+  <Page.actionBar>
+    <ActionBar title="Scrolling content" class="action-bar" />
+  </Page.actionBar>
+  <!--
+    The everyday pattern: the page overflows the bottom so the list scrolls under the
+    navigation bar, and the list itself keeps the last row reachable.
+  -->
+  <GridLayout backgroundColor="#1d4ed8">
+    <ListView items="{{ items }}" id="list" separatorColor="transparent">
+      <ListView.itemTemplate>
+        <GridLayout columns="auto, *" padding="14" backgroundColor="{{ color }}">
+          <Label col="0" text="{{ index }}" color="#ffffff" fontWeight="bold" width="42" />
+          <Label col="1" text="{{ label }}" color="#ffffff" textWrap="true" />
+        </GridLayout>
+      </ListView.itemTemplate>
+    </ListView>
+  </GridLayout>
+</Page>
