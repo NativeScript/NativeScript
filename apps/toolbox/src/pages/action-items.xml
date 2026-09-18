@@ -1,0 +1,20 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+	<Page.actionBar>
+		<ActionBar title="Action Items" class="action-bar">
+			<!-- More items than a vertical bar (iPhone Duo) has room for: the lower the priority, the sooner an item moves to the overflow menu, where its text shows next to the icon. -->
+			<ActionItem icon="sys://star" text="Favorite" ios.position="right" ios.visibilityPriority="high" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://square.and.arrow.up" text="Share" ios.position="right" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://bookmark" text="Bookmark" ios.position="right" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://flag" text="Flag" ios.position="right" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://folder" text="Move" ios.position="right" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://tag" text="Tag" ios.position="right" ios.visibilityPriority="low" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://archivebox" text="Archive" ios.position="right" ios.visibilityPriority="low" tap="{{ onItemTap }}" />
+			<ActionItem icon="sys://printer" text="Print" ios.position="right" ios.visibilityPriority="low" ios.axisBehavior="horizontalOnly" tap="{{ onItemTap }}" />
+		</ActionBar>
+	</Page.actionBar>
+
+	<StackLayout padding="20">
+		<Label text="{{ lastTapped }}" textWrap="true" fontSize="17" />
+		<Label text="Favorite: high priority. Tag, Archive and Print: low priority. Print: horizontal bars only." textWrap="true" marginTop="12" color="#888" />
+	</StackLayout>
+</Page>

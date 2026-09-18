@@ -107,6 +107,42 @@ export function test_actionItem_visibility() {
 	TKUnit.assertEqual(leftBarButtonItemsCount, 0, 'Visibility does not work');
 }
 
+export function test_actionItem_with_icon_keeps_text_as_title() {
+	const actionItem = new actionBar.ActionItem();
+	actionItem.icon = 'sys://star';
+	actionItem.text = 'Favorite';
+	actionItem.ios.position = 'right';
+	const page = createPageAndNavigate();
+
+	page.actionBar.actionItems.addItem(actionItem);
+
+	const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
+	const barButtonItem = navigationItem.rightBarButtonItems.objectAtIndex(0);
+
+	TKUnit.assert(!!barButtonItem.image, 'The icon should be the bar button item image');
+	TKUnit.assertEqual(barButtonItem.title, 'Favorite', 'The text should be kept as the bar button item title');
+}
+
+export function test_actionItem_bar_placement() {
+	const actionItem = new actionBar.ActionItem();
+	actionItem.icon = 'sys://star';
+	actionItem.text = 'Favorite';
+	actionItem.ios.position = 'right';
+	actionItem.ios.visibilityPriority = 'low';
+	actionItem.ios.axisBehavior = 'horizontalOnly';
+	const page = createPageAndNavigate();
+
+	// Must not throw where the placement API (iOS 27.1+) is unavailable.
+	page.actionBar.actionItems.addItem(actionItem);
+
+	const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
+	const barButtonItem: any = navigationItem.rightBarButtonItems.objectAtIndex(0);
+	if (barButtonItem.respondsToSelector('setVisibilityPriority:')) {
+		TKUnit.assertEqual(barButtonItem.visibilityPriority, (<any>global).UIBarButtonItemVisibilityPriorityLow, 'visibilityPriority');
+		TKUnit.assertEqual(barButtonItem.axisBehavior, 1, 'axisBehavior should be horizontalOnly');
+	}
+}
+
 export function test_navigationButton_visibility() {
 	var actionItem = new actionBar.NavigationButton();
 	actionItem.text = 'Test';

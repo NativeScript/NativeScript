@@ -43,6 +43,37 @@ function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
 	return img;
 }
 
+// iOS 27.1 UIBarButtonItem placement API (vertical bars on iPhone Duo), not yet in the iOS typings.
+declare const UIBarButtonItemVisibilityPriorityHigh: number;
+declare const UIBarButtonItemVisibilityPriorityLow: number;
+const enum BarButtonItemAxisBehavior {
+	Automatic = 0,
+	HorizontalOnly = 1,
+	VerticalPreferred = 2,
+}
+
+function applyBarPlacement(barButtonItem: UIBarButtonItem, settings: IOSActionItemSettings): void {
+	if (!barButtonItem || !settings || !barButtonItem.respondsToSelector('setVisibilityPriority:')) {
+		return;
+	}
+	const placement = barButtonItem as UIBarButtonItem & { visibilityPriority: number; axisBehavior: number };
+
+	const priority = settings.visibilityPriority;
+	if (priority === 'high') {
+		placement.visibilityPriority = UIBarButtonItemVisibilityPriorityHigh;
+	} else if (priority === 'low') {
+		placement.visibilityPriority = UIBarButtonItemVisibilityPriorityLow;
+	} else if (priority !== undefined && priority !== 'standard' && !isNaN(+priority)) {
+		placement.visibilityPriority = +priority;
+	}
+
+	if (settings.axisBehavior === 'horizontalOnly') {
+		placement.axisBehavior = BarButtonItemAxisBehavior.HorizontalOnly;
+	} else if (settings.axisBehavior === 'verticalPreferred') {
+		placement.axisBehavior = BarButtonItemAxisBehavior.VerticalPreferred;
+	}
+}
+
 @NativeClass
 class TapBarItemHandlerImpl extends NSObject {
 	private _owner: WeakRef<ActionItemDefinition>;
@@ -350,6 +381,11 @@ export class ActionBar extends ActionBarBase {
 			if (img) {
 				const image = img.imageWithRenderingMode(this._getIconRenderingMode());
 				barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, 'tap');
+				if (item.text) {
+					// Bars show the image; the title is what the system uses where an image alone won't do,
+					// such as the overflow menu items move to when a bar runs out of room.
+					barButtonItem.title = item.text + '';
+				}
 			}
 		} else {
 			barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + '', UIBarButtonItemStyle.Plain, tapHandler, 'tap');
@@ -360,6 +396,8 @@ export class ActionBar extends ActionBarBase {
 			barButtonItem.accessibilityLabel = item.text;
 			barButtonItem.accessibilityTraits = UIAccessibilityTraitButton;
 		}
+
+		applyBarPlacement(barButtonItem, item.ios);
 
 		return barButtonItem;
 	}
