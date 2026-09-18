@@ -53,7 +53,7 @@ export class ActionBar extends View {
 	/**
 	 * Gets the native iOS [UINavigationBar](https://developer.apple.com/documentation/uikit/uinavigationbar) that represents the user interface for this component. Valid only when running on iOS.
 	 */
-	ios: any /* UITabBarController */;
+	ios: any; /* UITabBarController */
 
 	/**
 	 * Gets or set the UIImageRenderingMode of the action bar icons in iOS. Defaults to "alwaysOriginal"
@@ -264,6 +264,31 @@ export interface IOSActionItemSettings {
 	 * 23: PageCurl
 	 */
 	systemIcon: number;
+
+	/**
+	 * Gets or sets how long the item keeps its place in the bar when space is constrained.
+	 * Items with a lower priority move to the overflow menu first.
+	 *  1. high
+	 *  2. standard - This is the default value.
+	 *  3. low
+	 * A number can be used for finer ordering between items; higher values are preserved longer.
+	 * Requires iOS 27.1+, where bars can be presented vertically (iPhone Duo) with room for fewer items. Ignored on earlier versions.
+	 * Note: Property not applicable to NavigationButton
+	 * (https://developer.apple.com/documentation/uikit/uibarbuttonitem/visibilitypriority)
+	 */
+	visibilityPriority?: 'high' | 'standard' | 'low' | number;
+
+	/**
+	 * Gets or sets which bar axes the item supports when the system presents bars vertically (iPhone Duo).
+	 *  1. automatic - the system infers the supported axes from the contents of the item. This is the default value.
+	 *  2. horizontalOnly - the item only supports horizontal bars and is not shown when no horizontal bar is present.
+	 *  3. verticalPreferred - the item supports both and prefers a vertical bar when both are present.
+	 * An item needs an icon to be presented vertically; set both `icon` and `text` so it also reads well in the overflow menu.
+	 * Requires iOS 27.1+. Ignored on earlier versions.
+	 * Note: Property not applicable to NavigationButton
+	 * (https://developer.apple.com/documentation/uikit/uibarbuttonitem/axisbehavior-swift.property)
+	 */
+	axisBehavior?: 'automatic' | 'horizontalOnly' | 'verticalPreferred';
 }
 
 /**
