@@ -82,32 +82,29 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
 	static goBack(frame?: FrameBase): boolean {
 		const top = frame ?? FrameBase.topmost();
-		if (top && top.canGoBack()) {
+		if (!top) {
+			return false;
+		}
+
+		if (top.canGoBack()) {
 			top.goBack();
-
 			return true;
-		} else if (top) {
-			let parentFrameCanGoBack = false;
-			let parentFrame = getAncestor(top, 'Frame');
+		}
 
-			while (parentFrame && !parentFrameCanGoBack) {
-				if (parentFrame && parentFrame.canGoBack()) {
-					parentFrameCanGoBack = true;
-				} else {
-					parentFrame = getAncestor(parentFrame, 'Frame');
-				}
-			}
+		let parentFrameCanGoBack = false;
+		let parentFrame = getAncestor(top, 'Frame');
 
-			if (parentFrame && parentFrameCanGoBack) {
-				parentFrame.goBack();
-
-				return true;
+		while (parentFrame && !parentFrameCanGoBack) {
+			if (parentFrame && parentFrame.canGoBack()) {
+				parentFrameCanGoBack = true;
+			} else {
+				parentFrame = getAncestor(parentFrame, 'Frame');
 			}
 		}
 
-		// Popping is only valid for the frame at the top of the stack - an explicitly passed frame may sit lower.
-		if (frameStack.length > 1 && frameStack[frameStack.length - 1] === top) {
-			top._popFromFrameStack();
+		if (parentFrame && parentFrameCanGoBack) {
+			parentFrame.goBack();
+			return true;
 		}
 
 		return false;
@@ -134,15 +131,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
 	@profile
 	public onLoaded() {
-		/**
-		 * In android 12 and newer, back press can exit app without finishing activity but still removes the frame from stack.
-		 * In that case, we rely on loaded lifecycle to add the frame back.
-		 * Also, make sure the loaded lifecycle does not attempt to push the frame when it's already in the stack but is not the topmost.
-		 */
-		if (this._currentEntry && !this._isInFrameStack) {
-			this._pushInFrameStack();
-		}
-
 		super.onLoaded();
 		this._processNextNavigationEntry();
 	}
