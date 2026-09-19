@@ -85,7 +85,7 @@ public class ContentLayout extends LayoutBase {
 		int childTop = paddingTop;
 
 		int childRight = right - left - (paddingLeft + paddingRight);
-		int childBottom = bottom - top - (paddingTop + paddingBottom);
+		int childBottom = bottom - top - paddingBottom;
 
 		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 			View child = this.getChildAt(i);
