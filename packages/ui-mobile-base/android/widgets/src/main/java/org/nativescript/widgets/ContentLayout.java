@@ -30,13 +30,29 @@ public class ContentLayout extends LayoutBase {
 		int measureWidth = 0;
 		int measureHeight = 0;
 
+		int paddingLeft = this.getPaddingLeft();
+		int paddingRight = this.getPaddingRight();
+		int paddingTop = this.getPaddingTop();
+		int paddingBottom = this.getPaddingBottom();
+
+		// Our own padding is not available to children: reduce the spec we pass down,
+		// mirroring StackLayout/DockLayout. Without this, a child measured against the
+		// full parent size can be laid out larger than the padding box it actually gets,
+		// silently losing content to clipChildren (e.g. Android edge-to-edge insets
+		// applied as padding on an ancestor).
+		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+		int childWidthMeasureSpec = widthMode == MeasureSpec.UNSPECIFIED ? widthMeasureSpec : MeasureSpec.makeMeasureSpec(Math.max(0, MeasureSpec.getSize(widthMeasureSpec) - paddingLeft - paddingRight), widthMode);
+
+		int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+		int childHeightMeasureSpec = heightMode == MeasureSpec.UNSPECIFIED ? heightMeasureSpec : MeasureSpec.makeMeasureSpec(Math.max(0, MeasureSpec.getSize(heightMeasureSpec) - paddingTop - paddingBottom), heightMode);
+
 		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 			View child = this.getChildAt(i);
 			if (child.getVisibility() == View.GONE) {
 				continue;
 			}
 
-			CommonLayoutParams.measureChild(child, widthMeasureSpec, heightMeasureSpec);
+			CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
 			final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 			final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
 
@@ -45,8 +61,8 @@ public class ContentLayout extends LayoutBase {
 		}
 
 		// Add in our padding
-		measureWidth += this.getPaddingLeft() + this.getPaddingRight();
-		measureHeight += this.getPaddingTop() + this.getPaddingBottom();
+		measureWidth += paddingLeft + paddingRight;
+		measureHeight += paddingTop + paddingBottom;
 
 		// Check against our minimum sizes
 		measureWidth = Math.max(measureWidth, this.getSuggestedMinimumWidth());
@@ -69,7 +85,7 @@ public class ContentLayout extends LayoutBase {
 		int childTop = paddingTop;
 
 		int childRight = right - left - (paddingLeft + paddingRight);
-		int childBottom = bottom - top - (paddingRight + paddingBottom);
+		int childBottom = bottom - top - paddingBottom;
 
 		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 			View child = this.getChildAt(i);
