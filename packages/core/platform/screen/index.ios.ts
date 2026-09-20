@@ -29,9 +29,6 @@ class MainScreen {
 		return this.currentScreen.bounds.size.height;
 	}
 
-	// A window can move to a screen of another size, e.g. between the outer and inner displays of
-	// iPhone Duo, so bounds come from the screen it is on now. Scale is the one metric that holds
-	// across screens (layout-helper caches it too), so it keeps using the screen resolved first.
 	private get currentScreen(): UIScreen {
 		const window = getWindow() as UIWindow;
 		return window ? window.screen : this.screen;

@@ -362,10 +362,6 @@ export class Frame extends FrameBase {
 	}
 
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		// Positioning is left to UIKit, but a Frame nested in a layout has no container controller sizing
-		// its view, so it keeps the UIScreen.main bounds UIKit created it with. That is wrong whenever the
-		// scene doesn't match the main screen, e.g. on the inner display of iPhone Duo, where
-		// UIScreen.main stays the outer display.
 		const nativeView = this.nativeViewProtected;
 		const container = nativeView?.superview;
 		if (!container) {
@@ -377,8 +373,9 @@ export class Frame extends FrameBase {
 			parent = parent.parent as View;
 		}
 
-		// Under a UIKit container (window, tab bar, split view, modal) the superview is UIKit's own wrapper.
-		if (container === parent?.nativeViewProtected && !CGRectEqualToRect(nativeView.frame, container.bounds)) {
+		// UIKit never sizes a nested Frame; it keeps UIScreen.main bounds.
+		const isNestedInView = container === parent?.nativeViewProtected;
+		if (isNestedInView && !CGRectEqualToRect(nativeView.frame, container.bounds)) {
 			nativeView.frame = container.bounds;
 		}
 	}
