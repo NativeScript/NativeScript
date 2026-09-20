@@ -43,7 +43,7 @@ function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
 	return img;
 }
 
-// iOS 27.1 UIBarButtonItem placement API (vertical bars on iPhone Duo), not yet in the iOS typings.
+// iOS 27.1 API, not yet in the iOS typings.
 declare const UIBarButtonItemVisibilityPriorityHigh: number;
 declare const UIBarButtonItemVisibilityPriorityLow: number;
 const enum BarButtonItemAxisBehavior {
@@ -382,9 +382,7 @@ export class ActionBar extends ActionBarBase {
 				const image = img.imageWithRenderingMode(this._getIconRenderingMode());
 				barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, 'tap');
 				if (item.text) {
-					// Bars show the image; the title is what the system uses where an image alone won't do,
-					// such as the overflow menu items move to when a bar runs out of room.
-					barButtonItem.title = item.text + '';
+					barButtonItem.title = item.text;
 				}
 			}
 		} else {

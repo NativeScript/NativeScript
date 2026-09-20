@@ -1,7 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
 	<Page.actionBar>
 		<ActionBar title="Action Items" class="action-bar">
-			<!-- More items than a vertical bar (iPhone Duo) has room for: the lower the priority, the sooner an item moves to the overflow menu, where its text shows next to the icon. -->
 			<ActionItem icon="sys://star" text="Favorite" ios.position="right" ios.visibilityPriority="high" tap="{{ onItemTap }}" />
 			<ActionItem icon="sys://square.and.arrow.up" text="Share" ios.position="right" tap="{{ onItemTap }}" />
 			<ActionItem icon="sys://bookmark" text="Bookmark" ios.position="right" tap="{{ onItemTap }}" />
