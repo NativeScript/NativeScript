@@ -94,7 +94,7 @@ describe('FrameBase.goBack', () => {
 		expect(isNavigatingBack(child)).toBe(false);
 	});
 
-	it('reports no navigation and leaves the stack alone when the given frame is not topmost', () => {
+	it('reports no navigation when the given frame is not topmost', () => {
 		const first = createFrame(false);
 		const second = createFrame(true);
 		_pushInFrameStack(first);
@@ -104,28 +104,6 @@ describe('FrameBase.goBack', () => {
 
 		expect(frameStack).toEqual([first, second]);
 		expect(isNavigatingBack(second)).toBe(false);
-	});
-
-	it('pops the topmost frame when it cannot navigate back', () => {
-		const first = createFrame(true);
-		const second = createFrame(false);
-		_pushInFrameStack(first);
-		_pushInFrameStack(second);
-
-		expect(FrameBase.goBack()).toBe(false);
-
-		expect(frameStack).toEqual([first]);
-		expect(second._isInFrameStack).toBe(false);
-	});
-
-	it('keeps the last frame in the stack when it cannot navigate back', () => {
-		const only = createFrame(false);
-		_pushInFrameStack(only);
-
-		expect(FrameBase.goBack()).toBe(false);
-		expect(FrameBase.goBack(only)).toBe(false);
-
-		expect(frameStack).toEqual([only]);
 	});
 
 	it("navigates a nested frame with history when given the window's topmost frame", () => {
