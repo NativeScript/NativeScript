@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { getClientStrategyDevicePath, getFrameworkFlavor, registerFrameworkFlavor } from './framework-flavors.js';
+import { getClientStrategyDevicePath, getFlavorVendorExcludes, getFrameworkFlavor, registerFrameworkFlavor } from './framework-flavors.js';
 import { typescriptServerStrategy } from './frameworks/typescript/server/strategy.js';
 
 function fakeProject(): { root: string } {
@@ -52,5 +52,21 @@ describe('getClientStrategyDevicePath', () => {
 		symlinkSync(real, path.join(root, 'node_modules', '@acme', 'linked-fw'), 'dir');
 		registerFrameworkFlavor({ flavor: 'linked', server: { ...server, flavor: 'linked' }, client: '@acme/linked-fw/client' });
 		expect(getClientStrategyDevicePath('linked', root)).toBe('/ns/m/node_modules/@acme/linked-fw/client/index.js');
+	});
+});
+
+describe('vendor policy', () => {
+	it('rejects a malformed vendor.exclude', () => {
+		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, client: 'x', vendor: { exclude: 'octane' as unknown as string[] } })).toThrow(/vendor\.exclude/);
+		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, client: 'x', vendor: { exclude: [''] } })).toThrow(/vendor\.exclude/);
+	});
+
+	it('exposes the excluded package roots of the registered flavor only', () => {
+		registerFrameworkFlavor({ flavor: 'fw', server, client: 'x', vendor: { exclude: [' octane ', 'react-dom'] } });
+		expect([...getFlavorVendorExcludes('fw')]).toEqual(['octane', 'react-dom']);
+		expect(getFlavorVendorExcludes('vue').size).toBe(0);
+		expect(getFlavorVendorExcludes(undefined).size).toBe(0);
+		registerFrameworkFlavor({ flavor: 'fw', server, client: 'x' });
+		expect(getFlavorVendorExcludes('fw').size).toBe(0);
 	});
 });

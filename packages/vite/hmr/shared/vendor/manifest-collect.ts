@@ -2,6 +2,7 @@ import path from 'path';
 import fs, { readFileSync } from 'fs';
 import { createRequire } from 'node:module';
 import { getMonorepoWorkspaceRoot } from '../../../helpers/project.js';
+import { getFlavorVendorExcludes } from '../../framework-flavors.js';
 
 // Internal representation of resolved vendor inputs, including any metadata we
 // need during esbuild bundling
@@ -384,14 +385,15 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 	// also skip them.
 	const localSourceNames = new Set<string>();
 
-	// Packages the user explicitly opted out of via NS_VENDOR_EXCLUDE. Applied
-	// here — not only as the final `vendor.delete()` sweep below — so an excluded
-	// package is never queued for peer-dependency traversal. Otherwise it can
-	// still drag its peers (notably build tools such as `vite`, declared as a
-	// peer of `@tanstack/solid-start`) into the bundle before it is itself
-	// removed. Anything genuinely needed at runtime but kept out of vendor is
-	// still served over HTTP by the dev server's module loader.
-	const envExcludes = new Set(parseEnvList(process.env.NS_VENDOR_EXCLUDE));
+	// Packages opted out via NS_VENDOR_EXCLUDE or by the registered flavor's
+	// vendor policy (a runtime package whose imports the flavor's compiler
+	// rewrites away). Applied here — not only as the final `vendor.delete()`
+	// sweep below — so an excluded package is never queued for peer-dependency
+	// traversal. Otherwise it can still drag its peers (notably build tools such
+	// as `vite`, declared as a peer of `@tanstack/solid-start`) into the bundle
+	// before it is itself removed. Anything genuinely needed at runtime but kept
+	// out of vendor is still served over HTTP by the dev server's module loader.
+	const policyExcludes = new Set([...parseEnvList(process.env.NS_VENDOR_EXCLUDE), ...getFlavorVendorExcludes(flavor)]);
 
 	const isPackageRootSpecifier = (name: string): boolean => {
 		if (!name) return false;
@@ -410,9 +412,9 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 		if (!name || shouldSkipDependency(name)) {
 			return;
 		}
-		// Honor NS_VENDOR_EXCLUDE up front so an opted-out package is neither
-		// vendored nor traversed for peers (see envExcludes above).
-		if (envExcludes.has(name)) {
+		// Honor the exclusion policy up front so an opted-out package is neither
+		// vendored nor traversed for peers (see policyExcludes above).
+		if (policyExcludes.has(name)) {
 			return;
 		}
 		// Avoid pulling Angular compiler/runtime into the dev vendor bundle when
@@ -518,7 +520,7 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 					// Policy exclusions match PACKAGE NAMES (`@prisma/client` in
 					// ALWAYS_EXCLUDE / NS_VENDOR_EXCLUDE); check here so subpath specs
 					// (`@prisma/client/runtime/…`) can't route around an excluded name.
-					if (shouldSkipDependency(name) || envExcludes.has(name)) {
+					if (shouldSkipDependency(name) || policyExcludes.has(name)) {
 						if (debug) console.log(`[vendor] skipping root dependency ${name} (excluded by policy)`);
 						continue;
 					}
@@ -646,9 +648,9 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 		// etc.). Only direct project dependencies go into the vendor bundle.
 	}
 
-	parseEnvList(process.env.NS_VENDOR_EXCLUDE).forEach((name) => {
+	for (const name of policyExcludes) {
 		vendor.delete(name);
-	});
+	}
 
 	return {
 		entries: Array.from(vendor).sort(),

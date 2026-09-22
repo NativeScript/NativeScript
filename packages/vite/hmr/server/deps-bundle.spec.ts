@@ -5,6 +5,8 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import { setUserDefineEntries } from '../../helpers/global-defines.js';
 import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection } from './deps-bundle.js';
+import { registerFrameworkFlavor } from '../framework-flavors.js';
+import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 
 describe('isDepsPerModuleServingEnabled', () => {
 	it('is off by default and on for 1/true', () => {
@@ -441,6 +443,13 @@ describe('resolveDepsEntriesFromVendorCollection', () => {
 		const specs = seed.entries.map((e) => e.spec);
 		expect(specs).toContain('/node_modules/nativescript-widgets');
 		expect(specs).toContain('/node_modules/pkg-c');
+	});
+
+	it('leaves a package root the registered flavor excludes out of the seed and the vendor specifier map', () => {
+		registerFrameworkFlavor({ flavor: 'seed-fixture', server: { ...typescriptServerStrategy, flavor: 'seed-fixture' }, client: '@fixture/seed-flavor/client', vendor: { exclude: ['pkg-c'] } });
+		const seed = resolveDepsEntriesFromVendorCollection(projectRoot, null, 'ios', 'seed-fixture');
+		expect(seed.vendorSpecToKey.has('pkg-c')).toBe(false);
+		expect(seed.entries.map((e) => e.spec)).toEqual(['/node_modules/nativescript-widgets']);
 	});
 
 	it('returns an empty seed when the project has no collectable dependencies', () => {
