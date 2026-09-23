@@ -487,7 +487,11 @@ export class TabView extends TabViewBase {
 		super.onItemsChanged(oldItems, newItems);
 
 		if (oldItems) {
-			oldItems.forEach((item: TabViewItem, i, arr) => {
+			oldItems.forEach((item: TabViewItem) => {
+				if (newItems && newItems.indexOf(item) >= 0) {
+					return;
+				}
+
 				item.index = 0;
 				item.tabItemSpec = null;
 				item.setNativeView(null);
