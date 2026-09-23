@@ -1,3 +1,18 @@
+## 9.1.2 (2026-09-23)
+
+### 🩹 Fixes
+
+- **types:** reference the platform typings by package name ([de16b2870](https://github.com/NativeScript/NativeScript/commit/de16b2870))
+
+### 🧱 Updated Dependencies
+
+- Updated types-android to 9.1.1
+- Updated types-ios to 9.1.2
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.9.0 (2025-02-26)
 
 ### 🚀 Features
