@@ -75,3 +75,23 @@ echo "/// <reference path=\"$i\" />" >> ios.d.ts
 done
 
 popd
+
+echo "Checking the default reference set (ios/common.d.ts)..."
+
+pushd packages/types-ios/src/lib/ios
+
+# UIKit's declarations use types the iOS 26 SDK moved into UIUtilities (UIAxis,
+# UIRectEdge, UICoordinateSpace), so the default set has to carry it next to UIKit.
+if [ -f 'objc-x86_64/objc!UIUtilities.d.ts' ] && ! grep -q 'objc!UIUtilities.d.ts' common.d.ts; then
+    perl -pi -e 's|^(/// <reference path="objc-x86_64/objc!UIKit.d.ts" />)$|$1\n/// <reference path="objc-x86_64/objc!UIUtilities.d.ts" />|' common.d.ts
+fi
+
+# Every file the default set references must exist in this generation.
+for ref in $(grep -o 'objc-x86_64/[^"]*' common.d.ts); do
+    if [ ! -f "$ref" ]; then
+        echo "error: common.d.ts references $ref, which was not generated"
+        exit 3
+    fi
+done
+
+popd
