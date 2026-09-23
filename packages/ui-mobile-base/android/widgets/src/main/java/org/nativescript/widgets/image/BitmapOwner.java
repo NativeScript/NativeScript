@@ -9,9 +9,6 @@ import android.graphics.drawable.Drawable;
 
 public interface BitmapOwner {
 	void setBitmap(Bitmap value);
-
-	void setDrawable(Drawable asyncDrawable);
-
+	void setDrawable(Drawable value);
 	Drawable getDrawable();
-
 }

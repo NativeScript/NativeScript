@@ -3,7 +3,7 @@ import { textOverflowProperty, textProperty, whiteSpaceProperty } from '../text-
 import { hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, directionProperty } from '../styling/style-properties';
+import { colorProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
 import { layout, isEmoji } from '../../utils';
 
 export * from './text-field-common';
@@ -331,31 +331,7 @@ export class TextField extends TextFieldBase {
 		this.nativeTextViewProtected.attributedPlaceholder = attributedPlaceholder;
 	}
 
-	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
-		return CoreTypes.zeroLength;
-	}
-	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
-		// Padding is realized via UITextFieldImpl.textRectForBounds method
-	}
-
-	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
-		return CoreTypes.zeroLength;
-	}
-	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
-		// Padding is realized via UITextFieldImpl.textRectForBounds method
-	}
-
-	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
-		return CoreTypes.zeroLength;
-	}
-	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
-		// Padding is realized via UITextFieldImpl.textRectForBounds method
-	}
-
-	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
-		return CoreTypes.zeroLength;
-	}
-	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
+	[paddingInternalProperty.setNative](_value: string) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 

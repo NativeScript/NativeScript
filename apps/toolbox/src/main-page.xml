@@ -14,11 +14,13 @@
         <Button text="dialogs" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="forms" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="glass-effects" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="gutters" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-async" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-handling" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="labels" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="list-page-sticky" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="list-page-sticky-templates" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="multiple-scenes" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="scroll-view" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

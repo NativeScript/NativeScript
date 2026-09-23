@@ -10,14 +10,16 @@ previous_url: /ApiReference/ui/image/HOW-TO
 
 The purpose of this article is to show the basic functionality of the Image view. The snippets demonstrates some scenarios and the usage of the ImageView specifics properties
 
-* [Binding image source property](#binding-image-source-property)
-* [Loading an image from app resources](#loading-an-image-from-app-resources)
-* [Loading an image from URL](#loading-an-image-from-url)
-* [Loading an image from file within the application](#loading-an-image-from-file-within-the-application)
-* [Loading an image from Data URI](#loading-an-image-from-data-uri)
-* [Setting image stretching](#setting-image-stretching)
-  * [via XML](#via-xml)
-  * [via code-behind](#via-code-behind)
+- [Image](#image)
+    - [Binding image source property](#binding-image-source-property)
+    - [Loading an image from app resources](#loading-an-image-from-app-resources)
+    - [Loading an image from URL](#loading-an-image-from-url)
+    - [Loading an image from file within the application](#loading-an-image-from-file-within-the-application)
+    - [Loading an image from Data URI](#loading-an-image-from-data-uri)
+    - [Setting image stretching](#setting-image-stretching)
+    - [via XML](#via-xml)
+    - [via code-behind](#via-code-behind)
+    - [See also](#see-also)
 
 Using an image in the code behind requires the Image module to be loaded.
 
@@ -123,7 +125,7 @@ This code snippet demonstrates the first scenario, when we setup the stretch in 
 The second example shows, how we could set up the property via code behind. In this scenario, we get an instance of the image and set up the appropriate string value. The Image stretch could also be set by using `Stretch` enum. For example:
 
 ```TypeScript
-import * as Enums from "tns-core-modules/ui/enums"
+import * as Enums from "@nativescript/core/ui/enums"
 
 const image = new ImageModule.Image();
 image.stretch=CoreTypes.Stretch.none;

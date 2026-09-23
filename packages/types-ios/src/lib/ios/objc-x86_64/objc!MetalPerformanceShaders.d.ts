@@ -11,7 +11,7 @@ declare const enum MPSDeviceOptions {
 /**
  * @since 12.2
  */
-declare function MPSGetPreferredDevice(options: MPSDeviceOptions): MTLDevice;
+declare function MPSGetPreferredDevice(options: MPSDeviceOptions): MTLDevice | null;
 
 declare function MPSHintTemporaryMemoryHighWaterMark(cmdBuf: MTLCommandBuffer, bytes: number): void;
 
@@ -20,4 +20,4 @@ declare function MPSSetHeapCacheDuration(cmdBuf: MTLCommandBuffer, seconds: numb
 /**
  * @since 9.0
  */
-declare function MPSSupportsMTLDevice(device: MTLDevice): boolean;
+declare function MPSSupportsMTLDevice(device: MTLDevice | null): boolean;

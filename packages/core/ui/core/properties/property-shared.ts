@@ -54,10 +54,21 @@ export function isCssUnsetValue(value: any): boolean {
 	return value === 'unset' || value === 'revert';
 }
 
+// These run at the top of every property setter, so the common case of setting
+// a non-string value (number, boolean, Color, object) must bail out after a
+// single typeof check instead of comparing against each reset keyword.
 export function isResetValue(value: any): boolean {
-	return value === unsetValue || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
+	if (typeof value !== 'string') {
+		return value === unsetValue;
+	}
+
+	return value === 'initial' || value === 'inherit' || value === 'unset' || value === 'revert';
 }
 
 export function isCssWideKeyword(value: any): boolean {
-	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
+	if (typeof value !== 'string') {
+		return false;
+	}
+
+	return value === 'initial' || value === 'inherit' || value === 'unset' || value === 'revert';
 }

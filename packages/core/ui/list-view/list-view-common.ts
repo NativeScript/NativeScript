@@ -59,6 +59,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public sectioned: boolean;
 	public showSearch: boolean;
 	public searchAutoHide: boolean;
+	public iosSearchInsetBehavior: ListViewSearchInsetBehavior;
 
 	get separatorColor(): Color {
 		return this.style.separatorColor;
@@ -117,6 +118,24 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 		if (this.itemTemplateSelector) {
 			const dataItem = this._getDataItem(index);
 			templateKey = this._itemTemplateSelector(dataItem, index, this.items);
+		}
+
+		for (let i = 0, length = this._itemTemplatesInternal.length; i < length; i++) {
+			if (this._itemTemplatesInternal[i].key === templateKey) {
+				return this._itemTemplatesInternal[i];
+			}
+		}
+
+		// This is the default template
+		return this._itemTemplatesInternal[0];
+	}
+
+	public _getItemTemplateInSection(section: number, index: number): KeyedTemplate {
+		let templateKey = 'default';
+		if (this.itemTemplateSelector) {
+			const dataItem = this._getDataItemInSection(section, index);
+			const sectionItems = this._getItemsInSection(section);
+			templateKey = this._itemTemplateSelector(dataItem, index, sectionItems);
 		}
 
 		for (let i = 0, length = this._itemTemplatesInternal.length; i < length; i++) {
@@ -357,3 +376,20 @@ export const searchAutoHideProperty = new Property<ListViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 searchAutoHideProperty.register(ListViewBase);
+
+/**
+ * Controls the underlying UIScrollView's content inset adjustment behavior
+ * when `showSearch` is enabled (iOS only).
+ *
+ * Defaults to `'automatic'`, which lets UIKit reserve top space for the
+ * navigation bar / large title when the UISearchController is hosted on
+ * `navigationItem.searchController`, and reserve bottom space for the
+ * keyboard/UISearchTab. Set to `'never'` to opt out (matches the prior
+ * behavior used when the search bar is the table's `tableHeaderView` and
+ * there is no enclosing UINavigationController).
+ */
+export type ListViewSearchInsetBehavior = 'automatic' | 'scrollableAxes' | 'never' | 'always';
+export const iosSearchInsetBehaviorProperty = new Property<ListViewBase, ListViewSearchInsetBehavior>({
+	name: 'iosSearchInsetBehavior',
+});
+iosSearchInsetBehaviorProperty.register(ListViewBase);

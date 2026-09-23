@@ -181,6 +181,11 @@
                 public widthPercent: number;
                 public heightPercent: number;
 
+                public maxWidth: number;
+                public maxHeight: number;
+                public maxWidthPercent: number;
+                public maxHeightPercent: number;
+
                 public topMarginPercent: number;
                 public leftMarginPercent: number;
                 public bottomMarginPercent: number;
@@ -263,6 +268,8 @@
                 constructor(context: android.content.Context);
                 public getOverflowEdge(): number;
                 public setOverflowEdge(value: number): void;
+                public getPassThroughParent(): boolean;
+                public setPassThroughParent(value: boolean): void;
             }
 
             export module LayoutBase {
@@ -361,6 +368,12 @@
 
                 public getAlignContent(): number;
                 public setAlignContent(value: number);
+
+                public getRowGap(): number;
+                public setRowGap(value: number);
+
+                public getColumnGap(): number;
+                public setColumnGap(value: number);
 
                 public static FLEX_DIRECTION_ROW: number;
                 public static FLEX_DIRECTION_ROW_REVERSE: number;
@@ -555,12 +568,16 @@
 
                 export namespace Worker {
                     interface IOnImageLoadedListener {
-                        onImageLoaded(success: boolean): void;
+                        handlesImageUpdate(): boolean;
+                        onImageLoaded(bitmapOrDrawable: globalAndroid.graphics.Bitmap | globalAndroid.graphics.drawable.Drawable): void;
+                        onImageLoadingError(e: java.lang.Exception): void;
                     }
 
                     export class OnImageLoadedListener implements IOnImageLoadedListener {
                         constructor(implementation: IOnImageLoadedListener);
-                        public onImageLoaded(success: boolean): void;
+                        public handlesImageUpdate(): boolean;
+                        public onImageLoaded(bitmapOrDrawable: globalAndroid.graphics.Bitmap | globalAndroid.graphics.drawable.Drawable): void;
+                        public onImageLoadingError(e: java.lang.Exception): void;
                     }
                 }
 
@@ -594,6 +611,14 @@
 
                 public static getMinHeight(view: android.view.View): number;
                 public static setMinHeight(view: android.view.View, value: number): void;
+
+                public static getMaxWidth(view: android.view.View): number;
+                public static setMaxWidth(view: android.view.View, value: number): void;
+                public static setMaxWidthPercent(view: android.view.View, value: number): void;
+
+                public static getMaxHeight(view: android.view.View): number;
+                public static setMaxHeight(view: android.view.View, value: number): void;
+                public static setMaxHeightPercent(view: android.view.View, value: number): void;
 
                 public static getWidth(view: android.view.View): number;
                 public static setWidth(view: android.view.View, value: number): void;
@@ -766,6 +791,9 @@ declare module org {
 				public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
                 public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
                 public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window): void;
+                public static stringToUpperCase(value: string): string;
+                public static stringToLowerCase(value: string): string;
+                public static capitalizeString(value: string): string;
                 public static ignoreEdgeToEdgeOnOlderDevices: boolean;
 				public constructor();
 			}

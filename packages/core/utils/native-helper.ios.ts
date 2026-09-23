@@ -1,9 +1,11 @@
+import type { AndroidNativeHelper } from './native-helper.types';
 import { platformCheck } from './platform-check';
 import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 import { Color } from '../color';
 import { Trace } from '../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './animation-helpers';
 import { SDK_VERSION } from './constants';
+import { getActiveWindow, getiOSWindow } from '../application/helpers-common';
 
 export function dataDeserialize(nativeData?: any) {
 	if (isNullOrUndefined(nativeData)) {
@@ -121,7 +123,7 @@ declare let UIImagePickerControllerSourceType: any;
 const radToDeg = Math.PI / 180;
 
 function isOrientationLandscape(orientation: number) {
-	return orientation === UIDeviceOrientation.LandscapeLeft /* 3 */ || orientation === UIDeviceOrientation.LandscapeRight /* 4 */;
+	return orientation === UIDeviceOrientation.LandscapeLeft /* 3 */ || orientation === UIDeviceOrientation.LandscapeRight; /* 4 */
 }
 
 function openFileAtRootModule(filePath: string): boolean {
@@ -176,7 +178,27 @@ function getRootViewController(): UIViewController {
 	return vc;
 }
 
+/**
+ * The UIWindow NativeScript is driving.
+ *
+ * Resolved from the active window, then the recorded primary window, then UIKit's own
+ * key window lookups. The UIKit lookups come last because `UIApplication.keyWindow` is
+ * deprecated and, in a scene-based app, key status can sit on any connected scene's
+ * window - including one NativeScript does not own.
+ */
 export function getWindow(): UIWindow {
+	const activeWindow = getActiveWindow();
+	// A detached window keeps its UIWindow reference until a surface re-attaches, but that
+	// surface is gone - only an attached window can answer for the app.
+	if (activeWindow?.state === 'attached' && activeWindow.ios?.uiWindow) {
+		return activeWindow.ios.uiWindow;
+	}
+
+	const iosWindow = getiOSWindow();
+	if (iosWindow) {
+		return iosWindow;
+	}
+
 	let window: UIWindow;
 	if (SDK_VERSION >= 15 && typeof NativeScriptViewFactory !== 'undefined') {
 		// UIWindowScene.keyWindow is only available 15+
@@ -304,15 +326,26 @@ function snapshotView(view: UIView, scale: number): UIImage {
 	}
 	// console.log('snapshotView view.frame:', printRect(view.frame));
 	const originalOpacity = view.layer.opacity;
-	view.layer.opacity = originalOpacity > 0 ? originalOpacity : 1;
+	const needsBump = originalOpacity <= 0;
+	if (needsBump) {
+		// Wrap in a CATransaction with actions disabled so the implicit `opacity`
+		// animation isn't kicked off when we temporarily restore visibility for
+		// the render. Restoring synchronously (instead of via setTimeout) avoids a
+		// race where the deferred restore would clobber a caller's later opacity
+		// change — most importantly the shared-transition cleanup that needs the
+		// final opacity to stick after the snapshot is taken.
+		CATransaction.begin();
+		CATransaction.setDisableActions(true);
+		view.layer.opacity = 1;
+	}
 	UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, scale);
 	view.layer.renderInContext(UIGraphicsGetCurrentContext());
 	const image = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-	setTimeout(() => {
-		// ensure set back properly on next tick
+	if (needsBump) {
 		view.layer.opacity = originalOpacity;
-	});
+		CATransaction.commit();
+	}
 	return image;
 }
 
@@ -355,8 +388,8 @@ function animateWithSpring(options?: { tension?: number; friction?: number; mass
 }
 
 // these don't exist on iOS. Stub them to empty functions.
-export const ad = platformCheck('Utils.ad');
-export const android = platformCheck('Utils.android');
+export const ad = platformCheck<AndroidNativeHelper>('Utils.ad');
+export const android = platformCheck<AndroidNativeHelper>('Utils.android');
 
 export const ios = {
 	collections,

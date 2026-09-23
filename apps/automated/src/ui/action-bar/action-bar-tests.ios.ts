@@ -108,7 +108,7 @@ export function test_actionItem_visibility() {
 }
 
 export function test_navigationButton_visibility() {
-	var actionItem = new actionBar.ActionItem();
+	var actionItem = new actionBar.NavigationButton();
 	actionItem.text = 'Test';
 	var page = createPageAndNavigate();
 

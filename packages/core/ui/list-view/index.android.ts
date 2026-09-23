@@ -996,8 +996,8 @@ function ensureListViewAdapterClass() {
 					// Header view type is the last index (after all item template types)
 					return this.owner._itemTemplatesInternal.length;
 				} else {
-					// Get template for the actual item
-					const template = this.owner._getItemTemplate(positionInfo.itemIndex);
+					// Get template for the actual item using section-aware lookup
+					const template = this.owner._getItemTemplateInSection(positionInfo.section, positionInfo.itemIndex);
 					return this.owner._itemTemplatesInternal.indexOf(template);
 				}
 			} else {
@@ -1124,8 +1124,8 @@ function ensureListViewAdapterClass() {
 		}
 
 		private _createItemView(section: number, itemIndex: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
-			// Use existing item creation logic but with sectioned data
-			const template = this.owner._getItemTemplate(itemIndex);
+			// Use section-aware template lookup when in sectioned mode, flat lookup otherwise
+			const template = section >= 0 && this.owner.sectioned ? this.owner._getItemTemplateInSection(section, itemIndex) : this.owner._getItemTemplate(itemIndex);
 			let view: View;
 
 			// convertView is of the wrong type

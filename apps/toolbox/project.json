@@ -30,6 +30,13 @@
 				"forDevice": false,
 				"prepare": false
 			},
+			"defaultConfiguration": "default",
+			"configurations": {
+				"default": {},
+				"hmr": {
+					"noHmr": false
+				}
+			},
 			"dependsOn": ["^build"]
 		},
 		"prepare": {

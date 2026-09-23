@@ -8,7 +8,7 @@ declare class MTKMesh extends NSObject {
 
 	static new(): MTKMesh; // inherited from NSObject
 
-	static newMeshesFromAssetDeviceSourceMeshesError(asset: MDLAsset, device: MTLDevice, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>, error?: interop.Reference<NSError>): NSArray<MTKMesh>;
+	static newMeshesFromAssetDeviceSourceMeshesError(asset: MDLAsset, device: MTLDevice, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh> | null> | ArrayBufferLike | ArrayBufferView | null, error?: interop.Reference<NSError>): NSArray<MTKMesh> | null;
 
 	name: string;
 
@@ -62,7 +62,7 @@ declare class MTKMeshBuffer extends NSObject implements MDLMeshBuffer, MDLNamed 
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	fillDataOffset(data: NSData, offset: number): void;
 
@@ -124,9 +124,9 @@ declare class MTKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	newBufferFromZoneDataType(zone: MDLMeshBufferZone, data: NSData, type: MDLMeshBufferType): MDLMeshBuffer;
+	newBufferFromZoneDataType(zone: MDLMeshBufferZone | null, data: NSData, type: MDLMeshBufferType): MDLMeshBuffer | null;
 
-	newBufferFromZoneLengthType(zone: MDLMeshBufferZone, length: number, type: MDLMeshBufferType): MDLMeshBuffer;
+	newBufferFromZoneLengthType(zone: MDLMeshBufferZone | null, length: number, type: MDLMeshBufferType): MDLMeshBuffer | null;
 
 	newBufferType(length: number, type: MDLMeshBufferType): MDLMeshBuffer;
 
@@ -152,12 +152,12 @@ declare class MTKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 /**
  * @since 9.0
  */
-declare function MTKMetalVertexDescriptorFromModelIO(modelIODescriptor: MDLVertexDescriptor): MTLVertexDescriptor;
+declare function MTKMetalVertexDescriptorFromModelIO(modelIODescriptor: MDLVertexDescriptor): MTLVertexDescriptor | null;
 
 /**
  * @since 10.0
  */
-declare function MTKMetalVertexDescriptorFromModelIOWithError(modelIODescriptor: MDLVertexDescriptor, error: interop.Pointer | interop.Reference<NSError>): MTLVertexDescriptor;
+declare function MTKMetalVertexDescriptorFromModelIOWithError(modelIODescriptor: MDLVertexDescriptor, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): MTLVertexDescriptor | null;
 
 /**
  * @since 9.0
@@ -182,7 +182,7 @@ declare function MTKModelIOVertexDescriptorFromMetal(metalDescriptor: MTLVertexD
 /**
  * @since 10.0
  */
-declare function MTKModelIOVertexDescriptorFromMetalWithError(metalDescriptor: MTLVertexDescriptor, error: interop.Pointer | interop.Reference<NSError>): MDLVertexDescriptor;
+declare function MTKModelIOVertexDescriptorFromMetalWithError(metalDescriptor: MTLVertexDescriptor, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): MDLVertexDescriptor;
 
 /**
  * @since 9.0
@@ -204,7 +204,7 @@ declare class MTKSubmesh extends NSObject {
 
 	readonly indexType: MTLIndexType;
 
-	readonly mesh: MTKMesh;
+	readonly mesh: MTKMesh | null;
 
 	name: string;
 
@@ -226,52 +226,52 @@ declare class MTKTextureLoader extends NSObject {
 
 	initWithDevice(device: MTLDevice): this;
 
-	newTextureWithCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, any> | null, completionHandler: (p1: MTLTexture | null, p2: NSError | null) => void): void;
 
-	newTextureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
+	newTextureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MTLTexture | null;
 
-	newTextureWithContentsOfURLOptionsCompletionHandler(URL: NSURL, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithContentsOfURLOptionsCompletionHandler(URL: NSURL, options: NSDictionary<string, any> | null, completionHandler: (p1: MTLTexture | null, p2: NSError | null) => void): void;
 
-	newTextureWithContentsOfURLOptionsError(URL: NSURL, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
+	newTextureWithContentsOfURLOptionsError(URL: NSURL, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MTLTexture | null;
 
-	newTextureWithDataOptionsCompletionHandler(data: NSData, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithDataOptionsCompletionHandler(data: NSData, options: NSDictionary<string, any> | null, completionHandler: (p1: MTLTexture | null, p2: NSError | null) => void): void;
 
-	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
-
-	/**
-	 * @since 10.0
-	 */
-	newTextureWithMDLTextureOptionsCompletionHandler(texture: MDLTexture, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MTLTexture | null;
 
 	/**
 	 * @since 10.0
 	 */
-	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
+	newTextureWithMDLTextureOptionsCompletionHandler(texture: MDLTexture, options: NSDictionary<string, any> | null, completionHandler: (p1: MTLTexture | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 10.0
 	 */
-	newTextureWithNameScaleFactorBundleOptionsCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MTLTexture | null;
 
 	/**
 	 * @since 10.0
 	 */
-	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
+	newTextureWithNameScaleFactorBundleOptionsCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle | null, options: NSDictionary<string, any> | null, completionHandler: (p1: MTLTexture | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 10.0
 	 */
-	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
+	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle | null, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MTLTexture | null;
 
 	/**
 	 * @since 10.0
 	 */
-	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSArray<MTLTexture>;
+	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any> | null, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 10.0
 	 */
-	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string> | string[], scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
+	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): NSArray<MTLTexture>;
+
+	/**
+	 * @since 10.0
+	 */
+	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string> | string[], scaleFactor: number, bundle: NSBundle | null, options: NSDictionary<string, any> | null, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError | null) => void): void;
 }
 
 /**
@@ -367,7 +367,7 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MTKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MTKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -378,7 +378,7 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MTKView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MTKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -397,11 +397,11 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	colorPixelFormat: MTLPixelFormat;
 
-	readonly currentDrawable: CAMetalDrawable;
+	readonly currentDrawable: CAMetalDrawable | null;
 
-	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor;
+	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor | null;
 
-	delegate: MTKViewDelegate;
+	delegate: MTKViewDelegate | null;
 
 	/**
 	 * @since 13.0
@@ -415,9 +415,9 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 	 */
 	depthStencilStorageMode: MTLStorageMode;
 
-	readonly depthStencilTexture: MTLTexture;
+	readonly depthStencilTexture: MTLTexture | null;
 
-	device: MTLDevice;
+	device: MTLDevice | null;
 
 	drawableSize: CGSize;
 
@@ -430,20 +430,25 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 	 */
 	multisampleColorAttachmentTextureUsage: MTLTextureUsage;
 
-	readonly multisampleColorTexture: MTLTexture;
+	readonly multisampleColorTexture: MTLTexture | null;
 
 	paused: boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly preferredDevice: MTLDevice;
+	readonly preferredDevice: MTLDevice | null;
 
 	readonly preferredDrawableSize: CGSize;
 
 	preferredFramesPerSecond: number;
 
 	presentsWithTransaction: boolean;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly residencySet: MTLResidencySet;
 
 	sampleCount: number;
 
@@ -461,9 +466,9 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { frame: CGRect; device: MTLDevice; });
+	constructor(o: { frame: CGRect; device: MTLDevice | null; });
 
-	actionForLayerForKey(layer: CALayer, event: string): CAAction;
+	actionForLayerForKey(layer: CALayer, event: string): CAAction | null;
 
 	class(): typeof NSObject;
 
@@ -479,7 +484,7 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithFrameDevice(frameRect: CGRect, device: MTLDevice): this;
+	initWithFrameDevice(frameRect: CGRect, device: MTLDevice | null): this;
 
 	isEqual(object: any): boolean;
 

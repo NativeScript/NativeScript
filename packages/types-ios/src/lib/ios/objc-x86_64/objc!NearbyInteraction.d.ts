@@ -16,7 +16,7 @@ declare class NIAlgorithmConvergence extends NSObject implements NSCopying, NSSe
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -70,7 +70,7 @@ declare class NIConfiguration extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -129,7 +129,7 @@ declare class NIDLTDOAMeasurement extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -189,7 +189,7 @@ declare class NIDiscoveryToken extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -284,7 +284,7 @@ declare class NINearbyObject extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -366,13 +366,13 @@ declare class NISession extends NSObject {
 
 	static new(): NISession; // inherited from NSObject
 
-	readonly configuration: NIConfiguration;
+	readonly configuration: NIConfiguration | null;
 
-	delegate: NISessionDelegate;
+	delegate: NISessionDelegate | null;
 
-	delegateQueue: NSObject & OS_dispatch_queue;
+	delegateQueue: NSObject & OS_dispatch_queue | null;
 
-	readonly discoveryToken: NIDiscoveryToken;
+	readonly discoveryToken: NIDiscoveryToken | null;
 
 	/**
 	 * @since 16.0
@@ -424,7 +424,7 @@ interface NISessionDelegate extends NSObjectProtocol {
 	/**
 	 * @since 16.0
 	 */
-	sessionDidUpdateAlgorithmConvergenceForObject?(session: NISession, convergence: NIAlgorithmConvergence, object: NINearbyObject): void;
+	sessionDidUpdateAlgorithmConvergenceForObject?(session: NISession, convergence: NIAlgorithmConvergence, object: NINearbyObject | null): void;
 
 	/**
 	 * @since 26.0

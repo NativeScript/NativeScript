@@ -26,33 +26,33 @@ declare class NEAppProxyFlow extends NSObject {
 	/**
 	 * @since 13.4
 	 */
-	networkInterface: NSObject & OS_nw_interface;
+	networkInterface: NSObject & OS_nw_interface | null;
 
 	/**
 	 * @since 14.2
 	 */
-	readonly remoteHostname: string;
+	readonly remoteHostname: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	closeReadWithError(error: NSError): void;
+	closeReadWithError(error: NSError | null): void;
 
 	/**
 	 * @since 9.0
 	 */
-	closeWriteWithError(error: NSError): void;
+	closeWriteWithError(error: NSError | null): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	openWithLocalEndpointCompletionHandler(localEndpoint: NWHostEndpoint, completionHandler: (p1: NSError) => void): void;
+	openWithLocalEndpointCompletionHandler(localEndpoint: NWHostEndpoint | null, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 18.0
 	 */
-	openWithLocalFlowEndpointCompletionHandler(localEndpoint: NSObject & OS_nw_endpoint, completionHandler: (p1: NSError) => void): void;
+	openWithLocalFlowEndpointCompletionHandler(localEndpoint: NSObject & OS_nw_endpoint | null, completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -93,7 +93,7 @@ declare class NEAppProxyProvider extends NETunnelProvider {
 	/**
 	 * @since 9.0
 	 */
-	cancelProxyWithError(error: NSError): void;
+	cancelProxyWithError(error: NSError | null): void;
 
 	/**
 	 * @since 9.0
@@ -114,7 +114,7 @@ declare class NEAppProxyProvider extends NETunnelProvider {
 	/**
 	 * @since 9.0
 	 */
-	startProxyWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: NSError) => void): void;
+	startProxyWithOptionsCompletionHandler(options: NSDictionary<string, any> | null, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
@@ -155,12 +155,12 @@ declare class NEAppProxyTCPFlow extends NEAppProxyFlow {
 	/**
 	 * @since 9.0
 	 */
-	readDataWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
+	readDataWithCompletionHandler(completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 */
-	writeDataWithCompletionHandler(data: NSData, completionHandler: (p1: NSError) => void): void;
+	writeDataWithCompletionHandler(data: NSData, completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -176,34 +176,34 @@ declare class NEAppProxyUDPFlow extends NEAppProxyFlow {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly localEndpoint: NWEndpoint;
+	readonly localEndpoint: NWEndpoint | null;
 
 	/**
 	 * @since 18.0
 	 */
-	readonly localFlowEndpoint: NSObject & OS_nw_endpoint;
+	readonly localFlowEndpoint: NSObject & OS_nw_endpoint | null;
 
 	/**
 	 * @since 18.0
 	 */
-	readDatagramsAndFlowEndpointsWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSArray<NSObject & OS_nw_endpoint>, p3: NSError) => void): void;
+	readDatagramsAndFlowEndpointsWithCompletionHandler(completionHandler: (p1: NSArray<NSData> | null, p2: NSArray<NSObject & OS_nw_endpoint> | null, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readDatagramsWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSArray<NWEndpoint>, p3: NSError) => void): void;
+	readDatagramsWithCompletionHandler(completionHandler: (p1: NSArray<NSData> | null, p2: NSArray<NWEndpoint> | null, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	writeDatagramsSentByEndpointsCompletionHandler(datagrams: NSArray<NSData> | NSData[], remoteEndpoints: NSArray<NWEndpoint> | NWEndpoint[], completionHandler: (p1: NSError) => void): void;
+	writeDatagramsSentByEndpointsCompletionHandler(datagrams: NSArray<NSData> | NSData[], remoteEndpoints: NSArray<NWEndpoint> | NWEndpoint[], completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 18.0
 	 */
-	writeDatagramsSentByFlowEndpointsCompletionHandler(datagrams: NSArray<NSData> | NSData[], remoteEndpoints: NSArray<NSObject & OS_nw_endpoint> | NSObject & OS_nw_endpoint[], completionHandler: (p1: NSError) => void): void;
+	writeDatagramsSentByFlowEndpointsCompletionHandler(datagrams: NSArray<NSData> | NSData[], remoteEndpoints: NSArray<NSObject & OS_nw_endpoint> | NSObject & OS_nw_endpoint[], completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -236,7 +236,7 @@ declare class NEAppPushManager extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	static loadAllFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NEAppPushManager>, p2: NSError) => void): void;
+	static loadAllFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NEAppPushManager> | null, p2: NSError | null) => void): void;
 
 	static new(): NEAppPushManager; // inherited from NSObject
 
@@ -245,7 +245,7 @@ declare class NEAppPushManager extends NSObject {
 	 */
 	readonly active: boolean;
 
-	delegate: NEAppPushDelegate;
+	delegate: NEAppPushDelegate | null;
 
 	/**
 	 * @since 14.0
@@ -255,7 +255,7 @@ declare class NEAppPushManager extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	localizedDescription: string;
+	localizedDescription: string | null;
 
 	/**
 	 * @since 26.0
@@ -275,7 +275,7 @@ declare class NEAppPushManager extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	providerBundleIdentifier: string;
+	providerBundleIdentifier: string | null;
 
 	/**
 	 * @since 14.0
@@ -285,17 +285,17 @@ declare class NEAppPushManager extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -324,7 +324,7 @@ declare class NEAppPushProvider extends NEProvider {
 	/**
 	 * @since 14.0
 	 */
-	readonly providerConfiguration: NSDictionary<string, any>;
+	readonly providerConfiguration: NSDictionary<string, any> | null;
 
 	/**
 	 * @since 14.0
@@ -350,7 +350,7 @@ declare class NEAppPushProvider extends NEProvider {
 	 * @since 14.0
 	 * @deprecated 100000
 	 */
-	startWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	startWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
@@ -375,12 +375,12 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	matchDomains: NSArray<any>;
+	matchDomains: NSArray<any> | null;
 
 	/**
 	 * @since 9.3
 	 */
-	matchPath: string;
+	matchPath: string | null;
 
 	/**
 	 * @since 9.0
@@ -396,7 +396,7 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	constructor(o: { signingIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -420,12 +420,12 @@ declare class NEDNSOverHTTPSSettings extends NEDNSSettings {
 	/**
 	 * @since 16.0
 	 */
-	identityReference: NSData;
+	identityReference: NSData | null;
 
 	/**
 	 * @since 14.0
 	 */
-	serverURL: NSURL;
+	serverURL: NSURL | null;
 }
 
 /**
@@ -440,12 +440,12 @@ declare class NEDNSOverTLSSettings extends NEDNSSettings {
 	/**
 	 * @since 16.0
 	 */
-	identityReference: NSData;
+	identityReference: NSData | null;
 
 	/**
 	 * @since 14.0
 	 */
-	serverName: string;
+	serverName: string | null;
 }
 
 /**
@@ -492,27 +492,27 @@ declare class NEDNSProxyManager extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	localizedDescription: string;
+	localizedDescription: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	providerProtocol: NEDNSProxyProviderProtocol;
+	providerProtocol: NEDNSProxyProviderProtocol | null;
 
 	/**
 	 * @since 11.0
 	 */
-	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -541,12 +541,12 @@ declare class NEDNSProxyProvider extends NEProvider {
 	/**
 	 * @since 11.0
 	 */
-	readonly systemDNSSettings: NSArray<NEDNSSettings>;
+	readonly systemDNSSettings: NSArray<NEDNSSettings> | null;
 
 	/**
 	 * @since 11.0
 	 */
-	cancelProxyWithError(error: NSError): void;
+	cancelProxyWithError(error: NSError | null): void;
 
 	/**
 	 * @since 11.0
@@ -567,7 +567,7 @@ declare class NEDNSProxyProvider extends NEProvider {
 	/**
 	 * @since 11.0
 	 */
-	startProxyWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: NSError) => void): void;
+	startProxyWithOptionsCompletionHandler(options: NSDictionary<string, any> | null, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
@@ -587,12 +587,12 @@ declare class NEDNSProxyProviderProtocol extends NEVPNProtocol {
 	/**
 	 * @since 11.0
 	 */
-	providerBundleIdentifier: string;
+	providerBundleIdentifier: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	providerConfiguration: NSDictionary<string, any>;
+	providerConfiguration: NSDictionary<string, any> | null;
 }
 
 /**
@@ -617,12 +617,12 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 9.0
 	 */
-	domainName: string;
+	domainName: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	matchDomains: NSArray<string>;
+	matchDomains: NSArray<string> | null;
 
 	/**
 	 * @since 9.0
@@ -632,7 +632,7 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 9.0
 	 */
-	searchDomains: NSArray<string>;
+	searchDomains: NSArray<string> | null;
 
 	/**
 	 * @since 9.0
@@ -648,7 +648,7 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 	 */
 	constructor(o: { servers: NSArray<string> | string[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -687,7 +687,7 @@ declare class NEDNSSettingsManager extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	dnsSettings: NEDNSSettings;
+	dnsSettings: NEDNSSettings | null;
 
 	/**
 	 * @since 14.0
@@ -697,27 +697,27 @@ declare class NEDNSSettingsManager extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	localizedDescription: string;
+	localizedDescription: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	onDemandRules: NSArray<NEOnDemandRule>;
+	onDemandRules: NSArray<NEOnDemandRule> | null;
 
 	/**
 	 * @since 14.0
 	 */
-	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -756,12 +756,12 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 	/**
 	 * @since 8.0
 	 */
-	probeURL: NSURL;
+	probeURL: NSURL | null;
 
 	/**
 	 * @since 8.0
 	 */
-	useDNSServers: NSArray<string>;
+	useDNSServers: NSArray<string> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -772,7 +772,7 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 	 */
 	constructor(o: { matchDomains: NSArray<string> | string[]; andAction: NEEvaluateConnectionRuleAction; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -822,23 +822,23 @@ declare class NEFilterBrowserFlow extends NEFilterFlow implements NSCopying, NSS
 	/**
 	 * @since 9.0
 	 */
-	readonly parentURL: NSURL;
+	readonly parentURL: NSURL | null;
 
 	/**
 	 * @since 9.0
 	 */
-	readonly request: NSURLRequest;
+	readonly request: NSURLRequest | null;
 
 	/**
 	 * @since 9.0
 	 */
-	readonly response: NSURLResponse;
+	readonly response: NSURLResponse | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -862,12 +862,12 @@ declare class NEFilterControlProvider extends NEFilterProvider {
 	/**
 	 * @since 9.0
 	 */
-	URLAppendStringMap: NSDictionary<string, string>;
+	URLAppendStringMap: NSDictionary<string, string> | null;
 
 	/**
 	 * @since 9.0
 	 */
-	remediationMap: NSDictionary<string, NSDictionary<string, NSObject>>;
+	remediationMap: NSDictionary<string, NSDictionary<string, NSObject>> | null;
 
 	/**
 	 * @since 9.0
@@ -913,7 +913,7 @@ declare class NEFilterControlVerdict extends NEFilterNewFlowVerdict implements N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -997,13 +997,13 @@ declare class NEFilterDataVerdict extends NEFilterVerdict implements NSCopying, 
 	/**
 	 * @since 9.0
 	 */
-	static remediateVerdictWithRemediationURLMapKeyRemediationButtonTextMapKey(remediationURLMapKey: string, remediationButtonTextMapKey: string): NEFilterDataVerdict;
+	static remediateVerdictWithRemediationURLMapKeyRemediationButtonTextMapKey(remediationURLMapKey: string | null, remediationButtonTextMapKey: string | null): NEFilterDataVerdict;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1027,7 +1027,7 @@ declare class NEFilterFlow extends NSObject implements NSCopying, NSSecureCoding
 	/**
 	 * @since 9.0
 	 */
-	readonly URL: NSURL;
+	readonly URL: NSURL | null;
 
 	/**
 	 * @since 13.0
@@ -1042,23 +1042,23 @@ declare class NEFilterFlow extends NSObject implements NSCopying, NSSecureCoding
 	/**
 	 * @since 11.0
 	 */
-	readonly sourceAppIdentifier: string;
+	readonly sourceAppIdentifier: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly sourceAppUniqueIdentifier: NSData;
+	readonly sourceAppUniqueIdentifier: NSData | null;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly sourceAppVersion: string;
+	readonly sourceAppVersion: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1087,27 +1087,27 @@ declare class NEFilterManager extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	localizedDescription: string;
+	localizedDescription: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	providerConfiguration: NEFilterProviderConfiguration;
+	providerConfiguration: NEFilterProviderConfiguration | null;
 
 	/**
 	 * @since 8.0
 	 */
-	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 8.0
 	 */
-	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 8.0
 	 */
-	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -1171,7 +1171,7 @@ declare class NEFilterNewFlowVerdict extends NEFilterVerdict implements NSCopyin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1200,7 +1200,7 @@ declare class NEFilterProvider extends NEProvider {
 	/**
 	 * @since 9.0
 	 */
-	startFilterWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	startFilterWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
@@ -1230,38 +1230,38 @@ declare class NEFilterProviderConfiguration extends NSObject implements NSCopyin
 	/**
 	 * @since 9.0
 	 */
-	identityReference: NSData;
+	identityReference: NSData | null;
 
 	/**
 	 * @since 9.0
 	 */
-	organization: string;
+	organization: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	passwordReference: NSData;
+	passwordReference: NSData | null;
 
 	/**
 	 * @since 9.0
 	 */
-	serverAddress: string;
+	serverAddress: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	username: string;
+	username: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	vendorConfiguration: NSDictionary<string, any>;
+	vendorConfiguration: NSDictionary<string, any> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1306,7 +1306,7 @@ declare class NEFilterRemediationVerdict extends NEFilterVerdict implements NSCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1345,13 +1345,13 @@ declare class NEFilterReport extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 11.0
 	 */
-	readonly flow: NEFilterFlow;
+	readonly flow: NEFilterFlow | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1385,28 +1385,28 @@ declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSe
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly localEndpoint: NWEndpoint;
+	readonly localEndpoint: NWEndpoint | null;
 
 	/**
 	 * @since 18.0
 	 */
-	readonly localFlowEndpoint: NSObject & OS_nw_endpoint;
+	readonly localFlowEndpoint: NSObject & OS_nw_endpoint | null;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly remoteEndpoint: NWEndpoint;
+	readonly remoteEndpoint: NWEndpoint | null;
 
 	/**
 	 * @since 18.0
 	 */
-	readonly remoteFlowEndpoint: NSObject & OS_nw_endpoint;
+	readonly remoteFlowEndpoint: NSObject & OS_nw_endpoint | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly remoteHostname: string;
+	readonly remoteHostname: string | null;
 
 	/**
 	 * @since 9.0
@@ -1427,7 +1427,7 @@ declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSe
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1452,7 +1452,7 @@ declare class NEFilterVerdict extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1482,7 +1482,7 @@ declare class NEFlowMetaData extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1557,7 +1557,7 @@ declare class NEHotspotConfiguration extends NSObject implements NSCopying, NSSe
 	 */
 	constructor(o: { SSIDPrefix: string; passphrase: string; isWEP: boolean; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1681,7 +1681,7 @@ declare class NEHotspotConfigurationManager extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	applyConfigurationCompletionHandler(configuration: NEHotspotConfiguration, completionHandler: (p1: NSError) => void): void;
+	applyConfigurationCompletionHandler(configuration: NEHotspotConfiguration, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
@@ -1691,12 +1691,12 @@ declare class NEHotspotConfigurationManager extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	joinAccessoryHotspotPassphraseCompletionHandler(accessory: ASAccessory, passphrase: string, completionHandler: (p1: NSError) => void): void;
+	joinAccessoryHotspotPassphraseCompletionHandler(accessory: ASAccessory, passphrase: string, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 18.0
 	 */
-	joinAccessoryHotspotWithoutSecurityCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError) => void): void;
+	joinAccessoryHotspotWithoutSecurityCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
@@ -1778,7 +1778,7 @@ declare class NEHotspotEAPSettings extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1838,7 +1838,7 @@ declare class NEHotspotHS20Settings extends NSObject implements NSCopying, NSSec
 	 */
 	constructor(o: { domainName: string; roamingEnabled: boolean; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1870,13 +1870,13 @@ declare class NEHotspotHelper extends NSObject {
 	 * @since 9.0
 	 * @deprecated 26.0
 	 */
-	static registerWithOptionsQueueHandler(options: NSDictionary<string, NSObject>, queue: NSObject & OS_dispatch_queue, handler: (p1: NEHotspotHelperCommand) => void): boolean;
+	static registerWithOptionsQueueHandler(options: NSDictionary<string, NSObject> | null, queue: NSObject & OS_dispatch_queue, handler: (p1: NEHotspotHelperCommand) => void): boolean;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 26.0
 	 */
-	static supportedNetworkInterfaces(): NSArray<any>;
+	static supportedNetworkInterfaces(): NSArray<any> | null;
 }
 
 /**
@@ -1901,12 +1901,12 @@ declare class NEHotspotHelperCommand extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	readonly network: NEHotspotNetwork;
+	readonly network: NEHotspotNetwork | null;
 
 	/**
 	 * @since 9.0
 	 */
-	readonly networkList: NSArray<NEHotspotNetwork>;
+	readonly networkList: NSArray<NEHotspotNetwork> | null;
 
 	/**
 	 * @since 9.0
@@ -2014,7 +2014,7 @@ declare class NEHotspotNetwork extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	static fetchCurrentWithCompletionHandler(completionHandler: (p1: NEHotspotNetwork) => void): void;
+	static fetchCurrentWithCompletionHandler(completionHandler: (p1: NEHotspotNetwork | null) => void): void;
 
 	static new(): NEHotspotNetwork; // inherited from NSObject
 
@@ -2112,7 +2112,7 @@ declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding 
 	/**
 	 * @since 9.0
 	 */
-	gatewayAddress: string;
+	gatewayAddress: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2123,7 +2123,7 @@ declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding 
 	 */
 	constructor(o: { destinationAddress: string; subnetMask: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2152,12 +2152,12 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 9.0
 	 */
-	excludedRoutes: NSArray<NEIPv4Route>;
+	excludedRoutes: NSArray<NEIPv4Route> | null;
 
 	/**
 	 * @since 9.0
 	 */
-	includedRoutes: NSArray<NEIPv4Route>;
+	includedRoutes: NSArray<NEIPv4Route> | null;
 
 	/**
 	 * @since 9.0
@@ -2173,7 +2173,7 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2212,7 +2212,7 @@ declare class NEIPv6Route extends NSObject implements NSCopying, NSSecureCoding 
 	/**
 	 * @since 9.0
 	 */
-	gatewayAddress: string;
+	gatewayAddress: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2223,7 +2223,7 @@ declare class NEIPv6Route extends NSObject implements NSCopying, NSSecureCoding 
 	 */
 	constructor(o: { destinationAddress: string; networkPrefixLength: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2252,12 +2252,12 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 9.0
 	 */
-	excludedRoutes: NSArray<NEIPv6Route>;
+	excludedRoutes: NSArray<NEIPv6Route> | null;
 
 	/**
 	 * @since 9.0
 	 */
-	includedRoutes: NSArray<NEIPv6Route>;
+	includedRoutes: NSArray<NEIPv6Route> | null;
 
 	/**
 	 * @since 9.0
@@ -2273,7 +2273,7 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2297,17 +2297,17 @@ declare class NEOnDemandRule extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 8.0
 	 */
-	DNSSearchDomainMatch: NSArray<string>;
+	DNSSearchDomainMatch: NSArray<string> | null;
 
 	/**
 	 * @since 8.0
 	 */
-	DNSServerAddressMatch: NSArray<string>;
+	DNSServerAddressMatch: NSArray<string> | null;
 
 	/**
 	 * @since 8.0
 	 */
-	SSIDMatch: NSArray<string>;
+	SSIDMatch: NSArray<string> | null;
 
 	/**
 	 * @since 8.0
@@ -2322,13 +2322,13 @@ declare class NEOnDemandRule extends NSObject implements NSCopying, NSSecureCodi
 	/**
 	 * @since 8.0
 	 */
-	probeURL: NSURL;
+	probeURL: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2381,7 +2381,7 @@ declare class NEOnDemandRuleEvaluateConnection extends NEOnDemandRule {
 	/**
 	 * @since 8.0
 	 */
-	connectionRules: NSArray<NEEvaluateConnectionRule>;
+	connectionRules: NSArray<NEEvaluateConnectionRule> | null;
 }
 
 /**
@@ -2425,7 +2425,7 @@ declare class NEPacket extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 10.0
 	 */
-	readonly metadata: NEFlowMetaData;
+	readonly metadata: NEFlowMetaData | null;
 
 	/**
 	 * @since 10.0
@@ -2441,7 +2441,7 @@ declare class NEPacket extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	constructor(o: { data: NSData; protocolFamily: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2495,22 +2495,22 @@ declare class NEPacketTunnelNetworkSettings extends NETunnelNetworkSettings {
 	/**
 	 * @since 9.0
 	 */
-	IPv4Settings: NEIPv4Settings;
+	IPv4Settings: NEIPv4Settings | null;
 
 	/**
 	 * @since 9.0
 	 */
-	IPv6Settings: NEIPv6Settings;
+	IPv6Settings: NEIPv6Settings | null;
 
 	/**
 	 * @since 9.0
 	 */
-	MTU: number;
+	MTU: number | null;
 
 	/**
 	 * @since 9.0
 	 */
-	tunnelOverheadBytes: number;
+	tunnelOverheadBytes: number | null;
 }
 
 /**
@@ -2530,29 +2530,29 @@ declare class NEPacketTunnelProvider extends NETunnelProvider {
 	/**
 	 * @since 18.0
 	 */
-	readonly virtualInterface: NSObject & OS_nw_interface;
+	readonly virtualInterface: NSObject & OS_nw_interface | null;
 
 	/**
 	 * @since 9.0
 	 */
-	cancelTunnelWithError(error: NSError): void;
-
-	/**
-	 * @since 9.0
-	 * @deprecated 18.0
-	 */
-	createTCPConnectionThroughTunnelToEndpointEnableTLSTLSParametersDelegate(remoteEndpoint: NWEndpoint, enableTLS: boolean, TLSParameters: NWTLSParameters, delegate: any): NWTCPConnection;
+	cancelTunnelWithError(error: NSError | null): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	createUDPSessionThroughTunnelToEndpointFromEndpoint(remoteEndpoint: NWEndpoint, localEndpoint: NWHostEndpoint): NWUDPSession;
+	createTCPConnectionThroughTunnelToEndpointEnableTLSTLSParametersDelegate(remoteEndpoint: NWEndpoint, enableTLS: boolean, TLSParameters: NWTLSParameters | null, delegate: any | null): NWTCPConnection;
+
+	/**
+	 * @since 9.0
+	 * @deprecated 18.0
+	 */
+	createUDPSessionThroughTunnelToEndpointFromEndpoint(remoteEndpoint: NWEndpoint, localEndpoint: NWHostEndpoint | null): NWUDPSession;
 
 	/**
 	 * @since 9.0
 	 */
-	startTunnelWithOptionsCompletionHandler(options: NSDictionary<string, NSObject>, completionHandler: (p1: NSError) => void): void;
+	startTunnelWithOptionsCompletionHandler(options: NSDictionary<string, NSObject> | null, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
@@ -2582,13 +2582,13 @@ declare class NEPrivateLTENetwork extends NSObject implements NSCopying, NSSecur
 	/**
 	 * @since 15.0
 	 */
-	trackingAreaCode: string;
+	trackingAreaCode: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2608,19 +2608,19 @@ declare class NEProvider extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly defaultPath: NWPath;
+	readonly defaultPath: NWPath | null;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	createTCPConnectionToEndpointEnableTLSTLSParametersDelegate(remoteEndpoint: NWEndpoint, enableTLS: boolean, TLSParameters: NWTLSParameters, delegate: any): NWTCPConnection;
+	createTCPConnectionToEndpointEnableTLSTLSParametersDelegate(remoteEndpoint: NWEndpoint, enableTLS: boolean, TLSParameters: NWTLSParameters | null, delegate: any | null): NWTCPConnection;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	createUDPSessionToEndpointFromEndpoint(remoteEndpoint: NWEndpoint, localEndpoint: NWHostEndpoint): NWUDPSession;
+	createUDPSessionToEndpointFromEndpoint(remoteEndpoint: NWEndpoint, localEndpoint: NWHostEndpoint | null): NWUDPSession;
 
 	/**
 	 * @since 10.0
@@ -2703,7 +2703,7 @@ declare class NEProxyServer extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 9.0
 	 */
-	password: string;
+	password: string | null;
 
 	/**
 	 * @since 9.0
@@ -2713,7 +2713,7 @@ declare class NEProxyServer extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 9.0
 	 */
-	username: string;
+	username: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2724,7 +2724,7 @@ declare class NEProxyServer extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2758,12 +2758,12 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 	/**
 	 * @since 9.0
 	 */
-	HTTPSServer: NEProxyServer;
+	HTTPSServer: NEProxyServer | null;
 
 	/**
 	 * @since 9.0
 	 */
-	HTTPServer: NEProxyServer;
+	HTTPServer: NEProxyServer | null;
 
 	/**
 	 * @since 9.0
@@ -2773,7 +2773,7 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 	/**
 	 * @since 9.0
 	 */
-	exceptionList: NSArray<string>;
+	exceptionList: NSArray<string> | null;
 
 	/**
 	 * @since 9.0
@@ -2783,23 +2783,23 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 	/**
 	 * @since 9.0
 	 */
-	matchDomains: NSArray<string>;
+	matchDomains: NSArray<string> | null;
 
 	/**
 	 * @since 9.0
 	 */
-	proxyAutoConfigurationJavaScript: string;
+	proxyAutoConfigurationJavaScript: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	proxyAutoConfigurationURL: NSURL;
+	proxyAutoConfigurationURL: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2815,29 +2815,29 @@ declare class NERelay extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NERelay; // inherited from NSObject
 
-	HTTP2RelayURL: NSURL;
+	HTTP2RelayURL: NSURL | null;
 
-	HTTP3RelayURL: NSURL;
+	HTTP3RelayURL: NSURL | null;
 
 	additionalHTTPHeaderFields: NSDictionary<string, string>;
 
-	dnsOverHTTPSURL: NSURL;
+	dnsOverHTTPSURL: NSURL | null;
 
-	identityData: NSData;
+	identityData: NSData | null;
 
-	identityDataPassword: string;
+	identityDataPassword: string | null;
 
-	rawPublicKeys: NSArray<NSData>;
+	rawPublicKeys: NSArray<NSData> | null;
 
-	syntheticDNSAnswerIPv4Prefix: string;
+	syntheticDNSAnswerIPv4Prefix: string | null;
 
-	syntheticDNSAnswerIPv6Prefix: string;
+	syntheticDNSAnswerIPv6Prefix: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2866,7 +2866,7 @@ declare class NERelayManager extends NSObject {
 
 	static alloc(): NERelayManager; // inherited from NSObject
 
-	static loadAllManagersFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NERelayManager>, p2: NSError) => void): void;
+	static loadAllManagersFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NERelayManager>, p2: NSError | null) => void): void;
 
 	static new(): NERelayManager; // inherited from NSObject
 
@@ -2881,30 +2881,30 @@ declare class NERelayManager extends NSObject {
 
 	enabled: boolean;
 
-	excludedDomains: NSArray<string>;
+	excludedDomains: NSArray<string> | null;
 
-	excludedFQDNs: NSArray<string>;
+	excludedFQDNs: NSArray<string> | null;
 
-	localizedDescription: string;
+	localizedDescription: string | null;
 
-	matchDomains: NSArray<string>;
+	matchDomains: NSArray<string> | null;
 
-	matchFQDNs: NSArray<string>;
+	matchFQDNs: NSArray<string> | null;
 
-	onDemandRules: NSArray<NEOnDemandRule>;
+	onDemandRules: NSArray<NEOnDemandRule> | null;
 
-	relays: NSArray<NERelay>;
+	relays: NSArray<NERelay> | null;
 
 	/**
 	 * @since 18.0
 	 */
-	getLastClientErrorsCompletionHandler(seconds: number, completionHandler: (p1: NSArray<NSError>) => void): void;
+	getLastClientErrorsCompletionHandler(seconds: number, completionHandler: (p1: NSArray<NSError> | null) => void): void;
 
-	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
-	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
-	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -2930,7 +2930,9 @@ declare const enum NERelayManagerClientError {
 
 	ServerCertificateExpired = 9,
 
-	Other = 10
+	Other = 10,
+
+	PvDConfigurationTruncated = 11
 }
 
 /**
@@ -2971,12 +2973,12 @@ declare class NETunnelNetworkSettings extends NSObject implements NSCopying, NSS
 	/**
 	 * @since 9.0
 	 */
-	DNSSettings: NEDNSSettings;
+	DNSSettings: NEDNSSettings | null;
 
 	/**
 	 * @since 9.0
 	 */
-	proxySettings: NEProxySettings;
+	proxySettings: NEProxySettings | null;
 
 	/**
 	 * @since 9.0
@@ -2992,7 +2994,7 @@ declare class NETunnelNetworkSettings extends NSObject implements NSCopying, NSS
 	 */
 	constructor(o: { tunnelRemoteAddress: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3016,7 +3018,7 @@ declare class NETunnelProvider extends NEProvider {
 	/**
 	 * @since 9.0
 	 */
-	readonly appRules: NSArray<NEAppRule>;
+	readonly appRules: NSArray<NEAppRule> | null;
 
 	/**
 	 * @since 9.0
@@ -3036,12 +3038,12 @@ declare class NETunnelProvider extends NEProvider {
 	/**
 	 * @since 9.0
 	 */
-	handleAppMessageCompletionHandler(messageData: NSData, completionHandler: (p1: NSData) => void): void;
+	handleAppMessageCompletionHandler(messageData: NSData, completionHandler: (p1: NSData | null) => void | null): void;
 
 	/**
 	 * @since 9.0
 	 */
-	setTunnelNetworkSettingsCompletionHandler(tunnelNetworkSettings: NETunnelNetworkSettings, completionHandler: (p1: NSError) => void): void;
+	setTunnelNetworkSettingsCompletionHandler(tunnelNetworkSettings: NETunnelNetworkSettings | null, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -3071,7 +3073,7 @@ declare class NETunnelProviderManager extends NEVPNManager {
 	/**
 	 * @since 9.0
 	 */
-	static loadAllFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NETunnelProviderManager>, p2: NSError) => void): void;
+	static loadAllFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NETunnelProviderManager> | null, p2: NSError | null) => void): void;
 
 	static new(): NETunnelProviderManager; // inherited from NSObject
 
@@ -3083,7 +3085,7 @@ declare class NETunnelProviderManager extends NEVPNManager {
 	/**
 	 * @since 9.0
 	 */
-	copyAppRules(): NSArray<NEAppRule>;
+	copyAppRules(): NSArray<NEAppRule> | null;
 }
 
 /**
@@ -3098,12 +3100,12 @@ declare class NETunnelProviderProtocol extends NEVPNProtocol {
 	/**
 	 * @since 9.0
 	 */
-	providerBundleIdentifier: string;
+	providerBundleIdentifier: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	providerConfiguration: NSDictionary<string, any>;
+	providerConfiguration: NSDictionary<string, any> | null;
 }
 
 /**
@@ -3130,12 +3132,12 @@ declare class NETunnelProviderSession extends NEVPNConnection {
 	/**
 	 * @since 9.0
 	 */
-	sendProviderMessageReturnErrorResponseHandler(messageData: NSData, error: interop.Pointer | interop.Reference<NSError>, responseHandler: (p1: NSData) => void): boolean;
+	sendProviderMessageReturnErrorResponseHandler(messageData: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, responseHandler: (p1: NSData | null) => void | null): boolean;
 
 	/**
 	 * @since 9.0
 	 */
-	startTunnelWithOptionsAndReturnError(options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
+	startTunnelWithOptionsAndReturnError(options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
@@ -3184,7 +3186,7 @@ declare class NEVPNConnection extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	readonly connectedDate: Date;
+	readonly connectedDate: Date | null;
 
 	/**
 	 * @since 10.0
@@ -3199,7 +3201,7 @@ declare class NEVPNConnection extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	fetchLastDisconnectErrorWithCompletionHandler(handler: (p1: NSError) => void): void;
+	fetchLastDisconnectErrorWithCompletionHandler(handler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 8.0
@@ -3209,7 +3211,7 @@ declare class NEVPNConnection extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	startVPNTunnelWithOptionsAndReturnError(options: NSDictionary<string, NSObject>, error?: interop.Reference<NSError>): boolean;
+	startVPNTunnelWithOptionsAndReturnError(options: NSDictionary<string, NSObject> | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0
@@ -3430,7 +3432,7 @@ declare class NEVPNIKEv2PPKConfiguration extends NSObject implements NSCopying {
 
 	constructor(o: { identifier: string; keychainReference: NSData; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithIdentifierKeychainReference(identifier: string, keychainReference: NSData): this;
 }
@@ -3485,7 +3487,7 @@ declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implement
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3533,7 +3535,7 @@ declare class NEVPNManager extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	localizedDescription: string;
+	localizedDescription: string | null;
 
 	/**
 	 * @since 8.0
@@ -3543,33 +3545,33 @@ declare class NEVPNManager extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	onDemandRules: NSArray<NEOnDemandRule>;
+	onDemandRules: NSArray<NEOnDemandRule> | null;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	protocol: NEVPNProtocol;
+	protocol: NEVPNProtocol | null;
 
 	/**
 	 * @since 9.0
 	 */
-	protocolConfiguration: NEVPNProtocol;
+	protocolConfiguration: NEVPNProtocol | null;
 
 	/**
 	 * @since 8.0
 	 */
-	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 8.0
 	 */
-	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 8.0
 	 */
-	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -3614,17 +3616,17 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 8.0
 	 */
-	identityData: NSData;
+	identityData: NSData | null;
 
 	/**
 	 * @since 8.0
 	 */
-	identityDataPassword: string;
+	identityDataPassword: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	identityReference: NSData;
+	identityReference: NSData | null;
 
 	/**
 	 * @since 14.0
@@ -3634,33 +3636,33 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 	/**
 	 * @since 8.0
 	 */
-	passwordReference: NSData;
+	passwordReference: NSData | null;
 
 	/**
 	 * @since 9.0
 	 */
-	proxySettings: NEProxySettings;
+	proxySettings: NEProxySettings | null;
 
 	/**
 	 * @since 8.0
 	 */
-	serverAddress: string;
+	serverAddress: string | null;
 
 	/**
 	 * @since 18.0
 	 */
-	sliceUUID: string;
+	sliceUUID: string | null;
 
 	/**
 	 * @since 8.0
 	 */
-	username: string;
+	username: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3744,17 +3746,17 @@ declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
 	/**
 	 * @since 18.0
 	 */
-	ppkConfiguration: NEVPNIKEv2PPKConfiguration;
+	ppkConfiguration: NEVPNIKEv2PPKConfiguration | null;
 
 	/**
 	 * @since 8.0
 	 */
-	serverCertificateCommonName: string;
+	serverCertificateCommonName: string | null;
 
 	/**
 	 * @since 8.0
 	 */
-	serverCertificateIssuerCommonName: string;
+	serverCertificateIssuerCommonName: string | null;
 
 	/**
 	 * @since 9.0
@@ -3784,17 +3786,17 @@ declare class NEVPNProtocolIPSec extends NEVPNProtocol {
 	/**
 	 * @since 8.0
 	 */
-	localIdentifier: string;
+	localIdentifier: string | null;
 
 	/**
 	 * @since 8.0
 	 */
-	remoteIdentifier: string;
+	remoteIdentifier: string | null;
 
 	/**
 	 * @since 8.0
 	 */
-	sharedSecretReference: NSData;
+	sharedSecretReference: NSData | null;
 
 	/**
 	 * @since 8.0
@@ -3874,7 +3876,7 @@ declare class NWEndpoint extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3974,7 +3976,7 @@ declare class NWTCPConnection extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly connectedPath: NWPath;
+	readonly connectedPath: NWPath | null;
 
 	/**
 	 * @since 9.0
@@ -3986,7 +3988,7 @@ declare class NWTCPConnection extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly error: NSError;
+	readonly error: NSError | null;
 
 	/**
 	 * @since 9.0
@@ -3998,13 +4000,13 @@ declare class NWTCPConnection extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly localAddress: NWEndpoint;
+	readonly localAddress: NWEndpoint | null;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly remoteAddress: NWEndpoint;
+	readonly remoteAddress: NWEndpoint | null;
 
 	/**
 	 * @since 9.0
@@ -4016,7 +4018,7 @@ declare class NWTCPConnection extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly txtRecord: NSData;
+	readonly txtRecord: NSData | null;
 
 	/**
 	 * @since 9.0
@@ -4046,13 +4048,13 @@ declare class NWTCPConnection extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readLengthCompletionHandler(length: number, completion: (p1: NSData, p2: NSError) => void): void;
+	readLengthCompletionHandler(length: number, completion: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readMinimumLengthMaximumLengthCompletionHandler(minimum: number, maximum: number, completion: (p1: NSData, p2: NSError) => void): void;
+	readMinimumLengthMaximumLengthCompletionHandler(minimum: number, maximum: number, completion: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
@@ -4064,7 +4066,7 @@ declare class NWTCPConnection extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	writeCompletionHandler(data: NSData, completion: (p1: NSError) => void): void;
+	writeCompletionHandler(data: NSData, completion: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -4135,13 +4137,13 @@ declare class NWTLSParameters extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	SSLCipherSuites: NSSet<number>;
+	SSLCipherSuites: NSSet<number> | null;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	TLSSessionID: NSData;
+	TLSSessionID: NSData | null;
 
 	/**
 	 * @since 9.0
@@ -4170,7 +4172,7 @@ declare class NWUDPSession extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly currentPath: NWPath;
+	readonly currentPath: NWPath | null;
 
 	/**
 	 * @since 9.0
@@ -4194,7 +4196,7 @@ declare class NWUDPSession extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly resolvedEndpoint: NWEndpoint;
+	readonly resolvedEndpoint: NWEndpoint | null;
 
 	/**
 	 * @since 9.0
@@ -4230,7 +4232,7 @@ declare class NWUDPSession extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	setReadHandlerMaxDatagrams(handler: (p1: NSArray<NSData>, p2: NSError) => void, maxDatagrams: number): void;
+	setReadHandlerMaxDatagrams(handler: (p1: NSArray<NSData> | null, p2: NSError | null) => void, maxDatagrams: number): void;
 
 	/**
 	 * @since 9.0
@@ -4242,13 +4244,13 @@ declare class NWUDPSession extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	writeDatagramCompletionHandler(datagram: NSData, completionHandler: (p1: NSError) => void): void;
+	writeDatagramCompletionHandler(datagram: NSData, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	writeMultipleDatagramsCompletionHandler(datagramArray: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
+	writeMultipleDatagramsCompletionHandler(datagramArray: NSArray<NSData> | NSData[], completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**

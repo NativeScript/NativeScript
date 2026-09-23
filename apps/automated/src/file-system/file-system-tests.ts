@@ -370,9 +370,11 @@ export var testEnumEntities = function () {
 	var file = documents.getFile('Test.txt');
 	var file1 = documents.getFile('Test1.txt');
 	var testFolder = documents.getFolder('testFolder');
+	var nestedFile = testFolder.getFile('Nested.txt');
 	var fileFound = false;
 	var file1Found = false;
 	var testFolderFound = false;
+	var nestedFileFound = false;
 	var console = {
 		log: function (file) {
 			if (file === 'Test.txt') {
@@ -381,6 +383,8 @@ export var testEnumEntities = function () {
 				file1Found = true;
 			} else if (file === 'testFolder') {
 				testFolderFound = true;
+			} else if (file === 'Nested.txt') {
+				nestedFileFound = true;
 			}
 		},
 	};
@@ -395,9 +399,11 @@ export var testEnumEntities = function () {
 	TKUnit.assert(fileFound, 'Failed to enumerate Test.txt');
 	TKUnit.assert(file1Found, 'Failed to enumerate Test1.txt');
 	TKUnit.assert(testFolderFound, 'Failed to enumerate testFolder');
+	TKUnit.assert(!nestedFileFound, 'eachEntity should not enumerate nested files');
 
 	file.remove();
 	file1.remove();
+	nestedFile.remove();
 	testFolder.remove();
 	// << (hide)
 	// << file-system-enum-content

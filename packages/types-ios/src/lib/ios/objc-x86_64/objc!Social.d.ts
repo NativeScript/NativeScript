@@ -81,7 +81,7 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	scrollViewDidEndScrollingAnimation(scrollView: UIScrollView): void;
 
-	scrollViewDidEndZoomingWithViewAtScale(scrollView: UIScrollView, view: UIView, scale: number): void;
+	scrollViewDidEndZoomingWithViewAtScale(scrollView: UIScrollView, view: UIView | null, scale: number): void;
 
 	scrollViewDidScroll(scrollView: UIScrollView): void;
 
@@ -101,12 +101,12 @@ declare class SLComposeServiceViewController extends UIViewController implements
 	/**
 	 * @since 3.2
 	 */
-	scrollViewWillBeginZoomingWithView(scrollView: UIScrollView, view: UIView): void;
+	scrollViewWillBeginZoomingWithView(scrollView: UIScrollView, view: UIView | null): void;
 
 	/**
 	 * @since 5.0
 	 */
-	scrollViewWillEndDraggingWithVelocityTargetContentOffset(scrollView: UIScrollView, velocity: CGPoint, targetContentOffset: interop.Pointer | interop.Reference<CGPoint>): void;
+	scrollViewWillEndDraggingWithVelocityTargetContentOffset(scrollView: UIScrollView, velocity: CGPoint, targetContentOffset: interop.Pointer | interop.Reference<CGPoint> | ArrayBufferLike | ArrayBufferView): void;
 
 	self(): this;
 
@@ -132,12 +132,12 @@ declare class SLComposeServiceViewController extends UIViewController implements
 	 * @since 16.0
 	 * @deprecated 100000
 	 */
-	textViewEditMenuForTextInRangeSuggestedActions(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+	textViewEditMenuForTextInRangeSuggestedActions(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu | null;
 
 	/**
 	 * @since 26.0
 	 */
-	textViewEditMenuForTextInRangesSuggestedActions(textView: UITextView, ranges: NSArray<NSValue> | NSValue[], suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+	textViewEditMenuForTextInRangesSuggestedActions(textView: UITextView, ranges: NSArray<NSValue> | NSValue[], suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu | null;
 
 	/**
 	 * @since 18.4
@@ -147,12 +147,12 @@ declare class SLComposeServiceViewController extends UIViewController implements
 	/**
 	 * @since 17.0
 	 */
-	textViewMenuConfigurationForTextItemDefaultMenu(textView: UITextView, textItem: UITextItem, defaultMenu: UIMenu): UITextItemMenuConfiguration;
+	textViewMenuConfigurationForTextItemDefaultMenu(textView: UITextView, textItem: UITextItem, defaultMenu: UIMenu): UITextItemMenuConfiguration | null;
 
 	/**
 	 * @since 17.0
 	 */
-	textViewPrimaryActionForTextItemDefaultAction(textView: UITextView, textItem: UITextItem, defaultAction: UIAction): UIAction;
+	textViewPrimaryActionForTextItemDefaultAction(textView: UITextView, textItem: UITextItem, defaultAction: UIAction): UIAction | null;
 
 	textViewShouldBeginEditing(textView: UITextView): boolean;
 
@@ -240,7 +240,7 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	validateContent(): void;
 
-	viewForZoomingInScrollView(scrollView: UIScrollView): UIView;
+	viewForZoomingInScrollView(scrollView: UIScrollView): UIView | null;
 }
 
 /**

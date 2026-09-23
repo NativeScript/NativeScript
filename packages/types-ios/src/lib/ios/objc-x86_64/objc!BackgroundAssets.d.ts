@@ -8,12 +8,12 @@ declare class BAAppExtensionInfo extends NSObject implements NSSecureCoding {
 
 	static new(): BAAppExtensionInfo; // inherited from NSObject
 
-	readonly restrictedDownloadSizeRemaining: number;
+	readonly restrictedDownloadSizeRemaining: number | null;
 
 	/**
 	 * @since 16.4
 	 */
-	readonly restrictedEssentialDownloadSizeRemaining: number;
+	readonly restrictedEssentialDownloadSizeRemaining: number | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -25,7 +25,7 @@ declare class BAAppExtensionInfo extends NSObject implements NSSecureCoding {
 }
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare class BAAssetPack extends NSObject {
 
@@ -37,7 +37,7 @@ declare class BAAssetPack extends NSObject {
 
 	readonly identifier: string;
 
-	readonly userInfo: NSData;
+	readonly userInfo: NSData | null;
 
 	readonly version: number;
 
@@ -47,12 +47,12 @@ declare class BAAssetPack extends NSObject {
 }
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare var BAAssetPackIdentifierErrorKey: string;
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare class BAAssetPackManager extends NSObject {
 
@@ -60,31 +60,55 @@ declare class BAAssetPackManager extends NSObject {
 
 	static new(): BAAssetPackManager; // inherited from NSObject
 
-	delegate: BAManagedAssetPackDownloadDelegate;
+	delegate: BAManagedAssetPackDownloadDelegate | null;
 
 	static readonly sharedManager: BAAssetPackManager;
 
-	URLForPathError(path: string, error?: interop.Reference<NSError>): NSURL;
+	URLForPathError(path: string, error?: interop.Reference<NSError>): NSURL | null;
 
-	checkForUpdatesWithCompletionHandler(completionHandler: (p1: NSSet<string>, p2: NSSet<string>, p3: NSError) => void): void;
+	/**
+	 * @since 26.4
+	 */
+	assetPackIsAvailableLocallyWithIdentifier(assetPackIdentifier: string): boolean;
 
-	contentsAtPathSearchingInAssetPackWithIdentifierOptionsError(path: string, assetPackIdentifier: string, options: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData;
+	checkForUpdatesWithCompletionHandler(completionHandler: (p1: NSSet<string> | null, p2: NSSet<string> | null, p3: NSError | null) => void | null): void;
 
-	ensureLocalAvailabilityOfAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: NSError) => void): void;
+	contentsAtPathSearchingInAssetPackWithIdentifierOptionsError(path: string, assetPackIdentifier: string | null, options: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData | null;
 
-	fileDescriptorForPathSearchingInAssetPackWithIdentifierError(path: string, assetPackIdentifier: string, error?: interop.Reference<NSError>): number;
+	ensureLocalAvailabilityOfAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: NSError | null) => void): void;
 
-	getAllAssetPacksWithCompletionHandler(completionHandler: (p1: NSSet<BAAssetPack>, p2: NSError) => void): void;
+	/**
+	 * @since 26.4
+	 */
+	ensureLocalAvailabilityOfAssetPackRequireLatestVersionCompletionHandler(assetPack: BAAssetPack, shouldUpdate: boolean, completionHandler: (p1: NSError | null) => void): void;
 
-	getAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPack, p2: NSError) => void): void;
+	fileDescriptorForPathSearchingInAssetPackWithIdentifierError(path: string, assetPackIdentifier: string | null, error?: interop.Reference<NSError>): number;
 
-	getStatusOfAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPackStatus, p2: NSError) => void): void;
+	getAllAssetPacksWithCompletionHandler(completionHandler: (p1: NSSet<BAAssetPack> | null, p2: NSError | null) => void): void;
 
-	removeAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: NSError) => void): void;
+	getAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPack | null, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 26.4
+	 */
+	getLocalStatusOfAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPackStatus) => void): void;
+
+	/**
+	 * @since 26
+	 * @deprecated 26.4
+	 */
+	getStatusOfAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPackStatus, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 26.4
+	 */
+	getStatusRelativeToAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: BAAssetPackStatus, p2: NSError | null) => void): void;
+
+	removeAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare class BAAssetPackManifest extends NSObject {
 
@@ -108,7 +132,7 @@ declare class BAAssetPackManifest extends NSObject {
 }
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare const enum BAAssetPackStatus {
 
@@ -179,7 +203,7 @@ declare class BADownload extends NSObject implements NSCoding, NSCopying, NSSecu
 	 */
 	copyAsNonEssential(): this;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -198,7 +222,7 @@ declare class BADownloadManager extends NSObject {
 	/**
 	 * @since 16.1
 	 */
-	delegate: BADownloadManagerDelegate;
+	delegate: BADownloadManagerDelegate | null;
 
 	/**
 	 * @since 16.1
@@ -213,22 +237,22 @@ declare class BADownloadManager extends NSObject {
 	/**
 	 * @since 16.4
 	 */
-	fetchCurrentDownloads(error?: interop.Reference<NSError>): NSArray<BADownload>;
+	fetchCurrentDownloads(error?: interop.Reference<NSError>): NSArray<BADownload> | null;
 
 	/**
 	 * @since 16.1
 	 */
-	fetchCurrentDownloadsWithCompletionHandler(completionHandler: (p1: NSArray<BADownload>, p2: NSError) => void): void;
+	fetchCurrentDownloadsWithCompletionHandler(completionHandler: (p1: NSArray<BADownload>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.1
 	 */
-	performWithExclusiveControl(performHandler: (p1: boolean, p2: NSError) => void): void;
+	performWithExclusiveControl(performHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.1
 	 */
-	performWithExclusiveControlBeforeDatePerformHandler(date: Date, performHandler: (p1: boolean, p2: NSError) => void): void;
+	performWithExclusiveControlBeforeDatePerformHandler(date: Date, performHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.1
@@ -250,7 +274,7 @@ interface BADownloadManagerDelegate extends NSObjectProtocol {
 
 	downloadDidPause?(download: BADownload): void;
 
-	downloadDidReceiveChallengeCompletionHandler?(download: BADownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
+	downloadDidReceiveChallengeCompletionHandler?(download: BADownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential | null) => void): void;
 
 	downloadDidWriteBytesTotalBytesWrittenTotalBytesExpectedToWrite?(download: BADownload, bytesWritten: number, totalBytesWritten: number, totalExpectedBytes: number): void;
 
@@ -281,7 +305,7 @@ declare const enum BADownloadState {
  */
 interface BADownloaderExtension extends NSObjectProtocol {
 
-	backgroundDownloadDidReceiveChallengeCompletionHandler?(download: BADownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
+	backgroundDownloadDidReceiveChallengeCompletionHandler?(download: BADownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential | null) => void): void;
 
 	backgroundDownloadFailedWithError?(download: BADownload, error: NSError): void;
 
@@ -361,7 +385,7 @@ declare const enum BAErrorCode {
 declare var BAErrorDomain: string;
 
 /**
- * @since 26.0
+ * @since 26
  */
 interface BAManagedAssetPackDownloadDelegate extends NSObjectProtocol {
 
@@ -381,7 +405,7 @@ declare var BAManagedAssetPackDownloadDelegate: {
 };
 
 /**
- * @since 26.0
+ * @since 26
  */
 interface BAManagedDownloaderExtension extends BADownloaderExtension {
 
@@ -393,7 +417,7 @@ declare var BAManagedDownloaderExtension: {
 };
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare const enum BAManagedErrorCode {
 
@@ -403,7 +427,7 @@ declare const enum BAManagedErrorCode {
 }
 
 /**
- * @since 26.0
+ * @since 26
  */
 declare var BAManagedErrorDomain: string;
 
@@ -438,7 +462,7 @@ declare class BAURLDownload extends BADownload implements NSCopying {
 	 */
 	constructor(o: { identifier: string; request: NSURLRequest; fileSize: number; applicationGroupIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 16.1

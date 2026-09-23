@@ -70,7 +70,7 @@ declare class QLThumbnailGenerationRequest extends NSObject implements NSCopying
 
 	constructor(o: { fileAtURL: NSURL; size: CGSize; scale: number; representationTypes: QLThumbnailGenerationRequestRepresentationTypes; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -106,17 +106,17 @@ declare class QLThumbnailGenerator extends NSObject {
 
 	cancelRequest(request: QLThumbnailGenerationRequest): void;
 
-	generateBestRepresentationForRequestCompletionHandler(request: QLThumbnailGenerationRequest, completionHandler: (p1: QLThumbnailRepresentation, p2: NSError) => void): void;
+	generateBestRepresentationForRequestCompletionHandler(request: QLThumbnailGenerationRequest, completionHandler: (p1: QLThumbnailRepresentation | null, p2: NSError | null) => void): void;
 
-	generateRepresentationsForRequestUpdateHandler(request: QLThumbnailGenerationRequest, updateHandler: (p1: QLThumbnailRepresentation, p2: QLThumbnailRepresentationType, p3: NSError) => void): void;
+	generateRepresentationsForRequestUpdateHandler(request: QLThumbnailGenerationRequest, updateHandler: (p1: QLThumbnailRepresentation | null, p2: QLThumbnailRepresentationType, p3: NSError | null) => void | null): void;
 
-	saveBestRepresentationForRequestToFileAtURLAsContentTypeCompletionHandler(request: QLThumbnailGenerationRequest, fileURL: NSURL, contentType: UTType, completionHandler: (p1: NSError) => void): void;
+	saveBestRepresentationForRequestToFileAtURLAsContentTypeCompletionHandler(request: QLThumbnailGenerationRequest, fileURL: NSURL, contentType: UTType, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 * @deprecated 18.0
 	 */
-	saveBestRepresentationForRequestToFileAtURLWithContentTypeCompletionHandler(request: QLThumbnailGenerationRequest, fileURL: NSURL, contentType: string, completionHandler: (p1: NSError) => void): void;
+	saveBestRepresentationForRequestToFileAtURLWithContentTypeCompletionHandler(request: QLThumbnailGenerationRequest, fileURL: NSURL, contentType: string, completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -128,7 +128,7 @@ declare class QLThumbnailProvider extends NSObject {
 
 	static new(): QLThumbnailProvider; // inherited from NSObject
 
-	provideThumbnailForFileRequestCompletionHandler(request: QLFileThumbnailRequest, handler: (p1: QLThumbnailReply, p2: NSError) => void): void;
+	provideThumbnailForFileRequestCompletionHandler(request: QLFileThumbnailRequest, handler: (p1: QLThumbnailReply | null, p2: NSError | null) => void): void;
 }
 
 /**

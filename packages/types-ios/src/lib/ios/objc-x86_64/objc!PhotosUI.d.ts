@@ -22,7 +22,7 @@ interface PHContentEditingController extends NSObjectProtocol {
 	/**
 	 * @since 8
 	 */
-	finishContentEditingWithCompletionHandler(completionHandler: (p1: PHContentEditingOutput) => void): void;
+	finishContentEditingWithCompletionHandler(completionHandler: (p1: PHContentEditingOutput | null) => void): void;
 
 	/**
 	 * @since 8
@@ -62,7 +62,7 @@ declare class PHLivePhotoView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PHLivePhotoView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PHLivePhotoView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -73,7 +73,7 @@ declare class PHLivePhotoView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PHLivePhotoView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PHLivePhotoView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -95,12 +95,12 @@ declare class PHLivePhotoView extends UIView {
 	/**
 	 * @since 9.1
 	 */
-	delegate: PHLivePhotoViewDelegate;
+	delegate: PHLivePhotoViewDelegate | null;
 
 	/**
 	 * @since 9.1
 	 */
-	livePhoto: PHLivePhoto;
+	livePhoto: PHLivePhoto | null;
 
 	/**
 	 * @since 9.1
@@ -205,7 +205,7 @@ declare class PHPickerConfiguration extends NSObject implements NSCopying {
 	/**
 	 * @since 14
 	 */
-	filter: PHPickerFilter;
+	filter: PHPickerFilter | null;
 
 	/**
 	 * @since 17
@@ -237,7 +237,7 @@ declare class PHPickerConfiguration extends NSObject implements NSCopying {
 	 */
 	constructor(o: { photoLibrary: PHPhotoLibrary; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 14
@@ -360,7 +360,7 @@ declare class PHPickerFilter extends NSObject implements NSCopying {
 	 */
 	static readonly videosFilter: PHPickerFilter;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -385,7 +385,7 @@ declare class PHPickerResult extends NSObject {
 	/**
 	 * @since 14
 	 */
-	readonly assetIdentifier: string;
+	readonly assetIdentifier: string | null;
 
 	/**
 	 * @since 14
@@ -412,7 +412,7 @@ declare class PHPickerUpdateConfiguration extends NSObject implements NSCopying 
 	 */
 	selectionLimit: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -432,7 +432,7 @@ declare class PHPickerViewController extends UIViewController {
 	/**
 	 * @since 14
 	 */
-	delegate: PHPickerViewControllerDelegate;
+	delegate: PHPickerViewControllerDelegate | null;
 
 	/**
 	 * @since 14
@@ -452,7 +452,7 @@ declare class PHPickerViewController extends UIViewController {
 	/**
 	 * @since 16
 	 */
-	moveAssetWithIdentifierAfterAssetWithIdentifier(identifier: string, afterIdentifier: string): void;
+	moveAssetWithIdentifierAfterAssetWithIdentifier(identifier: string, afterIdentifier: string | null): void;
 
 	/**
 	 * @since 17

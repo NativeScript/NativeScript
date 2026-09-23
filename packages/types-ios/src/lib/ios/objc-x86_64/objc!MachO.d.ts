@@ -48,10 +48,14 @@ declare const DYLD_CHAINED_PTR_START_NONE: number;
 
 declare const DYLD_CHAINED_PTR_X86_64_KERNEL_CACHE: number;
 
+declare const DYLD_CHAINED_STARTS_USE_FILE_OFFSET: number;
+
+declare const DYLD_CHAINED_STARTS_USE_VM_OFFSET: number;
+
 interface NSLinkEditErrorHandlers {
-	undefined: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	multiple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
+	undefined: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>;
+	multiple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null>;
+	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: interop.Pointer | interop.Reference<any> | null, p4: interop.Pointer | interop.Reference<any> | null) => void>;
 }
 declare var NSLinkEditErrorHandlers: interop.StructType<NSLinkEditErrorHandlers>;
 
@@ -105,23 +109,23 @@ declare const enum NSOtherErrorNumbers {
 /**
  * @since 2.0
  */
-declare function NSVersionOfLinkTimeLibrary(libraryName: string | interop.Pointer | interop.Reference<any>): number;
+declare function NSVersionOfLinkTimeLibrary(libraryName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function NSVersionOfRunTimeLibrary(libraryName: string | interop.Pointer | interop.Reference<any>): number;
+declare function NSVersionOfRunTimeLibrary(libraryName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
 interface NXArchInfo {
-	name: interop.Pointer | interop.Reference<any>;
+	name: interop.Pointer | interop.Reference<any> | null;
 	cputype: number;
 	cpusubtype: number;
 	byteorder: NXByteOrder;
-	description: interop.Pointer | interop.Reference<any>;
+	description: interop.Pointer | interop.Reference<any> | null;
 }
 declare var NXArchInfo: interop.StructType<NXArchInfo>;
 
@@ -135,43 +139,43 @@ declare function NXCombineCpuSubtypes(cputype: number, cpusubtype1: number, cpus
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXFindBestFatArch(cputype: number, cpusubtype: number, fat_archs: interop.Pointer | interop.Reference<fat_arch>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch>;
+declare function NXFindBestFatArch(cputype: number, cpusubtype: number, fat_archs: interop.Pointer | interop.Reference<fat_arch> | ArrayBufferLike | ArrayBufferView | null, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXFindBestFatArch_64(cputype: number, cpusubtype: number, fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch_64>;
+declare function NXFindBestFatArch_64(cputype: number, cpusubtype: number, fat_archs64: interop.Pointer | interop.Reference<fat_arch_64> | ArrayBufferLike | ArrayBufferView | null, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch_64> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXFreeArchInfo(x: interop.Pointer | interop.Reference<NXArchInfo>): void;
+declare function NXFreeArchInfo(x: interop.Pointer | interop.Reference<NXArchInfo> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXGetAllArchInfos(): interop.Pointer | interop.Reference<NXArchInfo>;
+declare function NXGetAllArchInfos(): interop.Pointer | interop.Reference<NXArchInfo> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXGetArchInfoFromCpuType(cputype: number, cpusubtype: number): interop.Pointer | interop.Reference<NXArchInfo>;
+declare function NXGetArchInfoFromCpuType(cputype: number, cpusubtype: number): interop.Pointer | interop.Reference<NXArchInfo> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXGetArchInfoFromName(name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<NXArchInfo>;
+declare function NXGetArchInfoFromName(name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<NXArchInfo> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function NXGetLocalArchInfo(): interop.Pointer | interop.Reference<NXArchInfo>;
+declare function NXGetLocalArchInfo(): interop.Pointer | interop.Reference<NXArchInfo> | null;
 
 declare const UNWIND_ARM64_DWARF_SECTION_OFFSET: number;
 
@@ -318,17 +322,17 @@ declare const UNWIND_X86_REG_NONE: number;
 /**
  * @since 2.0
  */
-declare function _NSGetExecutablePath(buf: string | interop.Pointer | interop.Reference<any>, bufsize: interop.Pointer | interop.Reference<number>): number;
+declare function _NSGetExecutablePath(buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, bufsize: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function _dyld_get_image_header(image_index: number): interop.Pointer | interop.Reference<mach_header>;
+declare function _dyld_get_image_header(image_index: number): interop.Pointer | interop.Reference<mach_header> | null;
 
 /**
  * @since 2.0
  */
-declare function _dyld_get_image_name(image_index: number): interop.Pointer | interop.Reference<any>;
+declare function _dyld_get_image_name(image_index: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
@@ -343,17 +347,17 @@ declare function _dyld_image_count(): number;
 /**
  * @since 2.0
  */
-declare function _dyld_register_func_for_add_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>, p2: number) => void>): void;
+declare function _dyld_register_func_for_add_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header> | null, p2: number) => void>): void;
 
 /**
  * @since 2.0
  */
-declare function _dyld_register_func_for_remove_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>, p2: number) => void>): void;
+declare function _dyld_register_func_for_remove_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header> | null, p2: number) => void>): void;
 
 /**
  * @since 14.0
  */
-declare function _dyld_shared_cache_contains_path(path: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function _dyld_shared_cache_contains_path(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 declare var _mh_bundle_header: mach_header_64;
 
@@ -366,7 +370,7 @@ declare var _mh_execute_header: mach_header_64;
 /**
  * @since 8.0
  */
-declare function _tlv_atexit(termFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, objAddr: interop.Pointer | interop.Reference<any>): void;
+declare function _tlv_atexit(termFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>, objAddr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 8.0
@@ -399,30 +403,30 @@ declare var data_in_code_entry: interop.StructType<data_in_code_entry>;
 interface dyld_all_image_infos {
 	version: number;
 	infoArrayCount: number;
-	infoArray: interop.Pointer | interop.Reference<dyld_image_info>;
+	infoArray: interop.Pointer | interop.Reference<dyld_image_info> | null;
 	notification: interop.FunctionReference<(p1: dyld_image_mode, p2: number, p3: interop.Reference<dyld_image_info>) => void>;
 	processDetachedFromSharedRegion: boolean;
 	libSystemInitialized: boolean;
-	dyldImageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
-	jitInfo: interop.Pointer | interop.Reference<any>;
-	dyldVersion: interop.Pointer | interop.Reference<any>;
-	errorMessage: interop.Pointer | interop.Reference<any>;
+	dyldImageLoadAddress: interop.Pointer | interop.Reference<mach_header> | null;
+	jitInfo: interop.Pointer | interop.Reference<any> | null;
+	dyldVersion: interop.Pointer | interop.Reference<any> | null;
+	errorMessage: interop.Pointer | interop.Reference<any> | null;
 	terminationFlags: number;
-	coreSymbolicationShmPage: interop.Pointer | interop.Reference<any>;
+	coreSymbolicationShmPage: interop.Pointer | interop.Reference<any> | null;
 	systemOrderFlag: number;
 	uuidArrayCount: number;
-	uuidArray: interop.Pointer | interop.Reference<dyld_uuid_info>;
-	dyldAllImageInfosAddress: interop.Pointer | interop.Reference<dyld_all_image_infos>;
+	uuidArray: interop.Pointer | interop.Reference<dyld_uuid_info> | null;
+	dyldAllImageInfosAddress: interop.Pointer | interop.Reference<dyld_all_image_infos> | null;
 	initialImageCount: number;
 	errorKind: number;
-	errorClientOfDylibPath: interop.Pointer | interop.Reference<any>;
-	errorTargetDylibPath: interop.Pointer | interop.Reference<any>;
-	errorSymbol: interop.Pointer | interop.Reference<any>;
+	errorClientOfDylibPath: interop.Pointer | interop.Reference<any> | null;
+	errorTargetDylibPath: interop.Pointer | interop.Reference<any> | null;
+	errorSymbol: interop.Pointer | interop.Reference<any> | null;
 	sharedCacheSlide: number;
 	sharedCacheUUID: interop.Reference<number>;
 	sharedCacheBaseAddress: number;
 	infoArrayChangeTimestamp: number;
-	dyldPath: interop.Pointer | interop.Reference<any>;
+	dyldPath: interop.Pointer | interop.Reference<any> | null;
 	notifyPorts: interop.Reference<number>;
 	reserved: interop.Reference<number>;
 	sharedCacheFSID: number;
@@ -431,7 +435,7 @@ interface dyld_all_image_infos {
 	compact_dyld_image_info_size: number;
 	platform: number;
 	aotInfoCount: number;
-	aotInfoArray: interop.Pointer | interop.Reference<dyld_aot_image_info>;
+	aotInfoArray: interop.Pointer | interop.Reference<dyld_aot_image_info> | null;
 	aotInfoArrayChangeTimestamp: number;
 	aotSharedCacheBaseAddress: number;
 	aotSharedCacheUUID: interop.Reference<number>;
@@ -439,8 +443,8 @@ interface dyld_all_image_infos {
 declare var dyld_all_image_infos: interop.StructType<dyld_all_image_infos>;
 
 interface dyld_aot_image_info {
-	x86LoadAddress: interop.Pointer | interop.Reference<mach_header>;
-	aotLoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	x86LoadAddress: interop.Pointer | interop.Reference<mach_header> | null;
+	aotLoadAddress: interop.Pointer | interop.Reference<mach_header> | null;
 	aotImageSize: number;
 	aotImageKey: interop.Reference<number>;
 }
@@ -681,8 +685,8 @@ declare const dyld_error_kind_none: number;
 declare const dyld_error_kind_symbol_missing: number;
 
 interface dyld_image_info {
-	imageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
-	imageFilePath: interop.Pointer | interop.Reference<any>;
+	imageLoadAddress: interop.Pointer | interop.Reference<mach_header> | null;
+	imageFilePath: interop.Pointer | interop.Reference<any> | null;
 	imageFileModDate: number;
 }
 declare var dyld_image_info: interop.StructType<dyld_image_info>;
@@ -723,7 +727,7 @@ interface dyld_shared_cache_rangesStruct {
 declare var dyld_shared_cache_rangesStruct: interop.StructType<dyld_shared_cache_rangesStruct>;
 
 interface dyld_uuid_info {
-	imageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	imageLoadAddress: interop.Pointer | interop.Reference<mach_header> | null;
 	imageUUID: interop.Reference<number>;
 }
 declare var dyld_uuid_info: interop.StructType<dyld_uuid_info>;
@@ -879,65 +883,65 @@ declare function get_end(): number;
  */
 declare function get_etext(): number;
 
-declare function getsectbyname(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<section_64>;
+declare function getsectbyname(segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<section_64> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectbynamefromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<section>;
+declare function getsectbynamefromheader(mhp: interop.Pointer | interop.Reference<mach_header> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<section> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectbynamefromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<section_64>;
+declare function getsectbynamefromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<section_64> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectbynamefromheaderwithswap(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, fSwap: number): interop.Pointer | interop.Reference<section>;
+declare function getsectbynamefromheaderwithswap(mhp: interop.Pointer | interop.Reference<mach_header> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, fSwap: number): interop.Pointer | interop.Reference<section> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectbynamefromheaderwithswap_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, fSwap: number): interop.Pointer | interop.Reference<section>;
+declare function getsectbynamefromheaderwithswap_64(mhp: interop.Pointer | interop.Reference<mach_header_64> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, fSwap: number): interop.Pointer | interop.Reference<section> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdata(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function getsectdata(segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdatafromFramework(FrameworkName: string | interop.Pointer | interop.Reference<any>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function getsectdatafromFramework(FrameworkName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdatafromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function getsectdatafromheader(mhp: interop.Pointer | interop.Reference<mach_header> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdatafromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function getsectdatafromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_header_64> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sectname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsegbyname(segname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<segment_command_64>;
+declare function getsegbyname(segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<segment_command_64> | null;
 
-declare function getsegmentdata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function getsegmentdata(mhp: interop.Pointer | interop.Reference<mach_header_64> | ArrayBufferLike | ArrayBufferView | null, segname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface ident_command {
 	cmd: number;
@@ -992,37 +996,37 @@ declare var mach_header_64: interop.StructType<mach_header_64>;
 /**
  * @since 16.0
  */
-declare function macho_arch_name_for_cpu_type(type: number, subtype: number): interop.Pointer | interop.Reference<any>;
+declare function macho_arch_name_for_cpu_type(type: number, subtype: number): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 16.0
  */
-declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header>): interop.Pointer | interop.Reference<any>;
+declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 16.0
  */
-declare function macho_best_slice(path: string | interop.Pointer | interop.Reference<any>, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number) => void): number;
+declare function macho_best_slice(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header> | null, p2: number, p3: number) => void | null): number;
 
 /**
  * @since 16.0
  */
-declare function macho_best_slice_in_fd(fd: number, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number) => void): number;
+declare function macho_best_slice_in_fd(fd: number, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header> | null, p2: number, p3: number) => void | null): number;
 
 /**
  * @since 16.0
  */
-declare function macho_cpu_type_for_arch_name(archName: string | interop.Pointer | interop.Reference<any>, type: interop.Pointer | interop.Reference<number>, subtype: interop.Pointer | interop.Reference<number>): boolean;
+declare function macho_cpu_type_for_arch_name(archName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, subtype: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): boolean;
 
 /**
  * @since 16.0
  */
-declare function macho_for_each_slice(path: string | interop.Pointer | interop.Reference<any>, callback: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean>) => void): number;
+declare function macho_for_each_slice(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: (p1: interop.Pointer | interop.Reference<mach_header> | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean> | null) => void | null): number;
 
 /**
  * @since 16.0
  */
-declare function macho_for_each_slice_in_fd(fd: number, callback: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean>) => void): number;
+declare function macho_for_each_slice_in_fd(fd: number, callback: (p1: interop.Pointer | interop.Reference<mach_header> | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean> | null) => void | null): number;
 
 interface note_command {
 	cmd: number;
@@ -1248,241 +1252,241 @@ declare var source_version_command: interop.StructType<source_version_command>;
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_build_tool_version(bt: interop.Pointer | interop.Reference<build_tool_version>, ntools: number, target_byte_sex: NXByteOrder): void;
+declare function swap_build_tool_version(bt: interop.Pointer | interop.Reference<build_tool_version> | ArrayBufferLike | ArrayBufferView | null, ntools: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_build_version_command(bv: interop.Pointer | interop.Reference<build_version_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_build_version_command(bv: interop.Pointer | interop.Reference<build_version_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_dyld_info_command(ed: interop.Pointer | interop.Reference<dyld_info_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_dyld_info_command(ed: interop.Pointer | interop.Reference<dyld_info_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_dylib_module(mods: interop.Pointer | interop.Reference<dylib_module>, nmods: number, target_byte_sex: NXByteOrder): void;
+declare function swap_dylib_module(mods: interop.Pointer | interop.Reference<dylib_module> | ArrayBufferLike | ArrayBufferView | null, nmods: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_dylib_module_64(mods: interop.Pointer | interop.Reference<dylib_module_64>, nmods: number, target_byte_sex: NXByteOrder): void;
+declare function swap_dylib_module_64(mods: interop.Pointer | interop.Reference<dylib_module_64> | ArrayBufferLike | ArrayBufferView | null, nmods: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_dylib_reference(refs: interop.Pointer | interop.Reference<dylib_reference>, nrefs: number, target_byte_sex: NXByteOrder): void;
+declare function swap_dylib_reference(refs: interop.Pointer | interop.Reference<dylib_reference> | ArrayBufferLike | ArrayBufferView | null, nrefs: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_dylib_table_of_contents(tocs: interop.Pointer | interop.Reference<dylib_table_of_contents>, ntocs: number, target_byte_sex: NXByteOrder): void;
+declare function swap_dylib_table_of_contents(tocs: interop.Pointer | interop.Reference<dylib_table_of_contents> | ArrayBufferLike | ArrayBufferView | null, ntocs: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_dysymtab_command(dyst: interop.Pointer | interop.Reference<dysymtab_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_dysymtab_command(dyst: interop.Pointer | interop.Reference<dysymtab_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_encryption_command(ec: interop.Pointer | interop.Reference<encryption_info_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_encryption_command(ec: interop.Pointer | interop.Reference<encryption_info_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_encryption_command_64(ec: interop.Pointer | interop.Reference<encryption_info_command_64>, target_byte_sex: NXByteOrder): void;
+declare function swap_encryption_command_64(ec: interop.Pointer | interop.Reference<encryption_info_command_64> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_entry_point_command(ep: interop.Pointer | interop.Reference<entry_point_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_entry_point_command(ep: interop.Pointer | interop.Reference<entry_point_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_fat_arch(fat_archs: interop.Pointer | interop.Reference<fat_arch>, nfat_arch: number, target_byte_order: NXByteOrder): void;
+declare function swap_fat_arch(fat_archs: interop.Pointer | interop.Reference<fat_arch> | ArrayBufferLike | ArrayBufferView | null, nfat_arch: number, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_fat_arch_64(fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_arch: number, target_byte_order: NXByteOrder): void;
+declare function swap_fat_arch_64(fat_archs64: interop.Pointer | interop.Reference<fat_arch_64> | ArrayBufferLike | ArrayBufferView | null, nfat_arch: number, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_fat_header(fat_header: interop.Pointer | interop.Reference<fat_header>, target_byte_order: NXByteOrder): void;
+declare function swap_fat_header(fat_header: interop.Pointer | interop.Reference<fat_header> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_ident_command(ident: interop.Pointer | interop.Reference<ident_command>, target_byte_order: NXByteOrder): void;
+declare function swap_ident_command(ident: interop.Pointer | interop.Reference<ident_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_indirect_symbols(indirect_symbols: interop.Pointer | interop.Reference<number>, nindirect_symbols: number, target_byte_sex: NXByteOrder): void;
+declare function swap_indirect_symbols(indirect_symbols: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, nindirect_symbols: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_linkedit_data_command(ld: interop.Pointer | interop.Reference<linkedit_data_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_linkedit_data_command(ld: interop.Pointer | interop.Reference<linkedit_data_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_linker_option_command(lo: interop.Pointer | interop.Reference<linker_option_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_linker_option_command(lo: interop.Pointer | interop.Reference<linker_option_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_load_command(lc: interop.Pointer | interop.Reference<load_command>, target_byte_order: NXByteOrder): void;
+declare function swap_load_command(lc: interop.Pointer | interop.Reference<load_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_mach_header(mh: interop.Pointer | interop.Reference<mach_header>, target_byte_order: NXByteOrder): void;
+declare function swap_mach_header(mh: interop.Pointer | interop.Reference<mach_header> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_mach_header_64(mh: interop.Pointer | interop.Reference<mach_header_64>, target_byte_order: NXByteOrder): void;
+declare function swap_mach_header_64(mh: interop.Pointer | interop.Reference<mach_header_64> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_note_command(nc: interop.Pointer | interop.Reference<note_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_note_command(nc: interop.Pointer | interop.Reference<note_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_prebind_cksum_command(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_prebind_cksum_command(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_prebind_cksum_commandFunction(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_prebind_cksum_commandFunction(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_relocation_info(relocs: interop.Pointer | interop.Reference<relocation_info>, nrelocs: number, target_byte_order: NXByteOrder): void;
+declare function swap_relocation_info(relocs: interop.Pointer | interop.Reference<relocation_info> | ArrayBufferLike | ArrayBufferView | null, nrelocs: number, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_routines_command(r_cmd: interop.Pointer | interop.Reference<routines_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_routines_command(r_cmd: interop.Pointer | interop.Reference<routines_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_routines_command_64(r_cmd: interop.Pointer | interop.Reference<routines_command_64>, target_byte_sex: NXByteOrder): void;
+declare function swap_routines_command_64(r_cmd: interop.Pointer | interop.Reference<routines_command_64> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_section(s: interop.Pointer | interop.Reference<section>, nsects: number, target_byte_order: NXByteOrder): void;
+declare function swap_section(s: interop.Pointer | interop.Reference<section> | ArrayBufferLike | ArrayBufferView | null, nsects: number, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_section_64(s: interop.Pointer | interop.Reference<section_64>, nsects: number, target_byte_order: NXByteOrder): void;
+declare function swap_section_64(s: interop.Pointer | interop.Reference<section_64> | ArrayBufferLike | ArrayBufferView | null, nsects: number, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_segment_command(sg: interop.Pointer | interop.Reference<segment_command>, target_byte_order: NXByteOrder): void;
+declare function swap_segment_command(sg: interop.Pointer | interop.Reference<segment_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_segment_command_64(sg: interop.Pointer | interop.Reference<segment_command_64>, target_byte_order: NXByteOrder): void;
+declare function swap_segment_command_64(sg: interop.Pointer | interop.Reference<segment_command_64> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_source_version_command(sv: interop.Pointer | interop.Reference<source_version_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_source_version_command(sv: interop.Pointer | interop.Reference<source_version_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_symseg_command(ss: interop.Pointer | interop.Reference<symseg_command>, target_byte_order: NXByteOrder): void;
+declare function swap_symseg_command(ss: interop.Pointer | interop.Reference<symseg_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_symtab_command(st: interop.Pointer | interop.Reference<symtab_command>, target_byte_order: NXByteOrder): void;
+declare function swap_symtab_command(st: interop.Pointer | interop.Reference<symtab_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_thread_command(ut: interop.Pointer | interop.Reference<thread_command>, target_byte_order: NXByteOrder): void;
+declare function swap_thread_command(ut: interop.Pointer | interop.Reference<thread_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_order: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_twolevel_hint(hints: interop.Pointer | interop.Reference<twolevel_hint>, nhints: number, target_byte_sex: NXByteOrder): void;
+declare function swap_twolevel_hint(hints: interop.Pointer | interop.Reference<twolevel_hint> | ArrayBufferLike | ArrayBufferView | null, nhints: number, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_twolevel_hints_command(hints_cmd: interop.Pointer | interop.Reference<twolevel_hints_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_twolevel_hints_command(hints_cmd: interop.Pointer | interop.Reference<twolevel_hints_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_uuid_command(uuid_cmd: interop.Pointer | interop.Reference<uuid_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_uuid_command(uuid_cmd: interop.Pointer | interop.Reference<uuid_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_uuid_commandFunction(uuid_cmd: interop.Pointer | interop.Reference<uuid_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_uuid_commandFunction(uuid_cmd: interop.Pointer | interop.Reference<uuid_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function swap_version_min_command(ver_cmd: interop.Pointer | interop.Reference<version_min_command>, target_byte_sex: NXByteOrder): void;
+declare function swap_version_min_command(ver_cmd: interop.Pointer | interop.Reference<version_min_command> | ArrayBufferLike | ArrayBufferView | null, target_byte_sex: NXByteOrder): void;
 
 interface symseg_command {
 	cmd: number;
@@ -1509,7 +1513,7 @@ interface thread_command {
 declare var thread_command: interop.StructType<thread_command>;
 
 interface tlv_descriptor {
-	thunk: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<tlv_descriptor>) => interop.Pointer | interop.Reference<any>>;
+	thunk: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<tlv_descriptor> | null) => interop.Pointer | interop.Reference<any> | null>;
 	key: number;
 	offset: number;
 }

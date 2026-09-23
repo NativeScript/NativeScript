@@ -20,7 +20,7 @@ declare class STScreenTimeConfigurationObserver extends NSObject {
 
 	static new(): STScreenTimeConfigurationObserver; // inherited from NSObject
 
-	readonly configuration: STScreenTimeConfiguration;
+	readonly configuration: STScreenTimeConfiguration | null;
 
 	constructor(o: { updateQueue: NSObject & OS_dispatch_queue; });
 
@@ -45,12 +45,12 @@ declare class STWebHistory extends NSObject {
 	/**
 	 * @since 18.4
 	 */
-	constructor(o: { bundleIdentifier: string; profileIdentifier: string; });
+	constructor(o: { bundleIdentifier: string; profileIdentifier: string | null; });
 
 	/**
 	 * @since 18.4
 	 */
-	constructor(o: { profileIdentifier: string; });
+	constructor(o: { profileIdentifier: string | null; });
 
 	deleteAllHistory(): void;
 
@@ -61,24 +61,24 @@ declare class STWebHistory extends NSObject {
 	/**
 	 * @since 18.4
 	 */
-	fetchAllHistoryWithCompletionHandler(completionHandler: (p1: NSSet<NSURL>, p2: NSError) => void): void;
+	fetchAllHistoryWithCompletionHandler(completionHandler: (p1: NSSet<NSURL> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 18.4
 	 */
-	fetchHistoryDuringIntervalCompletionHandler(interval: NSDateInterval, completionHandler: (p1: NSSet<NSURL>, p2: NSError) => void): void;
+	fetchHistoryDuringIntervalCompletionHandler(interval: NSDateInterval, completionHandler: (p1: NSSet<NSURL> | null, p2: NSError | null) => void): void;
 
 	initWithBundleIdentifierError(bundleIdentifier: string, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 18.4
 	 */
-	initWithBundleIdentifierProfileIdentifierError(bundleIdentifier: string, profileIdentifier: string, error?: interop.Reference<NSError>): this;
+	initWithBundleIdentifierProfileIdentifierError(bundleIdentifier: string, profileIdentifier: string | null, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 18.4
 	 */
-	initWithProfileIdentifier(profileIdentifier: string): this;
+	initWithProfileIdentifier(profileIdentifier: string | null): this;
 }
 
 /**
@@ -90,7 +90,7 @@ declare class STWebpageController extends UIViewController {
 
 	static new(): STWebpageController; // inherited from NSObject
 
-	URL: NSURL;
+	URL: NSURL | null;
 
 	readonly URLIsBlocked: boolean;
 
@@ -101,7 +101,7 @@ declare class STWebpageController extends UIViewController {
 	/**
 	 * @since 18.4
 	 */
-	profileIdentifier: string;
+	profileIdentifier: string | null;
 
 	suppressUsageRecording: boolean;
 

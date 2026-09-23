@@ -199,7 +199,7 @@ export function waitUntilNavigatedTo(page: Page, action: Function) {
 	TKUnit.waitUntilReady(() => completed, 5);
 }
 
-export function waitUntilNavigatedFrom(action: Function, topFrame?: Frame) {
+export function waitUntilNavigatedFrom(action: Function, topFrame?: { currentPage: Page }) {
 	const currentPage = topFrame ? topFrame.currentPage : Frame.topmost().currentPage;
 	let completed = false;
 	function navigatedFrom(args) {
@@ -292,7 +292,7 @@ export function _generateFormattedString(): FormattedString {
 	return formattedString;
 }
 
-export function nativeView_recycling_test(createNew: () => View, createLayout?: () => LayoutBase, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
+export function nativeView_recycling_test(createNew: () => View, createLayout?: () => View, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
 	return;
 
 	// if (__APPLE__) {

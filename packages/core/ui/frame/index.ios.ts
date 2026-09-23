@@ -29,8 +29,8 @@ let navControllerDelegate: UINavigationControllerDelegate = null;
 
 export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
-	iosNavigationBarClass: typeof NSObject;
-	iosToolbarClass: typeof NSObject;
+	iosNavigationBarClass?: typeof NSObject;
+	iosToolbarClass?: typeof NSObject;
 
 	private _ios: iOSFrame;
 

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`angular configuration @angular-devkit/build-angular backwards compatible sets scriptTarget for version <15 1`] = `
 {
@@ -45,8 +45,16 @@ exports[`angular configuration for android 1`] = `
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src'
     },
@@ -82,6 +90,13 @@ exports[`angular configuration for android 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -193,7 +208,12 @@ exports[`angular configuration for android 1`] = `
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                info: 'mock-sass'
+              }
+            }
           }
         ]
       },
@@ -206,7 +226,7 @@ exports[`angular configuration for android 1`] = `
         use: [
           /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
           {
-            loader: '<rootDir>/node_modules/@angular-devkit/build-angular/src/tools/babel/webpack-loader.js',
+            loader: '@angular-devkit/build-angular/src/tools/babel/webpack-loader',
             options: {
               aot: true
             }
@@ -335,6 +355,12 @@ exports[`angular configuration for android 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/android/app/src/main/assets/app'
+      }
+    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
@@ -349,10 +375,10 @@ exports[`angular configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios|visionos)\\.(\\w+)$/
+      /.(ios|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -361,6 +387,7 @@ exports[`angular configuration for android 1`] = `
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: true,
         __IOS__: false,
         __VISIONOS__: false,
@@ -478,8 +505,16 @@ exports[`angular configuration for ios 1`] = `
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src'
     },
@@ -515,6 +550,13 @@ exports[`angular configuration for ios 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -626,7 +668,12 @@ exports[`angular configuration for ios 1`] = `
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                info: 'mock-sass'
+              }
+            }
           }
         ]
       },
@@ -639,7 +686,7 @@ exports[`angular configuration for ios 1`] = `
         use: [
           /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
           {
-            loader: '<rootDir>/node_modules/@angular-devkit/build-angular/src/tools/babel/webpack-loader.js',
+            loader: '@angular-devkit/build-angular/src/tools/babel/webpack-loader',
             options: {
               aot: true
             }
@@ -768,6 +815,12 @@ exports[`angular configuration for ios 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/ios/jest/app'
+      }
+    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
@@ -782,10 +835,10 @@ exports[`angular configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android|visionos)\\.(\\w+)$/
+      /.(android|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -794,6 +847,7 @@ exports[`angular configuration for ios 1`] = `
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: false,
         __IOS__: true,
         __VISIONOS__: false,

@@ -1,10 +1,15 @@
-﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from '.';
+﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition } from '.';
 import { View, AddChildFromBuilder, AddArrayFromBuilder, CSSType } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Property, CoercibleProperty, InheritedCssProperty } from '../core/properties';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
+
+export interface SelectedIndexChangedEventData extends EventData {
+	oldIndex: number;
+	newIndex: number;
+}
 
 @CSSType('SegmentedBarItem')
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
@@ -79,7 +84,13 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 
 		if (newItems) {
 			for (let i = 0, count = newItems.length; i < count; i++) {
-				this._addView(newItems[i]);
+				const item = newItems[i];
+				// A view can only have one parent, and _addView throws if it already has one.
+				if (item.parent && item.parent !== this) {
+					item.parent._removeView(item);
+				}
+
+				this._addView(item);
 			}
 		}
 	}

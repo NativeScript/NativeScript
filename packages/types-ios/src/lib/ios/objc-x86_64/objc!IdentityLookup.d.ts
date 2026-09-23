@@ -74,12 +74,12 @@ declare class ILClassificationResponse extends NSObject implements NSSecureCodin
 
 	readonly action: ILClassificationAction;
 
-	userInfo: NSDictionary<string, any>;
+	userInfo: NSDictionary<string, any> | null;
 
 	/**
 	 * @since 12.1
 	 */
-	userString: string;
+	userString: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -105,7 +105,7 @@ declare class ILCommunication extends NSObject implements NSSecureCoding {
 
 	readonly dateReceived: Date;
 
-	readonly sender: string;
+	readonly sender: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -147,7 +147,7 @@ declare class ILMessageCommunication extends ILCommunication {
 
 	static new(): ILMessageCommunication; // inherited from NSObject
 
-	readonly messageBody: string;
+	readonly messageBody: string | null;
 
 	isEqualToMessageCommunication(communication: ILMessageCommunication): boolean;
 }
@@ -262,7 +262,7 @@ declare class ILMessageFilterExtensionContext extends NSExtensionContext {
 
 	static new(): ILMessageFilterExtensionContext; // inherited from NSObject
 
-	deferQueryRequestToNetworkWithCompletion(completion: (p1: ILNetworkResponse, p2: NSError) => void): void;
+	deferQueryRequestToNetworkWithCompletion(completion: (p1: ILNetworkResponse | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -286,14 +286,14 @@ declare class ILMessageFilterQueryRequest extends NSObject implements NSSecureCo
 
 	static new(): ILMessageFilterQueryRequest; // inherited from NSObject
 
-	readonly messageBody: string;
+	readonly messageBody: string | null;
 
 	/**
 	 * @since 16.0
 	 */
-	readonly receiverISOCountryCode: string;
+	readonly receiverISOCountryCode: string | null;
 
-	readonly sender: string;
+	readonly sender: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 

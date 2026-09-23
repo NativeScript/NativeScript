@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./global-types.d.ts" />
 /**
  * IMPORTANT: this is not generated automatically due to this issue:
@@ -10,6 +11,7 @@ export type { NativeScriptConfig } from './config';
 export * from './application';
 export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
 export { getNativeApp, setNativeApp } from './application/helpers-common';
+export * from './native-window';
 export * as ApplicationSettings from './application-settings';
 export namespace AccessibilityEvents {
 	export const accessibilityBlurEvent: 'accessibilityBlur';

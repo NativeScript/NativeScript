@@ -45,7 +45,7 @@ declare var OS_sec_trust: {
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLAddDistinguishedName(context: any, derDN: interop.Pointer | interop.Reference<any>, derDNLen: number): number;
+declare function SSLAddDistinguishedName(context: any, derDN: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, derDNLen: number): number;
 
 declare const enum SSLAuthenticate {
 
@@ -66,7 +66,9 @@ declare const enum SSLCiphersuiteGroup {
 
 	kSSLCiphersuiteGroupATS = 3,
 
-	kSSLCiphersuiteGroupATSCompatibility = 4
+	kSSLCiphersuiteGroupATSCompatibility = 4,
+
+	kSSLCiphersuiteGroupATSFCP_v2_1 = 5
 }
 
 declare const enum SSLClientCertificateState {
@@ -103,145 +105,145 @@ declare function SSLContextGetTypeID(): number;
  * @since 11.0
  * @deprecated 13.0
  */
-declare function SSLCopyALPNProtocols(context: any, protocols: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function SSLCopyALPNProtocols(context: any, protocols: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any>): number;
+declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 9.0
  * @deprecated 13.0
  */
-declare function SSLCopyRequestedPeerName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLCopyRequestedPeerName(context: any, peerName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, peerNameLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 9.0
  * @deprecated 13.0
  */
-declare function SSLCopyRequestedPeerNameLength(ctx: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLCopyRequestedPeerNameLength(ctx: any, peerNameLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLCreateContext(alloc: any, protocolSide: SSLProtocolSide, connectionType: SSLConnectionType): any;
+declare function SSLCreateContext(alloc: any | null, protocolSide: SSLProtocolSide, connectionType: SSLConnectionType): any | null;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetBufferedReadSize(context: any, bufferSize: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetBufferedReadSize(context: any, bufferSize: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetClientCertificateState(context: any, clientState: interop.Pointer | interop.Reference<SSLClientCertificateState>): number;
+declare function SSLGetClientCertificateState(context: any, clientState: interop.Pointer | interop.Reference<SSLClientCertificateState> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetConnection(context: any, connection: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function SSLGetConnection(context: any, connection: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetDatagramWriteSize(dtlsContext: any, bufSize: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetDatagramWriteSize(dtlsContext: any, bufSize: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, numCiphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetMaxDatagramRecordSize(dtlsContext: any, maxSize: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetMaxDatagramRecordSize(dtlsContext: any, maxSize: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetNegotiatedCipher(context: any, cipherSuite: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetNegotiatedCipher(context: any, cipherSuite: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetNegotiatedProtocolVersion(context: any, protocol: interop.Pointer | interop.Reference<SSLProtocol>): number;
+declare function SSLGetNegotiatedProtocolVersion(context: any, protocol: interop.Pointer | interop.Reference<SSLProtocol> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetNumberEnabledCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetNumberEnabledCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetNumberSupportedCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetNumberSupportedCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, peerNameLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetPeerDomainNameLength(context: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetPeerDomainNameLength(context: any, peerNameLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetPeerID(context: any, peerID: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, peerIDLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetPeerID(context: any, peerID: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView, peerIDLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetProtocolVersionMax(context: any, maxVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
+declare function SSLGetProtocolVersionMax(context: any, maxVersion: interop.Pointer | interop.Reference<SSLProtocol> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetProtocolVersionMin(context: any, minVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
+declare function SSLGetProtocolVersionMin(context: any, minVersion: interop.Pointer | interop.Reference<SSLProtocol> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetSessionOption(context: any, option: SSLSessionOption, value: string | interop.Pointer | interop.Reference<any>): number;
+declare function SSLGetSessionOption(context: any, option: SSLSessionOption, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetSessionState(context: any, state: interop.Pointer | interop.Reference<SSLSessionState>): number;
+declare function SSLGetSessionState(context: any, state: interop.Pointer | interop.Reference<SSLSessionState> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLGetSupportedCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetSupportedCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, numCiphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
@@ -295,7 +297,7 @@ declare function SSLReHandshake(context: any): number;
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLRead(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
+declare function SSLRead(context: any, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, dataLength: number, processed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 declare const enum SSLSessionOption {
 
@@ -343,7 +345,7 @@ declare function SSLSetALPNProtocols(context: any, protocols: NSArray<any> | any
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetCertificate(context: any, certRefs: NSArray<any> | any[]): number;
+declare function SSLSetCertificate(context: any, certRefs: NSArray<any> | any[] | null): number;
 
 /**
  * @since 5.0
@@ -355,19 +357,19 @@ declare function SSLSetClientSideAuthenticate(context: any, auth: SSLAuthenticat
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetConnection(context: any, connection: interop.Pointer | interop.Reference<any>): number;
+declare function SSLSetConnection(context: any, connection: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetDatagramHelloCookie(dtlsContext: any, cookie: interop.Pointer | interop.Reference<any>, cookieLen: number): number;
+declare function SSLSetDatagramHelloCookie(dtlsContext: any, cookie: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, cookieLen: number): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: number): number;
+declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, numCiphers: number): number;
 
 /**
  * @since 5.0
@@ -385,7 +387,7 @@ declare function SSLSetError(context: any, status: number): number;
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetIOFuncs(context: any, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>): number;
+declare function SSLSetIOFuncs(context: any, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<number> | null) => number>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<number> | null) => number>): number;
 
 /**
  * @since 5.0
@@ -403,13 +405,13 @@ declare function SSLSetOCSPResponse(context: any, response: NSData): number;
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: number): number;
+declare function SSLSetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, peerNameLen: number): number;
 
 /**
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLSetPeerID(context: any, peerID: interop.Pointer | interop.Reference<any>, peerIDLen: number): number;
+declare function SSLSetPeerID(context: any, peerID: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, peerIDLen: number): number;
 
 /**
  * @since 5.0
@@ -445,7 +447,7 @@ declare function SSLSetSessionTicketsEnabled(context: any, enabled: boolean): nu
  * @since 5.0
  * @deprecated 13.0
  */
-declare function SSLWrite(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
+declare function SSLWrite(context: any, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataLength: number, processed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 declare const SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA: number;
 
@@ -550,7 +552,7 @@ declare const enum SecAccessControlCreateFlags {
 /**
  * @since 8.0
  */
-declare function SecAccessControlCreateWithFlags(allocator: any, protection: any, flags: SecAccessControlCreateFlags, error: interop.Pointer | interop.Reference<NSError>): any;
+declare function SecAccessControlCreateWithFlags(allocator: any | null, protection: any, flags: SecAccessControlCreateFlags, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 8.0
@@ -559,13 +561,14 @@ declare function SecAccessControlGetTypeID(): number;
 
 /**
  * @since 8.0
+ * @deprecated 26.2
  */
-declare function SecAddSharedWebCredential(fqdn: string, account: string, password: string, completionHandler: (p1: NSError) => void): void;
+declare function SecAddSharedWebCredential(fqdn: string, account: string, password: string | null, completionHandler: (p1: NSError | null) => void): void;
 
 /**
  * @since 10.3
  */
-declare function SecCertificateCopyCommonName(certificate: any, commonName: interop.Pointer | interop.Reference<string>): number;
+declare function SecCertificateCopyCommonName(certificate: any, commonName: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
@@ -575,59 +578,59 @@ declare function SecCertificateCopyData(certificate: any): NSData;
 /**
  * @since 10.3
  */
-declare function SecCertificateCopyEmailAddresses(certificate: any, emailAddresses: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function SecCertificateCopyEmailAddresses(certificate: any, emailAddresses: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 12.0
  */
-declare function SecCertificateCopyKey(certificate: any): any;
+declare function SecCertificateCopyKey(certificate: any): any | null;
 
 /**
  * @since 10.3
  */
-declare function SecCertificateCopyNormalizedIssuerSequence(certificate: any): NSData;
+declare function SecCertificateCopyNormalizedIssuerSequence(certificate: any): NSData | null;
 
 /**
  * @since 10.3
  */
-declare function SecCertificateCopyNormalizedSubjectSequence(certificate: any): NSData;
+declare function SecCertificateCopyNormalizedSubjectSequence(certificate: any): NSData | null;
 
 /**
  * @since 18.0
  */
-declare function SecCertificateCopyNotValidAfterDate(certificate: any): Date;
+declare function SecCertificateCopyNotValidAfterDate(certificate: any): Date | null;
 
 /**
  * @since 18.0
  */
-declare function SecCertificateCopyNotValidBeforeDate(certificate: any): Date;
+declare function SecCertificateCopyNotValidBeforeDate(certificate: any): Date | null;
 
 /**
  * @since 10.3
  * @deprecated 12.0
  */
-declare function SecCertificateCopyPublicKey(certificate: any): any;
+declare function SecCertificateCopyPublicKey(certificate: any): any | null;
 
 /**
  * @since 10.3
  * @deprecated 11.0
  */
-declare function SecCertificateCopySerialNumber(certificate: any): NSData;
+declare function SecCertificateCopySerialNumber(certificate: any): NSData | null;
 
 /**
  * @since 11.0
  */
-declare function SecCertificateCopySerialNumberData(certificate: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function SecCertificateCopySerialNumberData(certificate: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 2.0
  */
-declare function SecCertificateCopySubjectSummary(certificate: any): string;
+declare function SecCertificateCopySubjectSummary(certificate: any): string | null;
 
 /**
  * @since 2.0
  */
-declare function SecCertificateCreateWithData(allocator: any, data: NSData): any;
+declare function SecCertificateCreateWithData(allocator: any | null, data: NSData): any | null;
 
 /**
  * @since 2.0
@@ -637,27 +640,27 @@ declare function SecCertificateGetTypeID(): number;
 /**
  * @since 11.3
  */
-declare function SecCopyErrorMessageString(status: number, reserved: interop.Pointer | interop.Reference<any>): string;
+declare function SecCopyErrorMessageString(status: number, reserved: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): string | null;
 
 /**
  * @since 8.0
  */
-declare function SecCreateSharedWebCredentialPassword(): string;
+declare function SecCreateSharedWebCredentialPassword(): string | null;
 
 /**
  * @since 2.0
  */
-declare function SecIdentityCopyCertificate(identityRef: any, certificateRef: interop.Pointer | interop.Reference<any>): number;
+declare function SecIdentityCopyCertificate(identityRef: any, certificateRef: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
  */
-declare function SecIdentityCopyPrivateKey(identityRef: any, privateKeyRef: interop.Pointer | interop.Reference<any>): number;
+declare function SecIdentityCopyPrivateKey(identityRef: any, privateKeyRef: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 11.2
  */
-declare function SecIdentityCreate(allocator: any, certificate: any, privateKey: any): any;
+declare function SecIdentityCreate(allocator: any | null, certificate: any, privateKey: any): any | null;
 
 /**
  * @since 2.0
@@ -667,12 +670,12 @@ declare function SecIdentityGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function SecItemAdd(attributes: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any>): number;
+declare function SecItemAdd(attributes: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function SecItemCopyMatching(query: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any>): number;
+declare function SecItemCopyMatching(query: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
@@ -687,65 +690,65 @@ declare function SecItemUpdate(query: NSDictionary<any, any>, attributesToUpdate
 /**
  * @since 10.0
  */
-declare function SecKeyCopyAttributes(key: any): NSDictionary<any, any>;
+declare function SecKeyCopyAttributes(key: any): NSDictionary<any, any> | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCopyExternalRepresentation(key: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function SecKeyCopyExternalRepresentation(key: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCopyKeyExchangeResult(privateKey: any, algorithm: string, publicKey: any, parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function SecKeyCopyKeyExchangeResult(privateKey: any, algorithm: string, publicKey: any, parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCopyPublicKey(key: any): any;
+declare function SecKeyCopyPublicKey(key: any): any | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCreateDecryptedData(key: any, algorithm: string, ciphertext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function SecKeyCreateDecryptedData(key: any, algorithm: string, ciphertext: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCreateEncryptedData(key: any, algorithm: string, plaintext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function SecKeyCreateEncryptedData(key: any, algorithm: string, plaintext: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCreateRandomKey(parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
+declare function SecKeyCreateRandomKey(parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCreateSignature(key: any, algorithm: string, dataToSign: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function SecKeyCreateSignature(key: any, algorithm: string, dataToSign: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 10.0
  */
-declare function SecKeyCreateWithData(keyData: NSData, attributes: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
+declare function SecKeyCreateWithData(keyData: NSData, attributes: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string | interop.Pointer | interop.Reference<any>, cipherTextLen: number, plainText: string | interop.Pointer | interop.Reference<any>, plainTextLen: interop.Pointer | interop.Reference<number>): number;
+declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, cipherTextLen: number, plainText: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, plainTextLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string | interop.Pointer | interop.Reference<any>, plainTextLen: number, cipherText: string | interop.Pointer | interop.Reference<any>, cipherTextLen: interop.Pointer | interop.Reference<number>): number;
+declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, plainTextLen: number, cipherText: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, cipherTextLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecKeyGeneratePair(parameters: NSDictionary<any, any>, publicKey: interop.Pointer | interop.Reference<any>, privateKey: interop.Pointer | interop.Reference<any>): number;
+declare function SecKeyGeneratePair(parameters: NSDictionary<any, any>, publicKey: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView | null, privateKey: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
@@ -782,23 +785,23 @@ declare const enum SecKeyOperationType {
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string | interop.Pointer | interop.Reference<any>, dataToSignLen: number, sig: string | interop.Pointer | interop.Reference<any>, sigLen: interop.Pointer | interop.Reference<number>): number;
+declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataToSignLen: number, sig: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sigLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string | interop.Pointer | interop.Reference<any>, signedDataLen: number, sig: string | interop.Pointer | interop.Reference<any>, sigLen: number): number;
+declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, signedDataLen: number, sig: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sigLen: number): number;
 
 /**
  * @since 10.0
  */
-declare function SecKeyVerifySignature(key: any, algorithm: string, signedData: NSData, signature: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function SecKeyVerifySignature(key: any, algorithm: string, signedData: NSData, signature: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function SecPKCS12Import(pkcs12_data: NSData, options: NSDictionary<any, any>, items: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function SecPKCS12Import(pkcs12_data: NSData, options: NSDictionary<any, any>, items: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
@@ -832,7 +835,7 @@ declare const enum SecPadding {
 /**
  * @since 7.0
  */
-declare function SecPolicyCopyProperties(policyRef: any): NSDictionary<any, any>;
+declare function SecPolicyCopyProperties(policyRef: any): NSDictionary<any, any> | null;
 
 /**
  * @since 2.0
@@ -842,17 +845,17 @@ declare function SecPolicyCreateBasicX509(): any;
 /**
  * @since 7.0
  */
-declare function SecPolicyCreateRevocation(revocationFlags: number): any;
+declare function SecPolicyCreateRevocation(revocationFlags: number): any | null;
 
 /**
  * @since 2.0
  */
-declare function SecPolicyCreateSSL(server: boolean, hostname: string): any;
+declare function SecPolicyCreateSSL(server: boolean, hostname: string | null): any;
 
 /**
  * @since 7.0
  */
-declare function SecPolicyCreateWithProperties(policyIdentifier: any, properties: NSDictionary<any, any>): any;
+declare function SecPolicyCreateWithProperties(policyIdentifier: any, properties: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 2.0
@@ -862,88 +865,88 @@ declare function SecPolicyGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function SecRandomCopyBytes(rnd: interop.Pointer | interop.Reference<any>, count: number, bytes: interop.Pointer | interop.Reference<any>): number;
+declare function SecRandomCopyBytes(rnd: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, count: number, bytes: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  * @deprecated 14.0
  */
-declare function SecRequestSharedWebCredential(fqdn: string, account: string, completionHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+declare function SecRequestSharedWebCredential(fqdn: string | null, account: string | null, completionHandler: (p1: NSArray<any> | null, p2: NSError | null) => void): void;
 
 /**
  * @since 15.0
  */
-declare function SecTrustCopyCertificateChain(trust: any): NSArray<any>;
+declare function SecTrustCopyCertificateChain(trust: any): NSArray<any> | null;
 
 /**
  * @since 7.0
  */
-declare function SecTrustCopyCustomAnchorCertificates(trust: any, anchors: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function SecTrustCopyCustomAnchorCertificates(trust: any, anchors: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function SecTrustCopyExceptions(trust: any): NSData;
+declare function SecTrustCopyExceptions(trust: any): NSData | null;
 
 /**
  * @since 14.0
  */
-declare function SecTrustCopyKey(trust: any): any;
+declare function SecTrustCopyKey(trust: any): any | null;
 
 /**
  * @since 7.0
  */
-declare function SecTrustCopyPolicies(trust: any, policies: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function SecTrustCopyPolicies(trust: any, policies: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecTrustCopyProperties(trust: any): NSArray<any>;
+declare function SecTrustCopyProperties(trust: any): NSArray<any> | null;
 
 /**
  * @since 2.0
  * @deprecated 14.0
  */
-declare function SecTrustCopyPublicKey(trust: any): any;
+declare function SecTrustCopyPublicKey(trust: any): any | null;
 
 /**
  * @since 7.0
  */
-declare function SecTrustCopyResult(trust: any): NSDictionary<any, any>;
+declare function SecTrustCopyResult(trust: any): NSDictionary<any, any> | null;
 
 /**
  * @since 2.0
  */
-declare function SecTrustCreateWithCertificates(certificates: any, policies: any, trust: interop.Pointer | interop.Reference<any>): number;
+declare function SecTrustCreateWithCertificates(certificates: any, policies: any | null, trust: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
+declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 7.0
  * @deprecated 13.0
  */
-declare function SecTrustEvaluateAsync(trust: any, queue: NSObject & OS_dispatch_queue, result: (p1: any, p2: SecTrustResultType) => void): number;
+declare function SecTrustEvaluateAsync(trust: any, queue: NSObject & OS_dispatch_queue | null, result: (p1: any, p2: SecTrustResultType) => void): number;
 
 /**
  * @since 13.0
  */
-declare function SecTrustEvaluateAsyncWithError(trust: any, queue: NSObject & OS_dispatch_queue, result: (p1: any, p2: boolean, p3: NSError) => void): number;
+declare function SecTrustEvaluateAsyncWithError(trust: any, queue: NSObject & OS_dispatch_queue, result: (p1: any, p2: boolean, p3: NSError | null) => void): number;
 
 /**
  * @since 12.0
  */
-declare function SecTrustEvaluateWithError(trust: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function SecTrustEvaluateWithError(trust: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 15.0
  */
-declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any;
+declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any | null;
 
 /**
  * @since 2.0
@@ -953,12 +956,12 @@ declare function SecTrustGetCertificateCount(trust: any): number;
 /**
  * @since 7.0
  */
-declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string | interop.Pointer | interop.Reference<any>): number;
+declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
  */
-declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
+declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 2.0
@@ -992,7 +995,7 @@ declare const enum SecTrustResultType {
 /**
  * @since 2.0
  */
-declare function SecTrustSetAnchorCertificates(trust: any, anchorCertificates: NSArray<any> | any[]): number;
+declare function SecTrustSetAnchorCertificates(trust: any, anchorCertificates: NSArray<any> | any[] | null): number;
 
 /**
  * @since 2.0
@@ -1002,7 +1005,7 @@ declare function SecTrustSetAnchorCertificatesOnly(trust: any, anchorCertificate
 /**
  * @since 4.0
  */
-declare function SecTrustSetExceptions(trust: any, exceptions: NSData): boolean;
+declare function SecTrustSetExceptions(trust: any, exceptions: NSData | null): boolean;
 
 /**
  * @since 7.0
@@ -1012,7 +1015,7 @@ declare function SecTrustSetNetworkFetchAllowed(trust: any, allowFetch: boolean)
 /**
  * @since 7.0
  */
-declare function SecTrustSetOCSPResponse(trust: any, responseData: any): number;
+declare function SecTrustSetOCSPResponse(trust: any, responseData: any | null): number;
 
 /**
  * @since 6.0
@@ -1022,7 +1025,7 @@ declare function SecTrustSetPolicies(trust: any, policies: any): number;
 /**
  * @since 12.1.1
  */
-declare function SecTrustSetSignedCertificateTimestamps(trust: any, sctArray: NSArray<any> | any[]): number;
+declare function SecTrustSetSignedCertificateTimestamps(trust: any, sctArray: NSArray<any> | any[] | null): number;
 
 /**
  * @since 2.0
@@ -3523,7 +3526,7 @@ declare var kSecPublicKeyAttrs: string;
 /**
  * @since 2.0
  */
-declare var kSecRandomDefault: interop.Pointer | interop.Reference<any>;
+declare var kSecRandomDefault: interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
@@ -3686,7 +3689,7 @@ declare function sec_certificate_copy_ref(certificate: NSObject & OS_sec_certifi
 /**
  * @since 12.0
  */
-declare function sec_certificate_create(certificate: any): NSObject & OS_sec_certificate;
+declare function sec_certificate_create(certificate: any): NSObject & OS_sec_certificate | null;
 
 /**
  * @since 13.0
@@ -3696,22 +3699,22 @@ declare function sec_identity_access_certificates(identity: NSObject & OS_sec_id
 /**
  * @since 12.0
  */
-declare function sec_identity_copy_certificates_ref(identity: NSObject & OS_sec_identity): interop.Unmanaged<NSArray<any>>;
+declare function sec_identity_copy_certificates_ref(identity: NSObject & OS_sec_identity): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 12.0
  */
-declare function sec_identity_copy_ref(identity: NSObject & OS_sec_identity): interop.Unmanaged<any>;
+declare function sec_identity_copy_ref(identity: NSObject & OS_sec_identity): interop.Unmanaged<any | null>;
 
 /**
  * @since 12.0
  */
-declare function sec_identity_create(identity: any): NSObject & OS_sec_identity;
+declare function sec_identity_create(identity: any): NSObject & OS_sec_identity | null;
 
 /**
  * @since 12.0
  */
-declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any> | any[]): NSObject & OS_sec_identity;
+declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any> | any[]): NSObject & OS_sec_identity | null;
 
 /**
  * @since 12.0
@@ -3746,27 +3749,27 @@ declare function sec_protocol_metadata_challenge_parameters_are_equal(metadataA:
 /**
  * @since 18.5
  */
-declare function sec_protocol_metadata_copy_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
+declare function sec_protocol_metadata_copy_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 12.0
  */
-declare function sec_protocol_metadata_copy_peer_public_key(metadata: NSObject & OS_sec_protocol_metadata): NSObject & OS_dispatch_data;
+declare function sec_protocol_metadata_copy_peer_public_key(metadata: NSObject & OS_sec_protocol_metadata): NSObject & OS_dispatch_data | null;
 
 /**
  * @since 18.5
  */
-declare function sec_protocol_metadata_copy_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
+declare function sec_protocol_metadata_copy_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 12.0
  */
-declare function sec_protocol_metadata_create_secret(metadata: NSObject & OS_sec_protocol_metadata, label_len: number, label: string | interop.Pointer | interop.Reference<any>, exporter_length: number): NSObject & OS_dispatch_data;
+declare function sec_protocol_metadata_create_secret(metadata: NSObject & OS_sec_protocol_metadata, label_len: number, label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, exporter_length: number): NSObject & OS_dispatch_data | null;
 
 /**
  * @since 12.0
  */
-declare function sec_protocol_metadata_create_secret_with_context(metadata: NSObject & OS_sec_protocol_metadata, label_len: number, label: string | interop.Pointer | interop.Reference<any>, context_len: number, context: string | interop.Pointer | interop.Reference<any>, exporter_length: number): NSObject & OS_dispatch_data;
+declare function sec_protocol_metadata_create_secret_with_context(metadata: NSObject & OS_sec_protocol_metadata, label_len: number, label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, context_len: number, context: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, exporter_length: number): NSObject & OS_dispatch_data | null;
 
 /**
  * @since 12.0
@@ -3783,7 +3786,7 @@ declare function sec_protocol_metadata_get_negotiated_ciphersuite(metadata: NSOb
  * @since 12.0
  * @deprecated 18.5
  */
-declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
+declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 12.0
@@ -3805,7 +3808,7 @@ declare function sec_protocol_metadata_get_negotiated_tls_protocol_version(metad
  * @since 12.0
  * @deprecated 18.5
  */
-declare function sec_protocol_metadata_get_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
+declare function sec_protocol_metadata_get_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 12.0
@@ -3820,7 +3823,7 @@ declare function sec_protocol_options_add_pre_shared_key(options: NSObject & OS_
 /**
  * @since 12.0
  */
-declare function sec_protocol_options_add_tls_application_protocol(options: NSObject & OS_sec_protocol_options, application_protocol: string | interop.Pointer | interop.Reference<any>): void;
+declare function sec_protocol_options_add_tls_application_protocol(options: NSObject & OS_sec_protocol_options, application_protocol: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 12.0
@@ -3872,7 +3875,7 @@ declare function sec_protocol_options_get_default_min_tls_protocol_version(): tl
 /**
  * @since 12.0
  */
-declare function sec_protocol_options_set_challenge_block(options: NSObject & OS_sec_protocol_options, challenge_block: (p1: NSObject & OS_sec_protocol_metadata, p2: (p1: NSObject & OS_sec_identity) => void) => void, challenge_queue: NSObject & OS_dispatch_queue): void;
+declare function sec_protocol_options_set_challenge_block(options: NSObject & OS_sec_protocol_options, challenge_block: (p1: NSObject & OS_sec_protocol_metadata, p2: (p1: NSObject & OS_sec_identity | null) => void) => void, challenge_queue: NSObject & OS_dispatch_queue): void;
 
 /**
  * @since 12.0
@@ -3902,7 +3905,7 @@ declare function sec_protocol_options_set_peer_authentication_required(options: 
 /**
  * @since 13.0
  */
-declare function sec_protocol_options_set_pre_shared_key_selection_block(options: NSObject & OS_sec_protocol_options, psk_selection_block: (p1: NSObject & OS_sec_protocol_metadata, p2: NSObject & OS_dispatch_data, p3: (p1: NSObject & OS_dispatch_data) => void) => void, psk_selection_queue: NSObject & OS_dispatch_queue): void;
+declare function sec_protocol_options_set_pre_shared_key_selection_block(options: NSObject & OS_sec_protocol_options, psk_selection_block: (p1: NSObject & OS_sec_protocol_metadata, p2: NSObject & OS_dispatch_data | null, p3: (p1: NSObject & OS_dispatch_data | null) => void) => void, psk_selection_queue: NSObject & OS_dispatch_queue): void;
 
 /**
  * @since 12.0
@@ -3960,7 +3963,7 @@ declare function sec_protocol_options_set_tls_sct_enabled(options: NSObject & OS
 /**
  * @since 12.0
  */
-declare function sec_protocol_options_set_tls_server_name(options: NSObject & OS_sec_protocol_options, server_name: string | interop.Pointer | interop.Reference<any>): void;
+declare function sec_protocol_options_set_tls_server_name(options: NSObject & OS_sec_protocol_options, server_name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 12.0
@@ -3972,9 +3975,9 @@ declare function sec_protocol_options_set_tls_tickets_enabled(options: NSObject 
  */
 declare function sec_protocol_options_set_verify_block(options: NSObject & OS_sec_protocol_options, verify_block: (p1: NSObject & OS_sec_protocol_metadata, p2: NSObject & OS_sec_trust, p3: (p1: boolean) => void) => void, verify_block_queue: NSObject & OS_dispatch_queue): void;
 
-declare function sec_release(obj: interop.Pointer | interop.Reference<any>): void;
+declare function sec_release(obj: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function sec_retain(obj: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function sec_retain(obj: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
@@ -3984,7 +3987,7 @@ declare function sec_trust_copy_ref(trust: NSObject & OS_sec_trust): interop.Unm
 /**
  * @since 12.0
  */
-declare function sec_trust_create(trust: any): NSObject & OS_sec_trust;
+declare function sec_trust_create(trust: any): NSObject & OS_sec_trust | null;
 
 declare const enum tls_ciphersuite_group_t {
 
@@ -3996,7 +3999,9 @@ declare const enum tls_ciphersuite_group_t {
 
 	tls_ciphersuite_group_ats = 3,
 
-	tls_ciphersuite_group_ats_compatibility = 4
+	tls_ciphersuite_group_ats_compatibility = 4,
+
+	tls_ciphersuite_group_ats_fcp_v2_1 = 5
 }
 
 declare const enum tls_ciphersuite_t {

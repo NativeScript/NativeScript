@@ -31,6 +31,36 @@ const v = _ref(0);
 		expect(out).toMatch(/\b_ref\b/);
 	});
 
+	// Regression: when a module's only /ns/rt named imports are nav helpers
+	// (filtered above), the leftover ImportSpecifier was previously left on
+	// `path.node.specifiers` because the destructure path was skipped. The
+	// resulting `import __ns_rt_ns_1, { $navigateTo } from "/ns/rt/0";` then
+	// collided with the regex-injected `import { $navigateTo } from "/ns/rt"`
+	// emitted by processCodeForDevice, throwing
+	// "Identifier '$navigateTo' has already been declared" at runtime.
+	it('strips nav-helper-only named imports from /ns/rt even when nothing remains to destructure', () => {
+		const input = `
+import { $navigateTo } from "/ns/rt/0";
+export function go(c) { $navigateTo(c); }
+`;
+		const out = astNormalizeModuleImportsAndHelpers(input);
+		// The combined "default + named { $navigateTo }" form must not survive.
+		expect(out).not.toMatch(/import\s+\w+\s*,\s*\{[^}]*\$navigateTo[^}]*\}\s*from\s*["'][^"']*\/ns\/rt/);
+		// And there must be no standalone named import of $navigateTo from /ns/rt either —
+		// websocket.ts is responsible for reinjecting one (without colliding).
+		expect(out).not.toMatch(/import\s*\{[^}]*\$navigateTo[^}]*\}\s*from\s*["'][^"']*\/ns\/rt/);
+	});
+
+	it('strips nav-helper-only named imports from nativescript-vue too', () => {
+		const input = `
+import { $navigateBack } from 'nativescript-vue';
+export function back() { $navigateBack(); }
+`;
+		const out = astNormalizeModuleImportsAndHelpers(input);
+		expect(out).not.toMatch(/import\s+\w+\s*,\s*\{[^}]*\$navigateBack[^}]*\}\s*from\s*["'][^"']*\/ns\/rt/);
+		expect(out).not.toMatch(/import\s*\{[^}]*\$navigateBack[^}]*\}\s*from\s*["'][^"']*\/ns\/rt/);
+	});
+
 	it('drops vite virtual imports and prebundle deps in normalizer (import declarations)', () => {
 		const input = `
 import '/@id/__x00__vite/dynamic-import-helper.js';

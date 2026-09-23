@@ -44,24 +44,17 @@ npx nativescript-vite init
 
 This will:
 
-- Generate a `vite.config.ts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper from `@nativescript/vite`.
-- Add (or update) the following npm scripts in your app `package.json`:
-	- `dev:ios`
-	- `dev:android`
-	- `dev:server:ios`
-	- `dev:server:android`
-	- `ios`
-	- `android`
-- Add the devDependencies `concurrently` and `wait-on`.
+- Generate a `vite.config.mts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript — or a flavor a dependency declares, see below) and the corresponding helper subpath from `@nativescript/vite`.
 - Add the dependency `@valor/nativescript-websockets`.
 - Append `.ns-vite-build` to `.gitignore` if it is not already present.
 
-After running `init`, you now have two ways to work with Vite:
+After running `init`, you have two ways to work with Vite:
 
-1. HMR workflow
+1. HMR workflow (default — the CLI starts the dev server for you)
 
 ```bash
-npm run dev:ios
+ns debug ios
+ns debug android
 ```
 
 2. Standard dev workflow (non-HMR)
@@ -71,18 +64,117 @@ ns debug ios --no-hmr
 ns debug android --no-hmr
 ```
 
+### Android: automatic `adb reverse`
+
+For Android HMR the CLI automatically runs `adb reverse tcp:<port> tcp:<port>`
+for the session's dev-server port (using the SDK-resolved adb, scoped to the
+deploy target, after the device is ready) so the device reaches the dev server
+through the ADB tunnel at `127.0.0.1:<port>`. Relevant opt-outs:
+
+- `NS_HMR_NO_ADB_REVERSE=1` — skip the tunnel and use `10.0.2.2`.
+- `NS_HMR_PREFER_LAN_HOST=1` — physical device over Wi-Fi; emit the host's LAN IP.
+- `NS_HMR_HOST=<host[:port]>` — point the device at an explicit origin (CI / tunnels).
+
+## Custom HMR sessions
+
+The CLI picks the dev-server settings for each session on its own:
+
+- **Port** — the first free port at or above `NS_HMR_PORT` (default `5173`),
+  the same way `vite` moves off a busy port. Whatever it picks is baked into
+  the device URLs, bound by the dev server and (on Android) tunnelled with
+  `adb reverse`, so all three always agree.
+- **Staging directory** — `.ns-vite-build/<platform>`, so iOS and Android
+  builds never overwrite each other's output.
+
+Both can still be pinned explicitly:
+
+| Environment variable | Purpose | Default |
+| --- | --- | --- |
+| `NS_HMR_PORT` | Preferred Vite dev-server port; the CLI moves to the next free port when it is taken | `5173` |
+| `NS_HMR_STRICT_PORT` | Fail instead of moving when `NS_HMR_PORT` is taken (Vite's `strictPort`) — for tunnels / CI that forward a fixed port | unset |
+| `NS_VITE_DIST_DIR` | Project-relative staging directory used for Vite output before the NativeScript CLI copies it into the platform app | `.ns-vite-build/<platform>` |
+
+The environment settings only need to be visible to the `ns` process — the CLI
+propagates them (and the values it picks) to the dev server it spawns.
+
+### Running two platforms at once
+
+Start both; nothing to configure:
+
+```bash
+# Terminal 1
+ns debug ios       # dev server on 5173
+
+# Terminal 2
+ns debug android   # 5173 is busy → dev server on 5174
+```
+
+Each session gets its own port and staging directory. Older CLIs that don't
+pick ports need them set by hand per terminal:
+
+```bash
+# Terminal 1: iOS
+NS_HMR_PORT=5173 NS_VITE_DIST_DIR=.ns-vite-build/ios ns debug ios
+
+# Terminal 2: Android
+NS_HMR_PORT=5174 NS_VITE_DIST_DIR=.ns-vite-build/android ns debug android
+```
+
+The inline environment syntax above is for POSIX shells; use the equivalent
+assignment on Windows.
+
+### Advanced: running `vite serve` yourself
+
+The dev server is just `vite serve -- --env.<platform> --env.hmr`. You can run
+it standalone for diagnostics, but do **not** run it alongside `ns run`/`ns debug`
+for the same platform — both would try to bind the same port. CLI-managed is the
+supported default.
+
 ## Usage
 
-1) Create `vite.config.ts`:
+1) Create `vite.config.mts` (the `.mts` extension keeps the config ESM without setting `"type": "module"` in the app's package.json, avoiding Vite's `configLoader: 'native'` warning):
 
 ```ts
 import { defineConfig, mergeConfig, UserConfig } from 'vite';
-import { typescriptConfig } from '@nativescript/vite';
+import { typescriptConfig } from '@nativescript/vite/typescript';
 
 export default defineConfig(({ mode }): UserConfig => {
 	return mergeConfig(typescriptConfig({ mode }), {});
 });
 ```
+
+Framework-specific configs should be imported from their matching subpaths to avoid loading unrelated framework tooling:
+
+```ts
+import { angularConfig } from '@nativescript/vite/angular';
+import { reactConfig } from '@nativescript/vite/react';
+import { solidConfig } from '@nativescript/vite/solid';
+import { vueConfig } from '@nativescript/vite/vue';
+```
+
+Plain JavaScript apps use the JavaScript helper and do not need `typescript` installed:
+
+```ts
+import { javascriptConfig } from '@nativescript/vite/javascript';
+```
+
+The TypeScript compiler is loaded only when a source needs the `@NativeClass` ES5 downlevel or when build-time type checking runs. If a plugin ships `@NativeClass`-decorated code and `typescript` is missing, the build logs a warning asking you to add `typescript` as a devDependency. Path aliases for JavaScript apps are read from `jsconfig.json` when there is no `tsconfig.json`.
+
+### Flavors from other packages
+
+A framework can ship its own flavor — config helper, server strategy and device-side
+client strategy — as a package, using `@nativescript/vite/framework` and
+`@nativescript/vite/hmr/client/framework.js`. `init` and flavor detection pick it up from a
+`nativescript.vite` declaration in that package's `package.json`. The Octane flavor,
+[`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane), is built this way:
+
+```ts
+import { octaneConfig } from '@nativescript-community/vite-octane';
+
+export default defineConfig(({ mode }) => octaneConfig({ mode }));
+```
+
+See [docs/framework-flavors.md](./docs/framework-flavors.md) for the full walkthrough.
 
 2) Update `nativescript.config.ts`:
 
@@ -92,7 +184,7 @@ import { NativeScriptConfig } from '@nativescript/core';
 export default {
 	// add these:
 	bundler: 'vite',
-	bundlerConfigPath: 'vite.config.ts',
+	bundlerConfigPath: 'vite.config.mts',
 } as NativeScriptConfig;
 ```
 

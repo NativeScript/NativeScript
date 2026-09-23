@@ -1,5 +1,5 @@
 import { ViewBase } from '../view-base';
-import { PropertyChangeData, WrappedValue } from '../../../data/observable';
+import { PropertyChangeData, PropertyChangeOrigin, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
 import { Style } from '../../styling/style';
@@ -12,6 +12,8 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
+const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
+const cssShorthandLonghands = new Map<string, string[]>();
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -31,6 +33,26 @@ const enum ValueSource {
 	Css = 2,
 	Local = 3,
 	Keyframe = 4,
+}
+
+/** `sourceKey` of every registered `CssProperty`, by css name. */
+const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
+
+/**
+ * Whether the style still carries what the cascade last wrote for the property.
+ * A `CssProperty` keeps one value: a local value both suppresses the css write and
+ * takes the slot, so clearing it leaves the property at its default with the css
+ * value gone. The cascade has to write it again rather than skip it as unchanged.
+ */
+export function _isCssValueStillApplied(style: unknown, cssLocalName: string, value: unknown): boolean {
+	const sourceKey = cssValueSourceKeys[cssLocalName];
+	if (sourceKey === undefined) {
+		// Applied through the view rather than the style; nothing to verify.
+		return true;
+	}
+
+	// A reset leaves no source behind, so it is in effect precisely when nothing else claimed the property.
+	return style[sourceKey] === (isResetValue(value) ? undefined : ValueSource.Css);
 }
 
 function print(map) {
@@ -54,6 +76,113 @@ export function _getProperties(): Property<any, any>[] {
 
 export function _getStyleProperties(): CssProperty<any, any>[] {
 	return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
+}
+
+/**
+ * Placeholder cascaded for each longhand of a shorthand that cannot be split while
+ * parsing - a single `var()` may substitute several longhands at once, so the
+ * shorthand is only parsed once its expression is resolved per view.
+ * @see https://drafts.csswg.org/css-variables/#variables-in-shorthands
+ */
+export class CssPendingSubstitution {
+	constructor(
+		public readonly shorthand: string,
+		public readonly value: string,
+	) {}
+
+	toString(): string {
+		return this.value;
+	}
+}
+
+export function _isCssPendingSubstitution(value: unknown): value is CssPendingSubstitution {
+	return value instanceof CssPendingSubstitution;
+}
+
+/**
+ * The longhands a shorthand expands into, probed from its converter on first use -
+ * the longhand properties a converter closes over are not initialized yet while
+ * the shorthand itself is being registered.
+ */
+function getCssShorthandLonghands(cssName: string): string[] | undefined {
+	const known = cssShorthandLonghands.get(cssName);
+	if (known) {
+		return known;
+	}
+
+	const converter = cssShorthandConverters.get(cssName);
+	if (!converter) {
+		return undefined;
+	}
+
+	try {
+		const probed = converter(unsetValue);
+		if (!probed?.length) {
+			return undefined;
+		}
+
+		const longhands: string[] = [];
+		for (let i = 0, length = probed.length; i < length; i++) {
+			longhands.push(probed[i][0].cssLocalName);
+		}
+
+		cssShorthandLonghands.set(cssName, longhands);
+
+		return longhands;
+	} catch (e) {
+		Trace.write(`Could not determine the longhands of shorthand [${cssName}]. ${e}`, Trace.categories.Style, Trace.messageType.warn);
+
+		return undefined;
+	}
+}
+
+/**
+ * One pending-substitution value per longhand of the shorthand, or `undefined`
+ * when the longhands cannot be determined.
+ */
+export function _pendingCssShorthandSubstitution(cssName: string, value: string): [string, CssPendingSubstitution][] | undefined {
+	const longhands = getCssShorthandLonghands(cssName);
+	if (!longhands) {
+		return undefined;
+	}
+
+	const pending = new CssPendingSubstitution(cssName, value);
+	const declarations: [string, CssPendingSubstitution][] = [];
+	for (let i = 0, length = longhands.length; i < length; i++) {
+		declarations.push([longhands[i], pending]);
+	}
+
+	return declarations;
+}
+
+/**
+ * Expand a shorthand declaration into its longhand declarations, or `undefined`
+ * when the property is not a shorthand, the value still has to be evaluated per
+ * view (`var()`/`calc()`), or it does not parse.
+ */
+export function _expandCssShorthand(cssName: string, value: string): [string, any][] | undefined {
+	const converter = cssShorthandConverters.get(cssName);
+	if (!converter) {
+		return undefined;
+	}
+
+	if (typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value))) {
+		return undefined;
+	}
+
+	try {
+		const converted = converter(value);
+		const expanded: [string, any][] = [];
+		for (let i = 0, length = converted.length; i < length; i++) {
+			expanded.push([converted[i][0].cssLocalName, converted[i][1]]);
+		}
+
+		return expanded;
+	} catch (e) {
+		Trace.write(`Failed to expand shorthand [${cssName}] with value [${value}]. ${e}`, Trace.categories.Style, Trace.messageType.warn);
+
+		return undefined;
+	}
 }
 
 export function isCssVariable(property: string) {
@@ -170,7 +299,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 	public isStyleProperty: boolean;
 
 	public get: () => U;
-	public set: (value: U) => void;
+	public set: (value: U, origin?: PropertyChangeOrigin) => void;
 	public overrideHandlers: (options: PropertyOptions<T, U>) => void;
 	public enumerable = true;
 	public configurable = true;
@@ -220,7 +349,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 		const property = this;
 
-		this.set = function (this: T, boxedValue: U): void {
+		this.set = function (this: T, boxedValue: U, origin?: PropertyChangeOrigin): void {
 			const reset = isResetValue(boxedValue);
 			let value: U;
 			let wrapped: boolean;
@@ -286,6 +415,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 						propertyName,
 						value,
 						oldValue,
+						origin: origin ?? 'script',
 					});
 				}
 
@@ -323,6 +453,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 						propertyName,
 						value,
 						oldValue,
+						origin: 'native',
 					});
 				}
 
@@ -470,6 +601,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 						propertyName,
 						value,
 						oldValue,
+						origin: 'script',
 					});
 				}
 
@@ -529,7 +661,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 
 				// take currentValue before calling base - base may change it.
 				const currentValue = that[key];
-				setBase.call(that, unboxedValue);
+				setBase.call(that, unboxedValue, valueSource === ValueSource.Local ? 'script' : 'inherited');
 
 				const newValue = that[key];
 				that[sourceKey] = newValueSource;
@@ -646,6 +778,8 @@ export class CssProperty<T extends Style, U> {
 				return;
 			}
 
+			this._localValueVersion++;
+
 			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
@@ -706,6 +840,7 @@ export class CssProperty<T extends Style, U> {
 						propertyName,
 						value,
 						oldValue,
+						origin: 'script',
 					});
 				}
 
@@ -790,6 +925,7 @@ export class CssProperty<T extends Style, U> {
 						propertyName,
 						value,
 						oldValue,
+						origin: 'css',
 					});
 				}
 
@@ -830,6 +966,8 @@ export class CssProperty<T extends Style, U> {
 		if (this.cssLocalName !== this.cssName) {
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
+
+		cssValueSourceKeys[this.cssLocalName] = this.sourceKey;
 	}
 
 	public isSet(instance: T): boolean {
@@ -908,6 +1046,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const property = this;
 
 		function descriptor(symbol: symbol, propertySource: ValueSource, enumerable: boolean, configurable: boolean, getsComputed: boolean): PropertyDescriptor {
+			const origin: PropertyChangeOrigin = propertySource === ValueSource.Keyframe ? 'animation' : propertySource === ValueSource.Css ? 'css' : 'script';
+
 			return {
 				enumerable,
 				configurable,
@@ -995,6 +1135,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 							propertyName,
 							value,
 							oldValue,
+							origin,
 						});
 					}
 				},
@@ -1096,12 +1237,20 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			}
 		};
 
-		const setFunc = (valueSource: ValueSource) =>
-			function (this: T, boxedValue: any): void {
+		const setFunc = (valueSource: ValueSource) => {
+			const isLocalWrite = valueSource === ValueSource.Local;
+			// Default is only used by the cascade below, to reset a child that inherited this value.
+			const origin: PropertyChangeOrigin = isLocalWrite ? 'script' : valueSource === ValueSource.Css ? 'css' : 'inherited';
+
+			return function (this: T, boxedValue: any): void {
 				const view = this.viewRef.get();
 				if (!view) {
 					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 					return;
+				}
+
+				if (isLocalWrite) {
+					this._localValueVersion++;
 				}
 
 				const reset = isResetValue(boxedValue) || boxedValue === '';
@@ -1181,6 +1330,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 							propertyName,
 							value,
 							oldValue,
+							origin,
 						});
 					}
 
@@ -1205,6 +1355,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 					});
 				}
 			};
+		};
 
 		const setDefaultFunc = setFunc(ValueSource.Default);
 		const setInheritedFunc = setFunc(ValueSource.Inherited);
@@ -1227,7 +1378,6 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 	protected readonly cssValueDescriptor: PropertyDescriptor;
 	protected readonly localValueDescriptor: PropertyDescriptor;
-	protected readonly propertyBagDescriptor: PropertyDescriptor;
 
 	public readonly sourceKey: symbol;
 
@@ -1239,6 +1389,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
+		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
 
 		const converter = options.converter;
 
@@ -1286,16 +1437,6 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			set: setLocalValue,
 		};
 
-		this.propertyBagDescriptor = {
-			enumerable: false,
-			configurable: true,
-			set(value: string) {
-				converter(value).forEach(([property, value]) => {
-					this[property.cssLocalName] = value;
-				});
-			},
-		};
-
 		cssSymbolPropertyMap[key] = this;
 	}
 
@@ -1311,7 +1452,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
 
-		Object.defineProperty(cls.prototype.PropertyBag, this.cssLocalName, this.propertyBagDescriptor);
+		// Nothing is defined on `PropertyBag`: shorthands are expanded while parsing,
+		// and the var()/calc() ones that do reach the bag must stay unconverted.
 	}
 }
 

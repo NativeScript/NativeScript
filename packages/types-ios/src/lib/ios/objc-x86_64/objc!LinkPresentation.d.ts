@@ -29,25 +29,25 @@ declare class LPLinkMetadata extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): LPLinkMetadata; // inherited from NSObject
 
-	URL: NSURL;
+	URL: NSURL | null;
 
-	iconProvider: NSItemProvider;
+	iconProvider: NSItemProvider | null;
 
-	imageProvider: NSItemProvider;
+	imageProvider: NSItemProvider | null;
 
-	originalURL: NSURL;
+	originalURL: NSURL | null;
 
-	remoteVideoURL: NSURL;
+	remoteVideoURL: NSURL | null;
 
-	title: string;
+	title: string | null;
 
-	videoProvider: NSItemProvider;
+	videoProvider: NSItemProvider | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -72,7 +72,7 @@ declare class LPLinkView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): LPLinkView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): LPLinkView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -83,7 +83,7 @@ declare class LPLinkView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): LPLinkView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): LPLinkView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -121,7 +121,7 @@ declare class LPMetadataProvider extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	startFetchingMetadataForRequestCompletionHandler(request: NSURLRequest, completionHandler: (p1: LPLinkMetadata, p2: NSError) => void): void;
+	startFetchingMetadataForRequestCompletionHandler(request: NSURLRequest, completionHandler: (p1: LPLinkMetadata | null, p2: NSError | null) => void): void;
 
-	startFetchingMetadataForURLCompletionHandler(URL: NSURL, completionHandler: (p1: LPLinkMetadata, p2: NSError) => void): void;
+	startFetchingMetadataForURLCompletionHandler(URL: NSURL, completionHandler: (p1: LPLinkMetadata | null, p2: NSError | null) => void): void;
 }

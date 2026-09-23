@@ -93,7 +93,7 @@ export namespace Trace {
 
 	export function removeEventListener(listener: TraceEventListener): void;
 
-	export module messageType {
+	export namespace messageType {
 		export const log = 0;
 		export const info = 1;
 		export const warn = 2;
@@ -103,7 +103,7 @@ export namespace Trace {
 	/**
 	 * all predefined categories.
 	 */
-	export module categories {
+	export namespace categories {
 		export const VisualTreeEvents = 'VisualTreeEvents';
 		export const Layout = 'Layout';
 		export const Style = 'Style';

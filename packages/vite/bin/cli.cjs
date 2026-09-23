@@ -2,25 +2,19 @@
 
 // Small CommonJS launcher that forwards to the ESM library's init helper.
 // This allows `npx @nativescript/vite init` to work reliably across npm versions.
+// The package is ESM-only (no dist/index.cjs); the init entry lives at
+// `../helpers/init.js` relative to this file in both the source tree and the
+// published `dist/packages/vite` layout.
 
 (async () => {
   try {
-    const mod = await import('../dist/index.cjs').catch(async () => import('../index.js'));
     if (process.argv[2] === 'init') {
-      if (typeof mod.runInit === 'function') {
-        await mod.runInit();
-      } else if (mod && mod.helpers && typeof mod.helpers.runInit === 'function') {
-        await mod.helpers.runInit();
-      } else if (mod && mod.default && typeof mod.default.runInit === 'function') {
-        await mod.default.runInit();
+      const { runInit } = await import('../helpers/init.js');
+      if (typeof runInit === 'function') {
+        await runInit();
       } else {
-        const initMod = await import('../helpers/init.js');
-        if (typeof initMod.runInit === 'function') {
-          await initMod.runInit();
-        } else {
-          console.error('[@nativescript/vite] `runInit` not found in helpers.');
-          process.exitCode = 1;
-        }
+        console.error('[@nativescript/vite] `runInit` not found in helpers/init.js.');
+        process.exitCode = 1;
       }
     } else {
       console.log('Usage: npx @nativescript/vite init');

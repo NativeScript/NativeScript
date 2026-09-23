@@ -240,6 +240,39 @@ export function getCurrentA11YServiceClass() {
 	return currentA11YServiceClass;
 }
 
+/**
+ * Applies the current accessibility state — the a11y service class, the font scale
+ * classes and the inherited font scale — to a root view.
+ *
+ * Runs for every window's root view; the `readyInit*` helpers next to it only wire up
+ * the process-wide listeners that keep this state current, and do so once.
+ */
+export function applyAccessibilityCssToRoot(rootView: View): void {
+	if (!rootView) {
+		return;
+	}
+
+	const a11yServiceClass = getCurrentA11YServiceClass();
+	if (a11yServiceClass) {
+		rootView.cssClasses.add(a11yServiceClass);
+	}
+
+	const fontScaleClass = getCurrentFontScaleClass();
+	if (fontScaleClass) {
+		rootView.cssClasses.add(fontScaleClass);
+	}
+
+	const fontScaleCategoryClass = getCurrentFontScaleCategory();
+	if (fontScaleCategoryClass) {
+		rootView.cssClasses.add(fontScaleCategoryClass);
+	}
+
+	const fontScale = getFontScale();
+	if (fontScale) {
+		rootView.style.fontScaleInternal = fontScale;
+	}
+}
+
 export enum AccessibilityTrait {
 	/**
 	 * The element allows direct touch interaction for VoiceOver users.

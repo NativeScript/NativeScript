@@ -45,15 +45,15 @@ declare class SKAdImpression extends NSObject {
 
 	adCampaignIdentifier: number;
 
-	adDescription: string;
+	adDescription: string | null;
 
 	adImpressionIdentifier: string;
 
 	adNetworkIdentifier: string;
 
-	adPurchaserName: string;
+	adPurchaserName: string | null;
 
-	adType: string;
+	adType: string | null;
 
 	advertisedAppStoreItemIdentifier: number;
 
@@ -91,7 +91,7 @@ declare class SKAdNetwork extends NSObject {
 	/**
 	 * @since 14.5
 	 */
-	static endImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
+	static endImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError | null) => void | null): void;
 
 	static new(): SKAdNetwork; // inherited from NSObject
 
@@ -104,7 +104,7 @@ declare class SKAdNetwork extends NSObject {
 	/**
 	 * @since 14.5
 	 */
-	static startImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
+	static startImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 14.0
@@ -115,17 +115,17 @@ declare class SKAdNetwork extends NSObject {
 	/**
 	 * @since 16.1
 	 */
-	static updatePostbackConversionValueCoarseValueCompletionHandler(fineValue: number, coarseValue: string, completion: (p1: NSError) => void): void;
+	static updatePostbackConversionValueCoarseValueCompletionHandler(fineValue: number, coarseValue: string, completion: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 16.1
 	 */
-	static updatePostbackConversionValueCoarseValueLockWindowCompletionHandler(fineValue: number, coarseValue: string, lockWindow: boolean, completion: (p1: NSError) => void): void;
+	static updatePostbackConversionValueCoarseValueLockWindowCompletionHandler(fineValue: number, coarseValue: string, lockWindow: boolean, completion: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 15.4
 	 */
-	static updatePostbackConversionValueCompletionHandler(conversionValue: number, completion: (p1: NSError) => void): void;
+	static updatePostbackConversionValueCompletionHandler(conversionValue: number, completion: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -153,14 +153,14 @@ declare class SKArcadeService extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static arcadeSubscriptionStatusWithNonceResultHandler(nonce: number, resultHandler: (p1: NSData, p2: number, p3: NSData, p4: number, p5: NSError) => void): void;
+	static arcadeSubscriptionStatusWithNonceResultHandler(nonce: number, resultHandler: (p1: NSData | null, p2: number, p3: NSData | null, p4: number, p5: NSError | null) => void): void;
 
 	static new(): SKArcadeService; // inherited from NSObject
 
 	/**
 	 * @since 13.0
 	 */
-	static registerArcadeAppWithRandomFromLibRandomFromLibLengthResultHandler(randomFromLib: NSData, randomFromLibLength: number, resultHandler: (p1: NSData, p2: number, p3: NSData, p4: number, p5: NSError) => void): void;
+	static registerArcadeAppWithRandomFromLibRandomFromLibLengthResultHandler(randomFromLib: NSData, randomFromLibLength: number, resultHandler: (p1: NSData | null, p2: number, p3: NSData | null, p4: number, p5: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
@@ -230,31 +230,31 @@ declare class SKCloudServiceController extends NSObject {
 	 * @since 9.3
 	 * @deprecated 18.0
 	 */
-	requestCapabilitiesWithCompletionHandler(completionHandler: (p1: SKCloudServiceCapability, p2: NSError) => void): void;
+	requestCapabilitiesWithCompletionHandler(completionHandler: (p1: SKCloudServiceCapability, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 10.3
 	 * @deprecated 11.0
 	 */
-	requestPersonalizationTokenForClientTokenWithCompletionHandler(clientToken: string, completionHandler: (p1: string, p2: NSError) => void): void;
+	requestPersonalizationTokenForClientTokenWithCompletionHandler(clientToken: string, completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	requestStorefrontCountryCodeWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
+	requestStorefrontCountryCodeWithCompletionHandler(completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.3
 	 * @deprecated 18.0
 	 */
-	requestStorefrontIdentifierWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
+	requestStorefrontIdentifierWithCompletionHandler(completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	requestUserTokenForDeveloperTokenCompletionHandler(developerToken: string, completionHandler: (p1: string, p2: NSError) => void): void;
+	requestUserTokenForDeveloperTokenCompletionHandler(developerToken: string, completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -327,9 +327,9 @@ declare class SKCloudServiceSetupViewController extends UIViewController {
 
 	static new(): SKCloudServiceSetupViewController; // inherited from NSObject
 
-	delegate: SKCloudServiceSetupViewControllerDelegate;
+	delegate: SKCloudServiceSetupViewControllerDelegate | null;
 
-	loadWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: boolean, p2: NSError) => void): void;
+	loadWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: boolean, p2: NSError | null) => void | null): void;
 }
 
 /**
@@ -371,7 +371,7 @@ declare class SKDownload extends NSObject {
 	 * @since 6.0
 	 * @deprecated 16.0
 	 */
-	readonly contentURL: NSURL;
+	readonly contentURL: NSURL | null;
 
 	/**
 	 * @since 6.0
@@ -389,7 +389,7 @@ declare class SKDownload extends NSObject {
 	 * @since 6.0
 	 * @deprecated 16.0
 	 */
-	readonly error: NSError;
+	readonly error: NSError | null;
 
 	/**
 	 * @since 13.0
@@ -502,7 +502,9 @@ declare const enum SKErrorCode {
 
 	UnsupportedPlatform = 19,
 
-	OverlayPresentedInBackgroundScene = 20
+	OverlayPresentedInBackgroundScene = 20,
+
+	PaymentMethodBindingConfigurationRequired = 21
 }
 
 /**
@@ -526,13 +528,13 @@ declare class SKMutablePayment extends SKPayment {
 	 * @since 7.0
 	 * @deprecated 18.0
 	 */
-	applicationUsername: string;
+	applicationUsername: string | null;
 
 	/**
 	 * @since 12.2
 	 * @deprecated 18.0
 	 */
-	paymentDiscount: SKPaymentDiscount;
+	paymentDiscount: SKPaymentDiscount | null;
 
 	productIdentifier: string;
 
@@ -546,7 +548,7 @@ declare class SKMutablePayment extends SKPayment {
 	 * @since 3.0
 	 * @deprecated 18.0
 	 */
-	requestData: NSData;
+	requestData: NSData | null;
 
 	/**
 	 * @since 8.3
@@ -571,7 +573,7 @@ declare class SKOverlay extends NSObject {
 
 	readonly configuration: SKOverlayConfiguration;
 
-	delegate: SKOverlayDelegate;
+	delegate: SKOverlayDelegate | null;
 
 	constructor(o: { configuration: SKOverlayConfiguration; });
 
@@ -592,29 +594,29 @@ declare class SKOverlayAppClipConfiguration extends SKOverlayConfiguration {
 
 	static new(): SKOverlayAppClipConfiguration; // inherited from NSObject
 
-	campaignToken: string;
+	campaignToken: string | null;
 
 	/**
 	 * @since 15.0
 	 */
-	customProductPageIdentifier: string;
+	customProductPageIdentifier: string | null;
 
 	/**
 	 * @since 15.0
 	 */
-	latestReleaseID: string;
+	latestReleaseID: string | null;
 
 	position: SKOverlayPosition;
 
-	providerToken: string;
+	providerToken: string | null;
 
 	constructor(o: { position: SKOverlayPosition; });
 
-	additionalValueForKey(key: string): any;
+	additionalValueForKey(key: string): any | null;
 
 	initWithPosition(position: SKOverlayPosition): this;
 
-	setAdditionalValueForKey(value: any, key: string): void;
+	setAdditionalValueForKey(value: any | null, key: string): void;
 }
 
 /**
@@ -628,27 +630,27 @@ declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
 
 	appIdentifier: string;
 
-	campaignToken: string;
+	campaignToken: string | null;
 
 	/**
 	 * @since 15.0
 	 */
-	customProductPageIdentifier: string;
+	customProductPageIdentifier: string | null;
 
 	/**
 	 * @since 15.0
 	 */
-	latestReleaseID: string;
+	latestReleaseID: string | null;
 
 	position: SKOverlayPosition;
 
-	providerToken: string;
+	providerToken: string | null;
 
 	userDismissible: boolean;
 
 	constructor(o: { appIdentifier: string; position: SKOverlayPosition; });
 
-	additionalValueForKey(key: string): any;
+	additionalValueForKey(key: string): any | null;
 
 	initWithAppIdentifierPosition(appIdentifier: string, position: SKOverlayPosition): this;
 
@@ -657,7 +659,7 @@ declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
 	 */
 	setAdImpression(impression: SKAdImpression): void;
 
-	setAdditionalValueForKey(value: any, key: string): void;
+	setAdditionalValueForKey(value: any | null, key: string): void;
 }
 
 /**
@@ -747,13 +749,13 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 	 * @since 7.0
 	 * @deprecated 18.0
 	 */
-	readonly applicationUsername: string;
+	readonly applicationUsername: string | null;
 
 	/**
 	 * @since 12.2
 	 * @deprecated 18.0
 	 */
-	readonly paymentDiscount: SKPaymentDiscount;
+	readonly paymentDiscount: SKPaymentDiscount | null;
 
 	readonly productIdentifier: string;
 
@@ -767,7 +769,7 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 	 * @since 3.0
 	 * @deprecated 18.0
 	 */
-	readonly requestData: NSData;
+	readonly requestData: NSData | null;
 
 	/**
 	 * @since 8.3
@@ -775,9 +777,9 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 	 */
 	readonly simulatesAskToBuyInSandbox: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -827,13 +829,13 @@ declare class SKPaymentQueue extends NSObject {
 	 * @since 13.0
 	 * @deprecated 18.0
 	 */
-	delegate: SKPaymentQueueDelegate;
+	delegate: SKPaymentQueueDelegate | null;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 18.0
 	 */
-	readonly storefront: SKStorefront;
+	readonly storefront: SKStorefront | null;
 
 	/**
 	 * @since 14.0
@@ -899,7 +901,7 @@ declare class SKPaymentQueue extends NSObject {
 	 * @since 7.0
 	 * @deprecated 18.0
 	 */
-	restoreCompletedTransactionsWithApplicationUsername(username: string): void;
+	restoreCompletedTransactionsWithApplicationUsername(username: string | null): void;
 
 	/**
 	 * @since 6.0
@@ -959,21 +961,21 @@ declare class SKPaymentTransaction extends NSObject {
 	 */
 	readonly downloads: NSArray<SKDownload>;
 
-	readonly error: NSError;
+	readonly error: NSError | null;
 
-	readonly originalTransaction: SKPaymentTransaction;
+	readonly originalTransaction: SKPaymentTransaction | null;
 
 	readonly payment: SKPayment;
 
-	readonly transactionDate: Date;
+	readonly transactionDate: Date | null;
 
-	readonly transactionIdentifier: string;
+	readonly transactionIdentifier: string | null;
 
 	/**
 	 * @since 3.0
 	 * @deprecated 7.0
 	 */
-	readonly transactionReceipt: NSData;
+	readonly transactionReceipt: NSData | null;
 
 	readonly transactionState: SKPaymentTransactionState;
 }
@@ -1080,7 +1082,7 @@ declare class SKProduct extends NSObject {
 	 * @since 11.2
 	 * @deprecated 18.0
 	 */
-	readonly introductoryPrice: SKProductDiscount;
+	readonly introductoryPrice: SKProductDiscount | null;
 
 	/**
 	 * @since 6.0
@@ -1128,13 +1130,13 @@ declare class SKProduct extends NSObject {
 	 * @since 12.0
 	 * @deprecated 18.0
 	 */
-	readonly subscriptionGroupIdentifier: string;
+	readonly subscriptionGroupIdentifier: string | null;
 
 	/**
 	 * @since 11.2
 	 * @deprecated 18.0
 	 */
-	readonly subscriptionPeriod: SKProductSubscriptionPeriod;
+	readonly subscriptionPeriod: SKProductSubscriptionPeriod | null;
 }
 
 /**
@@ -1151,7 +1153,7 @@ declare class SKProductDiscount extends NSObject {
 	 * @since 12.2
 	 * @deprecated 18.0
 	 */
-	readonly identifier: string;
+	readonly identifier: string | null;
 
 	/**
 	 * @since 11.2
@@ -1245,25 +1247,25 @@ declare class SKProductStorePromotionController extends NSObject {
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	fetchStorePromotionOrderWithCompletionHandler(completionHandler: (p1: NSArray<SKProduct>, p2: NSError) => void): void;
+	fetchStorePromotionOrderWithCompletionHandler(completionHandler: (p1: NSArray<SKProduct>, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	fetchStorePromotionVisibilityForProductCompletionHandler(product: SKProduct, completionHandler: (p1: SKProductStorePromotionVisibility, p2: NSError) => void): void;
+	fetchStorePromotionVisibilityForProductCompletionHandler(product: SKProduct, completionHandler: (p1: SKProductStorePromotionVisibility, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	updateStorePromotionOrderCompletionHandler(promotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError) => void): void;
+	updateStorePromotionOrderCompletionHandler(promotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 18.0
 	 */
-	updateStorePromotionVisibilityForProductCompletionHandler(promotionVisibility: SKProductStorePromotionVisibility, product: SKProduct, completionHandler: (p1: NSError) => void): void;
+	updateStorePromotionVisibilityForProductCompletionHandler(promotionVisibility: SKProductStorePromotionVisibility, product: SKProduct, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -1304,7 +1306,7 @@ declare class SKProductsRequest extends SKRequest {
 
 	static new(): SKProductsRequest; // inherited from NSObject
 
-	delegate: SKProductsRequestDelegate;
+	delegate: SKProductsRequestDelegate | null;
 
 	constructor(o: { productIdentifiers: NSSet<string>; });
 
@@ -1367,11 +1369,11 @@ declare class SKReceiptRefreshRequest extends SKRequest {
 
 	static new(): SKReceiptRefreshRequest; // inherited from NSObject
 
-	readonly receiptProperties: NSDictionary<string, any>;
+	readonly receiptProperties: NSDictionary<string, any> | null;
 
-	constructor(o: { receiptProperties: NSDictionary<string, any>; });
+	constructor(o: { receiptProperties: NSDictionary<string, any> | null; });
 
-	initWithReceiptProperties(properties: NSDictionary<string, any>): this;
+	initWithReceiptProperties(properties: NSDictionary<string, any> | null): this;
 }
 
 /**
@@ -1384,7 +1386,7 @@ declare class SKRequest extends NSObject {
 
 	static new(): SKRequest; // inherited from NSObject
 
-	delegate: SKRequestDelegate;
+	delegate: SKRequestDelegate | null;
 
 	cancel(): void;
 
@@ -1493,17 +1495,17 @@ declare class SKStoreProductViewController extends UIViewController {
 	/**
 	 * @since 6.0
 	 */
-	delegate: SKStoreProductViewControllerDelegate;
+	delegate: SKStoreProductViewControllerDelegate | null;
 
 	/**
 	 * @since 6.0
 	 */
-	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError) => void): void;
+	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 16.0
 	 */
-	loadProductWithParametersImpressionCompletionBlock(parameters: NSDictionary<string, any>, impression: SKAdImpression, block: (p1: boolean, p2: NSError) => void): void;
+	loadProductWithParametersImpressionCompletionBlock(parameters: NSDictionary<string, any>, impression: SKAdImpression, block: (p1: boolean, p2: NSError | null) => void | null): void;
 }
 
 /**

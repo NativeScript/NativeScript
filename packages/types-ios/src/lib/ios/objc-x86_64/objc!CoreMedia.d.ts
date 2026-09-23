@@ -2,87 +2,87 @@
 /**
  * @since 6.0
  */
-declare function CMAudioClockCreate(allocator: any, clockOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioClockCreate(allocator: any | null, clockOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMAudioFormatDescriptionCopyAsBigEndianSoundDescriptionBlockBuffer(allocator: any, audioFormatDescription: any, flavor: string, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCopyAsBigEndianSoundDescriptionBlockBuffer(allocator: any | null, audioFormatDescription: any, flavor: string | null, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionCreate(allocator: any, asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, layoutSize: number, layout: interop.Pointer | interop.Reference<AudioChannelLayout>, magicCookieSize: number, magicCookie: interop.Pointer | interop.Reference<any>, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreate(allocator: any | null, asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription> | ArrayBufferLike | ArrayBufferView, layoutSize: number, layout: interop.Pointer | interop.Reference<AudioChannelLayout> | ArrayBufferLike | ArrayBufferView | null, magicCookieSize: number, magicCookie: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionBlockBuffer(allocator: any, soundDescriptionBlockBuffer: any, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionBlockBuffer(allocator: any | null, soundDescriptionBlockBuffer: any, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionData(allocator: any, soundDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionData(allocator: any | null, soundDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionCreateSummary(allocator: any, formatDescriptionArray: NSArray<any> | any[], flags: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateSummary(allocator: any | null, formatDescriptionArray: NSArray<any> | any[], flags: number, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionEqual(formatDescription: any, otherFormatDescription: any, equalityMask: number, equalityMaskOut: interop.Pointer | interop.Reference<number>): boolean;
+declare function CMAudioFormatDescriptionEqual(formatDescription: any, otherFormatDescription: any, equalityMask: number, equalityMaskOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionGetChannelLayout(desc: any, sizeOut: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<AudioChannelLayout>;
+declare function CMAudioFormatDescriptionGetChannelLayout(desc: any, sizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<AudioChannelLayout> | null;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionGetFormatList(desc: any, sizeOut: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<AudioFormatListItem>;
+declare function CMAudioFormatDescriptionGetFormatList(desc: any, sizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<AudioFormatListItem> | null;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionGetMagicCookie(desc: any, sizeOut: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function CMAudioFormatDescriptionGetMagicCookie(desc: any, sizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionGetMostCompatibleFormat(desc: any): interop.Pointer | interop.Reference<AudioFormatListItem>;
+declare function CMAudioFormatDescriptionGetMostCompatibleFormat(desc: any): interop.Pointer | interop.Reference<AudioFormatListItem> | null;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionGetRichestDecodableFormat(desc: any): interop.Pointer | interop.Reference<AudioFormatListItem>;
+declare function CMAudioFormatDescriptionGetRichestDecodableFormat(desc: any): interop.Pointer | interop.Reference<AudioFormatListItem> | null;
 
 /**
  * @since 4.0
  */
-declare function CMAudioFormatDescriptionGetStreamBasicDescription(desc: any): interop.Pointer | interop.Reference<AudioStreamBasicDescription>;
+declare function CMAudioFormatDescriptionGetStreamBasicDescription(desc: any): interop.Pointer | interop.Reference<AudioStreamBasicDescription> | null;
 
 /**
  * @since 8.0
  */
-declare function CMAudioSampleBufferCreateReadyWithPacketDescriptions(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioSampleBufferCreateReadyWithPacketDescriptions(allocator: any | null, dataBuffer: any, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMAudioSampleBufferCreateWithPacketDescriptions(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioSampleBufferCreateWithPacketDescriptions(allocator: any | null, dataBuffer: any | null, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => number> | null, makeDataReadyRefcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 12.2
  */
-declare function CMAudioSampleBufferCreateWithPacketDescriptionsAndMakeDataReadyHandler(allocator: any, dataBuffer: any, dataReady: boolean, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
+declare function CMAudioSampleBufferCreateWithPacketDescriptionsAndMakeDataReadyHandler(allocator: any | null, dataBuffer: any | null, dataReady: boolean, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView, makeDataReadyHandler: (p1: any) => number | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer | interop.Reference<any>, returnedPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, returnedPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
@@ -92,7 +92,7 @@ declare function CMBlockBufferAppendBufferReference(theBuffer: any, targetBBuf: 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferAppendMemoryBlock(theBuffer: any, memoryBlock: interop.Pointer | interop.Reference<any>, blockLength: number, blockAllocator: any, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number): number;
+declare function CMBlockBufferAppendMemoryBlock(theBuffer: any, memoryBlock: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, blockLength: number, blockAllocator: any | null, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource> | ArrayBufferLike | ArrayBufferView | null, offsetToData: number, dataLength: number, flags: number): number;
 
 /**
  * @since 4.0
@@ -102,33 +102,33 @@ declare function CMBlockBufferAssureBlockMemory(theBuffer: any): number;
 /**
  * @since 4.0
  */
-declare function CMBlockBufferCopyDataBytes(theSourceBuffer: any, offsetToData: number, dataLength: number, destination: interop.Pointer | interop.Reference<any>): number;
+declare function CMBlockBufferCopyDataBytes(theSourceBuffer: any, offsetToData: number, dataLength: number, destination: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferCreateContiguous(structureAllocator: any, sourceBuffer: any, blockAllocator: any, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMBlockBufferCreateContiguous(structureAllocator: any | null, sourceBuffer: any, blockAllocator: any | null, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource> | ArrayBufferLike | ArrayBufferView | null, offsetToData: number, dataLength: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferCreateEmpty(structureAllocator: any, subBlockCapacity: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMBlockBufferCreateEmpty(structureAllocator: any | null, subBlockCapacity: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferCreateWithBufferReference(structureAllocator: any, bufferReference: any, offsetToData: number, dataLength: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMBlockBufferCreateWithBufferReference(structureAllocator: any | null, bufferReference: any, offsetToData: number, dataLength: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferCreateWithMemoryBlock(structureAllocator: any, memoryBlock: interop.Pointer | interop.Reference<any>, blockLength: number, blockAllocator: any, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMBlockBufferCreateWithMemoryBlock(structureAllocator: any | null, memoryBlock: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, blockLength: number, blockAllocator: any | null, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource> | ArrayBufferLike | ArrayBufferView | null, offsetToData: number, dataLength: number, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 interface CMBlockBufferCustomBlockSource {
 	version: number;
-	AllocateBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>;
-	FreeBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
-	refCon: interop.Pointer | interop.Reference<any>;
+	AllocateBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => interop.Pointer | interop.Reference<any> | null> | null;
+	FreeBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number) => void> | null;
+	refCon: interop.Pointer | interop.Reference<any> | null;
 }
 declare var CMBlockBufferCustomBlockSource: interop.StructType<CMBlockBufferCustomBlockSource>;
 
@@ -145,7 +145,7 @@ declare function CMBlockBufferGetDataLength(theBuffer: any): number;
 /**
  * @since 4.0
  */
-declare function CMBlockBufferGetDataPointer(theBuffer: any, offset: number, lengthAtOffsetOut: interop.Pointer | interop.Reference<number>, totalLengthOut: interop.Pointer | interop.Reference<number>, dataPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function CMBlockBufferGetDataPointer(theBuffer: any, offset: number, lengthAtOffsetOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, totalLengthOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, dataPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
@@ -165,37 +165,37 @@ declare function CMBlockBufferIsRangeContiguous(theBuffer: any, offset: number, 
 /**
  * @since 4.0
  */
-declare function CMBlockBufferReplaceDataBytes(sourceBytes: interop.Pointer | interop.Reference<any>, destinationBuffer: any, offsetIntoDestination: number, dataLength: number): number;
+declare function CMBlockBufferReplaceDataBytes(sourceBytes: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, destinationBuffer: any, offsetIntoDestination: number, dataLength: number): number;
 
 interface CMBufferCallbacks {
 	version: number;
-	refcon: interop.Pointer | interop.Reference<any>;
-	getDecodeTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => CMTime>;
-	getPresentationTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => CMTime>;
-	getDuration: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => CMTime>;
-	isDataReady: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => boolean>;
-	compare: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>;
-	dataBecameReadyNotification: string;
-	getSize: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>;
+	refcon: interop.Pointer | interop.Reference<any> | null;
+	getDecodeTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => CMTime> | null;
+	getPresentationTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => CMTime> | null;
+	getDuration: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => CMTime>;
+	isDataReady: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => boolean> | null;
+	compare: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any> | null) => CFComparisonResult> | null;
+	dataBecameReadyNotification: string | null;
+	getSize: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => number> | null;
 }
 declare var CMBufferCallbacks: interop.StructType<CMBufferCallbacks>;
 
 interface CMBufferHandlers {
 	version: number;
-	getDecodeTimeStamp: (p1: any) => CMTime;
-	getPresentationTimeStamp: (p1: any) => CMTime;
+	getDecodeTimeStamp: (p1: any) => CMTime | null;
+	getPresentationTimeStamp: (p1: any) => CMTime | null;
 	getDuration: (p1: any) => CMTime;
-	isDataReady: (p1: any) => boolean;
-	compare: (p1: any, p2: any) => CFComparisonResult;
-	dataBecameReadyNotification: string;
-	getSize: (p1: any) => number;
+	isDataReady: (p1: any) => boolean | null;
+	compare: (p1: any, p2: any) => CFComparisonResult | null;
+	dataBecameReadyNotification: string | null;
+	getSize: (p1: any) => number | null;
 }
 declare var CMBufferHandlers: interop.StructType<CMBufferHandlers>;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueCallForEachBuffer(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
+declare function CMBufferQueueCallForEachBuffer(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => number>, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
@@ -205,27 +205,27 @@ declare function CMBufferQueueContainsEndOfData(queue: any): boolean;
 /**
  * @since 17.0
  */
-declare function CMBufferQueueCopyHead(queue: any): any;
+declare function CMBufferQueueCopyHead(queue: any): any | null;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueCreate(allocator: any, capacity: number, callbacks: interop.Pointer | interop.Reference<CMBufferCallbacks>, queueOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMBufferQueueCreate(allocator: any | null, capacity: number, callbacks: interop.Pointer | interop.Reference<CMBufferCallbacks> | ArrayBufferLike | ArrayBufferView, queueOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 12.2
  */
-declare function CMBufferQueueCreateWithHandlers(allocator: any, capacity: number, handlers: interop.Pointer | interop.Reference<CMBufferHandlers>, queueOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMBufferQueueCreateWithHandlers(allocator: any | null, capacity: number, handlers: interop.Pointer | interop.Reference<CMBufferHandlers> | ArrayBufferLike | ArrayBufferView, queueOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueDequeueAndRetain(queue: any): any;
+declare function CMBufferQueueDequeueAndRetain(queue: any): any | null;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueDequeueIfDataReadyAndRetain(queue: any): any;
+declare function CMBufferQueueDequeueIfDataReadyAndRetain(queue: any): any | null;
 
 /**
  * @since 4.0
@@ -240,12 +240,12 @@ declare function CMBufferQueueGetBufferCount(queue: any): number;
 /**
  * @since 4.3
  */
-declare function CMBufferQueueGetCallbacksForSampleBuffersSortedByOutputPTS(): interop.Pointer | interop.Reference<CMBufferCallbacks>;
+declare function CMBufferQueueGetCallbacksForSampleBuffersSortedByOutputPTS(): interop.Pointer | interop.Reference<CMBufferCallbacks> | null;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueGetCallbacksForUnsortedSampleBuffers(): interop.Pointer | interop.Reference<CMBufferCallbacks>;
+declare function CMBufferQueueGetCallbacksForUnsortedSampleBuffers(): interop.Pointer | interop.Reference<CMBufferCallbacks> | null;
 
 /**
  * @since 4.0
@@ -271,7 +271,7 @@ declare function CMBufferQueueGetFirstPresentationTimeStamp(queue: any): CMTime;
  * @since 4.0
  * @deprecated 18.0
  */
-declare function CMBufferQueueGetHead(queue: any): any;
+declare function CMBufferQueueGetHead(queue: any): any | null;
 
 /**
  * @since 4.0
@@ -301,22 +301,22 @@ declare function CMBufferQueueGetTypeID(): number;
 /**
  * @since 4.0
  */
-declare function CMBufferQueueInstallTrigger(queue: any, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>, condition: number, time: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function CMBufferQueueInstallTrigger(queue: any, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void> | null, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, condition: number, time: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 12.2
  */
-declare function CMBufferQueueInstallTriggerHandler(queue: any, condition: number, time: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): number;
+declare function CMBufferQueueInstallTriggerHandler(queue: any, condition: number, time: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, handler: (p1: interop.Pointer | interop.Reference<any> | null) => void | null): number;
 
 /**
  * @since 12.2
  */
-declare function CMBufferQueueInstallTriggerHandlerWithIntegerThreshold(queue: any, condition: number, threshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): number;
+declare function CMBufferQueueInstallTriggerHandlerWithIntegerThreshold(queue: any, condition: number, threshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, handler: (p1: interop.Pointer | interop.Reference<any> | null) => void | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueInstallTriggerWithIntegerThreshold(queue: any, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>, condition: number, threshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function CMBufferQueueInstallTriggerWithIntegerThreshold(queue: any, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void> | null, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, condition: number, threshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
@@ -336,7 +336,7 @@ declare function CMBufferQueueMarkEndOfData(queue: any): number;
 /**
  * @since 4.0
  */
-declare function CMBufferQueueRemoveTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any>): number;
+declare function CMBufferQueueRemoveTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
@@ -346,12 +346,12 @@ declare function CMBufferQueueReset(queue: any): number;
 /**
  * @since 4.0
  */
-declare function CMBufferQueueResetWithCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>): number;
+declare function CMBufferQueueResetWithCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => void>, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMBufferQueueSetValidationCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
+declare function CMBufferQueueSetValidationCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any> | null) => number>, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 12.2
@@ -361,7 +361,7 @@ declare function CMBufferQueueSetValidationHandler(queue: any, handler: (p1: any
 /**
  * @since 4.0
  */
-declare function CMBufferQueueTestTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any>): boolean;
+declare function CMBufferQueueTestTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): boolean;
 
 /**
  * @since 6.0
@@ -371,7 +371,7 @@ declare function CMClockConvertHostTimeToSystemUnits(hostTime: CMTime): number;
 /**
  * @since 6.0
  */
-declare function CMClockGetAnchorTime(clock: any, clockTimeOut: interop.Pointer | interop.Reference<CMTime>, referenceClockTimeOut: interop.Pointer | interop.Reference<CMTime>): number;
+declare function CMClockGetAnchorTime(clock: any, clockTimeOut: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView, referenceClockTimeOut: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 6.0
@@ -406,52 +406,52 @@ declare function CMClockMightDrift(clock: any, otherClock: any): boolean;
 /**
  * @since 8.0
  */
-declare function CMClosedCaptionFormatDescriptionCopyAsBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionFormatDescription: any, flavor: string, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCopyAsBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any | null, closedCaptionFormatDescription: any, flavor: string | null, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionDescriptionBlockBuffer: any, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any | null, closedCaptionDescriptionBlockBuffer: any, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionData(allocator: any, closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionData(allocator: any | null, closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMCopyDictionaryOfAttachments(allocator: any, target: any, attachmentMode: number): NSDictionary<any, any>;
+declare function CMCopyDictionaryOfAttachments(allocator: any | null, target: any, attachmentMode: number): NSDictionary<any, any> | null;
 
 /**
  * @since 8.0
  */
-declare function CMDoesBigEndianSoundDescriptionRequireLegacyCBRSampleTableLayout(soundDescriptionBlockBuffer: any, flavor: string): boolean;
+declare function CMDoesBigEndianSoundDescriptionRequireLegacyCBRSampleTableLayout(soundDescriptionBlockBuffer: any, flavor: string | null): boolean;
 
 /**
  * @since 4.0
  */
-declare function CMFormatDescriptionCreate(allocator: any, mediaType: number, mediaSubType: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMFormatDescriptionCreate(allocator: any | null, mediaType: number, mediaSubType: number, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMFormatDescriptionEqual(formatDescription: any, otherFormatDescription: any): boolean;
+declare function CMFormatDescriptionEqual(formatDescription: any | null, otherFormatDescription: any | null): boolean;
 
 /**
  * @since 4.3
  */
-declare function CMFormatDescriptionEqualIgnoringExtensionKeys(formatDescription: any, otherFormatDescription: any, formatDescriptionExtensionKeysToIgnore: any, sampleDescriptionExtensionAtomKeysToIgnore: any): boolean;
+declare function CMFormatDescriptionEqualIgnoringExtensionKeys(formatDescription: any | null, otherFormatDescription: any | null, formatDescriptionExtensionKeysToIgnore: any | null, sampleDescriptionExtensionAtomKeysToIgnore: any | null): boolean;
 
 /**
  * @since 4.0
  */
-declare function CMFormatDescriptionGetExtension(desc: any, extensionKey: string): any;
+declare function CMFormatDescriptionGetExtension(desc: any, extensionKey: string): any | null;
 
 /**
  * @since 4.0
  */
-declare function CMFormatDescriptionGetExtensions(desc: any): NSDictionary<any, any>;
+declare function CMFormatDescriptionGetExtensions(desc: any): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
@@ -471,12 +471,12 @@ declare function CMFormatDescriptionGetTypeID(): number;
 /**
  * @since 4.0
  */
-declare function CMGetAttachment(target: any, key: string, attachmentModeOut: interop.Pointer | interop.Reference<number>): any;
+declare function CMGetAttachment(target: any, key: string, attachmentModeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 6.0
  */
-declare function CMMemoryPoolCreate(options: NSDictionary<any, any>): any;
+declare function CMMemoryPoolCreate(options: NSDictionary<any, any> | null): any;
 
 /**
  * @since 6.0
@@ -501,22 +501,22 @@ declare function CMMemoryPoolInvalidate(pool: any): void;
 /**
  * @since 8.0
  */
-declare function CMMetadataCreateIdentifierForKeyAndKeySpace(allocator: any, key: any, keySpace: string, identifierOut: interop.Pointer | interop.Reference<string>): number;
+declare function CMMetadataCreateIdentifierForKeyAndKeySpace(allocator: any | null, key: any, keySpace: string, identifierOut: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataCreateKeyFromIdentifier(allocator: any, identifier: string, keyOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataCreateKeyFromIdentifier(allocator: any | null, identifier: string, keyOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataCreateKeyFromIdentifierAsCFData(allocator: any, identifier: string, keyOut: interop.Pointer | interop.Reference<NSData>): number;
+declare function CMMetadataCreateKeyFromIdentifierAsCFData(allocator: any | null, identifier: string, keyOut: interop.Pointer | interop.Reference<NSData | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataCreateKeySpaceFromIdentifier(allocator: any, identifier: string, keySpaceOut: interop.Pointer | interop.Reference<string>): number;
+declare function CMMetadataCreateKeySpaceFromIdentifier(allocator: any | null, identifier: string, keySpaceOut: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -541,7 +541,7 @@ declare function CMMetadataDataTypeRegistryGetBaseDataTypeForConformingDataType(
 /**
  * @since 8.0
  */
-declare function CMMetadataDataTypeRegistryGetBaseDataTypes(): NSArray<any>;
+declare function CMMetadataDataTypeRegistryGetBaseDataTypes(): NSArray<any> | null;
 
 /**
  * @since 8.0
@@ -561,52 +561,52 @@ declare function CMMetadataDataTypeRegistryRegisterDataType(dataType: string, de
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionCopyAsBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataFormatDescription: any, flavor: string, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCopyAsBigEndianMetadataDescriptionBlockBuffer(allocator: any | null, metadataFormatDescription: any, flavor: string | null, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionCreateByMergingMetadataFormatDescriptions(allocator: any, sourceDescription: any, otherSourceDescription: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateByMergingMetadataFormatDescriptions(allocator: any | null, sourceDescription: any, otherSourceDescription: any, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataDescriptionBlockBuffer: any, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionBlockBuffer(allocator: any | null, metadataDescriptionBlockBuffer: any, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionData(allocator: any, metadataDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionData(allocator: any | null, metadataDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMMetadataFormatDescriptionCreateWithKeys(allocator: any, metadataType: number, keys: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithKeys(allocator: any | null, metadataType: number, keys: NSArray<any> | any[] | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetadataSpecifications(allocator: any, sourceDescription: any, metadataSpecifications: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetadataSpecifications(allocator: any | null, sourceDescription: any, metadataSpecifications: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionCreateWithMetadataSpecifications(allocator: any, metadataType: number, metadataSpecifications: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithMetadataSpecifications(allocator: any | null, metadataType: number, metadataSpecifications: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMMetadataFormatDescriptionGetIdentifiers(desc: any): NSArray<any>;
+declare function CMMetadataFormatDescriptionGetIdentifiers(desc: any): NSArray<any> | null;
 
 /**
  * @since 4.0
  */
-declare function CMMetadataFormatDescriptionGetKeyWithLocalID(desc: any, localKeyID: number): NSDictionary<any, any>;
+declare function CMMetadataFormatDescriptionGetKeyWithLocalID(desc: any, localKeyID: number): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
  */
-declare function CMMuxedFormatDescriptionCreate(allocator: any, muxType: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMuxedFormatDescriptionCreate(allocator: any | null, muxType: number, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
@@ -659,62 +659,62 @@ declare function CMSampleBufferCallBlockForEachSample(sbuf: any, handler: (p1: a
 /**
  * @since 4.0
  */
-declare function CMSampleBufferCallForEachSample(sbuf: any, callback: interop.FunctionReference<(p1: any, p2: number, p3: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCallForEachSample(sbuf: any, callback: interop.FunctionReference<(p1: any, p2: number, p3: interop.Pointer | interop.Reference<any> | null) => number>, refcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
  */
-declare function CMSampleBufferCopyPCMDataIntoAudioBufferList(sbuf: any, frameOffset: number, numFrames: number, bufferList: interop.Pointer | interop.Reference<AudioBufferList>): number;
+declare function CMSampleBufferCopyPCMDataIntoAudioBufferList(sbuf: any, frameOffset: number, numFrames: number, bufferList: interop.Pointer | interop.Reference<AudioBufferList> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferCopySampleBufferForRange(allocator: any, sbuf: any, sampleRange: CFRange, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCopySampleBufferForRange(allocator: any | null, sbuf: any, sampleRange: CFRange, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferCreate(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreate(allocator: any | null, dataBuffer: any | null, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => number> | null, makeDataReadyRefcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, formatDescription: any | null, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView | null, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferCreateCopy(allocator: any, sbuf: any, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreateCopy(allocator: any | null, sbuf: any, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferCreateCopyWithNewTiming(allocator: any, originalSBuf: any, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreateCopyWithNewTiming(allocator: any | null, originalSBuf: any, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferCreateForImageBuffer(allocator: any, imageBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreateForImageBuffer(allocator: any | null, imageBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any> | null) => number> | null, makeDataReadyRefcon: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 12.2
  */
-declare function CMSampleBufferCreateForImageBufferWithMakeDataReadyHandler(allocator: any, imageBuffer: any, dataReady: boolean, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
+declare function CMSampleBufferCreateForImageBufferWithMakeDataReadyHandler(allocator: any | null, imageBuffer: any, dataReady: boolean, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView, makeDataReadyHandler: (p1: any) => number | null): number;
 
 /**
  * @since 17.0
  */
-declare function CMSampleBufferCreateForTaggedBufferGroup(allocator: any, taggedBufferGroup: any, sbufPTS: CMTime, sbufDuration: CMTime, formatDescription: any, sBufOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreateForTaggedBufferGroup(allocator: any | null, taggedBufferGroup: any, sbufPTS: CMTime, sbufDuration: CMTime, formatDescription: any, sBufOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMSampleBufferCreateReady(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreateReady(allocator: any | null, dataBuffer: any | null, formatDescription: any | null, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView | null, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMSampleBufferCreateReadyWithImageBuffer(allocator: any, imageBuffer: any, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferCreateReadyWithImageBuffer(allocator: any | null, imageBuffer: any, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 12.2
  */
-declare function CMSampleBufferCreateWithMakeDataReadyHandler(allocator: any, dataBuffer: any, dataReady: boolean, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
+declare function CMSampleBufferCreateWithMakeDataReadyHandler(allocator: any | null, dataBuffer: any | null, dataReady: boolean, formatDescription: any | null, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView | null, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, sampleBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView, makeDataReadyHandler: (p1: any) => number | null): number;
 
 /**
  * @since 4.0
@@ -724,22 +724,22 @@ declare function CMSampleBufferDataIsReady(sbuf: any): boolean;
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sbuf: any, bufferListSizeNeededOut: interop.Pointer | interop.Reference<number>, bufferListOut: interop.Pointer | interop.Reference<AudioBufferList>, bufferListSize: number, blockBufferStructureAllocator: any, blockBufferBlockAllocator: any, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sbuf: any, bufferListSizeNeededOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, bufferListOut: interop.Pointer | interop.Reference<AudioBufferList> | ArrayBufferLike | ArrayBufferView | null, bufferListSize: number, blockBufferStructureAllocator: any | null, blockBufferBlockAllocator: any | null, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetAudioStreamPacketDescriptions(sbuf: any, packetDescriptionsSize: number, packetDescriptionsOut: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, packetDescriptionsSizeNeededOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMSampleBufferGetAudioStreamPacketDescriptions(sbuf: any, packetDescriptionsSize: number, packetDescriptionsOut: interop.Pointer | interop.Reference<AudioStreamPacketDescription> | ArrayBufferLike | ArrayBufferView | null, packetDescriptionsSizeNeededOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetAudioStreamPacketDescriptionsPtr(sbuf: any, packetDescriptionsPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioStreamPacketDescription>>, packetDescriptionsSizeOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMSampleBufferGetAudioStreamPacketDescriptionsPtr(sbuf: any, packetDescriptionsPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioStreamPacketDescription> | null> | ArrayBufferLike | ArrayBufferView | null, packetDescriptionsSizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetDataBuffer(sbuf: any): any;
+declare function CMSampleBufferGetDataBuffer(sbuf: any): any | null;
 
 /**
  * @since 4.0
@@ -754,12 +754,12 @@ declare function CMSampleBufferGetDuration(sbuf: any): CMTime;
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetFormatDescription(sbuf: any): any;
+declare function CMSampleBufferGetFormatDescription(sbuf: any): any | null;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetImageBuffer(sbuf: any): any;
+declare function CMSampleBufferGetImageBuffer(sbuf: any): any | null;
 
 /**
  * @since 4.0
@@ -784,7 +784,7 @@ declare function CMSampleBufferGetOutputPresentationTimeStamp(sbuf: any): CMTime
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetOutputSampleTimingInfoArray(sbuf: any, timingArrayEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMSampleBufferGetOutputSampleTimingInfoArray(sbuf: any, timingArrayEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView | null, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
@@ -794,7 +794,7 @@ declare function CMSampleBufferGetPresentationTimeStamp(sbuf: any): CMTime;
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetSampleAttachmentsArray(sbuf: any, createIfNecessary: boolean): NSArray<any>;
+declare function CMSampleBufferGetSampleAttachmentsArray(sbuf: any, createIfNecessary: boolean): NSArray<any> | null;
 
 /**
  * @since 4.0
@@ -804,22 +804,22 @@ declare function CMSampleBufferGetSampleSize(sbuf: any, sampleIndex: number): nu
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetSampleSizeArray(sbuf: any, sizeArrayEntries: number, sizeArrayOut: interop.Pointer | interop.Reference<number>, sizeArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMSampleBufferGetSampleSizeArray(sbuf: any, sizeArrayEntries: number, sizeArrayOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, sizeArrayEntriesNeededOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetSampleTimingInfo(sbuf: any, sampleIndex: number, timingInfoOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>): number;
+declare function CMSampleBufferGetSampleTimingInfo(sbuf: any, sampleIndex: number, timingInfoOut: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMSampleBufferGetSampleTimingInfoArray(sbuf: any, numSampleTimingEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMSampleBufferGetSampleTimingInfoArray(sbuf: any, numSampleTimingEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo> | ArrayBufferLike | ArrayBufferView | null, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
  */
-declare function CMSampleBufferGetTaggedBufferGroup(sbuf: any): any;
+declare function CMSampleBufferGetTaggedBufferGroup(sbuf: any): any | null;
 
 /**
  * @since 4.0
@@ -834,7 +834,7 @@ declare function CMSampleBufferGetTypeID(): number;
 /**
  * @since 8.0
  */
-declare function CMSampleBufferHasDataFailed(sbuf: any, statusOut: interop.Pointer | interop.Reference<number>): boolean;
+declare function CMSampleBufferHasDataFailed(sbuf: any, statusOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.0
@@ -859,7 +859,7 @@ declare function CMSampleBufferSetDataBuffer(sbuf: any, dataBuffer: any): number
 /**
  * @since 4.0
  */
-declare function CMSampleBufferSetDataBufferFromAudioBufferList(sbuf: any, blockBufferStructureAllocator: any, blockBufferBlockAllocator: any, flags: number, bufferList: interop.Pointer | interop.Reference<AudioBufferList>): number;
+declare function CMSampleBufferSetDataBufferFromAudioBufferList(sbuf: any, blockBufferStructureAllocator: any | null, blockBufferBlockAllocator: any | null, flags: number, bufferList: interop.Pointer | interop.Reference<AudioBufferList> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
@@ -901,7 +901,7 @@ declare var CMSampleTimingInfo: interop.StructType<CMSampleTimingInfo>;
 /**
  * @since 4.0
  */
-declare function CMSetAttachment(target: any, key: string, value: any, attachmentMode: number): void;
+declare function CMSetAttachment(target: any, key: string, value: any | null, attachmentMode: number): void;
 
 /**
  * @since 4.0
@@ -911,17 +911,17 @@ declare function CMSetAttachments(target: any, theAttachments: NSDictionary<any,
 /**
  * @since 5.0
  */
-declare function CMSimpleQueueCreate(allocator: any, capacity: number, queueOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMSimpleQueueCreate(allocator: any | null, capacity: number, queueOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
  */
-declare function CMSimpleQueueDequeue(queue: any): interop.Pointer | interop.Reference<any>;
+declare function CMSimpleQueueDequeue(queue: any): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 5.0
  */
-declare function CMSimpleQueueEnqueue(queue: any, element: interop.Pointer | interop.Reference<any>): number;
+declare function CMSimpleQueueEnqueue(queue: any, element: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 5.0
@@ -936,7 +936,7 @@ declare function CMSimpleQueueGetCount(queue: any): number;
 /**
  * @since 5.0
  */
-declare function CMSimpleQueueGetHead(queue: any): interop.Pointer | interop.Reference<any>;
+declare function CMSimpleQueueGetHead(queue: any): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 5.0
@@ -975,62 +975,62 @@ declare const enum CMStereoViewInterpretationOptions {
 /**
  * @since 8.0
  */
-declare function CMSwapBigEndianClosedCaptionDescriptionToHost(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, closedCaptionDescriptionSize: number): number;
+declare function CMSwapBigEndianClosedCaptionDescriptionToHost(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, closedCaptionDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapBigEndianImageDescriptionToHost(imageDescriptionData: string | interop.Pointer | interop.Reference<any>, imageDescriptionSize: number): number;
+declare function CMSwapBigEndianImageDescriptionToHost(imageDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, imageDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapBigEndianMetadataDescriptionToHost(metadataDescriptionData: string | interop.Pointer | interop.Reference<any>, metadataDescriptionSize: number): number;
+declare function CMSwapBigEndianMetadataDescriptionToHost(metadataDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, metadataDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapBigEndianSoundDescriptionToHost(soundDescriptionData: string | interop.Pointer | interop.Reference<any>, soundDescriptionSize: number): number;
+declare function CMSwapBigEndianSoundDescriptionToHost(soundDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, soundDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapBigEndianTextDescriptionToHost(textDescriptionData: string | interop.Pointer | interop.Reference<any>, textDescriptionSize: number): number;
+declare function CMSwapBigEndianTextDescriptionToHost(textDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, textDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapBigEndianTimeCodeDescriptionToHost(timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any>, timeCodeDescriptionSize: number): number;
+declare function CMSwapBigEndianTimeCodeDescriptionToHost(timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, timeCodeDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapHostEndianClosedCaptionDescriptionToBig(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, closedCaptionDescriptionSize: number): number;
+declare function CMSwapHostEndianClosedCaptionDescriptionToBig(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, closedCaptionDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapHostEndianImageDescriptionToBig(imageDescriptionData: string | interop.Pointer | interop.Reference<any>, imageDescriptionSize: number): number;
+declare function CMSwapHostEndianImageDescriptionToBig(imageDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, imageDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapHostEndianMetadataDescriptionToBig(metadataDescriptionData: string | interop.Pointer | interop.Reference<any>, metadataDescriptionSize: number): number;
+declare function CMSwapHostEndianMetadataDescriptionToBig(metadataDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, metadataDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapHostEndianSoundDescriptionToBig(soundDescriptionData: string | interop.Pointer | interop.Reference<any>, soundDescriptionSize: number): number;
+declare function CMSwapHostEndianSoundDescriptionToBig(soundDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, soundDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapHostEndianTextDescriptionToBig(textDescriptionData: string | interop.Pointer | interop.Reference<any>, textDescriptionSize: number): number;
+declare function CMSwapHostEndianTextDescriptionToBig(textDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, textDescriptionSize: number): number;
 
 /**
  * @since 8.0
  */
-declare function CMSwapHostEndianTimeCodeDescriptionToBig(timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any>, timeCodeDescriptionSize: number): number;
+declare function CMSwapHostEndianTimeCodeDescriptionToBig(timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, timeCodeDescriptionSize: number): number;
 
 /**
  * @since 6.0
@@ -1045,7 +1045,7 @@ declare function CMSyncGetRelativeRate(ofClockOrTimebase: any, relativeToClockOr
 /**
  * @since 6.0
  */
-declare function CMSyncGetRelativeRateAndAnchorTime(ofClockOrTimebase: any, relativeToClockOrTimebase: any, outRelativeRate: interop.Pointer | interop.Reference<number>, outOfClockOrTimebaseAnchorTime: interop.Pointer | interop.Reference<CMTime>, outRelativeToClockOrTimebaseAnchorTime: interop.Pointer | interop.Reference<CMTime>): number;
+declare function CMSyncGetRelativeRateAndAnchorTime(ofClockOrTimebase: any, relativeToClockOrTimebase: any, outRelativeRate: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, outOfClockOrTimebaseAnchorTime: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView | null, outRelativeToClockOrTimebaseAnchorTime: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 6.0
@@ -1113,7 +1113,7 @@ declare function CMTagCollectionAddTag(tagCollection: any, tagToAdd: CMTag): num
 /**
  * @since 17.0
  */
-declare function CMTagCollectionAddTagsFromArray(tagCollection: any, tags: interop.Pointer | interop.Reference<CMTag>, tagCount: number): number;
+declare function CMTagCollectionAddTagsFromArray(tagCollection: any, tags: interop.Pointer | interop.Reference<CMTag> | ArrayBufferLike | ArrayBufferView, tagCount: number): number;
 
 /**
  * @since 17.0
@@ -1123,12 +1123,12 @@ declare function CMTagCollectionAddTagsFromCollection(tagCollection: any, collec
 /**
  * @since 17.0
  */
-declare function CMTagCollectionApply(tagCollection: any, applier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
+declare function CMTagCollectionApply(tagCollection: any, applier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any> | null) => void>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionApplyUntil(tagCollection: any, applier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => boolean>, context: interop.Pointer | interop.Reference<any>): CMTag;
+declare function CMTagCollectionApplyUntil(tagCollection: any, applier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any> | null) => boolean>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): CMTag;
 
 /**
  * @since 17.0
@@ -1138,7 +1138,7 @@ declare function CMTagCollectionContainsCategory(tagCollection: any, category: C
 /**
  * @since 17.0
  */
-declare function CMTagCollectionContainsSpecifiedTags(tagCollection: any, containedTags: interop.Pointer | interop.Reference<CMTag>, containedTagCount: number): boolean;
+declare function CMTagCollectionContainsSpecifiedTags(tagCollection: any, containedTags: interop.Pointer | interop.Reference<CMTag> | ArrayBufferLike | ArrayBufferView, containedTagCount: number): boolean;
 
 /**
  * @since 17.0
@@ -1153,77 +1153,77 @@ declare function CMTagCollectionContainsTagsOfCollection(tagCollection: any, con
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCopyAsData(tagCollection: any, allocator: any): NSData;
+declare function CMTagCollectionCopyAsData(tagCollection: any, allocator: any | null): NSData | null;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCopyAsDictionary(tagCollection: any, allocator: any): NSDictionary<any, any>;
+declare function CMTagCollectionCopyAsDictionary(tagCollection: any, allocator: any | null): NSDictionary<any, any> | null;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCopyDescription(allocator: any, tagCollection: any): string;
+declare function CMTagCollectionCopyDescription(allocator: any | null, tagCollection: any | null): string | null;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCopyTagsOfCategories(allocator: any, tagCollection: any, categories: interop.Pointer | interop.Reference<CMTagCategory>, categoriesCount: number, collectionWithTagsOfCategories: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCopyTagsOfCategories(allocator: any | null, tagCollection: any, categories: interop.Pointer | interop.Reference<CMTagCategory> | ArrayBufferLike | ArrayBufferView, categoriesCount: number, collectionWithTagsOfCategories: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCountTagsWithFilterFunction(tagCollection: any, filterApplier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => boolean>, context: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCountTagsWithFilterFunction(tagCollection: any, filterApplier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any> | null) => boolean>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreate(allocator: any, tags: interop.Pointer | interop.Reference<CMTag>, tagCount: number, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreate(allocator: any | null, tags: interop.Pointer | interop.Reference<CMTag> | ArrayBufferLike | ArrayBufferView | null, tagCount: number, newCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateCopy(tagCollection: any, allocator: any, newCollectionCopyOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateCopy(tagCollection: any, allocator: any | null, newCollectionCopyOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateDifference(tagCollectionMinuend: any, tagCollectionSubtrahend: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateDifference(tagCollectionMinuend: any | null, tagCollectionSubtrahend: any | null, tagCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateExclusiveOr(tagCollection1: any, tagCollection2: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateExclusiveOr(tagCollection1: any | null, tagCollection2: any | null, tagCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateFromData(data: NSData, allocator: any, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateFromData(data: NSData, allocator: any | null, newCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateFromDictionary(dict: NSDictionary<any, any>, allocator: any, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateFromDictionary(dict: NSDictionary<any, any>, allocator: any | null, newCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateIntersection(tagCollection1: any, tagCollection2: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateIntersection(tagCollection1: any | null, tagCollection2: any | null, tagCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateMutable(allocator: any, capacity: number, newMutableCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateMutable(allocator: any | null, capacity: number, newMutableCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateMutableCopy(tagCollection: any, allocator: any, newMutableCollectionCopyOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateMutableCopy(tagCollection: any, allocator: any | null, newMutableCollectionCopyOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionCreateUnion(tagCollection1: any, tagCollection2: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionCreateUnion(tagCollection1: any | null, tagCollection2: any | null, tagCollectionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
@@ -1264,17 +1264,17 @@ declare function CMTagCollectionGetCountOfCategory(tagCollection: any, category:
 /**
  * @since 17.0
  */
-declare function CMTagCollectionGetTags(tagCollection: any, tagBuffer: interop.Pointer | interop.Reference<CMTag>, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number>): number;
+declare function CMTagCollectionGetTags(tagCollection: any, tagBuffer: interop.Pointer | interop.Reference<CMTag> | ArrayBufferLike | ArrayBufferView, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionGetTagsWithCategory(tagCollection: any, category: CMTagCategory, tagBuffer: interop.Pointer | interop.Reference<CMTag>, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number>): number;
+declare function CMTagCollectionGetTagsWithCategory(tagCollection: any, category: CMTagCategory, tagBuffer: interop.Pointer | interop.Reference<CMTag> | ArrayBufferLike | ArrayBufferView, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
  */
-declare function CMTagCollectionGetTagsWithFilterFunction(tagCollection: any, tagBuffer: interop.Pointer | interop.Reference<CMTag>, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number>, filter: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => boolean>, context: interop.Pointer | interop.Reference<any>): number;
+declare function CMTagCollectionGetTagsWithFilterFunction(tagCollection: any, tagBuffer: interop.Pointer | interop.Reference<CMTag> | ArrayBufferLike | ArrayBufferView, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, filter: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any> | null) => boolean>, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 17.0
@@ -1309,12 +1309,12 @@ declare function CMTagCompare(tag1: CMTag, tag2: CMTag): CFComparisonResult;
 /**
  * @since 17.0
  */
-declare function CMTagCopyAsDictionary(tag: CMTag, allocator: any): NSDictionary<any, any>;
+declare function CMTagCopyAsDictionary(tag: CMTag, allocator: any | null): NSDictionary<any, any> | null;
 
 /**
  * @since 17.0
  */
-declare function CMTagCopyDescription(allocator: any, tag: CMTag): string;
+declare function CMTagCopyDescription(allocator: any | null, tag: CMTag): string | null;
 
 /**
  * @since 17.0
@@ -1445,12 +1445,12 @@ declare function CMTagMakeWithSInt64Value(category: CMTagCategory, value: number
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupCreate(allocator: any, tagCollections: NSArray<any> | any[], buffers: NSArray<any> | any[], groupOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTaggedBufferGroupCreate(allocator: any | null, tagCollections: NSArray<any> | any[], buffers: NSArray<any> | any[], groupOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupCreateCombined(allocator: any, taggedBufferGroups: NSArray<any> | any[], groupOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTaggedBufferGroupCreateCombined(allocator: any | null, taggedBufferGroups: NSArray<any> | any[], groupOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
@@ -1467,12 +1467,12 @@ declare const enum CMTaggedBufferGroupError {
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroup(allocator: any, taggedBufferGroup: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroup(allocator: any | null, taggedBufferGroup: any, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 26.0
  */
-declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroupWithExtensions(allocator: any, taggedBufferGroup: any, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroupWithExtensions(allocator: any | null, taggedBufferGroup: any, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
@@ -1482,32 +1482,32 @@ declare function CMTaggedBufferGroupFormatDescriptionMatchesTaggedBufferGroup(de
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetCMSampleBufferAtIndex(group: any, index: number): any;
+declare function CMTaggedBufferGroupGetCMSampleBufferAtIndex(group: any, index: number): any | null;
 
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetCMSampleBufferForTag(group: any, tag: CMTag, indexOut: interop.Pointer | interop.Reference<number>): any;
+declare function CMTaggedBufferGroupGetCMSampleBufferForTag(group: any, tag: CMTag, indexOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetCMSampleBufferForTagCollection(group: any, tagCollection: any, indexOut: interop.Pointer | interop.Reference<number>): any;
+declare function CMTaggedBufferGroupGetCMSampleBufferForTagCollection(group: any, tagCollection: any, indexOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetCVPixelBufferAtIndex(group: any, index: number): any;
+declare function CMTaggedBufferGroupGetCVPixelBufferAtIndex(group: any, index: number): any | null;
 
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetCVPixelBufferForTag(group: any, tag: CMTag, indexOut: interop.Pointer | interop.Reference<number>): any;
+declare function CMTaggedBufferGroupGetCVPixelBufferForTag(group: any, tag: CMTag, indexOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetCVPixelBufferForTagCollection(group: any, tagCollection: any, indexOut: interop.Pointer | interop.Reference<number>): any;
+declare function CMTaggedBufferGroupGetCVPixelBufferForTagCollection(group: any, tagCollection: any, indexOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 17.0
@@ -1522,7 +1522,7 @@ declare function CMTaggedBufferGroupGetNumberOfMatchesForTagCollection(group: an
 /**
  * @since 17.0
  */
-declare function CMTaggedBufferGroupGetTagCollectionAtIndex(group: any, index: number): any;
+declare function CMTaggedBufferGroupGetTagCollectionAtIndex(group: any, index: number): any | null;
 
 /**
  * @since 17.0
@@ -1532,42 +1532,42 @@ declare function CMTaggedBufferGroupGetTypeID(): number;
 /**
  * @since 8.0
  */
-declare function CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuffer(allocator: any, textFormatDescription: any, flavor: string, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuffer(allocator: any | null, textFormatDescription: any, flavor: string | null, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionBlockBuffer(allocator: any, textDescriptionBlockBuffer: any, flavor: string, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionBlockBuffer(allocator: any | null, textDescriptionBlockBuffer: any, flavor: string | null, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData(allocator: any, textDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: string, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData(allocator: any | null, textDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, flavor: string | null, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMTextFormatDescriptionGetDefaultStyle(desc: any, localFontIDOut: interop.Pointer | interop.Reference<number>, boldOut: string | interop.Pointer | interop.Reference<any>, italicOut: string | interop.Pointer | interop.Reference<any>, underlineOut: string | interop.Pointer | interop.Reference<any>, fontSizeOut: interop.Pointer | interop.Reference<number>, colorComponentsOut: interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetDefaultStyle(desc: any, localFontIDOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, boldOut: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, italicOut: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, underlineOut: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, fontSizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, colorComponentsOut: interop.Reference<number> | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMTextFormatDescriptionGetDefaultTextBox(desc: any, originIsAtTopLeft: boolean, heightOfTextTrack: number, defaultTextBoxOut: interop.Pointer | interop.Reference<CGRect>): number;
+declare function CMTextFormatDescriptionGetDefaultTextBox(desc: any, originIsAtTopLeft: boolean, heightOfTextTrack: number, defaultTextBoxOut: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMTextFormatDescriptionGetDisplayFlags(desc: any, displayFlagsOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetDisplayFlags(desc: any, displayFlagsOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMTextFormatDescriptionGetFontName(desc: any, localFontID: number, fontNameOut: interop.Pointer | interop.Reference<string>): number;
+declare function CMTextFormatDescriptionGetFontName(desc: any, localFontID: number, fontNameOut: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMTextFormatDescriptionGetJustification(desc: any, horizontaJustificationlOut: interop.Pointer | interop.Reference<number>, verticalJustificationOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetJustification(desc: any, horizontaJustificationlOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, verticalJustificationOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface CMTime {
 	value: number;
@@ -1595,22 +1595,22 @@ declare function CMTimeClampToRange(time: CMTime, range: CMTimeRange): CMTime;
 /**
  * @since 8.0
  */
-declare function CMTimeCodeFormatDescriptionCopyAsBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeFormatDescription: any, flavor: string, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCopyAsBigEndianTimeCodeDescriptionBlockBuffer(allocator: any | null, timeCodeFormatDescription: any, flavor: string | null, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMTimeCodeFormatDescriptionCreate(allocator: any, timeCodeFormatType: number, frameDuration: CMTime, frameQuanta: number, flags: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreate(allocator: any | null, timeCodeFormatType: number, frameDuration: CMTime, frameQuanta: number, flags: number, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeDescriptionBlockBuffer: any, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionBlockBuffer(allocator: any | null, timeCodeDescriptionBlockBuffer: any, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionData(allocator: any, timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionData(allocator: any | null, timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
@@ -1640,12 +1640,12 @@ declare function CMTimeConvertScale(time: CMTime, newTimescale: number, method: 
 /**
  * @since 4.0
  */
-declare function CMTimeCopyAsDictionary(time: CMTime, allocator: any): NSDictionary<any, any>;
+declare function CMTimeCopyAsDictionary(time: CMTime, allocator: any | null): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
  */
-declare function CMTimeCopyDescription(allocator: any, time: CMTime): string;
+declare function CMTimeCopyDescription(allocator: any | null, time: CMTime): string | null;
 
 /**
  * @since 4.0
@@ -1683,7 +1683,7 @@ declare function CMTimeMake(value: number, timescale: number): CMTime;
 /**
  * @since 4.0
  */
-declare function CMTimeMakeFromDictionary(dictionaryRepresentation: NSDictionary<any, any>): CMTime;
+declare function CMTimeMakeFromDictionary(dictionaryRepresentation: NSDictionary<any, any> | null): CMTime;
 
 /**
  * @since 4.0
@@ -1714,12 +1714,12 @@ declare var CMTimeMapping: interop.StructType<CMTimeMapping>;
 /**
  * @since 9.0
  */
-declare function CMTimeMappingCopyAsDictionary(mapping: CMTimeMapping, allocator: any): NSDictionary<any, any>;
+declare function CMTimeMappingCopyAsDictionary(mapping: CMTimeMapping, allocator: any | null): NSDictionary<any, any> | null;
 
 /**
  * @since 9.0
  */
-declare function CMTimeMappingCopyDescription(allocator: any, mapping: CMTimeMapping): string;
+declare function CMTimeMappingCopyDescription(allocator: any | null, mapping: CMTimeMapping): string | null;
 
 /**
  * @since 9.0
@@ -1785,12 +1785,12 @@ declare function CMTimeRangeContainsTimeRange(range: CMTimeRange, otherRange: CM
 /**
  * @since 4.0
  */
-declare function CMTimeRangeCopyAsDictionary(range: CMTimeRange, allocator: any): NSDictionary<any, any>;
+declare function CMTimeRangeCopyAsDictionary(range: CMTimeRange, allocator: any | null): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
  */
-declare function CMTimeRangeCopyDescription(allocator: any, range: CMTimeRange): string;
+declare function CMTimeRangeCopyDescription(allocator: any | null, range: CMTimeRange): string | null;
 
 /**
  * @since 4.0
@@ -1880,12 +1880,12 @@ declare function CMTimebaseCopySource(timebase: any): any;
 /**
  * @since 9.0
  */
-declare function CMTimebaseCopySourceClock(timebase: any): any;
+declare function CMTimebaseCopySourceClock(timebase: any): any | null;
 
 /**
  * @since 9.0
  */
-declare function CMTimebaseCopySourceTimebase(timebase: any): any;
+declare function CMTimebaseCopySourceTimebase(timebase: any): any | null;
 
 /**
  * @since 9.0
@@ -1895,12 +1895,12 @@ declare function CMTimebaseCopyUltimateSourceClock(timebase: any): any;
 /**
  * @since 6.0
  */
-declare function CMTimebaseCreateWithSourceClock(allocator: any, sourceClock: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimebaseCreateWithSourceClock(allocator: any | null, sourceClock: any, timebaseOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 6.0
  */
-declare function CMTimebaseCreateWithSourceTimebase(allocator: any, sourceTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimebaseCreateWithSourceTimebase(allocator: any | null, sourceTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 6.0
@@ -1911,19 +1911,19 @@ declare function CMTimebaseGetEffectiveRate(timebase: any): number;
  * @since 6.0
  * @deprecated 9.0
  */
-declare function CMTimebaseGetMaster(timebase: any): any;
+declare function CMTimebaseGetMaster(timebase: any): any | null;
 
 /**
  * @since 6.0
  * @deprecated 9.0
  */
-declare function CMTimebaseGetMasterClock(timebase: any): any;
+declare function CMTimebaseGetMasterClock(timebase: any): any | null;
 
 /**
  * @since 6.0
  * @deprecated 9.0
  */
-declare function CMTimebaseGetMasterTimebase(timebase: any): any;
+declare function CMTimebaseGetMasterTimebase(timebase: any): any | null;
 
 /**
  * @since 6.0
@@ -1938,7 +1938,7 @@ declare function CMTimebaseGetTime(timebase: any): CMTime;
 /**
  * @since 6.0
  */
-declare function CMTimebaseGetTimeAndRate(timebase: any, timeOut: interop.Pointer | interop.Reference<CMTime>, rateOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMTimebaseGetTimeAndRate(timebase: any, timeOut: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView | null, rateOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 6.0
@@ -1954,7 +1954,7 @@ declare function CMTimebaseGetTypeID(): number;
  * @since 6.0
  * @deprecated 9.0
  */
-declare function CMTimebaseGetUltimateMasterClock(timebase: any): any;
+declare function CMTimebaseGetUltimateMasterClock(timebase: any): any | null;
 
 /**
  * @since 6.0
@@ -2030,42 +2030,42 @@ declare var CMVideoDimensions: interop.StructType<CMVideoDimensions>;
 /**
  * @since 8.0
  */
-declare function CMVideoFormatDescriptionCopyAsBigEndianImageDescriptionBlockBuffer(allocator: any, videoFormatDescription: any, stringEncoding: number, flavor: string, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCopyAsBigEndianImageDescriptionBlockBuffer(allocator: any | null, videoFormatDescription: any, stringEncoding: number, flavor: string | null, blockBufferOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 17.0
  */
-declare function CMVideoFormatDescriptionCopyTagCollectionArray(formatDescription: any, tagCollectionsOut: interop.Pointer | interop.Reference<NSArray<any>>): number;
+declare function CMVideoFormatDescriptionCopyTagCollectionArray(formatDescription: any, tagCollectionsOut: interop.Pointer | interop.Reference<NSArray<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function CMVideoFormatDescriptionCreate(allocator: any, codecType: number, width: number, height: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreate(allocator: any | null, codecType: number, width: number, height: number, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
  */
-declare function CMVideoFormatDescriptionCreateForImageBuffer(allocator: any, imageBuffer: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateForImageBuffer(allocator: any | null, imageBuffer: any, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionBlockBuffer(allocator: any, imageDescriptionBlockBuffer: any, stringEncoding: number, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionBlockBuffer(allocator: any | null, imageDescriptionBlockBuffer: any, stringEncoding: number, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 8.0
  */
-declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData(allocator: any, imageDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, stringEncoding: number, flavor: string, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData(allocator: any | null, imageDescriptionData: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, stringEncoding: number, flavor: string | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 7.0
  */
-declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any | null, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView, parameterSetSizes: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 11.0
  */
-declare function CMVideoFormatDescriptionCreateFromHEVCParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromHEVCParameterSets(allocator: any | null, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView, parameterSetSizes: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, NALUnitHeaderLength: number, extensions: NSDictionary<any, any> | null, formatDescriptionOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
  * @since 4.0
@@ -2085,12 +2085,12 @@ declare function CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers(
 /**
  * @since 7.0
  */
-declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView | null, parameterSetSizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, parameterSetCountOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 11.0
  */
-declare function CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null | null> | ArrayBufferLike | ArrayBufferView | null, parameterSetSizeOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, parameterSetCountOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0

@@ -7,9 +7,32 @@ import { parse as babelParse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { genCode } from './babel.js';
+import { buildCoreUrlPath, specToCoreSub } from '../../helpers/ns-core-url.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 // Ensure traverse callable across CJS/ESM builds
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
+
+// `core-sanitize.rewriteSpec` plus the `ns-core-external-urls` resolve plugin
+// canonicalize every `@nativescript/core[/sub]` import to a `/ns/core/...`
+// bridge URL upstream of this normalizer. Empirical telemetry across
+// cold boot, full app load, and HMR TS/HTML updates showed zero fires for the
+// AST `isNsCorePackage` branches under the Angular pipeline. We keep the
+// rewrite as a defense-in-depth safety net, but if it ever runs we want the
+// drift to be visible immediately — silent re-rewrite is precisely what
+// re-introduced the realm-split bug
+function reportUnexpectedCoreSpec(kind: string, spec: string): void {
+	try {
+		const g = getGlobalScope();
+		g.__NS_AST_CORE_FIRED__ ||= { Import: 0, ImportExpression: 0, ImportCall: 0, RequireCall: 0, samples: [] };
+		const bucket = g.__NS_AST_CORE_FIRED__;
+		const slot = kind as 'Import' | 'ImportExpression' | 'ImportCall' | 'RequireCall';
+		if (typeof bucket[slot] === 'number') bucket[slot]++;
+		const arr = bucket.samples as Array<{ kind: string; src: string }>;
+		if (arr.length < 5) arr.push({ kind, src: spec });
+		console.warn(`[ast-normalizer] unexpected @nativescript/core spec at ${kind}: '${spec}' — upstream rewriter regressed`);
+	} catch {}
+}
 
 // Normalize imports and helper aliases deterministically.
 // Contract:
@@ -17,15 +40,22 @@ const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 // - Output: JS with a single default import from '/ns/rt' and one destructure for any underscored helpers used
 // - Navigation helpers are stripped from any /ns/rt named imports
 // - A marker comment '/* [ast-normalized] */' is injected at the top
-export function astNormalizeModuleImportsAndHelpers(code: string): string {
+export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { underscoreTextFallback?: boolean }): string {
 	try {
-		// Pre-scan for underscored helper usages to inform aliasing during import rewrite
+		// Pre-scan for underscored helper usages to inform aliasing during import rewrite.
+		// The regex captures the part AFTER the leading `_`, so `_arguments` → `arguments`.
+		// Filter strict-mode reserved words to prevent invalid generated code.
 		const needAlias = new Set<string>();
 		try {
-			const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
+			const _STRICT_PRE = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
+			// `(?![\w$])` (not `\b`) terminates the identifier: `\w` excludes `$`, so a
+			// plain `\b` would match the PREFIX `_Symbol` inside Babel temp vars like
+			// `_Symbol$toStringTag` and alias the global `Symbol` from /ns/rt.
+			const re = /(^|[^.\w$])_([A-Za-z]\w*)(?![\w$])/g;
 			let m: RegExpExecArray | null;
 			while ((m = re.exec(code))) {
 				const base = m[2].replace(/^_+/, '');
+				if (_STRICT_PRE.has(base)) continue;
 				if (!/(^|_)(ctx|cache)$/.test(base) && !/^(hoisted_|component_|directive_|sfc_main|ns_sfc__|ns_sfc|sfc)/.test(base)) {
 					needAlias.add(base);
 				}
@@ -52,7 +82,20 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 		const isVuePrebundle = (src: string | null | undefined) => !!src && /\.vite\/deps\/(?:vue|nativescript-vue)[^/]*\.js/.test(src);
 		const isVuePackage = (src: string | null | undefined) => !!src && (src === 'vue' || src.startsWith('vue/') || src.includes('nativescript-vue'));
 		const isVueLike = (src: string | null | undefined) => (isVuePackage(src) || isVuePrebundle(src)) && !isSfcPath(src);
-		const isViteVirtual = (src: string | null | undefined) => !!src && (/\/\@id\//.test(src) || /\0/.test(src) || /__x00__/.test(src));
+		// True virtual modules only (`\0`/`__x00__`-marked). A plain `/@id/<id>`
+		// is Vite's URL form for any REAL resolved bare id that isn't a file
+		// path (e.g. `html-entities` when not in optimizeDeps) — those must be
+		// rewritten to the bare id (see below), not removed; removing them
+		// left consumer bindings undefined (`decode is not defined`).
+		// Exemption: oxc runtime helper virtuals are real servable URLs that
+		// downstream passes preserve/origin-prefix — keep them here too.
+		const isViteVirtual = (src: string | null | undefined) => !!src && (/\0/.test(src) || /__x00__/.test(src)) && !src.includes('__x00__@oxc-project+runtime');
+		const realIdPrefixed = (src: string | null | undefined): string | null => {
+			if (!src || !src.startsWith('/@id/')) return null;
+			const bare = src.slice('/@id/'.length);
+			if (!bare || bare.includes('__x00__') || bare.includes('\0')) return null;
+			return bare;
+		};
 		const isVitePrebundle = (src: string | null | undefined) => !!src && /node_modules\/\.vite\/deps\//.test(src);
 		const vitePrebundleId = (src: string | null | undefined): string | null => {
 			if (!src) return null;
@@ -89,8 +132,21 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 				if (isVueLike(src)) {
 					path.node.source = t.stringLiteral('/ns/rt');
 				} else if (isNsCorePackage(src)) {
-					// Rewrite any @nativescript/core[/*] to the HTTP-ESM bridge
-					path.node.source = t.stringLiteral('/ns/core');
+					// Defense-in-depth: upstream stages (`core-sanitize`
+					// `rewriteSpec` + the `ns-core-external-urls` resolve
+					// plugin) are supposed to have already converted every
+					// `@nativescript/core[/sub]` to a canonical bridge URL
+					// before the AST normalizer runs. Empirical
+					// telemetry for Angular showed zero fires across cold
+					// boot, full app load, and HMR TS/HTML updates, so this
+					// path is effectively dead.
+					//
+					// We keep the rewrite but log a one-shot warning when
+					// it fires so future regressions surface immediately
+					// rather than silently re-introducing the realm-split
+					// bug.
+					reportUnexpectedCoreSpec('Import', src);
+					path.node.source = t.stringLiteral(buildCoreUrlPath(specToCoreSub(src) || ''));
 				} else if (isVitePrebundle(src)) {
 					const id = vitePrebundleId(src);
 					if (id && /^(?:pinia)(?:$|[_\.-])/.test(id)) {
@@ -102,7 +158,20 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					} else {
 						// Keep other prebundles as-is; they may be fetchable directly from the dev server
 					}
+				} else if (realIdPrefixed(src)) {
+					// Real bare id served under /@id/ — restore the bare specifier so
+					// the module-bindings pass routes it like any dependency import.
+					path.node.source = t.stringLiteral(realIdPrefixed(src) as string);
 				} else if (isViteVirtual(src) || src === '@vite/client' || src === '/@vite/client') {
+					// Removing the Vite client import should also remove its declared locals from our
+					// `declared` set; otherwise later bridge rewrites may unnecessarily suffix names
+					// (e.g. `__vite__createHotContext_1`) while call sites still reference the original.
+					try {
+						for (const s of path.node.specifiers || []) {
+							const local = (s as any)?.local?.name;
+							if (typeof local === 'string' && local) declared.delete(local);
+						}
+					} catch {}
 					path.remove();
 					return;
 				}
@@ -232,6 +301,13 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 								const decl = t.variableDeclaration('const', [t.variableDeclarator(t.objectPattern(safeProps), t.identifier(existingRtDefaultLocal))]);
 								path.insertAfter(decl);
 							}
+						}
+						// Always strip ALL remaining ImportSpecifiers from this /ns/rt import.
+						// If `named` is empty here it's either because the source had no named
+						// specifiers, or because they were all nav helpers ($navigateTo/$navigateBack)
+						// filtered above. In the latter case we still need to drop the originals so
+						// the wrapper consts injected later don't collide with a leftover named import.
+						if (path.node.specifiers.some((s) => t.isImportSpecifier(s))) {
 							path.node.specifiers = path.node.specifiers.filter((s) => !t.isImportSpecifier(s));
 						}
 						// Collect any local names introduced by this import for declared set
@@ -243,7 +319,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 
 					// Non-rt core path: handle like before
 					if (named.length) {
-						let tmpName = hasDefault && !hasNamespace ? (path.node.specifiers.find((s) => t.isImportDefaultSpecifier(s)) as t.ImportDefaultSpecifier).local.name : makeUid(isCore ? 'core_ns' : 'ns');
+						const tmpName = hasDefault && !hasNamespace ? (path.node.specifiers.find((s) => t.isImportDefaultSpecifier(s)) as t.ImportDefaultSpecifier).local.name : makeUid(isCore ? 'core_ns' : 'ns');
 						if (!hasDefault || hasNamespace) {
 							path.node.specifiers = [t.importDefaultSpecifier(t.identifier(tmpName))];
 						}
@@ -274,7 +350,8 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					if (isVueLike(src)) {
 						path.node.source = t.stringLiteral('/ns/rt');
 					} else if (isNsCorePackage(src)) {
-						path.node.source = t.stringLiteral('/ns/core');
+						reportUnexpectedCoreSpec('ImportExpression', src);
+						path.node.source = t.stringLiteral(buildCoreUrlPath(specToCoreSub(src) || ''));
 					}
 				}
 			},
@@ -285,7 +362,8 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						if (isVueLike(first.value)) {
 							path.node.arguments[0] = t.stringLiteral('/ns/rt');
 						} else if (isNsCorePackage(first.value)) {
-							path.node.arguments[0] = t.stringLiteral('/ns/core');
+							reportUnexpectedCoreSpec('ImportCall', first.value);
+							path.node.arguments[0] = t.stringLiteral(buildCoreUrlPath(specToCoreSub(first.value) || ''));
 						}
 					}
 					return;
@@ -297,7 +375,8 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						if (isVueLike(v)) {
 							path.node.arguments[0] = t.stringLiteral('/ns/rt');
 						} else if (isNsCorePackage(v)) {
-							path.node.arguments[0] = t.stringLiteral('/ns/core');
+							reportUnexpectedCoreSpec('RequireCall', v);
+							path.node.arguments[0] = t.stringLiteral(buildCoreUrlPath(specToCoreSub(v) || ''));
 						}
 					}
 				}
@@ -325,7 +404,14 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 			Identifier(path) {
 				const name = path.node.name;
 				if (!name || !name.startsWith('_')) return;
-				if (/^__ns_(?:rt|core)_ns(?:\d+|_re)$/.test(name)) return;
+				// Only single-underscore names are downlevel/Vue helper aliases
+				// (`_toDisplayString`, `_Symbol`). Double-underscore names are
+				// runtime globals by convention (`__ns__setInterval`, ...) —
+				// aliasing them destructures `rt.ns__setInterval` (undefined) and
+				// shadows the real global; observed as `setInterval is not a
+				// function` in worker realms when the app's timer polyfill
+				// assigned the shadowed undefined binding over the working global.
+				if (name.startsWith('__')) return;
 				if (path.scope.hasBinding(name)) return;
 				if (t.isObjectProperty(path.parent) && path.parent.key === path.node && !path.parent.computed) return;
 				if (t.isMemberExpression(path.parent) && path.parent.property === path.node && !path.parent.computed) return;
@@ -356,17 +442,34 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 			});
 		} catch {}
 
-		// Fallback: if traversal didn't detect underscored helper uses, do a conservative text scan
-		if (!underscoreUses.size) {
+		// Fallback: if traversal didn't detect underscored helper uses, do a conservative text scan.
+		// NOTE: this scan captures m[2] (the part AFTER the leading underscore), so a source-level
+		// `_arguments` becomes `arguments` in the set — which is a strict-mode reserved word.
+		// Filter those out here to avoid generating invalid destructures like `const { arguments }`.
+		//
+		// The text scan has NO scope information, so it is inherently unsound on
+		// arbitrary code (it has misread core internals like `ClassInfo._getBase`
+		// and Babel temp vars as Vue template helpers). It exists for compiled Vue
+		// template output (`_toDisplayString`, …) when the AST pass comes up empty
+		// — callers outside the Vue pipeline pass `underscoreTextFallback: false`.
+		if (opts?.underscoreTextFallback !== false && !underscoreUses.size) {
 			try {
-				const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
+				const _STRICT_RESERVED_FB = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
+				// `(?![\w$])` (not `\b`): see the pre-scan above — `\b` matches the prefix
+				// `_Symbol` inside Babel temp vars like `_Symbol$toStringTag`, which would
+				// shadow the global `Symbol` with an undefined /ns/rt destructure.
+				const re = /(^|[^.\w$])_([A-Za-z]\w*)(?![\w$])/g;
 				let m: RegExpExecArray | null;
 				while ((m = re.exec(code))) {
 					const name = m[2];
-					// Never consider `_this` as a helper alias
-					if (name === 'this') continue;
+					if (_STRICT_RESERVED_FB.has(name)) continue;
 					if (/(^|_)(ctx|cache)$/.test(name)) continue;
 					if (/^(hoisted_|component_|directive_|sfc_main|ns_sfc__|ns_sfc|sfc)/.test(name)) continue;
+					// The AST visitor skips identifiers with real bindings; this text
+					// fallback has no scope info, so at least skip module-level declarations.
+					try {
+						if (new RegExp(`(^|\\n)\\s*(?:const|let|var|function|class)\\s+_${name}\\b`).test(code)) continue;
+					} catch {}
 					underscoreUses.add(name);
 				}
 			} catch {}
@@ -386,13 +489,17 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					existingRtDefaultLocal = defLocal;
 				}
 			}
+			// Words that cannot be used as variable names in strict mode (ESM is always strict).
+			// Covers keywords, future-reserved words, and restricted identifiers.
+			const STRICT_RESERVED = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
 			const props: t.ObjectProperty[] = [];
 			for (const underscored of underscoreUses) {
-				// Never alias our own generated internals
-				if (/^__ns_(?:rt|core)_ns(?:\d+|_re)$/.test(underscored)) continue;
+				// Never alias our own generated internals or double-underscore
+				// runtime globals (see the Identifier visitor above).
+				if (underscored.startsWith('__')) continue;
 				const base = underscored.replace(/^_+/, '');
-				// Do not attempt to destructure a property named 'this' from /ns/rt
-				if (base === 'this') continue;
+				// Skip reserved/restricted words — they cannot be used as binding names in strict mode
+				if (STRICT_RESERVED.has(base) || STRICT_RESERVED.has(underscored)) continue;
 				// Ensure local binding is a valid, non-reserved identifier
 				let localName = underscored;
 				if (!t.isIdentifier(t.identifier(localName)) || localName === 'this') {
@@ -476,20 +583,21 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 							if (rtNames.has(initName) || /^__ns_rt_ns(?:\d+|_re)$/.test(initName)) {
 								for (const p of d.id.properties) {
 									if (t.isObjectProperty(p)) {
-										const key = (p.key as any).name || String(p.key as any);
+										const key = (p.key as any).name || (p.key as any).value || String(p.key as any);
 										if (key === '$navigateTo' || key === '$navigateBack') continue;
 										// Skip internal core bridge sentinel(s) to avoid duplicate locals like __ns_core_ns_1/__ns_core_ns_2
 										if (/^ns_core_ns_\d+$/.test(key)) continue;
 										// Skip any accidental runtime sentinel property mappings (e.g., ns_rt_ns_1)
 										if (/^ns_rt_ns_\d+$/.test(key)) continue;
-										const localId = (p.value as any).name || String(p.value as any);
+										const localId = (p.value as any).name || (p.value as any).value || String(p.value as any);
 										// Never collect bindings that shadow the default import local
 										if (localId === defaultLocal || key === defaultLocal) continue;
 										if (/^__ns_rt_ns(?:\d+|_re)$/.test(localId) || /^__ns_rt_ns(?:\d+|_re)$/.test(key)) continue;
 										// Also skip any locals that look like core bridge internals to prevent shadowing
 										if (/^__ns_core_ns(?:\d+|_re)$/.test(localId) || /^__ns_core_ns(?:\d+|_re)$/.test(key)) continue;
 										if (!collected.has(localId)) {
-											collected.set(localId, t.objectProperty(t.identifier(key), t.identifier(localId)));
+											// Preserve original key node (may be StringLiteral for reserved words like 'extends')
+											collected.set(localId, t.objectProperty(p.key, t.identifier(localId), false, false));
 										}
 									}
 								}
@@ -527,7 +635,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					if (!t.isObjectPattern(id) || !t.isIdentifier(init)) return;
 					const initName = init.name;
 					if (!(initName && (/^__ns_rt_ns(?:\d+|_re)$/.test(initName) || initName === existingRtDefaultLocal))) return;
-					const props = id.properties.filter((p: any) => !(t.isObjectProperty(p) && /^ns_core_ns_\d+$/.test(((p.key as any).name || String(p.key as any)) as string)));
+					const props = id.properties.filter((p: any) => !(t.isObjectProperty(p) && /^ns_core_ns_\d+$/.test(((p.key as any).name || (p.key as any).value || String(p.key as any)) as string)));
 					if (props.length === 0) {
 						path.remove();
 					} else if (props.length !== id.properties.length) {

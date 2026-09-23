@@ -1,6 +1,6 @@
 import { parse } from '../../css/reworkcss.js';
 import { Screen } from '../../platform';
-import { createSelector, RuleSet, StyleSheetSelectorScope, fromAstNode, Node, Changes } from './css-selector';
+import { createSelector, RuleSet, StyleSheetSelectorScope, SelectorTier, fromAstNode, Node, Changes, matchSelectorCandidates } from './css-selector';
 import { _populateRules } from './style-scope';
 
 describe('css-selector', () => {
@@ -277,6 +277,229 @@ describe('css-selector', () => {
 		).toBe(false);
 		// TODO: Re-add this when decorators actually work properly on ts-jest
 		//expect(rule.selectors[0].specificity).toEqual(0);
+	});
+
+	describe('sibling combinator flags', () => {
+		it('adjacent combinator sets hasAdjacentCombinator', () => {
+			const sel = createSelector('.spaced > * + *');
+			expect(sel.hasAdjacentCombinator).toBe(true);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it('general sibling combinator sets hasSiblingCombinator', () => {
+			const sel = createSelector('.spaced > * ~ *');
+			expect(sel.hasSiblingCombinator).toBe(true);
+			expect(sel.hasAdjacentCombinator).toBe(false);
+		});
+
+		it('selector without sibling combinators sets neither flag', () => {
+			const sel = createSelector('.spaced > .child');
+			expect(sel.hasAdjacentCombinator).toBe(false);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it(':is() selector list propagates combinator flags', () => {
+			const sel = createSelector(':is(.a + .b)');
+			expect(sel.hasAdjacentCombinator).toBe(true);
+			expect(sel.hasSiblingCombinator).toBe(false);
+		});
+
+		it('compound selector propagates combinator flags of functional pseudo-class', () => {
+			const sel = createSelector('.list :is(.a ~ .b).c');
+			expect(sel.hasSiblingCombinator).toBe(true);
+		});
+
+		it('scope accumulates combinator flags from rulesets', () => {
+			const { selectorScope } = create(`
+				.a { color: red; }
+				.spaced > * + * { margin-top: 8; }
+			`);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(true);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(false);
+		});
+
+		it('scope without sibling combinators keeps flags false', () => {
+			const { selectorScope } = create(`.a { color: red; }`);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(false);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(false);
+		});
+
+		it('scope rolls up combinator flags from media query rules', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: 10000) {
+					.spaced > * ~ * { margin-top: 8; }
+				}
+			`);
+			expect(selectorScope.hasSiblingCombinatorSelectors).toBe(true);
+			expect(selectorScope.hasAdjacentCombinatorSelectors).toBe(false);
+		});
+	});
+
+	it('attribute selector with case-insensitive flag matches repeatedly', () => {
+		const rule = createOne(`button[testAttr='VaLuE' i] { color: red; }`);
+		const matching = { cssType: 'button', testAttr: 'vAlUe' };
+		const nonMatching = { cssType: 'button', testAttr: 'other' };
+
+		// Run multiple times to ensure matching does not depend on per-match state
+		for (let i = 0; i < 3; i++) {
+			expect(rule.selectors[0].match(matching)).toBe(true);
+			expect(rule.selectors[0].match(nonMatching)).toBe(false);
+		}
+	});
+
+	describe('attribute selectors', () => {
+		class Widget {
+			public cssType = 'widget';
+			public cssClasses = new Set<string>();
+			private _text: string;
+			get text(): string {
+				return this._text;
+			}
+			set text(value: string) {
+				this._text = value;
+			}
+		}
+
+		it('does not match a node that does not know the attribute', () => {
+			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
+			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
+
+			expect(rule.selectors[0].match(<any>node)).toBe(false);
+		});
+
+		it('stays a candidate so it can match once the attribute is assigned', () => {
+			// Assigning a plain instance value raises no change event, so a selector
+			// dropped from the match would never be reconsidered.
+			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
+			const node: any = { cssType: 'label', cssClasses: new Set(['title']) };
+
+			expect(rule.selectors[0].accumulateChanges(node, undefined)).toBe(true);
+
+			node['_ngcontent-c7'] = '';
+
+			expect(rule.selectors[0].match(node)).toBe(true);
+		});
+
+		it('matches a node carrying the attribute', () => {
+			const rule = createOne(`.title[_ngcontent-c3] { color: red; }`);
+			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
+
+			expect(rule.selectors[0].accumulateChanges(<any>node, undefined)).toBe(true);
+		});
+
+		it('does not subscribe for attributes that cannot raise change events', () => {
+			const rule = createOne(`[_ngcontent-c3] { color: red; }`);
+			const node = { cssType: 'label', '_ngcontent-c3': '' };
+			const changes: Array<string> = [];
+
+			rule.selectors[0].accumulateChanges(
+				<any>node,
+				<any>{
+					addAttribute: (_n, attribute: string) => changes.push(attribute),
+					addPseudoClass: () => {},
+				},
+			);
+
+			expect(changes).toEqual([]);
+		});
+
+		it('subscribes for attributes backed by a property', () => {
+			const rule = createOne(`widget[text] { color: red; }`);
+			const node = new Widget();
+			node.text = 'hello';
+			const changes: Array<string> = [];
+
+			rule.selectors[0].accumulateChanges(
+				<any>node,
+				<any>{
+					addAttribute: (_n, attribute: string) => changes.push(attribute),
+					addPseudoClass: () => {},
+				},
+			);
+
+			expect(changes).toEqual(['text']);
+		});
+
+		it('matches a property backed attribute even when it is unset', () => {
+			const rule = createOne(`widget[text] { color: red; }`);
+
+			// The value can still be assigned later, and assigning it raises `textChange`.
+			const accumulator = <any>{ addAttribute: () => {}, addPseudoClass: () => {} };
+			expect(rule.selectors[0].accumulateChanges(<any>new Widget(), accumulator)).toBe(true);
+		});
+	});
+
+	it('expands a shorthand into its longhands while parsing', () => {
+		const rule = createOne(`button { margin: 4; }`);
+
+		expect(rule.declarations.map((d) => d.property)).toEqual(['margin-top', 'margin-right', 'margin-bottom', 'margin-left']);
+	});
+
+	it('gives a shorthand holding a variable one pending-substitution value per longhand', () => {
+		// A single var() can substitute several longhands at once, so the shorthand can
+		// only be parsed once substitution has happened - but the declaration is still
+		// keyed by longhands, as the cascade requires.
+		const rule = createOne(`button { margin: var(--m); }`);
+
+		expect(rule.declarations.map((d) => d.property)).toEqual(['margin-top', 'margin-right', 'margin-bottom', 'margin-left']);
+		expect(rule.declarations.map((d) => String(d.value))).toEqual(['var(--m)', 'var(--m)', 'var(--m)', 'var(--m)']);
+		// One placeholder shared by every longhand, so it is only resolved once.
+		expect(new Set(rule.declarations.map((d) => d.value)).size).toBe(1);
+	});
+
+	it('strips the unsupported !important flag while parsing', () => {
+		const rule = createOne(`button { color: red !important; }`);
+		expect(rule.declarations).toEqual([{ property: 'color', value: 'red' }]);
+	});
+
+	describe('candidate resolution across scopes', () => {
+		it('breaks a specificity tie on the scope tier before the position', () => {
+			const application = create(`label { color: red; }`).selectorScope;
+			const local = new StyleSheetSelectorScope(create(`label { color: blue; }`).rulesets, SelectorTier.Local);
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const candidates = local.collectCandidates(<any>node, application.collectCandidates(<any>node));
+			const { selectors } = matchSelectorCandidates(<any>node, candidates);
+
+			// Local styles are a later "stylesheet", so they win the tie regardless of
+			// the position each selector got inside its own scope.
+			expect(selectors.length).toBe(2);
+			expect(selectors[1].ruleset.declarations[0].value).toBe('blue');
+		});
+
+		it('drops rules scoped to a stylesheet the caller did not load', () => {
+			const { rulesets, selectorScope } = create(`label { color: red; } label { color: blue; }`);
+			rulesets[1].scopedTag = 'other.css';
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const { selectors } = matchSelectorCandidates(<any>node, selectorScope.collectCandidates(<any>node), new Set(['mine.css']));
+
+			expect(selectors.length).toBe(1);
+			expect(selectors[0].ruleset.declarations[0].value).toBe('red');
+		});
+
+		it('keeps rules scoped to a stylesheet the caller did load', () => {
+			const { rulesets, selectorScope } = create(`label { color: red; } label { color: blue; }`);
+			rulesets[1].scopedTag = 'mine.css';
+
+			const node = { cssType: 'label', cssClasses: new Set<string>() };
+			const { selectors } = matchSelectorCandidates(<any>node, selectorScope.collectCandidates(<any>node), new Set(['mine.css']));
+
+			expect(selectors.length).toBe(2);
+		});
+	});
+
+	it('query returns selectors sorted by specificity then position', () => {
+		const { selectorScope } = create(`
+	        button { color: red; }
+	        .login { color: blue; }
+	        button.login { color: green; }
+	        #main { color: yellow; }
+	    `);
+
+		const { selectors } = selectorScope.query({ cssType: 'button', id: 'main', cssClasses: new Set(['login']) });
+		expect(selectors.length).toBe(4);
+		expect(selectors.map((sel) => sel.toString().trim())).toEqual(['button', '.login', 'button.login', '#main']);
 	});
 
 	describe('media queries', () => {

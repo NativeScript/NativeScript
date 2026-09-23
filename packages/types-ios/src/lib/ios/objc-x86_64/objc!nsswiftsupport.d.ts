@@ -5,7 +5,7 @@ declare class NativeScriptContainerCtrl extends UIViewController {
 
 	static new(): NativeScriptContainerCtrl; // inherited from NSObject
 
-	updateData: (p1: NSMutableDictionary<any, any>) => void;
+	updateData: (p1: NSMutableDictionary<any, any>) => void | null;
 }
 
 /**
@@ -18,25 +18,25 @@ declare class NativeScriptViewFactory extends NSObject implements NativeScriptEm
 	/**
 	 * @since 15.0
 	 */
-	static getKeyWindow(): UIWindow;
+	static getKeyWindow(): UIWindow | null;
 
 	static initShared(): void;
 
 	static new(): NativeScriptViewFactory; // inherited from NSObject
 
-	static setApp(value: NativeScriptContainerCtrl): void;
+	static setApp(value: NativeScriptContainerCtrl | null): void;
 
-	static setShared(value: NativeScriptViewFactory): void;
+	static setShared(value: NativeScriptViewFactory | null): void;
 
-	viewCreator: (p1: string) => void;
+	viewCreator: (p1: string) => void | null;
 
-	viewDestroyer: (p1: string) => void;
+	viewDestroyer: (p1: string) => void | null;
 
-	views: NSMutableDictionary<any, any>;
+	views: NSMutableDictionary<any, any> | null;
 
-	static app: NativeScriptContainerCtrl;
+	static app: NativeScriptContainerCtrl | null;
 
-	static shared: NativeScriptViewFactory;
+	static shared: NativeScriptViewFactory | null;
 
 	getViewById(id: string): UIView;
 

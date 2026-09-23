@@ -12,7 +12,7 @@ declare class MPAdTimeRange extends NSObject implements NSCopying {
 
 	constructor(o: { timeRange: CMTimeRange; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithTimeRange(timeRange: CMTimeRange): this;
 }
@@ -150,7 +150,7 @@ declare class MPContentItem extends NSObject {
 
 	static new(): MPContentItem; // inherited from NSObject
 
-	artwork: MPMediaItemArtwork;
+	artwork: MPMediaItemArtwork | null;
 
 	container: boolean;
 
@@ -170,9 +170,9 @@ declare class MPContentItem extends NSObject {
 	 */
 	streamingContent: boolean;
 
-	subtitle: string;
+	subtitle: string | null;
 
-	title: string;
+	title: string | null;
 
 	constructor(o: { identifier: string; });
 
@@ -312,16 +312,16 @@ declare class MPMediaEntity extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 4.0
 	 */
-	enumerateValuesForPropertiesUsingBlock(properties: NSSet<string>, block: (p1: string, p2: any, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateValuesForPropertiesUsingBlock(properties: NSSet<string>, block: (p1: string, p2: any, p3: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 
 	/**
 	 * @since 8.0
 	 */
-	objectForKeyedSubscript(key: any): any;
+	objectForKeyedSubscript(key: any): any | null;
 
-	valueForProperty(property: string): any;
+	valueForProperty(property: string): any | null;
 }
 
 /**
@@ -373,7 +373,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly albumArtist: string;
+	readonly albumArtist: string | null;
 
 	/**
 	 * @since 8.0
@@ -388,7 +388,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly albumTitle: string;
+	readonly albumTitle: string | null;
 
 	/**
 	 * @since 8.0
@@ -403,7 +403,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly artist: string;
+	readonly artist: string | null;
 
 	/**
 	 * @since 8.0
@@ -413,12 +413,12 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly artwork: MPMediaItemArtwork;
+	readonly artwork: MPMediaItemArtwork | null;
 
 	/**
 	 * @since 8.0
 	 */
-	readonly assetURL: NSURL;
+	readonly assetURL: NSURL | null;
 
 	/**
 	 * @since 8.0
@@ -438,7 +438,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 8.0
 	 */
-	readonly comments: string;
+	readonly comments: string | null;
 
 	/**
 	 * @since 8.0
@@ -448,7 +448,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly composer: string;
+	readonly composer: string | null;
 
 	/**
 	 * @since 8.0
@@ -478,7 +478,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly genre: string;
+	readonly genre: string | null;
 
 	/**
 	 * @since 8.0
@@ -488,12 +488,12 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly lastPlayedDate: Date;
+	readonly lastPlayedDate: Date | null;
 
 	/**
 	 * @since 8.0
 	 */
-	readonly lyrics: string;
+	readonly lyrics: string | null;
 
 	/**
 	 * @since 7.0
@@ -523,7 +523,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly podcastTitle: string;
+	readonly podcastTitle: string | null;
 
 	/**
 	 * @since 10.3
@@ -543,7 +543,7 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly releaseDate: Date;
+	readonly releaseDate: Date | null;
 
 	/**
 	 * @since 7.0
@@ -553,12 +553,12 @@ declare class MPMediaItem extends MPMediaEntity {
 	/**
 	 * @since 7.0
 	 */
-	readonly title: string;
+	readonly title: string | null;
 
 	/**
 	 * @since 8.0
 	 */
-	readonly userGrouping: string;
+	readonly userGrouping: string | null;
 }
 
 /**
@@ -573,12 +573,12 @@ declare class MPMediaItemAnimatedArtwork extends NSObject {
 	/**
 	 * @since 19.0
 	 */
-	constructor(o: { artworkID: string; previewImageRequestHandler: (p1: CGSize, p2: (p1: UIImage) => void) => void; videoAssetFileURLRequestHandler: (p1: CGSize, p2: (p1: NSURL) => void) => void; });
+	constructor(o: { artworkID: string; previewImageRequestHandler: (p1: CGSize, p2: (p1: UIImage | null) => void) => void; videoAssetFileURLRequestHandler: (p1: CGSize, p2: (p1: NSURL | null) => void) => void; });
 
 	/**
 	 * @since 19.0
 	 */
-	initWithArtworkIDPreviewImageRequestHandlerVideoAssetFileURLRequestHandler(artworkID: string, previewImageRequestHandler: (p1: CGSize, p2: (p1: UIImage) => void) => void, videoAssetFileURLRequestHandler: (p1: CGSize, p2: (p1: NSURL) => void) => void): this;
+	initWithArtworkIDPreviewImageRequestHandlerVideoAssetFileURLRequestHandler(artworkID: string, previewImageRequestHandler: (p1: CGSize, p2: (p1: UIImage | null) => void) => void, videoAssetFileURLRequestHandler: (p1: CGSize, p2: (p1: NSURL | null) => void) => void): this;
 }
 
 /**
@@ -609,7 +609,7 @@ declare class MPMediaItemArtwork extends NSObject {
 	 */
 	constructor(o: { image: UIImage; });
 
-	imageWithSize(size: CGSize): UIImage;
+	imageWithSize(size: CGSize): UIImage | null;
 
 	/**
 	 * @since 10.0
@@ -640,7 +640,7 @@ declare class MPMediaItemCollection extends MPMediaEntity {
 
 	readonly mediaTypes: MPMediaType;
 
-	readonly representativeItem: MPMediaItem;
+	readonly representativeItem: MPMediaItem | null;
 
 	constructor(o: { items: NSArray<MPMediaItem> | MPMediaItem[]; });
 
@@ -872,7 +872,7 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 9.3
 	 */
-	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSArray<MPMediaEntity>, p2: NSError) => void): void;
+	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSArray<MPMediaEntity>, p2: NSError | null) => void | null): void;
 
 	beginGeneratingLibraryChangeNotifications(): void;
 
@@ -883,7 +883,7 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 9.3
 	 */
-	getPlaylistWithUUIDCreationMetadataCompletionHandler(uuid: NSUUID, creationMetadata: MPMediaPlaylistCreationMetadata, completionHandler: (p1: MPMediaPlaylist, p2: NSError) => void): void;
+	getPlaylistWithUUIDCreationMetadataCompletionHandler(uuid: NSUUID, creationMetadata: MPMediaPlaylistCreationMetadata | null, completionHandler: (p1: MPMediaPlaylist | null, p2: NSError | null) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -915,11 +915,11 @@ declare class MPMediaPickerController extends UIViewController {
 
 	allowsPickingMultipleItems: boolean;
 
-	delegate: MPMediaPickerControllerDelegate;
+	delegate: MPMediaPickerControllerDelegate | null;
 
 	readonly mediaTypes: MPMediaType;
 
-	prompt: string;
+	prompt: string | null;
 
 	/**
 	 * @since 6.0
@@ -995,22 +995,22 @@ declare class MPMediaPlaylist extends MPMediaItemCollection {
 	/**
 	 * @since 9.3
 	 */
-	readonly authorDisplayName: string;
+	readonly authorDisplayName: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly cloudGlobalID: string;
+	readonly cloudGlobalID: string | null;
 
 	/**
 	 * @since 9.3
 	 */
-	readonly descriptionText: string;
+	readonly descriptionText: string | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly name: string;
+	readonly name: string | null;
 
 	/**
 	 * @since 7.0
@@ -1020,17 +1020,17 @@ declare class MPMediaPlaylist extends MPMediaItemCollection {
 	/**
 	 * @since 8.0
 	 */
-	readonly seedItems: NSArray<MPMediaItem>;
+	readonly seedItems: NSArray<MPMediaItem> | null;
 
 	/**
 	 * @since 9.3
 	 */
-	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSError) => void): void;
+	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 9.3
 	 */
-	addMediaItemsCompletionHandler(mediaItems: NSArray<MPMediaItem> | MPMediaItem[], completionHandler: (p1: NSError) => void): void;
+	addMediaItemsCompletionHandler(mediaItems: NSArray<MPMediaItem> | MPMediaItem[], completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -1127,15 +1127,15 @@ declare class MPMediaPropertyPredicate extends MPMediaPredicate {
 
 	static new(): MPMediaPropertyPredicate; // inherited from NSObject
 
-	static predicateWithValueForProperty(value: any, property: string): MPMediaPropertyPredicate;
+	static predicateWithValueForProperty(value: any | null, property: string): MPMediaPropertyPredicate;
 
-	static predicateWithValueForPropertyComparisonType(value: any, property: string, comparisonType: MPMediaPredicateComparison): MPMediaPropertyPredicate;
+	static predicateWithValueForPropertyComparisonType(value: any | null, property: string, comparisonType: MPMediaPredicateComparison): MPMediaPropertyPredicate;
 
 	readonly comparisonType: MPMediaPredicateComparison;
 
 	readonly property: string;
 
-	readonly value: any;
+	readonly value: any | null;
 }
 
 /**
@@ -1168,36 +1168,36 @@ declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding
 	/**
 	 * @since 4.2
 	 */
-	readonly collectionSections: NSArray<MPMediaQuerySection>;
+	readonly collectionSections: NSArray<MPMediaQuerySection> | null;
 
-	readonly collections: NSArray<MPMediaItemCollection>;
+	readonly collections: NSArray<MPMediaItemCollection> | null;
 
-	filterPredicates: NSSet<MPMediaPredicate>;
+	filterPredicates: NSSet<MPMediaPredicate> | null;
 
 	groupingType: MPMediaGrouping;
 
 	/**
 	 * @since 4.2
 	 */
-	readonly itemSections: NSArray<MPMediaQuerySection>;
+	readonly itemSections: NSArray<MPMediaQuerySection> | null;
 
-	readonly items: NSArray<MPMediaItem>;
+	readonly items: NSArray<MPMediaItem> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { filterPredicates: NSSet<MPMediaPredicate>; });
+	constructor(o: { filterPredicates: NSSet<MPMediaPredicate> | null; });
 
 	addFilterPredicate(predicate: MPMediaPredicate): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithFilterPredicates(filterPredicates: NSSet<MPMediaPredicate>): this;
+	initWithFilterPredicates(filterPredicates: NSSet<MPMediaPredicate> | null): this;
 
 	removeFilterPredicate(predicate: MPMediaPredicate): void;
 }
@@ -1219,7 +1219,7 @@ declare class MPMediaQuerySection extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1286,7 +1286,7 @@ declare class MPMovieAccessLog extends NSObject implements NSCopying {
 	 */
 	readonly extendedLogDataStringEncoding: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1383,7 +1383,7 @@ declare class MPMovieAccessLogEvent extends NSObject implements NSCopying {
 	 */
 	readonly serverAddress: string;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1435,7 +1435,7 @@ declare class MPMovieErrorLog extends NSObject implements NSCopying {
 	 */
 	readonly extendedLogDataStringEncoding: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1490,7 +1490,7 @@ declare class MPMovieErrorLogEvent extends NSObject implements NSCopying {
 	 */
 	readonly serverAddress: string;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2037,7 +2037,7 @@ declare class MPMusicPlayerApplicationController extends MPMusicPlayerController
 
 	static new(): MPMusicPlayerApplicationController; // inherited from NSObject
 
-	performQueueTransactionCompletionHandler(queueTransaction: (p1: MPMusicPlayerControllerMutableQueue) => void, completionHandler: (p1: MPMusicPlayerControllerQueue, p2: NSError) => void): void;
+	performQueueTransactionCompletionHandler(queueTransaction: (p1: MPMusicPlayerControllerMutableQueue) => void, completionHandler: (p1: MPMusicPlayerControllerQueue, p2: NSError | null) => void): void;
 }
 
 /**
@@ -2054,7 +2054,7 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 	 */
 	readonly indexOfNowPlayingItem: number;
 
-	nowPlayingItem: MPMediaItem;
+	nowPlayingItem: MPMediaItem | null;
 
 	readonly playbackState: MPMusicPlaybackState;
 
@@ -2113,7 +2113,7 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 	/**
 	 * @since 10.1
 	 */
-	prepareToPlayWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	prepareToPlayWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 10.3
@@ -2152,7 +2152,7 @@ declare class MPMusicPlayerControllerMutableQueue extends MPMusicPlayerControlle
 
 	static new(): MPMusicPlayerControllerMutableQueue; // inherited from NSObject
 
-	insertQueueDescriptorAfterItem(queueDescriptor: MPMusicPlayerQueueDescriptor, afterItem: MPMediaItem): void;
+	insertQueueDescriptorAfterItem(queueDescriptor: MPMusicPlayerQueueDescriptor, afterItem: MPMediaItem | null): void;
 
 	removeItem(item: MPMediaItem): void;
 }
@@ -2202,7 +2202,7 @@ declare class MPMusicPlayerMediaItemQueueDescriptor extends MPMusicPlayerQueueDe
 
 	readonly query: MPMediaQuery;
 
-	startItem: MPMediaItem;
+	startItem: MPMediaItem | null;
 
 	constructor(o: { itemCollection: MPMediaItemCollection; });
 
@@ -2244,7 +2244,7 @@ declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQu
 
 	playParametersQueue: NSArray<MPMusicPlayerPlayParameters>;
 
-	startItemPlayParameters: MPMusicPlayerPlayParameters;
+	startItemPlayParameters: MPMusicPlayerPlayParameters | null;
 
 	constructor(o: { playParametersQueue: NSArray<MPMusicPlayerPlayParameters> | MPMusicPlayerPlayParameters[]; });
 
@@ -2274,9 +2274,9 @@ declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescri
 
 	static new(): MPMusicPlayerStoreQueueDescriptor; // inherited from NSObject
 
-	startItemID: string;
+	startItemID: string | null;
 
-	storeIDs: NSArray<string>;
+	storeIDs: NSArray<string> | null;
 
 	constructor(o: { storeIDs: NSArray<string> | string[]; });
 
@@ -2326,7 +2326,7 @@ declare class MPNowPlayingInfoCenter extends NSObject {
 
 	static new(): MPNowPlayingInfoCenter; // inherited from NSObject
 
-	nowPlayingInfo: NSDictionary<string, any>;
+	nowPlayingInfo: NSDictionary<string, any> | null;
 
 	/**
 	 * @since 13.0
@@ -2353,19 +2353,19 @@ declare class MPNowPlayingInfoLanguageOption extends NSObject {
 
 	static new(): MPNowPlayingInfoLanguageOption; // inherited from NSObject
 
-	readonly displayName: string;
+	readonly displayName: string | null;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
-	readonly languageOptionCharacteristics: NSArray<string>;
+	readonly languageOptionCharacteristics: NSArray<string> | null;
 
 	readonly languageOptionType: MPNowPlayingInfoLanguageOptionType;
 
-	readonly languageTag: string;
+	readonly languageTag: string | null;
 
-	constructor(o: { type: MPNowPlayingInfoLanguageOptionType; languageTag: string; characteristics: NSArray<string> | string[]; displayName: string; identifier: string; });
+	constructor(o: { type: MPNowPlayingInfoLanguageOptionType; languageTag: string; characteristics: NSArray<string> | string[] | null; displayName: string; identifier: string; });
 
-	initWithTypeLanguageTagCharacteristicsDisplayNameIdentifier(languageOptionType: MPNowPlayingInfoLanguageOptionType, languageTag: string, languageOptionCharacteristics: NSArray<string> | string[], displayName: string, identifier: string): this;
+	initWithTypeLanguageTagCharacteristicsDisplayNameIdentifier(languageOptionType: MPNowPlayingInfoLanguageOptionType, languageTag: string, languageOptionCharacteristics: NSArray<string> | string[] | null, displayName: string, identifier: string): this;
 
 	isAutomaticAudibleLanguageOption(): boolean;
 
@@ -2383,13 +2383,13 @@ declare class MPNowPlayingInfoLanguageOptionGroup extends NSObject {
 
 	readonly allowEmptySelection: boolean;
 
-	readonly defaultLanguageOption: MPNowPlayingInfoLanguageOption;
+	readonly defaultLanguageOption: MPNowPlayingInfoLanguageOption | null;
 
 	readonly languageOptions: NSArray<MPNowPlayingInfoLanguageOption>;
 
-	constructor(o: { languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[]; defaultLanguageOption: MPNowPlayingInfoLanguageOption; allowEmptySelection: boolean; });
+	constructor(o: { languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[]; defaultLanguageOption: MPNowPlayingInfoLanguageOption | null; allowEmptySelection: boolean; });
 
-	initWithLanguageOptionsDefaultLanguageOptionAllowEmptySelection(languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[], defaultLanguageOption: MPNowPlayingInfoLanguageOption, allowEmptySelection: boolean): this;
+	initWithLanguageOptionsDefaultLanguageOptionAllowEmptySelection(languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[], defaultLanguageOption: MPNowPlayingInfoLanguageOption | null, allowEmptySelection: boolean): this;
 }
 
 /**
@@ -2563,7 +2563,7 @@ declare class MPNowPlayingSession extends NSObject {
 
 	readonly canBecomeActive: boolean;
 
-	delegate: MPNowPlayingSessionDelegate;
+	delegate: MPNowPlayingSessionDelegate | null;
 
 	readonly nowPlayingInfoCenter: MPNowPlayingInfoCenter;
 
@@ -2575,7 +2575,7 @@ declare class MPNowPlayingSession extends NSObject {
 
 	addPlayer(player: AVPlayer): void;
 
-	becomeActiveIfPossibleWithCompletion(completion: (p1: boolean) => void): void;
+	becomeActiveIfPossibleWithCompletion(completion: (p1: boolean) => void | null): void;
 
 	initWithPlayers(players: NSArray<AVPlayer> | AVPlayer[]): this;
 
@@ -2602,17 +2602,17 @@ declare var MPNowPlayingSessionDelegate: {
  */
 interface MPPlayableContentDataSource extends NSObjectProtocol {
 
-	beginLoadingChildItemsAtIndexPathCompletionHandler?(indexPath: NSIndexPath, completionHandler: (p1: NSError) => void): void;
+	beginLoadingChildItemsAtIndexPathCompletionHandler?(indexPath: NSIndexPath, completionHandler: (p1: NSError | null) => void): void;
 
 	childItemsDisplayPlaybackProgressAtIndexPath?(indexPath: NSIndexPath): boolean;
 
-	contentItemAtIndexPath(indexPath: NSIndexPath): MPContentItem;
+	contentItemAtIndexPath(indexPath: NSIndexPath): MPContentItem | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 14.0
 	 */
-	contentItemForIdentifierCompletionHandler?(identifier: string, completionHandler: (p1: MPContentItem, p2: NSError) => void): void;
+	contentItemForIdentifierCompletionHandler?(identifier: string, completionHandler: (p1: MPContentItem | null, p2: NSError | null) => void): void;
 
 	numberOfChildItemsAtIndexPath(indexPath: NSIndexPath): number;
 }
@@ -2637,19 +2637,19 @@ interface MPPlayableContentDelegate extends NSObjectProtocol {
 	 * @since 9.0
 	 * @deprecated 9.3
 	 */
-	playableContentManagerInitializePlaybackQueueWithCompletionHandler?(contentManager: MPPlayableContentManager, completionHandler: (p1: NSError) => void): void;
+	playableContentManagerInitializePlaybackQueueWithCompletionHandler?(contentManager: MPPlayableContentManager, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 9.3
 	 * @deprecated 12.0
 	 */
-	playableContentManagerInitializePlaybackQueueWithContentItemsCompletionHandler?(contentManager: MPPlayableContentManager, contentItems: NSArray<any> | any[], completionHandler: (p1: NSError) => void): void;
+	playableContentManagerInitializePlaybackQueueWithContentItemsCompletionHandler?(contentManager: MPPlayableContentManager, contentItems: NSArray<any> | any[] | null, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 7.1
 	 * @deprecated 14.0
 	 */
-	playableContentManagerInitiatePlaybackOfContentItemAtIndexPathCompletionHandler?(contentManager: MPPlayableContentManager, indexPath: NSIndexPath, completionHandler: (p1: NSError) => void): void;
+	playableContentManagerInitiatePlaybackOfContentItemAtIndexPathCompletionHandler?(contentManager: MPPlayableContentManager, indexPath: NSIndexPath, completionHandler: (p1: NSError | null) => void): void;
 }
 declare var MPPlayableContentDelegate: {
 
@@ -2674,9 +2674,9 @@ declare class MPPlayableContentManager extends NSObject {
 	 */
 	readonly context: MPPlayableContentManagerContext;
 
-	dataSource: MPPlayableContentDataSource;
+	dataSource: MPPlayableContentDataSource | null;
 
-	delegate: MPPlayableContentDelegate;
+	delegate: MPPlayableContentDelegate | null;
 
 	/**
 	 * @since 10.0
@@ -2757,9 +2757,9 @@ declare class MPRemoteCommand extends NSObject {
 
 	addTargetWithHandler(handler: (p1: MPRemoteCommandEvent) => MPRemoteCommandHandlerStatus): any;
 
-	removeTarget(target: any): void;
+	removeTarget(target: any | null): void;
 
-	removeTargetAction(target: any, action: string): void;
+	removeTargetAction(target: any, action: string | null): void;
 }
 
 /**
@@ -3012,7 +3012,7 @@ declare class MPVolumeView extends UIView implements NSCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MPVolumeView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MPVolumeView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3023,7 +3023,7 @@ declare class MPVolumeView extends UIView implements NSCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MPVolumeView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MPVolumeView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3047,7 +3047,7 @@ declare class MPVolumeView extends UIView implements NSCoding {
 	 * @since 7.0
 	 * @deprecated 17.0
 	 */
-	volumeWarningSliderImage: UIImage;
+	volumeWarningSliderImage: UIImage | null;
 
 	/**
 	 * @since 7.0
@@ -3070,18 +3070,18 @@ declare class MPVolumeView extends UIView implements NSCoding {
 	/**
 	 * @since 6.0
 	 */
-	maximumVolumeSliderImageForState(state: UIControlState): UIImage;
+	maximumVolumeSliderImageForState(state: UIControlState): UIImage | null;
 
 	/**
 	 * @since 6.0
 	 */
-	minimumVolumeSliderImageForState(state: UIControlState): UIImage;
+	minimumVolumeSliderImageForState(state: UIControlState): UIImage | null;
 
 	/**
 	 * @since 6.0
 	 * @deprecated 13.0
 	 */
-	routeButtonImageForState(state: UIControlState): UIImage;
+	routeButtonImageForState(state: UIControlState): UIImage | null;
 
 	/**
 	 * @since 6.0
@@ -3092,23 +3092,23 @@ declare class MPVolumeView extends UIView implements NSCoding {
 	/**
 	 * @since 6.0
 	 */
-	setMaximumVolumeSliderImageForState(image: UIImage, state: UIControlState): void;
+	setMaximumVolumeSliderImageForState(image: UIImage | null, state: UIControlState): void;
 
 	/**
 	 * @since 6.0
 	 */
-	setMinimumVolumeSliderImageForState(image: UIImage, state: UIControlState): void;
+	setMinimumVolumeSliderImageForState(image: UIImage | null, state: UIControlState): void;
 
 	/**
 	 * @since 6.0
 	 * @deprecated 13.0
 	 */
-	setRouteButtonImageForState(image: UIImage, state: UIControlState): void;
+	setRouteButtonImageForState(image: UIImage | null, state: UIControlState): void;
 
 	/**
 	 * @since 6.0
 	 */
-	setVolumeThumbImageForState(image: UIImage, state: UIControlState): void;
+	setVolumeThumbImageForState(image: UIImage | null, state: UIControlState): void;
 
 	/**
 	 * @since 6.0
@@ -3118,7 +3118,7 @@ declare class MPVolumeView extends UIView implements NSCoding {
 	/**
 	 * @since 6.0
 	 */
-	volumeThumbImageForState(state: UIControlState): UIImage;
+	volumeThumbImageForState(state: UIControlState): UIImage | null;
 
 	/**
 	 * @since 6.0

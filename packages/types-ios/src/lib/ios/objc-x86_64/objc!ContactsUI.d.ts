@@ -28,15 +28,15 @@ declare class CNContactPickerViewController extends UIViewController {
 
 	static new(): CNContactPickerViewController; // inherited from NSObject
 
-	delegate: CNContactPickerDelegate;
+	delegate: CNContactPickerDelegate | null;
 
-	displayedPropertyKeys: NSArray<string>;
+	displayedPropertyKeys: NSArray<string> | null;
 
-	predicateForEnablingContact: NSPredicate;
+	predicateForEnablingContact: NSPredicate | null;
 
-	predicateForSelectionOfContact: NSPredicate;
+	predicateForSelectionOfContact: NSPredicate | null;
 
-	predicateForSelectionOfProperty: NSPredicate;
+	predicateForSelectionOfProperty: NSPredicate | null;
 }
 
 /**
@@ -52,7 +52,7 @@ declare class CNContactViewController extends UIViewController {
 
 	static viewControllerForContact(contact: CNContact): CNContactViewController;
 
-	static viewControllerForNewContact(contact: CNContact): CNContactViewController;
+	static viewControllerForNewContact(contact: CNContact | null): CNContactViewController;
 
 	static viewControllerForUnknownContact(contact: CNContact): CNContactViewController;
 
@@ -60,25 +60,25 @@ declare class CNContactViewController extends UIViewController {
 
 	allowsEditing: boolean;
 
-	alternateName: string;
+	alternateName: string | null;
 
 	readonly contact: CNContact;
 
-	contactStore: CNContactStore;
+	contactStore: CNContactStore | null;
 
-	delegate: CNContactViewControllerDelegate;
+	delegate: CNContactViewControllerDelegate | null;
 
-	displayedPropertyKeys: NSArray<any>;
+	displayedPropertyKeys: NSArray<any> | null;
 
-	message: string;
+	message: string | null;
 
-	parentContainer: CNContainer;
+	parentContainer: CNContainer | null;
 
-	parentGroup: CNGroup;
+	parentGroup: CNGroup | null;
 
 	shouldShowLinkedContacts: boolean;
 
-	highlightPropertyWithKeyIdentifier(key: string, identifier: string): void;
+	highlightPropertyWithKeyIdentifier(key: string, identifier: string | null): void;
 }
 
 /**
@@ -86,7 +86,7 @@ declare class CNContactViewController extends UIViewController {
  */
 interface CNContactViewControllerDelegate extends NSObjectProtocol {
 
-	contactViewControllerDidCompleteWithContact?(viewController: CNContactViewController, contact: CNContact): void;
+	contactViewControllerDidCompleteWithContact?(viewController: CNContactViewController, contact: CNContact | null): void;
 
 	contactViewControllerShouldPerformDefaultActionForContactProperty?(viewController: CNContactViewController, property: CNContactProperty): boolean;
 }

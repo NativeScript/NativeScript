@@ -248,6 +248,6 @@ function livesync(context: ModuleContext) {
 	ls(context);
 }
 
-function waitUntilLivesyncComplete(frame: Frame) {
+function waitUntilLivesyncComplete(frame: { navigationQueueIsEmpty(): boolean }) {
 	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 }

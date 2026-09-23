@@ -23,7 +23,7 @@ interface GCAxis2DInput extends NSObjectProtocol {
 
 	value: GCPoint2;
 
-	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCAxis2DInput, p3: GCPoint2) => void;
+	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCAxis2DInput, p3: GCPoint2) => void | null;
 }
 declare var GCAxis2DInput: {
 
@@ -35,7 +35,7 @@ declare var GCAxis2DInput: {
  */
 interface GCAxisElement extends GCPhysicalInputElement {
 
-	absoluteInput: GCAxisInput;
+	absoluteInput: GCAxisInput | null;
 
 	relativeInput: GCRelativeInput;
 }
@@ -74,7 +74,7 @@ interface GCAxisInput extends NSObjectProtocol {
 
 	value: number;
 
-	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCAxisInput, p3: number) => void;
+	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCAxisInput, p3: number) => void | null;
 }
 declare var GCAxisInput: {
 
@@ -89,11 +89,11 @@ interface GCButtonElement extends GCPhysicalInputElement {
 	/**
 	 * @since 26.0
 	 */
-	forceInput: GCLinearInput;
+	forceInput: GCLinearInput | null;
 
 	pressedInput: any;
 
-	touchedInput: GCTouchedStateInput;
+	touchedInput: GCTouchedStateInput | null;
 }
 declare var GCButtonElement: {
 
@@ -131,7 +131,7 @@ declare class GCColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { red: number; green: number; blue: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -167,7 +167,7 @@ declare class GCController extends NSObject implements GCDevice {
 	/**
 	 * @since 7.0
 	 */
-	static startWirelessControllerDiscoveryWithCompletionHandler(completionHandler: () => void): void;
+	static startWirelessControllerDiscoveryWithCompletionHandler(completionHandler: () => void | null): void;
 
 	/**
 	 * @since 7.0
@@ -182,29 +182,29 @@ declare class GCController extends NSObject implements GCDevice {
 	/**
 	 * @since 14.0
 	 */
-	readonly battery: GCDeviceBattery;
+	readonly battery: GCDeviceBattery | null;
 
 	/**
 	 * @since 7.0
 	 * @deprecated 13.0
 	 */
-	controllerPausedHandler: (p1: GCController) => void;
+	controllerPausedHandler: (p1: GCController) => void | null;
 
 	/**
 	 * @since 7.0
 	 */
-	readonly extendedGamepad: GCExtendedGamepad;
+	readonly extendedGamepad: GCExtendedGamepad | null;
 
 	/**
 	 * @since 7.0
 	 * @deprecated 10.0
 	 */
-	readonly gamepad: GCGamepad;
+	readonly gamepad: GCGamepad | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly haptics: GCDeviceHaptics;
+	readonly haptics: GCDeviceHaptics | null;
 
 	/**
 	 * @since 17.0
@@ -214,17 +214,17 @@ declare class GCController extends NSObject implements GCDevice {
 	/**
 	 * @since 14.0
 	 */
-	readonly light: GCDeviceLight;
+	readonly light: GCDeviceLight | null;
 
 	/**
 	 * @since 10.0
 	 */
-	readonly microGamepad: GCMicroGamepad;
+	readonly microGamepad: GCMicroGamepad | null;
 
 	/**
 	 * @since 8.0
 	 */
-	readonly motion: GCMotion;
+	readonly motion: GCMotion | null;
 
 	/**
 	 * @since 7.0
@@ -239,7 +239,7 @@ declare class GCController extends NSObject implements GCDevice {
 	/**
 	 * @since 14.0
 	 */
-	static readonly current: GCController;
+	static readonly current: GCController | null;
 
 	/**
 	 * @since 14.5
@@ -275,7 +275,7 @@ declare class GCController extends NSObject implements GCDevice {
 	/**
 	 * @since 7.0
 	 */
-	readonly vendorName: string; // inherited from GCDevice
+	readonly vendorName: string | null; // inherited from GCDevice
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -318,7 +318,7 @@ declare class GCControllerAxisInput extends GCControllerElement {
 
 	readonly value: number;
 
-	valueChangedHandler: (p1: GCControllerAxisInput, p2: number) => void;
+	valueChangedHandler: (p1: GCControllerAxisInput, p2: number) => void | null;
 
 	/**
 	 * @since 13.0
@@ -340,18 +340,18 @@ declare class GCControllerButtonInput extends GCControllerElement {
 	/**
 	 * @since 8.0
 	 */
-	pressedChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void;
+	pressedChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void | null;
 
 	readonly touched: boolean;
 
 	/**
 	 * @since 14.0
 	 */
-	touchedChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean, p4: boolean) => void;
+	touchedChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean, p4: boolean) => void | null;
 
 	readonly value: number;
 
-	valueChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void;
+	valueChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void | null;
 
 	/**
 	 * @since 13.0
@@ -396,7 +396,7 @@ declare class GCControllerDirectionPad extends GCControllerElement {
 
 	readonly up: GCControllerButtonInput;
 
-	valueChangedHandler: (p1: GCControllerDirectionPad, p2: number, p3: number) => void;
+	valueChangedHandler: (p1: GCControllerDirectionPad, p2: number, p3: number) => void | null;
 
 	readonly xAxis: GCControllerAxisInput;
 
@@ -429,12 +429,12 @@ declare class GCControllerElement extends NSObject {
 	 */
 	readonly boundToSystemGesture: boolean;
 
-	readonly collection: GCControllerElement;
+	readonly collection: GCControllerElement | null;
 
 	/**
 	 * @since 14.0
 	 */
-	localizedName: string;
+	localizedName: string | null;
 
 	/**
 	 * @since 14.0
@@ -444,17 +444,17 @@ declare class GCControllerElement extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	sfSymbolsName: string;
+	sfSymbolsName: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	unmappedLocalizedName: string;
+	unmappedLocalizedName: string | null;
 
 	/**
 	 * @since 14.0
 	 */
-	unmappedSfSymbolsName: string;
+	unmappedSfSymbolsName: string | null;
 }
 
 /**
@@ -474,7 +474,7 @@ declare class GCControllerInputState extends NSObject implements GCDevicePhysica
 
 	readonly description: string; // inherited from NSObjectProtocol
 
-	readonly device: GCDevice; // inherited from GCDevicePhysicalInputState
+	readonly device: GCDevice | null; // inherited from GCDevicePhysicalInputState
 
 	readonly dpads: GCPhysicalInputElementCollection<string, GCDirectionPadElement>; // inherited from GCDevicePhysicalInputState
 
@@ -504,7 +504,7 @@ declare class GCControllerInputState extends NSObject implements GCDevicePhysica
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
+	objectForKeyedSubscript(key: string): GCPhysicalInputElement | null;
 
 	performSelector(aSelector: string): any;
 
@@ -528,7 +528,7 @@ declare class GCControllerLiveInput extends GCControllerInputState implements GC
 
 	static new(): GCControllerLiveInput; // inherited from NSObject
 
-	readonly unmappedInput: GCControllerLiveInput;
+	readonly unmappedInput: GCControllerLiveInput | null;
 
 	readonly axes: GCPhysicalInputElementCollection<string, GCAxisElement>; // inherited from GCDevicePhysicalInputState
 
@@ -538,17 +538,17 @@ declare class GCControllerLiveInput extends GCControllerInputState implements GC
 
 	readonly description: string; // inherited from NSObjectProtocol
 
-	readonly device: GCDevice; // inherited from GCDevicePhysicalInputState
+	readonly device: GCDevice | null; // inherited from GCDevicePhysicalInputState
 
 	readonly dpads: GCPhysicalInputElementCollection<string, GCDirectionPadElement>; // inherited from GCDevicePhysicalInputState
 
-	elementValueDidChangeHandler: (p1: GCDevicePhysicalInput, p2: GCPhysicalInputElement) => void; // inherited from GCDevicePhysicalInput
+	elementValueDidChangeHandler: (p1: GCDevicePhysicalInput, p2: GCPhysicalInputElement) => void | null; // inherited from GCDevicePhysicalInput
 
 	readonly elements: GCPhysicalInputElementCollection<string, GCPhysicalInputElement>; // inherited from GCDevicePhysicalInputState
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
-	inputStateAvailableHandler: (p1: GCDevicePhysicalInput) => void; // inherited from GCDevicePhysicalInput
+	inputStateAvailableHandler: (p1: GCDevicePhysicalInput) => void | null; // inherited from GCDevicePhysicalInput
 
 	inputStateQueueDepth: number; // inherited from GCDevicePhysicalInput
 
@@ -561,7 +561,7 @@ declare class GCControllerLiveInput extends GCControllerInputState implements GC
 	/**
 	 * @since 17.0
 	 */
-	queue: NSObject & OS_dispatch_queue; // inherited from GCDevicePhysicalInput
+	queue: NSObject & OS_dispatch_queue | null; // inherited from GCDevicePhysicalInput
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -581,9 +581,9 @@ declare class GCControllerLiveInput extends GCControllerInputState implements GC
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	nextInputState(): GCControllerInputState & GCDevicePhysicalInputStateDiff;
+	nextInputState(): GCControllerInputState & GCDevicePhysicalInputStateDiff | null;
 
-	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
+	objectForKeyedSubscript(key: string): GCPhysicalInputElement | null;
 
 	performSelector(aSelector: string): any;
 
@@ -627,15 +627,15 @@ declare class GCControllerTouchpad extends GCControllerElement {
 
 	reportsAbsoluteTouchSurfaceValues: boolean;
 
-	touchDown: (p1: GCControllerTouchpad, p2: number, p3: number, p4: number, p5: boolean) => void;
+	touchDown: (p1: GCControllerTouchpad, p2: number, p3: number, p4: number, p5: boolean) => void | null;
 
-	touchMoved: (p1: GCControllerTouchpad, p2: number, p3: number, p4: number, p5: boolean) => void;
+	touchMoved: (p1: GCControllerTouchpad, p2: number, p3: number, p4: number, p5: boolean) => void | null;
 
 	readonly touchState: GCTouchState;
 
 	readonly touchSurface: GCControllerDirectionPad;
 
-	touchUp: (p1: GCControllerTouchpad, p2: number, p3: number, p4: number, p5: boolean) => void;
+	touchUp: (p1: GCControllerTouchpad, p2: number, p3: number, p4: number, p5: boolean) => void | null;
 
 	setValueForXAxisYAxisTouchDownButtonValue(xAxis: number, yAxis: number, touchDown: boolean, buttonValue: number): void;
 }
@@ -681,7 +681,7 @@ interface GCDevice extends NSObjectProtocol {
 	/**
 	 * @since 7.0
 	 */
-	vendorName: string;
+	vendorName: string | null;
 }
 declare var GCDevice: {
 
@@ -737,7 +737,7 @@ declare class GCDeviceHaptics extends NSObject {
 
 	readonly supportedLocalities: NSSet<string>;
 
-	createEngineWithLocality(locality: string): CHHapticEngine;
+	createEngineWithLocality(locality: string): CHHapticEngine | null;
 }
 
 /**
@@ -757,20 +757,20 @@ declare class GCDeviceLight extends NSObject {
  */
 interface GCDevicePhysicalInput extends GCDevicePhysicalInputState {
 
-	elementValueDidChangeHandler: (p1: GCDevicePhysicalInput, p2: GCPhysicalInputElement) => void;
+	elementValueDidChangeHandler: (p1: GCDevicePhysicalInput, p2: GCPhysicalInputElement) => void | null;
 
-	inputStateAvailableHandler: (p1: GCDevicePhysicalInput) => void;
+	inputStateAvailableHandler: (p1: GCDevicePhysicalInput) => void | null;
 
 	inputStateQueueDepth: number;
 
 	/**
 	 * @since 17.0
 	 */
-	queue: NSObject & OS_dispatch_queue;
+	queue: NSObject & OS_dispatch_queue | null;
 
 	capture(): GCDevicePhysicalInputState;
 
-	nextInputState(): any;
+	nextInputState(): any | null;
 }
 declare var GCDevicePhysicalInput: {
 
@@ -798,7 +798,7 @@ interface GCDevicePhysicalInputState extends NSObjectProtocol {
 
 	buttons: GCPhysicalInputElementCollection<string, GCButtonElement>;
 
-	device: GCDevice;
+	device: GCDevice | null;
 
 	dpads: GCPhysicalInputElementCollection<string, GCDirectionPadElement>;
 
@@ -810,7 +810,7 @@ interface GCDevicePhysicalInputState extends NSObjectProtocol {
 
 	switches: GCPhysicalInputElementCollection<string, GCSwitchElement>;
 
-	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
+	objectForKeyedSubscript(key: string): GCPhysicalInputElement | null;
 }
 declare var GCDevicePhysicalInputState: {
 
@@ -824,7 +824,7 @@ interface GCDevicePhysicalInputStateDiff extends NSObjectProtocol {
 
 	changeForElement(element: GCPhysicalInputElement): GCDevicePhysicalInputElementChange;
 
-	changedElements(): NSEnumerator<GCPhysicalInputElement>;
+	changedElements(): NSEnumerator<GCPhysicalInputElement> | null;
 }
 declare var GCDevicePhysicalInputStateDiff: {
 
@@ -1042,7 +1042,7 @@ declare class GCEventInteraction extends NSObject implements UIInteraction {
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly view: UIView; // inherited from UIInteraction
+	readonly view: UIView | null; // inherited from UIInteraction
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -1050,7 +1050,7 @@ declare class GCEventInteraction extends NSObject implements UIInteraction {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	didMoveToView(view: UIView): void;
+	didMoveToView(view: UIView | null): void;
 
 	isEqual(object: any): boolean;
 
@@ -1070,7 +1070,7 @@ declare class GCEventInteraction extends NSObject implements UIInteraction {
 
 	self(): this;
 
-	willMoveToView(view: UIView): void;
+	willMoveToView(view: UIView | null): void;
 }
 
 /**
@@ -1101,7 +1101,7 @@ declare class GCExtendedGamepad extends GCPhysicalInputProfile {
 	/**
 	 * @since 14.0
 	 */
-	readonly buttonHome: GCControllerButtonInput;
+	readonly buttonHome: GCControllerButtonInput | null;
 
 	/**
 	 * @since 13.0
@@ -1111,13 +1111,13 @@ declare class GCExtendedGamepad extends GCPhysicalInputProfile {
 	/**
 	 * @since 13.0
 	 */
-	readonly buttonOptions: GCControllerButtonInput;
+	readonly buttonOptions: GCControllerButtonInput | null;
 
 	readonly buttonX: GCControllerButtonInput;
 
 	readonly buttonY: GCControllerButtonInput;
 
-	readonly controller: GCController;
+	readonly controller: GCController | null;
 
 	readonly dpad: GCControllerDirectionPad;
 
@@ -1128,7 +1128,7 @@ declare class GCExtendedGamepad extends GCPhysicalInputProfile {
 	/**
 	 * @since 12.1
 	 */
-	readonly leftThumbstickButton: GCControllerButtonInput;
+	readonly leftThumbstickButton: GCControllerButtonInput | null;
 
 	readonly leftTrigger: GCControllerButtonInput;
 
@@ -1139,11 +1139,11 @@ declare class GCExtendedGamepad extends GCPhysicalInputProfile {
 	/**
 	 * @since 12.1
 	 */
-	readonly rightThumbstickButton: GCControllerButtonInput;
+	readonly rightThumbstickButton: GCControllerButtonInput | null;
 
 	readonly rightTrigger: GCControllerButtonInput;
 
-	valueChangedHandler: (p1: GCExtendedGamepad, p2: GCControllerElement) => void;
+	valueChangedHandler: (p1: GCExtendedGamepad, p2: GCControllerElement) => void | null;
 
 	/**
 	 * @since 7.0
@@ -1181,7 +1181,7 @@ declare var GCExtendedGamepadSnapShotDataV100: interop.StructType<GCExtendedGame
  * @since 7.0
  * @deprecated 13.0
  */
-declare function GCExtendedGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>, data: NSData): boolean;
+declare function GCExtendedGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100> | ArrayBufferLike | ArrayBufferView | null, data: NSData | null): boolean;
 
 /**
  * @since 7.0
@@ -1231,7 +1231,7 @@ declare var GCExtendedGamepadSnapshotData: interop.StructType<GCExtendedGamepadS
  * @since 13.0
  * @deprecated 13.0
  */
-declare function GCExtendedGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData>, data: NSData): boolean;
+declare function GCExtendedGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData> | ArrayBufferLike | ArrayBufferView | null, data: NSData | null): boolean;
 
 /**
  * @since 13.0
@@ -1253,7 +1253,7 @@ declare class GCGameControllerActivationContext extends NSObject {
 
 	static new(): GCGameControllerActivationContext; // inherited from NSObject
 
-	readonly previousApplicationBundleID: string;
+	readonly previousApplicationBundleID: string | null;
 }
 
 /**
@@ -1286,7 +1286,7 @@ declare class GCGamepad extends GCPhysicalInputProfile {
 
 	readonly buttonY: GCControllerButtonInput;
 
-	readonly controller: GCController;
+	readonly controller: GCController | null;
 
 	readonly dpad: GCControllerDirectionPad;
 
@@ -1294,7 +1294,7 @@ declare class GCGamepad extends GCPhysicalInputProfile {
 
 	readonly rightShoulder: GCControllerButtonInput;
 
-	valueChangedHandler: (p1: GCGamepad, p2: GCControllerElement) => void;
+	valueChangedHandler: (p1: GCGamepad, p2: GCControllerElement) => void | null;
 
 	saveSnapshot(): GCGamepadSnapshot;
 }
@@ -1317,7 +1317,7 @@ declare var GCGamepadSnapShotDataV100: interop.StructType<GCGamepadSnapShotDataV
  * @since 7.0
  * @deprecated 13.0
  */
-declare function GCGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100>, data: NSData): boolean;
+declare function GCGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100> | ArrayBufferLike | ArrayBufferView | null, data: NSData | null): boolean;
 
 /**
  * @since 7.0
@@ -1496,6 +1496,11 @@ declare var GCInputLeftBumper: string;
 declare var GCInputLeftShoulder: string;
 
 /**
+ * @since 26.4
+ */
+declare var GCInputLeftSideButton: string;
+
+/**
  * @since 14.0
  */
 declare var GCInputLeftThumbstick: string;
@@ -1539,6 +1544,11 @@ declare var GCInputRightBumper: string;
  * @since 14.0
  */
 declare var GCInputRightShoulder: string;
+
+/**
+ * @since 26.4
+ */
+declare var GCInputRightSideButton: string;
 
 /**
  * @since 14.0
@@ -2942,12 +2952,12 @@ declare class GCKeyboard extends NSObject implements GCDevice {
 	/**
 	 * @since 14.0
 	 */
-	readonly keyboardInput: GCKeyboardInput;
+	readonly keyboardInput: GCKeyboardInput | null;
 
 	/**
 	 * @since 14.0
 	 */
-	static readonly coalescedKeyboard: GCKeyboard;
+	static readonly coalescedKeyboard: GCKeyboard | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -2978,7 +2988,7 @@ declare class GCKeyboard extends NSObject implements GCDevice {
 	/**
 	 * @since 7.0
 	 */
-	readonly vendorName: string; // inherited from GCDevice
+	readonly vendorName: string | null; // inherited from GCDevice
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -3026,9 +3036,9 @@ declare class GCKeyboardInput extends GCPhysicalInputProfile {
 
 	readonly anyKeyPressed: boolean;
 
-	keyChangedHandler: (p1: GCKeyboardInput, p2: GCControllerButtonInput, p3: number, p4: boolean) => void;
+	keyChangedHandler: (p1: GCKeyboardInput, p2: GCControllerButtonInput, p3: number, p4: boolean) => void | null;
 
-	buttonForKeyCode(code: number): GCControllerButtonInput;
+	buttonForKeyCode(code: number): GCControllerButtonInput | null;
 }
 
 /**
@@ -3045,13 +3055,18 @@ interface GCLinearInput extends NSObjectProtocol {
 	lastValueTimestamp: number;
 
 	/**
+	 * @since 26.2
+	 */
+	physicalExtents: GCPhysicalInputExtents | null;
+
+	/**
 	 * @since 17.0
 	 */
 	sources: NSSet<GCPhysicalInputSource>;
 
 	value: number;
 
-	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCLinearInput, p3: number) => void;
+	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCLinearInput, p3: number) => void | null;
 }
 declare var GCLinearInput: {
 
@@ -3078,13 +3093,13 @@ declare class GCMicroGamepad extends GCPhysicalInputProfile {
 
 	readonly buttonX: GCControllerButtonInput;
 
-	readonly controller: GCController;
+	readonly controller: GCController | null;
 
 	readonly dpad: GCControllerDirectionPad;
 
 	reportsAbsoluteDpadValues: boolean;
 
-	valueChangedHandler: (p1: GCMicroGamepad, p2: GCControllerElement) => void;
+	valueChangedHandler: (p1: GCMicroGamepad, p2: GCControllerElement) => void | null;
 
 	/**
 	 * @since 9.0
@@ -3112,7 +3127,7 @@ declare var GCMicroGamepadSnapShotDataV100: interop.StructType<GCMicroGamepadSna
  * @since 9.0
  * @deprecated 13.0
  */
-declare function GCMicroGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>, data: NSData): boolean;
+declare function GCMicroGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100> | ArrayBufferLike | ArrayBufferView | null, data: NSData | null): boolean;
 
 /**
  * @since 9.0
@@ -3149,7 +3164,7 @@ declare var GCMicroGamepadSnapshotData: interop.StructType<GCMicroGamepadSnapsho
  * @since 13.0
  * @deprecated 13.0
  */
-declare function GCMicroGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>, data: NSData): boolean;
+declare function GCMicroGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData> | ArrayBufferLike | ArrayBufferView | null, data: NSData | null): boolean;
 
 /**
  * @since 13.0
@@ -3176,7 +3191,7 @@ declare class GCMotion extends NSObject {
 
 	readonly attitude: GCQuaternion;
 
-	readonly controller: GCController;
+	readonly controller: GCController | null;
 
 	readonly gravity: GCAcceleration;
 
@@ -3215,7 +3230,7 @@ declare class GCMotion extends NSObject {
 
 	readonly userAcceleration: GCAcceleration;
 
-	valueChangedHandler: (p1: GCMotion) => void;
+	valueChangedHandler: (p1: GCMotion) => void | null;
 
 	/**
 	 * @since 14.0
@@ -3259,9 +3274,9 @@ declare class GCMouse extends NSObject implements GCDevice {
 
 	static new(): GCMouse; // inherited from NSObject
 
-	readonly mouseInput: GCMouseInput;
+	readonly mouseInput: GCMouseInput | null;
 
-	static readonly current: GCMouse;
+	static readonly current: GCMouse | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -3292,7 +3307,7 @@ declare class GCMouse extends NSObject implements GCDevice {
 	/**
 	 * @since 7.0
 	 */
-	readonly vendorName: string; // inherited from GCDevice
+	readonly vendorName: string | null; // inherited from GCDevice
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -3348,15 +3363,15 @@ declare class GCMouseInput extends GCPhysicalInputProfile {
 
 	static new(): GCMouseInput; // inherited from NSObject
 
-	readonly auxiliaryButtons: NSArray<GCControllerButtonInput>;
+	readonly auxiliaryButtons: NSArray<GCControllerButtonInput> | null;
 
 	readonly leftButton: GCControllerButtonInput;
 
-	readonly middleButton: GCControllerButtonInput;
+	readonly middleButton: GCControllerButtonInput | null;
 
-	mouseMovedHandler: (p1: GCMouseInput, p2: number, p3: number) => void;
+	mouseMovedHandler: (p1: GCMouseInput, p2: number, p3: number) => void | null;
 
-	readonly rightButton: GCControllerButtonInput;
+	readonly rightButton: GCControllerButtonInput | null;
 
 	readonly scroll: GCDeviceCursor;
 }
@@ -3368,9 +3383,9 @@ interface GCPhysicalInputElement extends NSObjectProtocol {
 
 	aliases: NSSet<string>;
 
-	localizedName: string;
+	localizedName: string | null;
 
-	sfSymbolsName: string;
+	sfSymbolsName: string | null;
 }
 declare var GCPhysicalInputElement: {
 
@@ -3391,9 +3406,9 @@ declare class GCPhysicalInputElementCollection<Key, Element> extends NSObject im
 
 	elementEnumerator(): NSEnumerator<GCPhysicalInputElement>;
 
-	elementForAlias(alias: string): GCPhysicalInputElement;
+	elementForAlias(alias: string): GCPhysicalInputElement | null;
 
-	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
+	objectForKeyedSubscript(key: string): GCPhysicalInputElement | null;
 }
 
 /**
@@ -3404,6 +3419,22 @@ interface GCPhysicalInputElementName {
 declare var GCPhysicalInputElementName: {
 
 	prototype: GCPhysicalInputElementName;
+};
+
+/**
+ * @since 26.2
+ */
+interface GCPhysicalInputExtents extends NSObjectProtocol {
+
+	maximumValue: number;
+
+	minimumValue: number;
+
+	scaledValue: number;
+}
+declare var GCPhysicalInputExtents: {
+
+	prototype: GCPhysicalInputExtents;
 };
 
 /**
@@ -3453,7 +3484,7 @@ declare class GCPhysicalInputProfile extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	readonly device: GCDevice;
+	readonly device: GCDevice | null;
 
 	/**
 	 * @since 14.0
@@ -3483,7 +3514,7 @@ declare class GCPhysicalInputProfile extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	valueDidChangeHandler: (p1: GCPhysicalInputProfile, p2: GCControllerElement) => void;
+	valueDidChangeHandler: (p1: GCPhysicalInputProfile, p2: GCControllerElement) => void | null;
 
 	/**
 	 * @since 14.0
@@ -3503,7 +3534,7 @@ declare class GCPhysicalInputProfile extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	objectForKeyedSubscript(key: string): GCControllerElement;
+	objectForKeyedSubscript(key: string): GCControllerElement | null;
 
 	/**
 	 * @since 14.0
@@ -3520,9 +3551,9 @@ interface GCPhysicalInputSource extends NSObjectProtocol {
 
 	elementAliases: NSSet<string>;
 
-	elementLocalizedName: string;
+	elementLocalizedName: string | null;
 
-	sfSymbolsName: string;
+	sfSymbolsName: string | null;
 }
 declare var GCPhysicalInputSource: {
 
@@ -3570,7 +3601,7 @@ interface GCPressedStateInput extends NSObjectProtocol {
 
 	pressed: boolean;
 
-	pressedDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCPressedStateInput, p3: boolean) => void;
+	pressedDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCPressedStateInput, p3: boolean) => void | null;
 
 	/**
 	 * @since 17.0
@@ -3669,7 +3700,7 @@ interface GCRelativeInput extends NSObjectProtocol {
 
 	delta: number;
 
-	deltaDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCRelativeInput, p3: number) => void;
+	deltaDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCRelativeInput, p3: number) => void | null;
 
 	lastDeltaLatency: number;
 
@@ -3727,7 +3758,7 @@ interface GCSwitchPositionInput extends NSObjectProtocol {
 
 	position: number;
 
-	positionDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCSwitchPositionInput, p3: number) => void;
+	positionDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCSwitchPositionInput, p3: number) => void | null;
 
 	positionRange: NSRange;
 
@@ -3783,7 +3814,7 @@ interface GCTouchedStateInput extends NSObjectProtocol {
 
 	touched: boolean;
 
-	touchedDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCTouchedStateInput, p3: boolean) => void;
+	touchedDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCTouchedStateInput, p3: boolean) => void | null;
 }
 declare var GCTouchedStateInput: {
 
@@ -3797,7 +3828,9 @@ declare const enum GCUIEventTypes {
 
 	None = 0,
 
-	Gamepad = 1
+	Gamepad = 1,
+
+	Stylus = 2
 }
 
 /**
@@ -3811,11 +3844,11 @@ declare class GCVirtualController extends NSObject {
 
 	static virtualControllerWithConfiguration(configuration: GCVirtualControllerConfiguration): GCVirtualController;
 
-	readonly controller: GCController;
+	readonly controller: GCController | null;
 
 	constructor(o: { configuration: GCVirtualControllerConfiguration; });
 
-	connectWithReplyHandler(reply: (p1: NSError) => void): void;
+	connectWithReplyHandler(reply: (p1: NSError | null) => void | null): void;
 
 	disconnect(): void;
 
@@ -3864,7 +3897,7 @@ declare class GCVirtualControllerElementConfiguration extends NSObject {
 
 	hidden: boolean;
 
-	path: UIBezierPath;
+	path: UIBezierPath | null;
 }
 
 /**
@@ -3879,46 +3912,46 @@ declare class GCXboxGamepad extends GCExtendedGamepad {
 	/**
 	 * @since 15.0
 	 */
-	readonly buttonShare: GCControllerButtonInput;
+	readonly buttonShare: GCControllerButtonInput | null;
 
-	readonly paddleButton1: GCControllerButtonInput;
+	readonly paddleButton1: GCControllerButtonInput | null;
 
-	readonly paddleButton2: GCControllerButtonInput;
+	readonly paddleButton2: GCControllerButtonInput | null;
 
-	readonly paddleButton3: GCControllerButtonInput;
+	readonly paddleButton3: GCControllerButtonInput | null;
 
-	readonly paddleButton4: GCControllerButtonInput;
+	readonly paddleButton4: GCControllerButtonInput | null;
 }
 
 /**
  * @since 7.0
  * @deprecated 13.0
  */
-declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>): NSData;
+declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 13.0
  * @deprecated 13.0
  */
-declare function NSDataFromGCExtendedGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData>): NSData;
+declare function NSDataFromGCExtendedGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 7.0
  * @deprecated 13.0
  */
-declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100>): NSData;
+declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 9.0
  * @deprecated 13.0
  */
-declare function NSDataFromGCMicroGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>): NSData;
+declare function NSDataFromGCMicroGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 13.0
  * @deprecated 13.0
  */
-declare function NSDataFromGCMicroGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>): NSData;
+declare function NSDataFromGCMicroGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData> | ArrayBufferLike | ArrayBufferView | null): NSData | null;
 
 /**
  * @since 17.4

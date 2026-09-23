@@ -68,7 +68,7 @@ declare class WCSession extends NSObject {
 
 	readonly complicationEnabled: boolean;
 
-	delegate: WCSessionDelegate;
+	delegate: WCSessionDelegate | null;
 
 	/**
 	 * @since 10.0
@@ -92,19 +92,19 @@ declare class WCSession extends NSObject {
 
 	readonly watchAppInstalled: boolean;
 
-	readonly watchDirectoryURL: NSURL;
+	readonly watchDirectoryURL: NSURL | null;
 
 	static readonly defaultSession: WCSession;
 
 	activateSession(): void;
 
-	sendMessageDataReplyHandlerErrorHandler(data: NSData, replyHandler: (p1: NSData) => void, errorHandler: (p1: NSError) => void): void;
+	sendMessageDataReplyHandlerErrorHandler(data: NSData, replyHandler: (p1: NSData) => void | null, errorHandler: (p1: NSError) => void | null): void;
 
-	sendMessageReplyHandlerErrorHandler(message: NSDictionary<string, any>, replyHandler: (p1: NSDictionary<string, any>) => void, errorHandler: (p1: NSError) => void): void;
+	sendMessageReplyHandlerErrorHandler(message: NSDictionary<string, any>, replyHandler: (p1: NSDictionary<string, any>) => void | null, errorHandler: (p1: NSError) => void | null): void;
 
 	transferCurrentComplicationUserInfo(userInfo: NSDictionary<string, any>): WCSessionUserInfoTransfer;
 
-	transferFileMetadata(file: NSURL, metadata: NSDictionary<string, any>): WCSessionFileTransfer;
+	transferFileMetadata(file: NSURL, metadata: NSDictionary<string, any> | null): WCSessionFileTransfer;
 
 	transferUserInfo(userInfo: NSDictionary<string, any>): WCSessionUserInfoTransfer;
 
@@ -128,7 +128,7 @@ interface WCSessionDelegate extends NSObjectProtocol {
 	/**
 	 * @since 9.3
 	 */
-	sessionActivationDidCompleteWithStateError(session: WCSession, activationState: WCSessionActivationState, error: NSError): void;
+	sessionActivationDidCompleteWithStateError(session: WCSession, activationState: WCSessionActivationState, error: NSError | null): void;
 
 	/**
 	 * @since 9.3
@@ -140,9 +140,9 @@ interface WCSessionDelegate extends NSObjectProtocol {
 	 */
 	sessionDidDeactivate(session: WCSession): void;
 
-	sessionDidFinishFileTransferError?(session: WCSession, fileTransfer: WCSessionFileTransfer, error: NSError): void;
+	sessionDidFinishFileTransferError?(session: WCSession, fileTransfer: WCSessionFileTransfer, error: NSError | null): void;
 
-	sessionDidFinishUserInfoTransferError?(session: WCSession, userInfoTransfer: WCSessionUserInfoTransfer, error: NSError): void;
+	sessionDidFinishUserInfoTransferError?(session: WCSession, userInfoTransfer: WCSessionUserInfoTransfer, error: NSError | null): void;
 
 	sessionDidReceiveApplicationContext?(session: WCSession, applicationContext: NSDictionary<string, any>): void;
 
@@ -178,7 +178,7 @@ declare class WCSessionFile extends NSObject {
 
 	readonly fileURL: NSURL;
 
-	readonly metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any> | null;
 }
 
 /**

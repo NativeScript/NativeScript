@@ -48,9 +48,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// by App Transport Security. A `data:` URL inlined in the bundle
 	// sidesteps all three since DevTools handles it without any network
 	// request. Production builds keep their configured devtool unchanged.
+
+	let defaultSourceMap: Config.DevTool = 'inline-source-map';
+
 	function useSourceMapFiles() {
 		if (mode === 'development') {
-			env.sourceMap = 'inline-source-map';
+			defaultSourceMap = 'source-map';
 		}
 	}
 	// determine target output by @nativescript/* runtime version
@@ -147,21 +150,21 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// but are required by some packages like css-tree
 	config.resolve.merge({
 		fallback: {
-			module: require.resolve('../polyfills/module.js'),
+			module: require.resolve('../polyfills/module'),
 		},
 		alias: {
 			// Mock mdn-data modules that css-tree tries to load
 			'mdn-data/css/properties.json': require.resolve(
-				'../polyfills/mdn-data-properties.js',
+				'../polyfills/mdn-data-properties',
 			),
 			'mdn-data/css/syntaxes.json': require.resolve(
-				'../polyfills/mdn-data-syntaxes.js',
+				'../polyfills/mdn-data-syntaxes',
 			),
 			'mdn-data/css/at-rules.json': require.resolve(
-				'../polyfills/mdn-data-at-rules.js',
+				'../polyfills/mdn-data-at-rules',
 			),
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
-			module: require.resolve('../polyfills/module.js'),
+			module: require.resolve('../polyfills/module'),
 		},
 		// Allow extension-less ESM imports (fixes "fully specified" errors)
 		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
@@ -175,8 +178,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
-		const defaultSourceMap = 'inline-source-map';
-
 		if (typeof map === 'undefined') {
 			// source-maps disabled in production by default
 			// enabled with --env.sourceMap=<type>

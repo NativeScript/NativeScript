@@ -1526,11 +1526,57 @@ export const testMinHeight_works_as_lower_bound_shrink_to = test(activity_minhei
 	closeEnough(height(flexbox), height(text1) + height(text2) + height(text3) + height(text4));
 });
 
-// We do not support maxWidth/maxHeight
-// omit: testMaxWidth_initial_width_more_than_maxWidth
-// omit: testMaxWidth_works_as_upper_bound_expand_to
-// omit: testMaxHeight_initial_height_more_than_maxHeight
-// omit: testMaxHeight_works_as_lower_bound_expand_to
+let activity_maxwidth_test = () =>
+	getViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" backgroundColor="gray">
+            <Label id="text1" horizontalAlignment="left" verticalAlignment="top" width="200" text="1" maxWidth="100" backgroundColor="red" />
+            <Label id="text2" horizontalAlignment="left" verticalAlignment="top" width="200" text="2" maxWidth="100" backgroundColor="green" flexGrow="1" />
+        </FlexboxLayout>`,
+	);
+
+export const testMaxWidth_initial_width_more_than_maxWidth = test(activity_maxwidth_test, noop, ({ root, flexbox, text1, text2 }) => {
+	closeEnough(width(text1), dipToDp(100));
+	closeEnough(width(text2), dipToDp(100));
+});
+
+let activity_maxwidth_upper_bound_test = () =>
+	getViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" flexWrap="${FlexWrap.NOWRAP}" backgroundColor="gray">
+        <Label id="text1" width="50" verticalAlignment="top" text="1" maxWidth="100" flexGrow="1" backgroundColor="red" />
+        <Label id="text2" width="50" verticalAlignment="top" text="2" flexGrow="1" backgroundColor="green" />
+    </FlexboxLayout>`,
+	);
+
+export const testMaxWidth_works_as_upper_bound_expand_to = test(activity_maxwidth_upper_bound_test, noop, ({ root, flexbox, text1, text2 }) => {
+	closeEnough(width(text1), dipToDp(100));
+	closeEnough(width(text2), width(flexbox) - dipToDp(100));
+});
+
+let activity_maxheight_test = () =>
+	getViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" flexDirection="${FlexDirection.COLUMN}" backgroundColor="gray">
+        <Label id="text1" horizontalAlignment="left" verticalAlignment="top" height="200" text="1" maxHeight="100" backgroundColor="red" />
+        <Label id="text2" horizontalAlignment="left" verticalAlignment="top" height="200" text="2" maxHeight="100" flexGrow="1" backgroundColor="green" />
+    </FlexboxLayout>`,
+	);
+
+export const testMaxHeight_initial_height_more_than_maxHeight = test(activity_maxheight_test, noop, ({ root, flexbox, text1, text2 }) => {
+	closeEnough(height(text1), dipToDp(100));
+	closeEnough(height(text2), dipToDp(100));
+});
+
+let activity_maxheight_upper_bound_test = () =>
+	getViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.NOWRAP}" backgroundColor="gray">
+        <Label id="text1" horizontalAlignment="left" height="50" text="1" maxHeight="100" flexGrow="1" backgroundColor="red" />
+        <Label id="text2" horizontalAlignment="left" height="50" text="2" flexGrow="1" backgroundColor="green" />
+    </FlexboxLayout>`,
+	);
+
+export const testMaxHeight_works_as_upper_bound_expand_to = test(activity_maxheight_upper_bound_test, noop, ({ root, flexbox, text1, text2 }) => {
+	closeEnough(height(text1), dipToDp(100));
+	closeEnough(height(text2), height(flexbox) - dipToDp(100));
+});
 
 let activity_views_visibility_gone = () =>
 	getViews(

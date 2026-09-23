@@ -35,9 +35,9 @@ export namespace CoreTypes {
 	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit | CSSWideKeywords;
+	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit | `${number}dip` | `${number}px` | CSSWideKeywords;
 	export type LengthType = 'auto' | FixedLengthType;
-	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit;
+	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit | `${number}%`;
 
 	export const zeroLength: LengthType = {
 		value: 0,
@@ -270,6 +270,14 @@ export namespace CoreTypes {
 		export const noRepeat: BackgroundRepeatType = 'no-repeat';
 		export const isValid = makeValidator<BackgroundRepeatType>(repeat, repeatX, repeatY, noRepeat);
 		export const parse = makeParser<BackgroundRepeatType>(isValid);
+	}
+
+	export type CornerShapeType = 'round' | 'squircle';
+	export namespace CornerShape {
+		export const round: CornerShapeType = 'round';
+		export const squircle: CornerShapeType = 'squircle';
+		export const isValid = makeValidator<CornerShapeType>(round, squircle);
+		export const parse = makeParser<CornerShapeType>(isValid);
 	}
 
 	export namespace AnimationCurve {

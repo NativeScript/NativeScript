@@ -118,7 +118,7 @@ export declare class Page extends PageBase {
 
 	/**
 	 * iOS Only
-	 * Perform an action when user performans the "escape" gesture
+	 * Perform an action when user performs the "escape" gesture
 	 *
 	 * @nsProperty
 	 */

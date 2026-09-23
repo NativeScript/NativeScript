@@ -93,7 +93,7 @@ declare class SNClassificationResult extends NSObject implements SNResult {
 	/**
 	 * @since 15.0
 	 */
-	classificationForIdentifier(identifier: string): SNClassification;
+	classificationForIdentifier(identifier: string): SNClassification | null;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 

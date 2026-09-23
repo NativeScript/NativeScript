@@ -48,7 +48,7 @@ declare class MFMailComposeViewController extends UINavigationController {
 
 	static new(): MFMailComposeViewController; // inherited from NSObject
 
-	mailComposeDelegate: MFMailComposeViewControllerDelegate;
+	mailComposeDelegate: MFMailComposeViewControllerDelegate | null;
 
 	addAttachmentDataMimeTypeFileName(attachment: NSData, mimeType: string, filename: string): void;
 
@@ -57,9 +57,9 @@ declare class MFMailComposeViewController extends UINavigationController {
 	 */
 	insertCollaborationItemProviderCompletionHandler(itemProvider: NSItemProvider, completionHandler: (p1: boolean) => void): void;
 
-	setBccRecipients(bccRecipients: NSArray<string> | string[]): void;
+	setBccRecipients(bccRecipients: NSArray<string> | string[] | null): void;
 
-	setCcRecipients(ccRecipients: NSArray<string> | string[]): void;
+	setCcRecipients(ccRecipients: NSArray<string> | string[] | null): void;
 
 	setMessageBodyIsHTML(body: string, isHTML: boolean): void;
 
@@ -70,12 +70,12 @@ declare class MFMailComposeViewController extends UINavigationController {
 
 	setSubject(subject: string): void;
 
-	setToRecipients(toRecipients: NSArray<string> | string[]): void;
+	setToRecipients(toRecipients: NSArray<string> | string[] | null): void;
 }
 
 interface MFMailComposeViewControllerDelegate extends NSObjectProtocol {
 
-	mailComposeControllerDidFinishWithResultError?(controller: MFMailComposeViewController, result: MFMailComposeResult, error: NSError): void;
+	mailComposeControllerDidFinishWithResultError?(controller: MFMailComposeViewController, result: MFMailComposeResult, error: NSError | null): void;
 }
 declare var MFMailComposeViewControllerDelegate: {
 
@@ -111,23 +111,23 @@ declare class MFMessageComposeViewController extends UINavigationController {
 	/**
 	 * @since 7.0
 	 */
-	readonly attachments: NSArray<NSDictionary<any, any>>;
+	readonly attachments: NSArray<NSDictionary<any, any>> | null;
 
-	body: string;
+	body: string | null;
 
 	/**
 	 * @since 10.0
 	 */
-	message: MSMessage;
+	message: MSMessage | null;
 
-	messageComposeDelegate: MFMessageComposeViewControllerDelegate;
+	messageComposeDelegate: MFMessageComposeViewControllerDelegate | null;
 
-	recipients: NSArray<string>;
+	recipients: NSArray<string> | null;
 
 	/**
 	 * @since 7.0
 	 */
-	subject: string;
+	subject: string | null;
 
 	/**
 	 * @since 7.0
@@ -137,7 +137,7 @@ declare class MFMessageComposeViewController extends UINavigationController {
 	/**
 	 * @since 7.0
 	 */
-	addAttachmentURLWithAlternateFilename(attachmentURL: NSURL, alternateFilename: string): boolean;
+	addAttachmentURLWithAlternateFilename(attachmentURL: NSURL, alternateFilename: string | null): boolean;
 
 	/**
 	 * @since 7.0

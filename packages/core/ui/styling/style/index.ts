@@ -112,6 +112,7 @@ export class Style extends Observable {
 	 */
 	public fontScaleInternal: number;
 	public backgroundInternal: Background;
+	public paddingInternal: string;
 
 	public rotate: number;
 	public rotateX: number;
@@ -151,6 +152,13 @@ export class Style extends Observable {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
+	/**
+	 * The curve used to round the corners: 'round' (circular arcs, the default)
+	 * or 'squircle' (Apple's continuous corner curve). iOS only; Android always
+	 * renders circular corners.
+	 */
+	public cornerShape: CoreTypes.CornerShapeType;
+
 	public boxShadow: string | ShadowCSSValues[];
 
 	public direction: CoreTypes.LayoutDirectionType;
@@ -182,6 +190,8 @@ export class Style extends Observable {
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;
+	public maxWidth: CoreTypes.PercentLengthType;
+	public maxHeight: CoreTypes.PercentLengthType;
 	public width: CoreTypes.PercentLengthType;
 	public height: CoreTypes.PercentLengthType;
 	public margin: string | CoreTypes.PercentLengthType;
@@ -194,6 +204,9 @@ export class Style extends Observable {
 	public paddingTop: CoreTypes.LengthType;
 	public paddingRight: CoreTypes.LengthType;
 	public paddingBottom: CoreTypes.LengthType;
+	public gap: string | CoreTypes.LengthType;
+	public rowGap: CoreTypes.LengthType;
+	public columnGap: CoreTypes.LengthType;
 	public horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 	public verticalAlignment: CoreTypes.VerticalAlignmentType;
 
@@ -254,6 +267,12 @@ export class Style extends Observable {
 
 	public viewRef: WeakRef<ViewBase>;
 
+	/**
+	 * Bumped on every local write. A local value takes the slot of the css value it
+	 * shadows, so this is what tells the css state its recorded values may be stale.
+	 */
+	public _localValueVersion: number;
+
 	public get view(): ViewBase {
 		if (this.viewRef) {
 			return this.viewRef.get();
@@ -265,3 +284,4 @@ export class Style extends Observable {
 Style.prototype.PropertyBag = class {
 	[property: string]: string;
 };
+Style.prototype._localValueVersion = 0;

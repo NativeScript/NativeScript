@@ -17,7 +17,7 @@ declare class SWAttributionView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SWAttributionView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): SWAttributionView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -28,7 +28,7 @@ declare class SWAttributionView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SWAttributionView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): SWAttributionView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -41,17 +41,17 @@ declare class SWAttributionView extends UIView {
 
 	displayContext: SWAttributionViewDisplayContext;
 
-	highlight: SWHighlight;
+	highlight: SWHighlight | null;
 
 	readonly highlightMenu: UIMenu;
 
 	horizontalAlignment: SWAttributionViewHorizontalAlignment;
 
-	menuTitleForHideAction: string;
+	menuTitleForHideAction: string | null;
 
 	preferredMaxLayoutWidth: number;
 
-	supplementalMenu: UIMenu;
+	supplementalMenu: UIMenu | null;
 }
 
 /**
@@ -105,13 +105,13 @@ declare class SWCollaborationHighlight extends SWHighlight implements NSCopying,
 
 	readonly creationDate: Date;
 
-	readonly title: string;
+	readonly title: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -141,7 +141,7 @@ declare class SWCollaborationView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SWCollaborationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): SWCollaborationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -152,7 +152,7 @@ declare class SWCollaborationView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SWCollaborationView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): SWCollaborationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -163,11 +163,11 @@ declare class SWCollaborationView extends UIView {
 
 	activeParticipantCount: number;
 
-	cloudSharingControllerDelegate: UICloudSharingControllerDelegate;
+	cloudSharingControllerDelegate: UICloudSharingControllerDelegate | null;
 
-	cloudSharingDelegate: UICloudSharingControllerDelegate;
+	cloudSharingDelegate: UICloudSharingControllerDelegate | null;
 
-	delegate: SWCollaborationViewDelegate;
+	delegate: SWCollaborationViewDelegate | null;
 
 	headerImage: UIImage;
 
@@ -179,7 +179,7 @@ declare class SWCollaborationView extends UIView {
 
 	constructor(o: { itemProvider: NSItemProvider; });
 
-	dismissPopover(completion: () => void): void;
+	dismissPopover(completion: () => void | null): void;
 
 	initWithItemProvider(itemProvider: NSItemProvider): this;
 
@@ -221,7 +221,7 @@ declare class SWHighlight extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -237,7 +237,7 @@ declare class SWHighlightCenter extends NSObject {
 
 	static new(): SWHighlightCenter; // inherited from NSObject
 
-	delegate: SWHighlightCenterDelegate;
+	delegate: SWHighlightCenterDelegate | null;
 
 	readonly highlights: NSArray<SWHighlight>;
 
@@ -250,19 +250,19 @@ declare class SWHighlightCenter extends NSObject {
 	 */
 	clearNoticesForHighlight(highlight: SWCollaborationHighlight): void;
 
-	collaborationHighlightForIdentifierError(collaborationIdentifier: string, error?: interop.Reference<NSError>): SWCollaborationHighlight;
+	collaborationHighlightForIdentifierError(collaborationIdentifier: string, error?: interop.Reference<NSError>): SWCollaborationHighlight | null;
 
 	/**
 	 * @since 16.0
 	 */
-	getCollaborationHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWCollaborationHighlight, p2: NSError) => void): void;
+	getCollaborationHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWCollaborationHighlight | null, p2: NSError | null) => void): void;
 
-	getHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWHighlight, p2: NSError) => void): void;
+	getHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWHighlight | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	getSignedIdentityProofForCollaborationHighlightUsingDataCompletionHandler(collaborationHighlight: SWCollaborationHighlight, data: NSData, completionHandler: (p1: SWSignedPersonIdentityProof, p2: NSError) => void): void;
+	getSignedIdentityProofForCollaborationHighlightUsingDataCompletionHandler(collaborationHighlight: SWCollaborationHighlight, data: NSData, completionHandler: (p1: SWSignedPersonIdentityProof | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
@@ -328,7 +328,7 @@ declare class SWHighlightChangeEvent extends NSObject implements SWHighlightEven
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -412,7 +412,7 @@ declare class SWHighlightMembershipEvent extends NSObject implements SWHighlight
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -486,7 +486,7 @@ declare class SWHighlightMentionEvent extends NSObject implements SWHighlightEve
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -550,7 +550,7 @@ declare class SWHighlightPersistenceEvent extends NSObject implements SWHighligh
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 

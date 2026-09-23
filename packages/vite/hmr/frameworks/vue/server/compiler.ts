@@ -1,4 +1,4 @@
-import { parse as vueParse, compileTemplate as vueCompileTemplate, compileScript as vueCompileScript } from '@vue/compiler-sfc';
+import { parse as vueParse, compileTemplate as vueCompileTemplate, compileScript as vueCompileScript, compileStyleAsync as vueCompileStyleAsync } from '@vue/compiler-sfc';
 import { NS_NATIVE_TAGS } from '../../../server/compiler.js';
 
 export function makeNativeScriptIsCustomElement(bindingMetadata?: Record<string, unknown>): (tag: string) => boolean {
@@ -22,10 +22,12 @@ export const vueSfcCompiler = {
 	parse: vueParse,
 	compileTemplate: vueCompileTemplate,
 	compileScript: vueCompileScript,
+	compileStyleAsync: vueCompileStyleAsync,
 };
 
 export const parseSfc = vueParse;
 export const compileSfcTemplate = vueCompileTemplate;
 export const compileSfcScript = vueCompileScript;
+export const compileSfcStyleAsync = vueCompileStyleAsync;
 
 export type { SFCDescriptor, SFCParseOptions, SFCScriptCompileOptions, SFCTemplateCompileOptions } from '@vue/compiler-sfc';

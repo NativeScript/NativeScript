@@ -4,7 +4,7 @@
  */
 interface CAAction {
 
-	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void;
+	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any> | null): void;
 }
 declare var CAAction: {
 
@@ -25,13 +25,13 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 	 */
 	static animationWithSCNAnimation(animation: SCNAnimation): CAAnimation;
 
-	static defaultValueForKey(key: string): any;
+	static defaultValueForKey(key: string): any | null;
 
 	static new(): CAAnimation; // inherited from NSObject
 
-	animationEvents: NSArray<SCNAnimationEvent>;
+	animationEvents: NSArray<SCNAnimationEvent> | null;
 
-	delegate: CAAnimationDelegate;
+	delegate: CAAnimationDelegate | null;
 
 	fadeInDuration: number;
 
@@ -44,7 +44,7 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	removedOnCompletion: boolean;
 
-	timingFunction: CAMediaTimingFunction;
+	timingFunction: CAMediaTimingFunction | null;
 
 	usesSceneTimeBase: boolean;
 
@@ -84,7 +84,7 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -106,7 +106,7 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	retainCount(): number;
 
-	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void;
+	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any> | null): void;
 
 	self(): this;
 
@@ -138,7 +138,7 @@ declare class CAAnimationGroup extends CAAnimation {
 
 	static new(): CAAnimationGroup; // inherited from NSObject
 
-	animations: NSArray<CAAnimation>;
+	animations: NSArray<CAAnimation> | null;
 }
 
 /**
@@ -150,15 +150,15 @@ declare class CABasicAnimation extends CAPropertyAnimation {
 
 	static animation(): CABasicAnimation; // inherited from CAAnimation
 
-	static animationWithKeyPath(path: string): CABasicAnimation; // inherited from CAPropertyAnimation
+	static animationWithKeyPath(path: string | null): CABasicAnimation; // inherited from CAPropertyAnimation
 
 	static new(): CABasicAnimation; // inherited from NSObject
 
-	byValue: any;
+	byValue: any | null;
 
-	fromValue: any;
+	fromValue: any | null;
 
-	toValue: any;
+	toValue: any | null;
 }
 
 /**
@@ -263,7 +263,7 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 	 */
 	presentsWithTransaction: boolean;
 
-	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
+	drawableProperties: NSDictionary<string, any> | null; // inherited from EAGLDrawable
 }
 
 /**
@@ -271,7 +271,7 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
  */
 declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCoding {
 
-	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData, contentData: NSData, scale: number): CAEDRMetadata;
+	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData | null, contentData: NSData | null, scale: number): CAEDRMetadata;
 
 	static HDR10MetadataWithMinLuminanceMaxLuminanceOpticalOutputScale(minNits: number, maxNits: number, scale: number): CAEDRMetadata;
 
@@ -295,7 +295,7 @@ declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -323,7 +323,7 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 
 	static alloc(): CAEmitterCell; // inherited from NSObject
 
-	static defaultValueForKey(key: string): any;
+	static defaultValueForKey(key: string): any | null;
 
 	static emitterCell(): CAEmitterCell;
 
@@ -339,9 +339,9 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 
 	blueSpeed: number;
 
-	color: any;
+	color: any | null;
 
-	contents: any;
+	contents: any | null;
 
 	contentsRect: CGRect;
 
@@ -353,7 +353,7 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 
 	emissionRange: number;
 
-	emitterCells: NSArray<CAEmitterCell>;
+	emitterCells: NSArray<CAEmitterCell> | null;
 
 	enabled: boolean;
 
@@ -371,7 +371,7 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 
 	minificationFilterBias: number;
 
-	name: string;
+	name: string | null;
 
 	redRange: number;
 
@@ -387,7 +387,7 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 
 	spinRange: number;
 
-	style: NSDictionary<any, any>;
+	style: NSDictionary<any, any> | null;
 
 	velocity: number;
 
@@ -439,7 +439,7 @@ declare class CAEmitterLayer extends CALayer {
 
 	birthRate: number;
 
-	emitterCells: NSArray<CAEmitterCell>;
+	emitterCells: NSArray<CAEmitterCell> | null;
 
 	emitterDepth: number;
 
@@ -504,11 +504,11 @@ declare class CAGradientLayer extends CALayer {
 
 	static new(): CAGradientLayer; // inherited from NSObject
 
-	colors: NSArray<any>;
+	colors: NSArray<any> | null;
 
 	endPoint: CGPoint;
 
-	locations: NSArray<number>;
+	locations: NSArray<number> | null;
 
 	startPoint: CGPoint;
 
@@ -524,27 +524,27 @@ declare class CAKeyframeAnimation extends CAPropertyAnimation {
 
 	static animation(): CAKeyframeAnimation; // inherited from CAAnimation
 
-	static animationWithKeyPath(path: string): CAKeyframeAnimation; // inherited from CAPropertyAnimation
+	static animationWithKeyPath(path: string | null): CAKeyframeAnimation; // inherited from CAPropertyAnimation
 
 	static new(): CAKeyframeAnimation; // inherited from NSObject
 
-	biasValues: NSArray<number>;
+	biasValues: NSArray<number> | null;
 
 	calculationMode: string;
 
-	continuityValues: NSArray<number>;
+	continuityValues: NSArray<number> | null;
 
-	keyTimes: NSArray<number>;
+	keyTimes: NSArray<number> | null;
 
-	path: any;
+	path: any | null;
 
-	rotationMode: string;
+	rotationMode: string | null;
 
-	tensionValues: NSArray<number>;
+	tensionValues: NSArray<number> | null;
 
-	timingFunctions: NSArray<CAMediaTimingFunction>;
+	timingFunctions: NSArray<CAMediaTimingFunction> | null;
 
-	values: NSArray<any>;
+	values: NSArray<any> | null;
 }
 
 /**
@@ -559,9 +559,9 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 	 */
 	static cornerCurveExpansionFactor(curve: string): number;
 
-	static defaultActionForKey(event: string): CAAction;
+	static defaultActionForKey(event: string): CAAction | null;
 
-	static defaultValueForKey(key: string): any;
+	static defaultValueForKey(key: string): any | null;
 
 	static layer(): CALayer;
 
@@ -571,7 +571,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	static new(): CALayer; // inherited from NSObject
 
-	actions: NSDictionary<string, CAAction>;
+	actions: NSDictionary<string, CAAction> | null;
 
 	/**
 	 * @since 2.0
@@ -587,19 +587,19 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	anchorPointZ: number;
 
-	backgroundColor: any;
+	backgroundColor: any | null;
 
-	backgroundFilters: NSArray<any>;
+	backgroundFilters: NSArray<any> | null;
 
-	borderColor: any;
+	borderColor: any | null;
 
 	borderWidth: number;
 
 	bounds: CGRect;
 
-	compositingFilter: any;
+	compositingFilter: any | null;
 
-	contents: any;
+	contents: any | null;
 
 	contentsCenter: CGRect;
 
@@ -629,7 +629,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	cornerRadius: number;
 
-	delegate: CALayerDelegate;
+	delegate: CALayerDelegate | null;
 
 	doubleSided: boolean;
 
@@ -640,7 +640,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	edgeAntialiasingMask: CAEdgeAntialiasingMask;
 
-	filters: NSArray<any>;
+	filters: NSArray<any> | null;
 
 	frame: CGRect;
 
@@ -650,7 +650,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	magnificationFilter: string;
 
-	mask: CALayer;
+	mask: CALayer | null;
 
 	/**
 	 * @since 11.0
@@ -663,7 +663,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	minificationFilterBias: number;
 
-	name: string;
+	name: string | null;
 
 	needsDisplayOnBoundsChange: boolean;
 
@@ -680,25 +680,25 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	rasterizationScale: number;
 
-	shadowColor: any;
+	shadowColor: any | null;
 
 	shadowOffset: CGSize;
 
 	shadowOpacity: number;
 
-	shadowPath: any;
+	shadowPath: any | null;
 
 	shadowRadius: number;
 
 	shouldRasterize: boolean;
 
-	style: NSDictionary<any, any>;
+	style: NSDictionary<any, any> | null;
 
 	sublayerTransform: CATransform3D;
 
-	sublayers: NSArray<CALayer>;
+	sublayers: NSArray<CALayer> | null;
 
-	readonly superlayer: CALayer;
+	readonly superlayer: CALayer | null;
 
 	/**
 	 * @since 18.0
@@ -739,33 +739,33 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	constructor(o: { layer: any; });
 
-	actionForKey(event: string): CAAction;
+	actionForKey(event: string): CAAction | null;
 
-	addAnimationForKey(anim: CAAnimation, key: string): void;
+	addAnimationForKey(anim: CAAnimation, key: string | null): void;
 
 	addSublayer(layer: CALayer): void;
 
 	affineTransform(): CGAffineTransform;
 
-	animationForKey(key: string): CAAnimation;
+	animationForKey(key: string): CAAnimation | null;
 
-	animationKeys(): NSArray<string>;
+	animationKeys(): NSArray<string> | null;
 
 	containsPoint(p: CGPoint): boolean;
 
 	contentsAreFlipped(): boolean;
 
-	convertPointFromLayer(p: CGPoint, l: CALayer): CGPoint;
+	convertPointFromLayer(p: CGPoint, l: CALayer | null): CGPoint;
 
-	convertPointToLayer(p: CGPoint, l: CALayer): CGPoint;
+	convertPointToLayer(p: CGPoint, l: CALayer | null): CGPoint;
 
-	convertRectFromLayer(r: CGRect, l: CALayer): CGRect;
+	convertRectFromLayer(r: CGRect, l: CALayer | null): CGRect;
 
-	convertRectToLayer(r: CGRect, l: CALayer): CGRect;
+	convertRectToLayer(r: CGRect, l: CALayer | null): CGRect;
 
-	convertTimeFromLayer(t: number, l: CALayer): number;
+	convertTimeFromLayer(t: number, l: CALayer | null): number;
 
-	convertTimeToLayer(t: number, l: CALayer): number;
+	convertTimeToLayer(t: number, l: CALayer | null): number;
 
 	display(): void;
 
@@ -775,17 +775,17 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	hitTest(p: CGPoint): CALayer;
+	hitTest(p: CGPoint): CALayer | null;
 
 	initWithCoder(coder: NSCoder): this;
 
 	initWithLayer(layer: any): this;
 
-	insertSublayerAbove(layer: CALayer, sibling: CALayer): void;
+	insertSublayerAbove(layer: CALayer, sibling: CALayer | null): void;
 
 	insertSublayerAtIndex(layer: CALayer, idx: number): void;
 
-	insertSublayerBelow(layer: CALayer, sibling: CALayer): void;
+	insertSublayerBelow(layer: CALayer, sibling: CALayer | null): void;
 
 	layoutIfNeeded(): void;
 
@@ -831,7 +831,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
  */
 interface CALayerDelegate extends NSObjectProtocol {
 
-	actionForLayerForKey?(layer: CALayer, event: string): CAAction;
+	actionForLayerForKey?(layer: CALayer, event: string): CAAction | null;
 
 	displayLayer?(layer: CALayer): void;
 
@@ -912,7 +912,7 @@ declare class CAMetalDisplayLink extends NSObject {
 
 	static new(): CAMetalDisplayLink; // inherited from NSObject
 
-	delegate: CAMetalDisplayLinkDelegate;
+	delegate: CAMetalDisplayLinkDelegate | null;
 
 	paused: boolean;
 
@@ -984,21 +984,21 @@ declare class CAMetalLayer extends CALayer {
 	/**
 	 * @since 16.0
 	 */
-	EDRMetadata: CAEDRMetadata;
+	EDRMetadata: CAEDRMetadata | null;
 
 	/**
 	 * @since 11.0
 	 */
 	allowsNextDrawableTimeout: boolean;
 
-	colorspace: any;
+	colorspace: any | null;
 
 	/**
 	 * @since 16.0
 	 */
-	developerHUDProperties: NSDictionary<any, any>;
+	developerHUDProperties: NSDictionary<any, any> | null;
 
-	device: MTLDevice;
+	device: MTLDevice | null;
 
 	drawableSize: CGSize;
 
@@ -1014,7 +1014,7 @@ declare class CAMetalLayer extends CALayer {
 	/**
 	 * @since 13.0
 	 */
-	readonly preferredDevice: MTLDevice;
+	readonly preferredDevice: MTLDevice | null;
 
 	presentsWithTransaction: boolean;
 
@@ -1023,7 +1023,7 @@ declare class CAMetalLayer extends CALayer {
 	 */
 	readonly residencySet: MTLResidencySet;
 
-	nextDrawable(): CAMetalDrawable;
+	nextDrawable(): CAMetalDrawable | null;
 }
 
 /**
@@ -1035,7 +1035,7 @@ declare class CAPropertyAnimation extends CAAnimation {
 
 	static animation(): CAPropertyAnimation; // inherited from CAAnimation
 
-	static animationWithKeyPath(path: string): CAPropertyAnimation;
+	static animationWithKeyPath(path: string | null): CAPropertyAnimation;
 
 	static new(): CAPropertyAnimation; // inherited from NSObject
 
@@ -1043,9 +1043,9 @@ declare class CAPropertyAnimation extends CAAnimation {
 
 	cumulative: boolean;
 
-	keyPath: string;
+	keyPath: string | null;
 
-	valueFunction: CAValueFunction;
+	valueFunction: CAValueFunction | null;
 }
 
 /**
@@ -1060,15 +1060,15 @@ declare class CARenderer extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	static rendererWithMTLTextureOptions(tex: MTLTexture, dict: NSDictionary<any, any>): CARenderer;
+	static rendererWithMTLTextureOptions(tex: MTLTexture, dict: NSDictionary<any, any> | null): CARenderer;
 
 	bounds: CGRect;
 
-	layer: CALayer;
+	layer: CALayer | null;
 
 	addUpdateRect(r: CGRect): void;
 
-	beginFrameAtTimeTimeStamp(t: number, ts: interop.Pointer | interop.Reference<CVTimeStamp>): void;
+	beginFrameAtTimeTimeStamp(t: number, ts: interop.Pointer | interop.Reference<CVTimeStamp> | ArrayBufferLike | ArrayBufferView | null): void;
 
 	endFrame(): void;
 
@@ -1096,7 +1096,7 @@ declare class CAReplicatorLayer extends CALayer {
 
 	instanceBlueOffset: number;
 
-	instanceColor: any;
+	instanceColor: any | null;
 
 	instanceCount: number;
 
@@ -1140,13 +1140,13 @@ declare class CAShapeLayer extends CALayer {
 
 	static new(): CAShapeLayer; // inherited from NSObject
 
-	fillColor: any;
+	fillColor: any | null;
 
 	fillRule: string;
 
 	lineCap: string;
 
-	lineDashPattern: NSArray<number>;
+	lineDashPattern: NSArray<number> | null;
 
 	lineDashPhase: number;
 
@@ -1156,9 +1156,9 @@ declare class CAShapeLayer extends CALayer {
 
 	miterLimit: number;
 
-	path: any;
+	path: any | null;
 
-	strokeColor: any;
+	strokeColor: any | null;
 
 	strokeEnd: number;
 
@@ -1174,7 +1174,7 @@ declare class CASpringAnimation extends CABasicAnimation {
 
 	static animation(): CASpringAnimation; // inherited from CAAnimation
 
-	static animationWithKeyPath(path: string): CASpringAnimation; // inherited from CAPropertyAnimation
+	static animationWithKeyPath(path: string | null): CASpringAnimation; // inherited from CAPropertyAnimation
 
 	static new(): CASpringAnimation; // inherited from NSObject
 
@@ -1229,13 +1229,13 @@ declare class CATextLayer extends CALayer {
 
 	allowsFontSubpixelQuantization: boolean;
 
-	font: any;
+	font: any | null;
 
 	fontSize: number;
 
-	foregroundColor: any;
+	foregroundColor: any | null;
 
-	string: any;
+	string: any | null;
 
 	truncationMode: string;
 
@@ -1286,13 +1286,13 @@ declare class CATransaction extends NSObject {
 
 	static animationDuration(): number;
 
-	static animationTimingFunction(): CAMediaTimingFunction;
+	static animationTimingFunction(): CAMediaTimingFunction | null;
 
 	static begin(): void;
 
 	static commit(): void;
 
-	static completionBlock(): () => void;
+	static completionBlock(): () => void | null;
 
 	static disableActions(): boolean;
 
@@ -1304,17 +1304,17 @@ declare class CATransaction extends NSObject {
 
 	static setAnimationDuration(dur: number): void;
 
-	static setAnimationTimingFunction(_function: CAMediaTimingFunction): void;
+	static setAnimationTimingFunction(_function: CAMediaTimingFunction | null): void;
 
-	static setCompletionBlock(block: () => void): void;
+	static setCompletionBlock(block: () => void | null): void;
 
 	static setDisableActions(flag: boolean): void;
 
-	static setValueForKey(anObject: any, key: string): void;
+	static setValueForKey(anObject: any | null, key: string): void;
 
 	static unlock(): void;
 
-	static valueForKey(key: string): any;
+	static valueForKey(key: string): any | null;
 }
 
 /**
@@ -1437,7 +1437,7 @@ declare class CATransition extends CAAnimation {
 
 	startProgress: number;
 
-	subtype: string;
+	subtype: string | null;
 
 	type: string;
 }

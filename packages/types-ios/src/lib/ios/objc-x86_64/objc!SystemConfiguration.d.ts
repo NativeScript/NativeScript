@@ -3,12 +3,12 @@
  * @since 4.1
  * @deprecated 100000
  */
-declare function CNCopyCurrentNetworkInfo(interfaceName: string): NSDictionary<any, any>;
+declare function CNCopyCurrentNetworkInfo(interfaceName: string): NSDictionary<any, any> | null;
 
 /**
  * @since 4.1
  */
-declare function CNCopySupportedInterfaces(): NSArray<any>;
+declare function CNCopySupportedInterfaces(): NSArray<any> | null;
 
 /**
  * @since 4.0
@@ -35,10 +35,10 @@ declare function SCCopyLastError(): NSError;
 
 interface SCDynamicStoreContext {
 	version: number;
-	info: interop.Pointer | interop.Reference<any>;
-	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	info: interop.Pointer | interop.Reference<any> | null;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => string> | null;
 }
 declare var SCDynamicStoreContext: interop.StructType<SCDynamicStoreContext>;
 
@@ -50,14 +50,14 @@ declare function SCError(): number;
 /**
  * @since 2.0
  */
-declare function SCErrorString(status: number): interop.Pointer | interop.Reference<any>;
+declare function SCErrorString(status: number): interop.Pointer | interop.Reference<any> | null;
 
 interface SCNetworkConnectionContext {
 	version: number;
-	info: interop.Pointer | interop.Reference<any>;
-	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	info: interop.Pointer | interop.Reference<any> | null;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => string> | null;
 }
 declare var SCNetworkConnectionContext: interop.StructType<SCNetworkConnectionContext>;
 
@@ -107,10 +107,10 @@ declare const enum SCNetworkConnectionStatus {
 
 interface SCNetworkReachabilityContext {
 	version: number;
-	info: interop.Pointer | interop.Reference<any>;
-	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	info: interop.Pointer | interop.Reference<any> | null;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => string> | null;
 }
 declare var SCNetworkReachabilityContext: interop.StructType<SCNetworkReachabilityContext>;
 
@@ -118,19 +118,19 @@ declare var SCNetworkReachabilityContext: interop.StructType<SCNetworkReachabili
  * @since 2.0
  * @deprecated 17.4
  */
-declare function SCNetworkReachabilityCreateWithAddress(allocator: any, address: interop.Pointer | interop.Reference<sockaddr>): any;
+declare function SCNetworkReachabilityCreateWithAddress(allocator: any | null, address: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView): any | null;
 
 /**
  * @since 2.0
  * @deprecated 17.4
  */
-declare function SCNetworkReachabilityCreateWithAddressPair(allocator: any, localAddress: interop.Pointer | interop.Reference<sockaddr>, remoteAddress: interop.Pointer | interop.Reference<sockaddr>): any;
+declare function SCNetworkReachabilityCreateWithAddressPair(allocator: any | null, localAddress: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, remoteAddress: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 2.0
  * @deprecated 17.4
  */
-declare function SCNetworkReachabilityCreateWithName(allocator: any, nodename: string | interop.Pointer | interop.Reference<any>): any;
+declare function SCNetworkReachabilityCreateWithName(allocator: any | null, nodename: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 declare const enum SCNetworkReachabilityFlags {
 
@@ -159,7 +159,7 @@ declare const enum SCNetworkReachabilityFlags {
  * @since 2.0
  * @deprecated 17.4
  */
-declare function SCNetworkReachabilityGetFlags(target: any, flags: interop.Pointer | interop.Reference<SCNetworkReachabilityFlags>): boolean;
+declare function SCNetworkReachabilityGetFlags(target: any, flags: interop.Pointer | interop.Reference<SCNetworkReachabilityFlags> | ArrayBufferLike | ArrayBufferView): boolean;
 
 /**
  * @since 2.0
@@ -177,13 +177,13 @@ declare function SCNetworkReachabilityScheduleWithRunLoop(target: any, runLoop: 
  * @since 2.0
  * @deprecated 17.4
  */
-declare function SCNetworkReachabilitySetCallback(target: any, callout: interop.FunctionReference<(p1: any, p2: SCNetworkReachabilityFlags, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<SCNetworkReachabilityContext>): boolean;
+declare function SCNetworkReachabilitySetCallback(target: any, callout: interop.FunctionReference<(p1: any, p2: SCNetworkReachabilityFlags, p3: interop.Pointer | interop.Reference<any> | null) => void> | null, context: interop.Pointer | interop.Reference<SCNetworkReachabilityContext> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.0
  * @deprecated 17.4
  */
-declare function SCNetworkReachabilitySetDispatchQueue(target: any, queue: NSObject & OS_dispatch_queue): boolean;
+declare function SCNetworkReachabilitySetDispatchQueue(target: any, queue: NSObject & OS_dispatch_queue | null): boolean;
 
 /**
  * @since 2.0
@@ -193,10 +193,10 @@ declare function SCNetworkReachabilityUnscheduleFromRunLoop(target: any, runLoop
 
 interface SCPreferencesContext {
 	version: number;
-	info: interop.Pointer | interop.Reference<any>;
-	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	info: interop.Pointer | interop.Reference<any> | null;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => string> | null;
 }
 declare var SCPreferencesContext: interop.StructType<SCPreferencesContext>;
 

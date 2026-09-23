@@ -1,3 +1,314 @@
+## 9.1.2 (2026-09-14)
+
+### 🚀 Features
+
+- **vite:** support plain javascript ([d0f3e7654](https://github.com/NativeScript/NativeScript/commit/d0f3e7654))
+
+### 🩹 Fixes
+
+- **android:** back press navigates nested frames with history again ([#11432](https://github.com/NativeScript/NativeScript/pull/11432))
+- **core:** getRandomValues fills the caller's typed array on iOS ([#11405](https://github.com/NativeScript/NativeScript/pull/11405))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+
+## 9.1.1 (2026-08-31)
+
+### 🚀 Features
+
+- iOS 26.5 types, Android API Level 36 + 37 ([#11369](https://github.com/NativeScript/NativeScript/pull/11369))
+
+### 🩹 Fixes
+
+- **core:** scene session discard no longer retires a live window ([#11376](https://github.com/NativeScript/NativeScript/pull/11376))
+- **core:** restore application lifecycle events and window resolution under UIScene ([#11373](https://github.com/NativeScript/NativeScript/pull/11373))
+- **core:** css lost to a local value or a late attribute assignment ([#11371](https://github.com/NativeScript/NativeScript/pull/11371))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+
+## 9.1.0 (2026-08-27)
+
+### 🚀 Features
+
+- **core:** corner-shape css property for continuous corners on iOS ([#11365](https://github.com/NativeScript/NativeScript/pull/11365))
+- ⚠️  cross-platform NativeWindow (scenes, multi-windows, improved API for iOS, and now Android) ([#11181](https://github.com/NativeScript/NativeScript/pull/11181))
+- **core:** type uncaughtErrorPolicy and deprecate discardUncaughtJsExceptions ([#11356](https://github.com/NativeScript/NativeScript/pull/11356), [#409](https://github.com/NativeScript/NativeScript/issues/409))
+- **core:** add HMR hooks for XML errors, module registry, and modals ([a6b5c7597](https://github.com/NativeScript/NativeScript/commit/a6b5c7597))
+- **core:** swiftui lifecycle boot apps to use standard notification observers for windows ([#11345](https://github.com/NativeScript/NativeScript/pull/11345))
+- **ios:** ListView iosSearchInsetBehavior for search content insets ([#11327](https://github.com/NativeScript/NativeScript/pull/11327))
+- **ios:** shared transition improvements ([#11322](https://github.com/NativeScript/NativeScript/pull/11322))
+- **ios:** shared transition interactive morph dismiss with cornerRadius and alpha fixes ([#11321](https://github.com/NativeScript/NativeScript/pull/11321))
+- **config:** add `runtimePackageName` to `IConfigPlatform` ([#11237](https://github.com/NativeScript/NativeScript/pull/11237))
+- **ios:** iosContentInsetAdjustmentBehavior for ScrollView with safe-area aware layouts ([#11324](https://github.com/NativeScript/NativeScript/pull/11324))
+- **core:** flexbox css gutters support ([#11310](https://github.com/NativeScript/NativeScript/pull/11310))
+- **TextBase:** localized text transform ([#11302](https://github.com/NativeScript/NativeScript/pull/11302))
+- **core:** support max-width and max-height CSS properties ([#11300](https://github.com/NativeScript/NativeScript/pull/11300))
+
+### 🩹 Fixes
+
+- **core:** iOS double free of V8-owned buffers; getRandomValues view handling ([#11370](https://github.com/NativeScript/NativeScript/pull/11370))
+- **core:** restore the per-side padding setNative protocol ([#11368](https://github.com/NativeScript/NativeScript/pull/11368))
+- **core:** custom application delegate scene wiring and non-scene launch timing ([#11367](https://github.com/NativeScript/NativeScript/pull/11367))
+- **core:** keep function values intact when splitting css shorthands ([#11364](https://github.com/NativeScript/NativeScript/pull/11364))
+- **core:** install global polyfills only when missing, without materializing lazy runtime globals ([#11360](https://github.com/NativeScript/NativeScript/pull/11360))
+- **core:** detach SegmentedBar/TabView items from a previous parent before adopting them ([#11353](https://github.com/NativeScript/NativeScript/pull/11353))
+- **listview:** correct item template resolution in sectioned ListView ([#11184](https://github.com/NativeScript/NativeScript/pull/11184))
+- **core:** resolve ESM circular imports and tighten types for Vite ([c6e6442c7](https://github.com/NativeScript/NativeScript/commit/c6e6442c7))
+- **core:** invalidate sibling combinator selector matches on child insert/remove ([#11348](https://github.com/NativeScript/NativeScript/pull/11348))
+- **ios:** re-attach root view after in-process runtime reload ([#11261](https://github.com/NativeScript/NativeScript/pull/11261))
+- **ios:** ensure notification event is passed to app start when not delaying launch event ([#11347](https://github.com/NativeScript/NativeScript/pull/11347))
+- **ios:** guard safe-area helpers against detached NS subtrees ([#11325](https://github.com/NativeScript/NativeScript/pull/11325))
+- **core:** guard undefined navigation queue entry in Frame ([#11326](https://github.com/NativeScript/NativeScript/pull/11326))
+- **debugger:** exclude internal props from devtools elements ([#11344](https://github.com/NativeScript/NativeScript/pull/11344))
+- **android:** don't crash in Fragment.onCreateView on stale-fragment race ([#11264](https://github.com/NativeScript/NativeScript/pull/11264))
+- **ios:** guard interactiveContentPopGestureRecognizer for apps built with pre-26 SDKs ([#11313](https://github.com/NativeScript/NativeScript/pull/11313))
+- **ios:** update swipe back gesture from Page property ([#11312](https://github.com/NativeScript/NativeScript/pull/11312))
+- **core:** remove once listeners by identity, not stale index ([#11306](https://github.com/NativeScript/NativeScript/pull/11306))
+- **core:** added string types for LengthType properties ([#11274](https://github.com/NativeScript/NativeScript/pull/11274))
+- **core:** use enumeratorAtPath for iOS shallow entity enumeration ([#11182](https://github.com/NativeScript/NativeScript/pull/11182))
+- **ios:** prevent duplicate suspend/resume events when using UIScenes ([#11269](https://github.com/NativeScript/NativeScript/pull/11269))
+- **core:** improve view teardown process for reusable views ([#11260](https://github.com/NativeScript/NativeScript/pull/11260))
+- **ios:** handle UIColor backgroundColor in Switch ([#11267](https://github.com/NativeScript/NativeScript/pull/11267))
+- **android:** update view imageSource when image is set asynchronously ([#11215](https://github.com/NativeScript/NativeScript/pull/11215))
+- **android:** guard TextBase fontSize reset values ([#11222](https://github.com/NativeScript/NativeScript/pull/11222))
+- **android:** TabView fragment manager resolution ([#11228](https://github.com/NativeScript/NativeScript/pull/11228))
+- **core:** avoid firing removed event listeners ([#11263](https://github.com/NativeScript/NativeScript/pull/11263))
+- **android:** Update @nativescript/core fetch to use exported DOMException ([3d8e5e00d](https://github.com/NativeScript/NativeScript/commit/3d8e5e00d))
+- **android:** activity recreation crashes with tabs and complex view hierarchies ([#11223](https://github.com/NativeScript/NativeScript/pull/11223))
+- **android:** edge to edge default behaviour ([#11233](https://github.com/NativeScript/NativeScript/pull/11233))
+
+### 🔥 Performance
+
+- **core:** overhaul css matching, cascade, and application ([#11361](https://github.com/NativeScript/NativeScript/pull/11361))
+- **core:** Cache media query arrays in the ruleset ([#11309](https://github.com/NativeScript/NativeScript/pull/11309))
+- **core:** hot-path optimizations across events, properties, CSS matching and iOS layout ([#11307](https://github.com/NativeScript/NativeScript/pull/11307))
+
+### ⚠️  Breaking Changes
+
+- cross-platform NativeWindow (scenes, multi-windows, improved API for iOS, and now Android)  ([#11181](https://github.com/NativeScript/NativeScript/pull/11181))
+  - `NativeWindow.iosWindow` is renamed to `NativeWindow.ios`, and its `window`
+    property to `uiWindow`. Migrate to `win.ios?.uiWindow` / `win.ios?.scene`.
+  - `NativeWindow.androidWindow` is renamed to `NativeWindow.android`. Migrate to
+    `win.android?.activity`.
+  - `SceneEventData.window` is now the `NativeWindow`; the native `UIWindow`
+    moved to `SceneEventData.uiWindow`. A `window` payload key always means a
+    `NativeWindow`.
+  - `getWindows()` is now role-filtered and defaults to `application` +
+    `embedded`. Use `getWindows('all')` to enumerate every registered surface.
+  - On Android, the `exit` event fires only when the last window finishes;
+    previously it fired for any finishing activity. iOS `exit` is unchanged
+    (process termination).
+  - In scene mode, Application `suspend`/`resume` reflect whole-app state. Use a
+    window's `background`/`foreground` events to track a single window.
+  - Scene disconnect and activity recreation raise `detached` instead of
+    destroying the window; the window stays registered and its listeners survive.
+  - A window clears its event listeners after `close`. Do not re-use a closed
+    window instance.
+  - `CSSUtils.getRootViewCssClasses()` no longer includes orientation,
+    appearance, or direction classes; these are per-window — read them from the
+    window instead.
+  Deprecated (still working): the `launch` event (use `ready` +
+  `setWindowContentResolver()`), `shouldDelayLaunchEvent` (now a no-op),
+  `Application.orientation()`/`systemAppearance()`/`layoutDirection()` (they
+  delegate to `primaryWindow`), and the enumeration getters (`getAllWindows`,
+  `getAllScenes`, `getWindowScenes`, `getPrimaryWindow`, `getPrimaryScene`).
+  Un-deprecated: the `activity*`/`scene*` bridges on `Application` are permanent
+  aggregate APIs — they fire for every window, and `args.window` identifies
+  which one.
+
+### ❤️ Thank You
+
+- Abdelkarim Ait Bourich @VeinDevTtv
+- Boaz Blake @ebsi-bblake
+- Copilot @Copilot
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- gria001
+- Jason Cassidy @jcassidyav
+- Jonas Katins @jkatins
+- Nathan Walker
+- Osei Fortune @triniwiz
+- Samuel Schultze
+- Tanner Linsley
+
+## 9.1.0-rc.3 (2026-08-27)
+
+### 🩹 Fixes
+
+- **core:** restore the per-side padding setNative protocol ([#11368](https://github.com/NativeScript/NativeScript/pull/11368))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 9.1.0-rc.2 (2026-08-26)
+
+### 🚀 Features
+
+- **core:** corner-shape css property for continuous corners on iOS ([#11365](https://github.com/NativeScript/NativeScript/pull/11365))
+
+### 🩹 Fixes
+
+- **core:** custom application delegate scene wiring and non-scene launch timing ([#11367](https://github.com/NativeScript/NativeScript/pull/11367))
+- **core:** keep function values intact when splitting css shorthands ([#11364](https://github.com/NativeScript/NativeScript/pull/11364))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 9.1.0-rc.1 (2026-08-26)
+
+### 🔥 Performance
+
+- **core:** overhaul css matching, cascade, and application ([#11361](https://github.com/NativeScript/NativeScript/pull/11361))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 9.1.0-rc.0 (2026-08-25)
+
+### 🚀 Features
+
+- ⚠️  cross-platform NativeWindow (scenes, multi-windows, improved API for iOS, and now Android) ([#11181](https://github.com/NativeScript/NativeScript/pull/11181))
+- **core:** type uncaughtErrorPolicy and deprecate discardUncaughtJsExceptions ([#11356](https://github.com/NativeScript/NativeScript/pull/11356), [#409](https://github.com/NativeScript/NativeScript/issues/409))
+- **core:** add HMR hooks for XML errors, module registry, and modals ([a6b5c7597](https://github.com/NativeScript/NativeScript/commit/a6b5c7597))
+- **core:** swiftui lifecycle boot apps to use standard notification observers for windows ([#11345](https://github.com/NativeScript/NativeScript/pull/11345))
+- **ios:** ListView iosSearchInsetBehavior for search content insets ([#11327](https://github.com/NativeScript/NativeScript/pull/11327))
+- **ios:** shared transition improvements ([#11322](https://github.com/NativeScript/NativeScript/pull/11322))
+- **ios:** shared transition interactive morph dismiss with cornerRadius and alpha fixes ([#11321](https://github.com/NativeScript/NativeScript/pull/11321))
+- **config:** add `runtimePackageName` to `IConfigPlatform` ([#11237](https://github.com/NativeScript/NativeScript/pull/11237))
+- **ios:** iosContentInsetAdjustmentBehavior for ScrollView with safe-area aware layouts ([#11324](https://github.com/NativeScript/NativeScript/pull/11324))
+- **core:** flexbox css gutters support ([#11310](https://github.com/NativeScript/NativeScript/pull/11310))
+- **TextBase:** localized text transform ([#11302](https://github.com/NativeScript/NativeScript/pull/11302))
+- **core:** support max-width and max-height CSS properties ([#11300](https://github.com/NativeScript/NativeScript/pull/11300))
+
+### 🩹 Fixes
+
+- **core:** install global polyfills only when missing, without materializing lazy runtime globals ([#11360](https://github.com/NativeScript/NativeScript/pull/11360))
+- **core:** detach SegmentedBar/TabView items from a previous parent before adopting them ([#11353](https://github.com/NativeScript/NativeScript/pull/11353))
+- **listview:** correct item template resolution in sectioned ListView ([#11184](https://github.com/NativeScript/NativeScript/pull/11184))
+- **core:** resolve ESM circular imports and tighten types for Vite ([c6e6442c7](https://github.com/NativeScript/NativeScript/commit/c6e6442c7))
+- **core:** invalidate sibling combinator selector matches on child insert/remove ([#11348](https://github.com/NativeScript/NativeScript/pull/11348))
+- **ios:** re-attach root view after in-process runtime reload ([#11261](https://github.com/NativeScript/NativeScript/pull/11261))
+- **ios:** ensure notification event is passed to app start when not delaying launch event ([#11347](https://github.com/NativeScript/NativeScript/pull/11347))
+- **ios:** guard safe-area helpers against detached NS subtrees ([#11325](https://github.com/NativeScript/NativeScript/pull/11325))
+- **core:** guard undefined navigation queue entry in Frame ([#11326](https://github.com/NativeScript/NativeScript/pull/11326))
+- **debugger:** exclude internal props from devtools elements ([#11344](https://github.com/NativeScript/NativeScript/pull/11344))
+- **android:** don't crash in Fragment.onCreateView on stale-fragment race ([#11264](https://github.com/NativeScript/NativeScript/pull/11264))
+- **ios:** guard interactiveContentPopGestureRecognizer for apps built with pre-26 SDKs ([#11313](https://github.com/NativeScript/NativeScript/pull/11313))
+- **ios:** update swipe back gesture from Page property ([#11312](https://github.com/NativeScript/NativeScript/pull/11312))
+- **core:** remove once listeners by identity, not stale index ([#11306](https://github.com/NativeScript/NativeScript/pull/11306))
+- **core:** added string types for LengthType properties ([#11274](https://github.com/NativeScript/NativeScript/pull/11274))
+- **core:** use enumeratorAtPath for iOS shallow entity enumeration ([#11182](https://github.com/NativeScript/NativeScript/pull/11182))
+- **ios:** prevent duplicate suspend/resume events when using UIScenes ([#11269](https://github.com/NativeScript/NativeScript/pull/11269))
+- **core:** improve view teardown process for reusable views ([#11260](https://github.com/NativeScript/NativeScript/pull/11260))
+- **ios:** handle UIColor backgroundColor in Switch ([#11267](https://github.com/NativeScript/NativeScript/pull/11267))
+- **android:** update view imageSource when image is set asynchronously ([#11215](https://github.com/NativeScript/NativeScript/pull/11215))
+- **android:** guard TextBase fontSize reset values ([#11222](https://github.com/NativeScript/NativeScript/pull/11222))
+- **android:** TabView fragment manager resolution ([#11228](https://github.com/NativeScript/NativeScript/pull/11228))
+- **core:** avoid firing removed event listeners ([#11263](https://github.com/NativeScript/NativeScript/pull/11263))
+- **android:** Update @nativescript/core fetch to use exported DOMException ([3d8e5e00d](https://github.com/NativeScript/NativeScript/commit/3d8e5e00d))
+- **android:** activity recreation crashes with tabs and complex view hierarchies ([#11223](https://github.com/NativeScript/NativeScript/pull/11223))
+- **android:** edge to edge default behaviour ([#11233](https://github.com/NativeScript/NativeScript/pull/11233))
+
+### 🔥 Performance
+
+- **core:** Cache media query arrays in the ruleset ([#11309](https://github.com/NativeScript/NativeScript/pull/11309))
+- **core:** hot-path optimizations across events, properties, CSS matching and iOS layout ([#11307](https://github.com/NativeScript/NativeScript/pull/11307))
+
+### ⚠️  Breaking Changes
+
+- cross-platform NativeWindow (scenes, multi-windows, improved API for iOS, and now Android)  ([#11181](https://github.com/NativeScript/NativeScript/pull/11181))
+  - `NativeWindow.iosWindow` is renamed to `NativeWindow.ios`, and its `window`
+    property to `uiWindow`. Migrate to `win.ios?.uiWindow` / `win.ios?.scene`.
+  - `NativeWindow.androidWindow` is renamed to `NativeWindow.android`. Migrate to
+    `win.android?.activity`.
+  - `SceneEventData.window` is now the `NativeWindow`; the native `UIWindow`
+    moved to `SceneEventData.uiWindow`. A `window` payload key always means a
+    `NativeWindow`.
+  - `getWindows()` is now role-filtered and defaults to `application` +
+    `embedded`. Use `getWindows('all')` to enumerate every registered surface.
+  - On Android, the `exit` event fires only when the last window finishes;
+    previously it fired for any finishing activity. iOS `exit` is unchanged
+    (process termination).
+  - In scene mode, Application `suspend`/`resume` reflect whole-app state. Use a
+    window's `background`/`foreground` events to track a single window.
+  - Scene disconnect and activity recreation raise `detached` instead of
+    destroying the window; the window stays registered and its listeners survive.
+  - A window clears its event listeners after `close`. Do not re-use a closed
+    window instance.
+  - `CSSUtils.getRootViewCssClasses()` no longer includes orientation,
+    appearance, or direction classes; these are per-window — read them from the
+    window instead.
+  Deprecated (still working): the `launch` event (use `ready` +
+  `setWindowContentResolver()`), `shouldDelayLaunchEvent` (now a no-op),
+  `Application.orientation()`/`systemAppearance()`/`layoutDirection()` (they
+  delegate to `primaryWindow`), and the enumeration getters (`getAllWindows`,
+  `getAllScenes`, `getWindowScenes`, `getPrimaryWindow`, `getPrimaryScene`).
+  Un-deprecated: the `activity*`/`scene*` bridges on `Application` are permanent
+  aggregate APIs — they fire for every window, and `args.window` identifies
+  which one.
+
+### ❤️ Thank You
+
+- Abdelkarim Ait Bourich @VeinDevTtv
+- Boaz Blake @ebsi-bblake
+- Copilot @Copilot
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- gria001
+- Jason Cassidy @jcassidyav
+- Jonas Katins @jkatins
+- Nathan Walker
+- Osei Fortune @triniwiz
+- Samuel Schultze
+- Tanner Linsley
+
+## 9.0.20 (2026-05-27)
+
+### 🩹 Fixes
+
+- **android:** Removed invalid default padding conversion ([90f834138](https://github.com/NativeScript/NativeScript/commit/90f834138))
+
+### ❤️ Thank You
+
+- Dimitris - Rafail Katsampas @CatchABus
+
+## 9.0.19 (2026-05-27)
+
+### 🚀 Features
+
+- **ios:** option to delay the launch event until the app becomes active ([#9906](https://github.com/NativeScript/NativeScript/pull/9906))
+
+### 🩹 Fixes
+
+- **core:** complete `sideEffects` declarations for inspector modules, network requests in devtools ([#11229](https://github.com/NativeScript/NativeScript/pull/11229))
+- **android:** nested frame restoration step ([#11226](https://github.com/NativeScript/NativeScript/pull/11226))
+- **ios:** improve TabView handling around more navigation controller ([#11225](https://github.com/NativeScript/NativeScript/pull/11225))
+- **android:** apply accessibility CSS classes and font scale on init ([#11224](https://github.com/NativeScript/NativeScript/pull/11224))
+- **core:** prevent exponential traversal in _dialogClosed and _onRootViewReset ([#11220](https://github.com/NativeScript/NativeScript/pull/11220))
+- **ios:** layout validity status during layout changed event ([#11218](https://github.com/NativeScript/NativeScript/pull/11218))
+- **android:** correct TabView fragment manager resolution ([#11217](https://github.com/NativeScript/NativeScript/pull/11217))
+- **ios:** enableSwipeBackNavigation on ios 26+ ([#11211](https://github.com/NativeScript/NativeScript/pull/11211))
+
+### 🔥 Performance
+
+- **core:** reduce padding native setter calls ([#11216](https://github.com/NativeScript/NativeScript/pull/11216))
+
+### ❤️ Thank You
+
+- Copilot @Copilot
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- Osei Fortune @triniwiz
+- Owen Carey @owenthcarey
+
 ## 9.0.18 (2026-03-30)
 
 ### 🩹 Fixes

@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.36-next.0",
+	"version": "5.0.39-next.23",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -30,8 +30,6 @@
 		"dotenv-webpack": "^8.0.0",
 		"fork-ts-checker-webpack-plugin": "^9.0.0",
 		"loader-utils": "^2.0.0 || ^3.0.0",
-		"lodash.get": "^4.0.0",
-		"micromatch": "^4.0.0",
 		"postcss": "^8.0.0",
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
@@ -54,14 +52,12 @@
 		"webpack-virtual-modules": "^0.4.0"
 	},
 	"devDependencies": {
-		"@angular/compiler-cli": "^20.0.0",
-		"@angular-devkit/build-angular": "^20.0.0",
+		"@angular/compiler-cli": "^21.0.0",
+		"@angular-devkit/build-angular": "^21.0.0",
 		"@babel/helpers": ">=7.26.10",
 		"@types/css": "0.0.38",
 		"@types/jest": "29.5.4",
 		"@types/loader-utils": "2.0.6",
-		"@types/lodash.get": "4.4.9",
-		"@types/micromatch": "4.0.9",
 		"@types/sax": "1.2.7",
 		"@types/terser-webpack-plugin": "5.2.0",
 		"@types/webpack-virtual-modules": "0.4.2",
@@ -69,7 +65,7 @@
 		"jest-matcher-utils": "~29.7.0",
 		"nativescript-vue-template-compiler": "2.9.3",
 		"ts-jest": "29.4.5",
-		"typescript": "~5.8.0"
+		"typescript": "~5.9.3"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"

@@ -2,7 +2,8 @@ import { ImageSource } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 import * as http from '@nativescript/core/http';
 import * as fs from '@nativescript/core/file-system';
-import { requestInternal, addHeader, BaseHttpContent } from '@nativescript/core/http/http-request-internal';
+import type { BaseHttpContent } from '@nativescript/core/http/http-request-internal';
+import { requestInternal, addHeader } from '@nativescript/core/http/http-request-internal';
 
 export var test_getString_isDefined = function () {
 	TKUnit.assert(typeof http.getString !== 'undefined', 'Method http.getString() should be defined!');

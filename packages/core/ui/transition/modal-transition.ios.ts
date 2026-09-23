@@ -3,7 +3,7 @@ import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../..
 import { isNumber } from '../../utils/types';
 import { Transition, SharedElementSettings, TransitionInteractiveState } from '.';
 import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
-import { SharedTransitionHelper } from './shared-transition-helper';
+import { SharedTransitionHelper, removeInteractiveDismissShadow, syncInteractiveDismissShadow } from './shared-transition-helper';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 
 export class ModalTransition extends Transition {
@@ -58,7 +58,15 @@ export class ModalTransition extends Transition {
 	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
 		if (args?.ios?.view) {
 			const state = SharedTransition.getState(this.id);
-			const percent = state.interactive?.dismiss?.percentFormula ? state.interactive.dismiss.percentFormula(args) : args.deltaY / (args.ios.view.bounds.size.height / 2);
+			const morph = !!state.interactive?.dismiss?.morph;
+			const morphOptions = typeof state.interactive?.dismiss?.morph === 'object' ? state.interactive.dismiss.morph : null;
+			const viewH = args.ios.view.bounds.size.height;
+			const dist = Math.hypot(args.deltaX, args.deltaY);
+			const morphPercent = dist / viewH;
+			// 1:1 with finger movement (SwiftUI default). Dragging across the full
+			// view height corresponds to percent = 1. Halving the divisor — the
+			// previous default — made the modal run twice as fast as the finger.
+			const percent = state.interactive?.dismiss?.percentFormula ? state.interactive.dismiss.percentFormula(args) : morph ? morphPercent : args.deltaY / viewH;
 			if (SharedTransition.DEBUG) {
 				console.log('Interactive dismissal percentage:', percent);
 			}
@@ -68,16 +76,30 @@ export class ModalTransition extends Transition {
 						interactiveBegan: true,
 						interactiveCancelled: false,
 					});
+					// Dismiss shadow is applied from SharedTransitionHelper.interactiveStart
+					// (it runs after UIKit has reparented the modal view into the
+					// transition's containerView).
 					if (this._interactiveStartCallback) {
 						this._interactiveStartCallback();
 					}
 					break;
 				case GestureStateTypes.changed:
-					if (percent < 1) {
-						if (this.interactiveController) {
-							this.interactiveController.updateInteractiveTransition(percent);
+					if (morph) {
+						const presentedView = this.presented?.view;
+						if (presentedView) {
+							const minScale = morphOptions?.minScale ?? 0.5;
+							const scale = Math.max(minScale, 1 - dist / viewH);
+							presentedView.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(args.deltaX, args.deltaY), CGAffineTransformMakeScale(scale, scale));
 						}
 					}
+					if (percent < 1 && this.interactiveController) {
+						this.interactiveController.updateInteractiveTransition(percent);
+					}
+					// Mirror the modal's current visual state onto the sibling shadow
+					// layer. Done for both morph (direct transform) and non-morph
+					// (UIViewPropertyAnimator-driven frame/cornerRadius) — sync reads
+					// the presentation layer so it works for both.
+					syncInteractiveDismissShadow(this.presented?.view);
 					break;
 				case GestureStateTypes.cancelled:
 				case GestureStateTypes.ended:
@@ -91,6 +113,12 @@ export class ModalTransition extends Transition {
 							});
 							this.interactiveController.cancelInteractiveTransition();
 						}
+						// Always restore the modal's layer state we touched to render
+						// the dismiss shadow — both on cancel (view is being kept) and
+						// on finish (the same NS view instance may be reused on a
+						// subsequent presentation, and leaked shadow state would
+						// stack up across dismissals).
+						removeInteractiveDismissShadow(this.presented?.view);
 					}
 					break;
 			}

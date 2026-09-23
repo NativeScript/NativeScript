@@ -1,0 +1,37 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="false" androidOverflowEdge="bottom">
+    <ActionBar title="Sectioned Templates">
+    </ActionBar>
+
+    <GridLayout rows="auto,*" backgroundColor="#efefef">
+        <Label text="Each row's badge must match its rule: ⭐ favorite → blue 'favorite' card, last row of a section → dark 'last' card, everything else → white 'main' card. A wrong badge anywhere means template selection is broken." textWrap="true" fontSize="12" color="#666" padding="10 12 10 12" />
+        <ListView row="1" class="list-group" items="{{ groups }}" itemTap="{{ onItemTap }}" separatorColor="#00000000" itemTemplateSelector="{{ selectItemTemplate }}" sectioned="true" stickyHeader="true" stickyHeaderTopPadding="false" stickyHeaderTemplate="<GridLayout><Label text='{{ title }}' fontSize='18' fontWeight='bold' color='#009bff' padding='8 0 8 12' borderBottomWidth='1' borderBottomColor='#ccc' borderTopWidth='1' borderTopColor='#ccc' backgroundColor='#fff' /></GridLayout>" stickyHeaderHeight="45">
+            <ListView.itemTemplates>
+                <template key="main">
+                    <GridLayout columns="auto,auto,*,auto" padding="14 12 14 12" margin="2 6 2 6" borderRadius="10" backgroundColor="#fff" boxShadow="0px 1px 2px rgba(0,0,0,0.2)">
+                        <Label text="{{ flag }}" marginLeft="4"></Label>
+                        <Label col="1" text="{{ name }}" marginLeft="6" color="black"></Label>
+                        <Label col="2" text="{{ code }}" marginLeft="4" color="#999"></Label>
+                        <Label col="3" text="main" fontSize="11" color="#999"></Label>
+                    </GridLayout>
+                </template>
+                <template key="favorite">
+                    <GridLayout rows="auto,auto" columns="auto,auto,*,auto" padding="16 12 16 12" margin="2 6 2 6" borderRadius="10" backgroundColor="#dff0ff" borderWidth="1" borderColor="#009bff" boxShadow="0px 1px 2px rgba(0,0,0,0.2)">
+                        <Label rowSpan="2" text="⭐" marginLeft="4" verticalAlignment="center"></Label>
+                        <Label col="1" text="{{ name }}" marginLeft="6" color="#005b96" fontWeight="bold"></Label>
+                        <Label row="1" col="1" text="{{ code }}" marginLeft="6" fontSize="12" color="#4a80a5"></Label>
+                        <Label rowSpan="2" col="3" text="favorite" fontSize="11" color="#009bff" fontWeight="bold" verticalAlignment="center"></Label>
+                    </GridLayout>
+                </template>
+                <template key="last">
+                    <GridLayout columns="auto,auto,*,auto" padding="14 12 14 12" margin="2 6 10 6" borderRadius="10" backgroundColor="#37474f" boxShadow="0px 1px 2px rgba(0,0,0,0.3)">
+                        <Label text="{{ flag }}" marginLeft="4"></Label>
+                        <Label col="1" text="{{ name }}" marginLeft="6" color="#fff"></Label>
+                        <Label col="2" text="{{ code }}" marginLeft="4" color="#b0bec5"></Label>
+                        <Label col="3" text="last" fontSize="11" color="#ffd54f" fontWeight="bold"></Label>
+                    </GridLayout>
+                </template>
+            </ListView.itemTemplates>
+        </ListView>
+    </GridLayout>
+
+</Page>

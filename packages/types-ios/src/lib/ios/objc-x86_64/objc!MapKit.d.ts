@@ -10,11 +10,11 @@ declare class MKAddress extends NSObject {
 
 	readonly fullAddress: string;
 
-	readonly shortAddress: string;
+	readonly shortAddress: string | null;
 
-	constructor(o: { fullAddress: string; shortAddress: string; });
+	constructor(o: { fullAddress: string; shortAddress: string | null; });
 
-	initWithFullAddressShortAddress(fullAddress: string, shortAddress: string): this;
+	initWithFullAddressShortAddress(fullAddress: string, shortAddress: string | null): this;
 }
 
 /**
@@ -38,7 +38,7 @@ declare class MKAddressFilter extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -80,17 +80,17 @@ declare class MKAddressRepresentations extends NSObject {
 
 	static new(): MKAddressRepresentations; // inherited from NSObject
 
-	readonly cityName: string;
+	readonly cityName: string | null;
 
-	readonly cityWithContext: string;
+	readonly cityWithContext: string | null;
 
-	readonly regionCode: string;
+	readonly regionCode: string | null;
 
-	readonly regionName: string;
+	readonly regionName: string | null;
 
-	cityWithContextUsingStyle(style: MKAddressRepresentationsContextStyle): string;
+	cityWithContextUsingStyle(style: MKAddressRepresentationsContextStyle): string | null;
 
-	fullAddressIncludingRegionSingleLine(includingRegion: boolean, singleLine: boolean): string;
+	fullAddressIncludingRegionSingleLine(includingRegion: boolean, singleLine: boolean): string | null;
 }
 
 /**
@@ -109,9 +109,9 @@ interface MKAnnotation extends NSObjectProtocol {
 
 	coordinate: CLLocationCoordinate2D;
 
-	subtitle?: string;
+	subtitle?: string | null;
 
-	title?: string;
+	title?: string | null;
 
 	/**
 	 * @since 4.0
@@ -143,7 +143,7 @@ declare class MKAnnotationView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKAnnotationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKAnnotationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -154,7 +154,7 @@ declare class MKAnnotationView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKAnnotationView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKAnnotationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -168,7 +168,7 @@ declare class MKAnnotationView extends UIView {
 	 */
 	accessoryOffset: CGPoint;
 
-	annotation: MKAnnotation;
+	annotation: MKAnnotation | null;
 
 	calloutOffset: CGPoint;
 
@@ -179,12 +179,12 @@ declare class MKAnnotationView extends UIView {
 	/**
 	 * @since 11.0
 	 */
-	readonly clusterAnnotationView: MKAnnotationView;
+	readonly clusterAnnotationView: MKAnnotationView | null;
 
 	/**
 	 * @since 11.0
 	 */
-	clusteringIdentifier: string;
+	clusteringIdentifier: string | null;
 
 	/**
 	 * @since 11.0
@@ -194,7 +194,7 @@ declare class MKAnnotationView extends UIView {
 	/**
 	 * @since 9.0
 	 */
-	detailCalloutAccessoryView: UIView;
+	detailCalloutAccessoryView: UIView | null;
 
 	/**
 	 * @since 11.0
@@ -215,13 +215,13 @@ declare class MKAnnotationView extends UIView {
 
 	highlighted: boolean;
 
-	image: UIImage;
+	image: UIImage | null;
 
-	leftCalloutAccessoryView: UIView;
+	leftCalloutAccessoryView: UIView | null;
 
-	readonly reuseIdentifier: string;
+	readonly reuseIdentifier: string | null;
 
-	rightCalloutAccessoryView: UIView;
+	rightCalloutAccessoryView: UIView | null;
 
 	selected: boolean;
 
@@ -235,9 +235,9 @@ declare class MKAnnotationView extends UIView {
 	 */
 	zPriority: number;
 
-	constructor(o: { annotation: MKAnnotation; reuseIdentifier: string; });
+	constructor(o: { annotation: MKAnnotation | null; reuseIdentifier: string | null; });
 
-	initWithAnnotationReuseIdentifier(annotation: MKAnnotation, reuseIdentifier: string): this;
+	initWithAnnotationReuseIdentifier(annotation: MKAnnotation | null, reuseIdentifier: string | null): this;
 
 	/**
 	 * @since 11.0
@@ -331,11 +331,11 @@ declare class MKCircle extends MKShape implements MKOverlay {
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -414,7 +414,7 @@ declare class MKCircleView extends MKOverlayPathView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKCircleView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKCircleView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -425,7 +425,7 @@ declare class MKCircleView extends MKOverlayPathView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKCircleView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKCircleView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -464,9 +464,9 @@ declare class MKClusterAnnotation extends NSObject implements MKAnnotation {
 
 	readonly memberAnnotations: NSArray<MKAnnotation>;
 
-	subtitle: string;
+	subtitle: string | null;
 
-	title: string;
+	title: string | null;
 
 	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
@@ -532,7 +532,7 @@ declare class MKCompassButton extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKCompassButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKCompassButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -543,20 +543,20 @@ declare class MKCompassButton extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKCompassButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKCompassButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
 	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKCompassButton; // inherited from UIAppearance
 
-	static compassButtonWithMapView(mapView: MKMapView): MKCompassButton;
+	static compassButtonWithMapView(mapView: MKMapView | null): MKCompassButton;
 
 	static new(): MKCompassButton; // inherited from NSObject
 
 	compassVisibility: MKFeatureVisibility;
 
-	mapView: MKMapView;
+	mapView: MKMapView | null;
 }
 
 /**
@@ -596,9 +596,9 @@ declare class MKDirections extends NSObject {
 
 	constructor(o: { request: MKDirectionsRequest; });
 
-	calculateDirectionsWithCompletionHandler(completionHandler: (p1: MKDirectionsResponse, p2: NSError) => void): void;
+	calculateDirectionsWithCompletionHandler(completionHandler: (p1: MKDirectionsResponse | null, p2: NSError | null) => void): void;
 
-	calculateETAWithCompletionHandler(completionHandler: (p1: MKETAResponse, p2: NSError) => void): void;
+	calculateETAWithCompletionHandler(completionHandler: (p1: MKETAResponse | null, p2: NSError | null) => void): void;
 
 	cancel(): void;
 
@@ -622,14 +622,14 @@ declare class MKDirectionsRequest extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	arrivalDate: Date;
+	arrivalDate: Date | null;
 
 	/**
 	 * @since 7.0
 	 */
-	departureDate: Date;
+	departureDate: Date | null;
 
-	destination: MKMapItem;
+	destination: MKMapItem | null;
 
 	/**
 	 * @since 16.0
@@ -641,7 +641,7 @@ declare class MKDirectionsRequest extends NSObject {
 	 */
 	requestsAlternateRoutes: boolean;
 
-	source: MKMapItem;
+	source: MKMapItem | null;
 
 	/**
 	 * @since 16.0
@@ -666,12 +666,12 @@ declare class MKDirectionsRequest extends NSObject {
 	/**
 	 * @since 7.0
 	 */
-	setDestination(destination: MKMapItem): void;
+	setDestination(destination: MKMapItem | null): void;
 
 	/**
 	 * @since 7.0
 	 */
-	setSource(source: MKMapItem): void;
+	setSource(source: MKMapItem | null): void;
 }
 
 /**
@@ -851,7 +851,7 @@ declare class MKGeoJSONDecoder extends NSObject {
 
 	static new(): MKGeoJSONDecoder; // inherited from NSObject
 
-	geoJSONObjectsWithDataError(data: NSData, error?: interop.Reference<NSError>): NSArray<MKGeoJSONObject>;
+	geoJSONObjectsWithDataError(data: NSData, error?: interop.Reference<NSError>): NSArray<MKGeoJSONObject> | null;
 }
 
 /**
@@ -865,9 +865,9 @@ declare class MKGeoJSONFeature extends NSObject implements MKGeoJSONObject {
 
 	readonly geometry: NSArray<MKShape & MKGeoJSONObject>;
 
-	readonly identifier: string;
+	readonly identifier: string | null;
 
-	readonly properties: NSData;
+	readonly properties: NSData | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -929,7 +929,7 @@ declare class MKGeocodingRequest extends NSObject {
 
 	readonly loading: boolean;
 
-	preferredLocale: NSLocale;
+	preferredLocale: NSLocale | null;
 
 	region: MKCoordinateRegion;
 
@@ -937,7 +937,7 @@ declare class MKGeocodingRequest extends NSObject {
 
 	cancel(): void;
 
-	getMapItemsWithCompletionHandler(completionHandler: (p1: NSArray<MKMapItem>, p2: NSError) => void): void;
+	getMapItemsWithCompletionHandler(completionHandler: (p1: NSArray<MKMapItem> | null, p2: NSError | null) => void): void;
 
 	initWithAddressString(addressString: string): this;
 }
@@ -951,9 +951,9 @@ declare class MKGeodesicPolyline extends MKPolyline {
 
 	static new(): MKGeodesicPolyline; // inherited from NSObject
 
-	static polylineWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number): MKGeodesicPolyline; // inherited from MKPolyline
+	static polylineWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D> | ArrayBufferLike | ArrayBufferView, count: number): MKGeodesicPolyline; // inherited from MKPolyline
 
-	static polylineWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number): MKGeodesicPolyline; // inherited from MKPolyline
+	static polylineWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint> | ArrayBufferLike | ArrayBufferView, count: number): MKGeodesicPolyline; // inherited from MKPolyline
 }
 
 /**
@@ -981,7 +981,7 @@ declare class MKHybridMapConfiguration extends MKMapConfiguration {
 
 	static new(): MKHybridMapConfiguration; // inherited from NSObject
 
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	showsTraffic: boolean;
 
@@ -1084,7 +1084,7 @@ declare class MKLocalPointsOfInterestRequest extends NSObject implements NSCopyi
 
 	readonly coordinate: CLLocationCoordinate2D;
 
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	readonly radius: number;
 
@@ -1094,7 +1094,7 @@ declare class MKLocalPointsOfInterestRequest extends NSObject implements NSCopyi
 
 	constructor(o: { coordinateRegion: MKCoordinateRegion; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithCenterCoordinateRadius(coordinate: CLLocationCoordinate2D, radius: number): this;
 
@@ -1128,7 +1128,7 @@ declare class MKLocalSearch extends NSObject {
 
 	initWithRequest(request: MKLocalSearchRequest): this;
 
-	startWithCompletionHandler(completionHandler: (p1: MKLocalSearchResponse, p2: NSError) => void): void;
+	startWithCompletionHandler(completionHandler: (p1: MKLocalSearchResponse | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -1143,9 +1143,9 @@ declare class MKLocalSearchCompleter extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	addressFilter: MKAddressFilter;
+	addressFilter: MKAddressFilter | null;
 
-	delegate: MKLocalSearchCompleterDelegate;
+	delegate: MKLocalSearchCompleterDelegate | null;
 
 	/**
 	 * @since 9.3
@@ -1156,7 +1156,7 @@ declare class MKLocalSearchCompleter extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	queryFragment: string;
 
@@ -1247,14 +1247,14 @@ declare class MKLocalSearchRequest extends NSObject implements NSCopying {
 	/**
 	 * @since 18.0
 	 */
-	addressFilter: MKAddressFilter;
+	addressFilter: MKAddressFilter | null;
 
-	naturalLanguageQuery: string;
+	naturalLanguageQuery: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	region: MKCoordinateRegion;
 
@@ -1283,7 +1283,7 @@ declare class MKLocalSearchRequest extends NSObject implements NSCopying {
 	 */
 	constructor(o: { naturalLanguageQuery: string; region: MKCoordinateRegion; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 9.3
@@ -1348,7 +1348,7 @@ declare class MKLookAroundScene extends NSObject implements NSCopying {
 
 	static new(): MKLookAroundScene; // inherited from NSObject
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1366,7 +1366,7 @@ declare class MKLookAroundSceneRequest extends NSObject {
 
 	readonly loading: boolean;
 
-	readonly mapItem: MKMapItem;
+	readonly mapItem: MKMapItem | null;
 
 	constructor(o: { coordinate: CLLocationCoordinate2D; });
 
@@ -1374,7 +1374,7 @@ declare class MKLookAroundSceneRequest extends NSObject {
 
 	cancel(): void;
 
-	getSceneWithCompletionHandler(completionHandler: (p1: MKLookAroundScene, p2: NSError) => void): void;
+	getSceneWithCompletionHandler(completionHandler: (p1: MKLookAroundScene, p2: NSError | null) => void): void;
 
 	initWithCoordinate(coordinate: CLLocationCoordinate2D): this;
 
@@ -1402,7 +1402,7 @@ declare class MKLookAroundSnapshotOptions extends NSObject {
 
 	static new(): MKLookAroundSnapshotOptions; // inherited from NSObject
 
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	size: CGSize;
 
@@ -1424,7 +1424,7 @@ declare class MKLookAroundSnapshotter extends NSObject {
 
 	cancel(): void;
 
-	getSnapshotWithCompletionHandler(completionHandler: (p1: MKLookAroundSnapshot, p2: NSError) => void): void;
+	getSnapshotWithCompletionHandler(completionHandler: (p1: MKLookAroundSnapshot | null, p2: NSError | null) => void): void;
 
 	initWithSceneOptions(scene: MKLookAroundScene, options: MKLookAroundSnapshotOptions): this;
 }
@@ -1440,13 +1440,13 @@ declare class MKLookAroundViewController extends UIViewController implements NSC
 
 	badgePosition: MKLookAroundBadgePosition;
 
-	delegate: MKLookAroundViewControllerDelegate;
+	delegate: MKLookAroundViewControllerDelegate | null;
 
 	navigationEnabled: boolean;
 
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
-	scene: MKLookAroundScene;
+	scene: MKLookAroundScene | null;
 
 	showsRoadLabels: boolean;
 
@@ -1529,7 +1529,7 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1557,7 +1557,7 @@ declare class MKMapCameraBoundary extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { mapRect: MKMapRect; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1596,7 +1596,7 @@ declare class MKMapCameraZoomRange extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { minCenterCoordinateDistance: number; maxCenterCoordinateDistance: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1624,7 +1624,7 @@ declare class MKMapConfiguration extends NSObject implements NSCopying, NSSecure
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1649,9 +1649,9 @@ declare class MKMapFeatureAnnotation extends NSObject implements MKAnnotation {
 
 	readonly featureType: MKMapFeatureType;
 
-	readonly iconStyle: MKIconStyle;
+	readonly iconStyle: MKIconStyle | null;
 
-	readonly pointOfInterestCategory: string;
+	readonly pointOfInterestCategory: string | null;
 
 	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
@@ -1663,11 +1663,11 @@ declare class MKMapFeatureAnnotation extends NSObject implements MKAnnotation {
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -1738,22 +1738,22 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): MKMapItem;
 
-	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>): boolean;
+	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any> | null): boolean;
 
 	/**
 	 * @since 13.2
 	 */
-	static openMapsWithItemsLaunchOptionsFromSceneCompletionHandler(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>, scene: UIScene, completion: (p1: boolean) => void): void;
+	static openMapsWithItemsLaunchOptionsFromSceneCompletionHandler(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any> | null, scene: UIScene | null, completion: (p1: boolean) => void | null): void;
 
 	/**
 	 * @since 26.0
 	 */
-	readonly address: MKAddress;
+	readonly address: MKAddress | null;
 
 	/**
 	 * @since 26.0
 	 */
-	readonly addressRepresentations: MKAddressRepresentations;
+	readonly addressRepresentations: MKAddressRepresentations | null;
 
 	/**
 	 * @since 18.0
@@ -1763,7 +1763,7 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	/**
 	 * @since 18.0
 	 */
-	readonly identifier: MKMapItemIdentifier;
+	readonly identifier: MKMapItemIdentifier | null;
 
 	readonly isCurrentLocation: boolean;
 
@@ -1772,9 +1772,9 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	 */
 	readonly location: CLLocation;
 
-	name: string;
+	name: string | null;
 
-	phoneNumber: string;
+	phoneNumber: string | null;
 
 	/**
 	 * @since 6.0
@@ -1785,14 +1785,14 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	/**
 	 * @since 13.0
 	 */
-	pointOfInterestCategory: string;
+	pointOfInterestCategory: string | null;
 
 	/**
 	 * @since 9.0
 	 */
-	timeZone: NSTimeZone;
+	timeZone: NSTimeZone | null;
 
-	url: NSURL;
+	url: NSURL | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1819,7 +1819,7 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { location: CLLocation; address: MKAddress; });
+	constructor(o: { location: CLLocation; address: MKAddress | null; });
 
 	/**
 	 * @since 6.0
@@ -1838,7 +1838,7 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	/**
 	 * @since 26.0
 	 */
-	initWithLocationAddress(location: CLLocation, address: MKAddress): this;
+	initWithLocationAddress(location: CLLocation, address: MKAddress | null): this;
 
 	/**
 	 * @since 6.0
@@ -1854,14 +1854,14 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
-	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData | null, p2: NSError | null) => void): NSProgress | null;
 
-	openInMapsWithLaunchOptions(launchOptions: NSDictionary<string, any>): boolean;
+	openInMapsWithLaunchOptions(launchOptions: NSDictionary<string, any> | null): boolean;
 
 	/**
 	 * @since 13.2
 	 */
-	openInMapsWithLaunchOptionsFromSceneCompletionHandler(launchOptions: NSDictionary<string, any>, scene: UIScene, completion: (p1: boolean) => void): void;
+	openInMapsWithLaunchOptionsFromSceneCompletionHandler(launchOptions: NSDictionary<string, any> | null, scene: UIScene | null, completion: (p1: boolean) => void | null): void;
 
 	performSelector(aSelector: string): any;
 
@@ -1897,11 +1897,11 @@ declare class MKMapItemAnnotation extends NSObject implements MKAnnotation {
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -1956,7 +1956,7 @@ declare class MKMapItemDetailSelectionAccessoryPresentationStyle extends NSObjec
 
 	static alloc(): MKMapItemDetailSelectionAccessoryPresentationStyle; // inherited from NSObject
 
-	static automaticWithPresentationViewController(presentationViewController: UIViewController): MKMapItemDetailSelectionAccessoryPresentationStyle;
+	static automaticWithPresentationViewController(presentationViewController: UIViewController | null): MKMapItemDetailSelectionAccessoryPresentationStyle;
 
 	static calloutWithCalloutStyle(style: MKMapItemDetailSelectionAccessoryCalloutStyle): MKMapItemDetailSelectionAccessoryPresentationStyle;
 
@@ -1978,17 +1978,17 @@ declare class MKMapItemDetailViewController extends UIViewController {
 
 	static new(): MKMapItemDetailViewController; // inherited from NSObject
 
-	delegate: MKMapItemDetailViewControllerDelegate;
+	delegate: MKMapItemDetailViewControllerDelegate | null;
 
-	mapItem: MKMapItem;
+	mapItem: MKMapItem | null;
 
-	constructor(o: { mapItem: MKMapItem; });
+	constructor(o: { mapItem: MKMapItem | null; });
 
-	constructor(o: { mapItem: MKMapItem; displaysMap: boolean; });
+	constructor(o: { mapItem: MKMapItem | null; displaysMap: boolean; });
 
-	initWithMapItem(mapItem: MKMapItem): this;
+	initWithMapItem(mapItem: MKMapItem | null): this;
 
-	initWithMapItemDisplaysMap(mapItem: MKMapItem, displaysMap: boolean): this;
+	initWithMapItemDisplaysMap(mapItem: MKMapItem | null, displaysMap: boolean): this;
 }
 
 /**
@@ -2020,7 +2020,7 @@ declare class MKMapItemIdentifier extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { identifierString: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2051,12 +2051,12 @@ declare class MKMapItemRequest extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	readonly mapFeatureAnnotation: MKMapFeatureAnnotation;
+	readonly mapFeatureAnnotation: MKMapFeatureAnnotation | null;
 
 	/**
 	 * @since 18.0
 	 */
-	readonly mapItemIdentifier: MKMapItemIdentifier;
+	readonly mapItemIdentifier: MKMapItemIdentifier | null;
 
 	/**
 	 * @since 16.0
@@ -2070,7 +2070,7 @@ declare class MKMapItemRequest extends NSObject {
 
 	cancel(): void;
 
-	getMapItemWithCompletionHandler(completionHandler: (p1: MKMapItem, p2: NSError) => void): void;
+	getMapItemWithCompletionHandler(completionHandler: (p1: MKMapItem | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
@@ -2123,7 +2123,7 @@ declare function MKMapRectContainsRect(rect1: MKMapRect, rect2: MKMapRect): bool
 /**
  * @since 4.0
  */
-declare function MKMapRectDivide(rect: MKMapRect, slice: interop.Pointer | interop.Reference<MKMapRect>, remainder: interop.Pointer | interop.Reference<MKMapRect>, amount: number, edge: CGRectEdge): void;
+declare function MKMapRectDivide(rect: MKMapRect, slice: interop.Pointer | interop.Reference<MKMapRect> | ArrayBufferLike | ArrayBufferView, remainder: interop.Pointer | interop.Reference<MKMapRect> | ArrayBufferLike | ArrayBufferView, amount: number, edge: CGRectEdge): void;
 
 /**
  * @since 4.0
@@ -2223,7 +2223,7 @@ declare class MKMapSnapshotOptions extends NSObject implements NSCopying {
 	 * @since 13.0
 	 * @deprecated 100000
 	 */
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	/**
 	 * @since 17.0
@@ -2257,7 +2257,7 @@ declare class MKMapSnapshotOptions extends NSObject implements NSCopying {
 	 */
 	traitCollection: UITraitCollection;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2277,9 +2277,9 @@ declare class MKMapSnapshotter extends NSObject {
 
 	initWithOptions(options: MKMapSnapshotOptions): this;
 
-	startWithCompletionHandler(completionHandler: (p1: MKMapSnapshot, p2: NSError) => void): void;
+	startWithCompletionHandler(completionHandler: (p1: MKMapSnapshot | null, p2: NSError | null) => void): void;
 
-	startWithQueueCompletionHandler(queue: NSObject & OS_dispatch_queue, completionHandler: (p1: MKMapSnapshot, p2: NSError) => void): void;
+	startWithQueueCompletionHandler(queue: NSObject & OS_dispatch_queue, completionHandler: (p1: MKMapSnapshot | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -2318,7 +2318,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKMapView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKMapView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2329,7 +2329,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKMapView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKMapView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2350,7 +2350,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	/**
 	 * @since 13.0
 	 */
-	cameraBoundary: MKMapCameraBoundary;
+	cameraBoundary: MKMapCameraBoundary | null;
 
 	/**
 	 * @since 13.0
@@ -2359,7 +2359,7 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	centerCoordinate: CLLocationCoordinate2D;
 
-	delegate: MKMapViewDelegate;
+	delegate: MKMapViewDelegate | null;
 
 	/**
 	 * @since 3.0
@@ -2386,7 +2386,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	 * @since 13.0
 	 * @deprecated 100000
 	 */
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	/**
 	 * @since 16.0
@@ -2488,22 +2488,22 @@ declare class MKMapView extends UIView implements NSCoding {
 	 */
 	annotationsInMapRect(mapRect: MKMapRect): NSSet<MKAnnotation>;
 
-	convertCoordinateToPointToView(coordinate: CLLocationCoordinate2D, view: UIView): CGPoint;
+	convertCoordinateToPointToView(coordinate: CLLocationCoordinate2D, view: UIView | null): CGPoint;
 
-	convertPointToCoordinateFromView(point: CGPoint, view: UIView): CLLocationCoordinate2D;
+	convertPointToCoordinateFromView(point: CGPoint, view: UIView | null): CLLocationCoordinate2D;
 
-	convertRectToRegionFromView(rect: CGRect, view: UIView): MKCoordinateRegion;
+	convertRectToRegionFromView(rect: CGRect, view: UIView | null): MKCoordinateRegion;
 
-	convertRegionToRectToView(region: MKCoordinateRegion, view: UIView): CGRect;
+	convertRegionToRectToView(region: MKCoordinateRegion, view: UIView | null): CGRect;
 
-	dequeueReusableAnnotationViewWithIdentifier(identifier: string): MKAnnotationView;
+	dequeueReusableAnnotationViewWithIdentifier(identifier: string): MKAnnotationView | null;
 
 	/**
 	 * @since 11.0
 	 */
 	dequeueReusableAnnotationViewWithIdentifierForAnnotation(identifier: string, annotation: MKAnnotation): MKAnnotationView;
 
-	deselectAnnotationAnimated(annotation: MKAnnotation, animated: boolean): void;
+	deselectAnnotationAnimated(annotation: MKAnnotation | null, animated: boolean): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2553,7 +2553,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	/**
 	 * @since 11.0
 	 */
-	registerClassForAnnotationViewWithReuseIdentifier(viewClass: typeof NSObject, identifier: string): void;
+	registerClassForAnnotationViewWithReuseIdentifier(viewClass: typeof NSObject | null, identifier: string): void;
 
 	removeAnnotation(annotation: MKAnnotation): void;
 
@@ -2572,7 +2572,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	/**
 	 * @since 7.0
 	 */
-	rendererForOverlay(overlay: MKOverlay): MKOverlayRenderer;
+	rendererForOverlay(overlay: MKOverlay): MKOverlayRenderer | null;
 
 	selectAnnotationAnimated(annotation: MKAnnotation, animated: boolean): void;
 
@@ -2584,12 +2584,12 @@ declare class MKMapView extends UIView implements NSCoding {
 	/**
 	 * @since 13.0
 	 */
-	setCameraBoundaryAnimated(cameraBoundary: MKMapCameraBoundary, animated: boolean): void;
+	setCameraBoundaryAnimated(cameraBoundary: MKMapCameraBoundary | null, animated: boolean): void;
 
 	/**
 	 * @since 13.0
 	 */
-	setCameraZoomRangeAnimated(cameraZoomRange: MKMapCameraZoomRange, animated: boolean): void;
+	setCameraZoomRangeAnimated(cameraZoomRange: MKMapCameraZoomRange | null, animated: boolean): void;
 
 	setCenterCoordinateAnimated(coordinate: CLLocationCoordinate2D, animated: boolean): void;
 
@@ -2609,7 +2609,7 @@ declare class MKMapView extends UIView implements NSCoding {
 	 */
 	showAnnotationsAnimated(annotations: NSArray<MKAnnotation> | MKAnnotation[], animated: boolean): void;
 
-	viewForAnnotation(annotation: MKAnnotation): MKAnnotationView;
+	viewForAnnotation(annotation: MKAnnotation): MKAnnotationView | null;
 
 	/**
 	 * @since 4.0
@@ -2721,9 +2721,9 @@ interface MKMapViewDelegate extends NSObjectProtocol {
 	/**
 	 * @since 18.0
 	 */
-	mapViewSelectionAccessoryForAnnotation?(mapView: MKMapView, annotation: MKAnnotation): MKSelectionAccessory;
+	mapViewSelectionAccessoryForAnnotation?(mapView: MKMapView, annotation: MKAnnotation): MKSelectionAccessory | null;
 
-	mapViewViewForAnnotation?(mapView: MKMapView, annotation: MKAnnotation): MKAnnotationView;
+	mapViewViewForAnnotation?(mapView: MKMapView, annotation: MKAnnotation): MKAnnotationView | null;
 
 	/**
 	 * @since 4.0
@@ -2766,7 +2766,7 @@ declare class MKMarkerAnnotationView extends MKAnnotationView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKMarkerAnnotationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKMarkerAnnotationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2777,7 +2777,7 @@ declare class MKMarkerAnnotationView extends MKAnnotationView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKMarkerAnnotationView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKMarkerAnnotationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2788,15 +2788,15 @@ declare class MKMarkerAnnotationView extends MKAnnotationView {
 
 	animatesWhenAdded: boolean;
 
-	glyphImage: UIImage;
+	glyphImage: UIImage | null;
 
-	glyphText: string;
+	glyphText: string | null;
 
-	glyphTintColor: UIColor;
+	glyphTintColor: UIColor | null;
 
-	markerTintColor: UIColor;
+	markerTintColor: UIColor | null;
 
-	selectedGlyphImage: UIImage;
+	selectedGlyphImage: UIImage | null;
 
 	subtitleVisibility: MKFeatureVisibility;
 
@@ -2840,7 +2840,7 @@ declare class MKMultiPoint extends MKShape implements MKGeoJSONObject {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	getCoordinatesRange(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, range: NSRange): void;
+	getCoordinatesRange(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D> | ArrayBufferLike | ArrayBufferView, range: NSRange): void;
 
 	isEqual(object: any): boolean;
 
@@ -2864,7 +2864,7 @@ declare class MKMultiPoint extends MKShape implements MKGeoJSONObject {
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	points(): interop.Pointer | interop.Reference<MKMapPoint>;
+	points(): interop.Pointer | interop.Reference<MKMapPoint> | null;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -2898,11 +2898,11 @@ declare class MKMultiPolygon extends MKShape implements MKGeoJSONObject, MKOverl
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -2981,11 +2981,11 @@ declare class MKMultiPolyline extends MKShape implements MKGeoJSONObject, MKOver
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -3074,11 +3074,11 @@ declare class MKOverlayPathRenderer extends MKOverlayRenderer {
 
 	static new(): MKOverlayPathRenderer; // inherited from NSObject
 
-	fillColor: UIColor;
+	fillColor: UIColor | null;
 
 	lineCap: CGLineCap;
 
-	lineDashPattern: NSArray<number>;
+	lineDashPattern: NSArray<number> | null;
 
 	lineDashPhase: number;
 
@@ -3095,7 +3095,7 @@ declare class MKOverlayPathRenderer extends MKOverlayRenderer {
 	 */
 	shouldRasterize: boolean;
 
-	strokeColor: UIColor;
+	strokeColor: UIColor | null;
 
 	applyFillPropertiesToContextAtZoomScale(context: any, zoomScale: number): void;
 
@@ -3129,7 +3129,7 @@ declare class MKOverlayPathView extends MKOverlayView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKOverlayPathView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKOverlayPathView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3140,7 +3140,7 @@ declare class MKOverlayPathView extends MKOverlayView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKOverlayPathView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKOverlayPathView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3302,7 +3302,7 @@ declare class MKOverlayView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKOverlayView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKOverlayView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3313,7 +3313,7 @@ declare class MKOverlayView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKOverlayView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKOverlayView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3421,7 +3421,7 @@ declare class MKPinAnnotationView extends MKAnnotationView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKPinAnnotationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKPinAnnotationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3432,7 +3432,7 @@ declare class MKPinAnnotationView extends MKAnnotationView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKPinAnnotationView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKPinAnnotationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3483,9 +3483,9 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 	/**
 	 * @since 10.0
 	 */
-	static placemarkWithLocationNamePostalAddress(location: CLLocation, name: string, postalAddress: CNPostalAddress): MKPlacemark; // inherited from CLPlacemark
+	static placemarkWithLocationNamePostalAddress(location: CLLocation, name: string | null, postalAddress: CNPostalAddress | null): MKPlacemark; // inherited from CLPlacemark
 
-	readonly countryCode: string;
+	readonly countryCode: string | null;
 
 	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
@@ -3497,11 +3497,11 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -3510,7 +3510,7 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 	 */
 	constructor(o: { coordinate: CLLocationCoordinate2D; });
 
-	constructor(o: { coordinate: CLLocationCoordinate2D; addressDictionary: NSDictionary<string, any>; });
+	constructor(o: { coordinate: CLLocationCoordinate2D; addressDictionary: NSDictionary<string, any> | null; });
 
 	/**
 	 * @since 10.0
@@ -3526,7 +3526,7 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 	 */
 	initWithCoordinate(coordinate: CLLocationCoordinate2D): this;
 
-	initWithCoordinateAddressDictionary(coordinate: CLLocationCoordinate2D, addressDictionary: NSDictionary<string, any>): this;
+	initWithCoordinateAddressDictionary(coordinate: CLLocationCoordinate2D, addressDictionary: NSDictionary<string, any> | null): this;
 
 	/**
 	 * @since 10.0
@@ -3588,7 +3588,7 @@ declare class MKPointAnnotation extends MKShape implements MKGeoJSONObject {
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { coordinate: CLLocationCoordinate2D; title: string; subtitle: string; });
+	constructor(o: { coordinate: CLLocationCoordinate2D; title: string | null; subtitle: string | null; });
 
 	class(): typeof NSObject;
 
@@ -3602,7 +3602,7 @@ declare class MKPointAnnotation extends MKShape implements MKGeoJSONObject {
 	/**
 	 * @since 13.0
 	 */
-	initWithCoordinateTitleSubtitle(coordinate: CLLocationCoordinate2D, title: string, subtitle: string): this;
+	initWithCoordinateTitleSubtitle(coordinate: CLLocationCoordinate2D, title: string | null, subtitle: string | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -4009,7 +4009,7 @@ declare class MKPointOfInterestFilter extends NSObject implements NSCopying, NSS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4038,15 +4038,15 @@ declare class MKPolygon extends MKMultiPoint implements MKGeoJSONObject, MKOverl
 
 	static new(): MKPolygon; // inherited from NSObject
 
-	static polygonWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number): MKPolygon;
+	static polygonWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D> | ArrayBufferLike | ArrayBufferView, count: number): MKPolygon;
 
-	static polygonWithCoordinatesCountInteriorPolygons(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number, interiorPolygons: NSArray<MKPolygon> | MKPolygon[]): MKPolygon;
+	static polygonWithCoordinatesCountInteriorPolygons(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D> | ArrayBufferLike | ArrayBufferView, count: number, interiorPolygons: NSArray<MKPolygon> | MKPolygon[] | null): MKPolygon;
 
-	static polygonWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number): MKPolygon;
+	static polygonWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint> | ArrayBufferLike | ArrayBufferView, count: number): MKPolygon;
 
-	static polygonWithPointsCountInteriorPolygons(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number, interiorPolygons: NSArray<MKPolygon> | MKPolygon[]): MKPolygon;
+	static polygonWithPointsCountInteriorPolygons(points: interop.Pointer | interop.Reference<MKMapPoint> | ArrayBufferLike | ArrayBufferView, count: number, interiorPolygons: NSArray<MKPolygon> | MKPolygon[] | null): MKPolygon;
 
-	readonly interiorPolygons: NSArray<MKPolygon>;
+	readonly interiorPolygons: NSArray<MKPolygon> | null;
 
 	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
 
@@ -4062,11 +4062,11 @@ declare class MKPolygon extends MKMultiPoint implements MKGeoJSONObject, MKOverl
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -4145,7 +4145,7 @@ declare class MKPolygonView extends MKOverlayPathView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKPolygonView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKPolygonView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4156,7 +4156,7 @@ declare class MKPolygonView extends MKOverlayPathView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKPolygonView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKPolygonView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4193,9 +4193,9 @@ declare class MKPolyline extends MKMultiPoint implements MKGeoJSONObject, MKOver
 
 	static new(): MKPolyline; // inherited from NSObject
 
-	static polylineWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number): MKPolyline;
+	static polylineWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D> | ArrayBufferLike | ArrayBufferView, count: number): MKPolyline;
 
-	static polylineWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number): MKPolyline;
+	static polylineWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint> | ArrayBufferLike | ArrayBufferView, count: number): MKPolyline;
 
 	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
 
@@ -4211,11 +4211,11 @@ declare class MKPolyline extends MKMultiPoint implements MKGeoJSONObject, MKOver
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
@@ -4294,7 +4294,7 @@ declare class MKPolylineView extends MKOverlayPathView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKPolylineView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKPolylineView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4305,7 +4305,7 @@ declare class MKPolylineView extends MKOverlayPathView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKPolylineView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKPolylineView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4430,13 +4430,13 @@ declare class MKReverseGeocodingRequest extends NSObject {
 
 	readonly location: CLLocation;
 
-	preferredLocale: NSLocale;
+	preferredLocale: NSLocale | null;
 
 	constructor(o: { location: CLLocation; });
 
 	cancel(): void;
 
-	getMapItemsWithCompletionHandler(completionHandler: (p1: NSArray<MKMapItem>, p2: NSError) => void): void;
+	getMapItemsWithCompletionHandler(completionHandler: (p1: NSArray<MKMapItem> | null, p2: NSError | null) => void): void;
 
 	initWithLocation(location: CLLocation): this;
 }
@@ -4498,7 +4498,7 @@ declare class MKRouteStep extends NSObject {
 
 	readonly instructions: string;
 
-	readonly notice: string;
+	readonly notice: string | null;
 
 	readonly polyline: MKPolyline;
 
@@ -4523,7 +4523,7 @@ declare class MKScaleView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKScaleView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKScaleView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4534,7 +4534,7 @@ declare class MKScaleView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKScaleView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKScaleView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4543,11 +4543,11 @@ declare class MKScaleView extends UIView {
 
 	static new(): MKScaleView; // inherited from NSObject
 
-	static scaleViewWithMapView(mapView: MKMapView): MKScaleView;
+	static scaleViewWithMapView(mapView: MKMapView | null): MKScaleView;
 
 	legendAlignment: MKScaleViewAlignment;
 
-	mapView: MKMapView;
+	mapView: MKMapView | null;
 
 	scaleVisibility: MKFeatureVisibility;
 }
@@ -4596,9 +4596,9 @@ declare class MKShape extends NSObject implements MKAnnotation {
 
 	static new(): MKShape; // inherited from NSObject
 
-	subtitle: string;
+	subtitle: string | null;
 
-	title: string;
+	title: string | null;
 
 	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
@@ -4653,7 +4653,7 @@ declare class MKStandardMapConfiguration extends MKMapConfiguration {
 
 	emphasisStyle: MKStandardMapEmphasisStyle;
 
-	pointOfInterestFilter: MKPointOfInterestFilter;
+	pointOfInterestFilter: MKPointOfInterestFilter | null;
 
 	showsTraffic: boolean;
 
@@ -4686,7 +4686,7 @@ declare class MKTileOverlay extends NSObject implements MKOverlay {
 
 	static new(): MKTileOverlay; // inherited from NSObject
 
-	readonly URLTemplate: string;
+	readonly URLTemplate: string | null;
 
 	canReplaceMapContent: boolean;
 
@@ -4710,15 +4710,15 @@ declare class MKTileOverlay extends NSObject implements MKOverlay {
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string | null; // inherited from MKAnnotation
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly title: string; // inherited from MKAnnotation
+	readonly title: string | null; // inherited from MKAnnotation
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { URLTemplate: string; });
+	constructor(o: { URLTemplate: string | null; });
 
 	URLForTilePath(path: MKTileOverlayPath): NSURL;
 
@@ -4726,7 +4726,7 @@ declare class MKTileOverlay extends NSObject implements MKOverlay {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithURLTemplate(URLTemplate: string): this;
+	initWithURLTemplate(URLTemplate: string | null): this;
 
 	intersectsMapRect(mapRect: MKMapRect): boolean;
 
@@ -4736,7 +4736,7 @@ declare class MKTileOverlay extends NSObject implements MKOverlay {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	loadTileAtPathResult(path: MKTileOverlayPath, result: (p1: NSData, p2: NSError) => void): void;
+	loadTileAtPathResult(path: MKTileOverlayPath, result: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	performSelector(aSelector: string): any;
 
@@ -4792,13 +4792,13 @@ declare class MKUserLocation extends NSObject implements MKAnnotation {
 	/**
 	 * @since 5.0
 	 */
-	readonly heading: CLHeading;
+	readonly heading: CLHeading | null;
 
-	readonly location: CLLocation;
+	readonly location: CLLocation | null;
 
-	subtitle: string;
+	subtitle: string | null;
 
-	title: string;
+	title: string | null;
 
 	readonly updating: boolean;
 
@@ -4862,7 +4862,7 @@ declare class MKUserLocationView extends MKAnnotationView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserLocationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKUserLocationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4873,7 +4873,7 @@ declare class MKUserLocationView extends MKAnnotationView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserLocationView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKUserLocationView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4901,7 +4901,7 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserTrackingBarButtonItem; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4912,7 +4912,7 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserTrackingBarButtonItem; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4936,11 +4936,11 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 
 	static new(): MKUserTrackingBarButtonItem; // inherited from NSObject
 
-	mapView: MKMapView;
+	mapView: MKMapView | null;
 
-	constructor(o: { mapView: MKMapView; });
+	constructor(o: { mapView: MKMapView | null; });
 
-	initWithMapView(mapView: MKMapView): this;
+	initWithMapView(mapView: MKMapView | null): this;
 }
 
 /**
@@ -4961,7 +4961,7 @@ declare class MKUserTrackingButton extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserTrackingButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): MKUserTrackingButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4972,7 +4972,7 @@ declare class MKUserTrackingButton extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserTrackingButton; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): MKUserTrackingButton; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -4981,9 +4981,9 @@ declare class MKUserTrackingButton extends UIView {
 
 	static new(): MKUserTrackingButton; // inherited from NSObject
 
-	static userTrackingButtonWithMapView(mapView: MKMapView): MKUserTrackingButton;
+	static userTrackingButtonWithMapView(mapView: MKMapView | null): MKUserTrackingButton;
 
-	mapView: MKMapView;
+	mapView: MKMapView | null;
 }
 
 /**

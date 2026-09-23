@@ -13,6 +13,11 @@ export * from './page-common';
 export class Page extends PageBase {
 	nativeViewProtected: org.nativescript.widgets.GridLayout;
 
+	constructor() {
+		super();
+		this.androidOverflowEdge = 'none';
+	}
+
 	public createNativeView() {
 		const layout = new org.nativescript.widgets.GridLayout(this._context);
 		layout.addRowsFromJSON(

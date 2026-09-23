@@ -7,52 +7,52 @@ declare function CCCalibratePBKDF(algorithm: number, passwordLen: number, saltLe
 /**
  * @since 2.0
  */
-declare function CCCrypt(op: number, alg: number, options: number, key: interop.Pointer | interop.Reference<any>, keyLength: number, iv: interop.Pointer | interop.Reference<any>, dataIn: interop.Pointer | interop.Reference<any>, dataInLength: number, dataOut: interop.Pointer | interop.Reference<any>, dataOutAvailable: number, dataOutMoved: interop.Pointer | interop.Reference<number>): number;
+declare function CCCrypt(op: number, alg: number, options: number, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, keyLength: number, iv: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataIn: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataInLength: number, dataOut: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataOutAvailable: number, dataOutMoved: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorCreate(op: number, alg: number, options: number, key: interop.Pointer | interop.Reference<any>, keyLength: number, iv: interop.Pointer | interop.Reference<any>, cryptorRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function CCCryptorCreate(op: number, alg: number, options: number, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, keyLength: number, iv: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, cryptorRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorCreateFromData(op: number, alg: number, options: number, key: interop.Pointer | interop.Reference<any>, keyLength: number, iv: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>, dataLength: number, cryptorRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, dataUsed: interop.Pointer | interop.Reference<number>): number;
+declare function CCCryptorCreateFromData(op: number, alg: number, options: number, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, keyLength: number, iv: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataLength: number, cryptorRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, dataUsed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 5.0
  */
-declare function CCCryptorCreateWithMode(op: number, mode: number, alg: number, padding: number, iv: interop.Pointer | interop.Reference<any>, key: interop.Pointer | interop.Reference<any>, keyLength: number, tweak: interop.Pointer | interop.Reference<any>, tweakLength: number, numRounds: number, options: number, cryptorRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function CCCryptorCreateWithMode(op: number, mode: number, alg: number, padding: number, iv: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, keyLength: number, tweak: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, tweakLength: number, numRounds: number, options: number, cryptorRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorFinal(cryptorRef: interop.Pointer | interop.Reference<any>, dataOut: interop.Pointer | interop.Reference<any>, dataOutAvailable: number, dataOutMoved: interop.Pointer | interop.Reference<number>): number;
+declare function CCCryptorFinal(cryptorRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataOut: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataOutAvailable: number, dataOutMoved: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorGetOutputLength(cryptorRef: interop.Pointer | interop.Reference<any>, inputLength: number, final: boolean): number;
+declare function CCCryptorGetOutputLength(cryptorRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, inputLength: number, final: boolean): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorRelease(cryptorRef: interop.Pointer | interop.Reference<any>): number;
+declare function CCCryptorRelease(cryptorRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorReset(cryptorRef: interop.Pointer | interop.Reference<any>, iv: interop.Pointer | interop.Reference<any>): number;
+declare function CCCryptorReset(cryptorRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, iv: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCCryptorUpdate(cryptorRef: interop.Pointer | interop.Reference<any>, dataIn: interop.Pointer | interop.Reference<any>, dataInLength: number, dataOut: interop.Pointer | interop.Reference<any>, dataOutAvailable: number, dataOutMoved: interop.Pointer | interop.Reference<number>): number;
+declare function CCCryptorUpdate(cryptorRef: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataIn: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataInLength: number, dataOut: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataOutAvailable: number, dataOutMoved: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CCHmac(algorithm: number, key: interop.Pointer | interop.Reference<any>, keyLength: number, data: interop.Pointer | interop.Reference<any>, dataLength: number, macOut: interop.Pointer | interop.Reference<any>): void;
+declare function CCHmac(algorithm: number, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, keyLength: number, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataLength: number, macOut: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface CCHmacContext {
 	ctx: interop.Reference<number>;
@@ -62,37 +62,37 @@ declare var CCHmacContext: interop.StructType<CCHmacContext>;
 /**
  * @since 2.0
  */
-declare function CCHmacFinal(ctx: interop.Pointer | interop.Reference<CCHmacContext>, macOut: interop.Pointer | interop.Reference<any>): void;
+declare function CCHmacFinal(ctx: interop.Pointer | interop.Reference<CCHmacContext> | ArrayBufferLike | ArrayBufferView | null, macOut: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function CCHmacInit(ctx: interop.Pointer | interop.Reference<CCHmacContext>, algorithm: number, key: interop.Pointer | interop.Reference<any>, keyLength: number): void;
+declare function CCHmacInit(ctx: interop.Pointer | interop.Reference<CCHmacContext> | ArrayBufferLike | ArrayBufferView | null, algorithm: number, key: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, keyLength: number): void;
 
 /**
  * @since 2.0
  */
-declare function CCHmacUpdate(ctx: interop.Pointer | interop.Reference<CCHmacContext>, data: interop.Pointer | interop.Reference<any>, dataLength: number): void;
+declare function CCHmacUpdate(ctx: interop.Pointer | interop.Reference<CCHmacContext> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dataLength: number): void;
 
 /**
  * @since 5.0
  */
-declare function CCKeyDerivationPBKDF(algorithm: number, password: string | interop.Pointer | interop.Reference<any>, passwordLen: number, salt: string | interop.Pointer | interop.Reference<any>, saltLen: number, prf: number, rounds: number, derivedKey: string | interop.Pointer | interop.Reference<any>, derivedKeyLen: number): number;
+declare function CCKeyDerivationPBKDF(algorithm: number, password: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, passwordLen: number, salt: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, saltLen: number, prf: number, rounds: number, derivedKey: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, derivedKeyLen: number): number;
 
 /**
  * @since 8.0
  */
-declare function CCRandomGenerateBytes(bytes: interop.Pointer | interop.Reference<any>, count: number): number;
+declare function CCRandomGenerateBytes(bytes: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, count: number): number;
 
 /**
  * @since 5.0
  */
-declare function CCSymmetricKeyUnwrap(algorithm: number, iv: string | interop.Pointer | interop.Reference<any>, ivLen: number, kek: string | interop.Pointer | interop.Reference<any>, kekLen: number, wrappedKey: string | interop.Pointer | interop.Reference<any>, wrappedKeyLen: number, rawKey: string | interop.Pointer | interop.Reference<any>, rawKeyLen: interop.Pointer | interop.Reference<number>): number;
+declare function CCSymmetricKeyUnwrap(algorithm: number, iv: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ivLen: number, kek: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, kekLen: number, wrappedKey: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, wrappedKeyLen: number, rawKey: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, rawKeyLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 5.0
  */
-declare function CCSymmetricKeyWrap(algorithm: number, iv: string | interop.Pointer | interop.Reference<any>, ivLen: number, kek: string | interop.Pointer | interop.Reference<any>, kekLen: number, rawKey: string | interop.Pointer | interop.Reference<any>, rawKeyLen: number, wrappedKey: string | interop.Pointer | interop.Reference<any>, wrappedKeyLen: interop.Pointer | interop.Reference<number>): number;
+declare function CCSymmetricKeyWrap(algorithm: number, iv: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ivLen: number, kek: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, kekLen: number, rawKey: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, rawKeyLen: number, wrappedKey: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, wrappedKeyLen: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 5.0
@@ -108,7 +108,7 @@ declare function CCSymmetricWrappedSize(algorithm: number, rawKeyLen: number): n
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD2(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_MD2(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface CC_MD2_CTX {
 	num: number;
@@ -122,25 +122,25 @@ declare var CC_MD2_CTX: interop.StructType<CC_MD2_CTX>;
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD2_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_MD2_CTX>): number;
+declare function CC_MD2_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_MD2_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD2_Init(c: interop.Pointer | interop.Reference<CC_MD2_CTX>): number;
+declare function CC_MD2_Init(c: interop.Pointer | interop.Reference<CC_MD2_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD2_Update(c: interop.Pointer | interop.Reference<CC_MD2_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_MD2_Update(c: interop.Pointer | interop.Reference<CC_MD2_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD4(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_MD4(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface CC_MD4_CTX {
 	A: number;
@@ -158,25 +158,25 @@ declare var CC_MD4_CTX: interop.StructType<CC_MD4_CTX>;
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD4_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_MD4_CTX>): number;
+declare function CC_MD4_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_MD4_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD4_Init(c: interop.Pointer | interop.Reference<CC_MD4_CTX>): number;
+declare function CC_MD4_Init(c: interop.Pointer | interop.Reference<CC_MD4_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD4_Update(c: interop.Pointer | interop.Reference<CC_MD4_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_MD4_Update(c: interop.Pointer | interop.Reference<CC_MD4_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD5(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_MD5(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface CC_MD5_CTX {
 	A: number;
@@ -194,21 +194,21 @@ declare var CC_MD5_CTX: interop.StructType<CC_MD5_CTX>;
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD5_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_MD5_CTX>): number;
+declare function CC_MD5_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_MD5_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD5_Init(c: interop.Pointer | interop.Reference<CC_MD5_CTX>): number;
+declare function CC_MD5_Init(c: interop.Pointer | interop.Reference<CC_MD5_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD5_Update(c: interop.Pointer | interop.Reference<CC_MD5_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_MD5_Update(c: interop.Pointer | interop.Reference<CC_MD5_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
-declare function CC_SHA1(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_SHA1(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface CC_SHA1_CTX {
 	h0: number;
@@ -223,36 +223,36 @@ interface CC_SHA1_CTX {
 }
 declare var CC_SHA1_CTX: interop.StructType<CC_SHA1_CTX>;
 
-declare function CC_SHA1_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA1_CTX>): number;
+declare function CC_SHA1_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_SHA1_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function CC_SHA1_Init(c: interop.Pointer | interop.Reference<CC_SHA1_CTX>): number;
+declare function CC_SHA1_Init(c: interop.Pointer | interop.Reference<CC_SHA1_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function CC_SHA1_Update(c: interop.Pointer | interop.Reference<CC_SHA1_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
-
-/**
- * @since 2.0
- */
-declare function CC_SHA224(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_SHA1_Update(c: interop.Pointer | interop.Reference<CC_SHA1_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA224_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
+declare function CC_SHA224(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA224_Init(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
+declare function CC_SHA224_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_SHA256_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA224_Update(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_SHA224_Init(c: interop.Pointer | interop.Reference<CC_SHA256_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA256(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_SHA224_Update(c: interop.Pointer | interop.Reference<CC_SHA256_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
+
+/**
+ * @since 2.0
+ */
+declare function CC_SHA256(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface CC_SHA256_CTX {
 	count: interop.Reference<number>;
@@ -264,42 +264,42 @@ declare var CC_SHA256_CTX: interop.StructType<CC_SHA256_CTX>;
 /**
  * @since 2.0
  */
-declare function CC_SHA256_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
+declare function CC_SHA256_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_SHA256_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA256_Init(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
+declare function CC_SHA256_Init(c: interop.Pointer | interop.Reference<CC_SHA256_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA256_Update(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_SHA256_Update(c: interop.Pointer | interop.Reference<CC_SHA256_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA384(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_SHA384(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA384_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
+declare function CC_SHA384_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_SHA512_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA384_Init(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
+declare function CC_SHA384_Init(c: interop.Pointer | interop.Reference<CC_SHA512_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA384_Update(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_SHA384_Update(c: interop.Pointer | interop.Reference<CC_SHA512_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA512(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function CC_SHA512(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number, md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface CC_SHA512_CTX {
 	count: interop.Reference<number>;
@@ -311,22 +311,22 @@ declare var CC_SHA512_CTX: interop.StructType<CC_SHA512_CTX>;
 /**
  * @since 2.0
  */
-declare function CC_SHA512_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
+declare function CC_SHA512_Final(md: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: interop.Pointer | interop.Reference<CC_SHA512_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA512_Init(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
+declare function CC_SHA512_Init(c: interop.Pointer | interop.Reference<CC_SHA512_CTX> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function CC_SHA512_Update(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
+declare function CC_SHA512_Update(c: interop.Pointer | interop.Reference<CC_SHA512_CTX> | ArrayBufferLike | ArrayBufferView | null, data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 /**
  * @since 5.0
  */
-declare var CCrfc3394_iv: interop.Pointer | interop.Reference<any>;
+declare var CCrfc3394_iv: interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 5.0

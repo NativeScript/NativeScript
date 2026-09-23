@@ -1,58 +1,562 @@
+import { setHmrBootStage } from './dev-overlay.js';
+import { buildPlaceholderPage } from './root-placeholder-view.js';
+import { getGlobalScope } from './global-scope.js';
+import { getVendorRequire } from './vendor-resolve.js';
+import { markDevBootComplete } from './boot-complete.js';
+
+function isPlaceholderView(view: any, placeholderRoot: any): boolean {
+	if (!view) {
+		return false;
+	}
+	if (placeholderRoot && view === placeholderRoot) {
+		return true;
+	}
+	try {
+		if ((view as any).__ns_dev_placeholder) {
+			return true;
+		}
+	} catch {}
+	return false;
+}
+
+function getCommittedRootView(application: any, placeholderRoot: any): any | null {
+	const probe = (app: any): any | null => {
+		try {
+			const root = app?.getRootView?.() || null;
+			if (!root) return null;
+			if (!isPlaceholderView(root, placeholderRoot)) return root;
+			const currentPage = (root as any).currentPage || (root as any)._currentEntry?.resolvedPage || null;
+			if (currentPage && !isPlaceholderView(currentPage, placeholderRoot)) return root;
+		} catch {}
+		return null;
+	};
+
+	const primary = probe(application);
+	if (primary) return primary;
+
+	// Vite HMR realm split: Angular's `Application.resetRootView` may have
+	// committed the real root on a different Application instance than the
+	// one the placeholder/early hook patched. Scan every Application we
+	// know about so we can detect the commit regardless of which twin
+	// Angular actually wrote to.
+	try {
+		const g: any = getGlobalScope();
+		const known: any[] = g['__NS_DEV_KNOWN_APPLICATIONS__'] || [];
+		for (const app of known) {
+			if (!app || app === application) continue;
+			const r = probe(app);
+			if (r) return r;
+		}
+	} catch {}
+
+	return null;
+}
+
+function getPlaceholderWaitDiagnosticSnapshot(g: any, application: any, placeholderRoot: any): Record<string, unknown> {
+	const snapshot: Record<string, unknown> = {
+		bootComplete: !!g.__NS_HMR_BOOT_COMPLETE__,
+		hasPlaceholderRoot: !!placeholderRoot,
+		hasPlaceholderFlag: !!g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__,
+		hasAngularAppRef: !!g.__NS_ANGULAR_APP_REF__,
+		hasAngularReboot: typeof g.__reboot_ng_modules__ === 'function',
+	};
+
+	try {
+		snapshot.applicationType = application?.constructor?.name;
+		snapshot.hasLaunched = typeof application?.hasLaunched === 'function' ? !!application.hasLaunched() : undefined;
+		snapshot.rootViewType = application?.getRootView?.()?.constructor?.name;
+	} catch {}
+
+	try {
+		const Frame = g.Frame;
+		const topmost = Frame?.topmost?.() || null;
+		snapshot.topmostFrameType = topmost?.constructor?.name;
+		snapshot.topmostPageType = topmost?.currentPage?.constructor?.name || topmost?._currentEntry?.resolvedPage?.constructor?.name;
+	} catch {}
+
+	return snapshot;
+}
+
+function restoreOriginalApplicationRun(g: any): void {
+	const originalRun = g['__NS_DEV_ORIGINAL_APP_RUN__'];
+	if (typeof originalRun !== 'function') {
+		return;
+	}
+
+	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
+	try {
+		if (application) {
+			(application as any).run = originalRun;
+		}
+	} catch {}
+	try {
+		if (g.Application && g.Application !== application) {
+			g.Application.run = originalRun;
+		}
+	} catch {}
+	try {
+		const proto = application ? Object.getPrototypeOf(application) : null;
+		if (proto && typeof proto.run === 'function' && proto.run !== originalRun) {
+			proto.run = originalRun;
+		}
+	} catch {}
+	delete g['__NS_DEV_ORIGINAL_APP_RUN__'];
+}
+
+function clearPlaceholderGlobals(g: any): void {
+	delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
+	delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
+	delete g['__NS_DEV_BOOT_STATUS_LABEL__'];
+	delete g['__NS_DEV_BOOT_DETAIL_LABEL__'];
+	delete g['__NS_DEV_BOOT_PROGRESS_FILL__'];
+	delete g['__NS_DEV_BOOT_PROGRESS_LAST_SCALE__'];
+	delete g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
+	delete g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'];
+	delete g['__NS_DEV_PLACEHOLDER_APPLICATION__'];
+	const timer = g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+	if (timer) {
+		try {
+			clearTimeout(timer);
+		} catch {}
+	}
+	delete g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+}
+
+export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): boolean {
+	const g: any = getGlobalScope();
+	const placeholderRoot = g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null;
+	const hadPlaceholder = !!placeholderRoot || !!g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] || !!g['__NS_DEV_BOOT_STATUS_LABEL__'] || !!g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
+	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
+	const committedRoot = getCommittedRootView(application, placeholderRoot);
+
+	if (!committedRoot) {
+		// Verbose-gated, throttled to 1 Hz to avoid spamming the log on long stalls.
+		try {
+			if (verbose) {
+				const now = Date.now();
+				const last = g.__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__ || 0;
+				if (now - last > 1000) {
+					g.__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__ = now;
+					const describe = (app: any) => {
+						try {
+							const r = app?.getRootView?.();
+							const cp = (r as any)?.currentPage || (r as any)?._currentEntry?.resolvedPage;
+							return {
+								appType: app?.constructor?.name || typeof app,
+								appIdentity: app === application ? 'primary' : 'alt',
+								rootType: r?.constructor?.name || 'null',
+								rootIsPlaceholder: !!r && (r === placeholderRoot || (r as any).__ns_dev_placeholder === true),
+								currentPageType: cp?.constructor?.name,
+							};
+						} catch {
+							return { appType: 'error' };
+						}
+					};
+					const known = (g['__NS_DEV_KNOWN_APPLICATIONS__'] || []) as any[];
+					console.warn('[ns-placeholder][diag] tryFinalize: no committed root', {
+						reason,
+						hadPlaceholder,
+						placeholderRootType: placeholderRoot?.constructor?.name,
+						primary: describe(application),
+						knownApplications: known.length,
+						alts: known.filter((a) => a && a !== application).map(describe),
+					});
+				}
+			}
+		} catch {}
+		return false;
+	}
+
+	let detachedPlaceholder = false;
+	if (hadPlaceholder) {
+		try {
+			const launchHandler = g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'];
+			if (application && typeof (application as any).off === 'function' && launchHandler) {
+				(application as any).off((application as any).launchEvent, launchHandler);
+			}
+		} catch {}
+		restoreOriginalApplicationRun(g);
+		clearPlaceholderGlobals(g);
+		detachedPlaceholder = true;
+	}
+
+	// Flips the JS global AND the native cold-boot gate
+	// (ns:module `setDevBootComplete`): the real root is committed, so the
+	// runtime's boot-only runloop pump can disarm.
+	markDevBootComplete();
+
+	if (detachedPlaceholder) {
+		setHmrBootStage('app-root-committed', {
+			detail: 'The real app root replaced the boot placeholder.',
+		});
+	}
+
+	if (verbose) {
+		console.info('[ns-placeholder] real app root committed', {
+			reason,
+			rootType: committedRoot?.constructor?.name || typeof committedRoot,
+			detachedPlaceholder,
+		});
+	}
+
+	return true;
+}
+
+function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): void {
+	const g: any = getGlobalScope();
+	if (g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__']) {
+		return;
+	}
+
+	const startedAt = Date.now();
+	const maxWaitMs = 20000;
+	let attempts = 0;
+	const tick = () => {
+		delete g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+		if (tryFinalizeBootPlaceholder(reason, verbose)) {
+			return;
+		}
+		attempts += 1;
+		if (Date.now() - startedAt >= maxWaitMs) {
+			// Always-on: a dev session that never commits a real root used to be
+			// an INFINITE silent spinner — the most common cause (a swallowed
+			// XML/Builder error during Application.run) printed one console line
+			// and nothing else. Flip the boot overlay to its error stage with the
+			// last captured builder error so the failure is visible on-device.
+			// Core's SourceErrorFormat stashes that error on
+			// `globalThis.__NS_LAST_XML_ERROR__` for exactly this hand-off.
+			try {
+				const lastXmlError = g.__NS_LAST_XML_ERROR__;
+				const hint = lastXmlError && lastXmlError.message ? `Last UI build error — ${lastXmlError.uri}: ${lastXmlError.message}` : 'No error was captured; check the device console for the first failure after launch.';
+				setHmrBootStage('error', {
+					detail: `Dev session is active but the app root never replaced the boot placeholder (waited ${Math.round((Date.now() - startedAt) / 1000)}s). ${hint}`,
+				});
+			} catch {}
+			// Verbose-gated: enable `verbose` in the HMR config to surface stall diagnostics.
+			try {
+				if (verbose) {
+					console.warn('[ns-placeholder][diag] waiting for real root commit TIMED OUT', {
+						reason,
+						attempts,
+						waitMs: Date.now() - startedAt,
+						state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
+					});
+				}
+			} catch {}
+			return;
+		}
+		g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'] = setTimeout(tick, attempts === 1 ? 0 : 100);
+	};
+
+	tick();
+}
+
 // Root placeholder installer used during dev HMR until HTTP ESM loads.
+//
+// Architecture:
+//   1. Install a launchEvent handler that provides a placeholder Frame/Page
+//   2. Call Application.run() to start the iOS lifecycle (required or app terminates)
+//   3. Inside the handler (after root is set), patch Application.run so subsequent
+//      calls (from the real app module) become Application.resetRootView()
+//
+// This means the app's entry (e.g., index.ts) can call Application.run({ create })
+// exactly as it would in production — the patch intercepts it and does a clean
+// root replacement instead of fighting the already-running lifecycle.
+
 export function installRootPlaceholder(verbose?: boolean) {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	if (g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__']) return;
 	g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] = true;
+	g['__NS_DEV_RESTORE_PLACEHOLDER__'] = (reason?: string) => {
+		if (!tryFinalizeBootPlaceholder(reason, verbose)) {
+			scheduleBootPlaceholderFinalize(reason, verbose);
+		}
+	};
 	try {
-		const getCore = (name: string): any => {
-			try {
-				const reg = g.__nsVendorRegistry;
-				const req = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-				let mod: any = null;
-				if (reg && reg.has('@nativescript/core')) mod = reg.get('@nativescript/core');
-				else if (typeof req === 'function') {
-					try {
-						mod = req('@nativescript/core');
-					} catch {}
-				}
-				const ns = (mod && (mod.default ?? mod)) || mod;
-				if (name === 'Application' && ns && (ns.Application || ns)) return ns.Application || ns;
-				if (ns && ns[name]) return ns[name];
-			} catch {}
-			try {
-				const nr = g.__nativeRequire;
-				if (typeof nr === 'function') {
-					try {
-						const mod = nr('@nativescript/core', '/');
-						const ns = (mod && (mod.default ?? mod)) || mod;
-						if (name === 'Application' && ns && (ns.Application || ns)) return ns.Application || ns;
-						if (ns && ns[name]) return ns[name];
-					} catch {}
-				}
-			} catch {}
+		type ResolvedModule = { value: any; via: string; moduleId: string };
+		const resolveModule = (moduleIds: string[]): ResolvedModule | undefined => {
+			for (const moduleId of moduleIds) {
+				try {
+					if (typeof g.moduleExists === 'function' && g.moduleExists(moduleId) && typeof g.loadModule === 'function') {
+						const mod = g.loadModule(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: 'loadModule', moduleId };
+					}
+				} catch {}
+				try {
+					const reg = g.__nsVendorRegistry;
+					if (reg?.has?.(moduleId)) {
+						const mod = reg.get(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nsVendorRegistry', moduleId };
+					}
+				} catch {}
+				try {
+					const req = getVendorRequire();
+					if (req) {
+						const mod = req(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
+					}
+				} catch {}
+				try {
+					const nr = g.__nativeRequire;
+					if (typeof nr === 'function') {
+						const mod = nr(moduleId, '/');
+						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nativeRequire', moduleId };
+					}
+				} catch {}
+			}
 			return undefined;
 		};
-		const Application = getCore('Application');
-		const Frame = getCore('Frame');
-		const Page = getCore('Page');
-		const Label = getCore('Label');
-		if (!Application || !Frame || !Page || !Label) {
-			try {
-				console.warn('[ns-entry] (early) core classes unavailable for placeholder');
-			} catch {}
+		const getCore = (name: string): { value: any; source: string } => {
+			if (name === 'Application' && g.Application && (typeof g.Application.run === 'function' || typeof g.Application.on === 'function' || typeof g.Application.resetRootView === 'function')) {
+				return { value: g.Application, source: 'globalThis.Application' };
+			}
+
+			const pickApplicationApi = (candidate: any, source: string): { value: any; source: string } | null => {
+				if (!candidate) return null;
+				const candidates = [
+					{ value: candidate, source },
+					{ value: candidate.Application, source: `${source}#Application` },
+					{ value: candidate.app, source: `${source}#app` },
+					{ value: candidate.application, source: `${source}#application` },
+				];
+				for (const entry of candidates) {
+					if (entry.value && (typeof entry.value.run === 'function' || typeof entry.value.on === 'function' || typeof entry.value.resetRootView === 'function')) {
+						return entry;
+					}
+				}
+				return null;
+			};
+
+			if (name === 'Application') {
+				const applicationModule = resolveModule(['@nativescript/core/application']);
+				const pickedFromAppModule = pickApplicationApi(applicationModule?.value, applicationModule ? `${applicationModule.via}:${applicationModule.moduleId}` : '@nativescript/core/application');
+				if (pickedFromAppModule) return pickedFromAppModule;
+			}
+
+			const primary = resolveModule(['@nativescript/core']);
+			if (name === 'Application' && primary?.value) {
+				const pickedFromPrimary = pickApplicationApi(primary.value, `${primary.via}:${primary.moduleId}`);
+				if (pickedFromPrimary) return pickedFromPrimary;
+			}
+			if (primary?.value && primary.value[name]) return { value: primary.value[name], source: `${primary.via}:${primary.moduleId}` };
+
+			const ui = resolveModule(['@nativescript/core/ui']);
+			if (ui?.value && ui.value[name]) return { value: ui.value[name], source: `${ui.via}:${ui.moduleId}` };
+
+			return { value: undefined, source: 'unresolved' };
+		};
+		const applicationResolved = getCore('Application');
+		const frameResolved = getCore('Frame');
+		const pageResolved = getCore('Page');
+		const labelResolved = getCore('Label');
+		const activityResolved = getCore('ActivityIndicator');
+		const Application = applicationResolved.value;
+		const Frame = frameResolved.value;
+		const Page = pageResolved.value;
+		const Label = labelResolved.value;
+		const ActivityIndicator = activityResolved.value;
+		if (!Application) {
+			if (verbose) {
+				console.warn('[ns-placeholder] Application unavailable', {
+					resolution: {
+						Application: applicationResolved.source,
+						Frame: frameResolved.source,
+						Page: pageResolved.source,
+						Label: labelResolved.source,
+					},
+					moduleApis: {
+						moduleExists: typeof g.moduleExists === 'function',
+						loadModule: typeof g.loadModule === 'function',
+						uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
+					},
+				});
+			}
+			return;
 		}
+		g['__NS_DEV_PLACEHOLDER_APPLICATION__'] = Application;
+		const isAndroid = !!(g.__ANDROID__ || typeof g.android !== 'undefined');
+		// Patch `Application.resetRootView` on BOTH platforms so the placeholder
+		// finalize callback (`__NS_DEV_RESTORE_PLACEHOLDER__`) fires every time the
+		// framework swaps the root view. The early Android wrapper in
+		// `core-aliases-early.ts` is unreliable under HTTP HMR boot (it runs before
+		// `g.Application` exists), so we wrap here too and coordinate via
+		// `__NS_DEV_PATCHED_RESET_ROOT__` to avoid double-wrapping.
+		const earlyAndroidWrapped = !!g['__NS_DEV_PATCHED_RESET_ROOT__'];
+		// Verbose-gated: the diag stream (resetRootView wraps, launch-handler
+		// entries, placeholder install state) only matters when investigating a stall.
+		const diag: (...args: any[]) => void = verbose
+			? (...args: any[]) => {
+					try {
+						console.warn('[ns-placeholder][diag]', ...args);
+					} catch {}
+				}
+			: () => {};
+		diag('install entry', {
+			platform: isAndroid ? 'android' : 'ios',
+			applicationSource: applicationResolved.source,
+			applicationType: Application?.constructor?.name,
+			hasReset: typeof (Application as any).resetRootView === 'function',
+			alreadyPatchedEarly: earlyAndroidWrapped,
+			alreadyPatchedView: !!g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'],
+			globalApplicationSame: g.Application === Application,
+			vendorApplicationSame: (() => {
+				try {
+					const v = g.__nsVendorRegistry?.get?.('@nativescript/core');
+					return v?.Application === Application || v?.default?.Application === Application;
+				} catch {
+					return null;
+				}
+			})(),
+		});
+		// Always patch every Application instance we can find. The early
+		// Android hook in `core-aliases-early.ts` only patches `g.Application`
+		// (the bundled realm's Application) and its prototype — but on Vite
+		// HMR there can be a SECOND Application loaded by the HTTP realm
+		// (`vendor-registry @nativescript/core`) that Angular's `import { Application }`
+		// actually resolves to. If we don't patch that twin too, Angular's
+		// `Application.resetRootView({ create: () => doc })` lands on an
+		// unpatched object, the placeholder finalize callback is never
+		// invoked, and the boot stalls at "Waiting for the app root view".
+		const makePatched = (origReset: (...args: any[]) => any, label: string) =>
+			function __ns_dev_patched_reset_root_view(entry?: any) {
+				diag(`patched resetRootView called (${label})`, {
+					hasEntry: !!entry,
+					entryKind: entry?.create ? 'create-fn' : entry?.moduleName ? 'module-name' : typeof entry,
+				});
+				const result = origReset(entry);
+				try {
+					const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
+					if (typeof restore === 'function') {
+						restore(`Application.resetRootView (${label})`);
+					}
+				} catch (e: any) {
+					diag('patched resetRootView restore threw', String(e && (e.message || e)));
+				}
+				return result;
+			};
+		const wrapOnce = (target: any, label: string): boolean => {
+			try {
+				if (!target || typeof target.resetRootView !== 'function') return false;
+				if ((target.resetRootView as any).__ns_dev_placeholder_wrap === true) return false;
+				const orig = target.resetRootView.bind(target);
+				const wrapped: any = makePatched(orig, label);
+				wrapped.__ns_dev_placeholder_wrap = true;
+				target.resetRootView = wrapped;
+				return true;
+			} catch {
+				return false;
+			}
+		};
+		const wrappedLocal = wrapOnce(Application, 'local');
+		const wrappedGlobal = g.Application && g.Application !== Application ? wrapOnce(g.Application, 'global') : false;
+		const wrappedProto = (() => {
+			try {
+				const proto = Object.getPrototypeOf(Application);
+				return wrapOnce(proto, 'proto');
+			} catch {
+				return false;
+			}
+		})();
+		// Vendor-realm Application coverage. Even when `earlyAndroidWrapped`
+		// is true, the early hook only touched `g.Application` + its proto;
+		// the vendor's Application is a separate object with its own
+		// `resetRootView` that the early hook never sees.
+		let wrappedVendor = false;
+		let wrappedVendorAppModule = false;
+		try {
+			const reg = g.__nsVendorRegistry;
+			if (reg && typeof reg.get === 'function') {
+				const vendorCore = reg.get('@nativescript/core');
+				const vendorApp = vendorCore?.Application || vendorCore?.default?.Application;
+				if (vendorApp && vendorApp !== Application) {
+					wrappedVendor = wrapOnce(vendorApp, 'vendor-core');
+					try {
+						const vp = Object.getPrototypeOf(vendorApp);
+						if (vp && vp !== Object.getPrototypeOf(Application)) {
+							wrapOnce(vp, 'vendor-core-proto');
+						}
+					} catch {}
+				}
+				const vendorAppMod = reg.get('@nativescript/core/application');
+				const vendorAppOnly = vendorAppMod?.Application || vendorAppMod?.default?.Application;
+				if (vendorAppOnly && vendorAppOnly !== Application && vendorAppOnly !== vendorApp) {
+					wrappedVendorAppModule = wrapOnce(vendorAppOnly, 'vendor-application');
+				}
+			}
+		} catch {}
+		// Track every Application instance we know about so
+		// `tryFinalizeBootPlaceholder` can poll the real root view on the
+		// instance Angular actually committed to.
+		try {
+			const apps: any[] = (g['__NS_DEV_KNOWN_APPLICATIONS__'] ||= []);
+			const push = (a: any) => {
+				if (a && apps.indexOf(a) === -1) apps.push(a);
+			};
+			push(Application);
+			push(g.Application);
+			try {
+				const reg = g.__nsVendorRegistry;
+				if (reg && typeof reg.get === 'function') {
+					const vendorCore = reg.get('@nativescript/core');
+					push(vendorCore?.Application);
+					push(vendorCore?.default?.Application);
+					const vendorAppMod = reg.get('@nativescript/core/application');
+					push(vendorAppMod?.Application);
+					push(vendorAppMod?.default?.Application);
+				}
+			} catch {}
+		} catch {}
+		g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'] = true;
+		g['__NS_DEV_PATCHED_RESET_ROOT__'] = true;
+		diag('patched Application.resetRootView', {
+			platform: isAndroid ? 'android' : 'ios',
+			wrappedLocal,
+			wrappedGlobal,
+			wrappedProto,
+			wrappedVendor,
+			wrappedVendorAppModule,
+			knownApplications: (g['__NS_DEV_KNOWN_APPLICATIONS__'] || []).length,
+		});
+		const canCreatePlaceholderRoot = !!Frame && !!Page && !!Label;
+		if (!canCreatePlaceholderRoot && verbose) {
+			console.warn('[ns-placeholder] visual placeholder unavailable; starting lifecycle without placeholder root', {
+				resolution: {
+					Application: applicationResolved.source,
+					Frame: frameResolved.source,
+					Page: pageResolved.source,
+					Label: labelResolved.source,
+					ActivityIndicator: activityResolved.source,
+				},
+				moduleApis: {
+					moduleExists: typeof g.moduleExists === 'function',
+					loadModule: typeof g.loadModule === 'function',
+					uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
+				},
+			});
+		}
+
+		let handlerFired = false;
+
+		// launchEvent handler: provides a placeholder root, then patches Application.run
 		const __ns_launch_handler = (args?: any) => {
+			diag('launch handler fired', {
+				hasArgs: !!args,
+				hasExistingRoot: !!args?.root,
+				existingRootType: args?.root?.constructor?.name,
+				hasLaunched: typeof (Application as any).hasLaunched === 'function' ? !!(Application as any).hasLaunched() : undefined,
+				started: !!(Application as any).started,
+			});
 			try {
 				const prev = args?.root;
-				if (verbose) console.info('[ns-entry] (early) launchEvent fired; existing root:', !!prev);
-				if (!prev && Frame && Page && Label) {
-					const page = new Page();
-					page.actionBarHidden = true;
-					const label = new Label();
-					label.text = 'Starting NativeScript + Vite dev server…';
-					label.textAlignment = 'center';
-					label.padding = 12;
-					page.content = label;
+				if (!prev && canCreatePlaceholderRoot && Frame && Page && Label) {
+					const built = buildPlaceholderPage({ Page, Label, ActivityIndicator, StackLayout: getCore('StackLayout').value, GridLayout: getCore('GridLayout').value, ContentView: getCore('ContentView').value, Image: getCore('Image').value, Color: getCore('Color').value, verbose });
+					const { page, statusLabel, detailLabel, progressFill, activityIndicator } = built;
+
+					g['__NS_DEV_BOOT_STATUS_LABEL__'] = statusLabel;
+					g['__NS_DEV_BOOT_DETAIL_LABEL__'] = detailLabel;
+					g['__NS_DEV_BOOT_PROGRESS_FILL__'] = progressFill;
+					g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'] = activityIndicator;
+
 					const frame = new Frame();
 					frame.navigate({ create: () => page, clearHistory: true, animated: false });
 					try {
@@ -60,54 +564,257 @@ export function installRootPlaceholder(verbose?: boolean) {
 						(page as any).__ns_dev_placeholder = true;
 						g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] = frame;
 					} catch {}
+					if (verbose) {
+						console.info('[ns-placeholder] assigned placeholder root', {
+							frameType: frame?.constructor?.name,
+							pageType: page?.constructor?.name,
+							hasProgressFill: !!progressFill,
+							hasActivityIndicator: !!activityIndicator,
+						});
+					}
 					if (args) args.root = frame;
-					if (verbose) console.info('[ns-entry] (early) temporary root provided via launch args');
 				}
 			} catch (e) {
-				try {
-					console.error('[ns-entry] (early) temp root error', e);
-				} catch {}
+				console.error('[ns-placeholder] root error', e);
 			}
-		};
-		try {
-			g['__NS_DEV_LAUNCH_HANDLER__'] = __ns_launch_handler;
-		} catch {}
-		try {
-			if (!g['__NS_DEV_LAUNCH_ATTACHED__'] && Application && (Application as any).on) {
-				(Application as any).on((Application as any).launchEvent, __ns_launch_handler);
-				g['__NS_DEV_LAUNCH_ATTACHED__'] = true;
-			}
-		} catch {}
-		try {
-			g['__NS_DEV_RESTORE_PLACEHOLDER__'] = () => {
+
+			if (!handlerFired) {
+				handlerFired = true;
+
+				// Patch Application.run() → resetRootView() for subsequent calls.
+				// The app lifecycle is now running — a second run() is undefined
+				// behavior, but resetRootView() is the documented API for
+				// replacing the root of a running app.
+				//
+				// Patch on ALL possible references. The vendor-registry Application,
+				// globalThis.Application, and the prototype may be different objects.
 				try {
-					if (g['__NS_DEV_LAUNCH_HANDLER__'] && Application && (Application as any).off) {
-						(Application as any).off((Application as any).launchEvent, g['__NS_DEV_LAUNCH_HANDLER__']);
-					}
-				} catch {}
-				// Clear flags and drop any retained placeholder Frame reference
-				try {
-					delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
-				} catch {}
-				try {
-					delete g['__NS_DEV_LAUNCH_ATTACHED__'];
-				} catch {}
-				try {
-					const fr = g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
-					if (fr && typeof fr._removeFromSuperview === 'function') {
+					if (Application && typeof (Application as any).run === 'function') {
+						const _originalRun = (Application as any).run.bind(Application);
+						g['__NS_DEV_ORIGINAL_APP_RUN__'] = _originalRun;
+						// HMR ordering invariant: the patched `Application.run` MUST yield
+						// back to the synchronous caller before any iOS view-lifecycle event
+						// fires on the new root view.
+						//
+						// Concrete bug this guards against: nativescript-vue's `app.start()` is
+						//   const componentInstance = app.mount(createAppRoot(), false, false);
+						//   startApp(componentInstance);   // → Application.run({ create: … })
+						//   setRootApp(app);                // — sets the module-private `rootApp`
+						// In a non-HMR build `Application.run` is `UIApplicationMain`, which
+						// returns control to the iOS runloop and lets `setRootApp(app)` execute
+						// before any `loaded`/`traitCollectionDidChange` callbacks fire. Under
+						// HMR `Application.run` is replaced with synchronous `resetRootView`,
+						// which attaches the root to the window *inside* this call — iOS then
+						// synchronously fires `loaded` on the new view tree, a TabView handler
+						// calls `nativescript-vue`'s `createNativeView`, that reads
+						// `rootApp._context`, and crashes with
+						//   TypeError: Cannot read properties of null (reading '_context')
+						// because `setRootApp(app)` hasn't run yet.
+						//
+						// `setRootApp` is module-private inside the vendor bundle, so the bridge
+						// cannot call it directly. Deferring the synchronous root attachment to a
+						// microtask restores the production timing: every consumer that called
+						// `Application.run(entry)` completes its tail (including private state
+						// setters like `setRootApp`) before iOS triggers lifecycle on the new
+						// root. The microtask runs before any I/O or DOM-tick boundary, so the UI
+						// still appears in the same iOS runloop turn — no user-visible delay.
+						const __ns_dev_patched_run = function __ns_dev_patched_run(entry?: any) {
+							diag('patched Application.run called', {
+								hasEntry: !!entry,
+								entryKind: entry?.create ? 'create-fn' : entry?.moduleName ? 'module-name' : typeof entry,
+							});
+							// Detach the launch handler synchronously: by the time the caller
+							// returned from `Application.run()`, the framework owns root-view
+							// management, and we must not re-enter the placeholder path on a
+							// subsequent launch tick.
+							try {
+								if (Application && (Application as any).off) {
+									(Application as any).off((Application as any).launchEvent, __ns_launch_handler);
+								}
+							} catch {}
+
+							// Frameworks (notably Angular) call `Application.run()` with no
+							// entry — they own the root via launch events and `resetRootView()`
+							// directly. Bailing here keeps `resetRootView(undefined)` from
+							// throwing "Main entry is missing".
+							if (!entry) {
+								diag('patched run() called with no entry; framework manages root view');
+								return;
+							}
+
+							// Snapshot for the deferred body so a later mutation by the caller
+							// can't observe a half-finished closure.
+							const __ns_deferred_entry = entry;
+
+							const __ns_deferred_reset = () => {
+								try {
+									const isModuleNameEntry = __ns_deferred_entry && __ns_deferred_entry.moduleName && !__ns_deferred_entry.create;
+									if (isModuleNameEntry) {
+										if (typeof (Application as any).resetRootView === 'function') {
+											(Application as any).resetRootView(__ns_deferred_entry);
+										}
+									} else {
+										// Framework path: two-phase boot with dominative document
+										(Application as any)._rootView = null;
+
+										try {
+											const domModule =
+												g.__nsVendorRegistry?.get?.('dominative') ||
+												(typeof require === 'function'
+													? (() => {
+															try {
+																return require('dominative');
+															} catch {
+																return null;
+															}
+														})()
+													: null);
+											const doc = domModule?.document;
+
+											if (doc && typeof (Application as any).resetRootView === 'function') {
+												(Application as any).resetRootView({ create: () => doc });
+												if (__ns_deferred_entry && typeof __ns_deferred_entry.create === 'function') {
+													__ns_deferred_entry.create();
+												}
+											} else {
+												if (typeof (Application as any).resetRootView === 'function') {
+													(Application as any).resetRootView(__ns_deferred_entry);
+												}
+											}
+										} catch (e2: any) {
+											if (verbose) console.warn('[ns-placeholder] two-phase boot failed:', e2?.message || e2);
+											try {
+												if (typeof (Application as any).resetRootView === 'function') {
+													(Application as any).resetRootView(__ns_deferred_entry);
+												}
+											} catch {}
+										}
+									}
+								} catch (e) {
+									console.warn('[ns-placeholder] deferred patched run() error:', e);
+								}
+							};
+
+							// Microtask-defer. `Promise.resolve().then(...)` lands the callback
+							// in the same iOS runloop turn — no perceptible delay — but only
+							// after the synchronous call stack that invoked `Application.run`
+							// has fully unwound, so `nativescript-vue`'s post-`startApp` code
+							// (`setRootApp(app);`) has executed before any view lifecycle fires.
+							Promise.resolve().then(__ns_deferred_reset);
+						};
+						(Application as any).run = __ns_dev_patched_run;
+						if (verbose) {
+							console.info('[ns-placeholder] patched Application.run');
+						}
+						if (g.Application && g.Application !== Application) {
+							g.Application.run = __ns_dev_patched_run;
+						}
 						try {
-							fr._removeFromSuperview();
+							const proto = Object.getPrototypeOf(Application);
+							if (proto && typeof proto.run === 'function' && proto.run !== __ns_dev_patched_run) {
+								proto.run = __ns_dev_patched_run;
+							}
 						} catch {}
 					}
 				} catch {}
-				try {
-					delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
-				} catch {}
-			};
-		} catch {}
-	} catch (e) {
+			}
+		};
+		g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'] = __ns_launch_handler;
+
 		try {
-			console.error('[ns-entry] (early) failed to install launchEvent handler', e);
+			if (Application && (Application as any).on) {
+				(Application as any).on((Application as any).launchEvent, __ns_launch_handler);
+			}
 		} catch {}
+
+		// Determine boot path
+		try {
+			const appAny = Application as any;
+			const methodState = {
+				hasRun: typeof appAny?.run === 'function',
+				hasOn: typeof appAny?.on === 'function',
+				hasOff: typeof appAny?.off === 'function',
+				hasHasLaunched: typeof appAny?.hasLaunched === 'function',
+				hasGetRootView: typeof appAny?.getRootView === 'function',
+				hasResetRootView: typeof appAny?.resetRootView === 'function',
+				hasRunAsMainApp: typeof appAny?.runAsMainApp === 'function',
+				type: appAny?.constructor?.name,
+			};
+			if (verbose) {
+				console.info('[ns-placeholder] application methods', methodState);
+				console.info('[ns-placeholder] application source', applicationResolved.source);
+			}
+
+			if (!appAny || typeof appAny.run !== 'function') {
+				console.warn('[ns-placeholder] Application.run unavailable', {
+					...methodState,
+					source: applicationResolved.source,
+				});
+				return;
+			}
+
+			const hasLaunched = typeof appAny.hasLaunched === 'function' ? !!appAny.hasLaunched() : false;
+			const hasRootView = typeof appAny.getRootView === 'function' ? !!appAny.getRootView() : false;
+			const started = !!appAny.started;
+			const nativeApp = appAny.nativeApp;
+			const iosNativeApp = appAny.ios?.nativeApp;
+			const canRunAsMainApp = typeof appAny.runAsMainApp === 'function';
+			// iOS family only: when NativeScript runs EMBEDDED inside a host
+			// UIApplication (a visionOS SwiftUI `App`, or iOS built with
+			// `NS_SWIFTUI_BOOT=1`), the UIApplication singleton ALREADY exists by
+			// the time this placeholder runs — the SwiftUI `@main` created it
+			// before `[NativeScriptStart boot]` ran our entry. Calling
+			// `UIApplicationMain` again (via `runAsMainApp`/`run`) asserts in
+			// `UIApplicationInstantiateSingleton` and crashes at boot.
+			//
+			// `runAsMainApp` is an iOS-only method, so gating on `canRunAsMainApp`
+			// scopes this to Apple platforms (it leaves Android's `appAny.run()`
+			// branch untouched, where `nativeApp` is legitimately present early).
+			// On STANDALONE iOS the UIApplication is not created until
+			// `runAsMainApp()` itself calls `UIApplicationMain`, so `nativeApp` is
+			// still null here and the normal boot path below is preserved.
+			const hostUIApplicationExists = canRunAsMainApp && !!(nativeApp || iosNativeApp);
+			if (verbose) {
+				console.info('[ns-placeholder] boot state', {
+					hasLaunched,
+					hasRootView,
+					started,
+					nativeApp: !!nativeApp,
+					iosNativeApp: !!iosNativeApp,
+					canRunAsMainApp,
+					hostUIApplicationExists,
+					hasResetRootView: typeof appAny.resetRootView === 'function',
+				});
+			}
+
+			if (hasLaunched || hasRootView || hostUIApplicationExists) {
+				// App lifecycle is already active — either a standalone app that has
+				// already launched, or NativeScript embedded inside a host
+				// UIApplication (visionOS SwiftUI). Skip starting it again
+				// (a second `UIApplicationMain` would assert) and only install the
+				// placeholder root/patching behavior for the existing instance.
+				if (verbose) {
+					console.info('[ns-placeholder] boot branch: existing lifecycle', { hostUIApplicationExists });
+				}
+				try {
+					__ns_launch_handler();
+				} catch {}
+			} else if (canRunAsMainApp) {
+				if (verbose) {
+					console.info('[ns-placeholder] boot branch: runAsMainApp');
+				}
+				appAny.started = true;
+				appAny.runAsMainApp();
+			} else {
+				if (verbose) {
+					console.info('[ns-placeholder] boot branch: Application.run');
+				}
+				appAny.run();
+			}
+		} catch (e) {
+			console.warn('[ns-placeholder] boot error', e);
+		}
+	} catch (e) {
+		console.error('[ns-placeholder] install failed', e);
 	}
 }

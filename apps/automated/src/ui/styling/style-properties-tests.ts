@@ -115,6 +115,30 @@ export function test_setting_minHeight_dip_property_from_CSS_is_applied_to_Style
 	test_property_from_CSS_is_applied_to_style('minHeight', 'min-height', 200, '200dip', true);
 }
 
+export function test_setting_maxWidth_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('maxWidth', 'max-width', 200, '200', true);
+}
+
+export function test_setting_maxWidth_dip_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('maxWidth', 'max-width', 200, '200dip', true);
+}
+
+export function test_setting_maxWidth_percent_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('maxWidth', 'max-width', { value: 0.5, unit: '%' }, '50%', true);
+}
+
+export function test_setting_maxHeight_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('maxHeight', 'max-height', 200, '200', true);
+}
+
+export function test_setting_maxHeight_dip_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('maxHeight', 'max-height', 200, '200dip', true);
+}
+
+export function test_setting_maxHeight_percent_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('maxHeight', 'max-height', { value: 0.5, unit: '%' }, '50%', true);
+}
+
 export function test_setting_verticalAlignment_property_from_CSS_is_applied_to_Style() {
 	test_property_from_CSS_is_applied_to_style('verticalAlignment', 'vertical-align', 'bottom');
 }
@@ -212,6 +236,14 @@ export function test_minWidth_property_is_synced_in_style_and_view() {
 
 export function test_minHeight_property_is_synced_in_style_and_view() {
 	test_property_is_synced_in_style_and_view('minHeight', 200);
+}
+
+export function test_maxWidth_property_is_synced_in_style_and_view() {
+	test_property_is_synced_in_style_and_view('maxWidth', 200);
+}
+
+export function test_maxHeight_property_is_synced_in_style_and_view() {
+	test_property_is_synced_in_style_and_view('maxHeight', 200);
 }
 
 export function test_verticalAlignment_property_is_synced_in_style_and_view() {
@@ -568,10 +600,11 @@ function test_font_shorthand_property(short: string, family: string, size: numbe
 export function test_setting_font_properties_sets_native_font() {
 	if (global.isIOS) {
 		const basePath = 'fonts';
-		fontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
-		fontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');
-		fontModule.ios.registerFont(basePath + '/Roboto-BoldItalic.ttf');
-		fontModule.ios.registerFont(basePath + '/Roboto-Italic.ttf');
+		const iosFontModule = fontModule as typeof fontModule & { ios: { registerFont(fontFile: string): void } };
+		iosFontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
+		iosFontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');
+		iosFontModule.ios.registerFont(basePath + '/Roboto-BoldItalic.ttf');
+		iosFontModule.ios.registerFont(basePath + '/Roboto-Italic.ttf');
 	}
 
 	test_native_font('normal', 'normal');

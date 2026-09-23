@@ -14,6 +14,8 @@ global.__IOS__ = true;
 global.__VISIONOS__ = false;
 global.__APPLE__ = true;
 global.__COMMONJS__ = false;
+// Injected by the bundler in a real app; the css-tree parser is the default.
+global.__CSS_PARSER__ = 'css-tree';
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
 global.NSBundle = {
@@ -31,6 +33,54 @@ global.NSObject = class NSObject {
 	}
 };
 global.NSNumber = {};
+// The NSData factories record which selector was used and with what arguments: ownership of the
+// bytes differs per selector, so that choice is the thing specs need to pin.
+function nsDataStub(selector: string, args: any[]) {
+	return { selector, args };
+}
+global.NSData = {
+	dataWithData(data: any) {
+		return nsDataStub('dataWithData', [data]);
+	},
+	dataWithBytesLength(bytes: any, length: number) {
+		return nsDataStub('dataWithBytesLength', [bytes, length]);
+	},
+	dataWithBytesNoCopyLength(bytes: any, length: number) {
+		return nsDataStub('dataWithBytesNoCopyLength', [bytes, length]);
+	},
+	dataWithBytesNoCopyLengthFreeWhenDone(bytes: any, length: number, freeWhenDone: boolean) {
+		return nsDataStub('dataWithBytesNoCopyLengthFreeWhenDone', [bytes, length, freeWhenDone]);
+	},
+};
+global.NSMutableData = { ...global.NSData };
+// Security's CSPRNG entry point, which the crypto shim feeds a typed array directly. The stub
+// fills it so specs can prove the bytes reach the caller's own view, and records the call.
+global.errSecSuccess = 0;
+global.kSecRandomDefault = { native: 'kSecRandomDefault' };
+global.SecRandomCopyBytes = (rnd: any, count: number, bytes: Uint8Array) => {
+	bytes.fill(0xab);
+	return 0;
+};
+global.NSCCrypto = {
+	randomUUID() {
+		return 'native-uuid';
+	},
+	getRandomValues(data: any) {},
+};
+// The Android crypto shim, so the platform branches of `wgc/crypto` can be exercised from the
+// same specs by flipping `__ANDROID__`.
+global.org = {
+	nativescript: {
+		winter_tc: {
+			Crypto: {
+				randomUUID() {
+					return 'native-uuid';
+				},
+				getRandomValues(bytes: any) {},
+			},
+		},
+	},
+};
 global.NSString = {
 	stringWithString() {
 		return {
@@ -157,6 +207,7 @@ global.NativeScriptGlobals = {
 		notify: (args) => {},
 		hasListeners: (args) => {},
 	},
+	setLaunched: () => {},
 };
 
 global.CADisplayLink = function () {};
@@ -182,9 +233,13 @@ global.UIUserInterfaceIdiom = {
 	Mac: 4,
 };
 global.UIGestureRecognizer = function () {};
+global.UIPanGestureRecognizer = function () {};
 global.UIGestureRecognizerDelegate = function () {};
 global.UIAdaptivePresentationControllerDelegate = function () {};
 global.UIPopoverPresentationControllerDelegate = function () {};
+global.UIAccessibilityIsVoiceOverRunning = () => false;
+global.UIContentSizeCategoryDidChangeNotification = 'UIContentSizeCategoryDidChangeNotification';
+global.UIContentSizeCategoryNewValueKey = 'UIContentSizeCategoryNewValueKey';
 global.UIContentSizeCategoryExtraSmall = 0.5;
 global.UIContentSizeCategorySmall = 0.7;
 global.UIContentSizeCategoryMedium = 0.85;

@@ -29,7 +29,7 @@ declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -66,7 +66,7 @@ declare class AXBrailleTable extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): AXBrailleTable; // inherited from NSObject
 
-	static defaultTableForLocale(locale: NSLocale): AXBrailleTable;
+	static defaultTableForLocale(locale: NSLocale): AXBrailleTable | null;
 
 	static languageAgnosticTables(): NSSet<AXBrailleTable>;
 
@@ -94,7 +94,7 @@ declare class AXBrailleTable extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { identifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -118,7 +118,7 @@ declare class AXBrailleTranslationResult extends NSObject implements NSCoding, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -162,7 +162,7 @@ declare class AXCategoricalDataAxisDescriptor extends NSObject implements AXData
 
 	constructor(o: { title: string; categoryOrder: NSArray<string> | string[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithAttributedTitleCategoryOrder(attributedTitle: NSAttributedString, categoryOrder: NSArray<string> | string[]): this;
 
@@ -174,7 +174,7 @@ declare class AXCategoricalDataAxisDescriptor extends NSObject implements AXData
  */
 interface AXChart extends NSObjectProtocol {
 
-	accessibilityChartDescriptor: AXChartDescriptor;
+	accessibilityChartDescriptor: AXChartDescriptor | null;
 }
 declare var AXChart: {
 
@@ -190,9 +190,9 @@ declare class AXChartDescriptor extends NSObject implements NSCopying {
 
 	static new(): AXChartDescriptor; // inherited from NSObject
 
-	additionalAxes: NSArray<AXDataAxisDescriptor>;
+	additionalAxes: NSArray<AXDataAxisDescriptor> | null;
 
-	attributedTitle: NSAttributedString;
+	attributedTitle: NSAttributedString | null;
 
 	contentDirection: AXChartDescriptorContentDirection;
 
@@ -200,31 +200,31 @@ declare class AXChartDescriptor extends NSObject implements NSCopying {
 
 	series: NSArray<AXDataSeriesDescriptor>;
 
-	summary: string;
+	summary: string | null;
 
-	title: string;
+	title: string | null;
 
 	xAxis: AXDataAxisDescriptor;
 
-	yAxis: AXNumericDataAxisDescriptor;
+	yAxis: AXNumericDataAxisDescriptor | null;
 
-	constructor(o: { attributedTitle: NSAttributedString; summary: string; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor; additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[]; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
+	constructor(o: { attributedTitle: NSAttributedString | null; summary: string | null; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor | null; additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[] | null; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
 
-	constructor(o: { attributedTitle: NSAttributedString; summary: string; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
+	constructor(o: { attributedTitle: NSAttributedString | null; summary: string | null; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
 
-	constructor(o: { title: string; summary: string; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor; additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[]; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
+	constructor(o: { title: string | null; summary: string | null; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor | null; additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[] | null; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
 
-	constructor(o: { title: string; summary: string; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
+	constructor(o: { title: string | null; summary: string | null; xAxisDescriptor: AXDataAxisDescriptor; yAxisDescriptor: AXNumericDataAxisDescriptor | null; series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	initWithAttributedTitleSummaryXAxisDescriptorYAxisDescriptorAdditionalAxesSeries(attributedTitle: NSAttributedString, summary: string, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor, additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[], series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
+	initWithAttributedTitleSummaryXAxisDescriptorYAxisDescriptorAdditionalAxesSeries(attributedTitle: NSAttributedString | null, summary: string | null, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor | null, additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[] | null, series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
 
-	initWithAttributedTitleSummaryXAxisDescriptorYAxisDescriptorSeries(attributedTitle: NSAttributedString, summary: string, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor, series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
+	initWithAttributedTitleSummaryXAxisDescriptorYAxisDescriptorSeries(attributedTitle: NSAttributedString | null, summary: string | null, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor, series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
 
-	initWithTitleSummaryXAxisDescriptorYAxisDescriptorAdditionalAxesSeries(title: string, summary: string, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor, additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[], series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
+	initWithTitleSummaryXAxisDescriptorYAxisDescriptorAdditionalAxesSeries(title: string | null, summary: string | null, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor | null, additionalAxes: NSArray<AXDataAxisDescriptor> | AXDataAxisDescriptor[] | null, series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
 
-	initWithTitleSummaryXAxisDescriptorYAxisDescriptorSeries(title: string, summary: string, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor, series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
+	initWithTitleSummaryXAxisDescriptorYAxisDescriptorSeries(title: string | null, summary: string | null, xAxis: AXDataAxisDescriptor, yAxis: AXNumericDataAxisDescriptor | null, series: NSArray<AXDataSeriesDescriptor> | AXDataSeriesDescriptor[]): this;
 }
 
 declare const enum AXChartDescriptorContentDirection {
@@ -269,7 +269,7 @@ declare class AXCustomContent extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -296,7 +296,7 @@ interface AXCustomContentProvider extends NSObjectProtocol {
 	/**
 	 * @since 17.0
 	 */
-	accessibilityCustomContentBlock?: () => NSArray<AXCustomContent>;
+	accessibilityCustomContentBlock?: () => NSArray<AXCustomContent> | null | null;
 }
 declare var AXCustomContentProvider: {
 
@@ -328,27 +328,27 @@ declare class AXDataPoint extends NSObject implements NSCopying {
 
 	additionalValues: NSArray<AXDataPointValue>;
 
-	attributedLabel: NSAttributedString;
+	attributedLabel: NSAttributedString | null;
 
-	label: string;
+	label: string | null;
 
 	xValue: AXDataPointValue;
 
-	yValue: AXDataPointValue;
+	yValue: AXDataPointValue | null;
 
-	constructor(o: { x: AXDataPointValue; y: AXDataPointValue; });
+	constructor(o: { x: AXDataPointValue; y: AXDataPointValue | null; });
 
-	constructor(o: { x: AXDataPointValue; y: AXDataPointValue; additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[]; });
+	constructor(o: { x: AXDataPointValue; y: AXDataPointValue | null; additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[] | null; });
 
-	constructor(o: { x: AXDataPointValue; y: AXDataPointValue; additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[]; label: string; });
+	constructor(o: { x: AXDataPointValue; y: AXDataPointValue | null; additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[] | null; label: string | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	initWithXY(xValue: AXDataPointValue, yValue: AXDataPointValue): this;
+	initWithXY(xValue: AXDataPointValue, yValue: AXDataPointValue | null): this;
 
-	initWithXYAdditionalValues(xValue: AXDataPointValue, yValue: AXDataPointValue, additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[]): this;
+	initWithXYAdditionalValues(xValue: AXDataPointValue, yValue: AXDataPointValue | null, additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[] | null): this;
 
-	initWithXYAdditionalValuesLabel(xValue: AXDataPointValue, yValue: AXDataPointValue, additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[], label: string): this;
+	initWithXYAdditionalValuesLabel(xValue: AXDataPointValue, yValue: AXDataPointValue | null, additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[] | null, label: string | null): this;
 }
 
 /**
@@ -368,7 +368,7 @@ declare class AXDataPointValue extends NSObject implements NSCopying {
 
 	number: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -386,13 +386,13 @@ declare class AXDataSeriesDescriptor extends NSObject implements NSCopying {
 
 	isContinuous: boolean;
 
-	name: string;
+	name: string | null;
 
 	constructor(o: { attributedName: NSAttributedString; isContinuous: boolean; dataPoints: NSArray<AXDataPoint> | AXDataPoint[]; });
 
 	constructor(o: { name: string; isContinuous: boolean; dataPoints: NSArray<AXDataPoint> | AXDataPoint[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithAttributedNameIsContinuousDataPoints(attributedName: NSAttributedString, isContinuous: boolean, dataPoints: NSArray<AXDataPoint> | AXDataPoint[]): this;
 
@@ -436,7 +436,7 @@ declare class AXFeatureOverrideSessionManager extends NSObject {
 
 	static readonly sharedInstance: AXFeatureOverrideSessionManager;
 
-	beginOverrideSessionEnablingOptionsDisablingOptionsError(enableOptions: AXFeatureOverrideSessionOptions, disableOptions: AXFeatureOverrideSessionOptions, error?: interop.Reference<NSError>): AXFeatureOverrideSession;
+	beginOverrideSessionEnablingOptionsDisablingOptionsError(enableOptions: AXFeatureOverrideSessionOptions, disableOptions: AXFeatureOverrideSessionOptions, error?: interop.Reference<NSError>): AXFeatureOverrideSession | null;
 
 	endOverrideSessionError(session: AXFeatureOverrideSession, error?: interop.Reference<NSError>): boolean;
 }
@@ -625,7 +625,7 @@ interface AXMathExpressionProvider extends NSObjectProtocol {
 	/**
 	 * @since 18.2
 	 */
-	accessibilityMathExpression(): AXMathExpression;
+	accessibilityMathExpression(): AXMathExpression | null;
 }
 declare var AXMathExpressionProvider: {
 
@@ -798,15 +798,15 @@ declare class AXNumericDataAxisDescriptor extends NSObject implements AXDataAxis
 
 	title: string; // inherited from AXDataAxisDescriptor
 
-	constructor(o: { attributedTitle: NSAttributedString; lowerBound: number; upperBound: number; gridlinePositions: NSArray<number> | number[]; valueDescriptionProvider: (p1: number) => string; });
+	constructor(o: { attributedTitle: NSAttributedString; lowerBound: number; upperBound: number; gridlinePositions: NSArray<number> | number[] | null; valueDescriptionProvider: (p1: number) => string; });
 
-	constructor(o: { title: string; lowerBound: number; upperBound: number; gridlinePositions: NSArray<number> | number[]; valueDescriptionProvider: (p1: number) => string; });
+	constructor(o: { title: string; lowerBound: number; upperBound: number; gridlinePositions: NSArray<number> | number[] | null; valueDescriptionProvider: (p1: number) => string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	initWithAttributedTitleLowerBoundUpperBoundGridlinePositionsValueDescriptionProvider(attributedTitle: NSAttributedString, lowerbound: number, upperBound: number, gridlinePositions: NSArray<number> | number[], valueDescriptionProvider: (p1: number) => string): this;
+	initWithAttributedTitleLowerBoundUpperBoundGridlinePositionsValueDescriptionProvider(attributedTitle: NSAttributedString, lowerbound: number, upperBound: number, gridlinePositions: NSArray<number> | number[] | null, valueDescriptionProvider: (p1: number) => string): this;
 
-	initWithTitleLowerBoundUpperBoundGridlinePositionsValueDescriptionProvider(title: string, lowerbound: number, upperBound: number, gridlinePositions: NSArray<number> | number[], valueDescriptionProvider: (p1: number) => string): this;
+	initWithTitleLowerBoundUpperBoundGridlinePositionsValueDescriptionProvider(title: string, lowerbound: number, upperBound: number, gridlinePositions: NSArray<number> | number[] | null, valueDescriptionProvider: (p1: number) => string): this;
 }
 
 declare const enum AXNumericDataAxisDescriptorScale {
@@ -821,7 +821,22 @@ declare const enum AXNumericDataAxisDescriptorScale {
 /**
  * @since 18.0
  */
-declare function AXOpenSettingsFeature(feature: AXSettingsFeature, completionHandler: (p1: NSError) => void): void;
+declare function AXOpenSettingsFeature(feature: AXSettingsFeature, completionHandler: (p1: NSError | null) => void | null): void;
+
+/**
+ * @since 26.4
+ */
+declare function AXOpenSettingsFeatureIsSupported(feature: AXSettingsFeature): boolean;
+
+/**
+ * @since 26.1
+ */
+declare function AXPrefersActionSliderAlternative(): boolean;
+
+/**
+ * @since 26.1
+ */
+declare var AXPrefersActionSliderAlternativeDidChangeNotification: string;
 
 /**
  * @since 17.0
@@ -844,6 +859,16 @@ declare function AXPrefersNonBlinkingTextInsertionIndicator(): boolean;
 declare var AXPrefersNonBlinkingTextInsertionIndicatorDidChangeNotification: string;
 
 /**
+ * @since 26.4
+ */
+declare function AXReduceHighlightingEffectsEnabled(): boolean;
+
+/**
+ * @since 26.4
+ */
+declare var AXReduceHighlightingEffectsEnabledDidChangeNotification: string;
+
+/**
  * @since 18.0
  */
 declare class AXRequest extends NSObject implements NSCopying, NSSecureCoding {
@@ -854,13 +879,13 @@ declare class AXRequest extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly technology: string;
 
-	static readonly currentRequest: AXRequest;
+	static readonly currentRequest: AXRequest | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -880,8 +905,20 @@ declare const enum AXSettingsFeature {
 
 	AssistiveTouchDevices = 4,
 
-	DwellControl = 5
+	DwellControl = 5,
+
+	CaptionStyles = 6
 }
+
+/**
+ * @since 26.1
+ */
+declare function AXShowBordersEnabled(): boolean;
+
+/**
+ * @since 26.1
+ */
+declare var AXShowBordersEnabledStatusDidChangeNotification: string;
 
 /**
  * @since 15.0

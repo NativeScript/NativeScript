@@ -1,14 +1,16 @@
 // Helper to rewrite vendor/bare imports of 'vue' or 'nativescript-vue' to the unified /ns/rt bridge
 // Ensures a single module realm for Vue/NativeScript-Vue across app and plugins during dev HTTP ESM.
+// The bridge URL is CANONICAL (unversioned): module identity is the URL, and
+// the bridge body doesn't change at HMR time.
 
-export function rewriteVendorVueSpec(code: string, origin: string, ver: number): string {
+export function rewriteVendorVueSpec(code: string, origin: string, _ver?: number): string {
 	try {
-		const rt = `${origin}/ns/rt/${ver}`;
+		const rt = `${origin}/ns/rt`;
 		let out = code;
 
 		// Helper: replace specifier if it ultimately references vue/nativescript-vue, including prebundled ids
 		const replaceIfVue = (_m: string, p1: string, spec: string, p2: string) => {
-			// Normalize any /ns/rt[/<num>] specifier to current graph version
+			// Normalize any versioned /ns/rt[/<num>] specifier to the canonical form
 			if (/^\/?ns\/rt(?:\/[0-9]+)?(?:$|[?#])/.test(spec) || /\/ns\/rt(?:\/[0-9]+)?(?:$|[?#])/.test(spec)) {
 				return `${p1}${rt}${p2}`;
 			}

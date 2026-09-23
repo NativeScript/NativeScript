@@ -9,9 +9,9 @@ declare class OS_object extends NSObject {
 /**
  * @since 8.0
  */
-declare function os_release(object: interop.Pointer | interop.Reference<any>): void;
+declare function os_release(object: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 8.0
  */
-declare function os_retain(object: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function os_retain(object: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;

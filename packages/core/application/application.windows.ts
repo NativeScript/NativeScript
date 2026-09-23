@@ -42,6 +42,8 @@ export class WindowsApplication extends ApplicationCommon {
 		this.started = true;
 		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 		windows.triggerFontScan();
+		// `ready` must precede the first window's content (and the legacy `launch`).
+		this.notifyReady();
 		this.setWindowContent();
 	}
 

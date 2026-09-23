@@ -12,6 +12,7 @@ import { parse as cssParse } from '../../css-value/reworkcss-value';
 import { BoxShadow } from './box-shadow';
 import { BackgroundClearFlags } from './background-common';
 import { ClipPathFunction } from './clip-path-function';
+import { CoreTypes } from '../../core-types';
 
 export * from './background-common';
 
@@ -93,6 +94,7 @@ export namespace ios {
 			layer.borderColor = borderColor?.ios?.CGColor;
 			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
 			layer.cornerRadius = getUniformBorderRadius(view, layer.bounds);
+			layer.cornerCurve = background.cornerShape === CoreTypes.CornerShape.squircle ? kCACornerCurveContinuous : kCACornerCurveCircular;
 		} else {
 			drawNonUniformBorders(nativeView, background);
 			needsLayerAdjustmentOnScroll = true;
@@ -1128,11 +1130,12 @@ function drawBoxShadow(view: View): void {
 			shadowLayer.allowsEdgeAntialiasing = true;
 			shadowLayer.contentsScale = Screen.mainScreen.scale;
 
-			// Shadow opacity is handled on the shadow's color instance
+			// The color's alpha is the shadow's opacity; the color itself must be
+			// passed opaque, or the alpha is applied twice (0.3 renders as 0.09).
 			shadowLayer.shadowOpacity = boxShadow.color?.a ? boxShadow.color.a / 255 : 1;
 			// Use this multiplier to imitate CSS shadow blur
 			shadowLayer.shadowRadius = shadowRadius * 0.5;
-			shadowLayer.shadowColor = boxShadow.color?.ios?.CGColor;
+			shadowLayer.shadowColor = boxShadow.color?.ios?.colorWithAlphaComponent(1)?.CGColor;
 			shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
 
 			// Apply spread radius by expanding shadow layer bounds (this has a nice glow with radii set to 0)

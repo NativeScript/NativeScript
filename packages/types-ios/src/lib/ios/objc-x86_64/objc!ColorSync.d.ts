@@ -45,7 +45,7 @@ declare const enum ColorSyncDataDepth {
 /**
  * @since 16.0
  */
-declare function ColorSyncIterateInstalledProfiles(callBack: interop.FunctionReference<(p1: NSDictionary<any, any>, p2: interop.Pointer | interop.Reference<any>) => boolean>, seed: interop.Pointer | interop.Reference<number>, userInfo: interop.Pointer | interop.Reference<any>, error: interop.Pointer | interop.Reference<NSError>): void;
+declare function ColorSyncIterateInstalledProfiles(callBack: interop.FunctionReference<(p1: NSDictionary<any, any>, p2: interop.Pointer | interop.Reference<any> | null) => boolean> | null, seed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, userInfo: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface ColorSyncMD5 {
 	digest: interop.Reference<number>;
@@ -60,12 +60,12 @@ declare function ColorSyncProfileContainsTag(prof: any, signature: string): bool
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCopyData(prof: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
+declare function ColorSyncProfileCopyData(prof: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSData;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCopyDescriptionString(prof: any): string;
+declare function ColorSyncProfileCopyDescriptionString(prof: any): string | null;
 
 /**
  * @since 16.0
@@ -75,42 +75,52 @@ declare function ColorSyncProfileCopyHeader(prof: any): NSData;
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCopyTag(prof: any, signature: string): NSData;
+declare function ColorSyncProfileCopyTag(prof: any, signature: string): NSData | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCopyTagSignatures(prof: any): NSArray<any>;
+declare function ColorSyncProfileCopyTagSignatures(prof: any): NSArray<any> | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCreate(data: NSData, error: interop.Pointer | interop.Reference<NSError>): any;
+declare function ColorSyncProfileCreate(data: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCreateLink(profileInfo: NSArray<any> | any[], options: NSDictionary<any, any>): any;
+declare function ColorSyncProfileCreateLink(profileInfo: NSArray<any> | any[], options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCreateMutable(): any;
+declare function ColorSyncProfileCreateMutable(): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCreateMutableCopy(prof: any): any;
+declare function ColorSyncProfileCreateMutableCopy(prof: any): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCreateWithName(name: string): any;
+declare function ColorSyncProfileCreateWithName(name: string): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileCreateWithURL(url: NSURL, error: interop.Pointer | interop.Reference<NSError>): any;
+declare function ColorSyncProfileCreateWithURL(url: NSURL, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
+
+/**
+ * @since 26.1
+ */
+declare function ColorSyncProfileCreateWithURLAndOptions(url: NSURL, options: NSDictionary<any, any> | null, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
+
+/**
+ * @since 26.1
+ */
+declare function ColorSyncProfileEstimateGamma(prof: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 16.0
@@ -125,7 +135,7 @@ declare function ColorSyncProfileGetTypeID(): number;
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileGetURL(prof: any, error: interop.Pointer | interop.Reference<NSError>): NSURL;
+declare function ColorSyncProfileGetURL(prof: any, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): NSURL;
 
 /**
  * @since 16.0
@@ -165,27 +175,27 @@ declare function ColorSyncProfileSetTag(prof: any, signature: string, data: NSDa
 /**
  * @since 16.0
  */
-declare function ColorSyncProfileVerify(prof: any, errors: interop.Pointer | interop.Reference<NSError>, warnings: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ColorSyncProfileVerify(prof: any, errors: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, warnings: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncTransformConvert(transform: any, width: number, height: number, dst: interop.Pointer | interop.Reference<any>, dstDepth: ColorSyncDataDepth, dstLayout: number, dstBytesPerRow: number, src: interop.Pointer | interop.Reference<any>, srcDepth: ColorSyncDataDepth, srcLayout: number, srcBytesPerRow: number, options: NSDictionary<any, any>): boolean;
+declare function ColorSyncTransformConvert(transform: any, width: number, height: number, dst: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, dstDepth: ColorSyncDataDepth, dstLayout: number, dstBytesPerRow: number, src: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, srcDepth: ColorSyncDataDepth, srcLayout: number, srcBytesPerRow: number, options: NSDictionary<any, any> | null): boolean;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncTransformCopyProperty(transform: any, key: any, options: NSDictionary<any, any>): any;
+declare function ColorSyncTransformCopyProperty(transform: any, key: any, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncTransformCreate(profileSequence: NSArray<any> | any[], options: NSDictionary<any, any>): any;
+declare function ColorSyncTransformCreate(profileSequence: NSArray<any> | any[] | null, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 16.0
  */
-declare function ColorSyncTransformGetProfileSequence(transform: any): NSArray<any>;
+declare function ColorSyncTransformGetProfileSequence(transform: any): NSArray<any> | null;
 
 /**
  * @since 16.0
@@ -195,7 +205,7 @@ declare function ColorSyncTransformGetTypeID(): number;
 /**
  * @since 16.0
  */
-declare function ColorSyncTransformSetProperty(transform: any, key: any, property: any): void;
+declare function ColorSyncTransformSetProperty(transform: any, key: any, property: any | null): void;
 
 /**
  * @since 16.0
@@ -320,6 +330,11 @@ declare var kColorSyncDCIP3Profile: string;
  * @since 16.0
  */
 declare var kColorSyncDisplayP3Profile: string;
+
+/**
+ * @since 26.1
+ */
+declare var kColorSyncDoNotSubstituteProfiles: string;
 
 /**
  * @since 16.0

@@ -47,6 +47,7 @@ export namespace AndroidHelper {
  * Various iOS view helper methods
  */
 export namespace IOSHelper {
+	export function hasIOSManagedInsetAncestor(view: View): boolean;
 	/**
 	 * String value used when hooking to traitCollectionColorAppearanceChangedEvent event.
 	 */

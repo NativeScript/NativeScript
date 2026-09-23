@@ -2,6 +2,7 @@ import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Flex
 import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
 import { Length } from '../../styling/length-shared';
+import { columnGapProperty, rowGapProperty } from '../../styling/style-properties';
 
 export * from './flexbox-layout-common';
 
@@ -130,6 +131,22 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 	[alignContentProperty.setNative](alignContent: AlignContent) {
 		this.nativeViewProtected.setAlignContent(alignContentMap[alignContent]);
+	}
+
+	[rowGapProperty.getDefault](): CoreTypes.LengthType {
+		return rowGapProperty.defaultValue;
+	}
+	[rowGapProperty.setNative](value: CoreTypes.LengthType) {
+		const gap = value ? Length.toDevicePixels(value, 0) : 0;
+		this.nativeViewProtected.setRowGap(Math.max(gap, 0));
+	}
+
+	[columnGapProperty.getDefault](): CoreTypes.LengthType {
+		return columnGapProperty.defaultValue;
+	}
+	[columnGapProperty.setNative](value: CoreTypes.LengthType) {
+		const gap = value ? Length.toDevicePixels(value, 0) : 0;
+		this.nativeViewProtected.setColumnGap(Math.max(gap, 0));
 	}
 
 	public _updateNativeLayoutParams(child: View): void {

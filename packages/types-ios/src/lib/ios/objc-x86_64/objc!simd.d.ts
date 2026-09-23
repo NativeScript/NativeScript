@@ -797,41 +797,41 @@ declare function __tg_sinFunction7(x: interop.Reference<number>): interop.Refere
 
 declare function __tg_sinFunction8(x: interop.Reference<number>): interop.Reference<number>;
 
-declare function __tg_sincos(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincos(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincosFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincosFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospi(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospi(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function __tg_sincospiFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function __tg_sincospiFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function __tg_sinh(x: interop.Reference<number>): interop.Reference<number>;
 
@@ -1061,7 +1061,7 @@ declare function _simd_incircle_pd2(p1: interop.Reference<number>, p2: interop.R
 
 declare function _simd_incircle_pf2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>): number;
 
-declare function _simd_insphere_pd3(p1: interop.Pointer | interop.Reference<number>): number;
+declare function _simd_insphere_pd3(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function _simd_insphere_pf3(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>, p5: interop.Reference<number>): number;
 
@@ -1091,7 +1091,7 @@ declare function _simd_nextafter_f4(x: interop.Reference<number>, y: interop.Ref
 
 declare function _simd_orient_pd2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>): number;
 
-declare function _simd_orient_pd3(p1: interop.Pointer | interop.Reference<number>): number;
+declare function _simd_orient_pd3(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function _simd_orient_pf2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>): number;
 
@@ -1099,7 +1099,7 @@ declare function _simd_orient_pf3(p1: interop.Reference<number>, p2: interop.Ref
 
 declare function _simd_orient_vd2(p1: interop.Reference<number>, p2: interop.Reference<number>): number;
 
-declare function _simd_orient_vd3(p1: interop.Pointer | interop.Reference<number>): number;
+declare function _simd_orient_vd3(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function _simd_orient_vf2(p1: interop.Reference<number>, p2: interop.Reference<number>): number;
 
@@ -1121,13 +1121,13 @@ declare function _simd_sin_d2(x: interop.Reference<number>): interop.Reference<n
 
 declare function _simd_sin_f4(x: interop.Reference<number>): interop.Reference<number>;
 
-declare function _simd_sincos_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function _simd_sincos_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function _simd_sincos_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function _simd_sincos_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function _simd_sincospi_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function _simd_sincospi_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function _simd_sincospi_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+declare function _simd_sincospi_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null, cosp: interop.Pointer | interop.Reference<interop.Reference<number>> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function _simd_sinh_d2(x: interop.Reference<number>): interop.Reference<number>;
 

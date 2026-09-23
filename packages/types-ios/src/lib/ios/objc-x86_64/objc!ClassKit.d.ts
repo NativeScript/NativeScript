@@ -12,7 +12,7 @@ declare class CLSActivity extends CLSObject {
 
 	readonly duration: number;
 
-	primaryActivityItem: CLSActivityItem;
+	primaryActivityItem: CLSActivityItem | null;
 
 	progress: number;
 
@@ -94,12 +94,12 @@ declare class CLSContext extends CLSObject {
 	 */
 	assignable: boolean;
 
-	readonly currentActivity: CLSActivity;
+	readonly currentActivity: CLSActivity | null;
 
 	/**
 	 * @since 13.4
 	 */
-	customTypeName: string;
+	customTypeName: string | null;
 
 	displayOrder: number;
 
@@ -115,7 +115,7 @@ declare class CLSContext extends CLSObject {
 	 */
 	readonly navigationChildContexts: NSArray<CLSContext>;
 
-	readonly parent: CLSContext;
+	readonly parent: CLSContext | null;
 
 	/**
 	 * @since 14
@@ -135,23 +135,23 @@ declare class CLSContext extends CLSObject {
 	/**
 	 * @since 13.4
 	 */
-	summary: string;
+	summary: string | null;
 
 	/**
 	 * @since 13.4
 	 */
-	thumbnail: any;
+	thumbnail: any | null;
 
 	title: string;
 
-	topic: string;
+	topic: string | null;
 
 	readonly type: CLSContextType;
 
 	/**
 	 * @since 11.4
 	 */
-	universalLinkURL: NSURL;
+	universalLinkURL: NSURL | null;
 
 	constructor(o: { type: CLSContextType; identifier: string; title: string; });
 
@@ -171,7 +171,7 @@ declare class CLSContext extends CLSObject {
 
 	createNewActivity(): CLSActivity;
 
-	descendantMatchingIdentifierPathCompletion(identifierPath: NSArray<string> | string[], completion: (p1: CLSContext, p2: NSError) => void): void;
+	descendantMatchingIdentifierPathCompletion(identifierPath: NSArray<string> | string[], completion: (p1: CLSContext | null, p2: NSError | null) => void): void;
 
 	initWithTypeIdentifierTitle(type: CLSContextType, identifier: string, title: string): this;
 
@@ -200,7 +200,7 @@ declare class CLSContext extends CLSObject {
  */
 interface CLSContextProvider {
 
-	updateDescendantsOfContextCompletion(context: CLSContext, completion: (p1: NSError) => void): void;
+	updateDescendantsOfContextCompletion(context: CLSContext, completion: (p1: NSError | null) => void): void;
 }
 declare var CLSContextProvider: {
 
@@ -298,33 +298,38 @@ declare class CLSDataStore extends NSObject {
 
 	static new(): CLSDataStore; // inherited from NSObject
 
-	readonly activeContext: CLSContext;
+	readonly activeContext: CLSContext | null;
 
-	delegate: CLSDataStoreDelegate;
+	delegate: CLSDataStoreDelegate | null;
 
 	readonly mainAppContext: CLSContext;
 
-	readonly runningActivity: CLSActivity;
+	readonly runningActivity: CLSActivity | null;
 
 	static readonly shared: CLSDataStore;
+
+	/**
+	 * @since 26.4
+	 */
+	checkIsAssignedDocumentCompletion(documentURL: NSURL, completion: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 12.2
 	 */
 	completeAllAssignedActivitiesMatching(contextPath: NSArray<string> | string[]): void;
 
-	contextsMatchingIdentifierPathCompletion(identifierPath: NSArray<string> | string[], completion: (p1: NSArray<CLSContext>, p2: NSError) => void): void;
+	contextsMatchingIdentifierPathCompletion(identifierPath: NSArray<string> | string[], completion: (p1: NSArray<CLSContext>, p2: NSError | null) => void): void;
 
-	contextsMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<CLSContext>, p2: NSError) => void): void;
+	contextsMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<CLSContext>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.5
 	 */
-	fetchActivityForURLCompletion(url: NSURL, completion: (p1: CLSActivity, p2: NSError) => void): void;
+	fetchActivityForURLCompletion(url: NSURL, completion: (p1: CLSActivity | null, p2: NSError | null) => void): void;
 
 	removeContext(context: CLSContext): void;
 
-	saveWithCompletion(completion: (p1: NSError) => void): void;
+	saveWithCompletion(completion: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -332,7 +337,7 @@ declare class CLSDataStore extends NSObject {
  */
 interface CLSDataStoreDelegate extends NSObjectProtocol {
 
-	createContextForIdentifierParentContextParentIdentifierPath(identifier: string, parentContext: CLSContext, parentIdentifierPath: NSArray<string> | string[]): CLSContext;
+	createContextForIdentifierParentContextParentIdentifierPath(identifier: string, parentContext: CLSContext, parentIdentifierPath: NSArray<string> | string[]): CLSContext | null;
 }
 declare var CLSDataStoreDelegate: {
 
@@ -448,13 +453,13 @@ declare class CLSProgressReportingCapability extends CLSObject {
 
 	static new(): CLSProgressReportingCapability; // inherited from NSObject
 
-	readonly details: string;
+	readonly details: string | null;
 
 	readonly kind: CLSProgressReportingCapabilityKind;
 
-	constructor(o: { kind: CLSProgressReportingCapabilityKind; details: string; });
+	constructor(o: { kind: CLSProgressReportingCapabilityKind; details: string | null; });
 
-	initWithKindDetails(kind: CLSProgressReportingCapabilityKind, details: string): this;
+	initWithKindDetails(kind: CLSProgressReportingCapabilityKind, details: string | null): this;
 }
 
 /**

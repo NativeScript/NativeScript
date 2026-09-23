@@ -1,4 +1,4 @@
-import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from '.';
+import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from '.';
 import { View, AddArrayFromBuilder, AddChildFromBuilder, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
@@ -8,10 +8,17 @@ import { Property, CssProperty, CoercibleProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
 import { Trace } from '../../trace';
 
+export interface SelectedIndexChangedEventData extends EventData {
+	oldIndex: number;
+	newIndex: number;
+}
+
 export const traceCategory = 'TabView';
 
 @CSSType('TabViewItem')
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
+	declare canBeLoaded?: boolean;
+
 	role: string;
 	private _title = '';
 	private _view: View;
@@ -76,7 +83,7 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 		const tabView = this.parent as TabViewBase;
 		if (tabView && tabView.items) {
 			// Don't load items until their fragments are instantiated.
-			if ((<TabViewItemDefinition>this).canBeLoaded) {
+			if (this.canBeLoaded) {
 				super.loadView(view);
 			}
 		}
@@ -200,6 +207,11 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 					throw new Error(`TabViewItem must have a view.`);
 				}
 
+				// A view can only have one parent, and _addView throws if it already has one.
+				if (item.parent && item.parent !== this) {
+					item.parent._removeView(item);
+				}
+
 				this._addView(item);
 			});
 		}
@@ -260,10 +272,16 @@ export const itemsProperty = new Property<TabViewBase, TabViewItemDefinition[]>(
 });
 itemsProperty.register(TabViewBase);
 
-export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'iosIconRenderingMode', defaultValue: 'automatic' });
+export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({
+	name: 'iosIconRenderingMode',
+	defaultValue: 'automatic',
+});
 iosIconRenderingModeProperty.register(TabViewBase);
 
-export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'androidIconRenderingMode', defaultValue: 'alwaysOriginal' });
+export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({
+	name: 'androidIconRenderingMode',
+	defaultValue: 'alwaysOriginal',
+});
 androidIconRenderingModeProperty.register(TabViewBase);
 
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
@@ -274,7 +292,10 @@ export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);
 
-export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bottom'>({ name: 'androidTabsPosition', defaultValue: 'top' });
+export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bottom'>({
+	name: 'androidTabsPosition',
+	defaultValue: 'top',
+});
 androidTabsPositionProperty.register(TabViewBase);
 
 export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({

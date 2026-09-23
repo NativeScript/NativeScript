@@ -1,3 +1,6 @@
+// Tags compiled as custom elements. A tag that a Vue integration registers as a
+// COMPONENT with slot templates (e.g. @nativescript-community/ui-collectionview/vue3's
+// CollectionView) must not be listed: the compiler rejects v-slot on an element.
 export const NS_NATIVE_TAGS = new Set<string>([
 	// Core containers/layouts
 	'Page',
@@ -19,7 +22,6 @@ export const NS_NATIVE_TAGS = new Set<string>([
 	'Image',
 	'Img',
 	'ListView',
-	'CollectionView',
 	'ScrollView',
 	'WebView',
 	'Switch',
@@ -52,7 +54,6 @@ export const NS_NATIVE_TAGS = new Set<string>([
 	'SegmentedBar',
 	'SegmentedBarItem',
 	'RadListView',
-	'CollectionViewGridLayout',
 	'StackLayoutBase',
 	'FlexboxLayoutBase',
 	'GridLayoutBase',

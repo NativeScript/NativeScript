@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'node:module';
-import { determineProjectFlavor } from './flavor.js';
+import { determineProjectFlavor, findDeclaredViteFlavor } from './flavor.js';
 import { getProjectFilePath, getProjectRootPath } from './project.js';
 
 const require = createRequire(import.meta.url);
@@ -14,11 +14,6 @@ interface PackageJson {
 	scripts?: Record<string, string>;
 	[key: string]: any;
 }
-
-const DEV_DEPS = {
-	concurrently: '^9.0.0',
-	'wait-on': '^9.0.0',
-} as const;
 
 const RUNTIME_DEPS = {
 	'@valor/nativescript-websockets': '^2.0.2',
@@ -37,28 +32,10 @@ function writePackageJson(pkg: PackageJson) {
 
 function ensureDependencies(pkg: PackageJson) {
 	pkg.dependencies = pkg.dependencies ?? {};
-	pkg.devDependencies = pkg.devDependencies ?? {};
-
-	for (const [name, version] of Object.entries(DEV_DEPS)) {
-		pkg.devDependencies[name] = version;
-	}
 
 	for (const [name, version] of Object.entries(RUNTIME_DEPS)) {
 		pkg.dependencies[name] = version;
 	}
-}
-
-function ensureScripts(pkg: PackageJson) {
-	pkg.scripts = pkg.scripts ?? {};
-	pkg.scripts['dev:ios'] = "concurrently -k -n vite,ns 'npm run dev:server:ios' 'wait-on tcp:5173 && npm run ios'";
-	pkg.scripts['dev:android'] = "concurrently -k -n vite,ns 'npm run dev:server:android' 'wait-on tcp:5173 && npm run android'";
-	pkg.scripts['dev:windows'] = "concurrently -k -n vite,ns 'npm run dev:server:windows' 'wait-on tcp:5173 && npm run windows'";
-	pkg.scripts['dev:server:ios'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.ios --env.hmr';
-	pkg.scripts['dev:server:android'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.android --env.hmr';
-	pkg.scripts['dev:server:windows'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.windows --env.hmr';
-	pkg.scripts['ios'] = 'VITE_DEBUG_LOGS=1 ns debug ios';
-	pkg.scripts['android'] = 'VITE_DEBUG_LOGS=1 ns debug android';
-	pkg.scripts['windows'] = 'VITE_DEBUG_LOGS=1 ns debug windows';
 }
 
 function ensureGitignore() {
@@ -89,44 +66,61 @@ function getFlavorImportAndConfig(flavor: string): { importLine: string; configE
 	switch (flavor) {
 		case 'angular':
 			return {
-				importLine: "import { angularConfig } from '@nativescript/vite';",
+				importLine: "import { angularConfig } from '@nativescript/vite/angular';",
 				configExpr: 'angularConfig({ mode })',
 			};
 		case 'react':
 			return {
-				importLine: "import { reactConfig } from '@nativescript/vite';",
+				importLine: "import { reactConfig } from '@nativescript/vite/react';",
 				configExpr: 'reactConfig({ mode })',
 			};
 		case 'solid':
 			return {
-				importLine: "import { solidConfig } from '@nativescript/vite';",
+				importLine: "import { solidConfig } from '@nativescript/vite/solid';",
 				configExpr: 'solidConfig({ mode })',
 			};
 		case 'vue':
 			return {
-				importLine: "import { vueConfig } from '@nativescript/vite';",
+				importLine: "import { vueConfig } from '@nativescript/vite/vue';",
 				configExpr: 'vueConfig({ mode })',
 			};
 		case 'typescript':
 			return {
-				importLine: "import { typescriptConfig } from '@nativescript/vite';",
+				importLine: "import { typescriptConfig } from '@nativescript/vite/typescript';",
 				configExpr: 'typescriptConfig({ mode })',
 			};
 		case 'javascript':
-		default:
-			return {
-				importLine: "import { javascriptConfig } from '@nativescript/vite';",
-				configExpr: 'javascriptConfig({ mode })',
-			};
+			return javascriptImportAndConfig();
+		default: {
+			const declared = findDeclaredViteFlavor();
+			if (declared?.flavor === flavor && declared.config) {
+				return {
+					importLine: `import { ${declared.config.import} } from '${declared.config.from}';`,
+					configExpr: `${declared.config.import}({ mode })`,
+				};
+			}
+			return javascriptImportAndConfig();
+		}
 	}
+}
+
+function javascriptImportAndConfig(): { importLine: string; configExpr: string } {
+	return {
+		importLine: "import { javascriptConfig } from '@nativescript/vite/javascript';",
+		configExpr: 'javascriptConfig({ mode })',
+	};
 }
 
 function ensureViteConfig() {
 	const root = getProjectRootPath();
-	const viteConfigPath = path.join(root, 'vite.config.ts');
-	if (fs.existsSync(viteConfigPath)) {
+	const existing = ['vite.config.mts', 'vite.config.ts', 'vite.config.mjs', 'vite.config.js', 'vite.config.cts', 'vite.config.cjs'].find((name) => fs.existsSync(path.join(root, name)));
+	if (existing) {
 		return;
 	}
+	// `.mts` keeps the config ESM regardless of the app package.json `type`,
+	// which NativeScript apps leave unset — a `.ts` config there is CJS-scoped
+	// and trips Vite's `configLoader: 'native'` forward-compat warning.
+	const viteConfigPath = path.join(root, 'vite.config.mts');
 	const flavor = resolveFlavor();
 	const { importLine, configExpr } = getFlavorImportAndConfig(flavor);
 	const contents = `import { defineConfig } from 'vite';\n${importLine};\n\nexport default defineConfig(({ mode }) => ${configExpr});\n`;
@@ -136,7 +130,6 @@ function ensureViteConfig() {
 export async function runInit() {
 	const pkg = readPackageJson();
 	ensureDependencies(pkg);
-	ensureScripts(pkg);
 	writePackageJson(pkg);
 	ensureGitignore();
 	ensureViteConfig();

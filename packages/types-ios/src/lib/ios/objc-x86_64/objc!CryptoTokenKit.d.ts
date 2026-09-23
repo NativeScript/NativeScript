@@ -85,6 +85,9 @@ declare class TKSimpleTLVRecord extends TKTLVRecord {
 	initWithTagValue(tag: number, value: NSData): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCard extends NSObject {
 
 	static alloc(): TKSmartCard; // inherited from NSObject
@@ -93,9 +96,12 @@ declare class TKSmartCard extends NSObject {
 
 	allowedProtocols: TKSmartCardProtocol;
 
+	/**
+	 * @since 9.0
+	 */
 	cla: number;
 
-	context: any;
+	context: any | null;
 
 	readonly currentProtocol: TKSmartCardProtocol;
 
@@ -103,35 +109,53 @@ declare class TKSmartCard extends NSObject {
 
 	readonly slot: TKSmartCardSlot;
 
+	/**
+	 * @since 10.0
+	 */
 	useCommandChaining: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	useExtendedLength: boolean;
 
 	readonly valid: boolean;
 
-	beginSessionWithReply(reply: (p1: boolean, p2: NSError) => void): void;
+	beginSessionWithReply(reply: (p1: boolean, p2: NSError | null) => void): void;
 
 	endSession(): void;
 
-	inSessionWithErrorExecuteBlock(error: interop.Pointer | interop.Reference<NSError>, block: (p1: interop.Pointer | interop.Reference<NSError>) => boolean): boolean;
-
-	sendInsP1P2DataLeReply(ins: number, p1: number, p2: number, requestData: NSData, le: number, reply: (p1: NSData, p2: number, p3: NSError) => void): void;
-
-	sendInsP1P2DataLeSwError(ins: number, p1: number, p2: number, requestData: NSData, le: number, sw: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSData;
-
-	transmitRequestReply(request: NSData, reply: (p1: NSData, p2: NSError) => void): void;
+	/**
+	 * @since 10.0
+	 */
+	inSessionWithErrorExecuteBlock(error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, block: (p1: interop.Pointer | interop.Reference<NSError | null> | null) => boolean): boolean;
 
 	/**
 	 * @since 9.0
 	 */
-	userInteractionForSecurePINChangeWithPINFormatAPDUCurrentPINByteOffsetNewPINByteOffset(PINFormat: TKSmartCardPINFormat, APDU: NSData, currentPINByteOffset: number, newPINByteOffset: number): TKSmartCardUserInteractionForSecurePINChange;
+	sendInsP1P2DataLeReply(ins: number, p1: number, p2: number, requestData: NSData | null, le: number | null, reply: (p1: NSData | null, p2: number, p3: NSError | null) => void): void;
+
+	/**
+	 * @since 10.0
+	 */
+	sendInsP1P2DataLeSwError(ins: number, p1: number, p2: number, requestData: NSData | null, le: number | null, sw: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView, error?: interop.Reference<NSError>): NSData | null;
+
+	transmitRequestReply(request: NSData, reply: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
 	 */
-	userInteractionForSecurePINVerificationWithPINFormatAPDUPINByteOffset(PINFormat: TKSmartCardPINFormat, APDU: NSData, PINByteOffset: number): TKSmartCardUserInteractionForSecurePINVerification;
+	userInteractionForSecurePINChangeWithPINFormatAPDUCurrentPINByteOffsetNewPINByteOffset(PINFormat: TKSmartCardPINFormat, APDU: NSData, currentPINByteOffset: number, newPINByteOffset: number): TKSmartCardUserInteractionForSecurePINChange | null;
+
+	/**
+	 * @since 9.0
+	 */
+	userInteractionForSecurePINVerificationWithPINFormatAPDUPINByteOffset(PINFormat: TKSmartCardPINFormat, APDU: NSData, PINByteOffset: number): TKSmartCardUserInteractionForSecurePINVerification | null;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardATR extends NSObject {
 
 	static alloc(): TKSmartCardATR; // inherited from NSObject
@@ -142,7 +166,10 @@ declare class TKSmartCardATR extends NSObject {
 
 	readonly historicalBytes: NSData;
 
-	readonly historicalRecords: NSArray<TKCompactTLVRecord>;
+	/**
+	 * @since 10.0
+	 */
+	readonly historicalRecords: NSArray<TKCompactTLVRecord> | null;
 
 	readonly protocols: NSArray<number>;
 
@@ -154,26 +181,32 @@ declare class TKSmartCardATR extends NSObject {
 
 	initWithSource(source: () => number): this;
 
-	interfaceGroupAtIndex(index: number): TKSmartCardATRInterfaceGroup;
+	interfaceGroupAtIndex(index: number): TKSmartCardATRInterfaceGroup | null;
 
-	interfaceGroupForProtocol(protocol: TKSmartCardProtocol): TKSmartCardATRInterfaceGroup;
+	interfaceGroupForProtocol(protocol: TKSmartCardProtocol): TKSmartCardATRInterfaceGroup | null;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardATRInterfaceGroup extends NSObject {
 
 	static alloc(): TKSmartCardATRInterfaceGroup; // inherited from NSObject
 
 	static new(): TKSmartCardATRInterfaceGroup; // inherited from NSObject
 
-	readonly TA: number;
+	readonly TA: number | null;
 
-	readonly TB: number;
+	readonly TB: number | null;
 
-	readonly TC: number;
+	readonly TC: number | null;
 
-	readonly protocol: number;
+	readonly protocol: number | null;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardPINCharset {
 
 	Numeric = 0,
@@ -183,6 +216,9 @@ declare const enum TKSmartCardPINCharset {
 	UpperAlphanumeric = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardPINCompletion {
 
 	MaxLength = 1,
@@ -192,6 +228,9 @@ declare const enum TKSmartCardPINCompletion {
 	Timeout = 4
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardPINConfirmation {
 
 	None = 0,
@@ -201,6 +240,9 @@ declare const enum TKSmartCardPINConfirmation {
 	Current = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardPINEncoding {
 
 	Binary = 0,
@@ -210,6 +252,9 @@ declare const enum TKSmartCardPINEncoding {
 	BCD = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardPINFormat extends NSObject {
 
 	static alloc(): TKSmartCardPINFormat; // inherited from NSObject
@@ -235,6 +280,9 @@ declare class TKSmartCardPINFormat extends NSObject {
 	minPINLength: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardPINJustification {
 
 	Left = 0,
@@ -242,6 +290,9 @@ declare const enum TKSmartCardPINJustification {
 	Right = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardProtocol {
 
 	None = 0,
@@ -255,13 +306,16 @@ declare const enum TKSmartCardProtocol {
 	Any = 65535
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardSlot extends NSObject {
 
 	static alloc(): TKSmartCardSlot; // inherited from NSObject
 
 	static new(): TKSmartCardSlot; // inherited from NSObject
 
-	readonly ATR: TKSmartCardATR;
+	readonly ATR: TKSmartCardATR | null;
 
 	readonly maxInputLength: number;
 
@@ -271,9 +325,12 @@ declare class TKSmartCardSlot extends NSObject {
 
 	readonly state: TKSmartCardSlotState;
 
-	makeSmartCard(): TKSmartCard;
+	makeSmartCard(): TKSmartCard | null;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardSlotManager extends NSObject {
 
 	static alloc(): TKSmartCardSlotManager; // inherited from NSObject
@@ -282,21 +339,24 @@ declare class TKSmartCardSlotManager extends NSObject {
 
 	readonly slotNames: NSArray<string>;
 
-	static readonly defaultManager: TKSmartCardSlotManager;
+	static readonly defaultManager: TKSmartCardSlotManager | null;
 
 	/**
 	 * @since 26.0
 	 */
-	createNFCSlotWithMessageCompletion(message: string, completion: (p1: TKSmartCardSlotNFCSession, p2: NSError) => void): void;
+	createNFCSlotWithMessageCompletion(message: string | null, completion: (p1: TKSmartCardSlotNFCSession | null, p2: NSError | null) => void): void;
 
-	getSlotWithNameReply(name: string, reply: (p1: TKSmartCardSlot) => void): void;
+	getSlotWithNameReply(name: string, reply: (p1: TKSmartCardSlot | null) => void): void;
 
 	/**
 	 * @since 26.0
 	 */
 	isNFCSupported(): boolean;
 
-	slotNamed(name: string): TKSmartCardSlot;
+	/**
+	 * @since 9.0
+	 */
+	slotNamed(name: string): TKSmartCardSlot | null;
 }
 
 /**
@@ -308,13 +368,16 @@ declare class TKSmartCardSlotNFCSession extends NSObject {
 
 	static new(): TKSmartCardSlotNFCSession; // inherited from NSObject
 
-	readonly slotName: string;
+	readonly slotName: string | null;
 
 	endSession(): void;
 
 	updateWithMessageError(message: string, error?: interop.Reference<NSError>): boolean;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum TKSmartCardSlotState {
 
 	Missing = 0,
@@ -337,11 +400,11 @@ declare class TKSmartCardToken extends TKToken {
 
 	static new(): TKSmartCardToken; // inherited from NSObject
 
-	readonly AID: NSData;
+	readonly AID: NSData | null;
 
-	constructor(o: { smartCard: TKSmartCard; AID: NSData; instanceID: string; tokenDriver: TKSmartCardTokenDriver; });
+	constructor(o: { smartCard: TKSmartCard; AID: NSData | null; instanceID: string; tokenDriver: TKSmartCardTokenDriver; });
 
-	initWithSmartCardAIDInstanceIDTokenDriver(smartCard: TKSmartCard, AID: NSData, instanceID: string, tokenDriver: TKSmartCardTokenDriver): this;
+	initWithSmartCardAIDInstanceIDTokenDriver(smartCard: TKSmartCard, AID: NSData | null, instanceID: string, tokenDriver: TKSmartCardTokenDriver): this;
 }
 
 /**
@@ -356,7 +419,7 @@ declare class TKSmartCardTokenDriver extends TKTokenDriver {
 
 interface TKSmartCardTokenDriverDelegate extends TKTokenDriverDelegate {
 
-	tokenDriverCreateTokenForSmartCardAIDError(driver: TKSmartCardTokenDriver, smartCard: TKSmartCard, AID: NSData, error?: interop.Reference<NSError>): TKSmartCardToken;
+	tokenDriverCreateTokenForSmartCardAIDError(driver: TKSmartCardTokenDriver, smartCard: TKSmartCard, AID: NSData | null, error?: interop.Reference<NSError>): TKSmartCardToken | null;
 }
 declare var TKSmartCardTokenDriverDelegate: {
 
@@ -399,16 +462,19 @@ declare class TKSmartCardTokenSession extends TKTokenSession {
 	/**
 	 * @since 26.0
 	 */
-	getSmartCardWithError(error?: interop.Reference<NSError>): TKSmartCard;
+	getSmartCardWithError(error?: interop.Reference<NSError>): TKSmartCard | null;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardUserInteraction extends NSObject {
 
 	static alloc(): TKSmartCardUserInteraction; // inherited from NSObject
 
 	static new(): TKSmartCardUserInteraction; // inherited from NSObject
 
-	delegate: TKSmartCardUserInteractionDelegate;
+	delegate: TKSmartCardUserInteractionDelegate | null;
 
 	initialTimeout: number;
 
@@ -416,9 +482,12 @@ declare class TKSmartCardUserInteraction extends NSObject {
 
 	cancel(): boolean;
 
-	runWithReply(reply: (p1: boolean, p2: NSError) => void): void;
+	runWithReply(reply: (p1: boolean, p2: NSError | null) => void): void;
 }
 
+/**
+ * @since 9.0
+ */
 interface TKSmartCardUserInteractionDelegate {
 
 	characterEnteredInUserInteraction?(interaction: TKSmartCardUserInteraction): void;
@@ -440,6 +509,9 @@ declare var TKSmartCardUserInteractionDelegate: {
 	prototype: TKSmartCardUserInteractionDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardUserInteractionForPINOperation extends TKSmartCardUserInteraction {
 
 	static alloc(): TKSmartCardUserInteractionForPINOperation; // inherited from NSObject
@@ -448,15 +520,18 @@ declare class TKSmartCardUserInteractionForPINOperation extends TKSmartCardUserI
 
 	PINCompletion: TKSmartCardPINCompletion;
 
-	PINMessageIndices: NSArray<number>;
+	PINMessageIndices: NSArray<number> | null;
 
 	locale: NSLocale;
 
-	resultData: NSData;
+	resultData: NSData | null;
 
 	resultSW: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardUserInteractionForSecurePINChange extends TKSmartCardUserInteractionForPINOperation {
 
 	static alloc(): TKSmartCardUserInteractionForSecurePINChange; // inherited from NSObject
@@ -466,6 +541,9 @@ declare class TKSmartCardUserInteractionForSecurePINChange extends TKSmartCardUs
 	PINConfirmation: TKSmartCardPINConfirmation;
 }
 
+/**
+ * @since 9.0
+ */
 declare class TKSmartCardUserInteractionForSecurePINVerification extends TKSmartCardUserInteractionForPINOperation {
 
 	static alloc(): TKSmartCardUserInteractionForSecurePINVerification; // inherited from NSObject
@@ -484,7 +562,7 @@ declare class TKTLVRecord extends NSObject {
 
 	static recordFromData(data: NSData): TKTLVRecord;
 
-	static sequenceOfRecordsFromData(data: NSData): NSArray<TKTLVRecord>;
+	static sequenceOfRecordsFromData(data: NSData): NSArray<TKTLVRecord> | null;
 
 	readonly data: NSData;
 
@@ -507,9 +585,9 @@ declare class TKToken extends NSObject {
 	 */
 	readonly configuration: TKTokenConfiguration;
 
-	delegate: TKTokenDelegate;
+	delegate: TKTokenDelegate | null;
 
-	readonly keychainContents: TKTokenKeychainContents;
+	readonly keychainContents: TKTokenKeychainContents | null;
 
 	readonly tokenDriver: TKTokenDriver;
 
@@ -547,15 +625,15 @@ declare class TKTokenConfiguration extends NSObject {
 
 	static new(): TKTokenConfiguration; // inherited from NSObject
 
-	configurationData: NSData;
+	configurationData: NSData | null;
 
 	readonly instanceID: string;
 
 	keychainItems: NSArray<TKTokenKeychainItem>;
 
-	certificateForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainCertificate;
+	certificateForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainCertificate | null;
 
-	keyForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainKey;
+	keyForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainKey | null;
 }
 
 /**
@@ -563,7 +641,7 @@ declare class TKTokenConfiguration extends NSObject {
  */
 interface TKTokenDelegate extends NSObjectProtocol {
 
-	tokenCreateSessionWithError(token: TKToken, error?: interop.Reference<NSError>): TKTokenSession;
+	tokenCreateSessionWithError(token: TKToken, error?: interop.Reference<NSError>): TKTokenSession | null;
 
 	tokenTerminateSession?(token: TKToken, session: TKTokenSession): void;
 }
@@ -581,7 +659,7 @@ declare class TKTokenDriver extends NSObject {
 
 	static new(): TKTokenDriver; // inherited from NSObject
 
-	delegate: TKTokenDriverDelegate;
+	delegate: TKTokenDriverDelegate | null;
 }
 
 /**
@@ -614,7 +692,7 @@ interface TKTokenDriverDelegate extends NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	tokenDriverTokenForConfigurationError?(driver: TKTokenDriver, configuration: TKTokenConfiguration, error?: interop.Reference<NSError>): TKToken;
+	tokenDriverTokenForConfigurationError?(driver: TKTokenDriver, configuration: TKTokenConfiguration, error?: interop.Reference<NSError>): TKToken | null;
 }
 declare var TKTokenDriverDelegate: {
 
@@ -646,7 +724,7 @@ declare class TKTokenKeyExchangeParameters extends NSObject {
 
 	readonly requestedSize: number;
 
-	readonly sharedInfo: NSData;
+	readonly sharedInfo: NSData | null;
 }
 
 /**
@@ -676,11 +754,11 @@ declare class TKTokenKeychainContents extends NSObject {
 
 	readonly items: NSArray<TKTokenKeychainItem>;
 
-	certificateForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainCertificate;
+	certificateForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainCertificate | null;
 
 	fillWithItems(items: NSArray<TKTokenKeychainItem> | TKTokenKeychainItem[]): void;
 
-	keyForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainKey;
+	keyForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainKey | null;
 }
 
 /**
@@ -692,9 +770,9 @@ declare class TKTokenKeychainItem extends NSObject {
 
 	static new(): TKTokenKeychainItem; // inherited from NSObject
 
-	constraints: NSDictionary<number, any>;
+	constraints: NSDictionary<number, any> | null;
 
-	label: string;
+	label: string | null;
 
 	readonly objectID: any;
 
@@ -712,7 +790,7 @@ declare class TKTokenKeychainKey extends TKTokenKeychainItem {
 
 	static new(): TKTokenKeychainKey; // inherited from NSObject
 
-	applicationTag: NSData;
+	applicationTag: NSData | null;
 
 	canDecrypt: boolean;
 
@@ -724,15 +802,15 @@ declare class TKTokenKeychainKey extends TKTokenKeychainItem {
 
 	keyType: string;
 
-	publicKeyData: NSData;
+	publicKeyData: NSData | null;
 
-	publicKeyHash: NSData;
+	publicKeyHash: NSData | null;
 
 	suitableForLogin: boolean;
 
-	constructor(o: { certificate: any; objectID: any; });
+	constructor(o: { certificate: any | null; objectID: any; });
 
-	initWithCertificateObjectID(certificateRef: any, objectID: any): this;
+	initWithCertificateObjectID(certificateRef: any | null, objectID: any): this;
 }
 
 /**
@@ -760,7 +838,7 @@ declare class TKTokenPasswordAuthOperation extends TKTokenAuthOperation {
 
 	static new(): TKTokenPasswordAuthOperation; // inherited from NSObject
 
-	password: string;
+	password: string | null;
 }
 
 /**
@@ -772,7 +850,7 @@ declare class TKTokenSession extends NSObject {
 
 	static new(): TKTokenSession; // inherited from NSObject
 
-	delegate: TKTokenSessionDelegate;
+	delegate: TKTokenSessionDelegate | null;
 
 	readonly token: TKToken;
 
@@ -786,13 +864,13 @@ declare class TKTokenSession extends NSObject {
  */
 interface TKTokenSessionDelegate extends NSObjectProtocol {
 
-	tokenSessionBeginAuthForOperationConstraintError?(session: TKTokenSession, operation: TKTokenOperation, constraint: any, error?: interop.Reference<NSError>): TKTokenAuthOperation;
+	tokenSessionBeginAuthForOperationConstraintError?(session: TKTokenSession, operation: TKTokenOperation, constraint: any, error?: interop.Reference<NSError>): TKTokenAuthOperation | null;
 
-	tokenSessionDecryptDataUsingKeyAlgorithmError?(session: TKTokenSession, ciphertext: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm, error?: interop.Reference<NSError>): NSData;
+	tokenSessionDecryptDataUsingKeyAlgorithmError?(session: TKTokenSession, ciphertext: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm, error?: interop.Reference<NSError>): NSData | null;
 
-	tokenSessionPerformKeyExchangeWithPublicKeyUsingKeyAlgorithmParametersError?(session: TKTokenSession, otherPartyPublicKeyData: NSData, objectID: any, algorithm: TKTokenKeyAlgorithm, parameters: TKTokenKeyExchangeParameters, error?: interop.Reference<NSError>): NSData;
+	tokenSessionPerformKeyExchangeWithPublicKeyUsingKeyAlgorithmParametersError?(session: TKTokenSession, otherPartyPublicKeyData: NSData, objectID: any, algorithm: TKTokenKeyAlgorithm, parameters: TKTokenKeyExchangeParameters, error?: interop.Reference<NSError>): NSData | null;
 
-	tokenSessionSignDataUsingKeyAlgorithmError?(session: TKTokenSession, dataToSign: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm, error?: interop.Reference<NSError>): NSData;
+	tokenSessionSignDataUsingKeyAlgorithmError?(session: TKTokenSession, dataToSign: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm, error?: interop.Reference<NSError>): NSData | null;
 
 	tokenSessionSupportsOperationUsingKeyAlgorithm?(session: TKTokenSession, operation: TKTokenOperation, keyObjectID: any, algorithm: TKTokenKeyAlgorithm): boolean;
 }
@@ -810,15 +888,15 @@ declare class TKTokenSmartCardPINAuthOperation extends TKTokenAuthOperation {
 
 	static new(): TKTokenSmartCardPINAuthOperation; // inherited from NSObject
 
-	APDUTemplate: NSData;
+	APDUTemplate: NSData | null;
 
-	PIN: string;
+	PIN: string | null;
 
 	PINByteOffset: number;
 
 	PINFormat: TKSmartCardPINFormat;
 
-	smartCard: TKSmartCard;
+	smartCard: TKSmartCard | null;
 }
 
 /**
@@ -854,7 +932,7 @@ declare class TKTokenWatcher extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	tokenInfoForTokenID(tokenID: string): TKTokenWatcherTokenInfo;
+	tokenInfoForTokenID(tokenID: string): TKTokenWatcherTokenInfo | null;
 }
 
 /**
@@ -866,9 +944,9 @@ declare class TKTokenWatcherTokenInfo extends NSObject {
 
 	static new(): TKTokenWatcherTokenInfo; // inherited from NSObject
 
-	readonly driverName: string;
+	readonly driverName: string | null;
 
-	readonly slotName: string;
+	readonly slotName: string | null;
 
 	readonly tokenID: string;
 }

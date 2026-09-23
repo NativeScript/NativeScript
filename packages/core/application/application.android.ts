@@ -2,12 +2,17 @@ import { CoreTypes } from '../core-types';
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { isEmbedded } from '../ui/embedding';
 import { SDK_VERSION } from '../utils/constants';
-import { android as androidUtils } from '../utils';
-import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
-import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
+import { android as androidUtils, dataSerialize } from '../utils';
+import { ApplicationCommon } from './application-common';
+import type { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
+import { AndroidNativeWindow } from '../native-window/native-window.android';
+import { NativeWindow } from '../native-window/native-window-common';
+import { NativeWindowEvents } from '../native-window/native-window-interfaces';
+import type { WindowOpenOptions } from '../native-window/native-window-interfaces';
 import {
 	CommonA11YServiceEnabledObservable,
 	SharedA11YObservable,
@@ -45,10 +50,25 @@ import { androidGetForegroundActivity, androidGetStartActivity, androidSetForegr
 import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import type { AndroidApplication as IAndroidApplication } from './application';
-import { enableEdgeToEdge } from '../utils/native-helper-for-android';
+import { enableEdgeToEdge, refreshEdgeToEdge } from '../utils/native-helper-for-android';
 import lazy from '../utils/lazy';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
+
+const WINDOW_ID_EXTRA = 'com.tns.activity.windowId';
+
+let multiWindowWarned = false;
+
+function warnMultiWindowIsExperimental(): void {
+	if (multiWindowWarned) {
+		return;
+	}
+	multiWindowWarned = true;
+
+	const message = 'Application.android.openWindow() is experimental. The start activity must not use launchMode="singleTask" (the app template default) or "singleInstance" in AndroidManifest.xml, or Android hands the launch intent to the existing activity instead of opening a second one; use "singleInstancePerTask" (API 31+) or "standard".';
+	Trace.write(message, Trace.categories.Debug, Trace.messageType.warn);
+	console.warn(message);
+}
 
 let NativeScriptLifecycleCallbacks_: typeof NativeScriptLifecycleCallbacks;
 function initNativeScriptLifecycleCallbacks() {
@@ -78,7 +98,28 @@ function initNativeScriptLifecycleCallbacks() {
 				this.nativescriptActivity = activity;
 			}
 
-			this.notifyActivityCreated(activity, savedInstanceState);
+			// Create and register NativeWindow for this activity
+			const savedWindowId = savedInstanceState?.getString(WINDOW_ID_EXTRA);
+			const knownWindow = savedWindowId ? (Application.android.getWindowById(savedWindowId) as AndroidNativeWindow) : undefined;
+			let nativeWindow: AndroidNativeWindow;
+
+			if (knownWindow?.state === 'detached') {
+				// The activity was recreated (rotation, theme change): the same window
+				// instance carries on, keeping its listeners and identity.
+				knownWindow._reattach(activity);
+				nativeWindow = knownWindow;
+			} else {
+				const isPrimary = Application.android._getWindows().length === 0;
+				// The role is fixed at creation because it is immutable, and deciding it later would
+				// mean either a second window for this activity or a window with the wrong role.
+				nativeWindow = new AndroidNativeWindow(activity, savedWindowId || AndroidNativeWindow.newWindowId(), isPrimary, isEmbedded() ? 'embedded' : 'application');
+				Application.android._registerWindow(nativeWindow);
+			}
+
+			nativeWindow._registerConfigurationCallbacks();
+			nativeWindow._notifyEvent(NativeWindowEvents.attached);
+
+			this.notifyActivityCreated(activity, savedInstanceState, nativeWindow);
 
 			if (Application.hasListeners(Application.displayedEvent)) {
 				this.subscribeForGlobalLayout(activity);
@@ -105,11 +146,54 @@ function initNativeScriptLifecycleCallbacks() {
 				}
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				// Android always pauses before destroying, so the window has normally left the
+				// active aggregate already; this only keeps a dropped pause from stranding it
+				// there and wedging the app as never-suspended.
+				Application.android._setWindowActive(nativeWindow, false, activity);
+
+				nativeWindow._surfaceGone = true;
+
+				// A destroyed activity only ends the window session when it is finishing —
+				// otherwise Android is recreating it and the same window is reused.
+				const isClosing = activity.isFinishing();
+
+				if (isClosing) {
+					nativeWindow._notifyEvent(NativeWindowEvents.close);
+				}
+
+				// Emit activityDestroyed on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityDestroyed,
+					object: nativeWindow,
+					window: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
+
+				if (isClosing) {
+					Application.android._unregisterWindow(nativeWindow);
+				} else {
+					nativeWindow._detach();
+				}
+			}
+
 			Application.android.notify({
 				eventName: Application.android.activityDestroyedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
+
+			// This callback runs for every activity in the process, not just NativeScript ones,
+			// so an empty registry here means the app really has no window left.
+			if (activity.isFinishing() && Application.android._getWindows().length === 0) {
+				Application.android.notify({
+					eventName: Application.exitEvent,
+					object: Application.android,
+					android: activity,
+				});
+			}
 
 			// TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
 			gc();
@@ -118,17 +202,29 @@ function initNativeScriptLifecycleCallbacks() {
 		@profile
 		public onActivityPaused(activity: androidx.appcompat.app.AppCompatActivity): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivityPaused');
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+
+			// `onActivityCreated` registers a window for every activity in the process, so the
+			// window's role cannot tell a NativeScript activity from a third-party one.
 			if ('isNativeScriptActivity' in activity) {
-				Application.setSuspended(true, {
-					// todo: deprecate event.android in favor of event.activity
-					android: activity,
+				Application.android._setWindowActive(nativeWindow, false, activity);
+			}
+
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
+				// Emit activityPaused on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityPaused,
+					object: nativeWindow,
+					window: nativeWindow,
 					activity,
-				});
+				} as AndroidActivityEventData);
 			}
 
 			Application.android.notify({
 				eventName: Application.android.activityPausedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -138,12 +234,25 @@ function initNativeScriptLifecycleCallbacks() {
 			// console.log('NativeScriptLifecycleCallbacks onActivityResumed');
 			Application.android.setForegroundActivity(activity);
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.activate);
+				// Emit activityResumed on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityResumed,
+					object: nativeWindow,
+					window: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
+			}
+
 			// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
 			// This is done to ensure proper timing for the event to be raised
 
 			Application.android.notify({
 				eventName: Application.android.activityResumedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -152,9 +261,25 @@ function initNativeScriptLifecycleCallbacks() {
 		public onActivitySaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivitySaveInstanceState');
 
+			// Emit on NativeWindow first
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				// Carries the window identity across activity recreation.
+				bundle.putString(WINDOW_ID_EXTRA, nativeWindow.id);
+
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.saveActivityState,
+					object: nativeWindow,
+					window: nativeWindow,
+					activity,
+					bundle,
+				} as AndroidActivityBundleEventData);
+			}
+
 			Application.android.notify({
 				eventName: Application.android.saveActivityStateEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 				bundle,
 			} as AndroidActivityBundleEventData);
@@ -173,9 +298,22 @@ function initNativeScriptLifecycleCallbacks() {
 				});
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.foreground);
+				// Emit activityStarted on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityStarted,
+					object: nativeWindow,
+					window: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
+			}
+
 			Application.android.notify({
 				eventName: Application.android.activityStartedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -192,9 +330,22 @@ function initNativeScriptLifecycleCallbacks() {
 				});
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.background);
+				// Emit activityStopped on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityStopped,
+					object: nativeWindow,
+					window: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
+			}
+
 			Application.android.notify({
 				eventName: Application.android.activityStoppedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 			} as AndroidActivityEventData);
 		}
@@ -212,10 +363,21 @@ function initNativeScriptLifecycleCallbacks() {
 		}
 
 		@profile
-		notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle) {
+		notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle, nativeWindow?: NativeWindow) {
+			// Emit on NativeWindow first
+			if (nativeWindow) {
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityCreated,
+					object: nativeWindow,
+					window: nativeWindow,
+					activity,
+					bundle,
+				} as AndroidActivityBundleEventData);
+			}
 			Application.android.notify({
 				eventName: Application.android.activityCreatedEvent,
 				object: Application.android,
+				window: nativeWindow,
 				activity,
 				bundle,
 			} as AndroidActivityBundleEventData);
@@ -312,6 +474,20 @@ const BroadcastReceiver = lazy(() => {
 	return BroadcastReceiverImpl;
 });
 
+type AndroidApplicationOn = ApplicationCommon['on'] & {
+	(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
+	(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+};
+
 export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
 	static readonly activityCreatedEvent = 'activityCreated';
 	static readonly activityDestroyedEvent = 'activityDestroyed';
@@ -336,6 +512,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
 	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
+	// `on` is created in ApplicationCommon as a bound function property. We only re-declare it
+	// here so Android-specific events get typed callbacks without changing the runtime field.
+	declare on: AndroidApplicationOn;
 
 	private _nativeApp: android.app.Application;
 	private _context: android.content.Context;
@@ -344,6 +523,11 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private lifecycleCallbacks: NativeScriptLifecycleCallbacks;
 	private componentCallbacks: NativeScriptComponentCallbacks;
+
+	// Windows currently active. Membership, not a count, so a repeated or missing lifecycle
+	// callback cannot drift the aggregate. The registry owns window lifetime, so nothing here
+	// outlives the window itself.
+	private _activeWindows = new Set<NativeWindow>();
 
 	init(nativeApp: android.app.Application): void {
 		if (this.nativeApp === nativeApp) {
@@ -377,10 +561,28 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this._pendingReceiverRegistrations.length = 0;
 	}
 
+	private edgeToEdgeAppearance: 'dark' | 'light' | null = null;
+
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
-		this.setOrientation(this.getOrientationValue(configuration));
-		this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
-		this.setLayoutDirection(this.getLayoutDirectionValue(configuration));
+		// The application context reports the app-wide configuration, which a window on a
+		// second display or in split-screen does not necessarily share, so the primary
+		// window is asked first. Each window tracks its own through its activity.
+		const primaryWindow = this.primaryWindow;
+
+		this.setOrientation(primaryWindow?.orientation() ?? this.getOrientationValue(configuration));
+		this.setSystemAppearance(primaryWindow?.systemAppearance() ?? this.getSystemAppearanceValue(configuration));
+		this.setLayoutDirection(primaryWindow?.layoutDirection() ?? this.getLayoutDirectionValue(configuration));
+	}
+
+	protected setSystemAppearance(value: 'dark' | 'light') {
+		super.setSystemAppearance(value);
+		// The activity survives the switch (uiMode is a handled config change),
+		// so the edge-to-edge system bar style must be applied again to pick up
+		// the icon appearance for the new theme.
+		if (this.edgeToEdgeAppearance !== value) {
+			this.edgeToEdgeAppearance = value;
+			refreshEdgeToEdge(this.foregroundActivity ?? this.startActivity);
+		}
 	}
 
 	getNativeApplication() {
@@ -416,6 +618,10 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			const nativeApp = this.getNativeApplication();
 			this.init(nativeApp);
 		}
+
+		// The activity lifecycle callbacks are registered but no activity has been created yet,
+		// so this always precedes the first `windowOpen`.
+		this.notifyReady();
 	}
 
 	get startActivity() {
@@ -507,7 +713,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
-		return this._registeredReceivers[intentFilter]?.[0].receiver;
+		return this._registeredReceivers[intentFilter]?.[0]?.receiver;
 	}
 
 	public getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[] {
@@ -517,6 +723,105 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 		return [];
 	}
+
+	// --- NativeWindow registry ---
+
+	/**
+	 * @internal - Get a NativeWindow by its activity.
+	 */
+	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): AndroidNativeWindow | undefined {
+		return this._windows.find((nw) => nw.android?.activity === activity) as AndroidNativeWindow | undefined;
+	}
+
+	/**
+	 * @internal - Feeds a window's active state into the application-level 'resume'/'suspend'
+	 * events, which describe the app as a whole: they are raised when the first window becomes
+	 * active and when the last active one resigns. Callers decide which activities may speak
+	 * for the app; every window reaching here participates.
+	 */
+	_setWindowActive(nativeWindow: NativeWindow | undefined, active: boolean, activity?: androidx.appcompat.app.AppCompatActivity): void {
+		if (this._trackWindowActive(nativeWindow, active)) {
+			this.setSuspended(!active, {
+				// todo: deprecate event.android in favor of event.activity
+				android: activity,
+				activity,
+			});
+		}
+	}
+
+	/**
+	 * @returns whether the set flipped between empty and non-empty, which is the only point
+	 * at which app-level state changes.
+	 */
+	private _trackWindowActive(nativeWindow: NativeWindow | undefined, active: boolean): boolean {
+		const wasPopulated = this._activeWindows.size > 0;
+
+		// An activity with no registered window cannot join the aggregate, so it only speaks
+		// for the app while no window holds the state.
+		if (!nativeWindow) {
+			return !wasPopulated;
+		}
+
+		if (active) {
+			this._activeWindows.add(nativeWindow);
+		} else {
+			this._activeWindows.delete(nativeWindow);
+		}
+
+		return wasPopulated !== this._activeWindows.size > 0;
+	}
+
+	// --- Multi-window support ---
+
+	/**
+	 * Opens a new window by launching the start activity into its own task.
+	 *
+	 * @param options Options for the new window. `options.data` is put on the launch
+	 * intent as extras and surfaces as the window's `data`.
+	 *
+	 * @experimental The start activity's `launchMode` in AndroidManifest.xml decides whether a
+	 * second instance can exist at all: `singleTask` (the app template default) and
+	 * `singleInstance` route the intent to the existing activity's `onNewIntent` instead of
+	 * creating one. `singleInstancePerTask` (API 31+) keeps single-task behavior for launcher
+	 * and deep-link starts while still allowing the `MULTIPLE_TASK`/`NEW_DOCUMENT` launch used
+	 * here; `standard` also works. When the app is already in split-screen, the new window
+	 * opens in the adjacent pane; otherwise it covers the current one and both show in recents.
+	 */
+	openWindow(options?: WindowOpenOptions): void {
+		warnMultiWindowIsExperimental();
+
+		const context = this.context ?? this.getNativeApplication();
+		const intent = new android.content.Intent();
+		const startActivity = this.startActivity;
+
+		if (startActivity) {
+			intent.setClass(context, startActivity.getClass());
+		} else {
+			intent.setClassName(context, 'org.nativescript.NativeScriptActivity');
+		}
+
+		let flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK | android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+
+		const launcher = this.foregroundActivity ?? startActivity;
+		if (SDK_VERSION >= 24 && launcher?.isInMultiWindowMode()) {
+			flags |= android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
+		}
+		intent.setFlags(flags);
+
+		const data = options?.data;
+		if (data) {
+			for (const key of Object.keys(data)) {
+				intent.putExtra(key, dataSerialize(data[key], true));
+			}
+		}
+
+		if (launcher) {
+			launcher.startActivity(intent);
+		} else {
+			context.startActivity(intent);
+		}
+	}
+
 	getRootView(): View {
 		const activity = this.foregroundActivity || this.startActivity;
 		if (!activity) {
@@ -604,7 +909,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		return this;
 	}
 }
+
 export * from './application-common';
+export * from './application-interfaces';
 export const Application = new AndroidApplication();
 export const iOSApplication = undefined;
 
@@ -726,7 +1033,7 @@ function updateAccessibilityState(): void {
 	if (!sharedA11YObservable) {
 		return;
 	}
-	
+
 	const accessibilityManager = getAndroidAccessibilityManager();
 	if (!accessibilityManager) {
 		sharedA11YObservable.set(accessibilityStateEnabledPropName, false);
@@ -819,7 +1126,7 @@ export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnab
 }
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
-export function ensureClasses() {
+export function ensureA11yClasses() {
 	if (accessibilityServiceObservable) {
 		return;
 	}
@@ -827,9 +1134,6 @@ export function ensureClasses() {
 	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
-
-	// Initialize SDK version CSS class once
-	initializeSdkVersionClass(Application.getRootView());
 }
 
 export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
@@ -884,7 +1188,9 @@ export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: strin
 }
 
 export function initAccessibilityCssHelper(): void {
-	ensureClasses();
+	ensureA11yClasses();
+	updateCurrentHelperClasses(applyRootCssClass);
+	applyFontScaleToRootViews();
 
 	Application.on(Application.fontScaleChangedEvent, () => {
 		updateCurrentHelperClasses(applyRootCssClass);

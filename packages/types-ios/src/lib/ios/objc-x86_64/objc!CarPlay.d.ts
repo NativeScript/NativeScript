@@ -10,13 +10,13 @@ declare class CPActionSheetTemplate extends CPTemplate {
 
 	readonly actions: NSArray<CPAlertAction>;
 
-	readonly message: string;
+	readonly message: string | null;
 
-	readonly title: string;
+	readonly title: string | null;
 
-	constructor(o: { title: string; message: string; actions: NSArray<CPAlertAction> | CPAlertAction[]; });
+	constructor(o: { title: string | null; message: string | null; actions: NSArray<CPAlertAction> | CPAlertAction[]; });
 
-	initWithTitleMessageActions(title: string, message: string, actions: NSArray<CPAlertAction> | CPAlertAction[]): this;
+	initWithTitleMessageActions(title: string | null, message: string | null, actions: NSArray<CPAlertAction> | CPAlertAction[]): this;
 }
 
 /**
@@ -31,7 +31,7 @@ declare class CPAlertAction extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 16.0
 	 */
-	readonly color: UIColor;
+	readonly color: UIColor | null;
 
 	readonly handler: (p1: CPAlertAction) => void;
 
@@ -198,9 +198,9 @@ declare class CPBarButton extends NSObject implements NSSecureCoding {
 
 	enabled: boolean;
 
-	image: UIImage;
+	image: UIImage | null;
 
-	title: string;
+	title: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -209,18 +209,18 @@ declare class CPBarButton extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { image: UIImage; handler: (p1: CPBarButton) => void; });
+	constructor(o: { image: UIImage; handler: (p1: CPBarButton) => void | null; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { title: string; handler: (p1: CPBarButton) => void; });
+	constructor(o: { title: string; handler: (p1: CPBarButton) => void | null; });
 
 	/**
 	 * @since 12.0
 	 * @deprecated 14.0
 	 */
-	constructor(o: { type: CPBarButtonType; handler: (p1: CPBarButton) => void; });
+	constructor(o: { type: CPBarButtonType; handler: (p1: CPBarButton) => void | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -229,18 +229,18 @@ declare class CPBarButton extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	initWithImageHandler(image: UIImage, handler: (p1: CPBarButton) => void): this;
+	initWithImageHandler(image: UIImage, handler: (p1: CPBarButton) => void | null): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithTitleHandler(title: string, handler: (p1: CPBarButton) => void): this;
+	initWithTitleHandler(title: string, handler: (p1: CPBarButton) => void | null): this;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 14.0
 	 */
-	initWithTypeHandler(type: CPBarButtonType, handler: (p1: CPBarButton) => void): this;
+	initWithTypeHandler(type: CPBarButtonType, handler: (p1: CPBarButton) => void | null): this;
 }
 
 /**
@@ -248,7 +248,7 @@ declare class CPBarButton extends NSObject implements NSSecureCoding {
  */
 interface CPBarButtonProviding extends NSObjectProtocol {
 
-	backButton: CPBarButton;
+	backButton: CPBarButton | null;
 
 	leadingNavigationBarButtons: NSArray<CPBarButton>;
 
@@ -290,13 +290,13 @@ declare class CPButton extends NSObject {
 
 	enabled: boolean;
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
-	title: string;
+	title: string | null;
 
-	constructor(o: { image: UIImage; handler: (p1: CPButton) => void; });
+	constructor(o: { image: UIImage; handler: (p1: CPButton) => void | null; });
 
-	initWithImageHandler(image: UIImage, handler: (p1: CPButton) => void): this;
+	initWithImageHandler(image: UIImage, handler: (p1: CPButton) => void | null): this;
 }
 
 declare var CPButtonMaximumImageSize: CGSize;
@@ -310,15 +310,15 @@ declare class CPContact extends NSObject implements NSSecureCoding {
 
 	static new(): CPContact; // inherited from NSObject
 
-	actions: NSArray<CPButton>;
+	actions: NSArray<CPButton> | null;
 
 	image: UIImage;
 
-	informativeText: string;
+	informativeText: string | null;
 
 	name: string;
 
-	subtitle: string;
+	subtitle: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -342,9 +342,9 @@ declare class CPContactCallButton extends CPButton {
 
 	static new(): CPContactCallButton; // inherited from NSObject
 
-	constructor(o: { handler: (p1: CPButton) => void; });
+	constructor(o: { handler: (p1: CPButton) => void | null; });
 
-	initWithHandler(handler: (p1: CPButton) => void): this;
+	initWithHandler(handler: (p1: CPButton) => void | null): this;
 }
 
 /**
@@ -356,9 +356,9 @@ declare class CPContactDirectionsButton extends CPButton {
 
 	static new(): CPContactDirectionsButton; // inherited from NSObject
 
-	constructor(o: { handler: (p1: CPButton) => void; });
+	constructor(o: { handler: (p1: CPButton) => void | null; });
 
-	initWithHandler(handler: (p1: CPButton) => void): this;
+	initWithHandler(handler: (p1: CPButton) => void | null): this;
 }
 
 /**
@@ -388,7 +388,7 @@ declare class CPContactTemplate extends CPTemplate implements CPBarButtonProvidi
 
 	contact: CPContact;
 
-	backButton: CPBarButton; // inherited from CPBarButtonProviding
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -462,13 +462,13 @@ declare class CPDashboardButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; image: UIImage; handler: (p1: CPDashboardButton) => void; });
+	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; image: UIImage; handler: (p1: CPDashboardButton) => void | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleVariantsSubtitleVariantsImageHandler(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPDashboardButton) => void): this;
+	initWithTitleVariantsSubtitleVariantsImageHandler(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPDashboardButton) => void | null): this;
 }
 
 /**
@@ -499,7 +499,7 @@ declare class CPGridButton extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 26.0
 	 */
-	readonly messageConfiguration: CPMessageGridItemConfiguration;
+	readonly messageConfiguration: CPMessageGridItemConfiguration | null;
 
 	readonly titleVariants: NSArray<string>;
 
@@ -507,23 +507,23 @@ declare class CPGridButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; handler: (p1: CPGridButton) => void; });
+	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; handler: (p1: CPGridButton) => void | null; });
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; messageConfiguration: CPMessageGridItemConfiguration; handler: (p1: CPGridButton) => void; });
+	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; messageConfiguration: CPMessageGridItemConfiguration | null; handler: (p1: CPGridButton) => void | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleVariantsImageHandler(titleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPGridButton) => void): this;
+	initWithTitleVariantsImageHandler(titleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPGridButton) => void | null): this;
 
 	/**
 	 * @since 26.0
 	 */
-	initWithTitleVariantsImageMessageConfigurationHandler(titleVariants: NSArray<string> | string[], image: UIImage, messageConfiguration: CPMessageGridItemConfiguration, handler: (p1: CPGridButton) => void): this;
+	initWithTitleVariantsImageMessageConfigurationHandler(titleVariants: NSArray<string> | string[], image: UIImage, messageConfiguration: CPMessageGridItemConfiguration | null, handler: (p1: CPGridButton) => void | null): this;
 
 	/**
 	 * @since 26.0
@@ -554,7 +554,7 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 	 */
 	static readonly maximumGridButtonImageSize: CGSize;
 
-	backButton: CPBarButton; // inherited from CPBarButtonProviding
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -572,13 +572,13 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { title: string; gridButtons: NSArray<CPGridButton> | CPGridButton[]; });
+	constructor(o: { title: string | null; gridButtons: NSArray<CPGridButton> | CPGridButton[]; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithTitleGridButtons(title: string, gridButtons: NSArray<CPGridButton> | CPGridButton[]): this;
+	initWithTitleGridButtons(title: string | null, gridButtons: NSArray<CPGridButton> | CPGridButton[]): this;
 
 	isEqual(object: any): boolean;
 
@@ -615,6 +615,78 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 declare var CPGridTemplateMaximumItems: number;
 
 /**
+ * @since 26.4
+ */
+declare class CPImageOverlay extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPImageOverlay; // inherited from NSObject
+
+	static new(): CPImageOverlay; // inherited from NSObject
+
+	/**
+	 * @since 26.4
+	 */
+	readonly alignment: CPImageOverlayAlignment;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly backgroundColor: UIColor | null;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly image: UIImage | null;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly text: string | null;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly textColor: UIColor | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { image: UIImage; alignment: CPImageOverlayAlignment; });
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { text: string; textColor: UIColor; backgroundColor: UIColor; alignment: CPImageOverlayAlignment; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithImageAlignment(image: UIImage, alignment: CPImageOverlayAlignment): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithTextTextColorBackgroundColorAlignment(text: string, textColor: UIColor, backgroundColor: UIColor, alignment: CPImageOverlayAlignment): this;
+}
+
+declare const enum CPImageOverlayAlignment {
+
+	Leading = 0,
+
+	Center = 1,
+
+	Trailing = 2
+}
+
+/**
  * @since 12.0
  */
 declare class CPImageSet extends NSObject implements NSSecureCoding {
@@ -649,21 +721,21 @@ declare class CPInformationItem extends NSObject implements NSSecureCoding {
 
 	static new(): CPInformationItem; // inherited from NSObject
 
-	readonly detail: string;
+	readonly detail: string | null;
 
-	readonly title: string;
+	readonly title: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: string; detail: string; });
+	constructor(o: { title: string | null; detail: string | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleDetail(title: string, detail: string): this;
+	initWithTitleDetail(title: string | null, detail: string | null): this;
 }
 
 /**
@@ -675,13 +747,13 @@ declare class CPInformationRatingItem extends CPInformationItem {
 
 	static new(): CPInformationRatingItem; // inherited from NSObject
 
-	readonly maximumRating: number;
+	readonly maximumRating: number | null;
 
-	readonly rating: number;
+	readonly rating: number | null;
 
-	constructor(o: { rating: number; maximumRating: number; title: string; detail: string; });
+	constructor(o: { rating: number | null; maximumRating: number | null; title: string | null; detail: string | null; });
 
-	initWithRatingMaximumRatingTitleDetail(rating: number, maximumRating: number, title: string, detail: string): this;
+	initWithRatingMaximumRatingTitleDetail(rating: number | null, maximumRating: number | null, title: string | null, detail: string | null): this;
 }
 
 /**
@@ -701,7 +773,7 @@ declare class CPInformationTemplate extends CPTemplate implements CPBarButtonPro
 
 	title: string;
 
-	backButton: CPBarButton; // inherited from CPBarButtonProviding
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -769,11 +841,11 @@ declare class CPInstrumentClusterController extends NSObject {
 
 	readonly compassSetting: CPInstrumentClusterSetting;
 
-	delegate: CPInstrumentClusterControllerDelegate;
+	delegate: CPInstrumentClusterControllerDelegate | null;
 
 	inactiveDescriptionVariants: NSArray<string>;
 
-	readonly instrumentClusterWindow: UIWindow;
+	readonly instrumentClusterWindow: UIWindow | null;
 
 	readonly speedLimitSetting: CPInstrumentClusterSetting;
 }
@@ -828,20 +900,20 @@ declare class CPInterfaceController extends NSObject {
 	 */
 	readonly carTraitCollection: UITraitCollection;
 
-	delegate: CPInterfaceControllerDelegate;
+	delegate: CPInterfaceControllerDelegate | null;
 
 	/**
 	 * @since 13.0
 	 */
 	prefersDarkUserInterfaceStyle: boolean;
 
-	readonly presentedTemplate: CPTemplate;
+	readonly presentedTemplate: CPTemplate | null;
 
 	readonly rootTemplate: CPTemplate;
 
 	readonly templates: NSArray<CPTemplate>;
 
-	readonly topTemplate: CPTemplate;
+	readonly topTemplate: CPTemplate | null;
 
 	/**
 	 * @since 12.0
@@ -852,7 +924,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	dismissTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	dismissTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 12.0
@@ -863,7 +935,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	popTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	popTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 12.0
@@ -874,7 +946,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	popToRootTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	popToRootTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 12.0
@@ -885,7 +957,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	popToTemplateAnimatedCompletion(targetTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	popToTemplateAnimatedCompletion(targetTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 12.0
@@ -896,7 +968,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	presentTemplateAnimatedCompletion(templateToPresent: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	presentTemplateAnimatedCompletion(templateToPresent: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 12.0
@@ -907,7 +979,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	pushTemplateAnimatedCompletion(templateToPush: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	pushTemplateAnimatedCompletion(templateToPush: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 12.0
@@ -918,7 +990,7 @@ declare class CPInterfaceController extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	setRootTemplateAnimatedCompletion(rootTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	setRootTemplateAnimatedCompletion(rootTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 }
 
 /**
@@ -966,7 +1038,7 @@ declare class CPLane extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 18.0
 	 */
-	readonly highlightedAngle: NSMeasurement<NSUnitAngle>;
+	readonly highlightedAngle: NSMeasurement<NSUnitAngle> | null;
 
 	/**
 	 * @since 17.4
@@ -999,7 +1071,7 @@ declare class CPLane extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1045,7 +1117,7 @@ declare class CPLaneGuidance extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1105,9 +1177,9 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 	 */
 	readonly imageTitles: NSArray<string>;
 
-	listImageRowHandler: (p1: CPListImageRowItem, p2: number, p3: () => void) => void;
+	listImageRowHandler: (p1: CPListImageRowItem, p2: number, p3: () => void) => void | null;
 
-	text: string;
+	text: string | null;
 
 	/**
 	 * @since 14.0
@@ -1124,7 +1196,7 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 	 */
 	enabled: boolean; // inherited from CPListTemplateItem
 
-	handler: (p1: CPSelectableListItem, p2: () => void) => void; // inherited from CPSelectableListItem
+	handler: (p1: CPSelectableListItem, p2: () => void) => void | null; // inherited from CPSelectableListItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
@@ -1132,34 +1204,34 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	userInfo: any; // inherited from CPListTemplateItem
+	userInfo: any | null; // inherited from CPListTemplateItem
 
 	readonly  // inherited from NSObjectProtocol
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { text: string; cardElements: NSArray<CPListImageRowItemCardElement> | CPListImageRowItemCardElement[]; allowsMultipleLines: boolean; });
+	constructor(o: { text: string | null; cardElements: NSArray<CPListImageRowItemCardElement> | CPListImageRowItemCardElement[]; allowsMultipleLines: boolean; });
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { text: string; condensedElements: NSArray<CPListImageRowItemCondensedElement> | CPListImageRowItemCondensedElement[]; allowsMultipleLines: boolean; });
+	constructor(o: { text: string | null; condensedElements: NSArray<CPListImageRowItemCondensedElement> | CPListImageRowItemCondensedElement[]; allowsMultipleLines: boolean; });
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { text: string; elements: NSArray<CPListImageRowItemRowElement> | CPListImageRowItemRowElement[]; allowsMultipleLines: boolean; });
+	constructor(o: { text: string | null; elements: NSArray<CPListImageRowItemRowElement> | CPListImageRowItemRowElement[]; allowsMultipleLines: boolean; });
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { text: string; gridElements: NSArray<CPListImageRowItemGridElement> | CPListImageRowItemGridElement[]; allowsMultipleLines: boolean; });
+	constructor(o: { text: string | null; gridElements: NSArray<CPListImageRowItemGridElement> | CPListImageRowItemGridElement[]; allowsMultipleLines: boolean; });
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { text: string; imageGridElements: NSArray<CPListImageRowItemImageGridElement> | CPListImageRowItemImageGridElement[]; allowsMultipleLines: boolean; });
+	constructor(o: { text: string | null; imageGridElements: NSArray<CPListImageRowItemImageGridElement> | CPListImageRowItemImageGridElement[]; allowsMultipleLines: boolean; });
 
 	/**
 	 * @since 14.0
@@ -1180,27 +1252,27 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 	/**
 	 * @since 26.0
 	 */
-	initWithTextCardElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemCardElement> | CPListImageRowItemCardElement[], allowsMultipleLines: boolean): this;
+	initWithTextCardElementsAllowsMultipleLines(text: string | null, elements: NSArray<CPListImageRowItemCardElement> | CPListImageRowItemCardElement[], allowsMultipleLines: boolean): this;
 
 	/**
 	 * @since 26.0
 	 */
-	initWithTextCondensedElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemCondensedElement> | CPListImageRowItemCondensedElement[], allowsMultipleLines: boolean): this;
+	initWithTextCondensedElementsAllowsMultipleLines(text: string | null, elements: NSArray<CPListImageRowItemCondensedElement> | CPListImageRowItemCondensedElement[], allowsMultipleLines: boolean): this;
 
 	/**
 	 * @since 26.0
 	 */
-	initWithTextElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemRowElement> | CPListImageRowItemRowElement[], allowsMultipleLines: boolean): this;
+	initWithTextElementsAllowsMultipleLines(text: string | null, elements: NSArray<CPListImageRowItemRowElement> | CPListImageRowItemRowElement[], allowsMultipleLines: boolean): this;
 
 	/**
 	 * @since 26.0
 	 */
-	initWithTextGridElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemGridElement> | CPListImageRowItemGridElement[], allowsMultipleLines: boolean): this;
+	initWithTextGridElementsAllowsMultipleLines(text: string | null, elements: NSArray<CPListImageRowItemGridElement> | CPListImageRowItemGridElement[], allowsMultipleLines: boolean): this;
 
 	/**
 	 * @since 26.0
 	 */
-	initWithTextImageGridElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemImageGridElement> | CPListImageRowItemImageGridElement[], allowsMultipleLines: boolean): this;
+	initWithTextImageGridElementsAllowsMultipleLines(text: string | null, elements: NSArray<CPListImageRowItemImageGridElement> | CPListImageRowItemImageGridElement[], allowsMultipleLines: boolean): this;
 
 	/**
 	 * @since 14.0
@@ -1242,7 +1314,7 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 /**
  * @since 26.0
  */
-declare class CPListImageRowItemCardElement extends CPListImageRowItemElement {
+declare class CPListImageRowItemCardElement extends CPListImageRowItemElement implements NSSecureCoding {
 
 	static alloc(): CPListImageRowItemCardElement; // inherited from NSObject
 
@@ -1250,17 +1322,40 @@ declare class CPListImageRowItemCardElement extends CPListImageRowItemElement {
 
 	readonly showsImageFullHeight: boolean;
 
-	subtitle: string;
+	subtitle: string | null;
 
-	tintColor: UIColor;
+	/**
+	 * @since 26.4
+	 */
+	thumbnail: CPThumbnailImage | null;
+
+	tintColor: UIColor | null;
 
 	title: string;
 
 	static readonly maximumFullHeightImageSize: CGSize;
 
-	constructor(o: { image: UIImage; showsImageFullHeight: boolean; title: string; subtitle: string; tintColor: UIColor; });
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	initWithImageShowsImageFullHeightTitleSubtitleTintColor(image: UIImage, showsImageFullHeight: boolean, title: string, subtitle: string, tintColor: UIColor): this;
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { image: UIImage; showsImageFullHeight: boolean; title: string | null; subtitle: string | null; tintColor: UIColor | null; });
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { thumbnail: CPThumbnailImage; title: string | null; subtitle: string | null; tintColor: UIColor | null; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithImageShowsImageFullHeightTitleSubtitleTintColor(image: UIImage, showsImageFullHeight: boolean, title: string | null, subtitle: string | null, tintColor: UIColor | null): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithThumbnailTitleSubtitleTintColor(thumbnail: CPThumbnailImage, title: string | null, subtitle: string | null, tintColor: UIColor | null): this;
 }
 
 /**
@@ -1272,17 +1367,17 @@ declare class CPListImageRowItemCondensedElement extends CPListImageRowItemEleme
 
 	static new(): CPListImageRowItemCondensedElement; // inherited from NSObject
 
-	accessorySymbolName: string;
+	accessorySymbolName: string | null;
 
 	readonly imageShape: CPListImageRowItemCondensedElementShape;
 
-	subtitle: string;
+	subtitle: string | null;
 
 	title: string;
 
-	constructor(o: { image: UIImage; imageShape: CPListImageRowItemCondensedElementShape; title: string; subtitle: string; accessorySymbolName: string; });
+	constructor(o: { image: UIImage; imageShape: CPListImageRowItemCondensedElementShape; title: string; subtitle: string | null; accessorySymbolName: string | null; });
 
-	initWithImageImageShapeTitleSubtitleAccessorySymbolName(image: UIImage, imageShape: CPListImageRowItemCondensedElementShape, title: string, subtitle: string, accessorySymbolName: string): this;
+	initWithImageImageShapeTitleSubtitleAccessorySymbolName(image: UIImage, imageShape: CPListImageRowItemCondensedElementShape, title: string, subtitle: string | null, accessorySymbolName: string | null): this;
 }
 
 declare const enum CPListImageRowItemCondensedElementShape {
@@ -1295,7 +1390,7 @@ declare const enum CPListImageRowItemCondensedElementShape {
 /**
  * @since 26.0
  */
-declare class CPListImageRowItemElement extends NSObject {
+declare class CPListImageRowItemElement extends NSObject implements CPPlayableItem {
 
 	static alloc(): CPListImageRowItemElement; // inherited from NSObject
 
@@ -1306,6 +1401,45 @@ declare class CPListImageRowItemElement extends NSObject {
 	image: UIImage;
 
 	static readonly maximumImageSize: CGSize;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	/**
+	 * @since 26.4
+	 */
+	playbackConfiguration: CPPlaybackConfiguration | null; // inherited from CPPlayableItem
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 /**
@@ -1331,15 +1465,15 @@ declare class CPListImageRowItemImageGridElement extends CPListImageRowItemEleme
 
 	static new(): CPListImageRowItemImageGridElement; // inherited from NSObject
 
-	accessorySymbolName: string;
+	accessorySymbolName: string | null;
 
 	readonly imageShape: CPListImageRowItemImageGridElementShape;
 
 	title: string;
 
-	constructor(o: { image: UIImage; imageShape: CPListImageRowItemImageGridElementShape; title: string; accessorySymbolName: string; });
+	constructor(o: { image: UIImage; imageShape: CPListImageRowItemImageGridElementShape; title: string; accessorySymbolName: string | null; });
 
-	initWithImageImageShapeTitleAccessorySymbolName(image: UIImage, imageShape: CPListImageRowItemImageGridElementShape, title: string, accessorySymbolName: string): this;
+	initWithImageImageShapeTitleAccessorySymbolName(image: UIImage, imageShape: CPListImageRowItemImageGridElementShape, title: string, accessorySymbolName: string | null): this;
 }
 
 declare const enum CPListImageRowItemImageGridElementShape {
@@ -1358,39 +1492,39 @@ declare class CPListImageRowItemRowElement extends CPListImageRowItemElement {
 
 	static new(): CPListImageRowItemRowElement; // inherited from NSObject
 
-	subtitle: string;
+	subtitle: string | null;
 
-	title: string;
+	title: string | null;
 
-	constructor(o: { image: UIImage; title: string; subtitle: string; });
+	constructor(o: { image: UIImage; title: string | null; subtitle: string | null; });
 
-	initWithImageTitleSubtitle(image: UIImage, title: string, subtitle: string): this;
+	initWithImageTitleSubtitle(image: UIImage, title: string | null, subtitle: string | null): this;
 }
 
 /**
  * @since 12.0
  */
-declare class CPListItem extends NSObject implements CPSelectableListItem {
+declare class CPListItem extends NSObject implements CPPlayableItem, CPSelectableListItem {
 
 	static alloc(): CPListItem; // inherited from NSObject
 
 	static new(): CPListItem; // inherited from NSObject
 
-	readonly accessoryImage: UIImage;
+	readonly accessoryImage: UIImage | null;
 
 	/**
 	 * @since 14.0
 	 */
 	accessoryType: CPListItemAccessoryType;
 
-	readonly detailText: string;
+	readonly detailText: string | null;
 
 	/**
 	 * @since 14.0
 	 */
 	explicitContent: boolean;
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
 	/**
 	 * @since 14.0
@@ -1433,53 +1567,58 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 	 */
 	enabled: boolean; // inherited from CPListTemplateItem
 
-	handler: (p1: CPSelectableListItem, p2: () => void) => void; // inherited from CPSelectableListItem
+	handler: (p1: CPSelectableListItem, p2: () => void) => void | null; // inherited from CPSelectableListItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 26.4
+	 */
+	playbackConfiguration: CPPlaybackConfiguration | null; // inherited from CPPlayableItem
+
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly text: string; // inherited from CPListTemplateItem
+	readonly text: string | null; // inherited from CPListTemplateItem
 
-	userInfo: any; // inherited from CPListTemplateItem
+	userInfo: any | null; // inherited from CPListTemplateItem
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { text: string; detailText: string; });
+	constructor(o: { text: string | null; detailText: string | null; });
 
-	constructor(o: { text: string; detailText: string; image: UIImage; });
+	constructor(o: { text: string | null; detailText: string | null; image: UIImage | null; });
 
 	/**
 	 * @since 14.0
 	 */
-	constructor(o: { text: string; detailText: string; image: UIImage; accessoryImage: UIImage; accessoryType: CPListItemAccessoryType; });
+	constructor(o: { text: string | null; detailText: string | null; image: UIImage | null; accessoryImage: UIImage | null; accessoryType: CPListItemAccessoryType; });
 
 	/**
 	 * @since 12.0
 	 * @deprecated 14.0
 	 */
-	constructor(o: { text: string; detailText: string; image: UIImage; showsDisclosureIndicator: boolean; });
+	constructor(o: { text: string | null; detailText: string | null; image: UIImage | null; showsDisclosureIndicator: boolean; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithTextDetailText(text: string, detailText: string): this;
+	initWithTextDetailText(text: string | null, detailText: string | null): this;
 
-	initWithTextDetailTextImage(text: string, detailText: string, image: UIImage): this;
+	initWithTextDetailTextImage(text: string | null, detailText: string | null, image: UIImage | null): this;
 
 	/**
 	 * @since 14.0
 	 */
-	initWithTextDetailTextImageAccessoryImageAccessoryType(text: string, detailText: string, image: UIImage, accessoryImage: UIImage, accessoryType: CPListItemAccessoryType): this;
+	initWithTextDetailTextImageAccessoryImageAccessoryType(text: string | null, detailText: string | null, image: UIImage | null, accessoryImage: UIImage | null, accessoryType: CPListItemAccessoryType): this;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 14.0
 	 */
-	initWithTextDetailTextImageShowsDisclosureIndicator(text: string, detailText: string, image: UIImage, showsDisclosureIndicator: boolean): this;
+	initWithTextDetailTextImageShowsDisclosureIndicator(text: string | null, detailText: string | null, image: UIImage | null, showsDisclosureIndicator: boolean): this;
 
 	isEqual(object: any): boolean;
 
@@ -1502,17 +1641,17 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 	/**
 	 * @since 14.0
 	 */
-	setAccessoryImage(accessoryImage: UIImage): void;
+	setAccessoryImage(accessoryImage: UIImage | null): void;
 
 	/**
 	 * @since 14.0
 	 */
-	setDetailText(detailText: string): void;
+	setDetailText(detailText: string | null): void;
 
 	/**
 	 * @since 14.0
 	 */
-	setImage(image: UIImage): void;
+	setImage(image: UIImage | null): void;
 
 	/**
 	 * @since 14.0
@@ -1545,26 +1684,26 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	static new(): CPListSection; // inherited from NSObject
 
-	readonly header: string;
+	readonly header: string | null;
 
 	/**
 	 * @since 15.0
 	 */
-	readonly headerButton: CPButton;
+	readonly headerButton: CPButton | null;
 
 	/**
 	 * @since 15.0
 	 */
-	headerImage: UIImage;
+	headerImage: UIImage | null;
 
 	/**
 	 * @since 15.0
 	 */
-	readonly headerSubtitle: string;
+	readonly headerSubtitle: string | null;
 
 	readonly items: NSArray<CPListTemplateItem>;
 
-	readonly sectionIndexTitle: string;
+	readonly sectionIndexTitle: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1575,9 +1714,9 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; headerSubtitle: string; headerImage: UIImage; headerButton: CPButton; sectionIndexTitle: string; });
+	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; headerSubtitle: string | null; headerImage: UIImage | null; headerButton: CPButton | null; sectionIndexTitle: string | null; });
 
-	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; sectionIndexTitle: string; });
+	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string | null; sectionIndexTitle: string | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1590,9 +1729,9 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 15.0
 	 */
-	initWithItemsHeaderHeaderSubtitleHeaderImageHeaderButtonSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, headerSubtitle: string, headerImage: UIImage, headerButton: CPButton, sectionIndexTitle: string): this;
+	initWithItemsHeaderHeaderSubtitleHeaderImageHeaderButtonSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, headerSubtitle: string | null, headerImage: UIImage | null, headerButton: CPButton | null, sectionIndexTitle: string | null): this;
 
-	initWithItemsHeaderSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, sectionIndexTitle: string): this;
+	initWithItemsHeaderSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string | null, sectionIndexTitle: string | null): this;
 
 	itemAtIndex(index: number): CPListTemplateItem;
 }
@@ -1609,13 +1748,13 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	/**
 	 * @since 15.0
 	 */
-	assistantCellConfiguration: CPAssistantCellConfiguration;
+	assistantCellConfiguration: CPAssistantCellConfiguration | null;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 14.0
 	 */
-	delegate: CPListTemplateDelegate;
+	delegate: CPListTemplateDelegate | null;
 
 	/**
 	 * @since 14.0
@@ -1630,12 +1769,17 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	/**
 	 * @since 26.0
 	 */
-	headerGridButtons: NSArray<CPGridButton>;
+	headerGridButtons: NSArray<CPGridButton> | null;
 
 	/**
 	 * @since 14.0
 	 */
 	readonly itemCount: number;
+
+	/**
+	 * @since 26.4
+	 */
+	listHeader: CPListTemplateDetailsHeader | null;
 
 	/**
 	 * @since 14.0
@@ -1649,7 +1793,7 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	 */
 	showsSpinnerWhileEmpty: boolean;
 
-	readonly title: string;
+	readonly title: string | null;
 
 	/**
 	 * @since 26.0
@@ -1671,7 +1815,7 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	 */
 	static readonly maximumSectionCount: number;
 
-	backButton: CPBarButton; // inherited from CPBarButtonProviding
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1689,17 +1833,22 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; });
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { title: string | null; listHeader: CPListTemplateDetailsHeader | null; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration | null; });
+
+	constructor(o: { title: string | null; sections: NSArray<CPListSection> | CPListSection[]; });
 
 	/**
 	 * @since 15.0
 	 */
-	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration; });
+	constructor(o: { title: string | null; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration | null; });
 
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration; headerGridButtons: NSArray<CPGridButton> | CPGridButton[]; });
+	constructor(o: { title: string | null; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration | null; headerGridButtons: NSArray<CPGridButton> | CPGridButton[] | null; });
 
 	class(): typeof NSObject;
 
@@ -1708,19 +1857,24 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	/**
 	 * @since 14.0
 	 */
-	indexPathForItem(item: CPListTemplateItem): NSIndexPath;
+	indexPathForItem(item: CPListTemplateItem): NSIndexPath | null;
 
-	initWithTitleSections(title: string, sections: NSArray<CPListSection> | CPListSection[]): this;
+	/**
+	 * @since 26.4
+	 */
+	initWithTitleListHeaderSectionsAssistantCellConfiguration(title: string | null, listHeader: CPListTemplateDetailsHeader | null, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration | null): this;
+
+	initWithTitleSections(title: string | null, sections: NSArray<CPListSection> | CPListSection[]): this;
 
 	/**
 	 * @since 15.0
 	 */
-	initWithTitleSectionsAssistantCellConfiguration(title: string, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration): this;
+	initWithTitleSectionsAssistantCellConfiguration(title: string | null, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration | null): this;
 
 	/**
 	 * @since 26.0
 	 */
-	initWithTitleSectionsAssistantCellConfigurationHeaderGridButtons(title: string, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration, headerGridButtons: NSArray<CPGridButton> | CPGridButton[]): this;
+	initWithTitleSectionsAssistantCellConfigurationHeaderGridButtons(title: string | null, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration | null, headerGridButtons: NSArray<CPGridButton> | CPGridButton[] | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -1761,6 +1915,123 @@ declare var CPListTemplateDelegate: {
 };
 
 /**
+ * @since 26.4
+ */
+declare class CPListTemplateDetailsHeader extends NSObject implements CPPlayableItem, NSSecureCoding {
+
+	static alloc(): CPListTemplateDetailsHeader; // inherited from NSObject
+
+	static new(): CPListTemplateDetailsHeader; // inherited from NSObject
+
+	/**
+	 * @since 26.4
+	 */
+	actionButtons: NSArray<CPButton>;
+
+	/**
+	 * @since 26.4
+	 */
+	adaptiveBackgroundStyle: boolean;
+
+	/**
+	 * @since 26.4
+	 */
+	bodyVariants: NSArray<NSAttributedString>;
+
+	/**
+	 * @since 26.4
+	 */
+	subtitle: string | null;
+
+	/**
+	 * @since 26.4
+	 */
+	thumbnail: CPThumbnailImage;
+
+	/**
+	 * @since 26.4
+	 */
+	title: string | null;
+
+	/**
+	 * @since 26.4
+	 */
+	static readonly maximumActionButtonCount: number;
+
+	/**
+	 * @since 26.4
+	 */
+	static readonly maximumActionButtonSize: CGSize;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	/**
+	 * @since 26.4
+	 */
+	playbackConfiguration: CPPlaybackConfiguration | null; // inherited from CPPlayableItem
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { thumbnail: CPThumbnailImage; title: string | null; subtitle: string | null; actionButtons: NSArray<CPButton> | CPButton[]; });
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { thumbnail: CPThumbnailImage; title: string | null; subtitle: string | null; bodyVariants: NSArray<NSAttributedString> | NSAttributedString[]; actionButtons: NSArray<CPButton> | CPButton[]; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithThumbnailTitleSubtitleActionButtons(thumbnail: CPThumbnailImage, title: string | null, subtitle: string | null, actionButton: NSArray<CPButton> | CPButton[]): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithThumbnailTitleSubtitleBodyVariantsActionButtons(thumbnail: CPThumbnailImage, title: string | null, subtitle: string | null, bodyVariants: NSArray<NSAttributedString> | NSAttributedString[], actionButtons: NSArray<CPButton> | CPButton[]): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+/**
  * @since 14.0
  */
 interface CPListTemplateItem extends NSObjectProtocol {
@@ -1770,14 +2041,21 @@ interface CPListTemplateItem extends NSObjectProtocol {
 	 */
 	enabled: boolean;
 
-	text: string;
+	text: string | null;
 
-	userInfo: any;
+	userInfo: any | null;
 }
 declare var CPListTemplateItem: {
 
 	prototype: CPListTemplateItem;
 };
+
+interface CPLocationCoordinate3D {
+	latitude: number;
+	longitude: number;
+	altitude: number;
+}
+declare var CPLocationCoordinate3D: interop.StructType<CPLocationCoordinate3D>;
 
 /**
  * @since 12.0
@@ -1793,7 +2071,7 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 15.4
 	 */
-	cardBackgroundColor: UIColor;
+	cardBackgroundColor: UIColor | null;
 
 	/**
 	 * @since 14.0
@@ -1808,33 +2086,33 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	dashboardJunctionImage: UIImage;
+	dashboardJunctionImage: UIImage | null;
 
 	/**
 	 * @since 14.0
 	 */
-	dashboardSymbolImage: UIImage;
+	dashboardSymbolImage: UIImage | null;
 
 	/**
 	 * @since 17.4
 	 */
 	highwayExitLabel: string;
 
-	initialTravelEstimates: CPTravelEstimates;
+	initialTravelEstimates: CPTravelEstimates | null;
 
 	instructionVariants: NSArray<string>;
 
 	/**
 	 * @since 17.4
 	 */
-	junctionElementAngles: NSSet<NSMeasurement<NSUnitAngle>>;
+	junctionElementAngles: NSSet<NSMeasurement<NSUnitAngle>> | null;
 
 	/**
 	 * @since 17.4
 	 */
-	junctionExitAngle: NSMeasurement<NSUnitAngle>;
+	junctionExitAngle: NSMeasurement<NSUnitAngle> | null;
 
-	junctionImage: UIImage;
+	junctionImage: UIImage | null;
 
 	/**
 	 * @since 17.4
@@ -1864,33 +2142,33 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	notificationSymbolImage: UIImage;
+	notificationSymbolImage: UIImage | null;
 
 	/**
 	 * @since 17.4
 	 */
-	roadFollowingManeuverVariants: NSArray<string>;
+	roadFollowingManeuverVariants: NSArray<string> | null;
 
-	symbolImage: UIImage;
+	symbolImage: UIImage | null;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 13.0
 	 */
-	symbolSet: CPImageSet;
+	symbolSet: CPImageSet | null;
 
 	/**
 	 * @since 17.4
 	 */
 	trafficSide: CPTrafficSide;
 
-	userInfo: any;
+	userInfo: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2052,23 +2330,23 @@ declare class CPMapButton extends NSObject implements NSSecureCoding {
 
 	enabled: boolean;
 
-	focusedImage: UIImage;
+	focusedImage: UIImage | null;
 
 	hidden: boolean;
 
-	image: UIImage;
+	image: UIImage | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { handler: (p1: CPMapButton) => void; });
+	constructor(o: { handler: (p1: CPMapButton) => void | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithHandler(handler: (p1: CPMapButton) => void): this;
+	initWithHandler(handler: (p1: CPMapButton) => void | null): this;
 }
 
 /**
@@ -2082,7 +2360,7 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	automaticallyHidesNavigationBar: boolean;
 
-	readonly currentNavigationAlert: CPNavigationAlert;
+	readonly currentNavigationAlert: CPNavigationAlert | null;
 
 	guidanceBackgroundColor: UIColor;
 
@@ -2090,13 +2368,13 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	mapButtons: NSArray<CPMapButton>;
 
-	mapDelegate: CPMapTemplateDelegate;
+	mapDelegate: CPMapTemplateDelegate | null;
 
 	readonly panningInterfaceVisible: boolean;
 
 	tripEstimateStyle: CPTripEstimateStyle;
 
-	backButton: CPBarButton; // inherited from CPBarButtonProviding
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -2146,14 +2424,14 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	showPanningInterfaceAnimated(animated: boolean): void;
 
-	showRouteChoicesPreviewForTripTextConfiguration(tripPreview: CPTrip, textConfiguration: CPTripPreviewTextConfiguration): void;
+	showRouteChoicesPreviewForTripTextConfiguration(tripPreview: CPTrip, textConfiguration: CPTripPreviewTextConfiguration | null): void;
 
 	/**
 	 * @since 14.0
 	 */
-	showTripPreviewsSelectedTripTextConfiguration(tripPreviews: NSArray<CPTrip> | CPTrip[], selectedTrip: CPTrip, textConfiguration: CPTripPreviewTextConfiguration): void;
+	showTripPreviewsSelectedTripTextConfiguration(tripPreviews: NSArray<CPTrip> | CPTrip[], selectedTrip: CPTrip | null, textConfiguration: CPTripPreviewTextConfiguration | null): void;
 
-	showTripPreviewsTextConfiguration(tripPreviews: NSArray<CPTrip> | CPTrip[], textConfiguration: CPTripPreviewTextConfiguration): void;
+	showTripPreviewsTextConfiguration(tripPreviews: NSArray<CPTrip> | CPTrip[], textConfiguration: CPTripPreviewTextConfiguration | null): void;
 
 	startNavigationSessionForTrip(trip: CPTrip): CPNavigationSession;
 
@@ -2198,9 +2476,34 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	mapTemplateDidEndZoomGestureWithVelocity?(mapTemplate: CPMapTemplate, velocity: number): void;
 
 	/**
+	 * @since 26.4
+	 */
+	mapTemplateDidFailToShareDestinationForTripError?(mapTemplate: CPMapTemplate, trip: CPTrip, error: NSError): void;
+
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateDidReceiveRequestForDestination?(mapTemplate: CPMapTemplate, waypoint: CPNavigationWaypoint): void;
+
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateDidReceiveUpdatedRouteSource?(mapTemplate: CPMapTemplate, routeSource: CPRouteSource): void;
+
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateDidRequestToInsertWaypointIntoSegmentCompletion?(mapTemplate: CPMapTemplate, waypoint: CPNavigationWaypoint, segment: CPRouteSegment, completion: (p1: CPTravelEstimates) => void): void;
+
+	/**
 	 * @since 26.0
 	 */
 	mapTemplateDidRotateWithCenterRotationVelocity?(mapTemplate: CPMapTemplate, center: CGPoint, rotation: number, velocity: number): void;
+
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateDidShareDestinationForTrip?(mapTemplate: CPMapTemplate, trip: CPTrip): void;
 
 	mapTemplateDidShowNavigationAlert?(mapTemplate: CPMapTemplate, navigationAlert: CPNavigationAlert): void;
 
@@ -2214,6 +2517,11 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	mapTemplateDidUpdateZoomGestureWithCenterScaleVelocity?(mapTemplate: CPMapTemplate, center: CGPoint, scale: number, velocity: number): void;
 
 	mapTemplateDisplayStyleForManeuver?(mapTemplate: CPMapTemplate, maneuver: CPManeuver): CPManeuverDisplayStyle;
+
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateMapTemplateWaypointAcceptedForSegment?(mapTemplate: CPMapTemplate, waypoint: CPNavigationWaypoint, accepted: boolean, segment: CPRouteSegment | null): void;
 
 	mapTemplatePanBeganWithDirection?(mapTemplate: CPMapTemplate, direction: CPPanDirection): void;
 
@@ -2243,6 +2551,11 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	 */
 	mapTemplateShouldProvideNavigationMetadata?(mapTemplate: CPMapTemplate): boolean;
 
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateShouldProvideRouteSharing?(mapTemplate: CPMapTemplate): boolean;
+
 	mapTemplateShouldShowNotificationForManeuver?(mapTemplate: CPMapTemplate, maneuver: CPManeuver): boolean;
 
 	mapTemplateShouldShowNotificationForNavigationAlert?(mapTemplate: CPMapTemplate, navigationAlert: CPNavigationAlert): boolean;
@@ -2255,12 +2568,35 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 
 	mapTemplateWillDismissPanningInterface?(mapTemplate: CPMapTemplate): void;
 
+	/**
+	 * @since 26.4
+	 */
+	mapTemplateWillShareDestinationForTrip?(mapTemplate: CPMapTemplate, trip: CPTrip): void;
+
 	mapTemplateWillShowNavigationAlert?(mapTemplate: CPMapTemplate, navigationAlert: CPNavigationAlert): void;
 }
 declare var CPMapTemplateDelegate: {
 
 	prototype: CPMapTemplateDelegate;
 };
+
+/**
+ * @since 26.4
+ */
+declare class CPMapTemplateWaypoint extends NSObject {
+
+	static alloc(): CPMapTemplateWaypoint; // inherited from NSObject
+
+	static new(): CPMapTemplateWaypoint; // inherited from NSObject
+
+	travelEstimates: CPTravelEstimates;
+
+	waypoint: CPNavigationWaypoint;
+
+	constructor(o: { waypoint: CPNavigationWaypoint; travelEstimates: CPTravelEstimates; });
+
+	initWithWaypointTravelEstimates(waypoint: CPNavigationWaypoint, travelEstimates: CPTravelEstimates): this;
+}
 
 declare var CPMaximumListSectionImageSize: CGSize;
 
@@ -2320,24 +2656,24 @@ declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 
 	static new(): CPMessageListItem; // inherited from NSObject
 
-	conversationIdentifier: string;
+	conversationIdentifier: string | null;
 
-	detailText: string;
+	detailText: string | null;
 
 	leadingConfiguration: CPMessageListItemLeadingConfiguration;
 
 	/**
 	 * @since 26.0
 	 */
-	leadingDetailTextImage: UIImage;
+	leadingDetailTextImage: UIImage | null;
 
-	phoneOrEmailAddress: string;
+	phoneOrEmailAddress: string | null;
 
-	text: string;
+	text: string | null;
 
-	trailingConfiguration: CPMessageListItemTrailingConfiguration;
+	trailingConfiguration: CPMessageListItemTrailingConfiguration | null;
 
-	trailingText: string;
+	trailingText: string | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -2354,21 +2690,21 @@ declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	userInfo: any; // inherited from CPListTemplateItem
+	userInfo: any | null; // inherited from CPListTemplateItem
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { conversationIdentifier: string; text: string; leadingConfiguration: CPMessageListItemLeadingConfiguration; trailingConfiguration: CPMessageListItemTrailingConfiguration; detailText: string; trailingText: string; });
+	constructor(o: { conversationIdentifier: string; text: string; leadingConfiguration: CPMessageListItemLeadingConfiguration; trailingConfiguration: CPMessageListItemTrailingConfiguration | null; detailText: string | null; trailingText: string | null; });
 
-	constructor(o: { fullName: string; phoneOrEmailAddress: string; leadingConfiguration: CPMessageListItemLeadingConfiguration; trailingConfiguration: CPMessageListItemTrailingConfiguration; detailText: string; trailingText: string; });
+	constructor(o: { fullName: string; phoneOrEmailAddress: string; leadingConfiguration: CPMessageListItemLeadingConfiguration; trailingConfiguration: CPMessageListItemTrailingConfiguration | null; detailText: string | null; trailingText: string | null; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithConversationIdentifierTextLeadingConfigurationTrailingConfigurationDetailTextTrailingText(conversationIdentifier: string, text: string, leadingConfiguration: CPMessageListItemLeadingConfiguration, trailingConfiguration: CPMessageListItemTrailingConfiguration, detailText: string, trailingText: string): this;
+	initWithConversationIdentifierTextLeadingConfigurationTrailingConfigurationDetailTextTrailingText(conversationIdentifier: string, text: string, leadingConfiguration: CPMessageListItemLeadingConfiguration, trailingConfiguration: CPMessageListItemTrailingConfiguration | null, detailText: string | null, trailingText: string | null): this;
 
-	initWithFullNamePhoneOrEmailAddressLeadingConfigurationTrailingConfigurationDetailTextTrailingText(fullName: string, phoneOrEmailAddress: string, leadingConfiguration: CPMessageListItemLeadingConfiguration, trailingConfiguration: CPMessageListItemTrailingConfiguration, detailText: string, trailingText: string): this;
+	initWithFullNamePhoneOrEmailAddressLeadingConfigurationTrailingConfigurationDetailTextTrailingText(fullName: string, phoneOrEmailAddress: string, leadingConfiguration: CPMessageListItemLeadingConfiguration, trailingConfiguration: CPMessageListItemTrailingConfiguration | null, detailText: string | null, trailingText: string | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -2398,15 +2734,15 @@ declare class CPMessageListItemLeadingConfiguration extends NSObject {
 
 	static new(): CPMessageListItemLeadingConfiguration; // inherited from NSObject
 
-	readonly leadingImage: UIImage;
+	readonly leadingImage: UIImage | null;
 
 	readonly leadingItem: CPMessageLeadingItem;
 
 	readonly unread: boolean;
 
-	constructor(o: { leadingItem: CPMessageLeadingItem; leadingImage: UIImage; unread: boolean; });
+	constructor(o: { leadingItem: CPMessageLeadingItem; leadingImage: UIImage | null; unread: boolean; });
 
-	initWithLeadingItemLeadingImageUnread(leadingItem: CPMessageLeadingItem, leadingImage: UIImage, unread: boolean): this;
+	initWithLeadingItemLeadingImageUnread(leadingItem: CPMessageLeadingItem, leadingImage: UIImage | null, unread: boolean): this;
 }
 
 /**
@@ -2418,13 +2754,13 @@ declare class CPMessageListItemTrailingConfiguration extends NSObject {
 
 	static new(): CPMessageListItemTrailingConfiguration; // inherited from NSObject
 
-	readonly trailingImage: UIImage;
+	readonly trailingImage: UIImage | null;
 
 	readonly trailingItem: CPMessageTrailingItem;
 
-	constructor(o: { trailingItem: CPMessageTrailingItem; trailingImage: UIImage; });
+	constructor(o: { trailingItem: CPMessageTrailingItem; trailingImage: UIImage | null; });
 
-	initWithTrailingItemTrailingImage(trailingItem: CPMessageTrailingItem, trailingImage: UIImage): this;
+	initWithTrailingItemTrailingImage(trailingItem: CPMessageTrailingItem, trailingImage: UIImage | null): this;
 }
 
 declare const enum CPMessageTrailingItem {
@@ -2445,13 +2781,13 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	readonly duration: number;
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
-	readonly imageSet: CPImageSet;
+	readonly imageSet: CPImageSet | null;
 
 	readonly primaryAction: CPAlertAction;
 
-	readonly secondaryAction: CPAlertAction;
+	readonly secondaryAction: CPAlertAction | null;
 
 	readonly subtitleVariants: NSArray<string>;
 
@@ -2461,25 +2797,25 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; image: UIImage; primaryAction: CPAlertAction; secondaryAction: CPAlertAction; duration: number; });
+	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[] | null; image: UIImage | null; primaryAction: CPAlertAction; secondaryAction: CPAlertAction | null; duration: number; });
 
 	/**
 	 * @since 12.0
 	 * @deprecated 13.0
 	 */
-	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; imageSet: CPImageSet; primaryAction: CPAlertAction; secondaryAction: CPAlertAction; duration: number; });
+	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[] | null; imageSet: CPImageSet | null; primaryAction: CPAlertAction; secondaryAction: CPAlertAction | null; duration: number; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithTitleVariantsSubtitleVariantsImagePrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], image: UIImage, primaryAction: CPAlertAction, secondaryAction: CPAlertAction, duration: number): this;
+	initWithTitleVariantsSubtitleVariantsImagePrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[] | null, image: UIImage | null, primaryAction: CPAlertAction, secondaryAction: CPAlertAction | null, duration: number): this;
 
 	/**
 	 * @since 12.0
 	 * @deprecated 13.0
 	 */
-	initWithTitleVariantsSubtitleVariantsImageSetPrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], imageSet: CPImageSet, primaryAction: CPAlertAction, secondaryAction: CPAlertAction, duration: number): this;
+	initWithTitleVariantsSubtitleVariantsImageSetPrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[] | null, imageSet: CPImageSet | null, primaryAction: CPAlertAction, secondaryAction: CPAlertAction | null, duration: number): this;
 
 	updateTitleVariantsSubtitleVariants(newTitleVariants: NSArray<string> | string[], newSubtitleVariants: NSArray<string> | string[]): void;
 }
@@ -2510,7 +2846,7 @@ declare class CPNavigationSession extends NSObject {
 	/**
 	 * @since 17.4
 	 */
-	currentLaneGuidance: CPLaneGuidance;
+	currentLaneGuidance: CPLaneGuidance | null;
 
 	/**
 	 * @since 17.4
@@ -2518,9 +2854,19 @@ declare class CPNavigationSession extends NSObject {
 	currentRoadNameVariants: NSArray<string>;
 
 	/**
+	 * @since 26.4
+	 */
+	currentSegment: CPRouteSegment;
+
+	/**
 	 * @since 17.4
 	 */
 	maneuverState: CPManeuverState;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly routeSegments: NSArray<CPRouteSegment>;
 
 	readonly trip: CPTrip;
 
@@ -2536,23 +2882,73 @@ declare class CPNavigationSession extends NSObject {
 	 */
 	addManeuvers(maneuvers: NSArray<CPManeuver> | CPManeuver[]): void;
 
+	/**
+	 * @since 26.4
+	 */
+	addRouteSegments(routeSegments: NSArray<CPRouteSegment> | CPRouteSegment[]): void;
+
 	cancelTrip(): void;
 
 	finishTrip(): void;
 
-	pauseTripForReasonDescription(reason: CPTripPauseReason, description: string): void;
+	pauseTripForReasonDescription(reason: CPTripPauseReason, description: string | null): void;
 
 	/**
 	 * @since 15.4
 	 */
-	pauseTripForReasonDescriptionTurnCardColor(reason: CPTripPauseReason, description: string, turnCardColor: UIColor): void;
+	pauseTripForReasonDescriptionTurnCardColor(reason: CPTripPauseReason, description: string | null, turnCardColor: UIColor | null): void;
 
 	/**
 	 * @since 17.4
 	 */
 	resumeTripWithUpdatedRouteInformation(routeInformation: CPRouteInformation): void;
 
+	/**
+	 * @since 26.4
+	 */
+	resumeTripWithUpdatedRouteSegmentsCurrentSegmentRerouteReason(routeSegments: NSArray<CPRouteSegment> | CPRouteSegment[], currentSegment: CPRouteSegment, rerouteReason: CPRerouteReason): void;
+
 	updateTravelEstimatesForManeuver(estimates: CPTravelEstimates, maneuver: CPManeuver): void;
+}
+
+/**
+ * @since 26.4
+ */
+declare class CPNavigationWaypoint extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPNavigationWaypoint; // inherited from NSObject
+
+	static new(): CPNavigationWaypoint; // inherited from NSObject
+
+	readonly address: string | null;
+
+	readonly centerPoint: CPLocationCoordinate3D;
+
+	readonly entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | null;
+
+	readonly entryPointsCount: number;
+
+	readonly locationThreshold: NSMeasurement<NSUnitLength> | null;
+
+	readonly name: string | null;
+
+	readonly timeZone: NSTimeZone | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { centerPoint: CPLocationCoordinate3D; locationThreshold: NSMeasurement<NSUnitLength> | null; name: string | null; address: string | null; entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView; entryPointsCount: number; timeZone: NSTimeZone | null; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { mapItem: MKMapItem; locationThreshold: NSMeasurement<NSUnitLength> | null; entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView; entryPointsCount: number; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCenterPointLocationThresholdNameAddressEntryPointsEntryPointsCountTimeZone(centerPoint: CPLocationCoordinate3D, locationThreshold: NSMeasurement<NSUnitLength> | null, name: string | null, address: string | null, entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView, entryPointsCount: number, timeZone: NSTimeZone | null): this;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithMapItemLocationThresholdEntryPointsEntryPointsCount(mapItem: MKMapItem, locationThreshold: NSMeasurement<NSUnitLength> | null, entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView, entryPointsCount: number): this;
 }
 
 /**
@@ -2582,13 +2978,13 @@ declare class CPNowPlayingButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { handler: (p1: CPNowPlayingButton) => void; });
+	constructor(o: { handler: (p1: CPNowPlayingButton) => void | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithHandler(handler: (p1: CPNowPlayingButton) => void): this;
+	initWithHandler(handler: (p1: CPNowPlayingButton) => void | null): this;
 }
 
 declare var CPNowPlayingButtonMaximumImageSize: CGSize;
@@ -2602,11 +2998,11 @@ declare class CPNowPlayingImageButton extends CPNowPlayingButton {
 
 	static new(): CPNowPlayingImageButton; // inherited from NSObject
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
-	constructor(o: { image: UIImage; handler: (p1: CPNowPlayingButton) => void; });
+	constructor(o: { image: UIImage; handler: (p1: CPNowPlayingButton) => void | null; });
 
-	initWithImageHandler(image: UIImage, handler: (p1: CPNowPlayingButton) => void): this;
+	initWithImageHandler(image: UIImage, handler: (p1: CPNowPlayingButton) => void | null): this;
 }
 
 /**
@@ -2638,9 +3034,9 @@ declare class CPNowPlayingModeSports extends CPNowPlayingMode implements NSSecur
 
 	static new(): CPNowPlayingModeSports; // inherited from NSObject
 
-	readonly backgroundArtwork: UIImage;
+	readonly backgroundArtwork: UIImage | null;
 
-	readonly eventStatus: CPNowPlayingSportsEventStatus;
+	readonly eventStatus: CPNowPlayingSportsEventStatus | null;
 
 	readonly leftTeam: CPNowPlayingSportsTeam;
 
@@ -2650,13 +3046,13 @@ declare class CPNowPlayingModeSports extends CPNowPlayingMode implements NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { leftTeam: CPNowPlayingSportsTeam; rightTeam: CPNowPlayingSportsTeam; eventStatus: CPNowPlayingSportsEventStatus; backgroundArtwork: UIImage; });
+	constructor(o: { leftTeam: CPNowPlayingSportsTeam; rightTeam: CPNowPlayingSportsTeam; eventStatus: CPNowPlayingSportsEventStatus | null; backgroundArtwork: UIImage | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithLeftTeamRightTeamEventStatusBackgroundArtwork(leftTeam: CPNowPlayingSportsTeam, rightTeam: CPNowPlayingSportsTeam, eventStatus: CPNowPlayingSportsEventStatus, backgroundArtwork: UIImage): this;
+	initWithLeftTeamRightTeamEventStatusBackgroundArtwork(leftTeam: CPNowPlayingSportsTeam, rightTeam: CPNowPlayingSportsTeam, eventStatus: CPNowPlayingSportsEventStatus | null, backgroundArtwork: UIImage | null): this;
 }
 
 /**
@@ -2740,23 +3136,23 @@ declare class CPNowPlayingSportsEventStatus extends NSObject implements NSSecure
 
 	static new(): CPNowPlayingSportsEventStatus; // inherited from NSObject
 
-	readonly eventClock: CPNowPlayingSportsClock;
+	readonly eventClock: CPNowPlayingSportsClock | null;
 
-	readonly eventStatusImage: UIImage;
+	readonly eventStatusImage: UIImage | null;
 
-	readonly eventStatusText: NSArray<string>;
+	readonly eventStatusText: NSArray<string> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { eventStatusText: NSArray<string> | string[]; eventStatusImage: UIImage; eventClock: CPNowPlayingSportsClock; });
+	constructor(o: { eventStatusText: NSArray<string> | string[] | null; eventStatusImage: UIImage | null; eventClock: CPNowPlayingSportsClock | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithEventStatusTextEventStatusImageEventClock(eventStatusText: NSArray<string> | string[], eventStatusImage: UIImage, eventClock: CPNowPlayingSportsClock): this;
+	initWithEventStatusTextEventStatusImageEventClock(eventStatusText: NSArray<string> | string[] | null, eventStatusImage: UIImage | null, eventClock: CPNowPlayingSportsClock | null): this;
 }
 
 /**
@@ -2776,21 +3172,21 @@ declare class CPNowPlayingSportsTeam extends NSObject implements NSSecureCoding 
 
 	readonly name: string;
 
-	readonly possessionIndicator: UIImage;
+	readonly possessionIndicator: UIImage | null;
 
-	readonly teamStandings: string;
+	readonly teamStandings: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { name: string; logo: CPNowPlayingSportsTeamLogo; teamStandings: string; eventScore: string; possessionIndicator: UIImage; favorite: boolean; });
+	constructor(o: { name: string; logo: CPNowPlayingSportsTeamLogo; teamStandings: string | null; eventScore: string; possessionIndicator: UIImage | null; favorite: boolean; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithNameLogoTeamStandingsEventScorePossessionIndicatorFavorite(name: string, logo: CPNowPlayingSportsTeamLogo, teamStandings: string, eventScore: string, possessionIndicator: UIImage, favorite: boolean): this;
+	initWithNameLogoTeamStandingsEventScorePossessionIndicatorFavorite(name: string, logo: CPNowPlayingSportsTeamLogo, teamStandings: string | null, eventScore: string, possessionIndicator: UIImage | null, favorite: boolean): this;
 }
 
 /**
@@ -2802,9 +3198,9 @@ declare class CPNowPlayingSportsTeamLogo extends NSObject implements NSSecureCod
 
 	static new(): CPNowPlayingSportsTeamLogo; // inherited from NSObject
 
-	readonly initials: string;
+	readonly initials: string | null;
 
-	readonly logo: UIImage;
+	readonly logo: UIImage | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2839,7 +3235,7 @@ declare class CPNowPlayingTemplate extends CPTemplate {
 	/**
 	 * @since 18.4
 	 */
-	nowPlayingMode: CPNowPlayingMode;
+	nowPlayingMode: CPNowPlayingMode | null;
 
 	upNextButtonEnabled: boolean;
 
@@ -2885,6 +3281,91 @@ declare const enum CPPanDirection {
 }
 
 /**
+ * @since 26.4
+ */
+interface CPPlayableItem extends NSObjectProtocol {
+
+	/**
+	 * @since 26.4
+	 */
+	playbackConfiguration: CPPlaybackConfiguration | null;
+}
+declare var CPPlayableItem: {
+
+	prototype: CPPlayableItem;
+};
+
+declare const enum CPPlaybackAction {
+
+	None = 0,
+
+	Play = 1,
+
+	Pause = 2,
+
+	Replay = 3
+}
+
+/**
+ * @since 26.4
+ */
+declare class CPPlaybackConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CPPlaybackConfiguration; // inherited from NSObject
+
+	static new(): CPPlaybackConfiguration; // inherited from NSObject
+
+	/**
+	 * @since 26.4
+	 */
+	readonly duration: CMTime;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly elapsedTime: CMTime;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly playbackAction: CPPlaybackAction;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly preferredPresentation: CPPlaybackPresentation;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { preferredPresentation: CPPlaybackPresentation; playbackAction: CPPlaybackAction; elapsedTime: CMTime; duration: CMTime; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithPreferredPresentationPlaybackActionElapsedTimeDuration(preferredPresentation: CPPlaybackPresentation, playbackAction: CPPlaybackAction, elapsedTime: CMTime, duration: CMTime): this;
+}
+
+declare const enum CPPlaybackPresentation {
+
+	None = 0,
+
+	Audio = 1,
+
+	Video = 2
+}
+
+/**
  * @since 14.0
  */
 declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
@@ -2893,32 +3374,32 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	static new(): CPPointOfInterest; // inherited from NSObject
 
-	detailSubtitle: string;
+	detailSubtitle: string | null;
 
-	detailSummary: string;
+	detailSummary: string | null;
 
-	detailTitle: string;
+	detailTitle: string | null;
 
 	location: MKMapItem;
 
-	pinImage: UIImage;
+	pinImage: UIImage | null;
 
-	primaryButton: CPTextButton;
+	primaryButton: CPTextButton | null;
 
-	secondaryButton: CPTextButton;
+	secondaryButton: CPTextButton | null;
 
 	/**
 	 * @since 16.0
 	 */
-	selectedPinImage: UIImage;
+	selectedPinImage: UIImage | null;
 
-	subtitle: string;
+	subtitle: string | null;
 
-	summary: string;
+	summary: string | null;
 
 	title: string;
 
-	userInfo: any;
+	userInfo: any | null;
 
 	/**
 	 * @since 16.0
@@ -2934,23 +3415,23 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { location: MKMapItem; title: string; subtitle: string; summary: string; detailTitle: string; detailSubtitle: string; detailSummary: string; pinImage: UIImage; });
+	constructor(o: { location: MKMapItem; title: string; subtitle: string | null; summary: string | null; detailTitle: string | null; detailSubtitle: string | null; detailSummary: string | null; pinImage: UIImage | null; });
 
 	/**
 	 * @since 16.0
 	 */
-	constructor(o: { location: MKMapItem; title: string; subtitle: string; summary: string; detailTitle: string; detailSubtitle: string; detailSummary: string; pinImage: UIImage; selectedPinImage: UIImage; });
+	constructor(o: { location: MKMapItem; title: string; subtitle: string | null; summary: string | null; detailTitle: string | null; detailSubtitle: string | null; detailSummary: string | null; pinImage: UIImage | null; selectedPinImage: UIImage | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImage(location: MKMapItem, title: string, subtitle: string, summary: string, detailTitle: string, detailSubtitle: string, detailSummary: string, pinImage: UIImage): this;
+	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImage(location: MKMapItem, title: string, subtitle: string | null, summary: string | null, detailTitle: string | null, detailSubtitle: string | null, detailSummary: string | null, pinImage: UIImage | null): this;
 
 	/**
 	 * @since 16.0
 	 */
-	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImageSelectedPinImage(location: MKMapItem, title: string, subtitle: string, summary: string, detailTitle: string, detailSubtitle: string, detailSummary: string, pinImage: UIImage, selectedPinImage: UIImage): this;
+	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImageSelectedPinImage(location: MKMapItem, title: string, subtitle: string | null, summary: string | null, detailTitle: string | null, detailSubtitle: string | null, detailSummary: string | null, pinImage: UIImage | null, selectedPinImage: UIImage | null): this;
 }
 
 /**
@@ -2962,7 +3443,7 @@ declare class CPPointOfInterestTemplate extends CPTemplate implements CPBarButto
 
 	static new(): CPPointOfInterestTemplate; // inherited from NSObject
 
-	pointOfInterestDelegate: CPPointOfInterestTemplateDelegate;
+	pointOfInterestDelegate: CPPointOfInterestTemplateDelegate | null;
 
 	readonly pointsOfInterest: NSArray<CPPointOfInterest>;
 
@@ -2970,7 +3451,7 @@ declare class CPPointOfInterestTemplate extends CPTemplate implements CPBarButto
 
 	title: string;
 
-	backButton: CPBarButton; // inherited from CPBarButtonProviding
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -3031,6 +3512,21 @@ declare var CPPointOfInterestTemplateDelegate: {
 	prototype: CPPointOfInterestTemplateDelegate;
 };
 
+declare const enum CPRerouteReason {
+
+	Unknown = 0,
+
+	MissedTurn = 1,
+
+	Offline = 2,
+
+	AlternateRoute = 3,
+
+	WaypointModified = 4,
+
+	Mandated = 5
+}
+
 /**
  * @since 12.0
  */
@@ -3040,13 +3536,13 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): CPRouteChoice; // inherited from NSObject
 
-	readonly additionalInformationVariants: NSArray<string>;
+	readonly additionalInformationVariants: NSArray<string> | null;
 
-	readonly selectionSummaryVariants: NSArray<string>;
+	readonly selectionSummaryVariants: NSArray<string> | null;
 
 	readonly summaryVariants: NSArray<string>;
 
-	userInfo: any;
+	userInfo: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -3054,7 +3550,7 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { summaryVariants: NSArray<string> | string[]; additionalInformationVariants: NSArray<string> | string[]; selectionSummaryVariants: NSArray<string> | string[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3108,6 +3604,59 @@ declare class CPRouteInformation extends NSObject {
 }
 
 /**
+ * @since 26.4
+ */
+declare class CPRouteSegment extends NSObject implements NSCopying {
+
+	static alloc(): CPRouteSegment; // inherited from NSObject
+
+	static new(): CPRouteSegment; // inherited from NSObject
+
+	readonly coordinates: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | null;
+
+	readonly coordinatesCount: number;
+
+	readonly currentLaneGuidance: CPLaneGuidance;
+
+	readonly currentManeuvers: NSArray<CPManeuver>;
+
+	readonly destination: CPNavigationWaypoint;
+
+	readonly identifier: NSUUID;
+
+	readonly laneGuidances: NSArray<CPLaneGuidance>;
+
+	readonly maneuverTravelEstimates: CPTravelEstimates;
+
+	readonly maneuvers: NSArray<CPManeuver>;
+
+	readonly origin: CPNavigationWaypoint;
+
+	readonly tripTravelEstimates: CPTravelEstimates;
+
+	constructor(o: { origin: CPNavigationWaypoint; destination: CPNavigationWaypoint; maneuvers: NSArray<CPManeuver> | CPManeuver[]; laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[]; currentManeuvers: NSArray<CPManeuver> | CPManeuver[]; currentLaneGuidance: CPLaneGuidance; tripTravelEstimates: CPTravelEstimates; maneuverTravelEstimates: CPTravelEstimates; coordinates: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView; coordinatesCount: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	initWithOriginDestinationManeuversLaneGuidancesCurrentManeuversCurrentLaneGuidanceTripTravelEstimatesManeuverTravelEstimatesCoordinatesCoordinatesCount(origin: CPNavigationWaypoint, destination: CPNavigationWaypoint, maneuvers: NSArray<CPManeuver> | CPManeuver[], laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[], currentManeuvers: NSArray<CPManeuver> | CPManeuver[], currentLaneGuidance: CPLaneGuidance, tripTravelEstimates: CPTravelEstimates, maneuverTravelEstimates: CPTravelEstimates, coordinates: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView, coordinatesCount: number): this;
+}
+
+declare const enum CPRouteSource {
+
+	Inactive = 0,
+
+	iOSUnchanged = 1,
+
+	iOSRouteModified = 2,
+
+	iOSRouteDestinationsModified = 3,
+
+	iOSDestinationsOnly = 4,
+
+	Vehicle = 5
+}
+
+/**
  * @since 12.0
  */
 declare class CPSearchTemplate extends CPTemplate {
@@ -3116,7 +3665,7 @@ declare class CPSearchTemplate extends CPTemplate {
 
 	static new(): CPSearchTemplate; // inherited from NSObject
 
-	delegate: CPSearchTemplateDelegate;
+	delegate: CPSearchTemplateDelegate | null;
 }
 
 /**
@@ -3140,7 +3689,7 @@ declare var CPSearchTemplateDelegate: {
  */
 interface CPSelectableListItem extends CPListTemplateItem {
 
-	handler: (p1: CPSelectableListItem, p2: () => void) => void;
+	handler: (p1: CPSelectableListItem, p2: () => void) => void | null;
 }
 declare var CPSelectableListItem: {
 
@@ -3161,9 +3710,14 @@ declare class CPSessionConfiguration extends NSObject {
 	 */
 	readonly contentStyle: CPContentStyle;
 
-	delegate: CPSessionConfigurationDelegate;
+	delegate: CPSessionConfigurationDelegate | null;
 
 	readonly limitedUserInterfaces: CPLimitableUserInterface;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly supportsVideoPlayback: boolean;
 
 	constructor(o: { delegate: CPSessionConfigurationDelegate; });
 
@@ -3188,6 +3742,49 @@ declare var CPSessionConfigurationDelegate: {
 };
 
 /**
+ * @since 26.4
+ */
+declare class CPSportsOverlay extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPSportsOverlay; // inherited from NSObject
+
+	static new(): CPSportsOverlay; // inherited from NSObject
+
+	/**
+	 * @since 26.4
+	 */
+	readonly eventStatus: CPNowPlayingSportsEventStatus | null;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly leftTeam: CPNowPlayingSportsTeam;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly rightTeam: CPNowPlayingSportsTeam;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { leftTeam: CPNowPlayingSportsTeam; rightTeam: CPNowPlayingSportsTeam; eventStatus: CPNowPlayingSportsEventStatus | null; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithLeftTeamRightTeamEventStatus(leftTeam: CPNowPlayingSportsTeam, rightTeam: CPNowPlayingSportsTeam, eventStatus: CPNowPlayingSportsEventStatus | null): this;
+}
+
+/**
  * @since 14.0
  */
 declare class CPTabBarTemplate extends CPTemplate {
@@ -3196,9 +3793,9 @@ declare class CPTabBarTemplate extends CPTemplate {
 
 	static new(): CPTabBarTemplate; // inherited from NSObject
 
-	delegate: CPTabBarTemplateDelegate;
+	delegate: CPTabBarTemplateDelegate | null;
 
-	readonly selectedTemplate: CPTemplate;
+	readonly selectedTemplate: CPTemplate | null;
 
 	readonly templates: NSArray<CPTemplate>;
 
@@ -3250,7 +3847,7 @@ declare class CPTemplate extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	tabImage: UIImage;
+	tabImage: UIImage | null;
 
 	/**
 	 * @since 14.0
@@ -3260,9 +3857,9 @@ declare class CPTemplate extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	tabTitle: string;
+	tabTitle: string | null;
 
-	userInfo: any;
+	userInfo: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -3286,7 +3883,7 @@ declare class CPTemplateApplicationDashboardScene extends UIScene {
 
 	readonly dashboardWindow: UIWindow;
 
-	delegate: CPTemplateApplicationDashboardSceneDelegate;
+	delegate: CPTemplateApplicationDashboardSceneDelegate | null;
 }
 
 /**
@@ -3319,7 +3916,7 @@ declare class CPTemplateApplicationInstrumentClusterScene extends UIScene {
 
 	readonly contentStyle: UIUserInterfaceStyle;
 
-	delegate: CPTemplateApplicationInstrumentClusterSceneDelegate;
+	delegate: CPTemplateApplicationInstrumentClusterSceneDelegate | null;
 
 	readonly instrumentClusterController: CPInstrumentClusterController;
 }
@@ -3361,7 +3958,7 @@ declare class CPTemplateApplicationScene extends UIScene {
 	 */
 	readonly contentStyle: UIUserInterfaceStyle;
 
-	delegate: CPTemplateApplicationSceneDelegate;
+	delegate: CPTemplateApplicationSceneDelegate | null;
 
 	readonly interfaceController: CPInterfaceController;
 }
@@ -3417,9 +4014,9 @@ declare class CPTextButton extends NSObject {
 
 	title: string;
 
-	constructor(o: { title: string; textStyle: CPTextButtonStyle; handler: (p1: CPTextButton) => void; });
+	constructor(o: { title: string; textStyle: CPTextButtonStyle; handler: (p1: CPTextButton) => void | null; });
 
-	initWithTitleTextStyleHandler(title: string, textStyle: CPTextButtonStyle, handler: (p1: CPTextButton) => void): this;
+	initWithTitleTextStyleHandler(title: string, textStyle: CPTextButtonStyle, handler: (p1: CPTextButton) => void | null): this;
 }
 
 /**
@@ -3432,6 +4029,59 @@ declare const enum CPTextButtonStyle {
 	Cancel = 1,
 
 	Confirm = 2
+}
+
+/**
+ * @since 26.4
+ */
+declare class CPThumbnailImage extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPThumbnailImage; // inherited from NSObject
+
+	static new(): CPThumbnailImage; // inherited from NSObject
+
+	/**
+	 * @since 26.4
+	 */
+	image: UIImage;
+
+	/**
+	 * @since 26.4
+	 */
+	imageOverlay: CPImageOverlay | null;
+
+	/**
+	 * @since 26.4
+	 */
+	sportsOverlay: CPSportsOverlay | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { image: UIImage; });
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { image: UIImage; imageOverlay: CPImageOverlay | null; sportsOverlay: CPSportsOverlay | null; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithImage(image: UIImage): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithImageImageOverlaySportsOverlay(image: UIImage, imageOverlay: CPImageOverlay | null, sportsOverlay: CPSportsOverlay | null): this;
 }
 
 /**
@@ -3508,30 +4158,76 @@ declare class CPTrip extends NSObject implements NSSecureCoding {
 
 	static new(): CPTrip; // inherited from NSObject
 
+	/**
+	 * @since 12.0
+	 * @deprecated 26.4
+	 */
 	readonly destination: MKMapItem;
 
 	/**
 	 * @since 17.4
 	 */
-	destinationNameVariants: NSArray<string>;
+	destinationNameVariants: NSArray<string> | null;
 
+	/**
+	 * @since 26.4
+	 */
+	readonly destinationWaypoint: CPNavigationWaypoint;
+
+	/**
+	 * @since 26.1
+	 */
+	hasShareableDestination: boolean;
+
+	/**
+	 * @since 12.0
+	 * @deprecated 26.4
+	 */
 	readonly origin: MKMapItem;
+
+	/**
+	 * @since 26.4
+	 */
+	readonly originWaypoint: CPNavigationWaypoint;
 
 	readonly routeChoices: NSArray<CPRouteChoice>;
 
-	userInfo: any;
+	/**
+	 * @since 26.4
+	 */
+	routeSegmentsAvailableForRegion: boolean;
+
+	userInfo: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 12.0
+	 * @deprecated 26.4
+	 */
 	constructor(o: { origin: MKMapItem; destination: MKMapItem; routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]; });
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { originWaypoint: CPNavigationWaypoint; destinationWaypoint: CPNavigationWaypoint; routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 26.4
+	 */
 	initWithOriginDestinationRouteChoices(origin: MKMapItem, destination: MKMapItem, routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]): this;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithOriginWaypointDestinationWaypointRouteChoices(origin: CPNavigationWaypoint, destination: CPNavigationWaypoint, routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]): this;
 }
 
 /**
@@ -3569,23 +4265,23 @@ declare class CPTripPreviewTextConfiguration extends NSObject implements NSSecur
 
 	static new(): CPTripPreviewTextConfiguration; // inherited from NSObject
 
-	readonly additionalRoutesButtonTitle: string;
+	readonly additionalRoutesButtonTitle: string | null;
 
-	readonly overviewButtonTitle: string;
+	readonly overviewButtonTitle: string | null;
 
-	readonly startButtonTitle: string;
+	readonly startButtonTitle: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { startButtonTitle: string; additionalRoutesButtonTitle: string; overviewButtonTitle: string; });
+	constructor(o: { startButtonTitle: string | null; additionalRoutesButtonTitle: string | null; overviewButtonTitle: string | null; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithStartButtonTitleAdditionalRoutesButtonTitleOverviewButtonTitle(startButtonTitle: string, additionalRoutesButtonTitle: string, overviewButtonTitle: string): this;
+	initWithStartButtonTitleAdditionalRoutesButtonTitleOverviewButtonTitle(startButtonTitle: string | null, additionalRoutesButtonTitle: string | null, overviewButtonTitle: string | null): this;
 }
 
 /**
@@ -3597,45 +4293,95 @@ declare class CPVoiceControlState extends NSObject implements NSSecureCoding {
 
 	static new(): CPVoiceControlState; // inherited from NSObject
 
+	/**
+	 * @since 26.4
+	 */
+	actionButtons: NSArray<CPButton>;
+
 	readonly identifier: string;
 
-	readonly image: UIImage;
+	readonly image: UIImage | null;
 
 	readonly repeats: boolean;
 
-	readonly titleVariants: NSArray<string>;
+	readonly titleVariants: NSArray<string> | null;
+
+	/**
+	 * @since 26.4
+	 */
+	static readonly maximumActionButtonCount: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identifier: string; titleVariants: NSArray<string> | string[]; image: UIImage; repeats: boolean; });
+	constructor(o: { identifier: string; titleVariants: NSArray<string> | string[] | null; image: UIImage | null; repeats: boolean; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithIdentifierTitleVariantsImageRepeats(identifier: string, titleVariants: NSArray<string> | string[], image: UIImage, repeats: boolean): this;
+	initWithIdentifierTitleVariantsImageRepeats(identifier: string, titleVariants: NSArray<string> | string[] | null, image: UIImage | null, repeats: boolean): this;
 }
 
 /**
  * @since 12.0
  */
-declare class CPVoiceControlTemplate extends CPTemplate {
+declare class CPVoiceControlTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPVoiceControlTemplate; // inherited from NSObject
 
 	static new(): CPVoiceControlTemplate; // inherited from NSObject
 
-	readonly activeStateIdentifier: string;
+	readonly activeStateIdentifier: string | null;
 
 	readonly voiceControlStates: NSArray<CPVoiceControlState>;
+
+	backButton: CPBarButton | null; // inherited from CPBarButtonProviding
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	leadingNavigationBarButtons: NSArray<CPBarButton>; // inherited from CPBarButtonProviding
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	trailingNavigationBarButtons: NSArray<CPBarButton>; // inherited from CPBarButtonProviding
+
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { voiceControlStates: NSArray<CPVoiceControlState> | CPVoiceControlState[]; });
 
 	activateVoiceControlStateWithIdentifier(identifier: string): void;
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	initWithVoiceControlStates(voiceControlStates: NSArray<CPVoiceControlState> | CPVoiceControlState[]): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 /**
@@ -3656,7 +4402,7 @@ declare class CPWindow extends UIWindow {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): CPWindow; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): CPWindow; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3667,7 +4413,7 @@ declare class CPWindow extends UIWindow {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): CPWindow; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): CPWindow; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -3678,7 +4424,32 @@ declare class CPWindow extends UIWindow {
 
 	readonly mapButtonSafeAreaLayoutGuide: UILayoutGuide;
 
-	templateApplicationScene: CPTemplateApplicationScene;
+	templateApplicationScene: CPTemplateApplicationScene | null;
 }
 
 declare var CarPlayErrorDomain: string;
+
+/**
+ * @since 17.4
+ */
+declare function NSStringFromCPJunctionType(junctionType: CPJunctionType): string;
+
+/**
+ * @since 17.4
+ */
+declare function NSStringFromCPLaneStatus(laneStatus: CPLaneStatus): string;
+
+/**
+ * @since 17.4
+ */
+declare function NSStringFromCPManeuverType(maneuverType: CPManeuverType): string;
+
+/**
+ * @since 26.4
+ */
+declare function NSStringFromCPRerouteReason(reason: CPRerouteReason): string;
+
+/**
+ * @since 17.4
+ */
+declare function NSStringFromCPTrafficSide(trafficSide: CPTrafficSide): string;

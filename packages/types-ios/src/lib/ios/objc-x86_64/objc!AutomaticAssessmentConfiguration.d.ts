@@ -18,7 +18,7 @@ declare class AEAssessmentApplication extends NSObject implements NSCopying {
 	 */
 	constructor(o: { bundleIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 17.5
@@ -34,6 +34,16 @@ declare class AEAssessmentConfiguration extends NSObject implements NSCopying {
 	static alloc(): AEAssessmentConfiguration; // inherited from NSObject
 
 	static new(): AEAssessmentConfiguration; // inherited from NSObject
+
+	/**
+	 * @since 26.1
+	 */
+	allowsAccessibilityLiveCaptions: boolean;
+
+	/**
+	 * @since 26.1
+	 */
+	allowsAccessibilityReader: boolean;
 
 	/**
 	 * @since 14.0
@@ -59,6 +69,11 @@ declare class AEAssessmentConfiguration extends NSObject implements NSCopying {
 	 * @since 14.0
 	 */
 	allowsDictation: boolean;
+
+	/**
+	 * @since 26.4
+	 */
+	allowsEmojiKeyboard: boolean;
 
 	/**
 	 * @since 14.0
@@ -95,7 +110,7 @@ declare class AEAssessmentConfiguration extends NSObject implements NSCopying {
 	 */
 	readonly mainParticipantConfiguration: AEAssessmentParticipantConfiguration;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 17.5
@@ -150,7 +165,7 @@ declare class AEAssessmentParticipantConfiguration extends NSObject implements N
 	 */
 	required: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -169,7 +184,7 @@ declare class AEAssessmentSession extends NSObject {
 	 */
 	readonly configuration: AEAssessmentConfiguration;
 
-	delegate: AEAssessmentSessionDelegate;
+	delegate: AEAssessmentSessionDelegate | null;
 
 	/**
 	 * @since 17.5

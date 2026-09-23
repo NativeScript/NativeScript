@@ -1,6 +1,10 @@
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import { ensureRoutesDefaultExport } from '../../../server/websocket-served-module-helpers.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import * as path from 'path';
+import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
+import type { TsModuleRegistryMessage } from '../../../shared/protocol.js';
 
 // TypeScript server strategy for NativeScript HMR.
 // This is a lightweight strategy that treats app TS/JS files
@@ -14,27 +18,46 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 	flavor: 'typescript',
 	matchesFile(id: string) {
 		// Treat any app TS/JS under the virtual app root as HMR-relevant.
-		return TS_FILE_PATTERN.test(id) && id.startsWith(TS_APP_PREFIX);
+		return matchesRuntimeGraphModuleId(id, TS_APP_PREFIX, TS_FILE_PATTERN);
 	},
-	preClean(code: string) {
-		// No TS-specific pre-clean; generic sanitizers handle core/HMR noise.
-		return code;
+	// HMR: reached via the dispatcher's delegation seam. Run the shared
+	// prologue (scope gate, pending overlay, common graph upsert, CSS), then —
+	// for an in-scope app file — emit a generic graph delta. We treat the changed
+	// file as a graph module with no deps so its hash/identity changes and the
+	// client sees a delta and can perform a TS root reset; the code body is not
+	// used for execution here.
+	async handleHotUpdate(ctx, deps) {
+		const state = await runHotUpdatePrologue(ctx, deps);
+		if (!state) return;
+		const { root, metrics, emitSummary } = state;
+		const { moduleGraph, verbose, wss, isSocketClientOpen } = deps;
+		const { file } = ctx;
+		metrics.tAfterFramework = Date.now();
+		try {
+			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+			if (verbose) console.log('[hmr-ws][ts] app file hot update', { file, rel });
+			moduleGraph.upsert(rel, '', [], { emitDeltaOnInsert: true });
+			// For this flavor the ns:hmr-delta broadcast IS the update delivery —
+			// count open sockets so the always-on summary line reflects reality
+			// instead of reporting recipients=0 for a delivered update.
+			try {
+				wss?.clients?.forEach((client: any) => {
+					if (isSocketClientOpen(client)) metrics.recipients += 1;
+				});
+			} catch {}
+		} catch (e) {
+			if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
+		}
+		emitSummary();
 	},
-	rewriteFrameworkImports(code: string) {
-		// For plain TS apps we rely on vendor bridging and generic import rewriting.
-		return code;
-	},
-	postClean(code: string) {
-		return code;
-	},
-	ensureVersionedImports(code: string, _origin: string, _version: number) {
-		// TypeScript flavor uses direct /ns/entry-rt and HTTP graph; no extra versioning.
-		return code;
-	},
+	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
+	// identity: plain TS apps rely on the generic pipeline (vendor bridge, /ns/entry-rt).
+	normalizeServedExports: ensureRoutesDefaultExport,
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure that any TS app module requested by the HTTP realm is transformed once,
 		// so that downstream helpers (rewriteImports, vendor bridge) see a stable shape.
 		const { filePath, server, verbose } = ctx;
+		if (isRuntimeGraphExcludedPath(filePath)) return;
 		try {
 			const transformed = await server.transformRequest(filePath);
 			if (!transformed?.code) return;
@@ -66,6 +89,9 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 				return;
 			}
 			for (const name of list) {
+				if (name === 'node_modules' || name.startsWith('.') || shouldSkipRuntimeGraphDirectoryName(name)) {
+					continue;
+				}
 				const full = path.join(dir, name);
 				let st: any;
 				try {
@@ -75,7 +101,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 				}
 				if (st.isDirectory()) {
 					walk(full);
-				} else if (st.isFile() && TS_FILE_PATTERN.test(name)) {
+				} else if (st.isFile() && shouldIncludeRuntimeGraphFile(full, TS_FILE_PATTERN)) {
 					const rel = '/' + path.relative(root, full).split(path.sep).join('/');
 					entries.push(rel);
 				}
@@ -104,7 +130,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		// Send a TS-oriented registry message; server-side graph
 		// code will coalesce this into ns:hmr-full-graph.
 		if (!wss) return;
-		const msg = {
+		const msg: TsModuleRegistryMessage = {
 			type: 'ns:ts-module-registry',
 			modules: entries,
 			ts: Date.now(),

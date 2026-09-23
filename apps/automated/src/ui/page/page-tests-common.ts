@@ -1,4 +1,4 @@
-import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Application, Utils, Builder } from '@nativescript/core';
+import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Utils, Builder } from '@nativescript/core';
 
 // >> article-set-bindingcontext
 export function pageLoaded(args) {
@@ -373,7 +373,7 @@ export function test_page_backgroundColor() {
 		TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, 'page backgroundColor is wrong');
 	} else {
 		const whiteColor = new Color('white');
-		TKUnit.assertEqual(page.nativeViewProtected.getBackground().getColor(), whiteColor.android, 'page default backgroundColor should be white');
+		TKUnit.assertEqual((page.nativeViewProtected as any).getBackground().getColor(), whiteColor.android, 'page default backgroundColor should be white');
 	}
 }
 

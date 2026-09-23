@@ -32,7 +32,7 @@ import org.nativescript.widgets.Utils;
 import java.lang.ref.WeakReference;
 
 /**
- * This class wraps up completing some arbitrary long running work when loading a bitmap to an
+ * This class wraps up completing some arbitrary long-running work when loading a bitmap to an
  * ImageView. It handles things like using a memory and disk cache, running the work in a background
  * thread and setting a placeholder image.
  */
@@ -43,7 +43,6 @@ public abstract class Worker {
 	protected static final String CONTENT_PREFIX = "content://";
 
 	static final String TAG = "JS";
-	private static final int FADE_IN_TIME = 200;
 
 	private Cache mCache;
 	private Bitmap mLoadingBitmap;
@@ -71,7 +70,7 @@ public abstract class Worker {
 			try {
 				ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), android.content.pm.PackageManager.GET_META_DATA);
 				android.os.Bundle bundle = ai.metaData;
-				Boolean debugLayouts = bundle != null && bundle.getBoolean("debugImageCache", false);
+				boolean debugLayouts = bundle != null && bundle.getBoolean("debugImageCache", false);
 				debuggable = debugLayouts ? 1 : 0;
 			} catch (PackageManager.NameNotFoundException e) {
 				debuggable = 0;
@@ -91,7 +90,7 @@ public abstract class Worker {
 
 	/**
 	 * Load an image specified by the data parameter into an ImageView (override
-	 * {@link Worker#processBitmap(String, int, int, boolean)} to define the processing logic). A memory and
+	 * {@link Worker#processBitmap(String, int, int, boolean, boolean)} to define the processing logic). A memory and
 	 * disk cache will be used if an {@link Cache} has been added using
 	 * {@link Worker#addImageCache(Cache)}. If the
 	 * image is found in the memory cache, it is set immediately, otherwise an {@link AsyncTask}
@@ -139,27 +138,37 @@ public abstract class Worker {
 		}
 
 		if (value != null) {
+			// This can be overridden to handle the image update manually
+			final boolean isManualUpdate = listener != null && listener.handlesImageUpdate();
+			final boolean isDrawable = value instanceof Drawable;
+
 			// Bitmap found in memory cache or loaded sync.
 			if (debuggable > 0) {
 				Log.v(TAG, "Set ImageBitmap on: " + owner + " to: " + uri);
 			}
-			if (value instanceof Drawable) {
-				owner.setDrawable((Drawable) value);
-			} else {
-				owner.setBitmap((Bitmap) value);
+
+			if (!isManualUpdate) {
+				if (isDrawable) {
+					owner.setDrawable((Drawable) value);
+				} else {
+					owner.setBitmap((Bitmap) value);
+				}
 			}
 
 			if (listener != null) {
 				if (debuggable > 0) {
-					Log.v(TAG, "OnImageLoadedListener on: " + owner + " to: " + uri);
+					Log.v(TAG, "OnImageLoadedListener onImageLoaded: " + owner + " to: " + uri);
 				}
-				listener.onImageLoaded(true);
+
+				if (isDrawable) {
+					listener.onImageLoaded((Drawable) value);
+				} else {
+					listener.onImageLoaded((Bitmap) value);
+				}
 			}
 		} else if (cancelPotentialWork(uri, owner)) {
 			final BitmapWorkerTask task = new BitmapWorkerTask(uri, owner, decodeWidth, decodeHeight, keepAspectRatio, useCache, listener);
-			final AsyncDrawable asyncDrawable =
-				new AsyncDrawable(mResources, mLoadingBitmap, task);
-
+			final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, mLoadingBitmap, task);
 
 			owner.setDrawable(asyncDrawable);
 
@@ -167,22 +176,29 @@ public abstract class Worker {
 			// framework and slightly modified. Refer to the docs at the top of the class
 			// for more info on what was changed.
 			task.executeOnExecutor(AsyncTask.DUAL_THREAD_EXECUTOR);
+		} else {
+			if (listener != null) {
+				if (debuggable > 0) {
+					Log.v(TAG, "OnImageLoadedListener onImageLoadingError: " + owner + " to: " + uri);
+				}
+				listener.onImageLoadingError(new Exception("Failed to load image: " + uri));
+			}
 		}
 	}
 
 	/**
-	 * Set placeholder bitmap that shows when the the background thread is running.
+	 * Set placeholder bitmap that shows when the background thread is running.
 	 *
-	 * @param bitmap
+	 * @param bitmap The bitmap to use as loading image.
 	 */
 	public void setLoadingImage(Bitmap bitmap) {
 		mLoadingBitmap = bitmap;
 	}
 
 	/**
-	 * Set placeholder bitmap that shows when the the background thread is running.
+	 * Set placeholder bitmap that shows when the background thread is running.
 	 *
-	 * @param resId
+	 * @param resId The resource id to use for resolving the loading image.
 	 */
 	public void setLoadingImage(int resId) {
 		mLoadingBitmap = BitmapFactory.decodeResource(mResources, resId);
@@ -190,7 +206,7 @@ public abstract class Worker {
 
 	/**
 	 * Adds an {@link Cache} to this {@link Worker} to handle disk and memory bitmap
-	 * caching. ImageCahce should be initialized before it is passed as parameter.
+	 * caching. ImageCache should be initialized before it is passed as parameter.
 	 */
 	public void addImageCache(Cache imageCache) {
 		this.mCache = imageCache;
@@ -210,11 +226,11 @@ public abstract class Worker {
 
 	/**
 	 * Subclasses should override this to define any processing or work that must happen to produce
-	 * the final bitmap. This will be executed in a background thread and be long running. For
+	 * the final bitmap. This will be executed in a background thread and be long-running. For
 	 * example, you could resize a large bitmap here, or pull down an image from the network.
 	 *
 	 * @param uri The URI to identify which image to process, as provided by
-	 *            {@link Worker#loadImage(String, BitmapOwner, int, int, boolean, boolean, OnImageLoadedListener)}
+	 *            {@link Worker#loadImage(String, BitmapOwner, int, int, boolean, boolean, boolean, OnImageLoadedListener)}
 	 * @return The processed bitmap
 	 */
 	protected abstract Bitmap processBitmap(String uri, int decodeWidth, int decodeHeight, boolean keepAspectRatio, boolean useCache);
@@ -229,7 +245,7 @@ public abstract class Worker {
 	/**
 	 * Cancels any pending work attached to the provided ImageView.
 	 *
-	 * @param owner
+	 * @param owner The bitmap owner.
 	 */
 	public static void cancelWork(BitmapOwner owner) {
 		final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(owner);
@@ -315,7 +331,7 @@ public abstract class Worker {
 			mCacheImage = cacheImage;
 			mUri = uri;
 			mCacheUri = createCacheUri(uri, decodeHeight, decodeWidth);
-			imageViewReference = new WeakReference<BitmapOwner>(owner);
+			imageViewReference = new WeakReference<>(owner);
 			mOnImageLoadedListener = listener;
 		}
 
@@ -328,20 +344,20 @@ public abstract class Worker {
 				Log.v(TAG, "doInBackground - starting work: " + imageViewReference.get() + ", on: " + mUri);
 			}
 
-
 			Object bitmap = null;
 
-			// Wait here if work is paused and the task is not cancelled
+			// Wait here if work is paused and the task is not canceled
 			synchronized (mPauseWorkLock) {
 				while (mPauseWork && !isCancelled()) {
 					try {
 						mPauseWorkLock.wait();
 					} catch (InterruptedException e) {
+						Log.e(TAG, "Failed to wait for pause worker lock: " + e.getMessage());
 					}
 				}
 			}
 
-			// If the bitmap was not found in the cache and this task has not been cancelled by
+			// If the bitmap was not found in the cache and this task has not been canceled by
 			// another thread and the ImageView that was originally bound to this task is still
 			// bound back to this task and our "exit early" flag is not set, then call the main
 			// process method (as implemented by a subclass)
@@ -350,7 +366,7 @@ public abstract class Worker {
 			}
 
 			// If the bitmap was processed and the image cache is available, then add the processed
-			// bitmap to the cache for future use. Note we don't check if the task was cancelled
+			// bitmap to the cache for future use. Note we don't check if the task was canceled
 			// here, if it was, and the thread is still running, we may as well add the processed
 			// bitmap to our cache as it might be used again in the future
 			if (bitmap != null) {
@@ -379,7 +395,6 @@ public abstract class Worker {
 		 */
 		@Override
 		protected void onPostExecute(Object value) {
-			boolean success = false;
 			// if cancel was called on this task or the "exit early" flag is set then we're done
 			if (isCancelled() || mExitTasksEarly) {
 				value = null;
@@ -394,23 +409,43 @@ public abstract class Worker {
 				Log.v(TAG, "onPostExecute - current ImageView: " + owner);
 			}
 
-			if (value != null && owner != null) {
-				success = true;
-				if (debuggable > 0) {
-					Log.v(TAG, "Set ImageDrawable on: " + owner + " to: " + mUri);
-				}
-				if (value instanceof Drawable) {
-					owner.setDrawable((Drawable) value);
-				} else if (value instanceof Bitmap) {
-					owner.setBitmap((Bitmap) value);
-				}
-			}
+			if (owner != null) {
+				if (value != null) {
+					// This can be overridden to handle the image update manually
+					final boolean isManualUpdate = mOnImageLoadedListener != null && mOnImageLoadedListener.handlesImageUpdate();
+					final boolean isDrawable = value instanceof Drawable;
 
-			if (mOnImageLoadedListener != null) {
-				if (debuggable > 0) {
-					Log.v(TAG, "OnImageLoadedListener on: " + owner + " to: " + mUri);
+					if (debuggable > 0) {
+						Log.v(TAG, "Set ImageDrawable on: " + owner + " to: " + mUri);
+					}
+
+					if (!isManualUpdate) {
+						if (isDrawable) {
+							owner.setDrawable((Drawable) value);
+						} else if (value instanceof Bitmap) {
+							owner.setBitmap((Bitmap) value);
+						}
+					}
+
+					if (mOnImageLoadedListener != null) {
+						if (debuggable > 0) {
+							Log.v(TAG, "OnImageLoadedListener onImageLoaded: " + owner + " to: " + mUri);
+						}
+
+						if (isDrawable) {
+							mOnImageLoadedListener.onImageLoaded((Drawable) value);
+						} else {
+							mOnImageLoadedListener.onImageLoaded((Bitmap) value);
+						}
+					}
+				} else {
+					if (mOnImageLoadedListener != null) {
+						if (debuggable > 0) {
+							Log.v(TAG, "OnImageLoadedListener onImageLoadingError: " + owner + " to: " + mUri);
+						}
+						mOnImageLoadedListener.onImageLoadingError(new Exception("Failed to load image: " + mUri));
+					}
 				}
-				mOnImageLoadedListener.onImageLoaded(success);
 			}
 		}
 
@@ -442,14 +477,29 @@ public abstract class Worker {
 	 * Interface definition for callback on image loaded successfully.
 	 */
 	public interface OnImageLoadedListener {
-
 		/**
-		 * Called once the image has been loaded.
-		 *
-		 * @param success True if the image was loaded successfully, false if
-		 *                there was an error.
+		 * Called when the image is about to be applied to the owner.
+		 * @return True if the image listener handles the owner update, false otherwise.
 		 */
-		void onImageLoaded(boolean success);
+		boolean handlesImageUpdate();
+		/**
+		 * Called when the image has been loaded.
+		 *
+		 * @param drawable A drawable representing the image content.
+		 */
+		void onImageLoaded(Drawable drawable);
+		/**
+		 * Called when the image has been loaded.
+		 *
+		 * @param bitmap A bitmap representing the image content.
+		 */
+		void onImageLoaded(Bitmap bitmap);
+		/**
+		 * Called when the image fails to load.
+		 *
+		 * @param e The exception error.
+		 */
+		void onImageLoadingError(Exception e);
 	}
 
 	/**
@@ -463,40 +513,13 @@ public abstract class Worker {
 
 		public AsyncDrawable(Resources res, Bitmap bitmap, BitmapWorkerTask bitmapWorkerTask) {
 			super(res, bitmap);
-			bitmapWorkerTaskReference =
-				new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+			bitmapWorkerTaskReference = new WeakReference<>(bitmapWorkerTask);
 		}
 
 		public BitmapWorkerTask getBitmapWorkerTask() {
 			return bitmapWorkerTaskReference.get();
 		}
 	}
-
-//    /**
-//     * Called when the processing is complete and the final drawable should be
-//     * set on the ImageView.
-//     *
-//     * @param imageView
-//     * @param bitmap
-//     */
-//    private void setImageDrawable(ImageView imageView, Bitmap bitmap) {
-//        if (mFadeInBitmap) {
-//            // Transition drawable with a transparent drawable and the final drawable
-//            final TransitionDrawable td =
-//                    new TransitionDrawable(new Drawable[] {
-//                            new ColorDrawable(0),
-//                            new BitmapDrawable(bitmap)
-//                    });
-//            // Set background to loading bitmap
-//            imageView.setBackgroundDrawable(
-//                    new BitmapDrawable(mResources, mLoadingBitmap));
-//
-//            imageView.setImageDrawable(td);
-//            td.startTransition(FADE_IN_TIME);
-//        } else {
-//            imageView.setImageBitmap(bitmap);
-//        }
-//    }
 
 	/**
 	 * Pause any ongoing background work. This can be used as a temporary
@@ -507,7 +530,7 @@ public abstract class Worker {
 	 * <p>
 	 * If work is paused, be sure setPauseWork(false) is called again
 	 * before your fragment or activity is destroyed (for example during
-	 * {@link android.app.Activity#onPause()}), or there is a risk the
+	 * {@link android.app.Activity} onPause lifecycle), or there is a risk the
 	 * background thread will never finish.
 	 */
 	public void setPauseWork(boolean pauseWork) {

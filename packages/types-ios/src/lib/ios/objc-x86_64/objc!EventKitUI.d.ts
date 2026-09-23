@@ -5,7 +5,7 @@ declare class EKCalendarChooser extends UIViewController {
 
 	static new(): EKCalendarChooser; // inherited from NSObject
 
-	delegate: EKCalendarChooserDelegate;
+	delegate: EKCalendarChooserDelegate | null;
 
 	selectedCalendars: NSSet<EKCalendar>;
 
@@ -71,9 +71,9 @@ declare class EKEventEditViewController extends UINavigationController {
 
 	static new(): EKEventEditViewController; // inherited from NSObject
 
-	editViewDelegate: EKEventEditViewDelegate;
+	editViewDelegate: EKEventEditViewDelegate | null;
 
-	event: EKEvent;
+	event: EKEvent | null;
 
 	eventStore: EKEventStore;
 
@@ -116,7 +116,7 @@ declare class EKEventViewController extends UIViewController {
 	/**
 	 * @since 4.2
 	 */
-	delegate: EKEventViewDelegate;
+	delegate: EKEventViewDelegate | null;
 
 	event: EKEvent;
 }

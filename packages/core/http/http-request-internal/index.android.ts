@@ -3,9 +3,16 @@ import type { Headers, HttpResponse, HttpRequestOptions } from '../../http';
 import { Screen } from '../../platform/screen';
 import * as domainDebugger from '../../debugger';
 import { isObject } from '../../utils';
-import { BaseHttpContent } from '.';
+import { HttpResponseEncoding } from '../http-interfaces';
 import { addHeader } from './http-request-internal-common';
 export { addHeader } from './http-request-internal-common';
+
+export interface BaseHttpContent {
+	raw: any;
+	requestURL: string;
+	toNativeImage: () => Promise<any>;
+	toNativeString: (encoding?: HttpResponseEncoding) => any;
+}
 
 interface PendingRequest {
 	url: string;

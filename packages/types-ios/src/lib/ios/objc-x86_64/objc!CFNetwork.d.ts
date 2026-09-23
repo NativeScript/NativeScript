@@ -3,7 +3,7 @@
  * @since 2.0
  * @deprecated 9.0
  */
-declare function CFFTPCreateParsedResourceListing(alloc: any, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number, parsed: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function CFFTPCreateParsedResourceListing(alloc: any | null, buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, bufferLength: number, parsed: interop.Pointer | interop.Reference<NSDictionary<any, any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
@@ -28,7 +28,7 @@ declare function CFHTTPAuthenticationCopyRealm(auth: any): interop.Unmanaged<str
 /**
  * @since 2.0
  */
-declare function CFHTTPAuthenticationCreateFromResponse(alloc: any, response: any): interop.Unmanaged<any>;
+declare function CFHTTPAuthenticationCreateFromResponse(alloc: any | null, response: any): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
@@ -38,7 +38,7 @@ declare function CFHTTPAuthenticationGetTypeID(): number;
 /**
  * @since 2.0
  */
-declare function CFHTTPAuthenticationIsValid(auth: any, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFHTTPAuthenticationIsValid(auth: any, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -58,57 +58,57 @@ declare function CFHTTPAuthenticationRequiresUserNameAndPassword(auth: any): boo
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageAddAuthentication(request: any, authenticationFailureResponse: any, username: string, password: string, authenticationScheme: string, forProxy: boolean): boolean;
+declare function CFHTTPMessageAddAuthentication(request: any, authenticationFailureResponse: any | null, username: string, password: string, authenticationScheme: string | null, forProxy: boolean): boolean;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageAppendBytes(message: any, newBytes: string | interop.Pointer | interop.Reference<any>, numBytes: number): boolean;
+declare function CFHTTPMessageAppendBytes(message: any, newBytes: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, numBytes: number): boolean;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageApplyCredentialDictionary(request: any, auth: any, dict: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFHTTPMessageApplyCredentialDictionary(request: any, auth: any, dict: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageApplyCredentials(request: any, auth: any, username: string, password: string, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFHTTPMessageApplyCredentials(request: any, auth: any, username: string | null, password: string | null, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopyAllHeaderFields(message: any): interop.Unmanaged<NSDictionary<any, any>>;
+declare function CFHTTPMessageCopyAllHeaderFields(message: any): interop.Unmanaged<NSDictionary<any, any> | null>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopyBody(message: any): interop.Unmanaged<NSData>;
+declare function CFHTTPMessageCopyBody(message: any): interop.Unmanaged<NSData | null>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopyHeaderFieldValue(message: any, headerField: string): interop.Unmanaged<string>;
+declare function CFHTTPMessageCopyHeaderFieldValue(message: any, headerField: string): interop.Unmanaged<string | null>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopyRequestMethod(request: any): interop.Unmanaged<string>;
+declare function CFHTTPMessageCopyRequestMethod(request: any): interop.Unmanaged<string | null>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopyRequestURL(request: any): interop.Unmanaged<NSURL>;
+declare function CFHTTPMessageCopyRequestURL(request: any): interop.Unmanaged<NSURL | null>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopyResponseStatusLine(response: any): interop.Unmanaged<string>;
+declare function CFHTTPMessageCopyResponseStatusLine(response: any): interop.Unmanaged<string | null>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCopySerializedMessage(message: any): interop.Unmanaged<NSData>;
+declare function CFHTTPMessageCopySerializedMessage(message: any): interop.Unmanaged<NSData | null>;
 
 /**
  * @since 2.0
@@ -118,22 +118,22 @@ declare function CFHTTPMessageCopyVersion(message: any): interop.Unmanaged<strin
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCreateCopy(alloc: any, message: any): interop.Unmanaged<any>;
+declare function CFHTTPMessageCreateCopy(alloc: any | null, message: any): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCreateEmpty(alloc: any, isRequest: boolean): interop.Unmanaged<any>;
+declare function CFHTTPMessageCreateEmpty(alloc: any | null, isRequest: boolean): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCreateRequest(alloc: any, requestMethod: string, url: NSURL, httpVersion: string): interop.Unmanaged<any>;
+declare function CFHTTPMessageCreateRequest(alloc: any | null, requestMethod: string, url: NSURL, httpVersion: string): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageCreateResponse(alloc: any, statusCode: number, statusDescription: string, httpVersion: string): interop.Unmanaged<any>;
+declare function CFHTTPMessageCreateResponse(alloc: any | null, statusCode: number, statusDescription: string | null, httpVersion: string): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
@@ -163,7 +163,7 @@ declare function CFHTTPMessageSetBody(message: any, bodyData: NSData): void;
 /**
  * @since 2.0
  */
-declare function CFHTTPMessageSetHeaderFieldValue(message: any, headerField: string, value: string): void;
+declare function CFHTTPMessageSetHeaderFieldValue(message: any, headerField: string, value: string | null): void;
 
 /**
  * @since 2.0
@@ -173,10 +173,10 @@ declare function CFHostCancelInfoResolution(theHost: any, info: CFHostInfoType):
 
 interface CFHostClientContext {
 	version: number;
-	info: interop.Pointer | interop.Reference<any>;
-	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	info: interop.Pointer | interop.Reference<any> | null;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => string> | null;
 }
 declare var CFHostClientContext: interop.StructType<CFHostClientContext>;
 
@@ -184,37 +184,37 @@ declare var CFHostClientContext: interop.StructType<CFHostClientContext>;
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostCreateCopy(alloc: any, host: any): interop.Unmanaged<any>;
+declare function CFHostCreateCopy(alloc: any | null, host: any): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostCreateWithAddress(allocator: any, addr: NSData): interop.Unmanaged<any>;
+declare function CFHostCreateWithAddress(allocator: any | null, addr: NSData): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostCreateWithName(allocator: any, hostname: string): interop.Unmanaged<any>;
+declare function CFHostCreateWithName(allocator: any | null, hostname: string): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostGetAddressing(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSArray<any>>;
+declare function CFHostGetAddressing(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostGetNames(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSArray<any>>;
+declare function CFHostGetNames(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostGetReachability(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSData>;
+declare function CFHostGetReachability(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): interop.Unmanaged<NSData | null>;
 
 /**
  * @since 2.0
@@ -241,13 +241,13 @@ declare function CFHostScheduleWithRunLoop(theHost: any, runLoop: any, runLoopMo
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostSetClient(theHost: any, clientCB: interop.FunctionReference<(p1: any, p2: CFHostInfoType, p3: interop.Pointer | interop.Reference<CFStreamError>, p4: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFHostClientContext>): boolean;
+declare function CFHostSetClient(theHost: any, clientCB: interop.FunctionReference<(p1: any, p2: CFHostInfoType, p3: interop.Pointer | interop.Reference<CFStreamError> | null, p4: interop.Pointer | interop.Reference<any> | null) => void> | null, clientContext: interop.Pointer | interop.Reference<CFHostClientContext> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFHostStartInfoResolution(theHost: any, info: CFHostInfoType, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFHostStartInfoResolution(theHost: any, info: CFHostInfoType, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -259,13 +259,13 @@ declare function CFHostUnscheduleFromRunLoop(theHost: any, runLoop: any, runLoop
  * @since 2.0
  * @deprecated 11.0
  */
-declare function CFNetDiagnosticCopyNetworkStatusPassively(details: any, description: interop.Pointer | interop.Reference<string>): number;
+declare function CFNetDiagnosticCopyNetworkStatusPassively(details: any, description: interop.Pointer | interop.Reference<string | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 11.0
  */
-declare function CFNetDiagnosticCreateWithStreams(alloc: any, readStream: NSInputStream, writeStream: NSOutputStream): interop.Unmanaged<any>;
+declare function CFNetDiagnosticCreateWithStreams(alloc: any | null, readStream: NSInputStream | null, writeStream: NSOutputStream | null): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
@@ -306,7 +306,7 @@ declare const enum CFNetDiagnosticStatusValues {
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceBrowserCreate(alloc: any, clientCB: interop.FunctionReference<(p1: any, p2: number, p3: any, p4: interop.Pointer | interop.Reference<CFStreamError>, p5: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext>): interop.Unmanaged<any>;
+declare function CFNetServiceBrowserCreate(alloc: any | null, clientCB: interop.FunctionReference<(p1: any, p2: number, p3: any | null, p4: interop.Pointer | interop.Reference<CFStreamError> | null, p5: interop.Pointer | interop.Reference<any> | null) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext> | ArrayBufferLike | ArrayBufferView): interop.Unmanaged<any>;
 
 declare const enum CFNetServiceBrowserFlags {
 
@@ -343,19 +343,19 @@ declare function CFNetServiceBrowserScheduleWithRunLoop(browser: any, runLoop: a
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceBrowserSearchForDomains(browser: any, registrationDomains: boolean, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceBrowserSearchForDomains(browser: any, registrationDomains: boolean, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceBrowserSearchForServices(browser: any, domain: string, serviceType: string, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceBrowserSearchForServices(browser: any, domain: string, serviceType: string, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceBrowserStopSearch(browser: any, error: interop.Pointer | interop.Reference<CFStreamError>): void;
+declare function CFNetServiceBrowserStopSearch(browser: any, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
@@ -371,10 +371,10 @@ declare function CFNetServiceCancel(theService: any): void;
 
 interface CFNetServiceClientContext {
 	version: number;
-	info: interop.Pointer | interop.Reference<any>;
-	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	info: interop.Pointer | interop.Reference<any> | null;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null> | null;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void> | null;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => string> | null;
 }
 declare var CFNetServiceClientContext: interop.StructType<CFNetServiceClientContext>;
 
@@ -382,31 +382,31 @@ declare var CFNetServiceClientContext: interop.StructType<CFNetServiceClientCont
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceCreate(alloc: any, domain: string, serviceType: string, name: string, port: number): interop.Unmanaged<any>;
+declare function CFNetServiceCreate(alloc: any | null, domain: string, serviceType: string, name: string, port: number): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceCreateCopy(alloc: any, service: any): interop.Unmanaged<any>;
+declare function CFNetServiceCreateCopy(alloc: any | null, service: any): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceCreateDictionaryWithTXTData(alloc: any, txtRecord: NSData): interop.Unmanaged<NSDictionary<any, any>>;
+declare function CFNetServiceCreateDictionaryWithTXTData(alloc: any | null, txtRecord: NSData): interop.Unmanaged<NSDictionary<any, any> | null>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceCreateTXTDataWithDictionary(alloc: any, keyValuePairs: NSDictionary<any, any>): interop.Unmanaged<NSData>;
+declare function CFNetServiceCreateTXTDataWithDictionary(alloc: any | null, keyValuePairs: NSDictionary<any, any>): interop.Unmanaged<NSData | null>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceGetAddressing(theService: any): interop.Unmanaged<NSArray<any>>;
+declare function CFNetServiceGetAddressing(theService: any): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 2.0
@@ -430,13 +430,13 @@ declare function CFNetServiceGetPortNumber(theService: any): number;
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceGetTXTData(theService: any): interop.Unmanaged<NSData>;
+declare function CFNetServiceGetTXTData(theService: any): interop.Unmanaged<NSData | null>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceGetTargetHost(theService: any): interop.Unmanaged<string>;
+declare function CFNetServiceGetTargetHost(theService: any): interop.Unmanaged<string | null>;
 
 /**
  * @since 2.0
@@ -454,7 +454,7 @@ declare function CFNetServiceGetTypeID(): number;
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceMonitorCreate(alloc: any, theService: any, clientCB: interop.FunctionReference<(p1: any, p2: any, p3: CFNetServiceMonitorType, p4: NSData, p5: interop.Pointer | interop.Reference<CFStreamError>, p6: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext>): interop.Unmanaged<any>;
+declare function CFNetServiceMonitorCreate(alloc: any | null, theService: any, clientCB: interop.FunctionReference<(p1: any, p2: any | null, p3: CFNetServiceMonitorType, p4: NSData | null, p5: interop.Pointer | interop.Reference<CFStreamError> | null, p6: interop.Pointer | interop.Reference<any> | null) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext> | ArrayBufferLike | ArrayBufferView): interop.Unmanaged<any>;
 
 /**
  * @since 2.0
@@ -478,13 +478,13 @@ declare function CFNetServiceMonitorScheduleWithRunLoop(monitor: any, runLoop: a
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceMonitorStart(monitor: any, recordType: CFNetServiceMonitorType, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceMonitorStart(monitor: any, recordType: CFNetServiceMonitorType, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceMonitorStop(monitor: any, error: interop.Pointer | interop.Reference<CFStreamError>): void;
+declare function CFNetServiceMonitorStop(monitor: any, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare const enum CFNetServiceMonitorType {
 
@@ -506,13 +506,13 @@ declare const enum CFNetServiceRegisterFlags {
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceRegisterWithOptions(theService: any, options: number, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceRegisterWithOptions(theService: any, options: number, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceResolveWithTimeout(theService: any, timeout: number, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceResolveWithTimeout(theService: any, timeout: number, error: interop.Pointer | interop.Reference<CFStreamError> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -524,7 +524,7 @@ declare function CFNetServiceScheduleWithRunLoop(theService: any, runLoop: any, 
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFNetServiceSetClient(theService: any, clientCB: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<CFStreamError>, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext>): boolean;
+declare function CFNetServiceSetClient(theService: any, clientCB: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<CFStreamError> | null, p3: interop.Pointer | interop.Reference<any> | null) => void> | null, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
@@ -562,7 +562,7 @@ declare const enum CFNetServicesError {
 /**
  * @since 2.0
  */
-declare function CFNetworkCopyProxiesForAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSArray<any>>;
+declare function CFNetworkCopyProxiesForAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 2.0
@@ -572,7 +572,7 @@ declare function CFNetworkCopyProxiesForURL(url: NSURL, proxySettings: NSDiction
 /**
  * @since 2.0
  */
-declare function CFNetworkCopySystemProxySettings(): interop.Unmanaged<NSDictionary<any, any>>;
+declare function CFNetworkCopySystemProxySettings(): interop.Unmanaged<NSDictionary<any, any> | null>;
 
 declare const enum CFNetworkErrors {
 
@@ -748,42 +748,42 @@ declare const enum CFNetworkErrors {
 /**
  * @since 2.0
  */
-declare function CFNetworkExecuteProxyAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: NSArray<any>, p3: NSError) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): any;
+declare function CFNetworkExecuteProxyAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: NSArray<any>, p3: NSError | null) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext> | ArrayBufferLike | ArrayBufferView): any;
 
 /**
  * @since 2.0
  */
-declare function CFNetworkExecuteProxyAutoConfigurationURL(proxyAutoConfigURL: NSURL, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: NSArray<any>, p3: NSError) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): any;
-
-/**
- * @since 2.0
- * @deprecated 9.0
- */
-declare function CFReadStreamCreateForHTTPRequest(alloc: any, request: any): interop.Unmanaged<NSInputStream>;
+declare function CFNetworkExecuteProxyAutoConfigurationURL(proxyAutoConfigURL: NSURL, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: NSArray<any>, p3: NSError | null) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext> | ArrayBufferLike | ArrayBufferView): any;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function CFReadStreamCreateForStreamedHTTPRequest(alloc: any, requestHeaders: any, requestBody: NSInputStream): interop.Unmanaged<NSInputStream>;
+declare function CFReadStreamCreateForHTTPRequest(alloc: any | null, request: any): interop.Unmanaged<NSInputStream>;
 
 /**
  * @since 2.0
  * @deprecated 9.0
  */
-declare function CFReadStreamCreateWithFTPURL(alloc: any, ftpURL: NSURL): interop.Unmanaged<NSInputStream>;
+declare function CFReadStreamCreateForStreamedHTTPRequest(alloc: any | null, requestHeaders: any, requestBody: NSInputStream): interop.Unmanaged<NSInputStream>;
+
+/**
+ * @since 2.0
+ * @deprecated 9.0
+ */
+declare function CFReadStreamCreateWithFTPURL(alloc: any | null, ftpURL: NSURL): interop.Unmanaged<NSInputStream>;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFStreamCreatePairWithSocketToCFHost(alloc: any, host: any, port: number, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
+declare function CFStreamCreatePairWithSocketToCFHost(alloc: any | null, host: any, port: number, readStream: interop.Pointer | interop.Reference<NSInputStream | null> | ArrayBufferLike | ArrayBufferView | null, writeStream: interop.Pointer | interop.Reference<NSOutputStream | null> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  * @deprecated 100000
  */
-declare function CFStreamCreatePairWithSocketToNetService(alloc: any, service: any, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
+declare function CFStreamCreatePairWithSocketToNetService(alloc: any | null, service: any, readStream: interop.Pointer | interop.Reference<NSInputStream | null> | ArrayBufferLike | ArrayBufferView | null, writeStream: interop.Pointer | interop.Reference<NSOutputStream | null> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare const enum CFStreamErrorHTTP {
 
@@ -807,7 +807,7 @@ declare const enum CFStreamErrorHTTPAuthentication {
  * @since 2.0
  * @deprecated 9.0
  */
-declare function CFWriteStreamCreateWithFTPURL(alloc: any, ftpURL: NSURL): interop.Unmanaged<NSOutputStream>;
+declare function CFWriteStreamCreateWithFTPURL(alloc: any | null, ftpURL: NSURL): interop.Unmanaged<NSOutputStream>;
 
 /**
  * @since 2.0

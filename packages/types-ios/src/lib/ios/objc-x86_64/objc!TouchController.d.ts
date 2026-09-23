@@ -8,7 +8,7 @@ declare class TCButton extends NSObject implements TCControl, TCControlLayout {
 
 	static new(): TCButton; // inherited from NSObject
 
-	contents: TCControlContents;
+	contents: TCControlContents | null;
 
 	anchor: TCControlLayoutAnchor; // inherited from TCControlLayout
 
@@ -88,7 +88,7 @@ declare class TCButtonDescriptor extends NSObject {
 
 	colliderShape: TCColliderShape;
 
-	contents: TCControlContents;
+	contents: TCControlContents | null;
 
 	highlightDuration: number;
 
@@ -212,7 +212,7 @@ declare class TCControlImage extends NSObject {
 
 	static new(): TCControlImage; // inherited from NSObject
 
-	highlightTexture: MTLTexture;
+	highlightTexture: MTLTexture | null;
 
 	offset: CGPoint;
 
@@ -226,7 +226,7 @@ declare class TCControlImage extends NSObject {
 
 	constructor(o: { texture: MTLTexture; size: CGSize; });
 
-	constructor(o: { texture: MTLTexture; size: CGSize; highlightTexture: MTLTexture; offset: CGPoint; tintColor: any; });
+	constructor(o: { texture: MTLTexture; size: CGSize; highlightTexture: MTLTexture | null; offset: CGPoint; tintColor: any; });
 
 	constructor(o: { UIImage: UIImage; size: CGSize; device: MTLDevice; });
 
@@ -234,7 +234,7 @@ declare class TCControlImage extends NSObject {
 
 	initWithTextureSize(texture: MTLTexture, size: CGSize): this;
 
-	initWithTextureSizeHighlightTextureOffsetTintColor(texture: MTLTexture, size: CGSize, highlightTexture: MTLTexture, offset: CGPoint, tintColor: any): this;
+	initWithTextureSizeHighlightTextureOffsetTintColor(texture: MTLTexture, size: CGSize, highlightTexture: MTLTexture | null, offset: CGPoint, tintColor: any): this;
 
 	initWithUIImageSizeDevice(uiImage: UIImage, size: CGSize, device: MTLDevice): this;
 }
@@ -362,29 +362,29 @@ declare class TCDirectionPad extends NSObject implements TCControl, TCControlLay
 
 	static new(): TCDirectionPad; // inherited from NSObject
 
-	compositeLabel: TCControlLabel;
+	compositeLabel: TCControlLabel | null;
 
 	digital: boolean;
 
-	downContents: TCControlContents;
+	downContents: TCControlContents | null;
 
-	downLabel: TCControlLabel;
+	downLabel: TCControlLabel | null;
 
-	leftContents: TCControlContents;
+	leftContents: TCControlContents | null;
 
-	leftLabel: TCControlLabel;
+	leftLabel: TCControlLabel | null;
 
 	mutuallyExclusiveInput: boolean;
 
 	radial: boolean;
 
-	rightContents: TCControlContents;
+	rightContents: TCControlContents | null;
 
-	rightLabel: TCControlLabel;
+	rightLabel: TCControlLabel | null;
 
-	upContents: TCControlContents;
+	upContents: TCControlContents | null;
 
-	upLabel: TCControlLabel;
+	upLabel: TCControlLabel | null;
 
 	anchor: TCControlLayoutAnchor; // inherited from TCControlLayout
 
@@ -464,19 +464,19 @@ declare class TCDirectionPadDescriptor extends NSObject {
 
 	colliderShape: TCColliderShape;
 
-	compositeLabel: TCControlLabel;
+	compositeLabel: TCControlLabel | null;
 
 	digital: boolean;
 
-	downContents: TCControlContents;
+	downContents: TCControlContents | null;
 
-	downLabel: TCControlLabel;
+	downLabel: TCControlLabel | null;
 
 	highlightDuration: number;
 
-	leftContents: TCControlContents;
+	leftContents: TCControlContents | null;
 
-	leftLabel: TCControlLabel;
+	leftLabel: TCControlLabel | null;
 
 	mutuallyExclusiveInput: boolean;
 
@@ -484,15 +484,15 @@ declare class TCDirectionPadDescriptor extends NSObject {
 
 	radial: boolean;
 
-	rightContents: TCControlContents;
+	rightContents: TCControlContents | null;
 
-	rightLabel: TCControlLabel;
+	rightLabel: TCControlLabel | null;
 
 	size: CGSize;
 
-	upContents: TCControlContents;
+	upContents: TCControlContents | null;
 
-	upLabel: TCControlLabel;
+	upLabel: TCControlLabel | null;
 
 	zIndex: number;
 }
@@ -511,11 +511,11 @@ declare class TCSwitch extends NSObject implements TCControl, TCControlLayout {
 
 	static new(): TCSwitch; // inherited from NSObject
 
-	contents: TCControlContents;
+	contents: TCControlContents | null;
 
 	readonly switchedOn: boolean;
 
-	switchedOnContents: TCControlContents;
+	switchedOnContents: TCControlContents | null;
 
 	anchor: TCControlLayoutAnchor; // inherited from TCControlLayout
 
@@ -595,7 +595,7 @@ declare class TCSwitchDescriptor extends NSObject {
 
 	colliderShape: TCColliderShape;
 
-	contents: TCControlContents;
+	contents: TCControlContents | null;
 
 	highlightDuration: number;
 
@@ -605,7 +605,7 @@ declare class TCSwitchDescriptor extends NSObject {
 
 	size: CGSize;
 
-	switchedOnContents: TCControlContents;
+	switchedOnContents: TCControlContents | null;
 
 	zIndex: number;
 }
@@ -619,11 +619,11 @@ declare class TCThrottle extends NSObject implements TCControl, TCControlLayout 
 
 	static new(): TCThrottle; // inherited from NSObject
 
-	backgroundContents: TCControlContents;
+	backgroundContents: TCControlContents | null;
 
 	baseValue: number;
 
-	indicatorContents: TCControlContents;
+	indicatorContents: TCControlContents | null;
 
 	indicatorSize: CGSize;
 
@@ -709,7 +709,7 @@ declare class TCThrottleDescriptor extends NSObject {
 
 	anchorCoordinateSystem: TCControlLayoutAnchorCoordinateSystem;
 
-	backgroundContents: TCControlContents;
+	backgroundContents: TCControlContents | null;
 
 	baseValue: number;
 
@@ -717,7 +717,7 @@ declare class TCThrottleDescriptor extends NSObject {
 
 	highlightDuration: number;
 
-	indicatorContents: TCControlContents;
+	indicatorContents: TCControlContents | null;
 
 	indicatorSize: CGSize;
 
@@ -755,11 +755,11 @@ declare class TCThumbstick extends NSObject implements TCControl, TCControlLayou
 
 	static new(): TCThumbstick; // inherited from NSObject
 
-	backgroundContents: TCControlContents;
+	backgroundContents: TCControlContents | null;
 
 	hidesWhenNotPressed: boolean;
 
-	stickContents: TCControlContents;
+	stickContents: TCControlContents | null;
 
 	stickSize: CGSize;
 
@@ -839,7 +839,7 @@ declare class TCThumbstickDescriptor extends NSObject {
 
 	anchorCoordinateSystem: TCControlLayoutAnchorCoordinateSystem;
 
-	backgroundContents: TCControlContents;
+	backgroundContents: TCControlContents | null;
 
 	colliderShape: TCColliderShape;
 
@@ -853,7 +853,7 @@ declare class TCThumbstickDescriptor extends NSObject {
 
 	size: CGSize;
 
-	stickContents: TCControlContents;
+	stickContents: TCControlContents | null;
 
 	stickSize: CGSize;
 
@@ -913,7 +913,7 @@ declare class TCTouchController extends NSObject {
 
 	connect(): void;
 
-	controlAtPoint(point: CGPoint): TCControl;
+	controlAtPoint(point: CGPoint): TCControl | null;
 
 	disconnect(): void;
 
@@ -969,7 +969,7 @@ declare class TCTouchpad extends NSObject implements TCControl, TCControlLayout 
 
 	static new(): TCTouchpad; // inherited from NSObject
 
-	contents: TCControlContents;
+	contents: TCControlContents | null;
 
 	reportsRelativeValues: boolean;
 
@@ -1051,7 +1051,7 @@ declare class TCTouchpadDescriptor extends NSObject {
 
 	colliderShape: TCColliderShape;
 
-	contents: TCControlContents;
+	contents: TCControlContents | null;
 
 	highlightDuration: number;
 

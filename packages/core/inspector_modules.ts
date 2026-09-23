@@ -183,7 +183,7 @@ function remapStack(raw: string): string {
 	const lines = raw.split('\n');
 	const out = lines.map((line) => {
 		// 1) Parenthesized frame: at fn (file:...:L:C)
-		let m = /\((.+):(\d+):(\d+)\)/.exec(line);
+		const m = /\((.+):(\d+):(\d+)\)/.exec(line);
 		if (m) {
 			try {
 				const [_, file, l, c] = m;

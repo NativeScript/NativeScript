@@ -5,6 +5,23 @@ import { addLabelToPage } from './page-tests-common';
 
 export * from './page-tests-common';
 
+export function test_enableSwipeBackNavigation_updates_the_native_gesture() {
+	const page = new Page();
+	addLabelToPage(page);
+	helper.navigateWithHistory(() => page);
+
+	const gesture = page.ios.navigationController.interactivePopGestureRecognizer;
+	TKUnit.assertTrue(gesture.enabled, 'Swipe-back gesture should initially be enabled.');
+
+	page.enableSwipeBackNavigation = false;
+	TKUnit.assertFalse(gesture.enabled, 'Swipe-back gesture should be disabled after updating the Page property.');
+
+	page.enableSwipeBackNavigation = true;
+	TKUnit.assertTrue(gesture.enabled, 'Swipe-back gesture should be re-enabled after updating the Page property.');
+
+	helper.goBack();
+}
+
 export function test_NavigateToNewPage_InnerControl() {
 	var testPage: Page;
 	var pageFactory = function (): Page {
@@ -375,7 +392,7 @@ export function test_showing_native_viewcontroller_doesnt_throw_exception() {
 	TKUnit.assertEqual(0, navigatedFrom, 'navigatingTo');
 
 	let page = new Page();
-	let navcontroller = <UINavigationController>Frame.topmost().ios.controller;
+	let navcontroller = <UINavigationController>(Frame.topmost().ios as any).controller;
 
 	let completed = false;
 	navcontroller.presentViewControllerAnimatedCompletion(page.ios, false, () => (completed = true));

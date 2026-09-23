@@ -5,6 +5,11 @@ import { booleanConverter } from '../core/view-base';
 import { EventData } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 
+export interface ScrollEventData extends EventData {
+	scrollX: number;
+	scrollY: number;
+}
+
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView {
 	public static scrollEvent = 'scroll';
@@ -12,6 +17,7 @@ export abstract class ScrollViewBase extends ContentView {
 	public orientation: CoreTypes.OrientationType;
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
+	public iosContentInsetAdjustmentBehavior: 'never' | 'automatic' | 'scrollableAxes' | 'always';
 
 	private _addedScrollEvent = false;
 
@@ -113,3 +119,12 @@ export const isScrollEnabledProperty = new Property<ScrollViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 isScrollEnabledProperty.register(ScrollViewBase);
+
+const insetAdjustmentConverter = makeParser<'never' | 'automatic' | 'scrollableAxes' | 'always'>(makeValidator('never', 'automatic', 'scrollableAxes', 'always'));
+export const iosContentInsetAdjustmentBehaviorProperty = new Property<ScrollViewBase, 'never' | 'automatic' | 'scrollableAxes' | 'always'>({
+	name: 'iosContentInsetAdjustmentBehavior',
+	defaultValue: 'never',
+	affectsLayout: __APPLE__,
+	valueConverter: insetAdjustmentConverter,
+});
+iosContentInsetAdjustmentBehaviorProperty.register(ScrollViewBase);

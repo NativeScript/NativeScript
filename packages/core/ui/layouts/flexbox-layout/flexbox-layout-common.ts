@@ -3,6 +3,7 @@ import { View, CSSType } from '../../core/view';
 import { CssProperty, ShorthandProperty, makeParser, makeValidator } from '../../core/properties';
 import { unsetValue } from '../../core/properties/property-shared';
 import { Style } from '../../styling/style';
+import { CoreTypes } from '../../../core-types';
 
 export type Basis = 'auto' | number;
 
@@ -183,26 +184,25 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 		this.style.alignContent = value as any;
 	}
 
-	get columnGap(): number {
-		return (this.style as any).columnGap ?? 0;
+	get gap(): string | CoreTypes.LengthType {
+		return this.style.gap;
 	}
-	set columnGap(value: number) {
-		(this.style as any).columnGap = value;
-	}
-
-	get rowGap(): number {
-		return (this.style as any).rowGap ?? 0;
-	}
-	set rowGap(value: number) {
-		(this.style as any).rowGap = value;
+	set gap(value: string | CoreTypes.LengthType) {
+		this.style.gap = value;
 	}
 
-	get gap(): number {
-		return this.columnGap;
+	get rowGap(): CoreTypes.LengthType {
+		return this.style.rowGap;
 	}
-	set gap(value: number) {
-		this.columnGap = value;
-		this.rowGap = value;
+	set rowGap(value: CoreTypes.LengthType) {
+		this.style.rowGap = value;
+	}
+
+	get columnGap(): CoreTypes.LengthType {
+		return this.style.columnGap;
+	}
+	set columnGap(value: CoreTypes.LengthType) {
+		this.style.columnGap = value;
 	}
 
 	public static setOrder(view: View, order: number) {
@@ -377,58 +377,6 @@ Object.defineProperty(View.prototype, 'alignSelf', {
 	enumerable: true,
 	configurable: true,
 });
-
-export type FlexGapValue = number;
-export namespace FlexGapValue {
-	export function isValid(value: any): boolean {
-		return isFinite(parseFloat(value)) && parseFloat(value) >= 0;
-	}
-	export const parse = parseFloat;
-}
-
-export const columnGapProperty = new CssProperty<Style, number>({
-	name: 'columnGap',
-	cssName: 'column-gap',
-	defaultValue: 0,
-	valueConverter: FlexGapValue.parse,
-});
-columnGapProperty.register(Style);
-
-export const rowGapProperty = new CssProperty<Style, number>({
-	name: 'rowGap',
-	cssName: 'row-gap',
-	defaultValue: 0,
-	valueConverter: FlexGapValue.parse,
-});
-rowGapProperty.register(Style);
-
-// gap: <row-gap> [<column-gap>]  — shorthand
-const gapProperty = new ShorthandProperty<Style, string>({
-	name: 'gap',
-	cssName: 'gap',
-	getter: function (this: Style) {
-		return `${(this as any).rowGap} ${(this as any).columnGap}`;
-	},
-	converter: function (value: string) {
-		const properties: [CssProperty<any, any>, any][] = [];
-		if (value === unsetValue) {
-			properties.push([rowGapProperty, value]);
-			properties.push([columnGapProperty, value]);
-		} else {
-			const parts = (value || '').trim().split(/\s+/);
-			const row = parseFloat(parts[0]);
-			if (isFinite(row) && row >= 0) {
-				properties.push([rowGapProperty, row]);
-				const col = parts.length >= 2 ? parseFloat(parts[1]) : row;
-				if (isFinite(col) && col >= 0) {
-					properties.push([columnGapProperty, col]);
-				}
-			}
-		}
-		return properties;
-	},
-});
-gapProperty.register(Style);
 
 // flex-flow: <flex-direction> || <flex-wrap>
 const flexFlowProperty = new ShorthandProperty<Style, string>({

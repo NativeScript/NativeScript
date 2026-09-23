@@ -1,4 +1,4 @@
-import { AlignSelf, Flex, FlexFlow, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
+import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
 import { CoreTypes, Trace } from '../../styling/styling-shared';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
@@ -8,12 +8,10 @@ import { Binding } from '../bindable';
 import { BindingOptions } from '../bindable/bindable-types';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
-import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import type { ModalTransition } from '../../transition/modal-transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
-import { unsetValue } from '../properties/property-shared';
 
 import { profile } from '../../../profiling';
 
@@ -113,7 +111,8 @@ export function getAncestor<T extends ViewBase = ViewBase>(view: T, criterion: s
 	let matcher: (view: ViewBase) => view is T;
 
 	if (typeof criterion === 'string') {
-		matcher = (view: ViewBase): view is T => view.typeName === criterion;
+		const normalizedCriterion = criterion.toLowerCase();
+		matcher = (view: ViewBase): view is T => view.typeName === criterion || view.cssType === normalizedCriterion;
 	} else {
 		matcher = (view: ViewBase): view is T => view instanceof criterion;
 	}
@@ -176,7 +175,7 @@ export function getViewByDomId(view: ViewBase, domId: number): ViewBase {
 
 	let retVal: ViewBase;
 	const descendantsCallback = function (child: ViewBase): boolean {
-		if (view._domId === domId) {
+		if (child._domId === domId) {
 			retVal = child;
 
 			// break the iteration by returning false
@@ -341,6 +340,25 @@ export abstract class ViewBase extends Observable {
 	private _isLoaded: boolean;
 
 	/**
+	 * if _setupAsRootView is called it means it is not supposed to be
+	 * added to a parent. However parent can be set before for the purpose
+	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
+	 * is not called in _setupAsRootView
+	 */
+	private _isRootView = false;
+
+	private _effectivePaddingTop: number = null;
+	private _effectivePaddingRight: number = null;
+	private _effectivePaddingBottom: number = null;
+	private _effectivePaddingLeft: number = null;
+
+	protected _defaultPaddingTop: number = 0;
+	protected _defaultPaddingRight: number = 0;
+	protected _defaultPaddingBottom: number = 0;
+	protected _defaultPaddingLeft: number = 0;
+	protected _isPaddingRelative: boolean;
+
+	/**
 	 * @deprecated
 	 */
 	private _visualState: string;
@@ -389,6 +407,14 @@ export abstract class ViewBase extends Observable {
 	public className: string;
 
 	/**
+	 * Gets the CSS fully qualified type name used for selector matching.
+	 */
+	public get cssType(): string {
+		return undefined;
+	}
+	public set cssType(value: string) {}
+
+	/**
 	 * Gets or sets the visual state of the view.
 	 * @nsProperty
 	 */
@@ -414,7 +440,7 @@ export abstract class ViewBase extends Observable {
 	public defaultVisualState: string = 'normal';
 
 	public _domId: number;
-	public _context: any /* android.content.Context */;
+	public _context: any; /* android.content.Context */
 	public _isAddedToNativeVisualTree: boolean;
 	/* "ui/styling/style-scope" */ public _cssState: CssState = new CssState(new WeakRef(this));
 	public _styleScope: StyleScope;
@@ -522,26 +548,20 @@ export abstract class ViewBase extends Observable {
 
 	public effectiveMinWidth: number;
 	public effectiveMinHeight: number;
+	public effectiveMaxWidth: number;
+	public effectiveMaxHeight: number;
 	public effectiveWidth: number;
 	public effectiveHeight: number;
 	public effectiveMarginTop: number;
 	public effectiveMarginRight: number;
 	public effectiveMarginBottom: number;
 	public effectiveMarginLeft: number;
-	public effectivePaddingTop: number;
-	public effectivePaddingRight: number;
-	public effectivePaddingBottom: number;
-	public effectivePaddingLeft: number;
 	public effectiveBorderTopWidth: number;
 	public effectiveBorderRightWidth: number;
 	public effectiveBorderBottomWidth: number;
 	public effectiveBorderLeftWidth: number;
-
-	public _defaultPaddingTop: number;
-	public _defaultPaddingRight: number;
-	public _defaultPaddingBottom: number;
-	public _defaultPaddingLeft: number;
-	public _isPaddingRelative: boolean;
+	public effectiveRowGap: number;
+	public effectiveColumnGap: number;
 
 	/**
 	 * @private
@@ -638,6 +658,38 @@ export abstract class ViewBase extends Observable {
 		this.className = v;
 	}
 
+	get effectivePaddingTop(): number {
+		return this._effectivePaddingTop != null ? this._effectivePaddingTop : this._defaultPaddingTop;
+	}
+	set effectivePaddingTop(v: number) {
+		this._effectivePaddingTop = v;
+	}
+
+	get effectivePaddingRight(): number {
+		return this._effectivePaddingRight != null ? this._effectivePaddingRight : this._defaultPaddingRight;
+	}
+	set effectivePaddingRight(v: number) {
+		this._effectivePaddingRight = v;
+	}
+
+	get effectivePaddingBottom(): number {
+		return this._effectivePaddingBottom != null ? this._effectivePaddingBottom : this._defaultPaddingBottom;
+	}
+	set effectivePaddingBottom(v: number) {
+		this._effectivePaddingBottom = v;
+	}
+
+	get effectivePaddingLeft(): number {
+		return this._effectivePaddingLeft != null ? this._effectivePaddingLeft : this._defaultPaddingLeft;
+	}
+	set effectivePaddingLeft(v: number) {
+		this._effectivePaddingLeft = v;
+	}
+
+	getEffectivePaddingShorthand(): string {
+		return `${this.effectivePaddingTop} ${this.effectivePaddingRight} ${this.effectivePaddingBottom} ${this.effectivePaddingLeft}`;
+	}
+
 	/**
 	 * Returns the child view with the specified id.
 	 */
@@ -725,6 +777,10 @@ export abstract class ViewBase extends Observable {
 		}
 	}
 
+	public _setDefaultPaddings(insets: any): void {
+		// Overridden
+	}
+
 	public _suspendNativeUpdates(type: SuspendType): void {
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount | type;
@@ -806,16 +862,18 @@ export abstract class ViewBase extends Observable {
 		highlighted: ['active', 'pressed'],
 	};
 
-	private getAllAliasedStates(name: string): string[] {
-		const allStates: string[] = [name];
-
-		if (name in this.pseudoClassAliases) {
-			for (let i = 0, length = this.pseudoClassAliases[name].length; i < length; i++) {
-				allStates.push(this.pseudoClassAliases[name][i]);
-			}
+	private addSinglePseudoClass(name: string): void {
+		if (!this.cssPseudoClasses.has(name)) {
+			this.cssPseudoClasses.add(name);
+			this.notifyPseudoClassChanged(name);
 		}
+	}
 
-		return allStates;
+	private deleteSinglePseudoClass(name: string): void {
+		if (this.cssPseudoClasses.has(name)) {
+			this.cssPseudoClasses.delete(name);
+			this.notifyPseudoClassChanged(name);
+		}
 	}
 
 	/**
@@ -825,11 +883,12 @@ export abstract class ViewBase extends Observable {
 	 */
 	@profile
 	public addPseudoClass(name: string): void {
-		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0, length = allStates.length; i < length; i++) {
-			if (!this.cssPseudoClasses.has(allStates[i])) {
-				this.cssPseudoClasses.add(allStates[i]);
-				this.notifyPseudoClassChanged(allStates[i]);
+		this.addSinglePseudoClass(name);
+
+		const aliases = this.pseudoClassAliases[name];
+		if (aliases) {
+			for (let i = 0, length = aliases.length; i < length; i++) {
+				this.addSinglePseudoClass(aliases[i]);
 			}
 		}
 	}
@@ -841,11 +900,12 @@ export abstract class ViewBase extends Observable {
 	 */
 	@profile
 	public deletePseudoClass(name: string): void {
-		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0, length = allStates.length; i < length; i++) {
-			if (this.cssPseudoClasses.has(allStates[i])) {
-				this.cssPseudoClasses.delete(allStates[i]);
-				this.notifyPseudoClassChanged(allStates[i]);
+		this.deleteSinglePseudoClass(name);
+
+		const aliases = this.pseudoClassAliases[name];
+		if (aliases) {
+			for (let i = 0, length = aliases.length; i < length; i++) {
+				this.deleteSinglePseudoClass(aliases[i]);
 			}
 		}
 	}
@@ -1105,17 +1165,10 @@ export abstract class ViewBase extends Observable {
 		// }
 	}
 
-	/**
-	 * if _setupAsRootView is called it means it is not supposed to be
-	 * added to a parent. However parent can be set before for the purpose
-	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
-	 * is not called in _setupAsRootView
-	 */
-	mIsRootView = false;
 	_setupAsRootView(context: any): void {
-		this.mIsRootView = true;
+		this._isRootView = true;
 		this._setupUI(context);
-		this.mIsRootView = false;
+		this._isRootView = false;
 	}
 
 	/**
@@ -1128,7 +1181,7 @@ export abstract class ViewBase extends Observable {
 			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
-				if (!this.mIsRootView && this.parent && !this._isAddedToNativeVisualTree) {
+				if (!this._isRootView && this.parent && !this._isAddedToNativeVisualTree) {
 					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
@@ -1177,24 +1230,7 @@ export abstract class ViewBase extends Observable {
 						nativeView.defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
 					}
 
-					this._defaultPaddingTop = result.top;
-					this._defaultPaddingRight = result.right;
-					this._defaultPaddingBottom = result.bottom;
-					this._defaultPaddingLeft = result.left;
-
-					const style = this.style;
-					if (!paddingTopProperty.isSet(style)) {
-						this.effectivePaddingTop = this._defaultPaddingTop;
-					}
-					if (!paddingRightProperty.isSet(style)) {
-						this.effectivePaddingRight = this._defaultPaddingRight;
-					}
-					if (!paddingBottomProperty.isSet(style)) {
-						this.effectivePaddingBottom = this._defaultPaddingBottom;
-					}
-					if (!paddingLeftProperty.isSet(style)) {
-						this.effectivePaddingLeft = this._defaultPaddingLeft;
-					}
+					this._setDefaultPaddings(result);
 				}
 			}
 		}else if(__WINDOWS__){
@@ -1205,7 +1241,7 @@ export abstract class ViewBase extends Observable {
 
 		this.setNativeView(nativeView);
 
-		if (!this.mIsRootView && this.parent) {
+		if (!this._isRootView && this.parent) {
 			const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
@@ -1249,7 +1285,7 @@ export abstract class ViewBase extends Observable {
 	 */
 	public destroyNode(forceDestroyChildren?: boolean): void {
 		this.reusable = false;
-		this.callUnloaded();
+		this.unloadView(this);
 		this._tearDownUI(forceDestroyChildren);
 	}
 
@@ -1269,7 +1305,9 @@ export abstract class ViewBase extends Observable {
 
 		if (!preserveNativeView) {
 			this.eachChild((child) => {
-				child._tearDownUI(force);
+				// if we decided to tear down the current view, we should also tear down the children, even if they are reusable
+				// the developer is responsible to detach them if they need to reuse them somewhere else
+				child._tearDownUI(true);
 
 				return true;
 			});
@@ -1505,7 +1543,7 @@ export abstract class ViewBase extends Observable {
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _dialogClosed(): void {
-		eachDescendant(this, (child: ViewBase) => {
+		this.eachChild((child: ViewBase) => {
 			child._dialogClosed();
 
 			return true;
@@ -1516,7 +1554,7 @@ export abstract class ViewBase extends Observable {
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _onRootViewReset(): void {
-		eachDescendant(this, (child: ViewBase) => {
+		this.eachChild((child: ViewBase) => {
 			child._onRootViewReset();
 
 			return true;
@@ -1533,24 +1571,21 @@ ViewBase.prototype._oldBottom = 0;
 
 ViewBase.prototype.effectiveMinWidth = 0;
 ViewBase.prototype.effectiveMinHeight = 0;
+// Infinity means unconstrained, so Math.min(measured, effectiveMaxWidth) is a no-op when unset.
+ViewBase.prototype.effectiveMaxWidth = Number.POSITIVE_INFINITY;
+ViewBase.prototype.effectiveMaxHeight = Number.POSITIVE_INFINITY;
 ViewBase.prototype.effectiveWidth = 0;
 ViewBase.prototype.effectiveHeight = 0;
 ViewBase.prototype.effectiveMarginTop = 0;
 ViewBase.prototype.effectiveMarginRight = 0;
 ViewBase.prototype.effectiveMarginBottom = 0;
 ViewBase.prototype.effectiveMarginLeft = 0;
-ViewBase.prototype.effectivePaddingTop = 0;
-ViewBase.prototype.effectivePaddingRight = 0;
-ViewBase.prototype.effectivePaddingBottom = 0;
-ViewBase.prototype.effectivePaddingLeft = 0;
 ViewBase.prototype.effectiveBorderTopWidth = 0;
 ViewBase.prototype.effectiveBorderRightWidth = 0;
 ViewBase.prototype.effectiveBorderBottomWidth = 0;
 ViewBase.prototype.effectiveBorderLeftWidth = 0;
-ViewBase.prototype._defaultPaddingTop = 0;
-ViewBase.prototype._defaultPaddingRight = 0;
-ViewBase.prototype._defaultPaddingBottom = 0;
-ViewBase.prototype._defaultPaddingLeft = 0;
+ViewBase.prototype.effectiveRowGap = 0;
+ViewBase.prototype.effectiveColumnGap = 0;
 ViewBase.prototype._isViewBase = true;
 ViewBase.prototype.recycleNativeView = 'never';
 ViewBase.prototype.reusable = false;
@@ -1583,6 +1618,9 @@ export const classNameProperty = new Property<ViewBase, string>({
 
 		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
 		const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// Window-scoped classes are absent from the system class list, so they have to be
+		// carried over by hand or a root view would lose them on every className change.
+		const windowScopedCssClasses = shouldAddModalRootViewCssClasses || shouldAddRootViewCssClasses ? CSSUtils.WINDOW_SCOPED_CSS_CLASSES.filter((c) => cssClasses.has(c)) : [];
 
 		cssClasses.clear();
 
@@ -1592,10 +1630,19 @@ export const classNameProperty = new Property<ViewBase, string>({
 			cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		}
 
-		rootViewsCssClasses.forEach((c) => cssClasses.add(c));
+		for (let i = 0, length = rootViewsCssClasses.length; i < length; i++) {
+			cssClasses.add(rootViewsCssClasses[i]);
+		}
+
+		for (let i = 0, length = windowScopedCssClasses.length; i < length; i++) {
+			cssClasses.add(windowScopedCssClasses[i]);
+		}
 
 		if (typeof newValue === 'string' && newValue !== '') {
-			newValue.split(' ').forEach((c) => cssClasses.add(c));
+			const classes = newValue.split(' ');
+			for (let i = 0, length = classes.length; i < length; i++) {
+				cssClasses.add(classes[i]);
+			}
 		}
 
 		view._onCssStateChange();

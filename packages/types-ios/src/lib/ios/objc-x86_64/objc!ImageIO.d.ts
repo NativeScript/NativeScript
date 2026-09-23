@@ -2,12 +2,12 @@
 /**
  * @since 13.0
  */
-declare function CGAnimateImageAtURLWithBlock(url: NSURL, options: NSDictionary<any, any>, block: (p1: number, p2: any, p3: interop.Pointer | interop.Reference<boolean>) => void): number;
+declare function CGAnimateImageAtURLWithBlock(url: NSURL, options: NSDictionary<any, any> | null, block: (p1: number, p2: any, p3: interop.Pointer | interop.Reference<boolean> | null) => void): number;
 
 /**
  * @since 13.0
  */
-declare function CGAnimateImageDataWithBlock(data: NSData, options: NSDictionary<any, any>, block: (p1: number, p2: any, p3: interop.Pointer | interop.Reference<boolean>) => void): number;
+declare function CGAnimateImageDataWithBlock(data: NSData, options: NSDictionary<any, any> | null, block: (p1: number, p2: any, p3: interop.Pointer | interop.Reference<boolean> | null) => void): number;
 
 declare const enum CGImageAnimationStatus {
 
@@ -30,22 +30,22 @@ declare function CGImageDestinationAddAuxiliaryDataInfo(idst: any, auxiliaryImag
 /**
  * @since 4.0
  */
-declare function CGImageDestinationAddImage(idst: any, image: any, properties: NSDictionary<any, any>): void;
+declare function CGImageDestinationAddImage(idst: any, image: any, properties: NSDictionary<any, any> | null): void;
 
 /**
  * @since 7.0
  */
-declare function CGImageDestinationAddImageAndMetadata(idst: any, image: any, metadata: any, options: NSDictionary<any, any>): void;
+declare function CGImageDestinationAddImageAndMetadata(idst: any, image: any, metadata: any | null, options: NSDictionary<any, any> | null): void;
 
 /**
  * @since 4.0
  */
-declare function CGImageDestinationAddImageFromSource(idst: any, isrc: any, index: number, properties: NSDictionary<any, any>): void;
+declare function CGImageDestinationAddImageFromSource(idst: any, isrc: any, index: number, properties: NSDictionary<any, any> | null): void;
 
 /**
  * @since 7.0
  */
-declare function CGImageDestinationCopyImageSource(idst: any, isrc: any, options: NSDictionary<any, any>, err: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CGImageDestinationCopyImageSource(idst: any, isrc: any, options: NSDictionary<any, any> | null, err: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 4.0
@@ -55,17 +55,17 @@ declare function CGImageDestinationCopyTypeIdentifiers(): NSArray<any>;
 /**
  * @since 4.0
  */
-declare function CGImageDestinationCreateWithData(data: NSData, type: string, count: number, options: NSDictionary<any, any>): any;
+declare function CGImageDestinationCreateWithData(data: NSData, type: string, count: number, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageDestinationCreateWithDataConsumer(consumer: any, type: string, count: number, options: NSDictionary<any, any>): any;
+declare function CGImageDestinationCreateWithDataConsumer(consumer: any, type: string, count: number, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageDestinationCreateWithURL(url: NSURL, type: string, count: number, options: NSDictionary<any, any>): any;
+declare function CGImageDestinationCreateWithURL(url: NSURL, type: string, count: number, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
@@ -80,32 +80,32 @@ declare function CGImageDestinationGetTypeID(): number;
 /**
  * @since 4.0
  */
-declare function CGImageDestinationSetProperties(idst: any, properties: NSDictionary<any, any>): void;
+declare function CGImageDestinationSetProperties(idst: any, properties: NSDictionary<any, any> | null): void;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCopyStringValueWithPath(metadata: any, parent: any, path: string): string;
+declare function CGImageMetadataCopyStringValueWithPath(metadata: any, parent: any | null, path: string): string | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCopyTagMatchingImageProperty(metadata: any, dictionaryName: string, propertyName: string): any;
+declare function CGImageMetadataCopyTagMatchingImageProperty(metadata: any, dictionaryName: string, propertyName: string): any | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCopyTagWithPath(metadata: any, parent: any, path: string): any;
+declare function CGImageMetadataCopyTagWithPath(metadata: any, parent: any | null, path: string): any | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCopyTags(metadata: any): NSArray<any>;
+declare function CGImageMetadataCopyTags(metadata: any): NSArray<any> | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCreateFromXMPData(data: NSData): any;
+declare function CGImageMetadataCreateFromXMPData(data: NSData): any | null;
 
 /**
  * @since 7.0
@@ -115,17 +115,17 @@ declare function CGImageMetadataCreateMutable(): any;
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCreateMutableCopy(metadata: any): any;
+declare function CGImageMetadataCreateMutableCopy(metadata: any): any | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataCreateXMPData(metadata: any, options: NSDictionary<any, any>): NSData;
+declare function CGImageMetadataCreateXMPData(metadata: any, options: NSDictionary<any, any> | null): NSData | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataEnumerateTagsUsingBlock(metadata: any, rootPath: string, options: NSDictionary<any, any>, block: (p1: string, p2: any) => boolean): void;
+declare function CGImageMetadataEnumerateTagsUsingBlock(metadata: any, rootPath: string | null, options: NSDictionary<any, any> | null, block: (p1: string, p2: any) => boolean): void;
 
 declare const enum CGImageMetadataErrors {
 
@@ -145,17 +145,17 @@ declare function CGImageMetadataGetTypeID(): number;
 /**
  * @since 7.0
  */
-declare function CGImageMetadataRegisterNamespaceForPrefix(metadata: any, xmlns: string, prefix: string, err: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CGImageMetadataRegisterNamespaceForPrefix(metadata: any, xmlns: string, prefix: string, err: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataRemoveTagWithPath(metadata: any, parent: any, path: string): boolean;
+declare function CGImageMetadataRemoveTagWithPath(metadata: any, parent: any | null, path: string): boolean;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataSetTagWithPath(metadata: any, parent: any, path: string, tag: any): boolean;
+declare function CGImageMetadataSetTagWithPath(metadata: any, parent: any | null, path: string, tag: any): boolean;
 
 /**
  * @since 7.0
@@ -165,37 +165,37 @@ declare function CGImageMetadataSetValueMatchingImageProperty(metadata: any, dic
 /**
  * @since 7.0
  */
-declare function CGImageMetadataSetValueWithPath(metadata: any, parent: any, path: string, value: any): boolean;
+declare function CGImageMetadataSetValueWithPath(metadata: any, parent: any | null, path: string, value: any): boolean;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataTagCopyName(tag: any): string;
+declare function CGImageMetadataTagCopyName(tag: any): string | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataTagCopyNamespace(tag: any): string;
+declare function CGImageMetadataTagCopyNamespace(tag: any): string | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataTagCopyPrefix(tag: any): string;
+declare function CGImageMetadataTagCopyPrefix(tag: any): string | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataTagCopyQualifiers(tag: any): NSArray<any>;
+declare function CGImageMetadataTagCopyQualifiers(tag: any): NSArray<any> | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataTagCopyValue(tag: any): any;
+declare function CGImageMetadataTagCopyValue(tag: any): any | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageMetadataTagCreate(xmlns: string, prefix: string, name: string, type: CGImageMetadataType, value: any): any;
+declare function CGImageMetadataTagCreate(xmlns: string, prefix: string | null, name: string, type: CGImageMetadataType, value: any): any | null;
 
 /**
  * @since 7.0
@@ -255,22 +255,22 @@ declare const enum CGImagePropertyTGACompression {
 /**
  * @since 11.0
  */
-declare function CGImageSourceCopyAuxiliaryDataInfoAtIndex(isrc: any, index: number, auxiliaryImageDataType: string): NSDictionary<any, any>;
+declare function CGImageSourceCopyAuxiliaryDataInfoAtIndex(isrc: any, index: number, auxiliaryImageDataType: string): NSDictionary<any, any> | null;
 
 /**
  * @since 7.0
  */
-declare function CGImageSourceCopyMetadataAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): any;
+declare function CGImageSourceCopyMetadataAtIndex(isrc: any, index: number, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCopyProperties(isrc: any, options: NSDictionary<any, any>): NSDictionary<any, any>;
+declare function CGImageSourceCopyProperties(isrc: any, options: NSDictionary<any, any> | null): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCopyPropertiesAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): NSDictionary<any, any>;
+declare function CGImageSourceCopyPropertiesAtIndex(isrc: any, index: number, options: NSDictionary<any, any> | null): NSDictionary<any, any> | null;
 
 /**
  * @since 4.0
@@ -280,32 +280,32 @@ declare function CGImageSourceCopyTypeIdentifiers(): NSArray<any>;
 /**
  * @since 4.0
  */
-declare function CGImageSourceCreateImageAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): any;
+declare function CGImageSourceCreateImageAtIndex(isrc: any, index: number, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCreateIncremental(options: NSDictionary<any, any>): any;
+declare function CGImageSourceCreateIncremental(options: NSDictionary<any, any> | null): any;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCreateThumbnailAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): any;
+declare function CGImageSourceCreateThumbnailAtIndex(isrc: any, index: number, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCreateWithData(data: NSData, options: NSDictionary<any, any>): any;
+declare function CGImageSourceCreateWithData(data: NSData, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCreateWithDataProvider(provider: any, options: NSDictionary<any, any>): any;
+declare function CGImageSourceCreateWithDataProvider(provider: any, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
  */
-declare function CGImageSourceCreateWithURL(url: NSURL, options: NSDictionary<any, any>): any;
+declare function CGImageSourceCreateWithURL(url: NSURL, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 4.0
@@ -330,7 +330,7 @@ declare function CGImageSourceGetStatusAtIndex(isrc: any, index: number): CGImag
 /**
  * @since 4.0
  */
-declare function CGImageSourceGetType(isrc: any): string;
+declare function CGImageSourceGetType(isrc: any): string | null;
 
 /**
  * @since 4.0

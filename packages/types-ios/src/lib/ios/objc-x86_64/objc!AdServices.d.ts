@@ -6,7 +6,7 @@ declare class AAAttribution extends NSObject {
 
 	static alloc(): AAAttribution; // inherited from NSObject
 
-	static attributionTokenWithError(error?: interop.Reference<NSError>): string;
+	static attributionTokenWithError(error?: interop.Reference<NSError>): string | null;
 
 	static new(): AAAttribution; // inherited from NSObject
 }

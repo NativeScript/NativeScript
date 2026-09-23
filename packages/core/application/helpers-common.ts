@@ -5,6 +5,8 @@
  * For example, use `__ANDROID__` or `__APPLE__` to check the platform.
  */
 
+import type { NativeWindow } from '../native-window';
+
 /**
  * Application type. UIApplication on iOS or android.app.Application on Android.
  */
@@ -99,6 +101,30 @@ export function setAppInBackground(value: boolean) {
 	_appInBackground = value;
 }
 
+/**
+ * Backs `Application.autoSystemAppearanceChanged`. Lives here so windows can read it
+ * without importing the application module.
+ */
+let _autoSystemAppearanceChanged: boolean = true;
+export function getAutoSystemAppearanceChanged(): boolean {
+	return _autoSystemAppearanceChanged;
+}
+export function setAutoSystemAppearanceChanged(value: boolean) {
+	_autoSystemAppearanceChanged = value;
+}
+
+/**
+ * Backs `Application.activeWindow`. Lives here so window-scoped lookups - the frame stack
+ * above all - can read it without importing the application module.
+ */
+let _activeWindow: NativeWindow | undefined;
+export function getActiveWindow(): NativeWindow | undefined {
+	return _activeWindow;
+}
+export function setActiveWindow(window: NativeWindow | undefined) {
+	_activeWindow = window;
+}
+
 let _iosWindow: UIWindow;
 export function getiOSWindow(): UIWindow {
 	return _iosWindow;
@@ -107,7 +133,7 @@ export function setiOSWindow(value: UIWindow) {
 	_iosWindow = value;
 }
 
-let _appMainEntry: any /* NavigationEntry */;
+let _appMainEntry: any; /* NavigationEntry */
 
 export function getAppMainEntry(): any /* NavigationEntry */ {
 	return _appMainEntry;

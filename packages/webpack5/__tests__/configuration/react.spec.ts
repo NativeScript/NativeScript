@@ -3,6 +3,16 @@ import Config from 'webpack-chain';
 import react from '../../src/configuration/react';
 import { init } from '../../src';
 
+jest.mock(
+	'@pmmmwh/react-refresh-webpack-plugin',
+	() => {
+		class ReactRefreshWebpackPlugin {}
+
+		return ReactRefreshWebpackPlugin;
+	},
+	{ virtual: true },
+);
+
 describe('react configuration', () => {
 	const platforms = ['ios', 'android'];
 

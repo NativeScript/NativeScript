@@ -1,0 +1,378 @@
+import { describe, it, expect } from 'vitest';
+import { synthesizeDefaultExport, isDeepCoreSubpath, normalizeAnyCoreSpecToBridge, rewriteSpecifiersForDevice } from './core-sanitize';
+
+// ─── rewriteSpecifiersForDevice ────────────────────────────────────────────────
+// Tests use REAL Vite output captured from the live dev server.
+//
+// All @nativescript/core specifiers are rewritten to the CANONICAL
+// `/ns/core/<sub>` path form (no version, no `?p=`, no `.js` tail).
+// Byte-identical URLs across every emitter are required; the legacy
+// versioned / query-param form has been deleted.
+
+const ORIGIN = 'http://localhost:5173';
+const VER = 0;
+
+describe('rewriteSpecifiersForDevice', () => {
+	it('rewrites core named import specifier to bridge URL', () => {
+		const input = 'import { Observable } from "/node_modules/@nativescript/core/data/observable/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('import { Observable } from "/ns/core/data/observable";');
+	});
+
+	it('rewrites core namespace import specifier', () => {
+		const input = 'import * as types from "/node_modules/@nativescript/core/utils/types.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('import * as types from "/ns/core/utils/types";');
+	});
+
+	it('rewrites core named re-export specifier', () => {
+		const input = 'export { booleanConverter } from "/node_modules/@nativescript/core/ui/core/view-base/utils.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('export { booleanConverter } from "/ns/core/ui/core/view-base/utils";');
+	});
+
+	it('rewrites core star re-export specifier', () => {
+		const input = 'export * from "/node_modules/@nativescript/core/accessibility/accessibility-common.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('export * from "/ns/core/accessibility/accessibility-common";');
+	});
+
+	it('does NOT mangle code structure — preserves newlines before exports (the styling-profile.js bug)', () => {
+		// This is the EXACT Vite output that the old pipeline broke
+		const input = ['// This file exists to break cycles caused by importing profiling into style-scope.ts.', '// Only put the @profile decorator and related logic here.', 'export { profile } from "/node_modules/@nativescript/core/profiling/index.js";'].join('\n');
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		// The export MUST be on its own line, NOT concatenated with the comment
+		const lines = out.split('\n');
+		expect(lines[2]).toMatch(/^export \{ profile \}/);
+		expect(out).toContain('export { profile } from "/ns/core/profiling"');
+	});
+
+	it('rewrites non-core node_modules to HTTP URLs', () => {
+		const input = 'import { something } from "/node_modules/rxjs/dist/esm/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe(`import { something } from "${ORIGIN}/ns/m/node_modules/rxjs/dist/esm/index.js";`);
+	});
+
+	it('does NOT touch export class/function declarations (no specifier)', () => {
+		const input = 'export class ObservableArray extends Observable {';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe(input);
+	});
+
+	it('leaves already-canonical bridge URLs unchanged', () => {
+		const input = 'import { X } from "/ns/core/data/observable";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe(input);
+	});
+
+	it('handles a real module with mixed import patterns (view-base)', () => {
+		const input = ['import { Trace } from "/node_modules/@nativescript/core/ui/styling/styling-shared.js";', 'import { Property } from "/node_modules/@nativescript/core/ui/core/properties/index.js";', 'import { profile } from "/node_modules/@nativescript/core/profiling/index.js";', 'export { booleanConverter } from "/node_modules/@nativescript/core/ui/core/view-base/utils.js";', 'export function getAncestor(view, criterion) {', 'export class ViewBase extends Observable {'].join('\n');
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+
+		// All core specifiers rewritten to bridge
+		expect(out).toContain('from "/ns/core/ui/styling/styling-shared"');
+		expect(out).toContain('from "/ns/core/ui/core/properties"');
+		expect(out).toContain('from "/ns/core/profiling"');
+		expect(out).toContain('from "/ns/core/ui/core/view-base/utils"');
+
+		// Declarations untouched
+		expect(out).toContain('export function getAncestor');
+		expect(out).toContain('export class ViewBase');
+
+		// Named imports preserved (NOT converted to default + destructure)
+		expect(out).toContain('import { Trace }');
+		expect(out).toContain('import { Property }');
+		expect(out).toContain('export { booleanConverter }');
+	});
+
+	it('handles dynamic imports', () => {
+		const input = 'const mod = await import("/node_modules/@nativescript/core/profiling/index.js");';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toContain('import("/ns/core/profiling")');
+	});
+
+	it('does NOT include a version segment in the output URL', () => {
+		// Invariant A: versioning was deleted. The rewrite emits the
+		// canonical `/ns/core/<sub>` form regardless of the `ver` argument.
+		// Any legacy caller passing a non-zero ver receives an unversioned
+		// URL so iOS's HTTP ESM cache sees one identity per logical module.
+		const out = rewriteSpecifiersForDevice('import { X } from "/node_modules/@nativescript/core/foo.js";', ORIGIN, 42);
+		expect(out).toContain('/ns/core/foo');
+		expect(out).not.toMatch(/\/ns\/core\/\d+/);
+		expect(out).not.toContain('?p=');
+	});
+
+	it('rewrites the package main entry file to the main core bridge URL', () => {
+		const out = rewriteSpecifiersForDevice('import { AbsoluteLayout } from "/node_modules/@nativescript/core/index.js";', ORIGIN, 42);
+		expect(out).toBe('import { AbsoluteLayout } from "/ns/core";');
+	});
+
+	// ─── Pattern 3: side-effect imports at start of input ─────────────────────
+	// Regression: the legacy `[;\n]` anchor required a preceding `;` or `\n`,
+	// so a side-effect import on line 0 of the transformed module body was
+	// served raw. Concretely, `/ns/core/inspector_modules` whose first body
+	// line was `import "/@fs/.../@nativescript/core/globals/index.js";` leaked
+	// the `/@fs/` URL to the device, bypassing the `/ns/core` bridge's
+	// define-injection and producing a `__DEV__ is not defined` ReferenceError
+	// from `platform-check.js`.
+	//
+	// Output specifiers are emitted in the canonical `/ns/core/<sub>` form
+	// (no `.js`, no `/index`) per `normalizeCoreSub`.
+	it('rewrites a side-effect core import that is the very first line of input', () => {
+		const input = 'import "/@fs/Users/x/y/node_modules/@nativescript/core/globals/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('import "/ns/core/globals";');
+		expect(out).not.toContain('/@fs/');
+	});
+
+	it('rewrites side-effect core imports both at start and mid-file', () => {
+		// All three are normalized to the canonical bare form (no .ios / .js /
+		// /index suffix) — buildCoreUrlPath strips platform suffixes so that
+		// vendor code, app code and the runtime import map all key the same
+		// URL string and iOS evaluates each core module exactly once.
+		const input = ['import "/@fs/Users/x/y/node_modules/@nativescript/core/globals/index.js";', 'import "/ns/core/debugger/webinspector-network.ios";', 'import "/@fs/Users/x/y/node_modules/@nativescript/core/utils/native-helper.ios.js";'].join('\n');
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toContain('import "/ns/core/globals";');
+		expect(out).toContain('import "/ns/core/utils/native-helper";');
+		// rewriteSpecifiersForDevice canonicalises EVERY spec; an
+		// `/ns/core/debugger/webinspector-network.ios` URL on input is
+		// recognised as containing `@nativescript/core` (via the
+		// `/ns/core` → core-bridge mapping inside `rewriteSpec`) so its
+		// platform suffix is also stripped on output.
+		expect(out).toContain('import "/ns/core/debugger/webinspector-network";');
+		expect(out).not.toContain('/@fs/');
+	});
+
+	it('preserves leading whitespace before a first-line side-effect import', () => {
+		// Some transforms emit a leading space before the first import.
+		const input = '  import "/node_modules/@nativescript/core/globals/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('  import "/ns/core/globals";');
+	});
+
+	it('rewrites a first-line core import preceded only by a newline', () => {
+		const input = '\nimport "/node_modules/@nativescript/core/globals/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('\nimport "/ns/core/globals";');
+	});
+});
+
+// ─── isDeepCoreSubpath ─────────────────────────────────────────────────────────
+
+describe('isDeepCoreSubpath', () => {
+	// Only the canonical path form `/ns/core/<sub>` is recognised; every
+	// emitter funnels through `buildCoreUrlPath` so the legacy `?p=` query
+	// form and the `<version>` segment form are gone.
+	it('returns true for canonical deep subpath with nested path', () => {
+		expect(isDeepCoreSubpath('/ns/core/data/observable-array')).toBe(true);
+	});
+
+	it('returns true for HTTP origin deep subpath', () => {
+		expect(isDeepCoreSubpath('http://localhost:5173/ns/core/ui/core/view-base')).toBe(true);
+	});
+
+	it('returns true for two-segment deep subpath', () => {
+		expect(isDeepCoreSubpath('/ns/core/data/observable')).toBe(true);
+	});
+
+	it('returns true for shallow subpath (globals)', () => {
+		expect(isDeepCoreSubpath('/ns/core/globals')).toBe(true);
+	});
+
+	it('returns false for main bridge (no sub)', () => {
+		expect(isDeepCoreSubpath('/ns/core')).toBe(false);
+	});
+
+	it('returns false for HTTP origin main bridge', () => {
+		expect(isDeepCoreSubpath('http://localhost:5173/ns/core')).toBe(false);
+	});
+
+	it('returns false for empty string', () => {
+		expect(isDeepCoreSubpath('')).toBe(false);
+	});
+
+	it('returns false for unrelated URL', () => {
+		expect(isDeepCoreSubpath('/ns/m/node_modules/rxjs/index.js')).toBe(false);
+	});
+});
+
+// ─── Deep subpath skip: simulated ensureDestructureCoreImports behavior ────────
+// These tests simulate the regex + isDeepCoreSubpath logic to verify correctness
+// without needing to export the internal function.
+
+describe('deep subpath skip in core named-import destructuring', () => {
+	// Simulate the core of `ensureDestructureCoreImports`. Only the
+	// canonical path form `/ns/core[/<sub>]` is recognised — no version
+	// segment, no `?p=` query form.
+	function simulateDestructureRewrite(code: string): string {
+		let result = code;
+		let counter = 0;
+		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?)['"];?\s*/gm;
+		result = result.replace(re, (_full, pfx: string, specList: string, src: string) => {
+			if (isDeepCoreSubpath(src)) return _full;
+			const tmp = `__ns_core_ns_re${counter > 0 ? `_${counter}` : ''}`;
+			counter++;
+			return `${pfx}import ${tmp} from ${JSON.stringify(src)};\nconst { ${specList.trim()} } = ${tmp};\n`;
+		});
+		return result;
+	}
+
+	it('rewrites named import from main bridge to default + destructure', () => {
+		const input = 'import { Frame } from "/ns/core";';
+		const out = simulateDestructureRewrite(input);
+		expect(out).toContain('import __ns_core_ns_re from "/ns/core"');
+		expect(out).toContain('const { Frame } = __ns_core_ns_re');
+		expect(out).not.toContain('import { Frame }');
+	});
+
+	it('SKIPS named import from canonical deep subpath (preserves named import)', () => {
+		const input = 'import { ObservableArray } from "/ns/core/data/observable-array";';
+		const out = simulateDestructureRewrite(input);
+		expect(out).toBe(input);
+	});
+
+	it('SKIPS HTTP origin deep subpath', () => {
+		const input = 'import { booleanConverter } from "http://localhost:5173/ns/core/ui/core/view-base/utils";';
+		const out = simulateDestructureRewrite(input);
+		expect(out).toBe(input);
+	});
+
+	it('handles mixed shallow and deep subpaths in same file', () => {
+		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core/ui/core/view-base";'].join('\n');
+		const out = simulateDestructureRewrite(input);
+
+		expect(out).toContain('import __ns_core_ns_re from "/ns/core"');
+		expect(out).toContain('const { Frame } = __ns_core_ns_re');
+		expect(out).toContain('import { View } from "/ns/core/ui/core/view-base"');
+	});
+
+	it('is idempotent — applying twice produces identical output', () => {
+		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core/ui/core/view-base";'].join('\n');
+		const pass1 = simulateDestructureRewrite(input);
+		const pass2 = simulateDestructureRewrite(pass1);
+		expect(pass1).toBe(pass2);
+	});
+
+	it('multiple deep subpath imports all preserved', () => {
+		const input = ['import { Observable } from "/ns/core/data/observable";', 'import { ObservableArray } from "/ns/core/data/observable-array";', 'import { View } from "/ns/core/ui/core/view-base";'].join('\n');
+		const out = simulateDestructureRewrite(input);
+		expect(out).toBe(input);
+	});
+});
+
+// ─── normalizeAnyCoreSpecToBridge + deep subpath interaction ───────────────────
+
+describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
+	function pipeline(code: string): string {
+		let result = normalizeAnyCoreSpecToBridge(code);
+		let counter = 0;
+		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?)['"];?\s*/gm;
+		result = result.replace(re, (_full, pfx: string, specList: string, src: string) => {
+			if (isDeepCoreSubpath(src)) return _full;
+			const tmp = `__ns_core_${counter++}`;
+			return `${pfx}import ${tmp} from ${JSON.stringify(src)};\nconst { ${specList.trim()} } = ${tmp};\n`;
+		});
+		return result;
+	}
+
+	it('bare @nativescript/core → bridge + destructure', () => {
+		const input = 'import { Frame } from "@nativescript/core";';
+		const out = pipeline(input);
+		expect(out).toContain('import __ns_core_0 from "/ns/core"');
+		expect(out).toContain('const { Frame } = __ns_core_0');
+	});
+
+	it('bare @nativescript/core/index.js → main bridge + destructure', () => {
+		const input = 'import { AbsoluteLayout } from "@nativescript/core/index.js";';
+		const out = pipeline(input);
+		expect(out).toContain('import __ns_core_0 from "/ns/core"');
+		expect(out).toContain('const { AbsoluteLayout } = __ns_core_0');
+		expect(out).not.toContain('/ns/core/index');
+	});
+
+	it('bare deep subpath → canonical bridge URL + named import preserved', () => {
+		const input = 'import { ObservableArray } from "@nativescript/core/data/observable-array";';
+		const out = pipeline(input);
+		expect(out).toContain('/ns/core/data/observable-array');
+		expect(out).toContain('import { ObservableArray }');
+		expect(out).not.toContain('const { ObservableArray }');
+	});
+
+	it('resolved node_modules path → canonical bridge URL + named import preserved', () => {
+		const input = 'import { View } from "/node_modules/@nativescript/core/ui/core/view-base/index.js";';
+		const out = pipeline(input);
+		expect(out).toContain('/ns/core/ui/core/view-base');
+		expect(out).toContain('import { View }');
+		expect(out).not.toContain('const { View }');
+	});
+
+	it('mixed: main entry destructured + deep subpath preserved', () => {
+		const input = ['import { Application } from "@nativescript/core";', 'import { View } from "@nativescript/core/ui/core/view-base";'].join('\n');
+		const out = pipeline(input);
+
+		expect(out).toContain('const { Application }');
+		expect(out).toContain('import { View } from "/ns/core/ui/core/view-base"');
+	});
+
+	it('pipeline is idempotent on output', () => {
+		const input = ['import { Application } from "@nativescript/core";', 'import { View } from "@nativescript/core/ui/core/view-base";'].join('\n');
+		const pass1 = pipeline(input);
+		const pass2 = pipeline(pass1);
+		expect(pass1).toBe(pass2);
+	});
+});
+
+// ─── synthesizeDefaultExport (kept as utility) ────────────────────────────────
+
+describe('synthesizeDefaultExport', () => {
+	it('synthesizes default for export class declarations', () => {
+		const input = ['import { Observable } from "../observable";', 'export class ChangeType { }', 'export class ObservableArray extends Observable { }'].join('\n');
+		const out = synthesizeDefaultExport(input);
+		expect(out).toContain('export { __ns_default_export as default }');
+		expect(out).toMatch(/var __ns_default_export = \{[^}]*ChangeType[^}]*ObservableArray[^}]*\}/);
+	});
+
+	it('synthesizes default for export function and const', () => {
+		const input = ['export function fromObject(source) { return source; }', 'export const CHANGE = "change";'].join('\n');
+		const out = synthesizeDefaultExport(input);
+		expect(out).toContain('export { __ns_default_export as default }');
+		expect(out).toContain('fromObject');
+		expect(out).toContain('CHANGE');
+	});
+
+	it('synthesizes default for named re-exports', () => {
+		const input = 'export { AbsoluteLayout } from "/path/absolute-layout.js";';
+		const out = synthesizeDefaultExport(input);
+		expect(out).toContain('import { AbsoluteLayout }');
+		expect(out).toContain('export { __ns_default_export as default }');
+	});
+
+	it('synthesizes default for star re-exports', () => {
+		const input = 'export * from "/path/accessibility-common.js";';
+		const out = synthesizeDefaultExport(input);
+		expect(out).toContain('import * as __ns_star_0');
+		expect(out).toContain('...__ns_star_0');
+	});
+
+	it('returns unchanged if already has export default', () => {
+		const input = 'export class Foo { }\nexport default Foo;';
+		expect(synthesizeDefaultExport(input)).toBe(input);
+	});
+
+	it('returns unchanged if has CJS exports', () => {
+		const input = 'module.exports = { a: 1 };';
+		expect(synthesizeDefaultExport(input)).toBe(input);
+	});
+
+	it('returns unchanged for side-effect-only module', () => {
+		const input = 'import "./polyfill.js";\nconsole.log("loaded");';
+		expect(synthesizeDefaultExport(input)).toBe(input);
+	});
+
+	it('deduplicates exports with the same name', () => {
+		const input = 'export class Foo { }\nexport { Foo };';
+		const out = synthesizeDefaultExport(input);
+		const obj = out.match(/var __ns_default_export = \{([^}]*)\}/)?.[1] || '';
+		expect((obj.match(/\bFoo\b/g) || []).length).toBe(1);
+	});
+});

@@ -55,10 +55,10 @@ public class FlexLine {
 	int mMainSize;
 
 	/**
-	 * The sum of the lengths of dividers along the main axis. This value should be lower or
-	 * than than the value of {@link #mMainSize}.
+	 * The sum of the lengths of gaps along the main axis. This value should be lower
+	 * than the value of {@link #mMainSize}.
 	 */
-	int mDividerLengthInMainSize;
+	int mGapLengthInMainSize;
 
 	/**
 	 * @see {@link #getCrossSize()}

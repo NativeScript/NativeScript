@@ -146,6 +146,15 @@ describe('css-shadow', () => {
 		expect(shadow).toBeNull();
 	});
 
+	it('0 0 10px color-mix(in srgb, blue 35%, transparent)', () => {
+		const shadow = parseCSSShadow('0 0 10px color-mix(in srgb, blue 35%, transparent)');
+		expect(shadow.inset).toBe(false);
+		expect(shadow.offsetX).toBe(0);
+		expect(shadow.offsetY).toBe(0);
+		expect(shadow.blurRadius).toEqual(Length.parse('10px'));
+		expect(shadow.color).toEqual(new Color('color-mix(in srgb, blue 35%, transparent)'));
+	});
+
 	it('5em 1em gold unset', () => {
 		// partially invalid shorthand should result in standard default fallback
 		const shadow = parseCSSShadow('5em 1em gold unset');

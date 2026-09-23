@@ -150,7 +150,7 @@ declare class ENExposureConfiguration extends NSObject {
 	/**
 	 * @since 12.5
 	 */
-	infectiousnessForDaysSinceOnsetOfSymptoms: NSDictionary<number, number>;
+	infectiousnessForDaysSinceOnsetOfSymptoms: NSDictionary<number, number> | null;
 
 	/**
 	 * @since 12.5
@@ -167,7 +167,7 @@ declare class ENExposureConfiguration extends NSObject {
 	 */
 	mediumDurationWeight: number;
 
-	metadata: NSDictionary<any, any>;
+	metadata: NSDictionary<any, any> | null;
 
 	minimumRiskScore: number;
 
@@ -222,17 +222,17 @@ declare class ENExposureDaySummary extends NSObject {
 
 	static new(): ENExposureDaySummary; // inherited from NSObject
 
-	readonly confirmedClinicalDiagnosisSummary: ENExposureSummaryItem;
+	readonly confirmedClinicalDiagnosisSummary: ENExposureSummaryItem | null;
 
-	readonly confirmedTestSummary: ENExposureSummaryItem;
+	readonly confirmedTestSummary: ENExposureSummaryItem | null;
 
 	readonly date: Date;
 
 	readonly daySummary: ENExposureSummaryItem;
 
-	readonly recursiveSummary: ENExposureSummaryItem;
+	readonly recursiveSummary: ENExposureSummaryItem | null;
 
-	readonly selfReportedSummary: ENExposureSummaryItem;
+	readonly selfReportedSummary: ENExposureSummaryItem | null;
 }
 
 /**
@@ -259,7 +259,7 @@ declare class ENExposureDetectionSummary extends NSObject {
 
 	readonly maximumRiskScoreFullRange: number;
 
-	readonly metadata: NSDictionary<any, any>;
+	readonly metadata: NSDictionary<any, any> | null;
 
 	readonly riskScoreSumFullRange: number;
 }
@@ -291,7 +291,7 @@ declare class ENExposureInfo extends NSObject {
 
 	readonly duration: number;
 
-	readonly metadata: NSDictionary<any, any>;
+	readonly metadata: NSDictionary<any, any> | null;
 
 	readonly totalRiskScore: number;
 
@@ -365,12 +365,12 @@ declare class ENManager extends NSObject {
 	/**
 	 * @since 12.5
 	 */
-	activityHandler: (p1: ENActivityFlags) => void;
+	activityHandler: (p1: ENActivityFlags) => void | null;
 
 	/**
 	 * @since 14.4
 	 */
-	diagnosisKeysAvailableHandler: (p1: NSArray<ENTemporaryExposureKey>) => void;
+	diagnosisKeysAvailableHandler: (p1: NSArray<ENTemporaryExposureKey>) => void | null;
 
 	dispatchQueue: NSObject & OS_dispatch_queue;
 
@@ -378,52 +378,52 @@ declare class ENManager extends NSObject {
 
 	readonly exposureNotificationStatus: ENStatus;
 
-	invalidationHandler: () => void;
+	invalidationHandler: () => void | null;
 
 	static readonly authorizationStatus: ENAuthorizationStatus;
 
-	activateWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	activateWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 12.5
 	 */
-	detectExposuresWithConfigurationCompletionHandler(configuration: ENExposureConfiguration, completionHandler: (p1: ENExposureDetectionSummary, p2: NSError) => void): NSProgress;
+	detectExposuresWithConfigurationCompletionHandler(configuration: ENExposureConfiguration, completionHandler: (p1: ENExposureDetectionSummary | null, p2: NSError | null) => void): NSProgress;
 
-	detectExposuresWithConfigurationDiagnosisKeyURLsCompletionHandler(configuration: ENExposureConfiguration, diagnosisKeyURLs: NSArray<NSURL> | NSURL[], completionHandler: (p1: ENExposureDetectionSummary, p2: NSError) => void): NSProgress;
+	detectExposuresWithConfigurationDiagnosisKeyURLsCompletionHandler(configuration: ENExposureConfiguration, diagnosisKeyURLs: NSArray<NSURL> | NSURL[], completionHandler: (p1: ENExposureDetectionSummary | null, p2: NSError | null) => void): NSProgress;
 
-	getDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSArray<ENTemporaryExposureKey>, p2: NSError) => void): void;
+	getDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSArray<ENTemporaryExposureKey> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.5
 	 * @deprecated 13.6
 	 */
-	getExposureInfoFromSummaryUserExplanationCompletionHandler(summary: ENExposureDetectionSummary, userExplanation: string, completionHandler: (p1: NSArray<ENExposureInfo>, p2: NSError) => void): NSProgress;
+	getExposureInfoFromSummaryUserExplanationCompletionHandler(summary: ENExposureDetectionSummary, userExplanation: string, completionHandler: (p1: NSArray<ENExposureInfo> | null, p2: NSError | null) => void): NSProgress;
 
 	/**
 	 * @since 12.5
 	 */
-	getExposureWindowsFromSummaryCompletionHandler(summary: ENExposureDetectionSummary, completionHandler: (p1: NSArray<ENExposureWindow>, p2: NSError) => void): NSProgress;
+	getExposureWindowsFromSummaryCompletionHandler(summary: ENExposureDetectionSummary, completionHandler: (p1: NSArray<ENExposureWindow> | null, p2: NSError | null) => void): NSProgress;
 
-	getTestDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSArray<ENTemporaryExposureKey>, p2: NSError) => void): void;
+	getTestDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSArray<ENTemporaryExposureKey> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 12.5
 	 */
-	getUserTraveledWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError) => void): void;
+	getUserTraveledWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	invalidate(): void;
 
 	/**
 	 * @since 14.4
 	 */
-	preAuthorizeDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	preAuthorizeDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.4
 	 */
-	requestPreAuthorizedDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	requestPreAuthorizedDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
-	setExposureNotificationEnabledCompletionHandler(enabled: boolean, completionHandler: (p1: NSError) => void): void;
+	setExposureNotificationEnabledCompletionHandler(enabled: boolean, completionHandler: (p1: NSError | null) => void): void;
 }
 
 declare const ENRiskLevelMax: number;

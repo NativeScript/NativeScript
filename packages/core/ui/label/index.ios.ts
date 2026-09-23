@@ -1,6 +1,6 @@
 import { Label as LabelDefinition } from '.';
 import { Background } from '../styling/background';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, directionProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
@@ -187,89 +187,54 @@ export class Label extends TextBase implements LabelDefinition {
 	[borderTopWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: layout.toDeviceIndependentPixels(this.effectiveBorderTopWidth),
 			right: border.right,
 			bottom: border.bottom,
 			left: border.left,
-		};
+		});
 	}
 
 	[borderRightWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: border.top,
 			right: layout.toDeviceIndependentPixels(this.effectiveBorderRightWidth),
 			bottom: border.bottom,
 			left: border.left,
-		};
+		});
 	}
 
 	[borderBottomWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: border.top,
 			right: border.right,
 			bottom: layout.toDeviceIndependentPixels(this.effectiveBorderBottomWidth),
 			left: border.left,
-		};
+		});
 	}
 
 	[borderLeftWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: border.top,
 			right: border.right,
 			bottom: border.bottom,
 			left: layout.toDeviceIndependentPixels(this.effectiveBorderLeftWidth),
-		};
+		});
 	}
 
-	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
-		const nativeView = this.nativeTextViewProtected;
-		const padding = nativeView.padding;
-		nativeView.padding = {
+	[paddingInternalProperty.setNative](_value: string) {
+		this.nativeTextViewProtected.padding = new UIEdgeInsets({
 			top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
-			right: padding.right,
-			bottom: padding.bottom,
-			left: padding.left,
-		};
-	}
-
-	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
-		const nativeView = this.nativeTextViewProtected;
-		const padding = nativeView.padding;
-		nativeView.padding = {
-			top: padding.top,
 			right: layout.toDeviceIndependentPixels(this.effectivePaddingRight),
-			bottom: padding.bottom,
-			left: padding.left,
-		};
-	}
-
-	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
-		const nativeView = this.nativeTextViewProtected;
-		const padding = nativeView.padding;
-		nativeView.padding = {
-			top: padding.top,
-			right: padding.right,
 			bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom),
-			left: padding.left,
-		};
-	}
-
-	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
-		const nativeView = this.nativeTextViewProtected;
-		const padding = nativeView.padding;
-		nativeView.padding = {
-			top: padding.top,
-			right: padding.right,
-			bottom: padding.bottom,
 			left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft),
-		};
+		});
 	}
 }
 

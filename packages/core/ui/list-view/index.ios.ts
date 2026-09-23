@@ -1,5 +1,5 @@
 import { ItemEventData, SearchEventData, ItemsSource } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty } from './list-view-common';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty, iosSearchInsetBehaviorProperty, ListViewSearchInsetBehavior } from './list-view-common';
 import { CoreTypes } from '../../core-types';
 import { View, type KeyedTemplate, type Template } from '../core/view';
 import { Length } from '../styling/length-shared';
@@ -26,6 +26,7 @@ const infinity = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 interface ViewItemIndex {
 	_listViewItemIndex?: number;
+	_listViewSectionIndex?: number;
 }
 
 type ItemView = View & ViewItemIndex;
@@ -162,7 +163,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 		const owner = this._owner?.deref();
 		let cell: ListViewCell;
 		if (owner) {
-			const template = owner._getItemTemplate(indexPath.row);
+			const template = owner.sectioned ? owner._getItemTemplateInSection(indexPath.section, indexPath.row) : owner._getItemTemplate(indexPath.row);
 			cell = <ListViewCell>(tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground());
 			owner._prepareCell(cell, indexPath);
 
@@ -172,7 +173,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 				// from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
 				const width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
 				const rowHeight = owner._effectiveRowHeight;
-				const cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
+				const cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row, indexPath.section);
 				cellView.iosOverflowSafeAreaEnabled = false;
 				View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
 			}
@@ -232,10 +233,10 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 			return tableView.estimatedRowHeight;
 		}
 
-		let height = owner.getHeight(indexPath.row);
+		let height = owner.getHeight(indexPath.row, indexPath.section);
 		if (height === undefined) {
 			// in iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated: this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
-			const template = owner._getItemTemplate(indexPath.row);
+			const template = owner.sectioned ? owner._getItemTemplateInSection(indexPath.section, indexPath.row) : owner._getItemTemplate(indexPath.row);
 			let cell = this._measureCellMap.get(template.key);
 			if (!cell) {
 				cell = <any>tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground();
@@ -437,7 +438,8 @@ export class ListView extends ListViewBase {
 	// tslint:disable-next-line
 	private _dataSource;
 	private _delegate;
-	private _heights: Array<number>;
+	// Measured row heights indexed [section][row]; non-sectioned lists use section 0.
+	private _heights: Array<Array<number>>;
 	private _preparingCell: boolean;
 	private _isDataDirty: boolean;
 	private _map: Map<ListViewCell, ItemView>;
@@ -453,7 +455,7 @@ export class ListView extends ListViewBase {
 		super();
 		this._map = new Map<ListViewCell, ItemView>();
 		this._headerMap = new Map<ListViewHeaderCell, View>();
-		this._heights = new Array<number>();
+		this._heights = new Array<Array<number>>();
 	}
 
 	createNativeView() {
@@ -545,17 +547,49 @@ export class ListView extends ListViewBase {
 		// 7. Ensure search bar is properly sized and prevent content inset issues
 		this._searchController.searchBar.sizeToFit();
 
-		// 8. Disable automatic content inset adjustment that can cause spacing issues
-		if (this.nativeViewProtected.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
-			// iOS 11+ - prevent automatic content inset adjustments
-			this.nativeViewProtected.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-		} else {
-			// iOS 10 and below - disable automatic content inset
-			this.nativeViewProtected.automaticallyAdjustsScrollIndicatorInsets = false;
-		}
+		// 8. Pick a sensible content-inset-adjustment behavior.
+		// - If `iosSearchInsetBehavior` was set explicitly, honor it.
+		// - Otherwise auto-detect:
+		//     - When the search controller is presented via `navigationItem.searchController`
+		//       (i.e., we're inside a UINavigationController), use Automatic so UIKit reserves
+		//       space for the navigation bar / large title and the table doesn't render under it.
+		//     - When the search bar is used as `tableHeaderView` (no enclosing nav controller),
+		//       use Never so the header view doesn't double-inset.
+		const explicit = this.iosSearchInsetBehavior;
+		const usingNavItem = !!(viewController && SDK_VERSION >= 11.0 && viewController.navigationItem && viewController.navigationItem.searchController === this._searchController);
+		const resolved: ListViewSearchInsetBehavior = explicit ?? (usingNavItem ? 'automatic' : 'never');
+		this._applyContentInsetBehavior(resolved);
 
 		if (Trace.isEnabled()) {
-			Trace.write(`ListView: UISearchController setup complete with searchAutoHide: ${this.searchAutoHide}`, Trace.categories.Debug);
+			Trace.write(`ListView: UISearchController setup complete with searchAutoHide: ${this.searchAutoHide}, insetBehavior: ${resolved}`, Trace.categories.Debug);
+		}
+	}
+
+	private _applyContentInsetBehavior(value: ListViewSearchInsetBehavior) {
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+		if (nativeView.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
+			let mapped: UIScrollViewContentInsetAdjustmentBehavior;
+			switch (value) {
+				case 'scrollableAxes':
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.ScrollableAxes;
+					break;
+				case 'never':
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.Never;
+					break;
+				case 'always':
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.Always;
+					break;
+				case 'automatic':
+				default:
+					mapped = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+			}
+			nativeView.contentInsetAdjustmentBehavior = mapped;
+		} else {
+			// iOS 10 and below
+			nativeView.automaticallyAdjustsScrollIndicatorInsets = value === 'automatic' || value === 'always';
 		}
 	}
 
@@ -695,12 +729,15 @@ export class ListView extends ListViewBase {
 		return indexes.some((visIndex) => visIndex.row === itemIndex);
 	}
 
-	public getHeight(index: number): number {
-		return this._heights[index];
+	public getHeight(index: number, section = 0): number {
+		return this._heights[section]?.[index];
 	}
 
-	public setHeight(index: number, value: number): void {
-		this._heights[index] = value;
+	public setHeight(index: number, value: number, section = 0): void {
+		if (!this._heights[section]) {
+			this._heights[section] = new Array<number>();
+		}
+		this._heights[section][index] = value;
 	}
 
 	public _onRowHeightPropertyChanged(oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
@@ -758,7 +795,7 @@ export class ListView extends ListViewBase {
 
 		this._map.forEach((childView, listViewCell) => {
 			const rowHeight = this._effectiveRowHeight;
-			const cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
+			const cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex, childView._listViewSectionIndex ?? 0);
 			if (cellHeight) {
 				const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
 				childView.iosOverflowSafeAreaEnabled = false;
@@ -779,7 +816,7 @@ export class ListView extends ListViewBase {
 			const heightMeasureSpec: number = rowHeight >= 0 ? layout.makeMeasureSpec(rowHeight, layout.EXACTLY) : infinity;
 			const measuredSize = View.measureChild(this, cellView, this.widthMeasureSpec, heightMeasureSpec);
 			const height = measuredSize.measuredHeight;
-			this.setHeight(indexPath.row, height);
+			this.setHeight(indexPath.row, height, indexPath.section);
 
 			return height;
 		}
@@ -794,13 +831,7 @@ export class ListView extends ListViewBase {
 			let view: ItemView = cell.view;
 			if (!view) {
 				if (this.sectioned) {
-					// For sectioned data, we need to calculate the absolute index for template selection
-					let absoluteIndex = 0;
-					for (let i = 0; i < indexPath.section; i++) {
-						absoluteIndex += this._getItemsInSection(i).length;
-					}
-					absoluteIndex += indexPath.row;
-					view = this._getItemTemplate(absoluteIndex).createView();
+					view = this._getItemTemplateInSection(indexPath.section, indexPath.row).createView();
 				} else {
 					view = this._getItemTemplate(indexPath.row).createView();
 				}
@@ -830,7 +861,7 @@ export class ListView extends ListViewBase {
 			if (this.sectioned) {
 				this._prepareItemInSection(view, indexPath.section, indexPath.row);
 				view._listViewItemIndex = indexPath.row; // Keep row index for compatibility
-				(view as any)._listViewSectionIndex = indexPath.section;
+				view._listViewSectionIndex = indexPath.section;
 			} else {
 				this._prepareItem(view, indexPath.row);
 				view._listViewItemIndex = indexPath.row;
@@ -863,6 +894,7 @@ export class ListView extends ListViewBase {
 		this._preparingCell = true;
 		view.parent._removeView(view);
 		view._listViewItemIndex = undefined;
+		view._listViewSectionIndex = undefined;
 		this._preparingCell = preparing;
 		this._map.delete(cell);
 	}
@@ -1121,6 +1153,14 @@ export class ListView extends ListViewBase {
 			this._setupSearchController();
 		} else {
 			this._cleanupSearchController();
+		}
+	}
+
+	[iosSearchInsetBehaviorProperty.setNative](value: ListViewSearchInsetBehavior) {
+		// Only apply live if the search controller is already set up. If not, the value
+		// will be picked up by _setupSearchController() when it runs.
+		if (this.showSearch && this._searchController) {
+			this._applyContentInsetBehavior(value);
 		}
 	}
 

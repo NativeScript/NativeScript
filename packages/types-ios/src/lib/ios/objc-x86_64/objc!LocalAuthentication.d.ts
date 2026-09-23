@@ -100,7 +100,7 @@ declare class LAContext extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	readonly evaluatedPolicyDomainState: NSData;
+	readonly evaluatedPolicyDomainState: NSData | null;
 
 	/**
 	 * @since 11.0
@@ -110,12 +110,12 @@ declare class LAContext extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	localizedCancelTitle: string;
+	localizedCancelTitle: string | null;
 
 	/**
 	 * @since 8.0
 	 */
-	localizedFallbackTitle: string;
+	localizedFallbackTitle: string | null;
 
 	/**
 	 * @since 11.0
@@ -126,7 +126,7 @@ declare class LAContext extends NSObject {
 	 * @since 8.3
 	 * @deprecated 9.0
 	 */
-	maxBiometryFailures: number;
+	maxBiometryFailures: number | null;
 
 	/**
 	 * @since 9.0
@@ -141,12 +141,12 @@ declare class LAContext extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	evaluateAccessControlOperationLocalizedReasonReply(accessControl: any, operation: LAAccessControlOperation, localizedReason: string, reply: (p1: boolean, p2: NSError) => void): void;
+	evaluateAccessControlOperationLocalizedReasonReply(accessControl: any, operation: LAAccessControlOperation, localizedReason: string, reply: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 8.0
 	 */
-	evaluatePolicyLocalizedReasonReply(policy: LAPolicy, localizedReason: string, reply: (p1: boolean, p2: NSError) => void): void;
+	evaluatePolicyLocalizedReasonReply(policy: LAPolicy, localizedReason: string, reply: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 9.0
@@ -161,7 +161,7 @@ declare class LAContext extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	setCredentialType(credential: NSData, type: LACredentialType): boolean;
+	setCredentialType(credential: NSData | null, type: LACredentialType): boolean;
 }
 
 /**
@@ -190,7 +190,7 @@ declare class LADomainState extends NSObject {
 	 */
 	readonly companion: LADomainStateCompanion;
 
-	readonly stateHash: NSData;
+	readonly stateHash: NSData | null;
 }
 
 /**
@@ -204,7 +204,7 @@ declare class LADomainStateBiometry extends NSObject {
 
 	readonly biometryType: LABiometryType;
 
-	readonly stateHash: NSData;
+	readonly stateHash: NSData | null;
 }
 
 /**
@@ -218,9 +218,9 @@ declare class LADomainStateCompanion extends NSObject {
 
 	readonly availableCompanionTypes: NSSet<number>;
 
-	readonly stateHash: NSData;
+	readonly stateHash: NSData | null;
 
-	stateHashForCompanionType(companionType: LACompanionType): NSData;
+	stateHashForCompanionType(companionType: LACompanionType): NSData | null;
 }
 
 /**
@@ -286,7 +286,7 @@ declare class LAEnvironmentMechanismCompanion extends LAEnvironmentMechanism {
 
 	static new(): LAEnvironmentMechanismCompanion; // inherited from NSObject
 
-	readonly stateHash: NSData;
+	readonly stateHash: NSData | null;
 
 	readonly type: LACompanionType;
 }
@@ -326,16 +326,16 @@ declare class LAEnvironmentState extends NSObject implements NSCopying {
 
 	readonly allMechanisms: NSArray<LAEnvironmentMechanism>;
 
-	readonly biometry: LAEnvironmentMechanismBiometry;
+	readonly biometry: LAEnvironmentMechanismBiometry | null;
 
 	/**
 	 * @since 18.0
 	 */
 	readonly companions: NSArray<LAEnvironmentMechanismCompanion>;
 
-	readonly userPassword: LAEnvironmentMechanismUserPassword;
+	readonly userPassword: LAEnvironmentMechanismUserPassword | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -438,11 +438,11 @@ declare class LAPrivateKey extends NSObject {
 
 	canSignUsingSecKeyAlgorithm(algorithm: string): boolean;
 
-	decryptDataSecKeyAlgorithmCompletion(data: NSData, algorithm: string, handler: (p1: NSData, p2: NSError) => void): void;
+	decryptDataSecKeyAlgorithmCompletion(data: NSData, algorithm: string, handler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	exchangeKeysWithPublicKeySecKeyAlgorithmSecKeyParametersCompletion(publicKey: NSData, algorithm: string, parameters: NSDictionary<any, any>, handler: (p1: NSData, p2: NSError) => void): void;
+	exchangeKeysWithPublicKeySecKeyAlgorithmSecKeyParametersCompletion(publicKey: NSData, algorithm: string, parameters: NSDictionary<any, any>, handler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	signDataSecKeyAlgorithmCompletion(data: NSData, algorithm: string, handler: (p1: NSData, p2: NSError) => void): void;
+	signDataSecKeyAlgorithmCompletion(data: NSData, algorithm: string, handler: (p1: NSData | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -458,11 +458,11 @@ declare class LAPublicKey extends NSObject {
 
 	canVerifyUsingSecKeyAlgorithm(algorithm: string): boolean;
 
-	encryptDataSecKeyAlgorithmCompletion(data: NSData, algorithm: string, handler: (p1: NSData, p2: NSError) => void): void;
+	encryptDataSecKeyAlgorithmCompletion(data: NSData, algorithm: string, handler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	exportBytesWithCompletion(handler: (p1: NSData, p2: NSError) => void): void;
+	exportBytesWithCompletion(handler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	verifyDataSignatureSecKeyAlgorithmCompletion(signedData: NSData, signature: NSData, algorithm: string, handler: (p1: NSError) => void): void;
+	verifyDataSignatureSecKeyAlgorithmCompletion(signedData: NSData, signature: NSData, algorithm: string, handler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -480,11 +480,11 @@ declare class LARight extends NSObject {
 
 	constructor(o: { requirement: LAAuthenticationRequirement; });
 
-	authorizeWithLocalizedReasonCompletion(localizedReason: string, handler: (p1: NSError) => void): void;
+	authorizeWithLocalizedReasonCompletion(localizedReason: string, handler: (p1: NSError | null) => void): void;
 
-	authorizeWithLocalizedReasonInPresentationContextCompletion(localizedReason: string, presentationContext: UIWindow, handler: (p1: NSError) => void): void;
+	authorizeWithLocalizedReasonInPresentationContextCompletion(localizedReason: string, presentationContext: UIWindow, handler: (p1: NSError | null) => void): void;
 
-	checkCanAuthorizeWithCompletion(handler: (p1: NSError) => void): void;
+	checkCanAuthorizeWithCompletion(handler: (p1: NSError | null) => void): void;
 
 	deauthorizeWithCompletion(handler: () => void): void;
 
@@ -516,17 +516,17 @@ declare class LARightStore extends NSObject {
 
 	static readonly sharedStore: LARightStore;
 
-	removeAllRightsWithCompletion(handler: (p1: NSError) => void): void;
+	removeAllRightsWithCompletion(handler: (p1: NSError | null) => void): void;
 
-	removeRightCompletion(right: LAPersistedRight, handler: (p1: NSError) => void): void;
+	removeRightCompletion(right: LAPersistedRight, handler: (p1: NSError | null) => void): void;
 
-	removeRightForIdentifierCompletion(identifier: string, handler: (p1: NSError) => void): void;
+	removeRightForIdentifierCompletion(identifier: string, handler: (p1: NSError | null) => void): void;
 
-	rightForIdentifierCompletion(identifier: string, handler: (p1: LAPersistedRight, p2: NSError) => void): void;
+	rightForIdentifierCompletion(identifier: string, handler: (p1: LAPersistedRight | null, p2: NSError | null) => void): void;
 
-	saveRightIdentifierCompletion(right: LARight, identifier: string, handler: (p1: LAPersistedRight, p2: NSError) => void): void;
+	saveRightIdentifierCompletion(right: LARight, identifier: string, handler: (p1: LAPersistedRight | null, p2: NSError | null) => void): void;
 
-	saveRightIdentifierSecretCompletion(right: LARight, identifier: string, secret: NSData, handler: (p1: LAPersistedRight, p2: NSError) => void): void;
+	saveRightIdentifierSecretCompletion(right: LARight, identifier: string, secret: NSData, handler: (p1: LAPersistedRight | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -538,7 +538,7 @@ declare class LASecret extends NSObject {
 
 	static new(): LASecret; // inherited from NSObject
 
-	loadDataWithCompletion(handler: (p1: NSData, p2: NSError) => void): void;
+	loadDataWithCompletion(handler: (p1: NSData | null, p2: NSError | null) => void): void;
 }
 
 /**

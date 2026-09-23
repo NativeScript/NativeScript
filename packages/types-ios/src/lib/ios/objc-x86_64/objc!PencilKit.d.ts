@@ -22,7 +22,7 @@ declare class PKCanvasView extends UIScrollView implements PKToolPickerObserver 
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKCanvasView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PKCanvasView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -33,7 +33,7 @@ declare class PKCanvasView extends UIScrollView implements PKToolPickerObserver 
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKCanvasView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PKCanvasView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -48,7 +48,7 @@ declare class PKCanvasView extends UIScrollView implements PKToolPickerObserver 
 	 */
 	allowsFingerDrawing: boolean;
 
-	delegate: PKCanvasViewDelegate;
+	delegate: PKCanvasViewDelegate | null;
 
 	drawing: PKDrawing;
 
@@ -197,7 +197,7 @@ declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {
 	 */
 	constructor(o: { strokes: NSArray<PKStroke> | PKStroke[]; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	dataRepresentation(): NSData;
 
@@ -294,7 +294,7 @@ declare class PKFloatRange extends NSObject implements NSCopying {
 
 	constructor(o: { lowerBound: number; upperBound: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithLowerBoundUpperBound(lowerBound: number, upperBound: number): this;
 }
@@ -319,7 +319,7 @@ declare class PKInk extends NSObject implements NSCopying {
 
 	constructor(o: { inkType: string; color: UIColor; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithInkTypeColor(type: string, color: UIColor): this;
 }
@@ -450,7 +450,7 @@ declare class PKResponderState extends NSObject {
 
 	static new(): PKResponderState; // inherited from NSObject
 
-	activeToolPicker: PKToolPicker;
+	activeToolPicker: PKToolPicker | null;
 
 	toolPickerVisibility: PKToolPickerVisibility;
 }
@@ -466,7 +466,7 @@ declare class PKStroke extends NSObject implements NSCopying {
 
 	readonly ink: PKInk;
 
-	readonly mask: UIBezierPath;
+	readonly mask: UIBezierPath | null;
 
 	readonly maskedPathRanges: NSArray<PKFloatRange>;
 
@@ -486,21 +486,21 @@ declare class PKStroke extends NSObject implements NSCopying {
 
 	readonly transform: CGAffineTransform;
 
-	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath; });
+	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath | null; });
 
 	/**
 	 * @since 16.0
 	 */
-	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath; randomSeed: number; });
+	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath | null; randomSeed: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	initWithInkStrokePathTransformMask(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath): this;
+	initWithInkStrokePathTransformMask(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath | null): this;
 
 	/**
 	 * @since 16.0
 	 */
-	initWithInkStrokePathTransformMaskRandomSeed(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath, randomSeed: number): this;
+	initWithInkStrokePathTransformMaskRandomSeed(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath | null, randomSeed: number): this;
 }
 
 /**
@@ -519,13 +519,13 @@ declare class PKStrokePath extends NSObject implements NSCopying {
 
 	constructor(o: { controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[]; creationDate: Date; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	enumerateInterpolatedPointsInRangeStrideByDistanceUsingBlock(range: PKFloatRange, distanceStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateInterpolatedPointsInRangeStrideByDistanceUsingBlock(range: PKFloatRange, distanceStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
-	enumerateInterpolatedPointsInRangeStrideByParametricStepUsingBlock(range: PKFloatRange, parametricStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateInterpolatedPointsInRangeStrideByParametricStepUsingBlock(range: PKFloatRange, parametricStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
-	enumerateInterpolatedPointsInRangeStrideByTimeUsingBlock(range: PKFloatRange, timeStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateInterpolatedPointsInRangeStrideByTimeUsingBlock(range: PKFloatRange, timeStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
 	initWithControlPointsCreationDate(controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[], creationDate: Date): this;
 
@@ -581,7 +581,7 @@ declare class PKStrokePoint extends NSObject implements NSCopying {
 
 	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; secondaryScale: number; threshold: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitude(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number): this;
 
@@ -599,7 +599,7 @@ declare class PKTool extends NSObject implements NSCopying {
 
 	static new(): PKTool; // inherited from NSObject
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -615,12 +615,12 @@ declare class PKToolPicker extends NSObject {
 	 * @since 13.0
 	 * @deprecated 14.0
 	 */
-	static sharedToolPickerForWindow(window: UIWindow): PKToolPicker;
+	static sharedToolPickerForWindow(window: UIWindow): PKToolPicker | null;
 
 	/**
 	 * @since 18.0
 	 */
-	accessoryItem: UIBarButtonItem;
+	accessoryItem: UIBarButtonItem | null;
 
 	/**
 	 * @since 26.0
@@ -632,7 +632,7 @@ declare class PKToolPicker extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	delegate: PKToolPickerDelegate;
+	delegate: PKToolPickerDelegate | null;
 
 	readonly isVisible: boolean;
 
@@ -669,7 +669,7 @@ declare class PKToolPicker extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	stateAutosaveName: string;
+	stateAutosaveName: string | null;
 
 	/**
 	 * @since 18.0
@@ -741,19 +741,19 @@ declare class PKToolPickerCustomItemConfiguration extends NSObject implements NS
 
 	identifier: string;
 
-	imageProvider: (p1: PKToolPickerCustomItem) => UIImage;
+	imageProvider: (p1: PKToolPickerCustomItem) => UIImage | null;
 
 	name: string;
 
 	toolAttributeControls: PKToolPickerCustomItemControlOptions;
 
-	viewControllerProvider: (p1: PKToolPickerCustomItem) => UIViewController;
+	viewControllerProvider: (p1: PKToolPickerCustomItem) => UIViewController | null;
 
 	widthVariants: NSDictionary<number, UIImage>;
 
 	constructor(o: { identifier: string; name: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithIdentifierName(identifier: string, name: string): this;
 }
@@ -819,9 +819,9 @@ declare class PKToolPickerInkingItem extends PKToolPickerItem {
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { inkType: string; color: UIColor; width: number; azimuth: number; identifier: string; });
+	constructor(o: { inkType: string; color: UIColor; width: number; azimuth: number; identifier: string | null; });
 
-	constructor(o: { inkType: string; color: UIColor; width: number; identifier: string; });
+	constructor(o: { inkType: string; color: UIColor; width: number; identifier: string | null; });
 
 	constructor(o: { inkType: string; width: number; });
 
@@ -834,9 +834,9 @@ declare class PKToolPickerInkingItem extends PKToolPickerItem {
 	/**
 	 * @since 26.0
 	 */
-	initWithInkTypeColorWidthAzimuthIdentifier(inkType: string, color: UIColor, width: number, azimuth: number, identifier: string): this;
+	initWithInkTypeColorWidthAzimuthIdentifier(inkType: string, color: UIColor, width: number, azimuth: number, identifier: string | null): this;
 
-	initWithInkTypeColorWidthIdentifier(inkType: string, color: UIColor, width: number, identifier: string): this;
+	initWithInkTypeColorWidthIdentifier(inkType: string, color: UIColor, width: number, identifier: string | null): this;
 
 	initWithInkTypeWidth(inkType: string, width: number): this;
 }
@@ -855,9 +855,9 @@ declare class PKToolPickerItem extends NSObject implements NSCopying {
 	/**
 	 * @since 26.0
 	 */
-	readonly tool: PKTool;
+	readonly tool: PKTool | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**

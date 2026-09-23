@@ -259,18 +259,18 @@ npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s rel
 cd ..
 ```
 
-4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
+4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `@nativescript/core`, 
 tag the release and update the CHANGELOG.md. Don't forget to check the auto-generated CHANGELOG.md 
 ```
-cd nativescript-core
+cd packages/core
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```
 
-5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
+5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `@nativescript/core`, 
 tag the release and update the CHANGELOG.md. Don't forget to check the auto-generated CHANGELOG.md 
 ```
-cd tns-core-modules-package
+cd packages/core
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```

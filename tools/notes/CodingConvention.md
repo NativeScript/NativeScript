@@ -412,11 +412,10 @@ req.on('end', function () {
 
 ## Comments
 
-Use the [JSDoc][JSDOC] convention for comments. When writing a comment always think how understandable will be for somebody who is new to this code. Even if it may look simple to you think how a guy that just joined will understand it. Always comment in the following cases:
+Use the [JSDoc][JSDOC] convention for public API comments — see [CodeComments.md](CodeComments.md) for the full rules (JSDoc tag format, inline comment limits, prohibited patterns). Comment in the following cases:
 + When there is some non-trivial logic.
 + Some "external" knowledge is needed which is missing in the context - workaround for a driver, module bug, special 'hack' because of a bug and so on;
-+ When you are creating a new class
-+ Public methods - include all the arguments and if possible the types {String}, {Number}. Optional arguments should be marked too. Check the [@param tag][param]
++ Public exported API - describe all the arguments with the [@param tag][param] (without types).
 
 [JSDOC]: https://devdocs.io/jsdoc/
 [param]: https://devdocs.io/jsdoc/tags-param
@@ -429,10 +428,6 @@ A typical module should have the following structure:
 2. module-private declarations - variables, functions, classes, etc.
 3. export variables and functions
 4. export class declarations
-
-<!--
-For more information see [this file](https://github.com/telerik/xPlatCore/blob/master/JS/BCL/CreateNewModule.md)
--->
 
 ## File naming
 Use lower case for file names. Use a dash to separate different words.

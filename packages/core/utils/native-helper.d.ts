@@ -14,11 +14,11 @@ export function dataDeserialize(nativeData?: any): any;
  */
 export function isRealDevice(): boolean;
 
-type NativeWindow = android.view.Window | UIWindow;
+type PlatformWindow = android.view.Window | UIWindow;
 /**
  * Get the UIWindow or android.view.Window of the app
  */
-export function getWindow<T extends NativeWindow>(): T;
+export function getWindow<T extends PlatformWindow>(): T;
 
 /**
  * Utilities related to Android.
@@ -122,6 +122,13 @@ export const android: {
 	 * @param options Options to set status bar color.
 	 */
 	setStatusBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void;
+	/**
+	 * Re-applies the activity's edge-to-edge styling. The system bar icon
+	 * appearance is decided from the theme at the time the style is applied, so
+	 * an activity that survives a dark-mode switch keeps the old icons until this
+	 * runs again.
+	 */
+	refreshEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity): void;
 	/**
 	 * Enables edge-to-edge navigation for the provided activity.
 	 * @param activity The activity to enable edge-to-edge navigation for.

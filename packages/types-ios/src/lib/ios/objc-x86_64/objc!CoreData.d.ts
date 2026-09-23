@@ -23,15 +23,15 @@ declare class NSAsynchronousFetchRequest<ResultType> extends NSPersistentStoreRe
 
 	static new<ResultType>(): NSAsynchronousFetchRequest<ResultType>; // inherited from NSObject
 
-	readonly completionBlock: (p1: NSAsynchronousFetchResult<any>) => void;
+	readonly completionBlock: (p1: NSAsynchronousFetchResult<any>) => void | null;
 
 	estimatedResultCount: number;
 
 	readonly fetchRequest: NSFetchRequest<NSFetchRequestResult>;
 
-	constructor(o: { fetchRequest: NSFetchRequest<NSFetchRequestResult>; completionBlock: (p1: NSAsynchronousFetchResult<NSFetchRequestResult>) => void; });
+	constructor(o: { fetchRequest: NSFetchRequest<NSFetchRequestResult>; completionBlock: (p1: NSAsynchronousFetchResult<NSFetchRequestResult>) => void | null; });
 
-	initWithFetchRequestCompletionBlock(request: NSFetchRequest<NSFetchRequestResult>, blk: (p1: NSAsynchronousFetchResult<NSFetchRequestResult>) => void): this;
+	initWithFetchRequestCompletionBlock(request: NSFetchRequest<NSFetchRequestResult>, blk: (p1: NSAsynchronousFetchResult<NSFetchRequestResult>) => void | null): this;
 }
 
 /**
@@ -45,7 +45,7 @@ declare class NSAsynchronousFetchResult<ResultType> extends NSPersistentStoreAsy
 
 	readonly fetchRequest: NSAsynchronousFetchRequest<NSFetchRequestResult>;
 
-	readonly finalResult: NSArray<NSFetchRequestResult>;
+	readonly finalResult: NSArray<NSFetchRequestResult> | null;
 }
 
 /**
@@ -59,7 +59,7 @@ declare class NSAtomicStore extends NSPersistentStore {
 
 	addCacheNodes(cacheNodes: NSSet<NSAtomicStoreCacheNode>): void;
 
-	cacheNodeForObjectID(objectID: NSManagedObjectID): NSAtomicStoreCacheNode;
+	cacheNodeForObjectID(objectID: NSManagedObjectID): NSAtomicStoreCacheNode | null;
 
 	cacheNodes(): NSSet<NSAtomicStoreCacheNode>;
 
@@ -91,7 +91,7 @@ declare class NSAtomicStoreCacheNode extends NSObject {
 
 	readonly objectID: NSManagedObjectID;
 
-	propertyCache: NSMutableDictionary<string, any>;
+	propertyCache: NSMutableDictionary<string, any> | null;
 
 	constructor(o: { objectID: NSManagedObjectID; });
 
@@ -119,9 +119,9 @@ declare class NSAttributeDescription extends NSPropertyDescription {
 
 	attributeType: NSAttributeType;
 
-	attributeValueClassName: string;
+	attributeValueClassName: string | null;
 
-	defaultValue: any;
+	defaultValue: any | null;
 
 	/**
 	 * @since 13.0
@@ -131,7 +131,7 @@ declare class NSAttributeDescription extends NSPropertyDescription {
 	/**
 	 * @since 3.0
 	 */
-	valueTransformerName: string;
+	valueTransformerName: string | null;
 }
 
 declare const enum NSAttributeType {
@@ -212,7 +212,7 @@ declare class NSBatchDeleteResult extends NSPersistentStoreResult {
 
 	static new(): NSBatchDeleteResult; // inherited from NSObject
 
-	readonly result: any;
+	readonly result: any | null;
 
 	readonly resultType: NSBatchDeleteRequestResultType;
 }
@@ -241,18 +241,18 @@ declare class NSBatchInsertRequest extends NSPersistentStoreRequest {
 	/**
 	 * @since 14.0
 	 */
-	dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean;
+	dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean | null;
 
-	readonly entity: NSEntityDescription;
+	readonly entity: NSEntityDescription | null;
 
 	readonly entityName: string;
 
 	/**
 	 * @since 14.0
 	 */
-	managedObjectHandler: (p1: NSManagedObject) => boolean;
+	managedObjectHandler: (p1: NSManagedObject) => boolean | null;
 
-	objectsToInsert: NSArray<NSDictionary<string, any>>;
+	objectsToInsert: NSArray<NSDictionary<string, any>> | null;
 
 	resultType: NSBatchInsertRequestResultType;
 
@@ -326,7 +326,7 @@ declare class NSBatchInsertResult extends NSPersistentStoreResult {
 
 	static new(): NSBatchInsertResult; // inherited from NSObject
 
-	readonly result: any;
+	readonly result: any | null;
 
 	readonly resultType: NSBatchInsertRequestResultType;
 }
@@ -348,9 +348,9 @@ declare class NSBatchUpdateRequest extends NSPersistentStoreRequest {
 
 	includesSubentities: boolean;
 
-	predicate: NSPredicate;
+	predicate: NSPredicate | null;
 
-	propertiesToUpdate: NSDictionary<any, any>;
+	propertiesToUpdate: NSDictionary<any, any> | null;
 
 	resultType: NSBatchUpdateRequestResultType;
 
@@ -384,7 +384,7 @@ declare class NSBatchUpdateResult extends NSPersistentStoreResult {
 
 	static new(): NSBatchUpdateResult; // inherited from NSObject
 
-	readonly result: any;
+	readonly result: any | null;
 
 	readonly resultType: NSBatchUpdateRequestResultType;
 }
@@ -433,13 +433,13 @@ declare class NSConstraintConflict extends NSObject {
 
 	readonly constraintValues: NSDictionary<string, any>;
 
-	readonly databaseObject: NSManagedObject;
+	readonly databaseObject: NSManagedObject | null;
 
-	readonly databaseSnapshot: NSDictionary<string, any>;
+	readonly databaseSnapshot: NSDictionary<string, any> | null;
 
-	constructor(o: { constraint: NSArray<string> | string[]; databaseObject: NSManagedObject; databaseSnapshot: NSDictionary<any, any>; conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[]; conflictingSnapshots: NSArray<any> | any[]; });
+	constructor(o: { constraint: NSArray<string> | string[]; databaseObject: NSManagedObject | null; databaseSnapshot: NSDictionary<any, any> | null; conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[]; conflictingSnapshots: NSArray<any> | any[]; });
 
-	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string> | string[], databaseObject: NSManagedObject, databaseSnapshot: NSDictionary<any, any>, conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[], conflictingSnapshots: NSArray<any> | any[]): this;
+	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string> | string[], databaseObject: NSManagedObject | null, databaseSnapshot: NSDictionary<any, any> | null, conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[], conflictingSnapshots: NSArray<any> | any[]): this;
 }
 
 /**
@@ -467,16 +467,16 @@ declare class NSCoreDataCoreSpotlightDelegate extends NSObject {
 	 */
 	constructor(o: { forStoreWithDescription: NSPersistentStoreDescription; model: NSManagedObjectModel; });
 
-	attributeSetForObject(object: NSManagedObject): CSSearchableItemAttributeSet;
+	attributeSetForObject(object: NSManagedObject): CSSearchableItemAttributeSet | null;
 
 	/**
 	 * @since 14.0
 	 */
-	deleteSpotlightIndexWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	deleteSpotlightIndexWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	domainIdentifier(): string;
 
-	indexName(): string;
+	indexName(): string | null;
 
 	/**
 	 * @since 13.0
@@ -529,11 +529,11 @@ declare class NSCustomMigrationStage extends NSMigrationStage {
 
 	readonly currentModel: NSManagedObjectModelReference;
 
-	didMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError>) => boolean;
+	didMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError | null> | null) => boolean | null;
 
 	readonly nextModel: NSManagedObjectModelReference;
 
-	willMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError>) => boolean;
+	willMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError | null> | null) => boolean | null;
 
 	constructor(o: { currentModelReference: NSManagedObjectModelReference; nextModelReference: NSManagedObjectModelReference; });
 
@@ -570,7 +570,7 @@ declare class NSDerivedAttributeDescription extends NSAttributeDescription {
 
 	static new(): NSDerivedAttributeDescription; // inherited from NSObject
 
-	derivationExpression: NSExpression;
+	derivationExpression: NSExpression | null;
 }
 
 /**
@@ -585,7 +585,7 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	static alloc(): NSEntityDescription; // inherited from NSObject
 
-	static entityForNameInManagedObjectContext(entityName: string, context: NSManagedObjectContext): NSEntityDescription;
+	static entityForNameInManagedObjectContext(entityName: string, context: NSManagedObjectContext): NSEntityDescription | null;
 
 	static insertNewObjectForEntityForNameInManagedObjectContext(entityName: string, context: NSManagedObjectContext): NSManagedObject;
 
@@ -615,7 +615,7 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	readonly managedObjectModel: NSManagedObjectModel;
 
-	name: string;
+	name: string | null;
 
 	properties: NSArray<NSPropertyDescription>;
 
@@ -626,20 +626,20 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 	/**
 	 * @since 3.0
 	 */
-	renamingIdentifier: string;
+	renamingIdentifier: string | null;
 
 	subentities: NSArray<NSEntityDescription>;
 
 	readonly subentitiesByName: NSDictionary<string, NSEntityDescription>;
 
-	readonly superentity: NSEntityDescription;
+	readonly superentity: NSEntityDescription | null;
 
 	/**
 	 * @since 9.0
 	 */
 	uniquenessConstraints: NSArray<NSArray<any>>;
 
-	userInfo: NSDictionary<any, any>;
+	userInfo: NSDictionary<any, any> | null;
 
 	/**
 	 * @since 3.0
@@ -649,12 +649,12 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 	/**
 	 * @since 3.0
 	 */
-	versionHashModifier: string;
+	versionHashModifier: string | null;
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -677,27 +677,27 @@ declare class NSEntityMapping extends NSObject {
 
 	static new(): NSEntityMapping; // inherited from NSObject
 
-	attributeMappings: NSArray<NSPropertyMapping>;
+	attributeMappings: NSArray<NSPropertyMapping> | null;
 
-	destinationEntityName: string;
+	destinationEntityName: string | null;
 
-	destinationEntityVersionHash: NSData;
+	destinationEntityVersionHash: NSData | null;
 
-	entityMigrationPolicyClassName: string;
+	entityMigrationPolicyClassName: string | null;
 
 	mappingType: NSEntityMappingType;
 
 	name: string;
 
-	relationshipMappings: NSArray<NSPropertyMapping>;
+	relationshipMappings: NSArray<NSPropertyMapping> | null;
 
-	sourceEntityName: string;
+	sourceEntityName: string | null;
 
-	sourceEntityVersionHash: NSData;
+	sourceEntityVersionHash: NSData | null;
 
-	sourceExpression: NSExpression;
+	sourceExpression: NSExpression | null;
 
-	userInfo: NSDictionary<any, any>;
+	userInfo: NSDictionary<any, any> | null;
 }
 
 declare const enum NSEntityMappingType {
@@ -760,7 +760,7 @@ declare class NSExpressionDescription extends NSPropertyDescription {
 
 	static new(): NSExpressionDescription; // inherited from NSObject
 
-	expression: NSExpression;
+	expression: NSExpression | null;
 
 	expressionResultType: NSAttributeType;
 }
@@ -778,23 +778,23 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding, NSCo
 
 	elements: NSArray<NSFetchIndexElementDescription>;
 
-	readonly entity: NSEntityDescription;
+	readonly entity: NSEntityDescription | null;
 
 	name: string;
 
-	partialIndexPredicate: NSPredicate;
+	partialIndexPredicate: NSPredicate | null;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]; });
+	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[] | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]): this;
+	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[] | null): this;
 }
 
 /**
@@ -810,17 +810,17 @@ declare class NSFetchIndexElementDescription extends NSObject implements NSCodin
 
 	collationType: NSFetchIndexElementType;
 
-	readonly indexDescription: NSFetchIndexDescription;
+	readonly indexDescription: NSFetchIndexDescription | null;
 
-	readonly property: NSPropertyDescription;
+	readonly property: NSPropertyDescription | null;
 
-	readonly propertyName: string;
+	readonly propertyName: string | null;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { property: NSPropertyDescription; collationType: NSFetchIndexElementType; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -853,12 +853,12 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 
 	static new<ResultType>(): NSFetchRequest<ResultType>; // inherited from NSObject
 
-	entity: NSEntityDescription;
+	entity: NSEntityDescription | null;
 
 	/**
 	 * @since 4.0
 	 */
-	readonly entityName: string;
+	readonly entityName: string | null;
 
 	/**
 	 * @since 3.0
@@ -875,7 +875,7 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 	/**
 	 * @since 5.0
 	 */
-	havingPredicate: NSPredicate;
+	havingPredicate: NSPredicate | null;
 
 	/**
 	 * @since 3.0
@@ -892,22 +892,22 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 	 */
 	includesSubentities: boolean;
 
-	predicate: NSPredicate;
+	predicate: NSPredicate | null;
 
 	/**
 	 * @since 3.0
 	 */
-	propertiesToFetch: NSArray<any>;
+	propertiesToFetch: NSArray<any> | null;
 
 	/**
 	 * @since 5.0
 	 */
-	propertiesToGroupBy: NSArray<any>;
+	propertiesToGroupBy: NSArray<any> | null;
 
 	/**
 	 * @since 3.0
 	 */
-	relationshipKeyPathsForPrefetching: NSArray<string>;
+	relationshipKeyPathsForPrefetching: NSArray<string> | null;
 
 	/**
 	 * @since 3.0
@@ -929,7 +929,7 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 	 */
 	shouldRefreshRefetchedObjects: boolean;
 
-	sortDescriptors: NSArray<NSSortDescriptor>;
+	sortDescriptors: NSArray<NSSortDescriptor> | null;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -938,14 +938,14 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 	 */
 	constructor(o: { entityName: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	/**
 	 * @since 10.0
 	 */
-	execute(error?: interop.Reference<NSError>): NSArray<NSFetchRequestResult>;
+	execute(error?: interop.Reference<NSError>): NSArray<NSFetchRequestResult> | null;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -1002,7 +1002,7 @@ declare class NSFetchedPropertyDescription extends NSPropertyDescription {
 
 	static new(): NSFetchedPropertyDescription; // inherited from NSObject
 
-	fetchRequest: NSFetchRequest<any>;
+	fetchRequest: NSFetchRequest<any> | null;
 }
 
 /**
@@ -1026,31 +1026,31 @@ declare class NSFetchedResultsController<ResultType> extends NSObject {
 
 	static alloc<ResultType>(): NSFetchedResultsController<ResultType>; // inherited from NSObject
 
-	static deleteCacheWithName(name: string): void;
+	static deleteCacheWithName(name: string | null): void;
 
 	static new<ResultType>(): NSFetchedResultsController<ResultType>; // inherited from NSObject
 
-	readonly cacheName: string;
+	readonly cacheName: string | null;
 
-	delegate: NSFetchedResultsControllerDelegate;
+	delegate: NSFetchedResultsControllerDelegate | null;
 
 	readonly fetchRequest: NSFetchRequest<NSFetchRequestResult>;
 
-	readonly fetchedObjects: NSArray<NSFetchRequestResult>;
+	readonly fetchedObjects: NSArray<NSFetchRequestResult> | null;
 
 	readonly managedObjectContext: NSManagedObjectContext;
 
 	readonly sectionIndexTitles: NSArray<string>;
 
-	readonly sectionNameKeyPath: string;
+	readonly sectionNameKeyPath: string | null;
 
-	readonly sections: NSArray<NSFetchedResultsSectionInfo>;
+	readonly sections: NSArray<NSFetchedResultsSectionInfo> | null;
 
-	constructor(o: { fetchRequest: NSFetchRequest<NSFetchRequestResult>; managedObjectContext: NSManagedObjectContext; sectionNameKeyPath: string; cacheName: string; });
+	constructor(o: { fetchRequest: NSFetchRequest<NSFetchRequestResult>; managedObjectContext: NSManagedObjectContext; sectionNameKeyPath: string | null; cacheName: string | null; });
 
-	indexPathForObject(object: NSFetchRequestResult): NSIndexPath;
+	indexPathForObject(object: NSFetchRequestResult): NSIndexPath | null;
 
-	initWithFetchRequestManagedObjectContextSectionNameKeyPathCacheName(fetchRequest: NSFetchRequest<NSFetchRequestResult>, context: NSManagedObjectContext, sectionNameKeyPath: string, name: string): this;
+	initWithFetchRequestManagedObjectContextSectionNameKeyPathCacheName(fetchRequest: NSFetchRequest<NSFetchRequestResult>, context: NSManagedObjectContext, sectionNameKeyPath: string | null, name: string | null): this;
 
 	objectAtIndexPath(indexPath: NSIndexPath): NSFetchRequestResult;
 
@@ -1058,7 +1058,7 @@ declare class NSFetchedResultsController<ResultType> extends NSObject {
 
 	sectionForSectionIndexTitleAtIndex(title: string, sectionIndex: number): number;
 
-	sectionIndexTitleForSectionName(sectionName: string): string;
+	sectionIndexTitleForSectionName(sectionName: string): string | null;
 }
 
 interface NSFetchedResultsControllerDelegate extends NSObjectProtocol {
@@ -1075,14 +1075,14 @@ interface NSFetchedResultsControllerDelegate extends NSObjectProtocol {
 	 */
 	controllerDidChangeContentWithSnapshot?(controller: NSFetchedResultsController<any>, snapshot: NSDiffableDataSourceSnapshot<string, NSManagedObjectID>): void;
 
-	controllerDidChangeObjectAtIndexPathForChangeTypeNewIndexPath?(controller: NSFetchedResultsController<any>, anObject: any, indexPath: NSIndexPath, type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath): void;
+	controllerDidChangeObjectAtIndexPathForChangeTypeNewIndexPath?(controller: NSFetchedResultsController<any>, anObject: any, indexPath: NSIndexPath | null, type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath | null): void;
 
 	controllerDidChangeSectionAtIndexForChangeType?(controller: NSFetchedResultsController<any>, sectionInfo: NSFetchedResultsSectionInfo, sectionIndex: number, type: NSFetchedResultsChangeType): void;
 
 	/**
 	 * @since 4.0
 	 */
-	controllerSectionIndexTitleForSectionName?(controller: NSFetchedResultsController<any>, sectionName: string): string;
+	controllerSectionIndexTitleForSectionName?(controller: NSFetchedResultsController<any>, sectionName: string): string | null;
 
 	controllerWillChangeContent?(controller: NSFetchedResultsController<any>): void;
 }
@@ -1093,13 +1093,13 @@ declare var NSFetchedResultsControllerDelegate: {
 
 interface NSFetchedResultsSectionInfo {
 
-	indexTitle: string;
+	indexTitle: string | null;
 
 	name: string;
 
 	numberOfObjects: number;
 
-	objects: NSArray<any>;
+	objects: NSArray<any> | null;
 }
 declare var NSFetchedResultsSectionInfo: {
 
@@ -1127,7 +1127,7 @@ declare class NSIncrementalStore extends NSPersistentStore {
 
 	static new(): NSIncrementalStore; // inherited from NSObject
 
-	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any;
+	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext | null, error?: interop.Reference<NSError>): any | null;
 
 	managedObjectContextDidRegisterObjectsWithIDs(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): void;
 
@@ -1135,11 +1135,11 @@ declare class NSIncrementalStore extends NSPersistentStore {
 
 	newObjectIDForEntityReferenceObject(entity: NSEntityDescription, data: any): NSManagedObjectID;
 
-	newValueForRelationshipForObjectWithIDWithContextError(relationship: NSRelationshipDescription, objectID: NSManagedObjectID, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any;
+	newValueForRelationshipForObjectWithIDWithContextError(relationship: NSRelationshipDescription, objectID: NSManagedObjectID, context: NSManagedObjectContext | null, error?: interop.Reference<NSError>): any | null;
 
-	newValuesForObjectWithIDWithContextError(objectID: NSManagedObjectID, context: NSManagedObjectContext, error?: interop.Reference<NSError>): NSIncrementalStoreNode;
+	newValuesForObjectWithIDWithContextError(objectID: NSManagedObjectID, context: NSManagedObjectContext, error?: interop.Reference<NSError>): NSIncrementalStoreNode | null;
 
-	obtainPermanentIDsForObjectsError(array: NSArray<NSManagedObject> | NSManagedObject[], error?: interop.Reference<NSError>): NSArray<NSManagedObjectID>;
+	obtainPermanentIDsForObjectsError(array: NSArray<NSManagedObject> | NSManagedObject[], error?: interop.Reference<NSError>): NSArray<NSManagedObjectID> | null;
 
 	referenceObjectForObjectID(objectID: NSManagedObjectID): any;
 }
@@ -1163,7 +1163,7 @@ declare class NSIncrementalStoreNode extends NSObject {
 
 	updateWithValuesVersion(values: NSDictionary<string, any>, version: number): void;
 
-	valueForPropertyDescription(prop: NSPropertyDescription): any;
+	valueForPropertyDescription(prop: NSPropertyDescription): any | null;
 }
 
 /**
@@ -1256,7 +1256,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	readonly inserted: boolean;
 
-	readonly managedObjectContext: NSManagedObjectContext;
+	readonly managedObjectContext: NSManagedObjectContext | null;
 
 	readonly objectID: NSManagedObjectID;
 
@@ -1284,7 +1284,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 	 */
 	constructor(o: { context: NSManagedObjectContext; });
 
-	constructor(o: { entity: NSEntityDescription; insertIntoManagedObjectContext: NSManagedObjectContext; });
+	constructor(o: { entity: NSEntityDescription; insertIntoManagedObjectContext: NSManagedObjectContext | null; });
 
 	awakeFromFetch(): void;
 
@@ -1304,11 +1304,11 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	class(): typeof NSObject;
 
-	committedValuesForKeys(keys: NSArray<string> | string[]): NSDictionary<string, any>;
+	committedValuesForKeys(keys: NSArray<string> | string[] | null): NSDictionary<string, any>;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	didAccessValueForKey(key: string): void;
+	didAccessValueForKey(key: string | null): void;
 
 	didSave(): void;
 
@@ -1324,7 +1324,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 	 */
 	initWithContext(moc: NSManagedObjectContext): this;
 
-	initWithEntityInsertIntoManagedObjectContext(entity: NSEntityDescription, context: NSManagedObjectContext): this;
+	initWithEntityInsertIntoManagedObjectContext(entity: NSEntityDescription, context: NSManagedObjectContext | null): this;
 
 	isEqual(object: any): boolean;
 
@@ -1348,7 +1348,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 	 */
 	prepareForDeletion(): void;
 
-	primitiveValueForKey(key: string): any;
+	primitiveValueForKey(key: string): any | null;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -1356,7 +1356,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	self(): this;
 
-	setPrimitiveValueForKey(value: any, key: string): void;
+	setPrimitiveValueForKey(value: any | null, key: string): void;
 
 	validateForDelete(error?: interop.Reference<NSError>): boolean;
 
@@ -1364,7 +1364,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	validateForUpdate(error?: interop.Reference<NSError>): boolean;
 
-	willAccessValueForKey(key: string): void;
+	willAccessValueForKey(key: string | null): void;
 
 	willSave(): void;
 
@@ -1413,21 +1413,21 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 	/**
 	 * @since 8.0
 	 */
-	name: string;
+	name: string | null;
 
 	/**
 	 * @since 5.0
 	 */
-	parentContext: NSManagedObjectContext;
+	parentContext: NSManagedObjectContext | null;
 
-	persistentStoreCoordinator: NSPersistentStoreCoordinator;
+	persistentStoreCoordinator: NSPersistentStoreCoordinator | null;
 
 	propagatesDeletesAtEndOfEvent: boolean;
 
 	/**
 	 * @since 10.0
 	 */
-	readonly queryGenerationToken: NSQueryGenerationToken;
+	readonly queryGenerationToken: NSQueryGenerationToken | null;
 
 	readonly registeredObjects: NSSet<NSManagedObject>;
 
@@ -1443,9 +1443,9 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 	/**
 	 * @since 11.0
 	 */
-	transactionAuthor: string;
+	transactionAuthor: string | null;
 
-	undoManager: NSUndoManager;
+	undoManager: NSUndoManager | null;
 
 	readonly updatedObjects: NSSet<NSManagedObject>;
 
@@ -1474,17 +1474,17 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	executeFetchRequestError(request: NSFetchRequest<any>, error?: interop.Reference<NSError>): NSArray<any>;
+	executeFetchRequestError(request: NSFetchRequest<any>, error?: interop.Reference<NSError>): NSArray<any> | null;
 
 	/**
 	 * @since 8.0
 	 */
-	executeRequestError(request: NSPersistentStoreRequest, error?: interop.Reference<NSError>): NSPersistentStoreResult;
+	executeRequestError(request: NSPersistentStoreRequest, error?: interop.Reference<NSError>): NSPersistentStoreResult | null;
 
 	/**
 	 * @since 3.0
 	 */
-	existingObjectWithIDError(objectID: NSManagedObjectID, error?: interop.Reference<NSError>): NSManagedObject;
+	existingObjectWithIDError(objectID: NSManagedObjectID, error?: interop.Reference<NSError>): NSManagedObject | null;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -1502,7 +1502,7 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 	 */
 	mergeChangesFromContextDidSaveNotification(notification: NSNotification): void;
 
-	objectRegisteredForID(objectID: NSManagedObjectID): NSManagedObject;
+	objectRegisteredForID(objectID: NSManagedObjectID): NSManagedObject | null;
 
 	objectWithID(objectID: NSManagedObjectID): NSManagedObject;
 
@@ -1541,12 +1541,12 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 	/**
 	 * @since 10.0
 	 */
-	setQueryGenerationFromTokenError(generation: NSQueryGenerationToken, error?: interop.Reference<NSError>): boolean;
+	setQueryGenerationFromTokenError(generation: NSQueryGenerationToken | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
 	 */
-	shouldHandleInaccessibleFaultForObjectIDTriggeredByProperty(fault: NSManagedObject, oid: NSManagedObjectID, property: NSPropertyDescription): boolean;
+	shouldHandleInaccessibleFaultForObjectIDTriggeredByProperty(fault: NSManagedObject, oid: NSManagedObjectID, property: NSPropertyDescription | null): boolean;
 
 	/**
 	 * @since 3.0
@@ -1616,7 +1616,7 @@ declare class NSManagedObjectID extends NSObject implements NSCopying, NSFetchRe
 
 	readonly entity: NSEntityDescription;
 
-	readonly persistentStore: NSPersistentStore;
+	readonly persistentStore: NSPersistentStore | null;
 
 	readonly temporaryID: boolean;
 
@@ -1638,7 +1638,7 @@ declare class NSManagedObjectID extends NSObject implements NSCopying, NSFetchRe
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	isEqual(object: any): boolean;
 
@@ -1671,21 +1671,21 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 	/**
 	 * @since 17.0
 	 */
-	static checksumsForVersionedModelAtURLError(modelURL: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, string>;
+	static checksumsForVersionedModelAtURLError(modelURL: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, string> | null;
 
-	static mergedModelFromBundles(bundles: NSArray<NSBundle> | NSBundle[]): NSManagedObjectModel;
-
-	/**
-	 * @since 3.0
-	 */
-	static mergedModelFromBundlesForStoreMetadata(bundles: NSArray<NSBundle> | NSBundle[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
-
-	static modelByMergingModels(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[]): NSManagedObjectModel;
+	static mergedModelFromBundles(bundles: NSArray<NSBundle> | NSBundle[] | null): NSManagedObjectModel | null;
 
 	/**
 	 * @since 3.0
 	 */
-	static modelByMergingModelsForStoreMetadata(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
+	static mergedModelFromBundlesForStoreMetadata(bundles: NSArray<NSBundle> | NSBundle[] | null, metadata: NSDictionary<string, any>): NSManagedObjectModel | null;
+
+	static modelByMergingModels(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[] | null): NSManagedObjectModel | null;
+
+	/**
+	 * @since 3.0
+	 */
+	static modelByMergingModelsForStoreMetadata(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[], metadata: NSDictionary<string, any>): NSManagedObjectModel | null;
 
 	static new(): NSManagedObjectModel; // inherited from NSObject
 
@@ -1705,7 +1705,7 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 	 */
 	readonly fetchRequestTemplatesByName: NSDictionary<string, NSFetchRequest<any>>;
 
-	localizationDictionary: NSDictionary<string, string>;
+	localizationDictionary: NSDictionary<string, string> | null;
 
 	/**
 	 * @since 17.0
@@ -1722,15 +1722,15 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	constructor(o: { contentsOfURL: NSURL; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	entitiesForConfiguration(configuration: string): NSArray<NSEntityDescription>;
+	entitiesForConfiguration(configuration: string | null): NSArray<NSEntityDescription> | null;
 
-	fetchRequestFromTemplateWithNameSubstitutionVariables(name: string, variables: NSDictionary<string, any>): NSFetchRequest<any>;
+	fetchRequestFromTemplateWithNameSubstitutionVariables(name: string, variables: NSDictionary<string, any>): NSFetchRequest<any> | null;
 
-	fetchRequestTemplateForName(name: string): NSFetchRequest<any>;
+	fetchRequestTemplateForName(name: string): NSFetchRequest<any> | null;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -1739,11 +1739,11 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 	/**
 	 * @since 3.0
 	 */
-	isConfigurationCompatibleWithStoreMetadata(configuration: string, metadata: NSDictionary<string, any>): boolean;
+	isConfigurationCompatibleWithStoreMetadata(configuration: string | null, metadata: NSDictionary<string, any>): boolean;
 
 	setEntitiesForConfiguration(entities: NSArray<NSEntityDescription> | NSEntityDescription[], configuration: string): void;
 
-	setFetchRequestTemplateForName(fetchRequestTemplate: NSFetchRequest<any>, name: string): void;
+	setFetchRequestTemplateForName(fetchRequestTemplate: NSFetchRequest<any> | null, name: string): void;
 }
 
 /**
@@ -1759,21 +1759,21 @@ declare class NSManagedObjectModelReference extends NSObject {
 
 	readonly versionChecksum: string;
 
-	constructor(o: { entityVersionHashes: NSDictionary<any, any>; inBundle: NSBundle; versionChecksum: string; });
+	constructor(o: { entityVersionHashes: NSDictionary<any, any>; inBundle: NSBundle | null; versionChecksum: string; });
 
 	constructor(o: { fileURL: NSURL; versionChecksum: string; });
 
 	constructor(o: { model: NSManagedObjectModel; versionChecksum: string; });
 
-	constructor(o: { name: string; inBundle: NSBundle; versionChecksum: string; });
+	constructor(o: { name: string; inBundle: NSBundle | null; versionChecksum: string; });
 
-	initWithEntityVersionHashesInBundleVersionChecksum(versionHash: NSDictionary<any, any>, bundle: NSBundle, versionChecksum: string): this;
+	initWithEntityVersionHashesInBundleVersionChecksum(versionHash: NSDictionary<any, any>, bundle: NSBundle | null, versionChecksum: string): this;
 
 	initWithFileURLVersionChecksum(fileURL: NSURL, versionChecksum: string): this;
 
 	initWithModelVersionChecksum(model: NSManagedObjectModel, versionChecksum: string): this;
 
-	initWithNameInBundleVersionChecksum(modelName: string, bundle: NSBundle, versionChecksum: string): this;
+	initWithNameInBundleVersionChecksum(modelName: string, bundle: NSBundle | null, versionChecksum: string): this;
 }
 
 declare const NSManagedObjectModelReferenceNotFoundError: number;
@@ -1792,9 +1792,9 @@ declare class NSMappingModel extends NSObject {
 	/**
 	 * @since 3.0
 	 */
-	static inferredMappingModelForSourceModelDestinationModelError(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel, error?: interop.Reference<NSError>): NSMappingModel;
+	static inferredMappingModelForSourceModelDestinationModelError(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel, error?: interop.Reference<NSError>): NSMappingModel | null;
 
-	static mappingModelFromBundlesForSourceModelDestinationModel(bundles: NSArray<NSBundle> | NSBundle[], sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): NSMappingModel;
+	static mappingModelFromBundlesForSourceModelDestinationModel(bundles: NSArray<NSBundle> | NSBundle[] | null, sourceModel: NSManagedObjectModel | null, destinationModel: NSManagedObjectModel | null): NSMappingModel | null;
 
 	static new(): NSMappingModel; // inherited from NSObject
 
@@ -1802,9 +1802,9 @@ declare class NSMappingModel extends NSObject {
 
 	readonly entityMappingsByName: NSDictionary<string, NSEntityMapping>;
 
-	constructor(o: { contentsOfURL: NSURL; });
+	constructor(o: { contentsOfURL: NSURL | null; });
 
-	initWithContentsOfURL(url: NSURL): this;
+	initWithContentsOfURL(url: NSURL | null): this;
 }
 
 /**
@@ -1836,21 +1836,21 @@ declare class NSMergeConflict extends NSObject {
 
 	static new(): NSMergeConflict; // inherited from NSObject
 
-	readonly cachedSnapshot: NSDictionary<string, any>;
+	readonly cachedSnapshot: NSDictionary<string, any> | null;
 
 	readonly newVersionNumber: number;
 
-	readonly objectSnapshot: NSDictionary<string, any>;
+	readonly objectSnapshot: NSDictionary<string, any> | null;
 
 	readonly oldVersionNumber: number;
 
-	readonly persistedSnapshot: NSDictionary<string, any>;
+	readonly persistedSnapshot: NSDictionary<string, any> | null;
 
 	readonly sourceObject: NSManagedObject;
 
-	constructor(o: { source: NSManagedObject; newVersion: number; oldVersion: number; cachedSnapshot: NSDictionary<string, any>; persistedSnapshot: NSDictionary<string, any>; });
+	constructor(o: { source: NSManagedObject; newVersion: number; oldVersion: number; cachedSnapshot: NSDictionary<string, any> | null; persistedSnapshot: NSDictionary<string, any> | null; });
 
-	initWithSourceNewVersionOldVersionCachedSnapshotPersistedSnapshot(srcObject: NSManagedObject, newvers: number, oldvers: number, cachesnap: NSDictionary<string, any>, persnap: NSDictionary<string, any>): this;
+	initWithSourceNewVersionOldVersionCachedSnapshotPersistedSnapshot(srcObject: NSManagedObject, newvers: number, oldvers: number, cachesnap: NSDictionary<string, any> | null, persnap: NSDictionary<string, any> | null): this;
 }
 
 /**
@@ -1968,7 +1968,7 @@ declare class NSMigrationManager extends NSObject {
 
 	readonly sourceModel: NSManagedObjectModel;
 
-	userInfo: NSDictionary<any, any>;
+	userInfo: NSDictionary<any, any> | null;
 
 	/**
 	 * @since 5.0
@@ -1981,19 +1981,19 @@ declare class NSMigrationManager extends NSObject {
 
 	cancelMigrationWithError(error: NSError): void;
 
-	destinationEntityForEntityMapping(mEntity: NSEntityMapping): NSEntityDescription;
+	destinationEntityForEntityMapping(mEntity: NSEntityMapping): NSEntityDescription | null;
 
-	destinationInstancesForEntityMappingNamedSourceInstances(mappingName: string, sourceInstances: NSArray<NSManagedObject> | NSManagedObject[]): NSArray<NSManagedObject>;
+	destinationInstancesForEntityMappingNamedSourceInstances(mappingName: string, sourceInstances: NSArray<NSManagedObject> | NSManagedObject[] | null): NSArray<NSManagedObject>;
 
 	initWithSourceModelDestinationModel(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): this;
 
-	migrateStoreFromURLTypeOptionsWithMappingModelToDestinationURLDestinationTypeDestinationOptionsError(sourceURL: NSURL, sStoreType: string, sOptions: NSDictionary<any, any>, mappings: NSMappingModel, dURL: NSURL, dStoreType: string, dOptions: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
+	migrateStoreFromURLTypeOptionsWithMappingModelToDestinationURLDestinationTypeDestinationOptionsError(sourceURL: NSURL, sStoreType: string, sOptions: NSDictionary<any, any> | null, mappings: NSMappingModel | null, dURL: NSURL, dStoreType: string, dOptions: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): boolean;
 
 	reset(): void;
 
-	sourceEntityForEntityMapping(mEntity: NSEntityMapping): NSEntityDescription;
+	sourceEntityForEntityMapping(mEntity: NSEntityMapping): NSEntityDescription | null;
 
-	sourceInstancesForEntityMappingNamedDestinationInstances(mappingName: string, destinationInstances: NSArray<NSManagedObject> | NSManagedObject[]): NSArray<NSManagedObject>;
+	sourceInstancesForEntityMappingNamedDestinationInstances(mappingName: string, destinationInstances: NSArray<NSManagedObject> | NSManagedObject[] | null): NSArray<NSManagedObject>;
 }
 
 declare const NSMigrationManagerDestinationStoreError: number;
@@ -2057,7 +2057,7 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 	/**
 	 * @since 15.0
 	 */
-	acceptShareInvitationsFromMetadataIntoPersistentStoreCompletion(metadata: NSArray<CKShareMetadata> | CKShareMetadata[], persistentStore: NSPersistentStore, completion: (p1: NSArray<CKShareMetadata>, p2: NSError) => void): void;
+	acceptShareInvitationsFromMetadataIntoPersistentStoreCompletion(metadata: NSArray<CKShareMetadata> | CKShareMetadata[], persistentStore: NSPersistentStore, completion: (p1: NSArray<CKShareMetadata> | null, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 14.0
@@ -2077,33 +2077,33 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 	/**
 	 * @since 15.0
 	 */
-	fetchParticipantsMatchingLookupInfosIntoPersistentStoreCompletion(lookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[], persistentStore: NSPersistentStore, completion: (p1: NSArray<CKShareParticipant>, p2: NSError) => void): void;
+	fetchParticipantsMatchingLookupInfosIntoPersistentStoreCompletion(lookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[], persistentStore: NSPersistentStore, completion: (p1: NSArray<CKShareParticipant> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 15.0
 	 */
-	fetchSharesInPersistentStoreError(persistentStore: NSPersistentStore, error?: interop.Reference<NSError>): NSArray<CKShare>;
+	fetchSharesInPersistentStoreError(persistentStore: NSPersistentStore | null, error?: interop.Reference<NSError>): NSArray<CKShare> | null;
 
 	/**
 	 * @since 15.0
 	 */
-	fetchSharesMatchingObjectIDsError(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[], error?: interop.Reference<NSError>): NSDictionary<NSManagedObjectID, CKShare>;
+	fetchSharesMatchingObjectIDsError(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[], error?: interop.Reference<NSError>): NSDictionary<NSManagedObjectID, CKShare> | null;
 
 	initializeCloudKitSchemaWithOptionsError(options: NSPersistentCloudKitContainerSchemaInitializationOptions, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 15.0
 	 */
-	persistUpdatedShareInPersistentStoreCompletion(share: CKShare, persistentStore: NSPersistentStore, completion: (p1: CKShare, p2: NSError) => void): void;
+	persistUpdatedShareInPersistentStoreCompletion(share: CKShare, persistentStore: NSPersistentStore, completion: (p1: CKShare | null, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 15.0
 	 */
-	purgeObjectsAndRecordsInZoneWithIDInPersistentStoreCompletion(zoneID: CKRecordZoneID, persistentStore: NSPersistentStore, completion: (p1: CKRecordZoneID, p2: NSError) => void): void;
+	purgeObjectsAndRecordsInZoneWithIDInPersistentStoreCompletion(zoneID: CKRecordZoneID, persistentStore: NSPersistentStore | null, completion: (p1: CKRecordZoneID | null, p2: NSError | null) => void | null): void;
 
-	recordForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecord;
+	recordForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecord | null;
 
-	recordIDForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecordID;
+	recordIDForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecordID | null;
 
 	recordIDsForManagedObjectIDs(managedObjectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): NSDictionary<NSManagedObjectID, CKRecordID>;
 
@@ -2112,7 +2112,7 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 	/**
 	 * @since 15.0
 	 */
-	shareManagedObjectsToShareCompletion(managedObjects: NSArray<NSManagedObject> | NSManagedObject[], share: CKShare, completion: (p1: NSSet<NSManagedObjectID>, p2: CKShare, p3: CKContainer, p4: NSError) => void): void;
+	shareManagedObjectsToShareCompletion(managedObjects: NSArray<NSManagedObject> | NSManagedObject[], share: CKShare | null, completion: (p1: NSSet<NSManagedObjectID> | null, p2: CKShare | null, p3: CKContainer | null, p4: NSError | null) => void): void;
 }
 
 /**
@@ -2124,9 +2124,9 @@ declare class NSPersistentCloudKitContainerEvent extends NSObject implements NSC
 
 	static new(): NSPersistentCloudKitContainerEvent; // inherited from NSObject
 
-	readonly endDate: Date;
+	readonly endDate: Date | null;
 
-	readonly error: NSError;
+	readonly error: NSError | null;
 
 	readonly identifier: NSUUID;
 
@@ -2138,7 +2138,7 @@ declare class NSPersistentCloudKitContainerEvent extends NSObject implements NSC
 
 	readonly type: NSPersistentCloudKitContainerEventType;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2155,7 +2155,7 @@ declare class NSPersistentCloudKitContainerEventRequest extends NSPersistentStor
 
 	static fetchEventsAfterDate(date: Date): NSPersistentCloudKitContainerEventRequest;
 
-	static fetchEventsAfterEvent(event: NSPersistentCloudKitContainerEvent): NSPersistentCloudKitContainerEventRequest;
+	static fetchEventsAfterEvent(event: NSPersistentCloudKitContainerEvent | null): NSPersistentCloudKitContainerEventRequest;
 
 	static fetchEventsMatchingFetchRequest(fetchRequest: NSFetchRequest<any>): NSPersistentCloudKitContainerEventRequest;
 
@@ -2175,7 +2175,7 @@ declare class NSPersistentCloudKitContainerEventResult extends NSPersistentStore
 
 	static new(): NSPersistentCloudKitContainerEventResult; // inherited from NSObject
 
-	readonly result: any;
+	readonly result: any | null;
 
 	readonly resultType: NSPersistentCloudKitContainerEventResultType;
 }
@@ -2270,7 +2270,7 @@ declare class NSPersistentContainer extends NSObject {
 
 	initWithNameManagedObjectModel(name: string, model: NSManagedObjectModel): this;
 
-	loadPersistentStoresWithCompletionHandler(block: (p1: NSPersistentStoreDescription, p2: NSError) => void): void;
+	loadPersistentStoresWithCompletionHandler(block: (p1: NSPersistentStoreDescription, p2: NSError | null) => void): void;
 
 	newBackgroundContext(): NSManagedObjectContext;
 
@@ -2287,7 +2287,7 @@ declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
 	/**
 	 * @since 13.0
 	 */
-	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription;
+	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription | null;
 
 	static new(): NSPersistentHistoryChange; // inherited from NSObject
 
@@ -2297,23 +2297,23 @@ declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
 
 	readonly changedObjectID: NSManagedObjectID;
 
-	readonly tombstone: NSDictionary<any, any>;
+	readonly tombstone: NSDictionary<any, any> | null;
 
-	readonly transaction: NSPersistentHistoryTransaction;
+	readonly transaction: NSPersistentHistoryTransaction | null;
 
-	readonly updatedProperties: NSSet<NSPropertyDescription>;
-
-	/**
-	 * @since 13.0
-	 */
-	static readonly entityDescription: NSEntityDescription;
+	readonly updatedProperties: NSSet<NSPropertyDescription> | null;
 
 	/**
 	 * @since 13.0
 	 */
-	static readonly fetchRequest: NSFetchRequest<any>;
+	static readonly entityDescription: NSEntityDescription | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	/**
+	 * @since 13.0
+	 */
+	static readonly fetchRequest: NSFetchRequest<any> | null;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -2325,15 +2325,15 @@ declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest 
 
 	static deleteHistoryBeforeDate(date: Date): NSPersistentHistoryChangeRequest;
 
-	static deleteHistoryBeforeToken(token: NSPersistentHistoryToken): NSPersistentHistoryChangeRequest;
+	static deleteHistoryBeforeToken(token: NSPersistentHistoryToken | null): NSPersistentHistoryChangeRequest;
 
-	static deleteHistoryBeforeTransaction(transaction: NSPersistentHistoryTransaction): NSPersistentHistoryChangeRequest;
+	static deleteHistoryBeforeTransaction(transaction: NSPersistentHistoryTransaction | null): NSPersistentHistoryChangeRequest;
 
 	static fetchHistoryAfterDate(date: Date): NSPersistentHistoryChangeRequest;
 
-	static fetchHistoryAfterToken(token: NSPersistentHistoryToken): NSPersistentHistoryChangeRequest;
+	static fetchHistoryAfterToken(token: NSPersistentHistoryToken | null): NSPersistentHistoryChangeRequest;
 
-	static fetchHistoryAfterTransaction(transaction: NSPersistentHistoryTransaction): NSPersistentHistoryChangeRequest;
+	static fetchHistoryAfterTransaction(transaction: NSPersistentHistoryTransaction | null): NSPersistentHistoryChangeRequest;
 
 	/**
 	 * @since 13.0
@@ -2345,11 +2345,11 @@ declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest 
 	/**
 	 * @since 13.0
 	 */
-	fetchRequest: NSFetchRequest<any>;
+	fetchRequest: NSFetchRequest<any> | null;
 
 	resultType: NSPersistentHistoryResultType;
 
-	readonly token: NSPersistentHistoryToken;
+	readonly token: NSPersistentHistoryToken | null;
 }
 
 /**
@@ -2373,7 +2373,7 @@ declare class NSPersistentHistoryResult extends NSPersistentStoreResult {
 
 	static new(): NSPersistentHistoryResult; // inherited from NSObject
 
-	readonly result: any;
+	readonly result: any | null;
 
 	readonly resultType: NSPersistentHistoryResultType;
 }
@@ -2409,7 +2409,7 @@ declare class NSPersistentHistoryToken extends NSObject implements NSCopying, NS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2438,17 +2438,17 @@ declare class NSPersistentHistoryTransaction extends NSObject implements NSCopyi
 	/**
 	 * @since 13.0
 	 */
-	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription;
+	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription | null;
 
 	static new(): NSPersistentHistoryTransaction; // inherited from NSObject
 
-	readonly author: string;
+	readonly author: string | null;
 
 	readonly bundleID: string;
 
-	readonly changes: NSArray<NSPersistentHistoryChange>;
+	readonly changes: NSArray<NSPersistentHistoryChange> | null;
 
-	readonly contextName: string;
+	readonly contextName: string | null;
 
 	readonly processID: string;
 
@@ -2463,14 +2463,14 @@ declare class NSPersistentHistoryTransaction extends NSObject implements NSCopyi
 	/**
 	 * @since 13.0
 	 */
-	static readonly entityDescription: NSEntityDescription;
+	static readonly entityDescription: NSEntityDescription | null;
 
 	/**
 	 * @since 13.0
 	 */
-	static readonly fetchRequest: NSFetchRequest<any>;
+	static readonly fetchRequest: NSFetchRequest<any> | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	objectIDNotification(): NSNotification;
 }
@@ -2482,7 +2482,7 @@ declare class NSPersistentStore extends NSObject {
 
 	static alloc(): NSPersistentStore; // inherited from NSObject
 
-	static metadataForPersistentStoreWithURLError(url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any>;
+	static metadataForPersistentStoreWithURLError(url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any> | null;
 
 	/**
 	 * @since 3.0
@@ -2491,9 +2491,9 @@ declare class NSPersistentStore extends NSObject {
 
 	static new(): NSPersistentStore; // inherited from NSObject
 
-	static setMetadataForPersistentStoreWithURLError(metadata: NSDictionary<string, any>, url: NSURL, error?: interop.Reference<NSError>): boolean;
+	static setMetadataForPersistentStoreWithURLError(metadata: NSDictionary<string, any> | null, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	URL: NSURL;
+	URL: NSURL | null;
 
 	readonly configurationName: string;
 
@@ -2506,23 +2506,23 @@ declare class NSPersistentStore extends NSObject {
 
 	metadata: NSDictionary<string, any>;
 
-	readonly options: NSDictionary<any, any>;
+	readonly options: NSDictionary<any, any> | null;
 
-	readonly persistentStoreCoordinator: NSPersistentStoreCoordinator;
+	readonly persistentStoreCoordinator: NSPersistentStoreCoordinator | null;
 
 	readOnly: boolean;
 
 	readonly type: string;
 
-	constructor(o: { persistentStoreCoordinator: NSPersistentStoreCoordinator; configurationName: string; URL: NSURL; options: NSDictionary<any, any>; });
+	constructor(o: { persistentStoreCoordinator: NSPersistentStoreCoordinator | null; configurationName: string | null; URL: NSURL; options: NSDictionary<any, any> | null; });
 
 	didAddToPersistentStoreCoordinator(coordinator: NSPersistentStoreCoordinator): void;
 
-	initWithPersistentStoreCoordinatorConfigurationNameURLOptions(root: NSPersistentStoreCoordinator, name: string, url: NSURL, options: NSDictionary<any, any>): this;
+	initWithPersistentStoreCoordinatorConfigurationNameURLOptions(root: NSPersistentStoreCoordinator | null, name: string | null, url: NSURL, options: NSDictionary<any, any> | null): this;
 
 	loadMetadata(error?: interop.Reference<NSError>): boolean;
 
-	willRemoveFromPersistentStoreCoordinator(coordinator: NSPersistentStoreCoordinator): void;
+	willRemoveFromPersistentStoreCoordinator(coordinator: NSPersistentStoreCoordinator | null): void;
 }
 
 /**
@@ -2536,9 +2536,9 @@ declare class NSPersistentStoreAsynchronousResult extends NSPersistentStoreResul
 
 	readonly managedObjectContext: NSManagedObjectContext;
 
-	readonly operationError: NSError;
+	readonly operationError: NSError | null;
 
-	readonly progress: NSProgress;
+	readonly progress: NSProgress | null;
 
 	cancel(): void;
 }
@@ -2556,46 +2556,51 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 	static alloc(): NSPersistentStoreCoordinator; // inherited from NSObject
 
 	/**
+	 * @since 26.4
+	 */
+	static cachedModelForPersistentStoreAtURLOptionsError(url: NSURL, options: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): NSManagedObjectModel | null;
+
+	/**
 	 * @since 3.0
 	 * @deprecated 9.0
 	 */
-	static metadataForPersistentStoreOfTypeURLError(storeType: string, url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any>;
+	static metadataForPersistentStoreOfTypeURLError(storeType: string | null, url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any> | null;
 
 	/**
 	 * @since 7.0
 	 */
-	static metadataForPersistentStoreOfTypeURLOptionsError(storeType: string, url: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): NSDictionary<string, any>;
+	static metadataForPersistentStoreOfTypeURLOptionsError(storeType: string, url: NSURL, options: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): NSDictionary<string, any> | null;
 
 	static new(): NSPersistentStoreCoordinator; // inherited from NSObject
 
 	/**
 	 * @since 3.0
 	 */
-	static registerStoreClassForStoreType(storeClass: typeof NSObject, storeType: string): void;
+	static registerStoreClassForStoreType(storeClass: typeof NSObject | null, storeType: string): void;
 
 	/**
 	 * @since 5.0
 	 * @deprecated 10.0
 	 */
-	static removeUbiquitousContentAndPersistentStoreAtURLOptionsError(storeURL: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
+	static removeUbiquitousContentAndPersistentStoreAtURLOptionsError(storeURL: NSURL, options: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 3.0
 	 * @deprecated 9.0
 	 */
-	static setMetadataForPersistentStoreOfTypeURLError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL, error?: interop.Reference<NSError>): boolean;
+	static setMetadataForPersistentStoreOfTypeURLError(metadata: NSDictionary<string, any> | null, storeType: string | null, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
 	 */
-	static setMetadataForPersistentStoreOfTypeURLOptionsError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
+	static setMetadataForPersistentStoreOfTypeURLOptionsError(metadata: NSDictionary<string, any> | null, storeType: string, url: NSURL, options: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): boolean;
 
 	readonly managedObjectModel: NSManagedObjectModel;
 
 	/**
 	 * @since 8.0
 	 */
-	name: string;
+	name: string | null;
 
 	readonly persistentStores: NSArray<NSPersistentStore>;
 
@@ -2611,24 +2616,24 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 	/**
 	 * @since 10.0
 	 */
-	addPersistentStoreWithDescriptionCompletionHandler(storeDescription: NSPersistentStoreDescription, block: (p1: NSPersistentStoreDescription, p2: NSError) => void): void;
+	addPersistentStoreWithDescriptionCompletionHandler(storeDescription: NSPersistentStoreDescription, block: (p1: NSPersistentStoreDescription, p2: NSError | null) => void): void;
 
-	addPersistentStoreWithTypeConfigurationURLOptionsError(storeType: string, configuration: string, storeURL: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): NSPersistentStore;
+	addPersistentStoreWithTypeConfigurationURLOptionsError(storeType: string, configuration: string | null, storeURL: NSURL | null, options: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): NSPersistentStore | null;
 
 	/**
 	 * @since 12.0
 	 */
-	currentPersistentHistoryTokenFromStores(stores: NSArray<any> | any[]): NSPersistentHistoryToken;
+	currentPersistentHistoryTokenFromStores(stores: NSArray<any> | any[] | null): NSPersistentHistoryToken | null;
 
 	/**
 	 * @since 9.0
 	 */
-	destroyPersistentStoreAtURLWithTypeOptionsError(url: NSURL, storeType: string, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
+	destroyPersistentStoreAtURLWithTypeOptionsError(url: NSURL, storeType: string, options: NSDictionary<any, any> | null, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any;
+	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any | null;
 
 	/**
 	 * @since 14.0
@@ -2644,16 +2649,16 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 	lock(): void;
 
-	managedObjectIDForURIRepresentation(url: NSURL): NSManagedObjectID;
+	managedObjectIDForURIRepresentation(url: NSURL): NSManagedObjectID | null;
 
 	/**
 	 * @since 5.0
 	 */
-	managedObjectIDFromUTF8StringLength(utf8string: string | interop.Pointer | interop.Reference<any>, len: number): NSManagedObjectID;
+	managedObjectIDFromUTF8StringLength(utf8string: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): NSManagedObjectID;
 
 	metadataForPersistentStore(store: NSPersistentStore): NSDictionary<string, any>;
 
-	migratePersistentStoreToURLOptionsWithTypeError(store: NSPersistentStore, URL: NSURL, options: NSDictionary<any, any>, storeType: string, error?: interop.Reference<NSError>): NSPersistentStore;
+	migratePersistentStoreToURLOptionsWithTypeError(store: NSPersistentStore, URL: NSURL, options: NSDictionary<any, any> | null, storeType: string, error?: interop.Reference<NSError>): NSPersistentStore | null;
 
 	/**
 	 * @since 8.0
@@ -2665,16 +2670,16 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 	 */
 	performBlockAndWait(block: () => void): void;
 
-	persistentStoreForURL(URL: NSURL): NSPersistentStore;
+	persistentStoreForURL(URL: NSURL): NSPersistentStore | null;
 
 	removePersistentStoreError(store: NSPersistentStore, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
 	 */
-	replacePersistentStoreAtURLDestinationOptionsWithPersistentStoreFromURLSourceOptionsStoreTypeError(destinationURL: NSURL, destinationOptions: NSDictionary<any, any>, sourceURL: NSURL, sourceOptions: NSDictionary<any, any>, storeType: string, error?: interop.Reference<NSError>): boolean;
+	replacePersistentStoreAtURLDestinationOptionsWithPersistentStoreFromURLSourceOptionsStoreTypeError(destinationURL: NSURL, destinationOptions: NSDictionary<any, any> | null, sourceURL: NSURL, sourceOptions: NSDictionary<any, any> | null, storeType: string, error?: interop.Reference<NSError>): boolean;
 
-	setMetadataForPersistentStore(metadata: NSDictionary<string, any>, store: NSPersistentStore): void;
+	setMetadataForPersistentStore(metadata: NSDictionary<string, any> | null, store: NSPersistentStore): void;
 
 	/**
 	 * @since 3.0
@@ -2723,14 +2728,14 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 
 	static persistentStoreDescriptionWithURL(URL: NSURL): NSPersistentStoreDescription;
 
-	URL: NSURL;
+	URL: NSURL | null;
 
 	/**
 	 * @since 13.0
 	 */
-	cloudKitContainerOptions: NSPersistentCloudKitContainerOptions;
+	cloudKitContainerOptions: NSPersistentCloudKitContainerOptions | null;
 
-	configuration: string;
+	configuration: string | null;
 
 	readonly options: NSDictionary<string, NSObject>;
 
@@ -2750,13 +2755,13 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 
 	constructor(o: { URL: NSURL; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithURL(url: NSURL): this;
 
-	setOptionForKey(option: NSObject, key: string): void;
+	setOptionForKey(option: NSObject | null, key: string): void;
 
-	setValueForPragmaNamed(value: NSObject, name: string): void;
+	setValueForPragmaNamed(value: NSObject | null, name: string): void;
 }
 
 /**
@@ -2828,11 +2833,11 @@ declare class NSPersistentStoreRequest extends NSObject implements NSCopying {
 
 	static new(): NSPersistentStoreRequest; // inherited from NSObject
 
-	affectedStores: NSArray<NSPersistentStore>;
+	affectedStores: NSArray<NSPersistentStore> | null;
 
 	readonly requestType: NSPersistentStoreRequestType;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum NSPersistentStoreRequestType {
@@ -2962,7 +2967,7 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 	/**
 	 * @since 3.0
 	 */
-	renamingIdentifier: string;
+	renamingIdentifier: string | null;
 
 	/**
 	 * @since 3.0
@@ -2972,7 +2977,7 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	transient: boolean;
 
-	userInfo: NSDictionary<any, any>;
+	userInfo: NSDictionary<any, any> | null;
 
 	readonly validationPredicates: NSArray<NSPredicate>;
 
@@ -2986,17 +2991,17 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 	/**
 	 * @since 3.0
 	 */
-	versionHashModifier: string;
+	versionHashModifier: string | null;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	setValidationPredicatesWithValidationWarnings(validationPredicates: NSArray<NSPredicate> | NSPredicate[], validationWarnings: NSArray<string> | string[]): void;
+	setValidationPredicatesWithValidationWarnings(validationPredicates: NSArray<NSPredicate> | NSPredicate[] | null, validationWarnings: NSArray<string> | string[] | null): void;
 }
 
 /**
@@ -3008,11 +3013,11 @@ declare class NSPropertyMapping extends NSObject {
 
 	static new(): NSPropertyMapping; // inherited from NSObject
 
-	name: string;
+	name: string | null;
 
-	userInfo: NSDictionary<any, any>;
+	userInfo: NSDictionary<any, any> | null;
 
-	valueExpression: NSExpression;
+	valueExpression: NSExpression | null;
 }
 
 /**
@@ -3030,7 +3035,7 @@ declare class NSQueryGenerationToken extends NSObject implements NSCopying, NSSe
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -3063,9 +3068,9 @@ declare class NSRelationshipDescription extends NSPropertyDescription {
 
 	deleteRule: NSDeleteRule;
 
-	destinationEntity: NSEntityDescription;
+	destinationEntity: NSEntityDescription | null;
 
-	inverseRelationship: NSRelationshipDescription;
+	inverseRelationship: NSRelationshipDescription | null;
 
 	maxCount: number;
 
@@ -3130,17 +3135,17 @@ declare class NSSaveChangesRequest extends NSPersistentStoreRequest {
 
 	static new(): NSSaveChangesRequest; // inherited from NSObject
 
-	readonly deletedObjects: NSSet<NSManagedObject>;
+	readonly deletedObjects: NSSet<NSManagedObject> | null;
 
-	readonly insertedObjects: NSSet<NSManagedObject>;
+	readonly insertedObjects: NSSet<NSManagedObject> | null;
 
-	readonly lockedObjects: NSSet<NSManagedObject>;
+	readonly lockedObjects: NSSet<NSManagedObject> | null;
 
-	readonly updatedObjects: NSSet<NSManagedObject>;
+	readonly updatedObjects: NSSet<NSManagedObject> | null;
 
-	constructor(o: { insertedObjects: NSSet<NSManagedObject>; updatedObjects: NSSet<NSManagedObject>; deletedObjects: NSSet<NSManagedObject>; lockedObjects: NSSet<NSManagedObject>; });
+	constructor(o: { insertedObjects: NSSet<NSManagedObject> | null; updatedObjects: NSSet<NSManagedObject> | null; deletedObjects: NSSet<NSManagedObject> | null; lockedObjects: NSSet<NSManagedObject> | null; });
 
-	initWithInsertedObjectsUpdatedObjectsDeletedObjectsLockedObjects(insertedObjects: NSSet<NSManagedObject>, updatedObjects: NSSet<NSManagedObject>, deletedObjects: NSSet<NSManagedObject>, lockedObjects: NSSet<NSManagedObject>): this;
+	initWithInsertedObjectsUpdatedObjectsDeletedObjectsLockedObjects(insertedObjects: NSSet<NSManagedObject> | null, updatedObjects: NSSet<NSManagedObject> | null, deletedObjects: NSSet<NSManagedObject> | null, lockedObjects: NSSet<NSManagedObject> | null): this;
 }
 
 declare const enum NSSnapshotEventType {
@@ -3171,7 +3176,7 @@ declare class NSStagedMigrationManager extends NSObject {
 
 	static new(): NSStagedMigrationManager; // inherited from NSObject
 
-	readonly container: NSPersistentContainer;
+	readonly container: NSPersistentContainer | null;
 
 	readonly stages: NSArray<NSMigrationStage>;
 

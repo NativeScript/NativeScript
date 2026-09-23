@@ -24,12 +24,12 @@ declare class ARAnchor extends NSObject implements ARAnchorCopying, NSSecureCodi
 	/**
 	 * @since 12.0
 	 */
-	readonly name: string;
+	readonly name: string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly sessionIdentifier: NSUUID;
+	readonly sessionIdentifier: NSUUID | null;
 
 	readonly transform: simd_float4x4;
 
@@ -46,7 +46,7 @@ declare class ARAnchor extends NSObject implements ARAnchorCopying, NSSecureCodi
 
 	constructor(o: { transform: simd_float4x4; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -85,7 +85,7 @@ declare class ARAppClipCodeAnchor extends ARAnchor implements ARTrackable {
 
 	readonly radius: number;
 
-	readonly url: NSURL;
+	readonly url: NSURL | null;
 
 	readonly urlDecodingState: ARAppClipCodeURLDecodingState;
 
@@ -481,7 +481,7 @@ declare class ARBodyTrackingConfiguration extends ARConfiguration {
 
 	environmentTexturing: AREnvironmentTexturing;
 
-	initialWorldMap: ARWorldMap;
+	initialWorldMap: ARWorldMap | null;
 
 	maximumNumberOfTrackedImages: number;
 
@@ -528,7 +528,7 @@ declare class ARCamera extends NSObject implements NSCopying {
 
 	readonly transform: simd_float4x4;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	projectPointOrientationViewportSize(point: interop.Reference<number>, orientation: UIInterfaceOrientation, viewportSize: CGSize): CGPoint;
 
@@ -573,7 +573,7 @@ declare class ARCoachingOverlayView extends UIView {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ARCoachingOverlayView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): ARCoachingOverlayView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -584,7 +584,7 @@ declare class ARCoachingOverlayView extends UIView {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ARCoachingOverlayView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): ARCoachingOverlayView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -595,15 +595,15 @@ declare class ARCoachingOverlayView extends UIView {
 
 	activatesAutomatically: boolean;
 
-	delegate: ARCoachingOverlayViewDelegate;
+	delegate: ARCoachingOverlayViewDelegate | null;
 
 	goal: ARCoachingGoal;
 
 	readonly isActive: boolean;
 
-	session: ARSession;
+	session: ARSession | null;
 
-	sessionProvider: NSObject & ARSessionProviding;
+	sessionProvider: NSObject & ARSessionProviding | null;
 
 	setActiveAnimated(active: boolean, animated: boolean): void;
 }
@@ -701,26 +701,26 @@ declare class ARConfiguration extends NSObject implements NSCopying {
 	/**
 	 * @since 16.0
 	 */
-	static readonly configurableCaptureDeviceForPrimaryCamera: AVCaptureDevice;
+	static readonly configurableCaptureDeviceForPrimaryCamera: AVCaptureDevice | null;
 
 	static readonly isSupported: boolean;
 
 	/**
 	 * @since 16.0
 	 */
-	static readonly recommendedVideoFormatFor4KResolution: ARVideoFormat;
+	static readonly recommendedVideoFormatFor4KResolution: ARVideoFormat | null;
 
 	/**
 	 * @since 16.0
 	 */
-	static readonly recommendedVideoFormatForHighResolutionFrameCapturing: ARVideoFormat;
+	static readonly recommendedVideoFormatForHighResolutionFrameCapturing: ARVideoFormat | null;
 
 	/**
 	 * @since 11.3
 	 */
 	static readonly supportedVideoFormats: NSArray<ARVideoFormat>;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -732,7 +732,7 @@ declare class ARDepthData extends NSObject {
 
 	static new(): ARDepthData; // inherited from NSObject
 
-	readonly confidenceMap: any;
+	readonly confidenceMap: any | null;
 
 	readonly depthMap: any;
 }
@@ -762,7 +762,7 @@ declare class AREnvironmentProbeAnchor extends ARAnchor {
 
 	static new(): AREnvironmentProbeAnchor; // inherited from NSObject
 
-	readonly environmentTexture: MTLTexture;
+	readonly environmentTexture: MTLTexture | null;
 
 	readonly extent: interop.Reference<number>;
 
@@ -908,15 +908,15 @@ declare class ARFaceGeometry extends NSObject implements NSCopying, NSSecureCodi
 
 	readonly textureCoordinateCount: number;
 
-	readonly textureCoordinates: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly textureCoordinates: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	readonly triangleCount: number;
 
-	readonly triangleIndices: interop.Pointer | interop.Reference<number>;
+	readonly triangleIndices: interop.Pointer | interop.Reference<number> | null;
 
 	readonly vertexCount: number;
 
-	readonly vertices: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly vertices: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -924,7 +924,7 @@ declare class ARFaceGeometry extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -984,9 +984,9 @@ declare class ARFrame extends NSObject implements NSCopying {
 	/**
 	 * @since 13.0
 	 */
-	readonly cameraGrainTexture: MTLTexture;
+	readonly cameraGrainTexture: MTLTexture | null;
 
-	readonly capturedDepthData: AVDepthData;
+	readonly capturedDepthData: AVDepthData | null;
 
 	readonly capturedDepthDataTimestamp: number;
 
@@ -995,12 +995,12 @@ declare class ARFrame extends NSObject implements NSCopying {
 	/**
 	 * @since 13.0
 	 */
-	readonly detectedBody: ARBody2D;
+	readonly detectedBody: ARBody2D | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly estimatedDepthData: any;
+	readonly estimatedDepthData: any | null;
 
 	/**
 	 * @since 16.0
@@ -1010,26 +1010,26 @@ declare class ARFrame extends NSObject implements NSCopying {
 	/**
 	 * @since 14.0
 	 */
-	readonly geoTrackingStatus: ARGeoTrackingStatus;
+	readonly geoTrackingStatus: ARGeoTrackingStatus | null;
 
-	readonly lightEstimate: ARLightEstimate;
+	readonly lightEstimate: ARLightEstimate | null;
 
-	readonly rawFeaturePoints: ARPointCloud;
+	readonly rawFeaturePoints: ARPointCloud | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly sceneDepth: ARDepthData;
+	readonly sceneDepth: ARDepthData | null;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly segmentationBuffer: any;
+	readonly segmentationBuffer: any | null;
 
 	/**
 	 * @since 14.0
 	 */
-	readonly smoothedSceneDepth: ARDepthData;
+	readonly smoothedSceneDepth: ARDepthData | null;
 
 	readonly timestamp: number;
 
@@ -1038,7 +1038,7 @@ declare class ARFrame extends NSObject implements NSCopying {
 	 */
 	readonly worldMappingStatus: ARWorldMappingStatus;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	displayTransformForOrientationViewportSize(orientation: UIInterfaceOrientation, viewportSize: CGSize): CGAffineTransform;
 
@@ -1155,9 +1155,9 @@ declare class ARGeoTrackingConfiguration extends ARConfiguration {
 
 	static alloc(): ARGeoTrackingConfiguration; // inherited from NSObject
 
-	static checkAvailabilityAtCoordinateCompletionHandler(coordinate: CLLocationCoordinate2D, completionHandler: (p1: boolean, p2: NSError) => void): void;
+	static checkAvailabilityAtCoordinateCompletionHandler(coordinate: CLLocationCoordinate2D, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
-	static checkAvailabilityWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError) => void): void;
+	static checkAvailabilityWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	static new(): ARGeoTrackingConfiguration; // inherited from NSObject
 
@@ -1237,7 +1237,7 @@ declare class ARGeoTrackingStatus extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1319,7 +1319,7 @@ declare class ARHitTestResult extends NSObject {
 
 	static new(): ARHitTestResult; // inherited from NSObject
 
-	readonly anchor: ARAnchor;
+	readonly anchor: ARAnchor | null;
 
 	readonly distance: number;
 
@@ -1493,7 +1493,7 @@ declare class ARMeshGeometry extends NSObject implements NSSecureCoding {
 
 	static new(): ARMeshGeometry; // inherited from NSObject
 
-	readonly classification: ARGeometrySource;
+	readonly classification: ARGeometrySource | null;
 
 	readonly faces: ARGeometryElement;
 
@@ -1687,19 +1687,19 @@ declare class ARPlaneGeometry extends NSObject implements NSSecureCoding {
 
 	readonly boundaryVertexCount: number;
 
-	readonly boundaryVertices: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly boundaryVertices: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	readonly textureCoordinateCount: number;
 
-	readonly textureCoordinates: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly textureCoordinates: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	readonly triangleCount: number;
 
-	readonly triangleIndices: interop.Pointer | interop.Reference<number>;
+	readonly triangleIndices: interop.Pointer | interop.Reference<number> | null;
 
 	readonly vertexCount: number;
 
-	readonly vertices: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly vertices: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1721,9 +1721,9 @@ declare class ARPointCloud extends NSObject implements NSSecureCoding {
 
 	readonly count: number;
 
-	readonly identifiers: interop.Pointer | interop.Reference<number>;
+	readonly identifiers: interop.Pointer | interop.Reference<number> | null;
 
-	readonly points: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly points: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1743,7 +1743,7 @@ declare class ARPositionalTrackingConfiguration extends ARConfiguration {
 
 	static new(): ARPositionalTrackingConfiguration; // inherited from NSObject
 
-	initialWorldMap: ARWorldMap;
+	initialWorldMap: ARWorldMap | null;
 
 	planeDetection: ARPlaneDetection;
 }
@@ -1779,7 +1779,7 @@ declare class ARRaycastResult extends NSObject {
 
 	static new(): ARRaycastResult; // inherited from NSObject
 
-	readonly anchor: ARAnchor;
+	readonly anchor: ARAnchor | null;
 
 	readonly target: ARRaycastTarget;
 
@@ -1815,16 +1815,16 @@ declare class ARReferenceImage extends NSObject {
 
 	static new(): ARReferenceImage; // inherited from NSObject
 
-	static referenceImagesInGroupNamedBundle(name: string, bundle: NSBundle): NSSet<ARReferenceImage>;
+	static referenceImagesInGroupNamedBundle(name: string, bundle: NSBundle | null): NSSet<ARReferenceImage> | null;
 
-	name: string;
+	name: string | null;
 
 	readonly physicalSize: CGSize;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly resourceGroupName: string;
+	readonly resourceGroupName: string | null;
 
 	constructor(o: { CGImage: any; orientation: CGImagePropertyOrientation; physicalWidth: number; });
 
@@ -1837,7 +1837,7 @@ declare class ARReferenceImage extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	validateWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	validateWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -1849,20 +1849,20 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	static new(): ARReferenceObject; // inherited from NSObject
 
-	static referenceObjectsInGroupNamedBundle(name: string, bundle: NSBundle): NSSet<ARReferenceObject>;
+	static referenceObjectsInGroupNamedBundle(name: string, bundle: NSBundle | null): NSSet<ARReferenceObject> | null;
 
 	readonly center: interop.Reference<number>;
 
 	readonly extent: interop.Reference<number>;
 
-	name: string;
+	name: string | null;
 
 	readonly rawFeaturePoints: ARPointCloud;
 
 	/**
 	 * @since 13.0
 	 */
-	readonly resourceGroupName: string;
+	readonly resourceGroupName: string | null;
 
 	readonly scale: interop.Reference<number>;
 
@@ -1874,7 +1874,7 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage, error?: interop.Reference<NSError>): boolean;
+	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage | null, error?: interop.Reference<NSError>): boolean;
 
 	initWithArchiveURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
@@ -1882,7 +1882,7 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	referenceObjectByApplyingTransform(transform: simd_float4x4): ARReferenceObject;
 
-	referenceObjectByMergingObjectError(object: ARReferenceObject, error?: interop.Reference<NSError>): ARReferenceObject;
+	referenceObjectByMergingObjectError(object: ARReferenceObject, error?: interop.Reference<NSError>): ARReferenceObject | null;
 }
 
 /**
@@ -1918,12 +1918,12 @@ declare class ARSCNFaceGeometry extends SCNGeometry {
 	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): ARSCNFaceGeometry; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): ARSCNFaceGeometry; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[] | null): ARSCNFaceGeometry; // inherited from SCNGeometry
 
 	/**
 	 * @since 16.0
 	 */
-	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): ARSCNFaceGeometry; // inherited from SCNGeometry
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[] | null, sourceChannels: NSArray<number> | number[] | null): ARSCNFaceGeometry; // inherited from SCNGeometry
 
 	static new(): ARSCNFaceGeometry; // inherited from NSObject
 
@@ -1944,12 +1944,12 @@ declare class ARSCNPlaneGeometry extends SCNGeometry {
 	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): ARSCNPlaneGeometry; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): ARSCNPlaneGeometry; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[] | null): ARSCNPlaneGeometry; // inherited from SCNGeometry
 
 	/**
 	 * @since 16.0
 	 */
-	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): ARSCNPlaneGeometry; // inherited from SCNGeometry
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[] | null, sourceChannels: NSArray<number> | number[] | null): ARSCNPlaneGeometry; // inherited from SCNGeometry
 
 	static new(): ARSCNPlaneGeometry; // inherited from NSObject
 
@@ -1976,7 +1976,7 @@ declare class ARSCNView extends SCNView implements ARSessionProviding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ARSCNView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): ARSCNView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1987,7 +1987,7 @@ declare class ARSCNView extends SCNView implements ARSessionProviding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ARSCNView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): ARSCNView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1998,7 +1998,7 @@ declare class ARSCNView extends SCNView implements ARSessionProviding {
 
 	automaticallyUpdatesLighting: boolean;
 
-	delegate: ARSCNViewDelegate;
+	delegate: ARSCNViewDelegate | null;
 
 	/**
 	 * @since 13.0
@@ -2024,7 +2024,7 @@ declare class ARSCNView extends SCNView implements ARSessionProviding {
 
 	readonly  // inherited from NSObjectProtocol
 
-	anchorForNode(node: SCNNode): ARAnchor;
+	anchorForNode(node: SCNNode): ARAnchor | null;
 
 	class(): typeof NSObject;
 
@@ -2042,7 +2042,7 @@ declare class ARSCNView extends SCNView implements ARSessionProviding {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	nodeForAnchor(anchor: ARAnchor): SCNNode;
+	nodeForAnchor(anchor: ARAnchor): SCNNode | null;
 
 	performSelector(aSelector: string): any;
 
@@ -2053,7 +2053,7 @@ declare class ARSCNView extends SCNView implements ARSessionProviding {
 	/**
 	 * @since 13.0
 	 */
-	raycastQueryFromPointAllowingTargetAlignment(point: CGPoint, target: ARRaycastTarget, alignment: ARRaycastTargetAlignment): ARRaycastQuery;
+	raycastQueryFromPointAllowingTargetAlignment(point: CGPoint, target: ARRaycastTarget, alignment: ARRaycastTargetAlignment): ARRaycastQuery | null;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -2078,7 +2078,7 @@ interface ARSCNViewDelegate extends ARSessionObserver, SCNSceneRendererDelegate 
 
 	rendererDidUpdateNodeForAnchor?(renderer: SCNSceneRenderer, node: SCNNode, anchor: ARAnchor): void;
 
-	rendererNodeForAnchor?(renderer: SCNSceneRenderer, anchor: ARAnchor): SCNNode;
+	rendererNodeForAnchor?(renderer: SCNSceneRenderer, anchor: ARAnchor): SCNNode | null;
 
 	rendererWillUpdateNodeForAnchor?(renderer: SCNSceneRenderer, node: SCNNode, anchor: ARAnchor): void;
 }
@@ -2105,7 +2105,7 @@ declare class ARSKView extends SKView implements ARSessionProviding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ARSKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): ARSKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2116,7 +2116,7 @@ declare class ARSKView extends SKView implements ARSessionProviding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ARSKView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): ARSKView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -2125,7 +2125,7 @@ declare class ARSKView extends SKView implements ARSessionProviding {
 
 	static new(): ARSKView; // inherited from NSObject
 
-	delegate: NSObject & ARSKViewDelegate;
+	delegate: NSObject & ARSKViewDelegate | null;
 
 	session: ARSession;
 
@@ -2141,7 +2141,7 @@ declare class ARSKView extends SKView implements ARSessionProviding {
 
 	readonly  // inherited from NSObjectProtocol
 
-	anchorForNode(node: SKNode): ARAnchor;
+	anchorForNode(node: SKNode): ARAnchor | null;
 
 	class(): typeof NSObject;
 
@@ -2159,7 +2159,7 @@ declare class ARSKView extends SKView implements ARSessionProviding {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	nodeForAnchor(anchor: ARAnchor): SKNode;
+	nodeForAnchor(anchor: ARAnchor): SKNode | null;
 
 	performSelector(aSelector: string): any;
 
@@ -2185,7 +2185,7 @@ interface ARSKViewDelegate extends ARSessionObserver, SKViewDelegate {
 
 	viewDidUpdateNodeForAnchor?(view: ARSKView, node: SKNode, anchor: ARAnchor): void;
 
-	viewNodeForAnchor?(view: ARSKView, anchor: ARAnchor): SKNode;
+	viewNodeForAnchor?(view: ARSKView, anchor: ARAnchor): SKNode | null;
 
 	viewWillUpdateNodeForAnchor?(view: ARSKView, node: SKNode, anchor: ARAnchor): void;
 }
@@ -2219,13 +2219,13 @@ declare class ARSession extends NSObject {
 
 	static new(): ARSession; // inherited from NSObject
 
-	readonly configuration: ARConfiguration;
+	readonly configuration: ARConfiguration | null;
 
-	readonly currentFrame: ARFrame;
+	readonly currentFrame: ARFrame | null;
 
-	delegate: ARSessionDelegate;
+	delegate: ARSessionDelegate | null;
 
-	delegateQueue: NSObject & OS_dispatch_queue;
+	delegateQueue: NSObject & OS_dispatch_queue | null;
 
 	/**
 	 * @since 13.0
@@ -2237,27 +2237,27 @@ declare class ARSession extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	captureHighResolutionFrameUsingPhotoSettingsCompletion(photoSettings: AVCapturePhotoSettings, completion: (p1: ARFrame, p2: NSError) => void): void;
+	captureHighResolutionFrameUsingPhotoSettingsCompletion(photoSettings: AVCapturePhotoSettings | null, completion: (p1: ARFrame | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	captureHighResolutionFrameWithCompletion(completion: (p1: ARFrame, p2: NSError) => void): void;
+	captureHighResolutionFrameWithCompletion(completion: (p1: ARFrame | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 12.0
 	 */
-	createReferenceObjectWithTransformCenterExtentCompletionHandler(transform: simd_float4x4, center: interop.Reference<number>, extent: interop.Reference<number>, completionHandler: (p1: ARReferenceObject, p2: NSError) => void): void;
+	createReferenceObjectWithTransformCenterExtentCompletionHandler(transform: simd_float4x4, center: interop.Reference<number>, extent: interop.Reference<number>, completionHandler: (p1: ARReferenceObject | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 12.0
 	 */
-	getCurrentWorldMapWithCompletionHandler(completionHandler: (p1: ARWorldMap, p2: NSError) => void): void;
+	getCurrentWorldMapWithCompletionHandler(completionHandler: (p1: ARWorldMap | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	getGeoLocationForPointCompletionHandler(position: interop.Reference<number>, completionHandler: (p1: CLLocationCoordinate2D, p2: number, p3: NSError) => void): void;
+	getGeoLocationForPointCompletionHandler(position: interop.Reference<number>, completionHandler: (p1: CLLocationCoordinate2D, p2: number, p3: NSError | null) => void): void;
 
 	pause(): void;
 
@@ -2280,7 +2280,7 @@ declare class ARSession extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	trackedRaycastUpdateHandler(query: ARRaycastQuery, updateHandler: (p1: NSArray<ARRaycastResult>) => void): ARTrackedRaycast;
+	trackedRaycastUpdateHandler(query: ARRaycastQuery, updateHandler: (p1: NSArray<ARRaycastResult>) => void): ARTrackedRaycast | null;
 
 	/**
 	 * @since 13.0
@@ -2386,7 +2386,7 @@ declare class ARSkeleton2D extends ARSkeleton {
 
 	static new(): ARSkeleton2D; // inherited from NSObject
 
-	readonly jointLandmarks: interop.Pointer | interop.Reference<interop.Reference<number>>;
+	readonly jointLandmarks: interop.Pointer | interop.Reference<interop.Reference<number>> | null;
 
 	landmarkForJointNamed(jointName: string): interop.Reference<number>;
 }
@@ -2400,9 +2400,9 @@ declare class ARSkeleton3D extends ARSkeleton {
 
 	static new(): ARSkeleton3D; // inherited from NSObject
 
-	readonly jointLocalTransforms: interop.Pointer | interop.Reference<simd_float4x4>;
+	readonly jointLocalTransforms: interop.Pointer | interop.Reference<simd_float4x4> | null;
 
-	readonly jointModelTransforms: interop.Pointer | interop.Reference<simd_float4x4>;
+	readonly jointModelTransforms: interop.Pointer | interop.Reference<simd_float4x4> | null;
 
 	localTransformForJointName(jointName: string): simd_float4x4;
 
@@ -2422,7 +2422,7 @@ declare class ARSkeletonDefinition extends NSObject {
 
 	readonly jointNames: NSArray<string>;
 
-	readonly neutralBodySkeleton3D: ARSkeleton3D;
+	readonly neutralBodySkeleton3D: ARSkeleton3D | null;
 
 	readonly parentIndices: NSArray<number>;
 
@@ -2436,7 +2436,7 @@ declare class ARSkeletonDefinition extends NSObject {
 /**
  * @since 14.0
  */
-declare function ARSkeletonJointNameForRecognizedPointKey(recognizedPointKey: string): string;
+declare function ARSkeletonJointNameForRecognizedPointKey(recognizedPointKey: string): string | null;
 
 /**
  * @since 13.0
@@ -2567,7 +2567,7 @@ declare class ARVideoFormat extends NSObject implements NSCopying {
 	 */
 	readonly videoHDRSupported: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 declare const enum ARWorldAlignment {
@@ -2600,7 +2600,7 @@ declare class ARWorldMap extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2670,7 +2670,7 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 	/**
 	 * @since 12.0
 	 */
-	initialWorldMap: ARWorldMap;
+	initialWorldMap: ARWorldMap | null;
 
 	/**
 	 * @since 12.0

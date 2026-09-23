@@ -36,15 +36,15 @@ declare class PKPushRegistry extends NSObject {
 
 	static new(): PKPushRegistry; // inherited from NSObject
 
-	delegate: PKPushRegistryDelegate;
+	delegate: PKPushRegistryDelegate | null;
 
-	desiredPushTypes: NSSet<string>;
+	desiredPushTypes: NSSet<string> | null;
 
-	constructor(o: { queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { queue: NSObject & OS_dispatch_queue | null; });
 
-	initWithQueue(queue: NSObject & OS_dispatch_queue): this;
+	initWithQueue(queue: NSObject & OS_dispatch_queue | null): this;
 
-	pushTokenForType(type: string): NSData;
+	pushTokenForType(type: string): NSData | null;
 }
 
 interface PKPushRegistryDelegate extends NSObjectProtocol {
@@ -61,6 +61,11 @@ interface PKPushRegistryDelegate extends NSObjectProtocol {
 	 * @since 11.0
 	 */
 	pushRegistryDidReceiveIncomingPushWithPayloadForTypeWithCompletionHandler?(registry: PKPushRegistry, payload: PKPushPayload, type: string, completion: () => void): void;
+
+	/**
+	 * @since 26.4
+	 */
+	pushRegistryDidReceiveIncomingVoIPPushWithPayloadMetadataWithCompletionHandler?(registry: PKPushRegistry, payload: PKPushPayload, metadata: PKVoIPPushMetadata, completion: () => void): void;
 
 	pushRegistryDidUpdatePushCredentialsForType(registry: PKPushRegistry, pushCredentials: PKPushCredentials, type: string): void;
 }
@@ -84,3 +89,15 @@ declare var PKPushTypeFileProvider: string;
  * @since 9.0
  */
 declare var PKPushTypeVoIP: string;
+
+/**
+ * @since 26.4
+ */
+declare class PKVoIPPushMetadata extends NSObject {
+
+	static alloc(): PKVoIPPushMetadata; // inherited from NSObject
+
+	static new(): PKVoIPPushMetadata; // inherited from NSObject
+
+	readonly mustReport: boolean;
+}

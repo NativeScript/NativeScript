@@ -136,24 +136,24 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	static alloc(): SHMediaItem; // inherited from NSObject
 
-	static fetchMediaItemWithShazamIDCompletionHandler(shazamID: string, completionHandler: (p1: SHMediaItem, p2: NSError) => void): void;
+	static fetchMediaItemWithShazamIDCompletionHandler(shazamID: string, completionHandler: (p1: SHMediaItem | null, p2: NSError | null) => void): void;
 
 	static mediaItemWithProperties(properties: NSDictionary<string, any>): SHMediaItem;
 
 	static new(): SHMediaItem; // inherited from NSObject
 
-	readonly appleMusicID: string;
+	readonly appleMusicID: string | null;
 
-	readonly appleMusicURL: NSURL;
+	readonly appleMusicURL: NSURL | null;
 
-	readonly artist: string;
+	readonly artist: string | null;
 
-	readonly artworkURL: NSURL;
+	readonly artworkURL: NSURL | null;
 
 	/**
 	 * @since 17.0
 	 */
-	readonly creationDate: Date;
+	readonly creationDate: Date | null;
 
 	readonly explicitContent: boolean;
 
@@ -164,28 +164,28 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	readonly genres: NSArray<string>;
 
-	readonly isrc: string;
+	readonly isrc: string | null;
 
-	readonly shazamID: string;
+	readonly shazamID: string | null;
 
-	readonly subtitle: string;
+	readonly subtitle: string | null;
 
 	/**
 	 * @since 16.0
 	 */
 	readonly timeRanges: NSArray<SHRange>;
 
-	readonly title: string;
+	readonly title: string | null;
 
-	readonly videoURL: NSURL;
+	readonly videoURL: NSURL | null;
 
-	readonly webURL: NSURL;
+	readonly webURL: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -298,7 +298,7 @@ declare class SHMediaLibrary extends NSObject {
 
 	static readonly defaultLibrary: SHMediaLibrary;
 
-	addMediaItemsCompletionHandler(mediaItems: NSArray<SHMediaItem> | SHMediaItem[], completionHandler: (p1: NSError) => void): void;
+	addMediaItemsCompletionHandler(mediaItems: NSArray<SHMediaItem> | SHMediaItem[], completionHandler: (p1: NSError | null) => void): void;
 }
 
 /**
@@ -322,7 +322,7 @@ declare class SHRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { lowerBound: number; upperBound: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -342,7 +342,7 @@ declare class SHSession extends NSObject {
 
 	readonly catalog: SHCatalog;
 
-	delegate: SHSessionDelegate;
+	delegate: SHSessionDelegate | null;
 
 	constructor(o: { catalog: SHCatalog; });
 
@@ -350,7 +350,7 @@ declare class SHSession extends NSObject {
 
 	matchSignature(signature: SHSignature): void;
 
-	matchStreamingBufferAtTime(buffer: AVAudioPCMBuffer, time: AVAudioTime): void;
+	matchStreamingBufferAtTime(buffer: AVAudioPCMBuffer, time: AVAudioTime | null): void;
 }
 
 /**
@@ -360,7 +360,7 @@ interface SHSessionDelegate extends NSObjectProtocol {
 
 	sessionDidFindMatch?(session: SHSession, match: SHMatch): void;
 
-	sessionDidNotFindMatchForSignatureError?(session: SHSession, signature: SHSignature, error: NSError): void;
+	sessionDidNotFindMatchForSignatureError?(session: SHSession, signature: SHSignature, error: NSError | null): void;
 }
 declare var SHSessionDelegate: {
 
@@ -376,7 +376,7 @@ declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): SHSignature; // inherited from NSObject
 
-	static signatureWithDataRepresentationError(dataRepresentation: NSData, error?: interop.Reference<NSError>): SHSignature;
+	static signatureWithDataRepresentationError(dataRepresentation: NSData, error?: interop.Reference<NSError>): SHSignature | null;
 
 	readonly dataRepresentation: NSData;
 
@@ -388,7 +388,7 @@ declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding 
 
 	constructor(o: { dataRepresentation: NSData; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -407,11 +407,11 @@ declare class SHSignatureGenerator extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	static generateSignatureFromAssetCompletionHandler(asset: AVAsset, completionHandler: (p1: SHSignature, p2: NSError) => void): void;
+	static generateSignatureFromAssetCompletionHandler(asset: AVAsset, completionHandler: (p1: SHSignature | null, p2: NSError | null) => void): void;
 
 	static new(): SHSignatureGenerator; // inherited from NSObject
 
-	appendBufferAtTimeError(buffer: AVAudioPCMBuffer, time: AVAudioTime, error?: interop.Reference<NSError>): boolean;
+	appendBufferAtTimeError(buffer: AVAudioPCMBuffer, time: AVAudioTime | null, error?: interop.Reference<NSError>): boolean;
 
 	signature(): SHSignature;
 }

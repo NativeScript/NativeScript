@@ -38,29 +38,16 @@ struct NativeScriptMainWindow: Scene {
                         NativeScriptEmbedder.boot()
                     }
                  }
-            }.onReceive(NotificationCenter.default
-                .publisher(for: NSNotification.Name("NativeScriptWindowOpen")), perform: { obj in
-                    let info = parseWindowInfo(obj: obj)
-                    let id = info.keys.first
-                    Task {
-                        if (info[id!]!) {
-                            await openImmersiveSpace(id: id!)
-                        } else {
-                            openWindow(id: id!)
-                        }
-                    }
-            }).onReceive(NotificationCenter.default
-                .publisher(for: NSNotification.Name("NativeScriptWindowClose")), perform: { obj in
-                    let info = parseWindowInfo(obj: obj)
-                    let id = info.keys.first
-                    Task {
-                        if (info[id!]!) {
-                            await dismissImmersiveSpace()
-                        } else {
-                            dismissWindow(id: id!)
-                        }
-                    }
-                })
+                // Must run synchronously here, before the boot() dispatched above executes:
+                // the JS runtime cannot post window commands until it boots, so this ordering
+                // guarantees the observers exist before the first command can arrive.
+                NativeScriptWindowCommandCoordinator.shared.install(.init(
+                    openWindow: openWindow,
+                    dismissWindow: dismissWindow,
+                    openImmersiveSpace: openImmersiveSpace,
+                    dismissImmersiveSpace: dismissImmersiveSpace
+                ))
+            }
             .onOpenURL { (url) in
                 NotificationCenter.default.post(name: Notification.Name("NativeScriptOpenURL"), object: nil, userInfo: ["url": url.absoluteString ])
             }
@@ -90,26 +77,72 @@ struct NativeScriptMainWindow: Scene {
         }
     }
 
-    #if os(visionOS)
-    func parseWindowInfo(obj: Notification, close: Bool = false) -> [String:Bool] {
-        if let userInfo = obj.userInfo {
-            var id: String = ""
-            var isImmersive = false
-            for (key, value) in userInfo {
-                let k = key as! String
-                if (k == "type") {
-                    id = value as! String
-                } else if (k == "isImmersive") {
-                    isImmersive = value as! Bool
+}
+
+#if os(visionOS)
+extension Notification.Name {
+    static let nativeScriptWindowOpen = Notification.Name("NativeScriptWindowOpen")
+    static let nativeScriptWindowClose = Notification.Name("NativeScriptWindowClose")
+}
+
+/// Routes window commands posted by the NativeScript runtime to SwiftUI environment actions.
+/// The observers must outlive the view hierarchy: the main WindowGroup content can be torn
+/// down and rebuilt (e.g. around immersive space transitions), and a view-scoped subscription
+/// like .onReceive would miss commands posted during those gaps. Observers register once per
+/// process, while the environment actions are rebound on every appearance so commands always
+/// dispatch through actions from the current scene.
+@MainActor
+final class NativeScriptWindowCommandCoordinator {
+    static let shared = NativeScriptWindowCommandCoordinator()
+
+    struct Handlers {
+        let openWindow: OpenWindowAction
+        let dismissWindow: DismissWindowAction
+        let openImmersiveSpace: OpenImmersiveSpaceAction
+        let dismissImmersiveSpace: DismissImmersiveSpaceAction
+    }
+
+    private var handlers: Handlers?
+    private var tokens: [NSObjectProtocol] = []
+
+    func install(_ handlers: Handlers) {
+        self.handlers = handlers
+        guard tokens.isEmpty else { return }
+
+        tokens.append(NotificationCenter.default.addObserver(forName: .nativeScriptWindowOpen, object: nil, queue: .main) { note in
+            guard let (id, isImmersive) = Self.parse(note) else { return }
+            Task { @MainActor in
+                guard let handlers = Self.shared.handlers else { return }
+                if isImmersive {
+                    await handlers.openImmersiveSpace(id: id)
+                } else {
+                    handlers.openWindow(id: id)
                 }
             }
-            return [id: isImmersive]
-            
-        }
-        return ["_": false]
+        })
+        tokens.append(NotificationCenter.default.addObserver(forName: .nativeScriptWindowClose, object: nil, queue: .main) { note in
+            guard let (id, isImmersive) = Self.parse(note) else { return }
+            Task { @MainActor in
+                guard let handlers = Self.shared.handlers else { return }
+                if isImmersive {
+                    await handlers.dismissImmersiveSpace()
+                } else {
+                    handlers.dismissWindow(id: id)
+                }
+            }
+        })
     }
-    #endif
+
+    private nonisolated static func parse(_ note: Notification) -> (id: String, isImmersive: Bool)? {
+        guard let id = note.userInfo?["type"] as? String, !id.isEmpty else { return nil }
+        return (id, note.userInfo?["isImmersive"] as? Bool ?? false)
+    }
+
+    deinit {
+        tokens.forEach(NotificationCenter.default.removeObserver)
+    }
 }
+#endif
 
 @available(iOS 13.0, *)
 struct NativeScriptAppView: UIViewRepresentable {

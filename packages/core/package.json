@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/core",
-	"version": "9.0.19-next.2",
+	"version": "9.1.3-next.2",
 	"description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
 	"type": "module",
 	"main": "index",
@@ -9,6 +9,8 @@
 	"sideEffects": [
 		"bundle-entry-points.js",
 		"./globals/index.js",
+		"./inspector_modules.js",
+		"./debugger/webinspector-*.js",
 		"./globals"
 	],
 	"files": [
@@ -69,6 +71,7 @@
 		"css-tree": "^3.1.0",
 		"css-what": "^7.0.0",
 		"emoji-regex": "^10.2.1",
+		"semver": "^7.0.0",
 		"source-map": "0.7.6",
 		"source-map-js": "^1.2.1",
 		"tslib": "^2.0.0"

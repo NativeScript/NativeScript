@@ -8,11 +8,11 @@ declare class SFCertificatePresentation extends NSObject {
 
 	static new(): SFCertificatePresentation; // inherited from NSObject
 
-	helpURL: NSURL;
+	helpURL: NSURL | null;
 
-	message: string;
+	message: string | null;
 
-	title: string;
+	title: string | null;
 
 	readonly trust: any;
 
@@ -22,5 +22,5 @@ declare class SFCertificatePresentation extends NSObject {
 
 	initWithTrust(trust: any): this;
 
-	presentSheetInViewControllerDismissHandler(viewController: UIViewController, dismissHandler: () => void): void;
+	presentSheetInViewControllerDismissHandler(viewController: UIViewController, dismissHandler: () => void | null): void;
 }

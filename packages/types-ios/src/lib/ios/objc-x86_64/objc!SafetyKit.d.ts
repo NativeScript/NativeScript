@@ -31,7 +31,7 @@ declare class SACrashDetectionEvent extends NSObject implements NSCopying, NSSec
 
 	readonly date: Date;
 
-	readonly location: CLLocation;
+	readonly location: CLLocation | null;
 
 	readonly response: SACrashDetectionEventResponse;
 
@@ -39,7 +39,7 @@ declare class SACrashDetectionEvent extends NSObject implements NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -67,11 +67,11 @@ declare class SACrashDetectionManager extends NSObject {
 
 	readonly authorizationStatus: SAAuthorizationStatus;
 
-	delegate: SACrashDetectionDelegate;
+	delegate: SACrashDetectionDelegate | null;
 
 	static readonly available: boolean;
 
-	requestAuthorizationWithCompletionHandler(handler: (p1: SAAuthorizationStatus, p2: NSError) => void): void;
+	requestAuthorizationWithCompletionHandler(handler: (p1: SAAuthorizationStatus, p2: NSError | null) => void): void;
 }
 
 /**
@@ -95,9 +95,9 @@ declare class SAEmergencyResponseManager extends NSObject {
 
 	static new(): SAEmergencyResponseManager; // inherited from NSObject
 
-	delegate: SAEmergencyResponseDelegate;
+	delegate: SAEmergencyResponseDelegate | null;
 
-	dialVoiceCallToPhoneNumberCompletionHandler(phoneNumber: string, handler: (p1: boolean, p2: NSError) => void): void;
+	dialVoiceCallToPhoneNumberCompletionHandler(phoneNumber: string, handler: (p1: boolean, p2: NSError | null) => void): void;
 }
 
 /**

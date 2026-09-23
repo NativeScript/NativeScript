@@ -80,52 +80,52 @@ interface NFCFeliCaTag extends NFCNDEFTag, NFCTag {
 	/**
 	 * @since 13.0
 	 */
-	pollingWithSystemCodeRequestCodeTimeSlotCompletionHandler(systemCode: NSData, requestCode: NFCFeliCaPollingRequestCode, timeSlot: NFCFeliCaPollingTimeSlot, completionHandler: (p1: NSData, p2: NSData, p3: NSError) => void): void;
+	pollingWithSystemCodeRequestCodeTimeSlotCompletionHandler(systemCode: NSData, requestCode: NFCFeliCaPollingRequestCode, timeSlot: NFCFeliCaPollingTimeSlot, completionHandler: (p1: NSData, p2: NSData, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	readWithoutEncryptionWithServiceCodeListBlockListCompletionHandler(serviceCodeList: NSArray<NSData> | NSData[], blockList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NSArray<NSData>, p4: NSError) => void): void;
+	readWithoutEncryptionWithServiceCodeListBlockListCompletionHandler(serviceCodeList: NSArray<NSData> | NSData[], blockList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NSArray<NSData>, p4: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestResponseWithCompletionHandler(completionHandler: (p1: number, p2: NSError) => void): void;
+	requestResponseWithCompletionHandler(completionHandler: (p1: number, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestServiceV2WithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NFCFeliCaEncryptionId, p4: NSArray<NSData>, p5: NSArray<NSData>, p6: NSError) => void): void;
+	requestServiceV2WithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NFCFeliCaEncryptionId, p4: NSArray<NSData>, p5: NSArray<NSData>, p6: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestServiceWithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	requestServiceWithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: NSArray<NSData>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestSpecificationVersionWithCompletionHandler(completionHandler: (p1: number, p2: number, p3: NSData, p4: NSData, p5: NSError) => void): void;
+	requestSpecificationVersionWithCompletionHandler(completionHandler: (p1: number, p2: number, p3: NSData, p4: NSData, p5: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	requestSystemCodeWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	requestSystemCodeWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	resetModeWithCompletionHandler(completionHandler: (p1: number, p2: number, p3: NSError) => void): void;
+	resetModeWithCompletionHandler(completionHandler: (p1: number, p2: number, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	sendFeliCaCommandPacketCompletionHandler(commandPacket: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	sendFeliCaCommandPacketCompletionHandler(commandPacket: NSData, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeWithoutEncryptionWithServiceCodeListBlockListBlockDataCompletionHandler(serviceCodeList: NSArray<NSData> | NSData[], blockList: NSArray<NSData> | NSData[], blockData: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NSError) => void): void;
+	writeWithoutEncryptionWithServiceCodeListBlockListBlockDataCompletionHandler(serviceCodeList: NSArray<NSData> | NSData[], blockList: NSArray<NSData> | NSData[], blockData: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NSError | null) => void): void;
 }
 declare var NFCFeliCaTag: {
 
@@ -159,22 +159,22 @@ declare class NFCISO15693CustomCommandConfiguration extends NFCTagCommandConfigu
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { manufacturerCode: number; customCommandCode: number; requestParameters: NSData; });
+	constructor(o: { manufacturerCode: number; customCommandCode: number; requestParameters: NSData | null; });
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { manufacturerCode: number; customCommandCode: number; requestParameters: NSData; maximumRetries: number; retryInterval: number; });
+	constructor(o: { manufacturerCode: number; customCommandCode: number; requestParameters: NSData | null; maximumRetries: number; retryInterval: number; });
 
 	/**
 	 * @since 11.0
 	 */
-	initWithManufacturerCodeCustomCommandCodeRequestParameters(manufacturerCode: number, customCommandCode: number, requestParameters: NSData): this;
+	initWithManufacturerCodeCustomCommandCodeRequestParameters(manufacturerCode: number, customCommandCode: number, requestParameters: NSData | null): this;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithManufacturerCodeCustomCommandCodeRequestParametersMaximumRetriesRetryInterval(manufacturerCode: number, customCommandCode: number, requestParameters: NSData, maximumRetries: number, retryInterval: number): this;
+	initWithManufacturerCodeCustomCommandCodeRequestParametersMaximumRetriesRetryInterval(manufacturerCode: number, customCommandCode: number, requestParameters: NSData | null, maximumRetries: number, retryInterval: number): this;
 }
 
 /**
@@ -231,13 +231,13 @@ declare class NFCISO15693ReaderSession extends NFCReaderSession {
 	 * @since 11.0
 	 * @deprecated 17.0
 	 */
-	constructor(o: { delegate: NFCReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { delegate: NFCReaderSessionDelegate; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 11.0
 	 * @deprecated 17.0
 	 */
-	initWithDelegateQueue(delegate: NFCReaderSessionDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithDelegateQueue(delegate: NFCReaderSessionDelegate, queue: NSObject & OS_dispatch_queue | null): this;
 
 	/**
 	 * @since 11.0
@@ -321,164 +321,164 @@ interface NFCISO15693Tag extends NFCNDEFTag, NFCTag {
 	/**
 	 * @since 14.0
 	 */
-	authenticateWithRequestFlagsCryptoSuiteIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, cryptoSuiteIdentifier: number, message: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
+	authenticateWithRequestFlagsCryptoSuiteIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, cryptoSuiteIdentifier: number, message: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	challengeWithRequestFlagsCryptoSuiteIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, cryptoSuiteIdentifier: number, message: NSData, completionHandler: (p1: NSError) => void): void;
+	challengeWithRequestFlagsCryptoSuiteIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, cryptoSuiteIdentifier: number, message: NSData, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	customCommandWithRequestFlagCustomCommandCodeCustomRequestParametersCompletionHandler(flags: NFCISO15693RequestFlag, customCommandCode: number, customRequestParameters: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	customCommandWithRequestFlagCustomCommandCodeCustomRequestParametersCompletionHandler(flags: NFCISO15693RequestFlag, customCommandCode: number, customRequestParameters: NSData, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	extendedFastReadMultipleBlocksWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	extendedFastReadMultipleBlocksWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	extendedGetMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError) => void): void;
+	extendedGetMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	extendedLockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSError) => void): void;
+	extendedLockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	extendedReadMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	extendedReadMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	extendedReadSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	extendedReadSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	extendedWriteMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
+	extendedWriteMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	extendedWriteSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError) => void): void;
+	extendedWriteSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	fastReadMultipleBlocksWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	fastReadMultipleBlocksWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	getMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError) => void): void;
+	getMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	getSystemInfoAndUIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSData, p2: number, p3: number, p4: number, p5: number, p6: number, p7: NSError) => void): void;
+	getSystemInfoAndUIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSData | null, p2: number, p3: number, p4: number, p5: number, p6: number, p7: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 14.0
 	 */
-	getSystemInfoWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: number, p2: number, p3: number, p4: number, p5: number, p6: NSError) => void): void;
+	getSystemInfoWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: number, p2: number, p3: number, p4: number, p5: number, p6: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	keyUpdateWithRequestFlagsKeyIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, keyIdentifier: number, message: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
+	keyUpdateWithRequestFlagsKeyIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, keyIdentifier: number, message: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	lockAFIWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+	lockAFIWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	lockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSError) => void): void;
+	lockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 * @deprecated 14.0
 	 */
-	lockDFSIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+	lockDFSIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	lockDSFIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+	lockDSFIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	readBufferWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
+	readBufferWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	readMultipleBlocksWithConfigurationCompletionHandler(readConfiguration: NFCISO15693ReadMultipleBlocksConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	readMultipleBlocksWithConfigurationCompletionHandler(readConfiguration: NFCISO15693ReadMultipleBlocksConfiguration, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	readMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	readMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	readSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	readSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	resetToReadyWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+	resetToReadyWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	selectWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+	selectWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	sendCustomCommandWithConfigurationCompletionHandler(commandConfiguration: NFCISO15693CustomCommandConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	sendCustomCommandWithConfigurationCompletionHandler(commandConfiguration: NFCISO15693CustomCommandConfiguration, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 14.0
 	 */
-	sendRequestWithFlagCommandCodeDataCompletionHandler(flags: number, commandCode: number, data: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
+	sendRequestWithFlagCommandCodeDataCompletionHandler(flags: number, commandCode: number, data: NSData | null, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	stayQuietWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	stayQuietWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeAFIWithRequestFlagAfiCompletionHandler(flags: NFCISO15693RequestFlag, afi: number, completionHandler: (p1: NSError) => void): void;
+	writeAFIWithRequestFlagAfiCompletionHandler(flags: NFCISO15693RequestFlag, afi: number, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeDSFIDWithRequestFlagDsfidCompletionHandler(flags: NFCISO15693RequestFlag, dsfid: number, completionHandler: (p1: NSError) => void): void;
+	writeDSFIDWithRequestFlagDsfidCompletionHandler(flags: NFCISO15693RequestFlag, dsfid: number, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
+	writeMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError) => void): void;
+	writeSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError | null) => void): void;
 }
 declare var NFCISO15693Tag: {
 
@@ -502,7 +502,7 @@ declare class NFCISO7816APDU extends NSObject implements NSCopying {
 	/**
 	 * @since 13.0
 	 */
-	readonly data: NSData;
+	readonly data: NSData | null;
 
 	/**
 	 * @since 13.0
@@ -539,7 +539,7 @@ declare class NFCISO7816APDU extends NSObject implements NSCopying {
 	 */
 	constructor(o: { instructionClass: number; instructionCode: number; p1Parameter: number; p2Parameter: number; data: NSData; expectedResponseLength: number; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 13.0
@@ -560,12 +560,12 @@ interface NFCISO7816Tag extends NFCNDEFTag, NFCTag {
 	/**
 	 * @since 13.0
 	 */
-	applicationData: NSData;
+	applicationData: NSData | null;
 
 	/**
 	 * @since 13.0
 	 */
-	historicalBytes: NSData;
+	historicalBytes: NSData | null;
 
 	/**
 	 * @since 13.0
@@ -583,9 +583,14 @@ interface NFCISO7816Tag extends NFCNDEFTag, NFCTag {
 	proprietaryApplicationDataCoding: boolean;
 
 	/**
+	 * @since 26.4
+	 */
+	supportsPACE: boolean;
+
+	/**
 	 * @since 13.0
 	 */
-	sendCommandAPDUCompletionHandler(apdu: NFCISO7816APDU, completionHandler: (p1: NSData, p2: number, p3: number, p4: NSError) => void): void;
+	sendCommandAPDUCompletionHandler(apdu: NFCISO7816APDU, completionHandler: (p1: NSData, p2: number, p3: number, p4: NSError | null) => void): void;
 }
 declare var NFCISO7816Tag: {
 
@@ -611,7 +616,7 @@ interface NFCMiFareTag extends NFCNDEFTag, NFCTag {
 	/**
 	 * @since 13.0
 	 */
-	historicalBytes: NSData;
+	historicalBytes: NSData | null;
 
 	/**
 	 * @since 13.0
@@ -626,12 +631,12 @@ interface NFCMiFareTag extends NFCNDEFTag, NFCTag {
 	/**
 	 * @since 13.0
 	 */
-	sendMiFareCommandCompletionHandler(command: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	sendMiFareCommandCompletionHandler(command: NSData, completionHandler: (p1: NSData, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	sendMiFareISO7816CommandCompletionHandler(apdu: NFCISO7816APDU, completionHandler: (p1: NSData, p2: number, p3: number, p4: NSError) => void): void;
+	sendMiFareISO7816CommandCompletionHandler(apdu: NFCISO7816APDU, completionHandler: (p1: NSData, p2: number, p3: number, p4: NSError | null) => void): void;
 }
 declare var NFCMiFareTag: {
 
@@ -762,12 +767,12 @@ declare class NFCNDEFPayload extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	wellKnownTypeTextPayloadWithLocale(locale: interop.Pointer | interop.Reference<NSLocale>): string;
+	wellKnownTypeTextPayloadWithLocale(locale: interop.Pointer | interop.Reference<NSLocale | null> | ArrayBufferLike | ArrayBufferView): string | null;
 
 	/**
 	 * @since 13.0
 	 */
-	wellKnownTypeURIPayload(): NSURL;
+	wellKnownTypeURIPayload(): NSURL | null;
 }
 
 /**
@@ -782,17 +787,17 @@ declare class NFCNDEFReaderSession extends NFCReaderSession {
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { delegate: NFCNDEFReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; invalidateAfterFirstRead: boolean; });
+	constructor(o: { delegate: NFCNDEFReaderSessionDelegate; queue: NSObject & OS_dispatch_queue | null; invalidateAfterFirstRead: boolean; });
 
 	/**
 	 * @since 13.0
 	 */
-	connectToTagCompletionHandler(tag: NFCNDEFTag, completionHandler: (p1: NSError) => void): void;
+	connectToTagCompletionHandler(tag: NFCNDEFTag, completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 */
-	initWithDelegateQueueInvalidateAfterFirstRead(delegate: NFCNDEFReaderSessionDelegate, queue: NSObject & OS_dispatch_queue, invalidateAfterFirstRead: boolean): this;
+	initWithDelegateQueueInvalidateAfterFirstRead(delegate: NFCNDEFReaderSessionDelegate, queue: NSObject & OS_dispatch_queue | null, invalidateAfterFirstRead: boolean): this;
 
 	/**
 	 * @since 13.0
@@ -852,22 +857,22 @@ interface NFCNDEFTag extends NSCopying, NSObjectProtocol, NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	queryNDEFStatusWithCompletionHandler(completionHandler: (p1: NFCNDEFStatus, p2: number, p3: NSError) => void): void;
+	queryNDEFStatusWithCompletionHandler(completionHandler: (p1: NFCNDEFStatus, p2: number, p3: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	readNDEFWithCompletionHandler(completionHandler: (p1: NFCNDEFMessage, p2: NSError) => void): void;
+	readNDEFWithCompletionHandler(completionHandler: (p1: NFCNDEFMessage | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeLockWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	writeLockWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 13.0
 	 */
-	writeNDEFCompletionHandler(ndefMessage: NFCNDEFMessage, completionHandler: (p1: NSError) => void): void;
+	writeNDEFCompletionHandler(ndefMessage: NFCNDEFMessage, completionHandler: (p1: NSError | null) => void): void;
 }
 declare var NFCNDEFTag: {
 
@@ -886,12 +891,12 @@ declare class NFCPaymentTagReaderSession extends NFCTagReaderSession {
 	/**
 	 * @since 26.0
 	 */
-	constructor(o: { delegate: NFCTagReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { delegate: NFCTagReaderSessionDelegate; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 26.0
 	 */
-	initWithDelegateQueue(delegate: NFCTagReaderSessionDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithDelegateQueue(delegate: NFCTagReaderSessionDelegate, queue: NSObject & OS_dispatch_queue | null): this;
 }
 
 declare const enum NFCPollingOption {
@@ -968,7 +973,7 @@ declare class NFCReaderSession extends NSObject implements NFCReaderSessionProto
 	/**
 	 * @since 11.0
 	 */
-	readonly delegate: any;
+	readonly delegate: any | null;
 
 	/**
 	 * @since 11.0
@@ -1113,7 +1118,7 @@ interface NFCTag extends NSCopying, NSObjectProtocol, NSSecureCoding {
 	/**
 	 * @since 11.0
 	 */
-	session: NFCReaderSessionProtocol;
+	session: NFCReaderSessionProtocol | null;
 
 	/**
 	 * @since 11.0
@@ -1123,22 +1128,22 @@ interface NFCTag extends NSCopying, NSObjectProtocol, NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	asNFCFeliCaTag(): NFCFeliCaTag;
+	asNFCFeliCaTag(): NFCFeliCaTag | null;
 
 	/**
 	 * @since 13.0
 	 */
-	asNFCISO15693Tag(): NFCISO15693Tag;
+	asNFCISO15693Tag(): NFCISO15693Tag | null;
 
 	/**
 	 * @since 13.0
 	 */
-	asNFCISO7816Tag(): NFCISO7816Tag;
+	asNFCISO7816Tag(): NFCISO7816Tag | null;
 
 	/**
 	 * @since 13.0
 	 */
-	asNFCMiFareTag(): NFCMiFareTag;
+	asNFCMiFareTag(): NFCMiFareTag | null;
 }
 declare var NFCTag: {
 
@@ -1164,7 +1169,7 @@ declare class NFCTagCommandConfiguration extends NSObject implements NSCopying {
 	 */
 	retryInterval: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -1179,27 +1184,68 @@ declare class NFCTagReaderSession extends NFCReaderSession {
 	/**
 	 * @since 13.0
 	 */
-	readonly connectedTag: NFCTag;
+	readonly connectedTag: NFCTag | null;
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { configuration: NFCTagReaderSessionConfiguration; delegate: NFCTagReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; });
 
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { pollingOption: NFCPollingOption; delegate: NFCTagReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { pollingOption: NFCPollingOption; delegate: NFCTagReaderSessionDelegate; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	connectToTagCompletionHandler(tag: NFCTag, completionHandler: (p1: NSError) => void): void;
+	connectToTagCompletionHandler(tag: NFCTag, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 26.4
+	 */
+	initWithConfigurationDelegateQueue(configuration: NFCTagReaderSessionConfiguration, delegate: NFCTagReaderSessionDelegate, queue: NSObject & OS_dispatch_queue): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithPollingOptionDelegateQueue(pollingOption: NFCPollingOption, delegate: NFCTagReaderSessionDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithPollingOptionDelegateQueue(pollingOption: NFCPollingOption, delegate: NFCTagReaderSessionDelegate, queue: NSObject & OS_dispatch_queue | null): this;
 
 	/**
 	 * @since 13.0
 	 */
 	restartPolling(): void;
+
+	/**
+	 * @since 26.4
+	 */
+	restartPollingWithConfiguration(configuration: NFCTagReaderSessionConfiguration): void;
+}
+
+/**
+ * @since 26.4
+ */
+declare class NFCTagReaderSessionConfiguration extends NSObject {
+
+	static alloc(): NFCTagReaderSessionConfiguration; // inherited from NSObject
+
+	static new(): NFCTagReaderSessionConfiguration; // inherited from NSObject
+
+	felicaSystemCodes: NSArray<string>;
+
+	iso7816SelectIdentifiers: NSArray<string>;
+
+	polling: NFCPollingOption;
+
+	/**
+	 * @since 26.4
+	 */
+	constructor(o: { pollingOption: NFCPollingOption; iso7816SelectIdentifiers: NSArray<string> | string[]; felicaSystemCodes: NSArray<string> | string[]; });
+
+	/**
+	 * @since 26.4
+	 */
+	initWithPollingOptionIso7816SelectIdentifiersFelicaSystemCodes(option: NFCPollingOption, iso7816SelectIdentifiers: NSArray<string> | string[], felicaSystemCodes: NSArray<string> | string[]): this;
 }
 
 /**
@@ -1282,13 +1328,13 @@ declare class NFCVASCommandConfiguration extends NSObject implements NSCopying {
 	/**
 	 * @since 13.0
 	 */
-	url: NSURL;
+	url: NSURL | null;
 
-	constructor(o: { VASMode: NFCVASMode; passTypeIdentifier: string; url: NSURL; });
+	constructor(o: { VASMode: NFCVASMode; passTypeIdentifier: string; url: NSURL | null; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	initWithVASModePassTypeIdentifierUrl(mode: NFCVASMode, passTypeIdentifier: string, url: NSURL): this;
+	initWithVASModePassTypeIdentifierUrl(mode: NFCVASMode, passTypeIdentifier: string, url: NSURL | null): this;
 }
 
 /**
@@ -1355,12 +1401,12 @@ declare class NFCVASReaderSession extends NFCReaderSession {
 	/**
 	 * @since 13.0
 	 */
-	constructor(o: { VASCommandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[]; delegate: NFCVASReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; });
+	constructor(o: { VASCommandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[]; delegate: NFCVASReaderSessionDelegate; queue: NSObject & OS_dispatch_queue | null; });
 
 	/**
 	 * @since 13.0
 	 */
-	initWithVASCommandConfigurationsDelegateQueue(commandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[], delegate: NFCVASReaderSessionDelegate, queue: NSObject & OS_dispatch_queue): this;
+	initWithVASCommandConfigurationsDelegateQueue(commandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[], delegate: NFCVASReaderSessionDelegate, queue: NSObject & OS_dispatch_queue | null): this;
 }
 
 /**
@@ -1412,5 +1458,5 @@ declare class NFCVASResponse extends NSObject implements NSCopying {
 	 */
 	readonly vasData: NSData;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }

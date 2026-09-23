@@ -16,12 +16,12 @@ export class Button extends button.Button {
 	[backgroundInternalProperty.setNative](value) {
 		this.backgroundInternalSetNativeCount++;
 
-		return super[backgroundInternalProperty.setNative](value);
+		return (super[backgroundInternalProperty.setNative] as any).call(this, value);
 	}
 	[fontInternalProperty.setNative](value) {
 		this.fontInternalSetNativeCount++;
 
-		return super[fontInternalProperty.setNative](value);
+		return (super[fontInternalProperty.setNative] as any).call(this, value);
 	}
 	_redrawNativeBackground(value: any): void {
 		this.nativeBackgroundRedraws++;
@@ -30,7 +30,7 @@ export class Button extends button.Button {
 	[colorProperty.setNative](value) {
 		this.colorSetNativeCount++;
 
-		return super[colorProperty.setNative](value);
+		return (super[colorProperty.setNative] as any).call(this, value);
 	}
 }
 Button.prototype.recycleNativeView = 'never';

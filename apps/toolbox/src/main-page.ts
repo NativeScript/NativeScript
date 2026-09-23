@@ -1,4 +1,4 @@
-import { Application, EventData, Page, SceneEventData, SceneEvents, Utils } from '@nativescript/core';
+import { Application, EventData, Page, SceneEvents, Utils, SceneEventData } from '@nativescript/core';
 import { HelloWorldModel } from './main-view-model';
 
 let initSceneEvents = false;
@@ -41,7 +41,7 @@ function setupSceneEvents() {
 			// Listen to scene events
 			Application.on(SceneEvents.sceneWillConnect, (args: SceneEventData) => {
 				console.log('New scene connecting:', args.scene);
-				console.log('Window:', args.window);
+				console.log('Window:', args.uiWindow);
 				console.log('Connection options:', args.connectionOptions);
 			});
 

@@ -31,7 +31,7 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { keyName: string; searchable: boolean; searchableByDefault: boolean; unique: boolean; multiValued: boolean; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -147,12 +147,12 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 	/**
 	 * @since 11.0
 	 */
-	dataForSearchableIndexItemIdentifierTypeIdentifierError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, error?: interop.Reference<NSError>): NSData;
+	dataForSearchableIndexItemIdentifierTypeIdentifierError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, error?: interop.Reference<NSError>): NSData | null;
 
 	/**
 	 * @since 11.0
 	 */
-	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean, error?: interop.Reference<NSError>): NSURL;
+	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean, error?: interop.Reference<NSError>): NSURL | null;
 
 	isEqual(object: any): boolean;
 
@@ -204,21 +204,21 @@ declare class CSLocalizedString extends NSString {
 
 	static string(): CSLocalizedString; // inherited from NSString
 
-	static stringWithCStringEncoding(cString: string | interop.Pointer | interop.Reference<any>, enc: number): CSLocalizedString; // inherited from NSString
+	static stringWithCStringEncoding(cString: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, enc: number): CSLocalizedString; // inherited from NSString
 
-	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): CSLocalizedString; // inherited from NSString
+	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string> | ArrayBufferLike | ArrayBufferView, length: number): CSLocalizedString; // inherited from NSString
 
 	static stringWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
 	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
 	static stringWithString(string: string): CSLocalizedString; // inherited from NSString
 
-	static stringWithUTF8String(nullTerminatedCString: string | interop.Pointer | interop.Reference<any>): CSLocalizedString; // inherited from NSString
+	static stringWithUTF8String(nullTerminatedCString: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): CSLocalizedString; // inherited from NSString
 
 	constructor(o: { localizedStrings: NSDictionary<any, any>; });
 
@@ -266,9 +266,9 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CSPerson; // inherited from NSObject
 
-	contactIdentifier: string;
+	contactIdentifier: string | null;
 
-	readonly displayName: string;
+	readonly displayName: string | null;
 
 	readonly handleIdentifier: string;
 
@@ -278,15 +278,15 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { displayName: string; handles: NSArray<string> | string[]; handleIdentifier: string; });
+	constructor(o: { displayName: string | null; handles: NSArray<string> | string[]; handleIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string> | string[], handleIdentifier: string): this;
+	initWithDisplayNameHandlesHandleIdentifier(displayName: string | null, handles: NSArray<string> | string[], handleIdentifier: string): this;
 }
 
 /**
@@ -305,11 +305,11 @@ declare class CSSearchQuery extends NSObject {
 
 	readonly cancelled: boolean;
 
-	completionHandler: (p1: NSError) => void;
+	completionHandler: (p1: NSError | null) => void | null;
 
 	readonly foundItemCount: number;
 
-	foundItemsHandler: (p1: NSArray<CSSearchableItem>) => void;
+	foundItemsHandler: (p1: NSArray<CSSearchableItem>) => void | null;
 
 	protectionClasses: NSArray<string>;
 
@@ -317,12 +317,12 @@ declare class CSSearchQuery extends NSObject {
 	 * @since 10.0
 	 * @deprecated 16.0
 	 */
-	constructor(o: { queryString: string; attributes: NSArray<string> | string[]; });
+	constructor(o: { queryString: string; attributes: NSArray<string> | string[] | null; });
 
 	/**
 	 * @since 16.0
 	 */
-	constructor(o: { queryString: string; queryContext: CSSearchQueryContext; });
+	constructor(o: { queryString: string; queryContext: CSSearchQueryContext | null; });
 
 	cancel(): void;
 
@@ -330,12 +330,12 @@ declare class CSSearchQuery extends NSObject {
 	 * @since 10.0
 	 * @deprecated 16.0
 	 */
-	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string> | string[]): this;
+	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string> | string[] | null): this;
 
 	/**
 	 * @since 16.0
 	 */
-	initWithQueryStringQueryContext(queryString: string, queryContext: CSSearchQueryContext): this;
+	initWithQueryStringQueryContext(queryString: string, queryContext: CSSearchQueryContext | null): this;
 
 	start(): void;
 }
@@ -353,7 +353,7 @@ declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecu
 
 	filterQueries: NSArray<string>;
 
-	keyboardLanguage: string;
+	keyboardLanguage: string | null;
 
 	sourceOptions: CSSearchQuerySourceOptions;
 
@@ -361,7 +361,7 @@ declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -412,36 +412,36 @@ declare class CSSearchableIndex extends NSObject {
 
 	static new(): CSSearchableIndex; // inherited from NSObject
 
-	indexDelegate: CSSearchableIndexDelegate;
+	indexDelegate: CSSearchableIndexDelegate | null;
 
 	constructor(o: { name: string; });
 
-	constructor(o: { name: string; protectionClass: string; });
+	constructor(o: { name: string; protectionClass: string | null; });
 
 	beginIndexBatch(): void;
 
-	deleteAllSearchableItemsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	deleteAllSearchableItemsWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
-	deleteSearchableItemsWithDomainIdentifiersCompletionHandler(domainIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError) => void): void;
+	deleteSearchableItemsWithDomainIdentifiersCompletionHandler(domainIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError | null) => void | null): void;
 
-	deleteSearchableItemsWithIdentifiersCompletionHandler(identifiers: NSArray<string> | string[], completionHandler: (p1: NSError) => void): void;
+	deleteSearchableItemsWithIdentifiersCompletionHandler(identifiers: NSArray<string> | string[], completionHandler: (p1: NSError | null) => void | null): void;
 
-	endIndexBatchWithClientStateCompletionHandler(clientState: NSData, completionHandler: (p1: NSError) => void): void;
+	endIndexBatchWithClientStateCompletionHandler(clientState: NSData, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 18.0
 	 */
-	endIndexBatchWithExpectedClientStateNewClientStateCompletionHandler(expectedClientState: NSData, newClientState: NSData, completionHandler: (p1: NSError) => void): void;
+	endIndexBatchWithExpectedClientStateNewClientStateCompletionHandler(expectedClientState: NSData | null, newClientState: NSData, completionHandler: (p1: NSError | null) => void | null): void;
 
-	fetchDataForBundleIdentifierItemIdentifierContentTypeCompletionHandler(bundleIdentifier: string, itemIdentifier: string, contentType: UTType, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	fetchDataForBundleIdentifierItemIdentifierContentTypeCompletionHandler(bundleIdentifier: string, itemIdentifier: string, contentType: UTType, completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	fetchLastClientStateWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
+	fetchLastClientStateWithCompletionHandler(completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	indexSearchableItemsCompletionHandler(items: NSArray<CSSearchableItem> | CSSearchableItem[], completionHandler: (p1: NSError) => void): void;
+	indexSearchableItemsCompletionHandler(items: NSArray<CSSearchableItem> | CSSearchableItem[], completionHandler: (p1: NSError | null) => void | null): void;
 
 	initWithName(name: string): this;
 
-	initWithNameProtectionClass(name: string, protectionClass: string): this;
+	initWithNameProtectionClass(name: string, protectionClass: string | null): this;
 }
 
 /**
@@ -452,12 +452,12 @@ interface CSSearchableIndexDelegate extends NSObjectProtocol {
 	/**
 	 * @since 11.0
 	 */
-	dataForSearchableIndexItemIdentifierTypeIdentifierError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, error?: interop.Reference<NSError>): NSData;
+	dataForSearchableIndexItemIdentifierTypeIdentifierError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, error?: interop.Reference<NSError>): NSData | null;
 
 	/**
 	 * @since 11.0
 	 */
-	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean, error?: interop.Reference<NSError>): NSURL;
+	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean, error?: interop.Reference<NSError>): NSURL | null;
 
 	searchableIndexDidFinishThrottle?(searchableIndex: CSSearchableIndex): void;
 
@@ -493,7 +493,7 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	attributeSet: CSSearchableItemAttributeSet;
 
-	domainIdentifier: string;
+	domainIdentifier: string | null;
 
 	expirationDate: Date;
 
@@ -513,20 +513,20 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { uniqueIdentifier: string; domainIdentifier: string; attributeSet: CSSearchableItemAttributeSet; });
+	constructor(o: { uniqueIdentifier: string | null; domainIdentifier: string | null; attributeSet: CSSearchableItemAttributeSet; });
 
 	/**
 	 * @since 16.0
 	 */
 	compareByRank(other: CSSearchableItem): NSComparisonResult;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithUniqueIdentifierDomainIdentifierAttributeSet(uniqueIdentifier: string, domainIdentifier: string, attributeSet: CSSearchableItemAttributeSet): this;
+	initWithUniqueIdentifierDomainIdentifierAttributeSet(uniqueIdentifier: string | null, domainIdentifier: string | null, attributeSet: CSSearchableItemAttributeSet): this;
 }
 
 /**
@@ -548,427 +548,427 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	static new(): CSSearchableItemAttributeSet; // inherited from NSObject
 
-	EXIFGPSVersion: string;
+	EXIFGPSVersion: string | null;
 
-	EXIFVersion: string;
+	EXIFVersion: string | null;
 
-	GPSAreaInformation: string;
+	GPSAreaInformation: string | null;
 
-	GPSDOP: number;
+	GPSDOP: number | null;
 
-	GPSDateStamp: Date;
+	GPSDateStamp: Date | null;
 
-	GPSDestBearing: number;
+	GPSDestBearing: number | null;
 
-	GPSDestDistance: number;
+	GPSDestDistance: number | null;
 
-	GPSDestLatitude: number;
+	GPSDestLatitude: number | null;
 
-	GPSDestLongitude: number;
+	GPSDestLongitude: number | null;
 
-	GPSDifferental: number;
+	GPSDifferental: number | null;
 
-	GPSMapDatum: string;
+	GPSMapDatum: string | null;
 
-	GPSMeasureMode: string;
+	GPSMeasureMode: string | null;
 
-	GPSProcessingMethod: string;
+	GPSProcessingMethod: string | null;
 
-	GPSStatus: string;
+	GPSStatus: string | null;
 
-	GPSTrack: number;
+	GPSTrack: number | null;
 
-	HTMLContentData: NSData;
+	HTMLContentData: NSData | null;
 
-	ISOSpeed: number;
+	ISOSpeed: number | null;
 
-	URL: NSURL;
+	URL: NSURL | null;
 
-	accountHandles: NSArray<string>;
+	accountHandles: NSArray<string> | null;
 
-	accountIdentifier: string;
+	accountIdentifier: string | null;
 
-	acquisitionMake: string;
+	acquisitionMake: string | null;
 
-	acquisitionModel: string;
+	acquisitionModel: string | null;
 
 	/**
 	 * @since 15.0
 	 */
 	actionIdentifiers: NSArray<string>;
 
-	addedDate: Date;
+	addedDate: Date | null;
 
-	additionalRecipients: NSArray<CSPerson>;
+	additionalRecipients: NSArray<CSPerson> | null;
 
-	album: string;
+	album: string | null;
 
-	allDay: number;
+	allDay: number | null;
 
-	alternateNames: NSArray<string>;
+	alternateNames: NSArray<string> | null;
 
-	altitude: number;
+	altitude: number | null;
 
-	aperture: number;
+	aperture: number | null;
 
-	artist: string;
+	artist: string | null;
 
-	audiences: NSArray<string>;
+	audiences: NSArray<string> | null;
 
-	audioBitRate: number;
+	audioBitRate: number | null;
 
-	audioChannelCount: number;
+	audioChannelCount: number | null;
 
-	audioEncodingApplication: string;
+	audioEncodingApplication: string | null;
 
-	audioSampleRate: number;
+	audioSampleRate: number | null;
 
-	audioTrackNumber: number;
+	audioTrackNumber: number | null;
 
-	authorAddresses: NSArray<string>;
+	authorAddresses: NSArray<string> | null;
 
-	authorEmailAddresses: NSArray<string>;
+	authorEmailAddresses: NSArray<string> | null;
 
-	authorNames: NSArray<string>;
+	authorNames: NSArray<string> | null;
 
-	authors: NSArray<CSPerson>;
+	authors: NSArray<CSPerson> | null;
 
-	bitsPerSample: number;
+	bitsPerSample: number | null;
 
-	cameraOwner: string;
+	cameraOwner: string | null;
 
-	city: string;
+	city: string | null;
 
-	codecs: NSArray<string>;
+	codecs: NSArray<string> | null;
 
-	colorSpace: string;
+	colorSpace: string | null;
 
-	comment: string;
+	comment: string | null;
 
-	completionDate: Date;
+	completionDate: Date | null;
 
-	composer: string;
+	composer: string | null;
 
-	contactKeywords: NSArray<string>;
+	contactKeywords: NSArray<string> | null;
 
-	containerDisplayName: string;
+	containerDisplayName: string | null;
 
-	containerIdentifier: string;
+	containerIdentifier: string | null;
 
-	containerOrder: number;
+	containerOrder: number | null;
 
-	containerTitle: string;
+	containerTitle: string | null;
 
-	contentCreationDate: Date;
+	contentCreationDate: Date | null;
 
-	contentDescription: string;
+	contentDescription: string | null;
 
-	contentModificationDate: Date;
+	contentModificationDate: Date | null;
 
-	contentRating: number;
+	contentRating: number | null;
 
-	contentSources: NSArray<string>;
+	contentSources: NSArray<string> | null;
 
-	contentType: string;
+	contentType: string | null;
 
-	contentTypeTree: NSArray<string>;
+	contentTypeTree: NSArray<string> | null;
 
-	contentURL: NSURL;
+	contentURL: NSURL | null;
 
-	contributors: NSArray<string>;
+	contributors: NSArray<string> | null;
 
-	copyright: string;
+	copyright: string | null;
 
-	country: string;
+	country: string | null;
 
-	coverage: NSArray<string>;
+	coverage: NSArray<string> | null;
 
-	creator: string;
+	creator: string | null;
 
-	darkThumbnailURL: NSURL;
+	darkThumbnailURL: NSURL | null;
 
-	deliveryType: number;
+	deliveryType: number | null;
 
-	director: string;
+	director: string | null;
 
-	displayName: string;
+	displayName: string | null;
 
 	/**
 	 * @since 10.0
 	 */
-	domainIdentifier: string;
+	domainIdentifier: string | null;
 
-	downloadedDate: Date;
+	downloadedDate: Date | null;
 
-	dueDate: Date;
+	dueDate: Date | null;
 
-	duration: number;
+	duration: number | null;
 
-	editors: NSArray<string>;
+	editors: NSArray<string> | null;
 
-	emailAddresses: NSArray<string>;
+	emailAddresses: NSArray<string> | null;
 
-	emailHeaders: NSDictionary<string, NSArray<any>>;
+	emailHeaders: NSDictionary<string, NSArray<any>> | null;
 
-	encodingApplications: NSArray<string>;
+	encodingApplications: NSArray<string> | null;
 
-	endDate: Date;
+	endDate: Date | null;
 
-	exposureMode: number;
+	exposureMode: number | null;
 
-	exposureProgram: string;
+	exposureProgram: string | null;
 
-	exposureTime: number;
+	exposureTime: number | null;
 
-	exposureTimeString: string;
+	exposureTimeString: string | null;
 
-	fNumber: number;
+	fNumber: number | null;
 
-	fileSize: number;
+	fileSize: number | null;
 
-	flashOn: number;
+	flashOn: number | null;
 
-	focalLength: number;
+	focalLength: number | null;
 
-	focalLength35mm: number;
+	focalLength35mm: number | null;
 
-	fontNames: NSArray<string>;
+	fontNames: NSArray<string> | null;
 
-	fullyFormattedAddress: string;
+	fullyFormattedAddress: string | null;
 
-	generalMIDISequence: number;
+	generalMIDISequence: number | null;
 
-	genre: string;
+	genre: string | null;
 
-	hasAlphaChannel: number;
+	hasAlphaChannel: number | null;
 
-	headline: string;
+	headline: string | null;
 
-	hiddenAdditionalRecipients: NSArray<CSPerson>;
+	hiddenAdditionalRecipients: NSArray<CSPerson> | null;
 
-	identifier: string;
+	identifier: string | null;
 
-	imageDirection: number;
+	imageDirection: number | null;
 
-	importantDates: NSArray<Date>;
+	importantDates: NSArray<Date> | null;
 
-	information: string;
+	information: string | null;
 
-	instantMessageAddresses: NSArray<string>;
+	instantMessageAddresses: NSArray<string> | null;
 
-	instructions: string;
+	instructions: string | null;
 
 	/**
 	 * @since 18.4
 	 */
-	readonly isPriority: number;
+	readonly isPriority: number | null;
 
-	keySignature: string;
+	keySignature: string | null;
 
-	keywords: NSArray<string>;
+	keywords: NSArray<string> | null;
 
-	kind: string;
+	kind: string | null;
 
-	languages: NSArray<string>;
+	languages: NSArray<string> | null;
 
-	lastUsedDate: Date;
+	lastUsedDate: Date | null;
 
-	latitude: number;
+	latitude: number | null;
 
-	layerNames: NSArray<string>;
+	layerNames: NSArray<string> | null;
 
-	lensModel: string;
+	lensModel: string | null;
 
 	likelyJunk: number;
 
-	local: number;
+	local: number | null;
 
-	longitude: number;
+	longitude: number | null;
 
-	lyricist: string;
+	lyricist: string | null;
 
-	mailboxIdentifiers: NSArray<string>;
+	mailboxIdentifiers: NSArray<string> | null;
 
-	maxAperture: number;
+	maxAperture: number | null;
 
-	mediaTypes: NSArray<string>;
+	mediaTypes: NSArray<string> | null;
 
-	metadataModificationDate: Date;
+	metadataModificationDate: Date | null;
 
-	meteringMode: string;
+	meteringMode: string | null;
 
-	musicalGenre: string;
+	musicalGenre: string | null;
 
-	musicalInstrumentCategory: string;
+	musicalInstrumentCategory: string | null;
 
-	musicalInstrumentName: string;
+	musicalInstrumentName: string | null;
 
-	namedLocation: string;
+	namedLocation: string | null;
 
-	organizations: NSArray<string>;
+	organizations: NSArray<string> | null;
 
-	orientation: number;
+	orientation: number | null;
 
-	originalFormat: string;
+	originalFormat: string | null;
 
-	originalSource: string;
+	originalSource: string | null;
 
-	pageCount: number;
+	pageCount: number | null;
 
-	pageHeight: number;
+	pageHeight: number | null;
 
-	pageWidth: number;
+	pageWidth: number | null;
 
-	participants: NSArray<string>;
+	participants: NSArray<string> | null;
 
-	path: string;
+	path: string | null;
 
-	performers: NSArray<string>;
+	performers: NSArray<string> | null;
 
-	phoneNumbers: NSArray<string>;
+	phoneNumbers: NSArray<string> | null;
 
-	pixelCount: number;
+	pixelCount: number | null;
 
-	pixelHeight: number;
+	pixelHeight: number | null;
 
-	pixelWidth: number;
+	pixelWidth: number | null;
 
-	playCount: number;
+	playCount: number | null;
 
-	postalCode: string;
+	postalCode: string | null;
 
-	primaryRecipients: NSArray<CSPerson>;
+	primaryRecipients: NSArray<CSPerson> | null;
 
-	producer: string;
+	producer: string | null;
 
-	profileName: string;
+	profileName: string | null;
 
-	projects: NSArray<string>;
-
-	/**
-	 * @since 11.0
-	 */
-	providerDataTypeIdentifiers: NSArray<string>;
+	projects: NSArray<string> | null;
 
 	/**
 	 * @since 11.0
 	 */
-	providerFileTypeIdentifiers: NSArray<string>;
+	providerDataTypeIdentifiers: NSArray<string> | null;
 
 	/**
 	 * @since 11.0
 	 */
-	providerInPlaceFileTypeIdentifiers: NSArray<string>;
-
-	publishers: NSArray<string>;
+	providerFileTypeIdentifiers: NSArray<string> | null;
 
 	/**
 	 * @since 11.0
 	 */
-	rankingHint: number;
+	providerInPlaceFileTypeIdentifiers: NSArray<string> | null;
 
-	rating: number;
+	publishers: NSArray<string> | null;
 
-	ratingDescription: string;
+	/**
+	 * @since 11.0
+	 */
+	rankingHint: number | null;
 
-	recipientAddresses: NSArray<string>;
+	rating: number | null;
 
-	recipientEmailAddresses: NSArray<string>;
+	ratingDescription: string | null;
 
-	recipientNames: NSArray<string>;
+	recipientAddresses: NSArray<string> | null;
 
-	recordingDate: Date;
+	recipientEmailAddresses: NSArray<string> | null;
 
-	redEyeOn: number;
+	recipientNames: NSArray<string> | null;
 
-	relatedUniqueIdentifier: string;
+	recordingDate: Date | null;
 
-	resolutionHeightDPI: number;
+	redEyeOn: number | null;
 
-	resolutionWidthDPI: number;
+	relatedUniqueIdentifier: string | null;
 
-	rights: string;
+	resolutionHeightDPI: number | null;
 
-	role: string;
+	resolutionWidthDPI: number | null;
 
-	securityMethod: string;
+	rights: string | null;
+
+	role: string | null;
+
+	securityMethod: string | null;
 
 	/**
 	 * @since 15.0
 	 */
-	sharedItemContentType: UTType;
+	sharedItemContentType: UTType | null;
 
-	speed: number;
+	speed: number | null;
 
-	startDate: Date;
+	startDate: Date | null;
 
-	stateOrProvince: string;
+	stateOrProvince: string | null;
 
-	streamable: number;
+	streamable: number | null;
 
-	subThoroughfare: string;
+	subThoroughfare: string | null;
 
-	subject: string;
+	subject: string | null;
 
-	supportsNavigation: number;
+	supportsNavigation: number | null;
 
-	supportsPhoneCall: number;
+	supportsPhoneCall: number | null;
 
-	tempo: number;
+	tempo: number | null;
 
-	textContent: string;
-
-	/**
-	 * @since 18.4
-	 */
-	readonly textContentSummary: string;
-
-	theme: string;
-
-	thoroughfare: string;
-
-	thumbnailData: NSData;
-
-	thumbnailURL: NSURL;
-
-	timeSignature: string;
-
-	timestamp: Date;
-
-	title: string;
-
-	totalBitRate: number;
+	textContent: string | null;
 
 	/**
 	 * @since 18.4
 	 */
-	transcribedTextContent: string;
+	readonly textContentSummary: string | null;
+
+	theme: string | null;
+
+	thoroughfare: string | null;
+
+	thumbnailData: NSData | null;
+
+	thumbnailURL: NSURL | null;
+
+	timeSignature: string | null;
+
+	timestamp: Date | null;
+
+	title: string | null;
+
+	totalBitRate: number | null;
+
+	/**
+	 * @since 18.4
+	 */
+	transcribedTextContent: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	userCreated: number;
+	userCreated: number | null;
 
 	/**
 	 * @since 11.0
 	 */
-	userCurated: number;
+	userCurated: number | null;
 
 	/**
 	 * @since 11.0
 	 */
-	userOwned: number;
+	userOwned: number | null;
 
-	version: string;
+	version: string | null;
 
-	videoBitRate: number;
+	videoBitRate: number | null;
 
 	/**
 	 * @since 10.0
 	 */
-	weakRelatedUniqueIdentifier: string;
+	weakRelatedUniqueIdentifier: string | null;
 
-	whiteBalance: number;
+	whiteBalance: number | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -985,7 +985,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	 */
 	constructor(o: { itemContentType: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1002,11 +1002,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	 */
 	initWithItemContentType(itemContentType: string): this;
 
-	moveFrom(sourceAttributeSet: CSSearchableItemAttributeSet): void;
+	setValueForCustomKey(value: NSSecureCoding | null, key: CSCustomAttributeKey): void;
 
-	setValueForCustomKey(value: NSSecureCoding, key: CSCustomAttributeKey): void;
-
-	valueForCustomKey(key: CSCustomAttributeKey): NSSecureCoding;
+	valueForCustomKey(key: CSCustomAttributeKey): NSSecureCoding | null;
 }
 
 /**
@@ -1042,7 +1040,7 @@ declare class CSSuggestion extends NSObject implements NSCopying, NSSecureCoding
 
 	compareByRank(other: CSSuggestion): NSComparisonResult;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1093,11 +1091,11 @@ declare class CSUserQuery extends CSSearchQuery {
 
 	readonly foundSuggestionCount: number;
 
-	foundSuggestionsHandler: (p1: NSArray<CSSuggestion>) => void;
+	foundSuggestionsHandler: (p1: NSArray<CSSuggestion>) => void | null;
 
-	constructor(o: { userQueryString: string; userQueryContext: CSUserQueryContext; });
+	constructor(o: { userQueryString: string | null; userQueryContext: CSUserQueryContext | null; });
 
-	initWithUserQueryStringUserQueryContext(userQueryString: string, userQueryContext: CSUserQueryContext): this;
+	initWithUserQueryStringUserQueryContext(userQueryString: string | null, userQueryContext: CSUserQueryContext | null): this;
 
 	/**
 	 * @since 18.0
@@ -1121,7 +1119,7 @@ declare class CSUserQueryContext extends CSSearchQueryContext {
 
 	static userQueryContext(): CSUserQueryContext;
 
-	static userQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion): CSUserQueryContext;
+	static userQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion | null): CSUserQueryContext;
 
 	/**
 	 * @since 18.0

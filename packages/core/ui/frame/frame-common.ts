@@ -12,7 +12,8 @@ import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
-import { NavigationData } from '.';
+import { Frame as FrameDefinition, NavigationData } from '.';
+import type { WindowBase } from '../../native-window';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame, NavigationData } from './frame-interfaces';
@@ -35,7 +36,7 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 }
 
 @CSSType('Frame')
-export class FrameBase extends CustomLayoutView {
+export class FrameBase extends CustomLayoutView implements FrameDefinition {
 	public static navigatingToEvent = 'navigatingTo';
 	public static navigatedToEvent = 'navigatedTo';
 
@@ -64,37 +65,46 @@ export class FrameBase extends CustomLayoutView {
 		return frameStack.find((frame) => frame.id && frame.id === id);
 	}
 
-	static topmost(): FrameBase {
-		return frameStackTopmost();
+	/**
+	 * Gets the topmost frame of a window.
+	 *
+	 * The frame highest in the navigation stack wins outright while it belongs to no window -
+	 * `navigate()` puts a frame in the stack before it is attached to one, and scoping cannot
+	 * place such a frame. Otherwise the frame highest in the stack that belongs to the resolved
+	 * window is returned, falling back to the frame highest in the stack regardless of window
+	 * when that window hosts none.
+	 *
+	 * @param window The window to scope the lookup to. Defaults to `Application.activeWindow`.
+	 */
+	static topmost(window?: WindowBase): FrameBase {
+		return frameStackTopmost(window);
 	}
 
-	static goBack(): boolean {
-		const top = FrameBase.topmost();
-		if (top && top.canGoBack()) {
+	static goBack(frame?: FrameBase): boolean {
+		const top = frame ?? FrameBase.topmost();
+		if (!top) {
+			return false;
+		}
+
+		if (top.canGoBack()) {
 			top.goBack();
-
 			return true;
-		} else if (top) {
-			let parentFrameCanGoBack = false;
-			let parentFrame = getAncestor(top, 'Frame');
+		}
 
-			while (parentFrame && !parentFrameCanGoBack) {
-				if (parentFrame && parentFrame.canGoBack()) {
-					parentFrameCanGoBack = true;
-				} else {
-					parentFrame = getAncestor(parentFrame, 'Frame');
-				}
-			}
+		let parentFrameCanGoBack = false;
+		let parentFrame = getAncestor(top, 'Frame');
 
-			if (parentFrame && parentFrameCanGoBack) {
-				parentFrame.goBack();
-
-				return true;
+		while (parentFrame && !parentFrameCanGoBack) {
+			if (parentFrame && parentFrame.canGoBack()) {
+				parentFrameCanGoBack = true;
+			} else {
+				parentFrame = getAncestor(parentFrame, 'Frame');
 			}
 		}
 
-		if (frameStack.length > 1) {
-			top._popFromFrameStack();
+		if (parentFrame && parentFrameCanGoBack) {
+			parentFrame.goBack();
+			return true;
 		}
 
 		return false;
@@ -351,9 +361,9 @@ export class FrameBase extends CustomLayoutView {
 			return;
 		}
 
+		// Entry is undefined for a goBack() queued before performGoBack populates it.
 		const entry = this._navigationQueue[0].entry;
-		const currentNavigationPage = entry.resolvedPage;
-		if (page !== currentNavigationPage) {
+		if (entry && page !== entry.resolvedPage) {
 			// If the page is not the one that requested navigation - skip it.
 			return;
 		}

@@ -6,5 +6,6 @@
 		"**/*.js": true,
 		"**/*.js.map": true
 	},
-	"eslint.validate": ["json"]
+	"eslint.validate": ["json"],
+	"js/ts.tsdk.path": "./node_modules/typescript/lib"
 }

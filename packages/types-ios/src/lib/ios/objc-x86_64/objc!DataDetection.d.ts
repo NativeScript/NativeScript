@@ -22,13 +22,13 @@ declare class DDMatchCalendarEvent extends DDMatch {
 
 	readonly allDay: boolean;
 
-	readonly endDate: Date;
+	readonly endDate: Date | null;
 
-	readonly endTimeZone: NSTimeZone;
+	readonly endTimeZone: NSTimeZone | null;
 
-	readonly startDate: Date;
+	readonly startDate: Date | null;
 
-	readonly startTimeZone: NSTimeZone;
+	readonly startTimeZone: NSTimeZone | null;
 }
 
 /**
@@ -42,7 +42,7 @@ declare class DDMatchEmailAddress extends DDMatch {
 
 	readonly emailAddress: string;
 
-	readonly label: string;
+	readonly label: string | null;
 }
 
 /**
@@ -94,7 +94,7 @@ declare class DDMatchPhoneNumber extends DDMatch {
 
 	static new(): DDMatchPhoneNumber; // inherited from NSObject
 
-	readonly label: string;
+	readonly label: string | null;
 
 	readonly phoneNumber: string;
 }
@@ -108,15 +108,15 @@ declare class DDMatchPostalAddress extends DDMatch {
 
 	static new(): DDMatchPostalAddress; // inherited from NSObject
 
-	readonly city: string;
+	readonly city: string | null;
 
-	readonly country: string;
+	readonly country: string | null;
 
-	readonly postalCode: string;
+	readonly postalCode: string | null;
 
-	readonly state: string;
+	readonly state: string | null;
 
-	readonly street: string;
+	readonly street: string | null;
 }
 
 /**

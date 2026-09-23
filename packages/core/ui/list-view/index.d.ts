@@ -161,7 +161,19 @@ export class ListView extends View {
 	 *
 	 * @nsProperty
 	 */
-	searchAutoHide: boolean; /**
+	searchAutoHide: boolean;
+
+	/**
+	 * iOS-only. Controls the underlying UIScrollView's `contentInsetAdjustmentBehavior`
+	 * when `showSearch` is enabled. Defaults to `'automatic'` when the search controller
+	 * is hosted on `navigationItem.searchController` (UINavigationController context),
+	 * and `'never'` otherwise (when the search bar is the `tableHeaderView`).
+	 *
+	 * @nsProperty
+	 */
+	iosSearchInsetBehavior: 'automatic' | 'scrollableAxes' | 'never' | 'always';
+
+	/**
 	 * Forces the ListView to reload all its items.
 	 */
 	refresh();

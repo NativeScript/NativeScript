@@ -1,9 +1,6 @@
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import path from 'path';
-import alias from '@rollup/plugin-alias';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
 import { parse as babelParse } from '@babel/parser';
@@ -11,29 +8,21 @@ import generate from '@babel/generator';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-export const vueConfig = ({ mode }): UserConfig => {
+export const vueConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
 	const cliFlags = getCliFlags();
 	const isDevMode = targetMode === 'development';
 	const hmrActive = isDevMode && !!cliFlags.hmr;
 
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'vue' }), {
+		resolve: {
+			// @rollup/plugin-alias resolves a bare package to its directory under rolldown
+			alias: [{ find: 'vue', replacement: 'nativescript-vue' }],
+		},
 		plugins: [
-			{
-				...alias({
-					entries: {
-						// Retain 'vue' alias to 'nativescript-vue' so any generic Vue imports resolve
-						// to the NativeScript-Vue runtime.
-						vue: 'nativescript-vue',
-						'set-value': resolve(__dirname, '../shims/set-value.js'),
-					},
-				}),
-				enforce: 'pre',
-			},
+			...getTypeCheckPlugins('vue', options.typeCheck),
 			// Enable Vue Single File Component support
 			vue({
 				// NativeScript projects often use <script setup lang="ts">

@@ -18,11 +18,11 @@ declare class EXHostViewController extends UIViewController {
 
 	static new(): EXHostViewController; // inherited from NSObject
 
-	delegate: EXHostViewControllerDelegate;
+	delegate: EXHostViewControllerDelegate | null;
 
 	placeholderView: UIView;
 
-	makeXPCConnectionWithError(error?: interop.Reference<NSError>): NSXPCConnection;
+	makeXPCConnectionWithError(error?: interop.Reference<NSError>): NSXPCConnection | null;
 }
 
 /**
@@ -32,7 +32,7 @@ interface EXHostViewControllerDelegate extends NSObjectProtocol {
 
 	hostViewControllerDidActivate?(viewController: EXHostViewController): void;
 
-	hostViewControllerWillDeactivateError?(viewController: EXHostViewController, error: NSError): void;
+	hostViewControllerWillDeactivateError?(viewController: EXHostViewController, error: NSError | null): void;
 }
 declare var EXHostViewControllerDelegate: {
 

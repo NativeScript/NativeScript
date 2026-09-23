@@ -19,6 +19,10 @@ jest.mock('../src/helpers/config.ts', () => ({
 	getValue: getValueMock,
 }));
 
+jest.mock('sass', () => ({
+	info: 'mock-sass',
+}));
+
 jest.mock('os', () => {
 	const os = jest.requireActual('os');
 
@@ -75,7 +79,7 @@ jest.mock('path', () => {
 				if (newPath.startsWith('__jest__/src')) {
 					return newPath.replace(
 						'__jest__/src',
-						'__jest__/node_modules/@nativescript/webpack/dist'
+						'__jest__/node_modules/@nativescript/webpack/dist',
 					);
 				}
 
@@ -96,5 +100,5 @@ jest.mock(
 			typescript: '*',
 		},
 	}),
-	{ virtual: true }
+	{ virtual: true },
 );

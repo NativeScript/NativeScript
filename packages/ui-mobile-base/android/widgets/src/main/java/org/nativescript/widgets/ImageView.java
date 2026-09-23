@@ -428,7 +428,7 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 	}
 
 	@Override
-	public void setDrawable(Drawable asyncDrawable) {
-		this.setImageDrawable(asyncDrawable);
+	public void setDrawable(Drawable value) {
+		this.setImageDrawable(value);
 	}
 }

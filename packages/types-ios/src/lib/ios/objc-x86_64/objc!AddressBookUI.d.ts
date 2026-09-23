@@ -15,18 +15,18 @@ declare class ABNewPersonViewController extends UIViewController {
 
 	static new(): ABNewPersonViewController; // inherited from NSObject
 
-	addressBook: any;
+	addressBook: any | null;
 
-	displayedPerson: any;
+	displayedPerson: any | null;
 
 	newPersonViewDelegate: ABNewPersonViewControllerDelegate;
 
-	parentGroup: any;
+	parentGroup: any | null;
 }
 
 interface ABNewPersonViewControllerDelegate extends NSObjectProtocol {
 
-	newPersonViewControllerDidCompleteWithNewPerson(newPersonView: ABNewPersonViewController, person: any): void;
+	newPersonViewControllerDidCompleteWithNewPerson(newPersonView: ABNewPersonViewController, person: any | null): void;
 }
 declare var ABNewPersonViewControllerDelegate: {
 
@@ -43,26 +43,26 @@ declare class ABPeoplePickerNavigationController extends UINavigationController 
 
 	static new(): ABPeoplePickerNavigationController; // inherited from NSObject
 
-	addressBook: any;
+	addressBook: any | null;
 
-	displayedProperties: NSArray<number>;
+	displayedProperties: NSArray<number> | null;
 
-	peoplePickerDelegate: ABPeoplePickerNavigationControllerDelegate;
-
-	/**
-	 * @since 8.0
-	 */
-	predicateForEnablingPerson: NSPredicate;
+	peoplePickerDelegate: ABPeoplePickerNavigationControllerDelegate | null;
 
 	/**
 	 * @since 8.0
 	 */
-	predicateForSelectionOfPerson: NSPredicate;
+	predicateForEnablingPerson: NSPredicate | null;
 
 	/**
 	 * @since 8.0
 	 */
-	predicateForSelectionOfProperty: NSPredicate;
+	predicateForSelectionOfPerson: NSPredicate | null;
+
+	/**
+	 * @since 8.0
+	 */
+	predicateForSelectionOfProperty: NSPredicate | null;
 }
 
 interface ABPeoplePickerNavigationControllerDelegate extends NSObjectProtocol {
@@ -221,9 +221,9 @@ declare class ABPersonViewController extends UIViewController implements UIViewC
 
 	static new(): ABPersonViewController; // inherited from NSObject
 
-	static viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<string> | string[], coder: NSCoder): UIViewController;
+	static viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<string> | string[], coder: NSCoder): UIViewController | null;
 
-	addressBook: any;
+	addressBook: any | null;
 
 	/**
 	 * @since 4.0
@@ -234,9 +234,9 @@ declare class ABPersonViewController extends UIViewController implements UIViewC
 
 	displayedPerson: any;
 
-	displayedProperties: NSArray<number>;
+	displayedProperties: NSArray<number> | null;
 
-	personViewDelegate: ABPersonViewControllerDelegate;
+	personViewDelegate: ABPersonViewControllerDelegate | null;
 
 	/**
 	 * @since 4.0
@@ -265,24 +265,24 @@ declare class ABUnknownPersonViewController extends UIViewController {
 
 	static new(): ABUnknownPersonViewController; // inherited from NSObject
 
-	addressBook: any;
+	addressBook: any | null;
 
 	allowsActions: boolean;
 
 	allowsAddingToAddressBook: boolean;
 
-	alternateName: string;
+	alternateName: string | null;
 
 	displayedPerson: any;
 
-	message: string;
+	message: string | null;
 
-	unknownPersonViewDelegate: ABUnknownPersonViewControllerDelegate;
+	unknownPersonViewDelegate: ABUnknownPersonViewControllerDelegate | null;
 }
 
 interface ABUnknownPersonViewControllerDelegate extends NSObjectProtocol {
 
-	unknownPersonViewControllerDidResolveToPerson(unknownCardViewController: ABUnknownPersonViewController, person: any): void;
+	unknownPersonViewControllerDidResolveToPerson(unknownCardViewController: ABUnknownPersonViewController, person: any | null): void;
 
 	/**
 	 * @since 3.0

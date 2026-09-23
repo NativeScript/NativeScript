@@ -4,6 +4,7 @@ import type { Observable, EventData } from '../../data/observable';
 import type { Property, View } from '../core/view';
 import type { Transition } from '../transition';
 import type { BackstackEntry, NavigationData } from './frame-interfaces';
+import type { WindowBase } from '../../native-window';
 
 export * from './frame-interfaces';
 
@@ -47,25 +48,29 @@ export class Frame extends FrameBase {
 	_originalBackground?: any;
 
 	/**
-	 * @private
-	 */
-	_saveFragmentsState?();
-
-	/**
 	 * Gets a frame by id.
 	 */
 	static getFrameById(id: string): Frame;
 
 	/**
-	 * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
+	 * Gets the topmost frame of a window. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
+	 *
+	 * The frame highest in the navigation stack wins outright while it belongs to no window -
+	 * `navigate()` puts a frame in the stack before it is attached to one, and scoping cannot
+	 * place such a frame. Otherwise the frame highest in the stack that belongs to the resolved
+	 * window is returned, falling back to the frame highest in the stack regardless of window
+	 * when that window hosts none.
+	 *
+	 * @param window The window to scope the lookup to. Defaults to `Application.activeWindow`.
 	 */
-	static topmost(): Frame;
+	static topmost(window?: WindowBase): Frame;
 
 	/**
 	 * Navigates back using the navigation hierarchy (if any). Updates the Frame stack as needed.
-	 * This method will start from the topmost Frame and will recursively search for an instance that has the canGoBack operation available.
+	 * This method will start from the given Frame and will recursively search its ancestors for an instance that has the canGoBack operation available.
+	 * @param frame The Frame to navigate back. Defaults to the topmost Frame; pass one to scope the back navigation to that Frame's hierarchy.
 	 */
-	static goBack();
+	static goBack(frame?: Frame);
 
 	/**
 	 * @private
@@ -174,13 +179,13 @@ export class Frame extends FrameBase {
 	 *
 	 * @nsProperty
 	 */
-	iosNavigationBarClass: any;
+	iosNavigationBarClass?: any;
 	/**
 	 * Specify a custom UIToolbar class (iOS only)
 	 *
 	 * @nsProperty
 	 */
-	iosToolBarClass: any;
+	iosToolbarClass?: any;
 
 	//@private
 	/**
@@ -269,6 +274,14 @@ export class Frame extends FrameBase {
 	 * @private
 	 */
 	_removeFromFrameStack();
+	/**
+	 * @private
+	 */
+	_restoreTransitionState?();
+	/**
+	 * @private
+	 */
+	_saveFragmentsState?();
 	//@endprivate
 
 	/**
@@ -456,7 +469,8 @@ export interface NavigationTransition {
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
  */
 export interface AndroidFrame extends Observable {
-	frameId?: any;
+	frameId: number;
+	owner: Frame;
 
 	/**
 	 * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
@@ -488,24 +502,11 @@ export interface AndroidFrame extends Observable {
 	 * @param page The Page instance to search for.
 	 */
 	fragmentForPage(entry: BackstackEntry): any;
-
-	// common properties
-	_resolvedPage?: Page;
-	_currentEntry?: BackstackEntry;
-	_executingContext?: NavigationContext;
-	_inheritStyles?(page: Page): void;
-	isLoaded?: boolean;
-	_styleScope?: any;
-	_addView?(view: View): void;
-	nativeViewProtected?: any /* android.view.View */;
-	_originalBackground?: any /* android.graphics.drawable.Drawable */;
-	backgroundColor?: any;
-	owner?: any;
 }
 
 export interface AndroidActivityCallbacks {
 	getRootView(): View;
-	resetActivityContent(activity: any): void;
+	resetActivityContent(activity: any, view?: View): void;
 
 	onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function): void;
 	onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;

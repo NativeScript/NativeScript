@@ -6,20 +6,20 @@ interface SFAddToHomeScreenActivityItem extends NSObjectProtocol {
 
 	URL: NSURL;
 
-	iconItemProvider?: NSItemProvider;
+	iconItemProvider?: NSItemProvider | null;
 
 	title: string;
 
 	/**
 	 * @since 18.2
 	 */
-	getHomeScreenWebAppInfoWithCompletionHandler?(completionHandler: (p1: SFAddToHomeScreenInfo) => void): void;
+	getHomeScreenWebAppInfoWithCompletionHandler?(completionHandler: (p1: SFAddToHomeScreenInfo | null) => void): void;
 
 	/**
 	 * @since 17.5
 	 * @deprecated 100000
 	 */
-	getWebAppManifestWithCompletionHandler?(completionHandler: (p1: BEWebAppManifest) => void): void;
+	getWebAppManifestWithCompletionHandler?(completionHandler: (p1: BEWebAppManifest | null) => void): void;
 }
 declare var SFAddToHomeScreenActivityItem: {
 
@@ -41,7 +41,7 @@ declare class SFAddToHomeScreenInfo extends NSObject implements NSCopying {
 
 	constructor(o: { manifest: BEWebAppManifest; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithManifest(manifest: BEWebAppManifest): this;
 }
@@ -71,11 +71,11 @@ declare class SFAuthenticationSession extends NSObject {
 
 	static new(): SFAuthenticationSession; // inherited from NSObject
 
-	constructor(o: { URL: NSURL; callbackURLScheme: string; completionHandler: (p1: NSURL, p2: NSError) => void; });
+	constructor(o: { URL: NSURL; callbackURLScheme: string | null; completionHandler: (p1: NSURL | null, p2: NSError | null) => void; });
 
 	cancel(): void;
 
-	initWithURLCallbackURLSchemeCompletionHandler(URL: NSURL, callbackURLScheme: string, completionHandler: (p1: NSURL, p2: NSError) => void): this;
+	initWithURLCallbackURLSchemeCompletionHandler(URL: NSURL, callbackURLScheme: string | null, completionHandler: (p1: NSURL | null, p2: NSError | null) => void): this;
 
 	start(): boolean;
 }
@@ -109,11 +109,11 @@ declare class SFContentBlockerManager extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	static getStateOfContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: SFContentBlockerState, p2: NSError) => void): void;
+	static getStateOfContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: SFContentBlockerState | null, p2: NSError | null) => void): void;
 
 	static new(): SFContentBlockerManager; // inherited from NSObject
 
-	static reloadContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
+	static reloadContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -141,7 +141,9 @@ declare const enum SFErrorCode {
 
 	InternalError = 4,
 
-	MissingEntitlement = 5
+	MissingEntitlement = 5,
+
+	MaximumAttemptsExceeded = 6
 }
 
 /**
@@ -160,6 +162,30 @@ declare var SFExtensionMessageKey: string;
 declare var SFExtensionProfileKey: string;
 
 /**
+ * @since 26.2
+ */
+declare class SFSafariExtensionManager extends NSObject {
+
+	static alloc(): SFSafariExtensionManager; // inherited from NSObject
+
+	static getStateOfExtensionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: SFSafariExtensionState | null, p2: NSError | null) => void): void;
+
+	static new(): SFSafariExtensionManager; // inherited from NSObject
+}
+
+/**
+ * @since 26.2
+ */
+declare class SFSafariExtensionState extends NSObject {
+
+	static alloc(): SFSafariExtensionState; // inherited from NSObject
+
+	static new(): SFSafariExtensionState; // inherited from NSObject
+
+	readonly enabled: boolean;
+}
+
+/**
  * @since 26.0
  */
 declare class SFSafariSettings extends NSObject {
@@ -168,7 +194,12 @@ declare class SFSafariSettings extends NSObject {
 
 	static new(): SFSafariSettings; // inherited from NSObject
 
-	static openExportBrowsingDataSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	static openExportBrowsingDataSettingsWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
+
+	/**
+	 * @since 26.2
+	 */
+	static openExtensionsSettingsForIdentifiersCompletionHandler(extensionIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
@@ -190,7 +221,7 @@ declare class SFSafariViewController extends UIViewController {
 	 */
 	readonly configuration: SFSafariViewControllerConfiguration;
 
-	delegate: SFSafariViewControllerDelegate;
+	delegate: SFSafariViewControllerDelegate | null;
 
 	/**
 	 * @since 11.0
@@ -201,13 +232,13 @@ declare class SFSafariViewController extends UIViewController {
 	 * @since 10.0
 	 * @deprecated 26.0
 	 */
-	preferredBarTintColor: UIColor;
+	preferredBarTintColor: UIColor | null;
 
 	/**
 	 * @since 10.0
 	 * @deprecated 26.0
 	 */
-	preferredControlTintColor: UIColor;
+	preferredControlTintColor: UIColor | null;
 
 	constructor(o: { URL: NSURL; });
 
@@ -245,9 +276,9 @@ declare class SFSafariViewControllerActivityButton extends NSObject implements N
 
 	static new(): SFSafariViewControllerActivityButton; // inherited from NSObject
 
-	readonly extensionIdentifier: string;
+	readonly extensionIdentifier: string | null;
 
-	readonly templateImage: UIImage;
+	readonly templateImage: UIImage | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -255,7 +286,7 @@ declare class SFSafariViewControllerActivityButton extends NSObject implements N
 
 	constructor(o: { templateImage: UIImage; extensionIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -276,7 +307,7 @@ declare class SFSafariViewControllerConfiguration extends NSObject implements NS
 	/**
 	 * @since 15.0
 	 */
-	activityButton: SFSafariViewControllerActivityButton;
+	activityButton: SFSafariViewControllerActivityButton | null;
 
 	barCollapsingEnabled: boolean;
 
@@ -285,9 +316,9 @@ declare class SFSafariViewControllerConfiguration extends NSObject implements NS
 	/**
 	 * @since 15.2
 	 */
-	eventAttribution: UIEventAttribution;
+	eventAttribution: UIEventAttribution | null;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -301,7 +332,7 @@ declare class SFSafariViewControllerDataStore extends NSObject {
 
 	static readonly defaultDataStore: SFSafariViewControllerDataStore;
 
-	clearWebsiteDataWithCompletionHandler(completion: () => void): void;
+	clearWebsiteDataWithCompletionHandler(completion: () => void | null): void;
 }
 
 /**
@@ -309,7 +340,7 @@ declare class SFSafariViewControllerDataStore extends NSObject {
  */
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 
-	safariViewControllerActivityItemsForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<UIActivity>;
+	safariViewControllerActivityItemsForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string | null): NSArray<UIActivity>;
 
 	safariViewControllerDidCompleteInitialLoad?(controller: SFSafariViewController, didLoadSuccessfully: boolean): void;
 
@@ -318,7 +349,7 @@ interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 	/**
 	 * @since 11.0
 	 */
-	safariViewControllerExcludedActivityTypesForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<string>;
+	safariViewControllerExcludedActivityTypesForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string | null): NSArray<string>;
 
 	/**
 	 * @since 11.0
@@ -366,13 +397,13 @@ declare class SSReadingList extends NSObject {
 
 	static alloc(): SSReadingList; // inherited from NSObject
 
-	static defaultReadingList(): SSReadingList;
+	static defaultReadingList(): SSReadingList | null;
 
 	static new(): SSReadingList; // inherited from NSObject
 
 	static supportsURL(URL: NSURL): boolean;
 
-	addReadingListItemWithURLTitlePreviewTextError(URL: NSURL, title: string, previewText: string, error?: interop.Reference<NSError>): boolean;
+	addReadingListItemWithURLTitlePreviewTextError(URL: NSURL, title: string | null, previewText: string | null, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

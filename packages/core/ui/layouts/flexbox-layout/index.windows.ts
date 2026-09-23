@@ -10,12 +10,20 @@ import {
     flexShrinkProperty, FlexShrink,
     flexWrapBeforeProperty, FlexWrapBefore,
     alignSelfProperty,
-    columnGapProperty, rowGapProperty,
 } from './flexbox-layout-common';
+import { columnGapProperty, rowGapProperty } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 import { View } from '../../core/view';
 import { CoreTypes } from '../../../core-types';
+import { layout } from '../../../utils';
 
 type WidgetFlexboxLayout = NativeScript.Widgets.FlexboxLayout;
+
+// The native widget lays out in XAML effective pixels (DIPs).
+function gapToDip(value: CoreTypes.LengthType): number {
+    const px = value ? Length.toDevicePixels(value, 0) : 0;
+    return px > 0 ? layout.toDeviceIndependentPixels(px) : 0;
+}
 
 const flexDirectionMap: Record<FlexDirection, number> = {
     [FlexDirection.ROW]: 0,
@@ -148,19 +156,19 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         try { (this.nativeViewProtected as any).InvalidateMeasure(); } catch (_e) {}
     }
 
-    [columnGapProperty.getDefault](): number {
-        return 0;
+    [columnGapProperty.getDefault](): CoreTypes.LengthType {
+        return columnGapProperty.defaultValue;
     }
-    [columnGapProperty.setNative](value: number) {
-        this.nativeViewProtected.ColumnGap = isNaN(value) || value < 0 ? 0 : value;
+    [columnGapProperty.setNative](value: CoreTypes.LengthType) {
+        this.nativeViewProtected.ColumnGap = gapToDip(value);
         try { (this.nativeViewProtected as any).InvalidateMeasure(); } catch (_e) {}
     }
 
-    [rowGapProperty.getDefault](): number {
-        return 0;
+    [rowGapProperty.getDefault](): CoreTypes.LengthType {
+        return rowGapProperty.defaultValue;
     }
-    [rowGapProperty.setNative](value: number) {
-        this.nativeViewProtected.RowGap = isNaN(value) || value < 0 ? 0 : value;
+    [rowGapProperty.setNative](value: CoreTypes.LengthType) {
+        this.nativeViewProtected.RowGap = gapToDip(value);
         try { (this.nativeViewProtected as any).InvalidateMeasure(); } catch (_e) {}
     }
 

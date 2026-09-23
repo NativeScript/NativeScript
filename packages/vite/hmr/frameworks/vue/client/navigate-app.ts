@@ -1,0 +1,269 @@
+/**
+ * App-driven navigation backend for the Vue flavor.
+ *
+ * `__nsNavigateUsingApp` is the HMR navigation path behind the `/ns/rt`
+ * bridge's `$navigateTo`: it builds a fresh Vue app per navigation and mounts
+ * the destination component deterministically (rather than relying on the
+ * vendor-held rootApp, which can live in a different module realm). It is
+ * installed onto `globalThis` by the Vue client strategy's `install()` so the
+ * bridge can reach it without importing any Vue module.
+ */
+import { getCore, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, ENV_VERBOSE as VERBOSE } from '../../../client/utils.js';
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
+import { resolveVendorModule } from '../../../shared/runtime/vendor-resolve.js';
+import { ensurePiniaOnApp, ensureVueGlobals } from './index.js';
+
+export function normalizeComponent(input: any, nameHint?: string): any {
+	try {
+		if (!input) return null;
+		// Unwrap module namespace with default
+		if (input && typeof input === 'object' && 'default' in input) {
+			const d = (input as any).default;
+			if (d) return normalizeComponent(d, nameHint);
+		}
+		// If already a component-like object with render/setup/template, return as-is
+		if (typeof input === 'object' && (input.render || input.setup || input.template || input.__isVue)) {
+			return input;
+		}
+		// If provided a render function, wrap with defineComponent
+		if (typeof input === 'function') {
+			ensureVueGlobals();
+			const comp = getGlobalScope().defineComponent
+				? getGlobalScope().defineComponent({
+						name: nameHint || input.name || 'AnonymousSFC',
+						render: input,
+					})
+				: { name: nameHint || input.name || 'AnonymousSFC', render: input };
+			return comp;
+		}
+		// If object has a render function property
+		if ((input as any)?.render && typeof (input as any).render === 'function') {
+			ensureVueGlobals();
+			const comp = getGlobalScope().defineComponent
+				? getGlobalScope().defineComponent({
+						name: nameHint || (input as any).name || 'AnonymousSFC',
+						render: (input as any).render,
+					})
+				: {
+						name: nameHint || (input as any).name || 'AnonymousSFC',
+						render: (input as any).render,
+					};
+			return comp;
+		}
+	} catch {}
+	return input;
+}
+
+/** The slice of a mounted Vue app the navigated-page reload needs. */
+export interface NavigatedPageHmrReloadHandle {
+	app: { unmount?: () => void; _context?: Record<string, any> };
+	/** The NativeScript Page hosting the mounted component. */
+	page: any;
+	/** Builds a fresh page from the current component definition (and installs a new reload on it). */
+	rebuild: () => any;
+}
+
+/**
+ * Install `appContext.reload` on a page mounted by `__nsNavigateUsingApp`.
+ *
+ * Vue routes an HMR `reload` of a parentless instance — which every navigated
+ * page mounted through this backend is — to `instance.appContext.reload()`.
+ * Vue's own DEV default for that hook re-renders into the app's root container,
+ * but here that container is the detached `NSVRoot` the page was mounted from,
+ * so the on-screen page never changes. The stock nativescript-vue `$navigateTo`
+ * installs its `reloadPage` for exactly this reason; this is that contract for
+ * the HMR navigation backend.
+ *
+ * The installed hook rebuilds the destination from the (HMR-mutated) component
+ * and `replacePage`s it into the frame, so the current entry is swapped in
+ * place and the backstack is untouched. A page that is not currently shown
+ * defers to its next `navigatedTo`; a page with no frame at all was already
+ * replaced or disposed, so its instance is stale and the hook stands down.
+ */
+export function installNavigatedPageHmrReload({ app, page, rebuild }: NavigatedPageHmrReloadHandle): boolean {
+	const ctx = app && app._context;
+	if (!ctx || !page) return false;
+	let pendingReturn = false;
+	ctx.reload = () => {
+		try {
+			const frame = page.frame;
+			if (!frame) return;
+			if (frame.currentPage !== page) {
+				if (pendingReturn) return;
+				pendingReturn = true;
+				try {
+					page.once('navigatedTo', () => {
+						pendingReturn = false;
+						try {
+							ctx.reload();
+						} catch {}
+					});
+				} catch {
+					pendingReturn = false;
+				}
+				return;
+			}
+			frame.replacePage({ create: () => rebuild(), animated: false } as any);
+			try {
+				// Release the replaced app once the fresh page is in, so its
+				// instance leaves Vue's HMR registry — otherwise every later
+				// reload also runs against the stale instance.
+				frame.once('navigatedTo', () => {
+					try {
+						app.unmount?.();
+					} catch {}
+				});
+			} catch {}
+		} catch (e) {
+			console.warn('[app-nav] HMR reload of navigated page failed', e);
+		}
+	};
+	return true;
+}
+
+/**
+ * Copy the root app's global registrations onto a page app, keeping whatever the
+ * page app already registered (nativescript-vue's own plugins, pinia).
+ * @param ctx The page app's `_context`.
+ * @param base The root app's `_context`.
+ */
+export function inheritAppContext(ctx: any, base: any): void {
+	if (!ctx || !base) return;
+	for (const key of ['components', 'directives'] as const) {
+		const src = base[key] || {};
+		const dst = (ctx[key] ||= {});
+		for (const k of Object.keys(src)) {
+			if (!Object.prototype.hasOwnProperty.call(dst, k)) dst[k] = src[k];
+		}
+	}
+	if (Array.isArray(base.mixins)) {
+		const dst: any[] = (ctx.mixins ||= []);
+		for (const m of base.mixins) if (!dst.includes(m)) dst.push(m);
+	}
+	const srcGp = base.config && base.config.globalProperties;
+	if (srcGp && ctx.config) {
+		const dstGp = (ctx.config.globalProperties ||= {});
+		for (const k of Object.keys(srcGp)) {
+			if (!(k in dstGp)) dstGp[k] = srcGp[k];
+		}
+	}
+}
+
+// Deterministic navigation using the current Vue app instance rather than vendor-held rootApp.
+function __nsNavigateUsingApp(comp: any, opts: any = {}) {
+	const g = getGlobalScope();
+	ensureVueGlobals();
+	const AppFactory = g.createApp;
+	const RootCtor = g.NSVRoot;
+	if (typeof AppFactory !== 'function' || typeof RootCtor !== 'function') {
+		throw new Error('Vue runtime not initialized');
+	}
+	try {
+		const top = (g.Frame && g.Frame.topmost && g.Frame.topmost()) || null;
+		const ctor = top && top.constructor && top.constructor.name;
+		if (VERBOSE)
+			console.log('[app-nav] begin', {
+				hmrRealm: g.__NS_HMR_REALM__ || 'unknown',
+				rtRealm: g.__NS_RT_REALM__ || 'unknown',
+				topCtor: ctor,
+				hasTop: !!top,
+			});
+	} catch {}
+	// Build a fresh Page each time the factory is invoked to avoid reusing a Page instance
+	// across fragment recreations (Android) or multiple frame attachments.
+	const buildTarget = (target: any = comp) => {
+		// Boot-time apps are only known via the bridge's createApp recording.
+		const existingApp = getCurrentApp() || (g as any).__NS_VUE_ROOT_APP__ || null;
+		const baseProvides = (existingApp && existingApp._context && existingApp._context.provides) || {};
+		// Forward `opts.props` as Vue's rootProps so `$navigateTo(Comp, { props: { … } })`
+		// reaches the destination component. nativescript-vue's stock `$navigateTo`
+		// does the same via `createNativeView(target, options?.props, …)` →
+		// `renderer.createApp(component, props)`. Dropping props here would surface
+		// at the destination as `[Vue warn]: Missing required prop` and any
+		// required-prop component would render with `undefined` bindings.
+		const app = AppFactory(normalizeComponent(target, target && (target.__name || target.name)), opts && (opts as any).props);
+		ensurePiniaOnApp(app);
+		try {
+			const rh: any = resolveVendorModule('nativescript-vue/dist/runtimeHelpers');
+			const setRootApp = rh && (rh.setRootApp || rh.default?.setRootApp);
+			if (typeof setRootApp === 'function') setRootApp(app);
+		} catch {}
+		try {
+			const ctx = app?._context;
+			if (ctx) {
+				const prov = (ctx.provides ||= {});
+				Object.getOwnPropertyNames(baseProvides).forEach((k) => {
+					if (!Object.prototype.hasOwnProperty.call(prov, k)) prov[k] = baseProvides[k];
+				});
+				Object.getOwnPropertySymbols(baseProvides).forEach((s) => {
+					if (!Object.prototype.hasOwnProperty.call(prov, s)) prov[s] = (baseProvides as any)[s];
+				});
+			}
+		} catch {}
+		try {
+			inheritAppContext(app?._context, existingApp && existingApp._context);
+		} catch {}
+		const root = new RootCtor();
+		const vm = typeof (app as any).runWithContext === 'function' ? (app as any).runWithContext(() => (app as any).mount(root) as any) : ((app as any).mount(root) as any);
+		setCurrentApp(app);
+		// HMR mutates Vue's clone of the root component, so rebuild from that.
+		const mountedType = (vm && vm.$ && vm.$.type) || target;
+		const el = vm?.$el;
+		const nativeView = el?.nativeView;
+		if (!nativeView) throw new Error('navigation mount did not yield a nativeView');
+		const P = getCore('Page');
+		const ctorName = String(nativeView?.constructor?.name || '').replace(/^_+/, '');
+		let page = nativeView;
+		if (!(ctorName === 'Page' || /^Page(\$\d+)?$/.test(ctorName)) && typeof P === 'function') {
+			const pg = new (P as any)();
+			(pg as any).content = nativeView;
+			// Hide default ActionBar for wrapped views to avoid double bars
+			try {
+				(pg as any).actionBarHidden = true;
+			} catch {}
+			page = pg;
+		}
+		try {
+			installNavigatedPageHmrReload({ app, page, rebuild: () => buildTarget(mountedType) });
+		} catch {}
+		return page;
+	};
+	let frame = opts && (opts as any).frame ? (opts as any).frame : getRootFrame();
+	if (!frame) {
+		const F = getCore('Frame');
+		frame = F && typeof F.topmost === 'function' ? (F.topmost() as any) : null;
+	}
+	if (!frame) {
+		const GApp = getCore('Application') || (g as any).Application;
+		const F = getCore('Frame');
+		if (typeof GApp?.resetRootView === 'function' && typeof F === 'function') {
+			GApp.resetRootView({
+				create: () => {
+					const fr = new (F as any)();
+					const navEntry = {
+						create: () => buildTarget(),
+						clearHistory: true,
+						animated: false,
+					} as any;
+					try {
+						(fr as any).navigate(navEntry);
+					} catch {}
+					setRootFrame(fr);
+					return fr;
+				},
+			} as any);
+			return undefined;
+		}
+		throw new Error('Application.resetRootView unavailable');
+	}
+	const navEntry = { create: () => buildTarget(), ...(opts || {}) } as any;
+	(frame as any).navigate(navEntry);
+	return undefined;
+}
+
+/** Expose deterministic app navigation globally so /ns/rt can guarantee single-path navigation. */
+export function installVueNavigateUsingApp(): void {
+	try {
+		globalThis.__nsNavigateUsingApp = __nsNavigateUsingApp;
+	} catch {}
+}

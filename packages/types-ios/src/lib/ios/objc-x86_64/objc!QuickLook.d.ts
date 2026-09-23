@@ -10,7 +10,7 @@ declare class ARQuickLookPreviewItem extends NSObject implements QLPreviewItem {
 
 	allowsContentScaling: boolean;
 
-	canonicalWebPageURL: NSURL;
+	canonicalWebPageURL: NSURL | null;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -20,9 +20,9 @@ declare class ARQuickLookPreviewItem extends NSObject implements QLPreviewItem {
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly previewItemTitle: string; // inherited from QLPreviewItem
+	readonly previewItemTitle: string | null; // inherited from QLPreviewItem
 
-	readonly previewItemURL: NSURL; // inherited from QLPreviewItem
+	readonly previewItemURL: NSURL | null; // inherited from QLPreviewItem
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -78,13 +78,13 @@ declare class QLPreviewController extends UIViewController {
 
 	static new(): QLPreviewController; // inherited from NSObject
 
-	readonly currentPreviewItem: QLPreviewItem;
+	readonly currentPreviewItem: QLPreviewItem | null;
 
 	currentPreviewItemIndex: number;
 
-	dataSource: QLPreviewControllerDataSource;
+	dataSource: QLPreviewControllerDataSource | null;
 
-	delegate: QLPreviewControllerDelegate;
+	delegate: QLPreviewControllerDelegate | null;
 
 	refreshCurrentPreviewItem(): void;
 
@@ -121,16 +121,16 @@ interface QLPreviewControllerDelegate extends NSObjectProtocol {
 	 */
 	previewControllerEditingModeForPreviewItem?(controller: QLPreviewController, previewItem: QLPreviewItem): QLPreviewItemEditingMode;
 
-	previewControllerFrameForPreviewItemInSourceView?(controller: QLPreviewController, item: QLPreviewItem, view: interop.Pointer | interop.Reference<UIView>): CGRect;
+	previewControllerFrameForPreviewItemInSourceView?(controller: QLPreviewController, item: QLPreviewItem, view: interop.Pointer | interop.Reference<UIView | null> | ArrayBufferLike | ArrayBufferView): CGRect;
 
 	previewControllerShouldOpenURLForPreviewItem?(controller: QLPreviewController, url: NSURL, item: QLPreviewItem): boolean;
 
-	previewControllerTransitionImageForPreviewItemContentRect?(controller: QLPreviewController, item: QLPreviewItem, contentRect: interop.Pointer | interop.Reference<CGRect>): UIImage;
+	previewControllerTransitionImageForPreviewItemContentRect?(controller: QLPreviewController, item: QLPreviewItem, contentRect: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView): UIImage | null;
 
 	/**
 	 * @since 10.0
 	 */
-	previewControllerTransitionViewForPreviewItem?(controller: QLPreviewController, item: QLPreviewItem): UIView;
+	previewControllerTransitionViewForPreviewItem?(controller: QLPreviewController, item: QLPreviewItem): UIView | null;
 
 	previewControllerWillDismiss?(controller: QLPreviewController): void;
 }
@@ -141,9 +141,9 @@ declare var QLPreviewControllerDelegate: {
 
 interface QLPreviewItem extends NSObjectProtocol {
 
-	previewItemTitle?: string;
+	previewItemTitle?: string | null;
 
-	previewItemURL: NSURL;
+	previewItemURL: NSURL | null;
 }
 declare var QLPreviewItem: {
 
@@ -223,19 +223,19 @@ declare class QLPreviewReply extends NSObject {
 
 	title: string;
 
-	constructor(o: { forPDFWithPageSize: CGSize; documentCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError>) => PDFDocument; });
+	constructor(o: { forPDFWithPageSize: CGSize; documentCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError | null> | null) => PDFDocument | null; });
 
-	constructor(o: { contextSize: CGSize; isBitmap: boolean; drawingBlock: (p1: any, p2: QLPreviewReply, p3: interop.Pointer | interop.Reference<NSError>) => boolean; });
+	constructor(o: { contextSize: CGSize; isBitmap: boolean; drawingBlock: (p1: any, p2: QLPreviewReply, p3: interop.Pointer | interop.Reference<NSError | null> | null) => boolean; });
 
-	constructor(o: { dataOfContentType: UTType; contentSize: CGSize; dataCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError>) => NSData; });
+	constructor(o: { dataOfContentType: UTType; contentSize: CGSize; dataCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError | null> | null) => NSData | null; });
 
 	constructor(o: { fileURL: NSURL; });
 
-	initForPDFWithPageSizeDocumentCreationBlock(defaultPageSize: CGSize, documentCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError>) => PDFDocument): this;
+	initForPDFWithPageSizeDocumentCreationBlock(defaultPageSize: CGSize, documentCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError | null> | null) => PDFDocument | null): this;
 
-	initWithContextSizeIsBitmapDrawingBlock(contextSize: CGSize, isBitmap: boolean, drawingBlock: (p1: any, p2: QLPreviewReply, p3: interop.Pointer | interop.Reference<NSError>) => boolean): this;
+	initWithContextSizeIsBitmapDrawingBlock(contextSize: CGSize, isBitmap: boolean, drawingBlock: (p1: any, p2: QLPreviewReply, p3: interop.Pointer | interop.Reference<NSError | null> | null) => boolean): this;
 
-	initWithDataOfContentTypeContentSizeDataCreationBlock(contentType: UTType, contentSize: CGSize, dataCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError>) => NSData): this;
+	initWithDataOfContentTypeContentSizeDataCreationBlock(contentType: UTType, contentSize: CGSize, dataCreationBlock: (p1: QLPreviewReply, p2: interop.Pointer | interop.Reference<NSError | null> | null) => NSData | null): this;
 
 	initWithFileURL(fileURL: NSURL): this;
 }
@@ -267,9 +267,9 @@ declare class QLPreviewSceneActivationConfiguration extends UIWindowSceneActivat
 
 	static new(): QLPreviewSceneActivationConfiguration; // inherited from NSObject
 
-	constructor(o: { itemsAtURLs: NSArray<NSURL> | NSURL[]; options: QLPreviewSceneOptions; });
+	constructor(o: { itemsAtURLs: NSArray<NSURL> | NSURL[]; options: QLPreviewSceneOptions | null; });
 
-	initWithItemsAtURLsOptions(urls: NSArray<NSURL> | NSURL[], options: QLPreviewSceneOptions): this;
+	initWithItemsAtURLsOptions(urls: NSArray<NSURL> | NSURL[], options: QLPreviewSceneOptions | null): this;
 }
 
 /**
@@ -286,11 +286,11 @@ declare class QLPreviewSceneOptions extends NSObject {
 
 interface QLPreviewingController extends NSObjectProtocol {
 
-	preparePreviewOfFileAtURLCompletionHandler?(url: NSURL, handler: (p1: NSError) => void): void;
+	preparePreviewOfFileAtURLCompletionHandler?(url: NSURL, handler: (p1: NSError | null) => void): void;
 
-	preparePreviewOfSearchableItemWithIdentifierQueryStringCompletionHandler?(identifier: string, queryString: string, handler: (p1: NSError) => void): void;
+	preparePreviewOfSearchableItemWithIdentifierQueryStringCompletionHandler?(identifier: string, queryString: string | null, handler: (p1: NSError | null) => void): void;
 
-	providePreviewForFileRequestCompletionHandler?(request: QLFilePreviewRequest, handler: (p1: QLPreviewReply, p2: NSError) => void): void;
+	providePreviewForFileRequestCompletionHandler?(request: QLFilePreviewRequest, handler: (p1: QLPreviewReply | null, p2: NSError | null) => void): void;
 }
 declare var QLPreviewingController: {
 

@@ -226,7 +226,7 @@ declare var OS_nw_ws_response: {
 /**
  * @since 12.0
  */
-declare var _nw_connection_send_idempotent_content: (p1: NSObject & OS_nw_error) => void;
+declare var _nw_connection_send_idempotent_content: (p1: NSObject & OS_nw_error | null) => void;
 
 /**
  * @since 12.0
@@ -286,22 +286,22 @@ declare var kNWErrorDomainWiFiAware: string;
 /**
  * @since 13.0
  */
-declare function nw_advertise_descriptor_copy_txt_record_object(advertise_descriptor: NSObject & OS_nw_advertise_descriptor): NSObject & OS_nw_txt_record;
+declare function nw_advertise_descriptor_copy_txt_record_object(advertise_descriptor: NSObject & OS_nw_advertise_descriptor): NSObject & OS_nw_txt_record | null;
 
 /**
  * @since 16.0
  */
-declare function nw_advertise_descriptor_create_application_service(application_service_name: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_advertise_descriptor;
+declare function nw_advertise_descriptor_create_application_service(application_service_name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_advertise_descriptor;
 
 /**
  * @since 12.0
  */
-declare function nw_advertise_descriptor_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any>, type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_advertise_descriptor;
+declare function nw_advertise_descriptor_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, type: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): NSObject & OS_nw_advertise_descriptor | null;
 
 /**
  * @since 16.0
  */
-declare function nw_advertise_descriptor_get_application_service_name(advertise_descriptor: NSObject & OS_nw_advertise_descriptor): interop.Pointer | interop.Reference<any>;
+declare function nw_advertise_descriptor_get_application_service_name(advertise_descriptor: NSObject & OS_nw_advertise_descriptor): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 12.0
@@ -316,37 +316,37 @@ declare function nw_advertise_descriptor_set_no_auto_rename(advertise_descriptor
 /**
  * @since 12.0
  */
-declare function nw_advertise_descriptor_set_txt_record(advertise_descriptor: NSObject & OS_nw_advertise_descriptor, txt_record: interop.Pointer | interop.Reference<any>, txt_length: number): void;
+declare function nw_advertise_descriptor_set_txt_record(advertise_descriptor: NSObject & OS_nw_advertise_descriptor, txt_record: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, txt_length: number): void;
 
 /**
  * @since 13.0
  */
-declare function nw_advertise_descriptor_set_txt_record_object(advertise_descriptor: NSObject & OS_nw_advertise_descriptor, txt_record: NSObject & OS_nw_txt_record): void;
+declare function nw_advertise_descriptor_set_txt_record_object(advertise_descriptor: NSObject & OS_nw_advertise_descriptor, txt_record: NSObject & OS_nw_txt_record | null): void;
 
 /**
  * @since 16.0
  */
-declare function nw_browse_descriptor_create_application_service(application_service_name: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_browse_descriptor;
+declare function nw_browse_descriptor_create_application_service(application_service_name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_browse_descriptor;
 
 /**
  * @since 13.0
  */
-declare function nw_browse_descriptor_create_bonjour_service(type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_browse_descriptor;
+declare function nw_browse_descriptor_create_bonjour_service(type: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): NSObject & OS_nw_browse_descriptor;
 
 /**
  * @since 16.0
  */
-declare function nw_browse_descriptor_get_application_service_name(descriptor: NSObject & OS_nw_browse_descriptor): interop.Pointer | interop.Reference<any>;
+declare function nw_browse_descriptor_get_application_service_name(descriptor: NSObject & OS_nw_browse_descriptor): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 13.0
  */
-declare function nw_browse_descriptor_get_bonjour_service_domain(descriptor: NSObject & OS_nw_browse_descriptor): interop.Pointer | interop.Reference<any>;
+declare function nw_browse_descriptor_get_bonjour_service_domain(descriptor: NSObject & OS_nw_browse_descriptor): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 13.0
  */
-declare function nw_browse_descriptor_get_bonjour_service_type(descriptor: NSObject & OS_nw_browse_descriptor): interop.Pointer | interop.Reference<any>;
+declare function nw_browse_descriptor_get_bonjour_service_type(descriptor: NSObject & OS_nw_browse_descriptor): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 13.0
@@ -380,7 +380,7 @@ declare function nw_browse_result_copy_endpoint(result: NSObject & OS_nw_browse_
 /**
  * @since 13.0
  */
-declare function nw_browse_result_copy_txt_record_object(result: NSObject & OS_nw_browse_result): NSObject & OS_nw_txt_record;
+declare function nw_browse_result_copy_txt_record_object(result: NSObject & OS_nw_browse_result): NSObject & OS_nw_txt_record | null;
 
 /**
  * @since 13.0
@@ -390,7 +390,7 @@ declare function nw_browse_result_enumerate_interfaces(result: NSObject & OS_nw_
 /**
  * @since 13.0
  */
-declare function nw_browse_result_get_changes(old_result: NSObject & OS_nw_browse_result, new_result: NSObject & OS_nw_browse_result): number;
+declare function nw_browse_result_get_changes(old_result: NSObject & OS_nw_browse_result | null, new_result: NSObject & OS_nw_browse_result | null): number;
 
 /**
  * @since 13.0
@@ -415,12 +415,12 @@ declare function nw_browser_copy_parameters(browser: NSObject & OS_nw_browser): 
 /**
  * @since 13.0
  */
-declare function nw_browser_create(descriptor: NSObject & OS_nw_browse_descriptor, parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_browser;
+declare function nw_browser_create(descriptor: NSObject & OS_nw_browse_descriptor, parameters: NSObject & OS_nw_parameters | null): NSObject & OS_nw_browser;
 
 /**
  * @since 13.0
  */
-declare function nw_browser_set_browse_results_changed_handler(browser: NSObject & OS_nw_browser, handler: (p1: NSObject & OS_nw_browse_result, p2: NSObject & OS_nw_browse_result, p3: boolean) => void): void;
+declare function nw_browser_set_browse_results_changed_handler(browser: NSObject & OS_nw_browser, handler: (p1: NSObject & OS_nw_browse_result, p2: NSObject & OS_nw_browse_result, p3: boolean) => void | null): void;
 
 /**
  * @since 13.0
@@ -430,7 +430,7 @@ declare function nw_browser_set_queue(browser: NSObject & OS_nw_browser, queue: 
 /**
  * @since 13.0
  */
-declare function nw_browser_set_state_changed_handler(browser: NSObject & OS_nw_browser, state_changed_handler: (p1: nw_browser_state_t, p2: NSObject & OS_nw_error) => void): void;
+declare function nw_browser_set_state_changed_handler(browser: NSObject & OS_nw_browser, state_changed_handler: (p1: nw_browser_state_t, p2: NSObject & OS_nw_error | null) => void | null): void;
 
 /**
  * @since 13.0
@@ -453,7 +453,7 @@ declare const enum nw_browser_state_t {
 /**
  * @since 13.0
  */
-declare function nw_connection_access_establishment_report(connection: NSObject & OS_nw_connection, queue: NSObject & OS_dispatch_queue, access_block: (p1: NSObject & OS_nw_establishment_report) => void): void;
+declare function nw_connection_access_establishment_report(connection: NSObject & OS_nw_connection, queue: NSObject & OS_dispatch_queue, access_block: (p1: NSObject & OS_nw_establishment_report | null) => void): void;
 
 /**
  * @since 12.0
@@ -473,12 +473,12 @@ declare function nw_connection_cancel_current_endpoint(connection: NSObject & OS
 /**
  * @since 12.0
  */
-declare function nw_connection_copy_current_path(connection: NSObject & OS_nw_connection): NSObject & OS_nw_path;
+declare function nw_connection_copy_current_path(connection: NSObject & OS_nw_connection): NSObject & OS_nw_path | null;
 
 /**
  * @since 12.0
  */
-declare function nw_connection_copy_description(connection: NSObject & OS_nw_connection): interop.Pointer | interop.Reference<any>;
+declare function nw_connection_copy_description(connection: NSObject & OS_nw_connection): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
@@ -493,7 +493,7 @@ declare function nw_connection_copy_parameters(connection: NSObject & OS_nw_conn
 /**
  * @since 12.0
  */
-declare function nw_connection_copy_protocol_metadata(connection: NSObject & OS_nw_connection, definition: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata;
+declare function nw_connection_copy_protocol_metadata(connection: NSObject & OS_nw_connection, definition: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata | null;
 
 /**
  * @since 12.0
@@ -528,7 +528,7 @@ declare function nw_connection_group_copy_descriptor(group: NSObject & OS_nw_con
 /**
  * @since 14.0
  */
-declare function nw_connection_group_copy_local_endpoint_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_endpoint;
+declare function nw_connection_group_copy_local_endpoint_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_endpoint | null;
 
 /**
  * @since 14.0
@@ -538,22 +538,22 @@ declare function nw_connection_group_copy_parameters(group: NSObject & OS_nw_con
 /**
  * @since 14.0
  */
-declare function nw_connection_group_copy_path_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_path;
+declare function nw_connection_group_copy_path_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_path | null;
 
 /**
  * @since 15.0
  */
-declare function nw_connection_group_copy_protocol_metadata(group: NSObject & OS_nw_connection_group, definition: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata;
+declare function nw_connection_group_copy_protocol_metadata(group: NSObject & OS_nw_connection_group, definition: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata | null;
 
 /**
  * @since 15.0
  */
-declare function nw_connection_group_copy_protocol_metadata_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context, definition: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata;
+declare function nw_connection_group_copy_protocol_metadata_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context, definition: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata | null;
 
 /**
  * @since 14.0
  */
-declare function nw_connection_group_copy_remote_endpoint_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_endpoint;
+declare function nw_connection_group_copy_remote_endpoint_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_endpoint | null;
 
 /**
  * @since 14.0
@@ -563,12 +563,12 @@ declare function nw_connection_group_create(group_descriptor: NSObject & OS_nw_g
 /**
  * @since 15.0
  */
-declare function nw_connection_group_extract_connection(group: NSObject & OS_nw_connection_group, endpoint: NSObject & OS_nw_endpoint, protocol_options: NSObject & OS_nw_protocol_options): NSObject & OS_nw_connection;
+declare function nw_connection_group_extract_connection(group: NSObject & OS_nw_connection_group, endpoint: NSObject & OS_nw_endpoint | null, protocol_options: NSObject & OS_nw_protocol_options | null): NSObject & OS_nw_connection | null;
 
 /**
  * @since 14.0
  */
-declare function nw_connection_group_extract_connection_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_connection;
+declare function nw_connection_group_extract_connection_for_message(group: NSObject & OS_nw_connection_group, context: NSObject & OS_nw_content_context): NSObject & OS_nw_connection | null;
 
 /**
  * @since 15.0
@@ -578,17 +578,17 @@ declare function nw_connection_group_reinsert_extracted_connection(group: NSObje
 /**
  * @since 14.0
  */
-declare function nw_connection_group_reply(group: NSObject & OS_nw_connection_group, inbound_message: NSObject & OS_nw_content_context, outbound_message: NSObject & OS_nw_content_context, content: NSObject & OS_dispatch_data): void;
+declare function nw_connection_group_reply(group: NSObject & OS_nw_connection_group, inbound_message: NSObject & OS_nw_content_context, outbound_message: NSObject & OS_nw_content_context, content: NSObject & OS_dispatch_data | null): void;
 
 /**
  * @since 14.0
  */
-declare function nw_connection_group_send_message(group: NSObject & OS_nw_connection_group, content: NSObject & OS_dispatch_data, endpoint: NSObject & OS_nw_endpoint, context: NSObject & OS_nw_content_context, completion: (p1: NSObject & OS_nw_error) => void): void;
+declare function nw_connection_group_send_message(group: NSObject & OS_nw_connection_group, content: NSObject & OS_dispatch_data | null, endpoint: NSObject & OS_nw_endpoint | null, context: NSObject & OS_nw_content_context, completion: (p1: NSObject & OS_nw_error | null) => void): void;
 
 /**
  * @since 15.0
  */
-declare function nw_connection_group_set_new_connection_handler(group: NSObject & OS_nw_connection_group, new_connection_handler: (p1: NSObject & OS_nw_connection) => void): void;
+declare function nw_connection_group_set_new_connection_handler(group: NSObject & OS_nw_connection_group, new_connection_handler: (p1: NSObject & OS_nw_connection) => void | null): void;
 
 /**
  * @since 14.0
@@ -598,12 +598,12 @@ declare function nw_connection_group_set_queue(group: NSObject & OS_nw_connectio
 /**
  * @since 14.0
  */
-declare function nw_connection_group_set_receive_handler(group: NSObject & OS_nw_connection_group, maximum_message_size: number, reject_oversized_messages: boolean, receive_handler: (p1: NSObject & OS_dispatch_data, p2: NSObject & OS_nw_content_context, p3: boolean) => void): void;
+declare function nw_connection_group_set_receive_handler(group: NSObject & OS_nw_connection_group, maximum_message_size: number, reject_oversized_messages: boolean, receive_handler: (p1: NSObject & OS_dispatch_data | null, p2: NSObject & OS_nw_content_context, p3: boolean) => void | null): void;
 
 /**
  * @since 14.0
  */
-declare function nw_connection_group_set_state_changed_handler(group: NSObject & OS_nw_connection_group, state_changed_handler: (p1: nw_connection_group_state_t, p2: NSObject & OS_nw_error) => void): void;
+declare function nw_connection_group_set_state_changed_handler(group: NSObject & OS_nw_connection_group, state_changed_handler: (p1: nw_connection_group_state_t, p2: NSObject & OS_nw_error | null) => void | null): void;
 
 /**
  * @since 14.0
@@ -626,12 +626,12 @@ declare const enum nw_connection_group_state_t {
 /**
  * @since 12.0
  */
-declare function nw_connection_receive(connection: NSObject & OS_nw_connection, minimum_incomplete_length: number, maximum_length: number, completion: (p1: NSObject & OS_dispatch_data, p2: NSObject & OS_nw_content_context, p3: boolean, p4: NSObject & OS_nw_error) => void): void;
+declare function nw_connection_receive(connection: NSObject & OS_nw_connection, minimum_incomplete_length: number, maximum_length: number, completion: (p1: NSObject & OS_dispatch_data | null, p2: NSObject & OS_nw_content_context | null, p3: boolean, p4: NSObject & OS_nw_error | null) => void): void;
 
 /**
  * @since 12.0
  */
-declare function nw_connection_receive_message(connection: NSObject & OS_nw_connection, completion: (p1: NSObject & OS_dispatch_data, p2: NSObject & OS_nw_content_context, p3: boolean, p4: NSObject & OS_nw_error) => void): void;
+declare function nw_connection_receive_message(connection: NSObject & OS_nw_connection, completion: (p1: NSObject & OS_dispatch_data | null, p2: NSObject & OS_nw_content_context | null, p3: boolean, p4: NSObject & OS_nw_error | null) => void): void;
 
 /**
  * @since 12.0
@@ -641,17 +641,17 @@ declare function nw_connection_restart(connection: NSObject & OS_nw_connection):
 /**
  * @since 12.0
  */
-declare function nw_connection_send(connection: NSObject & OS_nw_connection, content: NSObject & OS_dispatch_data, context: NSObject & OS_nw_content_context, is_complete: boolean, completion: (p1: NSObject & OS_nw_error) => void): void;
+declare function nw_connection_send(connection: NSObject & OS_nw_connection, content: NSObject & OS_dispatch_data | null, context: NSObject & OS_nw_content_context, is_complete: boolean, completion: (p1: NSObject & OS_nw_error | null) => void): void;
 
 /**
  * @since 12.0
  */
-declare function nw_connection_set_better_path_available_handler(connection: NSObject & OS_nw_connection, handler: (p1: boolean) => void): void;
+declare function nw_connection_set_better_path_available_handler(connection: NSObject & OS_nw_connection, handler: (p1: boolean) => void | null): void;
 
 /**
  * @since 12.0
  */
-declare function nw_connection_set_path_changed_handler(connection: NSObject & OS_nw_connection, handler: (p1: NSObject & OS_nw_path) => void): void;
+declare function nw_connection_set_path_changed_handler(connection: NSObject & OS_nw_connection, handler: (p1: NSObject & OS_nw_path) => void | null): void;
 
 /**
  * @since 12.0
@@ -661,12 +661,12 @@ declare function nw_connection_set_queue(connection: NSObject & OS_nw_connection
 /**
  * @since 12.0
  */
-declare function nw_connection_set_state_changed_handler(connection: NSObject & OS_nw_connection, handler: (p1: nw_connection_state_t, p2: NSObject & OS_nw_error) => void): void;
+declare function nw_connection_set_state_changed_handler(connection: NSObject & OS_nw_connection, handler: (p1: nw_connection_state_t, p2: NSObject & OS_nw_error | null) => void | null): void;
 
 /**
  * @since 12.0
  */
-declare function nw_connection_set_viability_changed_handler(connection: NSObject & OS_nw_connection, handler: (p1: boolean) => void): void;
+declare function nw_connection_set_viability_changed_handler(connection: NSObject & OS_nw_connection, handler: (p1: boolean) => void | null): void;
 
 /**
  * @since 12.0
@@ -691,17 +691,17 @@ declare const enum nw_connection_state_t {
 /**
  * @since 12.0
  */
-declare function nw_content_context_copy_antecedent(context: NSObject & OS_nw_content_context): NSObject & OS_nw_content_context;
+declare function nw_content_context_copy_antecedent(context: NSObject & OS_nw_content_context): NSObject & OS_nw_content_context | null;
 
 /**
  * @since 12.0
  */
-declare function nw_content_context_copy_protocol_metadata(context: NSObject & OS_nw_content_context, protocol: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata;
+declare function nw_content_context_copy_protocol_metadata(context: NSObject & OS_nw_content_context, protocol: NSObject & OS_nw_protocol_definition): NSObject & OS_nw_protocol_metadata | null;
 
 /**
  * @since 12.0
  */
-declare function nw_content_context_create(context_identifier: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_content_context;
+declare function nw_content_context_create(context_identifier: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_content_context;
 
 /**
  * @since 12.0
@@ -716,7 +716,7 @@ declare function nw_content_context_get_expiration_milliseconds(context: NSObjec
 /**
  * @since 12.0
  */
-declare function nw_content_context_get_identifier(context: NSObject & OS_nw_content_context): interop.Pointer | interop.Reference<any>;
+declare function nw_content_context_get_identifier(context: NSObject & OS_nw_content_context): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
@@ -731,7 +731,7 @@ declare function nw_content_context_get_relative_priority(context: NSObject & OS
 /**
  * @since 12.0
  */
-declare function nw_content_context_set_antecedent(context: NSObject & OS_nw_content_context, antecedent_context: NSObject & OS_nw_content_context): void;
+declare function nw_content_context_set_antecedent(context: NSObject & OS_nw_content_context, antecedent_context: NSObject & OS_nw_content_context | null): void;
 
 /**
  * @since 12.0
@@ -853,62 +853,62 @@ declare const enum nw_data_transfer_report_state_t {
 /**
  * @since 12.0
  */
-declare function nw_endpoint_copy_address_string(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_copy_address_string(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_copy_port_string(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_copy_port_string(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 16.0
  */
-declare function nw_endpoint_copy_txt_record(endpoint: NSObject & OS_nw_endpoint): NSObject & OS_nw_txt_record;
+declare function nw_endpoint_copy_txt_record(endpoint: NSObject & OS_nw_endpoint): NSObject & OS_nw_txt_record | null;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_create_address(address: interop.Pointer | interop.Reference<sockaddr>): NSObject & OS_nw_endpoint;
+declare function nw_endpoint_create_address(address: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView): NSObject & OS_nw_endpoint;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any>, type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_endpoint;
+declare function nw_endpoint_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_endpoint;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_create_host(hostname: string | interop.Pointer | interop.Reference<any>, port: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_endpoint;
+declare function nw_endpoint_create_host(hostname: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, port: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_endpoint;
 
 /**
  * @since 13.0
  */
-declare function nw_endpoint_create_url(url: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_endpoint;
+declare function nw_endpoint_create_url(url: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_endpoint;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_get_address(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<sockaddr>;
+declare function nw_endpoint_get_address(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<sockaddr> | null;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_get_bonjour_service_domain(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_get_bonjour_service_domain(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_get_bonjour_service_name(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_get_bonjour_service_name(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_get_bonjour_service_type(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_get_bonjour_service_type(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
  */
-declare function nw_endpoint_get_hostname(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_get_hostname(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
@@ -918,7 +918,7 @@ declare function nw_endpoint_get_port(endpoint: NSObject & OS_nw_endpoint): numb
 /**
  * @since 16.0
  */
-declare function nw_endpoint_get_signature(endpoint: NSObject & OS_nw_endpoint, out_signature_length: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_get_signature(endpoint: NSObject & OS_nw_endpoint, out_signature_length: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 12.0
@@ -928,7 +928,7 @@ declare function nw_endpoint_get_type(endpoint: NSObject & OS_nw_endpoint): nw_e
 /**
  * @since 13.0
  */
-declare function nw_endpoint_get_url(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any>;
+declare function nw_endpoint_get_url(endpoint: NSObject & OS_nw_endpoint): interop.Pointer | interop.Reference<any> | null;
 
 declare const enum nw_endpoint_type_t {
 
@@ -974,7 +974,7 @@ declare function nw_error_get_error_domain(error: NSObject & OS_nw_error): nw_er
 /**
  * @since 13.0
  */
-declare function nw_establishment_report_copy_proxy_endpoint(report: NSObject & OS_nw_establishment_report): NSObject & OS_nw_endpoint;
+declare function nw_establishment_report_copy_proxy_endpoint(report: NSObject & OS_nw_establishment_report): NSObject & OS_nw_endpoint | null;
 
 /**
  * @since 13.0
@@ -1059,7 +1059,7 @@ declare function nw_framer_copy_remote_endpoint(framer: NSObject & OS_nw_framer)
 /**
  * @since 13.0
  */
-declare function nw_framer_create_definition(identifier: string | interop.Pointer | interop.Reference<any>, flags: number, start_handler: (p1: NSObject & OS_nw_framer) => nw_framer_start_result_t): NSObject & OS_nw_protocol_definition;
+declare function nw_framer_create_definition(identifier: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number, start_handler: (p1: NSObject & OS_nw_framer) => nw_framer_start_result_t): NSObject & OS_nw_protocol_definition;
 
 /**
  * @since 13.0
@@ -1069,7 +1069,7 @@ declare function nw_framer_create_options(framer_definition: NSObject & OS_nw_pr
 /**
  * @since 13.0
  */
-declare function nw_framer_deliver_input(framer: NSObject & OS_nw_framer, input_buffer: string | interop.Pointer | interop.Reference<any>, input_length: number, message: NSObject & OS_nw_protocol_metadata, is_complete: boolean): void;
+declare function nw_framer_deliver_input(framer: NSObject & OS_nw_framer, input_buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, input_length: number, message: NSObject & OS_nw_protocol_metadata, is_complete: boolean): void;
 
 /**
  * @since 13.0
@@ -1089,12 +1089,12 @@ declare function nw_framer_mark_ready(framer: NSObject & OS_nw_framer): void;
 /**
  * @since 13.0
  */
-declare function nw_framer_message_access_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any>, access_value: (p1: interop.Pointer | interop.Reference<any>) => boolean): boolean;
+declare function nw_framer_message_access_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, access_value: (p1: interop.Pointer | interop.Reference<any> | null) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_framer_message_copy_object_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any>): any;
+declare function nw_framer_message_copy_object_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 13.0
@@ -1104,32 +1104,32 @@ declare function nw_framer_message_create(framer: NSObject & OS_nw_framer): NSOb
 /**
  * @since 13.0
  */
-declare function nw_framer_message_set_object_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
+declare function nw_framer_message_set_object_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: any | null): void;
 
 /**
  * @since 13.0
  */
-declare function nw_framer_message_set_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, dispose_value: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+declare function nw_framer_message_set_value(message: NSObject & OS_nw_protocol_metadata, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dispose_value: (p1: interop.Pointer | interop.Reference<any> | null) => void | null): void;
 
 /**
  * @since 15.4
  */
-declare function nw_framer_options_copy_object_value(options: NSObject & OS_nw_protocol_options, key: string | interop.Pointer | interop.Reference<any>): any;
+declare function nw_framer_options_copy_object_value(options: NSObject & OS_nw_protocol_options, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 15.4
  */
-declare function nw_framer_options_set_object_value(options: NSObject & OS_nw_protocol_options, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
+declare function nw_framer_options_set_object_value(options: NSObject & OS_nw_protocol_options, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: any | null): void;
 
 /**
  * @since 13.0
  */
-declare function nw_framer_parse_input(framer: NSObject & OS_nw_framer, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any>, parse: (p1: interop.Pointer | interop.Reference<any>, p2: number, p3: boolean) => number): boolean;
+declare function nw_framer_parse_input(framer: NSObject & OS_nw_framer, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, parse: (p1: interop.Pointer | interop.Reference<any> | null | null, p2: number, p3: boolean) => number): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_framer_parse_output(framer: NSObject & OS_nw_framer, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any>, parse: (p1: interop.Pointer | interop.Reference<any>, p2: number, p3: boolean) => number): boolean;
+declare function nw_framer_parse_output(framer: NSObject & OS_nw_framer, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, parse: (p1: interop.Pointer | interop.Reference<any> | null | null, p2: number, p3: boolean) => number): boolean;
 
 /**
  * @since 13.0
@@ -1191,7 +1191,7 @@ declare const enum nw_framer_start_result_t {
 /**
  * @since 13.0
  */
-declare function nw_framer_write_output(framer: NSObject & OS_nw_framer, output_buffer: string | interop.Pointer | interop.Reference<any>, output_length: number): void;
+declare function nw_framer_write_output(framer: NSObject & OS_nw_framer, output_buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, output_length: number): void;
 
 /**
  * @since 13.0
@@ -1231,7 +1231,7 @@ declare function nw_interface_get_index(interface: NSObject & OS_nw_interface): 
 /**
  * @since 12.0
  */
-declare function nw_interface_get_name(interface: NSObject & OS_nw_interface): interop.Pointer | interop.Reference<any>;
+declare function nw_interface_get_name(interface: NSObject & OS_nw_interface): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 12.0
@@ -1399,17 +1399,17 @@ declare function nw_listener_cancel(listener: NSObject & OS_nw_listener): void;
 /**
  * @since 12.0
  */
-declare function nw_listener_create(parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_listener;
+declare function nw_listener_create(parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_listener | null;
 
 /**
  * @since 12.0
  */
-declare function nw_listener_create_with_connection(connection: NSObject & OS_nw_connection, parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_listener;
+declare function nw_listener_create_with_connection(connection: NSObject & OS_nw_connection, parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_listener | null;
 
 /**
  * @since 12.0
  */
-declare function nw_listener_create_with_port(port: string | interop.Pointer | interop.Reference<any>, parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_listener;
+declare function nw_listener_create_with_port(port: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_listener | null;
 
 /**
  * @since 12.0
@@ -1424,22 +1424,22 @@ declare function nw_listener_get_port(listener: NSObject & OS_nw_listener): numb
 /**
  * @since 12.0
  */
-declare function nw_listener_set_advertise_descriptor(listener: NSObject & OS_nw_listener, advertise_descriptor: NSObject & OS_nw_advertise_descriptor): void;
+declare function nw_listener_set_advertise_descriptor(listener: NSObject & OS_nw_listener, advertise_descriptor: NSObject & OS_nw_advertise_descriptor | null): void;
 
 /**
  * @since 12.0
  */
-declare function nw_listener_set_advertised_endpoint_changed_handler(listener: NSObject & OS_nw_listener, handler: (p1: NSObject & OS_nw_endpoint, p2: boolean) => void): void;
+declare function nw_listener_set_advertised_endpoint_changed_handler(listener: NSObject & OS_nw_listener, handler: (p1: NSObject & OS_nw_endpoint, p2: boolean) => void | null): void;
 
 /**
  * @since 15.0
  */
-declare function nw_listener_set_new_connection_group_handler(listener: NSObject & OS_nw_listener, handler: (p1: NSObject & OS_nw_connection_group) => void): void;
+declare function nw_listener_set_new_connection_group_handler(listener: NSObject & OS_nw_listener, handler: (p1: NSObject & OS_nw_connection_group) => void | null): void;
 
 /**
  * @since 12.0
  */
-declare function nw_listener_set_new_connection_handler(listener: NSObject & OS_nw_listener, handler: (p1: NSObject & OS_nw_connection) => void): void;
+declare function nw_listener_set_new_connection_handler(listener: NSObject & OS_nw_listener, handler: (p1: NSObject & OS_nw_connection) => void | null): void;
 
 /**
  * @since 12.0
@@ -1454,7 +1454,7 @@ declare function nw_listener_set_queue(listener: NSObject & OS_nw_listener, queu
 /**
  * @since 12.0
  */
-declare function nw_listener_set_state_changed_handler(listener: NSObject & OS_nw_listener, handler: (p1: nw_listener_state_t, p2: NSObject & OS_nw_error) => void): void;
+declare function nw_listener_set_state_changed_handler(listener: NSObject & OS_nw_listener, handler: (p1: nw_listener_state_t, p2: NSObject & OS_nw_error | null) => void | null): void;
 
 /**
  * @since 12.0
@@ -1539,12 +1539,12 @@ declare function nw_parameters_copy_default_protocol_stack(parameters: NSObject 
 /**
  * @since 12.0
  */
-declare function nw_parameters_copy_local_endpoint(parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_endpoint;
+declare function nw_parameters_copy_local_endpoint(parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_endpoint | null;
 
 /**
  * @since 12.0
  */
-declare function nw_parameters_copy_required_interface(parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_interface;
+declare function nw_parameters_copy_required_interface(parameters: NSObject & OS_nw_parameters): NSObject & OS_nw_interface | null;
 
 /**
  * @since 12.0
@@ -1670,7 +1670,7 @@ declare function nw_parameters_prohibit_interface_type(parameters: NSObject & OS
 /**
  * @since 12.0
  */
-declare function nw_parameters_require_interface(parameters: NSObject & OS_nw_parameters, interface: NSObject & OS_nw_interface): void;
+declare function nw_parameters_require_interface(parameters: NSObject & OS_nw_parameters, interface: NSObject & OS_nw_interface | null): void;
 
 /**
  * @since 16.0
@@ -1705,7 +1705,7 @@ declare function nw_parameters_set_include_peer_to_peer(parameters: NSObject & O
 /**
  * @since 12.0
  */
-declare function nw_parameters_set_local_endpoint(parameters: NSObject & OS_nw_parameters, local_endpoint: NSObject & OS_nw_endpoint): void;
+declare function nw_parameters_set_local_endpoint(parameters: NSObject & OS_nw_parameters, local_endpoint: NSObject & OS_nw_endpoint | null): void;
 
 /**
  * @since 12.0
@@ -1760,12 +1760,12 @@ declare function nw_parameters_set_service_class(parameters: NSObject & OS_nw_pa
 /**
  * @since 12.0
  */
-declare function nw_path_copy_effective_local_endpoint(path: NSObject & OS_nw_path): NSObject & OS_nw_endpoint;
+declare function nw_path_copy_effective_local_endpoint(path: NSObject & OS_nw_path): NSObject & OS_nw_endpoint | null;
 
 /**
  * @since 12.0
  */
-declare function nw_path_copy_effective_remote_endpoint(path: NSObject & OS_nw_path): NSObject & OS_nw_endpoint;
+declare function nw_path_copy_effective_remote_endpoint(path: NSObject & OS_nw_path): NSObject & OS_nw_endpoint | null;
 
 /**
  * @since 13.0
@@ -1909,7 +1909,7 @@ declare function nw_privacy_context_clear_proxies(privacy_context: NSObject & OS
 /**
  * @since 14.0
  */
-declare function nw_privacy_context_create(description: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_privacy_context;
+declare function nw_privacy_context_create(description: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): NSObject & OS_nw_privacy_context;
 
 /**
  * @since 14.0
@@ -1924,7 +1924,7 @@ declare function nw_privacy_context_flush_cache(privacy_context: NSObject & OS_n
 /**
  * @since 14.0
  */
-declare function nw_privacy_context_require_encrypted_name_resolution(privacy_context: NSObject & OS_nw_privacy_context, require_encrypted_name_resolution: boolean, fallback_resolver_config: NSObject & OS_nw_resolver_config): void;
+declare function nw_privacy_context_require_encrypted_name_resolution(privacy_context: NSObject & OS_nw_privacy_context, require_encrypted_name_resolution: boolean, fallback_resolver_config: NSObject & OS_nw_resolver_config | null): void;
 
 /**
  * @since 12.0
@@ -2019,12 +2019,12 @@ declare function nw_protocol_stack_clear_application_protocols(stack: NSObject &
 /**
  * @since 12.0
  */
-declare function nw_protocol_stack_copy_internet_protocol(stack: NSObject & OS_nw_protocol_stack): NSObject & OS_nw_protocol_options;
+declare function nw_protocol_stack_copy_internet_protocol(stack: NSObject & OS_nw_protocol_stack): NSObject & OS_nw_protocol_options | null;
 
 /**
  * @since 12.0
  */
-declare function nw_protocol_stack_copy_transport_protocol(stack: NSObject & OS_nw_protocol_stack): NSObject & OS_nw_protocol_options;
+declare function nw_protocol_stack_copy_transport_protocol(stack: NSObject & OS_nw_protocol_stack): NSObject & OS_nw_protocol_options | null;
 
 /**
  * @since 12.0
@@ -2044,12 +2044,12 @@ declare function nw_protocol_stack_set_transport_protocol(stack: NSObject & OS_n
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_add_excluded_domain(config: NSObject & OS_nw_proxy_config, excluded_domain: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_proxy_config_add_excluded_domain(config: NSObject & OS_nw_proxy_config, excluded_domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_add_match_domain(config: NSObject & OS_nw_proxy_config, match_domain: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_proxy_config_add_match_domain(config: NSObject & OS_nw_proxy_config, match_domain: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 17.0
@@ -2064,17 +2064,17 @@ declare function nw_proxy_config_clear_match_domains(config: NSObject & OS_nw_pr
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_create_http_connect(proxy_endpoint: NSObject & OS_nw_endpoint, proxy_tls_options: NSObject & OS_nw_protocol_options): NSObject & OS_nw_proxy_config;
+declare function nw_proxy_config_create_http_connect(proxy_endpoint: NSObject & OS_nw_endpoint, proxy_tls_options: NSObject & OS_nw_protocol_options | null): NSObject & OS_nw_proxy_config;
 
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_create_oblivious_http(relay: NSObject & OS_nw_relay_hop, relay_resource_path: string | interop.Pointer | interop.Reference<any>, gateway_key_config: string | interop.Pointer | interop.Reference<any>, gateway_key_config_length: number): NSObject & OS_nw_proxy_config;
+declare function nw_proxy_config_create_oblivious_http(relay: NSObject & OS_nw_relay_hop, relay_resource_path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, gateway_key_config: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, gateway_key_config_length: number): NSObject & OS_nw_proxy_config;
 
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_create_relay(first_hop: NSObject & OS_nw_relay_hop, second_hop: NSObject & OS_nw_relay_hop): NSObject & OS_nw_proxy_config;
+declare function nw_proxy_config_create_relay(first_hop: NSObject & OS_nw_relay_hop, second_hop: NSObject & OS_nw_relay_hop | null): NSObject & OS_nw_proxy_config;
 
 /**
  * @since 17.0
@@ -2084,12 +2084,12 @@ declare function nw_proxy_config_create_socksv5(proxy_endpoint: NSObject & OS_nw
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_enumerate_excluded_domains(config: NSObject & OS_nw_proxy_config, enumerator: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+declare function nw_proxy_config_enumerate_excluded_domains(config: NSObject & OS_nw_proxy_config, enumerator: (p1: interop.Pointer | interop.Reference<any> | null) => void): void;
 
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_enumerate_match_domains(config: NSObject & OS_nw_proxy_config, enumerator: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+declare function nw_proxy_config_enumerate_match_domains(config: NSObject & OS_nw_proxy_config, enumerator: (p1: interop.Pointer | interop.Reference<any> | null) => void): void;
 
 /**
  * @since 17.0
@@ -2104,12 +2104,12 @@ declare function nw_proxy_config_set_failover_allowed(proxy_config: NSObject & O
 /**
  * @since 17.0
  */
-declare function nw_proxy_config_set_username_and_password(proxy_config: NSObject & OS_nw_proxy_config, username: string | interop.Pointer | interop.Reference<any>, password: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_proxy_config_set_username_and_password(proxy_config: NSObject & OS_nw_proxy_config, username: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, password: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): void;
 
 /**
  * @since 15.0
  */
-declare function nw_quic_add_tls_application_protocol(options: NSObject & OS_nw_protocol_options, application_protocol: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_quic_add_tls_application_protocol(options: NSObject & OS_nw_protocol_options, application_protocol: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 15.0
@@ -2134,7 +2134,7 @@ declare function nw_quic_get_application_error(metadata: NSObject & OS_nw_protoc
 /**
  * @since 15.0
  */
-declare function nw_quic_get_application_error_reason(metadata: NSObject & OS_nw_protocol_metadata): interop.Pointer | interop.Reference<any>;
+declare function nw_quic_get_application_error_reason(metadata: NSObject & OS_nw_protocol_metadata): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 15.0
@@ -2244,7 +2244,7 @@ declare function nw_quic_get_stream_usable_datagram_frame_size(metadata: NSObjec
 /**
  * @since 15.0
  */
-declare function nw_quic_set_application_error(metadata: NSObject & OS_nw_protocol_metadata, application_error: number, reason: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_quic_set_application_error(metadata: NSObject & OS_nw_protocol_metadata, application_error: number, reason: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): void;
 
 /**
  * @since 15.0
@@ -2335,17 +2335,17 @@ declare const enum nw_quic_stream_type_t {
 /**
  * @since 17.0
  */
-declare function nw_relay_hop_add_additional_http_header_field(relay_hop: NSObject & OS_nw_relay_hop, field_name: string | interop.Pointer | interop.Reference<any>, field_value: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_relay_hop_add_additional_http_header_field(relay_hop: NSObject & OS_nw_relay_hop, field_name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, field_value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 17.0
  */
-declare function nw_relay_hop_create(http3_relay_endpoint: NSObject & OS_nw_endpoint, http2_relay_endpoint: NSObject & OS_nw_endpoint, relay_tls_options: NSObject & OS_nw_protocol_options): NSObject & OS_nw_relay_hop;
+declare function nw_relay_hop_create(http3_relay_endpoint: NSObject & OS_nw_endpoint | null, http2_relay_endpoint: NSObject & OS_nw_endpoint | null, relay_tls_options: NSObject & OS_nw_protocol_options | null): NSObject & OS_nw_relay_hop;
 
 /**
  * @since 12.0
  */
-declare function nw_release(obj: interop.Pointer | interop.Reference<any>): void;
+declare function nw_release(obj: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare const enum nw_report_resolution_protocol_t {
 
@@ -2417,7 +2417,7 @@ declare function nw_resolver_config_create_tls(server_endpoint: NSObject & OS_nw
 /**
  * @since 12.0
  */
-declare function nw_retain(obj: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function nw_retain(obj: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare const enum nw_service_class_t {
 
@@ -2547,22 +2547,22 @@ declare function nw_tls_create_options(): NSObject & OS_nw_protocol_options;
 /**
  * @since 13.0
  */
-declare function nw_txt_record_access_bytes(txt_record: NSObject & OS_nw_txt_record, access_bytes: (p1: interop.Pointer | interop.Reference<any>, p2: number) => boolean): boolean;
+declare function nw_txt_record_access_bytes(txt_record: NSObject & OS_nw_txt_record, access_bytes: (p1: interop.Pointer | interop.Reference<any> | null, p2: number) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_txt_record_access_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any>, access_value: (p1: interop.Pointer | interop.Reference<any>, p2: nw_txt_record_find_key_t, p3: interop.Pointer | interop.Reference<any>, p4: number) => boolean): boolean;
+declare function nw_txt_record_access_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, access_value: (p1: interop.Pointer | interop.Reference<any> | null, p2: nw_txt_record_find_key_t, p3: interop.Pointer | interop.Reference<any> | null | null, p4: number) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_txt_record_apply(txt_record: NSObject & OS_nw_txt_record, applier: (p1: interop.Pointer | interop.Reference<any>, p2: nw_txt_record_find_key_t, p3: interop.Pointer | interop.Reference<any>, p4: number) => boolean): boolean;
+declare function nw_txt_record_apply(txt_record: NSObject & OS_nw_txt_record, applier: (p1: interop.Pointer | interop.Reference<any> | null, p2: nw_txt_record_find_key_t, p3: interop.Pointer | interop.Reference<any> | null, p4: number) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_txt_record_copy(txt_record: NSObject & OS_nw_txt_record): NSObject & OS_nw_txt_record;
+declare function nw_txt_record_copy(txt_record: NSObject & OS_nw_txt_record | null): NSObject & OS_nw_txt_record | null;
 
 /**
  * @since 13.0
@@ -2572,12 +2572,12 @@ declare function nw_txt_record_create_dictionary(): NSObject & OS_nw_txt_record;
 /**
  * @since 13.0
  */
-declare function nw_txt_record_create_with_bytes(txt_bytes: string | interop.Pointer | interop.Reference<any>, txt_len: number): NSObject & OS_nw_txt_record;
+declare function nw_txt_record_create_with_bytes(txt_bytes: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, txt_len: number): NSObject & OS_nw_txt_record;
 
 /**
  * @since 13.0
  */
-declare function nw_txt_record_find_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any>): nw_txt_record_find_key_t;
+declare function nw_txt_record_find_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): nw_txt_record_find_key_t;
 
 declare const enum nw_txt_record_find_key_t {
 
@@ -2595,7 +2595,7 @@ declare const enum nw_txt_record_find_key_t {
 /**
  * @since 13.0
  */
-declare function nw_txt_record_get_key_count(txt_record: NSObject & OS_nw_txt_record): number;
+declare function nw_txt_record_get_key_count(txt_record: NSObject & OS_nw_txt_record | null): number;
 
 /**
  * @since 13.0
@@ -2605,17 +2605,17 @@ declare function nw_txt_record_is_dictionary(txt_record: NSObject & OS_nw_txt_re
 /**
  * @since 13.0
  */
-declare function nw_txt_record_is_equal(left: NSObject & OS_nw_txt_record, right: NSObject & OS_nw_txt_record): boolean;
+declare function nw_txt_record_is_equal(left: NSObject & OS_nw_txt_record | null, right: NSObject & OS_nw_txt_record | null): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_txt_record_remove_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function nw_txt_record_remove_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_txt_record_set_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>, value_len: number): boolean;
+declare function nw_txt_record_set_key(txt_record: NSObject & OS_nw_txt_record, key: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null, value_len: number): boolean;
 
 /**
  * @since 12.0
@@ -2692,7 +2692,7 @@ declare function nw_ws_metadata_set_close_code(metadata: NSObject & OS_nw_protoc
 /**
  * @since 13.0
  */
-declare function nw_ws_metadata_set_pong_handler(metadata: NSObject & OS_nw_protocol_metadata, client_queue: NSObject & OS_dispatch_queue, pong_handler: (p1: NSObject & OS_nw_error) => void): void;
+declare function nw_ws_metadata_set_pong_handler(metadata: NSObject & OS_nw_protocol_metadata, client_queue: NSObject & OS_dispatch_queue, pong_handler: (p1: NSObject & OS_nw_error | null) => void): void;
 
 declare const enum nw_ws_opcode_t {
 
@@ -2714,12 +2714,12 @@ declare const enum nw_ws_opcode_t {
 /**
  * @since 13.0
  */
-declare function nw_ws_options_add_additional_header(options: NSObject & OS_nw_protocol_options, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_ws_options_add_additional_header(options: NSObject & OS_nw_protocol_options, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_options_add_subprotocol(options: NSObject & OS_nw_protocol_options, subprotocol: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_ws_options_add_subprotocol(options: NSObject & OS_nw_protocol_options, subprotocol: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 13.0
@@ -2744,37 +2744,37 @@ declare function nw_ws_options_set_skip_handshake(options: NSObject & OS_nw_prot
 /**
  * @since 13.0
  */
-declare function nw_ws_request_enumerate_additional_headers(request: NSObject & OS_nw_ws_request, enumerator: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => boolean): boolean;
+declare function nw_ws_request_enumerate_additional_headers(request: NSObject & OS_nw_ws_request, enumerator: (p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_request_enumerate_subprotocols(request: NSObject & OS_nw_ws_request, enumerator: (p1: interop.Pointer | interop.Reference<any>) => boolean): boolean;
+declare function nw_ws_request_enumerate_subprotocols(request: NSObject & OS_nw_ws_request, enumerator: (p1: interop.Pointer | interop.Reference<any> | null) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_response_add_additional_header(response: NSObject & OS_nw_ws_response, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): void;
+declare function nw_ws_response_add_additional_header(response: NSObject & OS_nw_ws_response, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_response_create(status: nw_ws_response_status_t, selected_subprotocol: string | interop.Pointer | interop.Reference<any>): NSObject & OS_nw_ws_response;
+declare function nw_ws_response_create(status: nw_ws_response_status_t, selected_subprotocol: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): NSObject & OS_nw_ws_response;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_response_enumerate_additional_headers(response: NSObject & OS_nw_ws_response, enumerator: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => boolean): boolean;
+declare function nw_ws_response_enumerate_additional_headers(response: NSObject & OS_nw_ws_response, enumerator: (p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => boolean): boolean;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_response_get_selected_subprotocol(response: NSObject & OS_nw_ws_response): interop.Pointer | interop.Reference<any>;
+declare function nw_ws_response_get_selected_subprotocol(response: NSObject & OS_nw_ws_response): interop.Pointer | interop.Reference<any> | null | null;
 
 /**
  * @since 13.0
  */
-declare function nw_ws_response_get_status(response: NSObject & OS_nw_ws_response): nw_ws_response_status_t;
+declare function nw_ws_response_get_status(response: NSObject & OS_nw_ws_response | null): nw_ws_response_status_t;
 
 declare const enum nw_ws_response_status_t {
 

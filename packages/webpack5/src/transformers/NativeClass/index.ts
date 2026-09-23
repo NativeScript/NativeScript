@@ -182,13 +182,19 @@ export default function (context: ts.TransformationContext, ...args) {
 		}
 
 		function visitNode(node: ts.Node): ts.Node {
-			// Do not traverse synthesized helper trees; leave them intact
-			if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
-				return node;
-			}
+			// Handle the source file before the Synthesized bail-out below: a source
+			// file updated by an earlier transformer (e.g. Angular's Ivy transform on
+			// files containing Angular-decorated classes) is itself flagged
+			// Synthesized, but its original statements still need processing. The
+			// per-statement Synthesized check in transformStatements protects any
+			// generated statements.
 			if (ts.isSourceFile(node)) {
 				const [stmts, changed] = transformStatements(node.statements, true);
 				return changed ? factory.updateSourceFile(node, stmts) : node;
+			}
+			// Do not traverse synthesized helper trees; leave them intact
+			if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
+				return node;
 			}
 			if (ts.isBlock(node)) {
 				const [stmts, changed] = transformStatements(node.statements, false);

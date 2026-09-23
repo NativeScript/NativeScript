@@ -317,7 +317,7 @@ function createBtn(text: string): Button {
 	return b;
 }
 
-function assertNativeChildren(layout: LayoutBase, arr: Array<string>) {
+function assertNativeChildren(layout: View, arr: Array<string>) {
 	if (layout.android) {
 		let android: org.nativescript.widgets.LayoutBase = layout.android;
 		TKUnit.assertEqual(android.getChildCount(), arr.length, 'Native children');

@@ -22,7 +22,7 @@ declare class GSSyncedDirectory extends NSObject {
 
 	static new(): GSSyncedDirectory; // inherited from NSObject
 
-	static openDirectoryForContainerIdentifier(containerIdentifier: string): GSSyncedDirectory;
+	static openDirectoryForContainerIdentifier(containerIdentifier: string | null): GSSyncedDirectory;
 
 	readonly directoryState: GSSyncedDirectoryState;
 
@@ -43,13 +43,13 @@ declare class GSSyncedDirectoryState extends NSObject {
 
 	static new(): GSSyncedDirectoryState; // inherited from NSObject
 
-	readonly conflictedVersions: NSArray<GSSyncedDirectoryVersion>;
+	readonly conflictedVersions: NSArray<GSSyncedDirectoryVersion> | null;
 
-	readonly error: NSError;
+	readonly error: NSError | null;
 
 	readonly state: GSSyncState;
 
-	readonly url: NSURL;
+	readonly url: NSURL | null;
 }
 
 declare class GSSyncedDirectoryVersion extends NSObject {

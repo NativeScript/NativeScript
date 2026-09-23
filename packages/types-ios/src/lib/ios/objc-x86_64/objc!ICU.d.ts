@@ -694,7 +694,23 @@ declare const enum UBlockCode {
 
 	LOCK_TULU_TIGALARI = 338,
 
-	LOCK_COUNT = 339,
+	LOCK_BERIA_ERFE = 339,
+
+	LOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_J = 340,
+
+	LOCK_MISCELLANEOUS_SYMBOLS_SUPPLEMENT = 341,
+
+	LOCK_SHARADA_SUPPLEMENT = 342,
+
+	LOCK_SIDETIC = 343,
+
+	LOCK_TAI_YO = 344,
+
+	LOCK_TANGUT_COMPONENTS_SUPPLEMENT = 345,
+
+	LOCK_TOLONG_SIKI = 346,
+
+	LOCK_COUNT = 347,
 
 	LOCK_INVALID_CODE = -1
 }
@@ -827,22 +843,22 @@ declare const enum UCharDirection {
 }
 
 interface UCharIterator {
-	context: interop.Pointer | interop.Reference<any>;
+	context: interop.Pointer | interop.Reference<any> | null;
 	length: number;
 	start: number;
 	index: number;
 	limit: number;
 	reservedField: number;
-	getIndex: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>, p2: UCharIteratorOrigin) => number>>;
-	move: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>, p2: number, p3: UCharIteratorOrigin) => number>>;
-	hasNext: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>) => number>>;
-	hasPrevious: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>) => number>>;
-	current: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>) => number>>;
-	next: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>) => number>>;
-	previous: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>) => number>>;
-	reservedFn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>, p2: number) => number>>;
-	getState: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>) => number>>;
-	setState: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator>, p2: number, p3: interop.Pointer | interop.Reference<UErrorCode>) => void>>;
+	getIndex: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null, p2: UCharIteratorOrigin) => number>> | null;
+	move: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null, p2: number, p3: UCharIteratorOrigin) => number>> | null;
+	hasNext: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null) => number>> | null;
+	hasPrevious: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null) => number>> | null;
+	current: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null) => number>> | null;
+	next: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null) => number>> | null;
+	previous: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null) => number>> | null;
+	reservedFn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null, p2: number) => number>> | null;
+	getState: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null) => number>> | null;
+	setState: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UCharIterator> | null, p2: number, p3: interop.Pointer | interop.Reference<UErrorCode> | null) => void>> | null;
 }
 declare var UCharIterator: interop.StructType<UCharIterator>;
 
@@ -1162,7 +1178,9 @@ declare const enum UErrorCode {
 
 	U_MF_DUPLICATE_VARIANT_ERROR = 65823,
 
-	U_FMT_PARSE_ERROR_LIMIT = 65824,
+	U_MF_BAD_OPTION = 65824,
+
+	U_FMT_PARSE_ERROR_LIMIT = 65825,
 
 	U_BRK_INTERNAL_ERROR = 66048,
 
@@ -1770,7 +1788,9 @@ declare const enum UJoiningGroup {
 
 	U_JG_KASHMIRI_YEH = 104,
 
-	U_JG_COUNT = 105
+	U_JG_THIN_NOON = 105,
+
+	U_JG_COUNT = 106
 }
 
 declare const enum UJoiningType {
@@ -1890,7 +1910,9 @@ declare const enum ULineBreak {
 
 	U_LB_VIRAMA = 47,
 
-	U_LB_COUNT = 48
+	U_LB_UNAMBIGUOUS_HYPHEN = 48,
+
+	U_LB_COUNT = 49
 }
 
 declare const enum UNumericType {
@@ -2273,14 +2295,14 @@ interface UText {
 	chunkNativeStart: number;
 	chunkOffset: number;
 	chunkLength: number;
-	chunkContents: interop.Pointer | interop.Reference<number>;
-	pFuncs: interop.Pointer | interop.Reference<UTextFuncs>;
-	pExtra: interop.Pointer | interop.Reference<any>;
-	context: interop.Pointer | interop.Reference<any>;
-	p: interop.Pointer | interop.Reference<any>;
-	q: interop.Pointer | interop.Reference<any>;
-	r: interop.Pointer | interop.Reference<any>;
-	privP: interop.Pointer | interop.Reference<any>;
+	chunkContents: interop.Pointer | interop.Reference<number> | null;
+	pFuncs: interop.Pointer | interop.Reference<UTextFuncs> | null;
+	pExtra: interop.Pointer | interop.Reference<any> | null;
+	context: interop.Pointer | interop.Reference<any> | null;
+	p: interop.Pointer | interop.Reference<any> | null;
+	q: interop.Pointer | interop.Reference<any> | null;
+	r: interop.Pointer | interop.Reference<any> | null;
+	privP: interop.Pointer | interop.Reference<any> | null;
 	a: number;
 	b: number;
 	c: number;
@@ -2295,18 +2317,18 @@ interface UTextFuncs {
 	reserved1: number;
 	reserved2: number;
 	reserved3: number;
-	clone: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>, p2: interop.Pointer | interop.Reference<UText>, p3: number, p4: interop.Pointer | interop.Reference<UErrorCode>) => interop.Pointer | interop.Reference<UText>>>;
-	nativeLength: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>) => number>>;
-	access: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>, p2: number, p3: number) => number>>;
-	extract: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>, p5: number, p6: interop.Pointer | interop.Reference<UErrorCode>) => number>>;
-	replace: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>, p5: number, p6: interop.Pointer | interop.Reference<UErrorCode>) => number>>;
-	copy: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>, p2: number, p3: number, p4: number, p5: number, p6: interop.Pointer | interop.Reference<UErrorCode>) => void>>;
-	mapOffsetToNative: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>) => number>>;
-	mapNativeIndexToUTF16: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>, p2: number) => number>>;
-	close: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>) => void>>;
-	spare1: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>) => void>>;
-	spare2: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>) => void>>;
-	spare3: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText>) => void>>;
+	clone: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null, p2: interop.Pointer | interop.Reference<UText> | null, p3: number, p4: interop.Pointer | interop.Reference<UErrorCode> | null) => interop.Pointer | interop.Reference<UText> | null>> | null;
+	nativeLength: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null) => number>> | null;
+	access: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null, p2: number, p3: number) => number>> | null;
+	extract: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number> | null, p5: number, p6: interop.Pointer | interop.Reference<UErrorCode> | null) => number>> | null;
+	replace: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number> | null, p5: number, p6: interop.Pointer | interop.Reference<UErrorCode> | null) => number>> | null;
+	copy: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null, p2: number, p3: number, p4: number, p5: number, p6: interop.Pointer | interop.Reference<UErrorCode> | null) => void>> | null;
+	mapOffsetToNative: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null) => number>> | null;
+	mapNativeIndexToUTF16: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null, p2: number) => number>> | null;
+	close: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null) => void>> | null;
+	spare1: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null) => void>> | null;
+	spare2: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null) => void>> | null;
+	spare3: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<UText> | null) => void>> | null;
 }
 declare var UTextFuncs: interop.StructType<UTextFuncs>;
 
@@ -2374,11 +2396,11 @@ declare const enum UWordBreakValues {
 
 declare const U_PARSE_CONTEXT_LEN: number;
 
-declare function u_UCharsToChars(us: interop.Pointer | interop.Reference<number>, cs: string | interop.Pointer | interop.Reference<any>, length: number): void;
+declare function u_UCharsToChars(us: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, cs: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number): void;
 
-declare function u_austrcpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function u_austrcpy(dst: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_austrncpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>, n: number): interop.Pointer | interop.Reference<any>;
+declare function u_austrncpy(dst: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n: number): interop.Pointer | interop.Reference<any> | null;
 
 declare function u_charAge(c: number, versionArray: interop.Reference<number>): void;
 
@@ -2386,25 +2408,25 @@ declare function u_charDigitValue(c: number): number;
 
 declare function u_charDirection(c: number): UCharDirection;
 
-declare function u_charFromName(nameChoice: UCharNameChoice, name: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_charFromName(nameChoice: UCharNameChoice, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function u_charMirror(c: number): number;
 
-declare function u_charName(code: number, nameChoice: UCharNameChoice, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_charName(code: number, nameChoice: UCharNameChoice, buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, bufferLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function u_charType(c: number): number;
 
-declare function u_charsToUChars(cs: string | interop.Pointer | interop.Reference<any>, us: interop.Pointer | interop.Reference<number>, length: number): void;
+declare function u_charsToUChars(cs: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, us: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number): void;
 
-declare function u_countChar32(s: interop.Pointer | interop.Reference<number>, length: number): number;
+declare function u_countChar32(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number): number;
 
 declare function u_digit(ch: number, radix: number): number;
 
-declare function u_enumCharNames(start: number, limit: number, fn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: UCharNameChoice, p4: interop.Pointer | interop.Reference<any>, p5: number) => number>>, context: interop.Pointer | interop.Reference<any>, nameChoice: UCharNameChoice, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function u_enumCharNames(start: number, limit: number, fn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: UCharNameChoice, p4: interop.Pointer | interop.Reference<any> | null, p5: number) => number>> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, nameChoice: UCharNameChoice, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function u_enumCharTypes(enumRange: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: UCharCategory) => number>>, context: interop.Pointer | interop.Reference<any>): void;
+declare function u_enumCharTypes(enumRange: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: number, p4: UCharCategory) => number>> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function u_errorName(code: UErrorCode): interop.Pointer | interop.Reference<any>;
+declare function u_errorName(code: UErrorCode): interop.Pointer | interop.Reference<any> | null;
 
 declare function u_foldCase(c: number, options: number): number;
 
@@ -2412,19 +2434,19 @@ declare function u_forDigit(digit: number, radix: number): number;
 
 declare function u_getBidiPairedBracket(c: number): number;
 
-declare function u_getBinaryPropertySet(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function u_getBinaryPropertySet(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function u_getCombiningClass(c: number): number;
 
-declare function u_getDataDirectory(): interop.Pointer | interop.Reference<any>;
+declare function u_getDataDirectory(): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_getFC_NFKC_Closure(c: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_getFC_NFKC_Closure(c: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_getIDTypes(c: number, types: interop.Pointer | interop.Reference<UIdentifierType>, capacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_getIDTypes(c: number, types: interop.Pointer | interop.Reference<UIdentifierType> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_getISOComment(c: number, dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_getISOComment(c: number, dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_getIntPropertyMap(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function u_getIntPropertyMap(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function u_getIntPropertyMaxValue(which: UProperty): number;
 
@@ -2434,15 +2456,15 @@ declare function u_getIntPropertyValue(c: number, which: UProperty): number;
 
 declare function u_getNumericValue(c: number): number;
 
-declare function u_getPropertyEnum(alias: string | interop.Pointer | interop.Reference<any>): UProperty;
+declare function u_getPropertyEnum(alias: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): UProperty;
 
-declare function u_getPropertyName(property: UProperty, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any>;
+declare function u_getPropertyName(property: UProperty, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_getPropertyValueEnum(property: UProperty, alias: string | interop.Pointer | interop.Reference<any>): number;
+declare function u_getPropertyValueEnum(property: UProperty, alias: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_getPropertyValueName(property: UProperty, value: number, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any>;
+declare function u_getPropertyValueName(property: UProperty, value: number, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_getTimeZoneFilesDirectory(status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function u_getTimeZoneFilesDirectory(status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function u_getUnicodeVersion(versionArray: interop.Reference<number>): void;
 
@@ -2508,121 +2530,121 @@ declare function u_isupper(c: number): number;
 
 declare function u_isxdigit(c: number): number;
 
-declare function u_memcasecmp(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>, length: number, options: number): number;
+declare function u_memcasecmp(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, options: number): number;
 
-declare function u_memchr(s: interop.Pointer | interop.Reference<number>, c: number, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memchr(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_memchr32(s: interop.Pointer | interop.Reference<number>, c: number, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memchr32(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_memcmp(buf1: interop.Pointer | interop.Reference<number>, buf2: interop.Pointer | interop.Reference<number>, count: number): number;
+declare function u_memcmp(buf1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, buf2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): number;
 
-declare function u_memcmpCodePointOrder(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>, count: number): number;
+declare function u_memcmpCodePointOrder(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): number;
 
-declare function u_memcpy(dest: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memcpy(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_memmove(dest: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memmove(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_memrchr(s: interop.Pointer | interop.Reference<number>, c: number, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memrchr(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_memrchr32(s: interop.Pointer | interop.Reference<number>, c: number, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memrchr32(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_memset(dest: interop.Pointer | interop.Reference<number>, c: number, count: number): interop.Pointer | interop.Reference<number>;
+declare function u_memset(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number, count: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_setDataDirectory(directory: string | interop.Pointer | interop.Reference<any>): void;
+declare function u_setDataDirectory(directory: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function u_setTimeZoneFilesDirectory(path: string | interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function u_setTimeZoneFilesDirectory(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function u_strCaseCompare(s1: interop.Pointer | interop.Reference<number>, length1: number, s2: interop.Pointer | interop.Reference<number>, length2: number, options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_strCaseCompare(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length1: number, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length2: number, options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strCompare(s1: interop.Pointer | interop.Reference<number>, length1: number, s2: interop.Pointer | interop.Reference<number>, length2: number, codePointOrder: number): number;
+declare function u_strCompare(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length1: number, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length2: number, codePointOrder: number): number;
 
-declare function u_strCompareIter(iter1: interop.Pointer | interop.Reference<UCharIterator>, iter2: interop.Pointer | interop.Reference<UCharIterator>, codePointOrder: number): number;
+declare function u_strCompareIter(iter1: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null, iter2: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null, codePointOrder: number): number;
 
-declare function u_strFindFirst(s: interop.Pointer | interop.Reference<number>, length: number, substring: interop.Pointer | interop.Reference<number>, subLength: number): interop.Pointer | interop.Reference<number>;
+declare function u_strFindFirst(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, substring: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, subLength: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFindLast(s: interop.Pointer | interop.Reference<number>, length: number, substring: interop.Pointer | interop.Reference<number>, subLength: number): interop.Pointer | interop.Reference<number>;
+declare function u_strFindLast(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, substring: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, subLength: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFoldCase(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_strFoldCase(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strFromJavaModifiedUTF8WithSub(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: string | interop.Pointer | interop.Reference<any>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromJavaModifiedUTF8WithSub(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFromUTF32(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromUTF32(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFromUTF32WithSub(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromUTF32WithSub(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFromUTF8(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: string | interop.Pointer | interop.Reference<any>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromUTF8(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFromUTF8Lenient(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: string | interop.Pointer | interop.Reference<any>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromUTF8Lenient(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFromUTF8WithSub(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: string | interop.Pointer | interop.Reference<any>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromUTF8WithSub(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strFromWCS(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strFromWCS(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strHasMoreChar32Than(s: interop.Pointer | interop.Reference<number>, length: number, number: number): number;
+declare function u_strHasMoreChar32Than(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, number: number): number;
 
-declare function u_strIsWellFormed(s: interop.Pointer | interop.Reference<number>, length: number): number;
+declare function u_strIsWellFormed(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number): number;
 
-declare function u_strToJavaModifiedUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function u_strToJavaModifiedUTF8(dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_strToLower(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_strToLower(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, locale: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strToTitle(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, titleIter: interop.Pointer | interop.Reference<any>, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_strToTitle(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, titleIter: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, locale: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strToUTF32(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strToUTF32(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strToUTF32WithSub(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strToUTF32WithSub(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strToUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function u_strToUTF8(dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_strToUTF8WithSub(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function u_strToUTF8WithSub(dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function u_strToUpper(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function u_strToUpper(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, locale: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strToWCS(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function u_strToWCS(dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strcasecmp(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>, options: number): number;
+declare function u_strcasecmp(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, options: number): number;
 
-declare function u_strcat(dst: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
+declare function u_strcat(dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strchr(s: interop.Pointer | interop.Reference<number>, c: number): interop.Pointer | interop.Reference<number>;
+declare function u_strchr(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strchr32(s: interop.Pointer | interop.Reference<number>, c: number): interop.Pointer | interop.Reference<number>;
+declare function u_strchr32(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strcmp(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>): number;
+declare function u_strcmp(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strcmpCodePointOrder(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>): number;
+declare function u_strcmpCodePointOrder(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strcpy(dst: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
+declare function u_strcpy(dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strcspn(string: interop.Pointer | interop.Reference<number>, matchSet: interop.Pointer | interop.Reference<number>): number;
+declare function u_strcspn(string: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, matchSet: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_stringHasBinaryProperty(s: interop.Pointer | interop.Reference<number>, length: number, which: UProperty): number;
+declare function u_stringHasBinaryProperty(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, which: UProperty): number;
 
-declare function u_strlen(s: interop.Pointer | interop.Reference<number>): number;
+declare function u_strlen(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strncasecmp(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>, n: number, options: number): number;
+declare function u_strncasecmp(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n: number, options: number): number;
 
-declare function u_strncat(dst: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, n: number): interop.Pointer | interop.Reference<number>;
+declare function u_strncat(dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strncmp(ucs1: interop.Pointer | interop.Reference<number>, ucs2: interop.Pointer | interop.Reference<number>, n: number): number;
+declare function u_strncmp(ucs1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, ucs2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n: number): number;
 
-declare function u_strncmpCodePointOrder(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>, n: number): number;
+declare function u_strncmpCodePointOrder(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n: number): number;
 
-declare function u_strncpy(dst: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, n: number): interop.Pointer | interop.Reference<number>;
+declare function u_strncpy(dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strpbrk(string: interop.Pointer | interop.Reference<number>, matchSet: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
+declare function u_strpbrk(string: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, matchSet: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strrchr(s: interop.Pointer | interop.Reference<number>, c: number): interop.Pointer | interop.Reference<number>;
+declare function u_strrchr(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strrchr32(s: interop.Pointer | interop.Reference<number>, c: number): interop.Pointer | interop.Reference<number>;
+declare function u_strrchr32(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strrstr(s: interop.Pointer | interop.Reference<number>, substring: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
+declare function u_strrstr(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, substring: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strspn(string: interop.Pointer | interop.Reference<number>, matchSet: interop.Pointer | interop.Reference<number>): number;
+declare function u_strspn(string: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, matchSet: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_strstr(s: interop.Pointer | interop.Reference<number>, substring: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
+declare function u_strstr(s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, substring: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_strtok_r(src: interop.Pointer | interop.Reference<number>, delim: interop.Pointer | interop.Reference<number>, saveState: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>): interop.Pointer | interop.Reference<number>;
+declare function u_strtok_r(src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, delim: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, saveState: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
 declare function u_tolower(c: number): number;
 
@@ -2630,250 +2652,250 @@ declare function u_totitle(c: number): number;
 
 declare function u_toupper(c: number): number;
 
-declare function u_uastrcpy(dst: interop.Pointer | interop.Reference<number>, src: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<number>;
+declare function u_uastrcpy(dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_uastrncpy(dst: interop.Pointer | interop.Reference<number>, src: string | interop.Pointer | interop.Reference<any>, n: number): interop.Pointer | interop.Reference<number>;
+declare function u_uastrncpy(dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, n: number): interop.Pointer | interop.Reference<number> | null;
 
-declare function u_unescape(src: string | interop.Pointer | interop.Reference<any>, dest: interop.Pointer | interop.Reference<number>, destCapacity: number): number;
+declare function u_unescape(src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number): number;
 
-declare function u_unescapeAt(charAt: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>) => number>, offset: interop.Pointer | interop.Reference<number>, length: number, context: interop.Pointer | interop.Reference<any>): number;
+declare function u_unescapeAt(charAt: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any> | null) => number>, offset: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function u_versionFromString(versionArray: interop.Reference<number>, versionString: string | interop.Pointer | interop.Reference<any>): void;
+declare function u_versionFromString(versionArray: interop.Reference<number>, versionString: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function u_versionFromUString(versionArray: interop.Reference<number>, versionString: interop.Pointer | interop.Reference<number>): void;
+declare function u_versionFromUString(versionArray: interop.Reference<number>, versionString: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function u_versionToString(versionArray: interop.Reference<number>, versionString: string | interop.Pointer | interop.Reference<any>): void;
+declare function u_versionToString(versionArray: interop.Reference<number>, versionString: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function ublock_getCode(c: number): UBlockCode;
 
-declare function ucpmap_get(map: interop.Pointer | interop.Reference<any>, c: number): number;
+declare function ucpmap_get(map: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, c: number): number;
 
-declare function ucpmap_getRange(map: interop.Pointer | interop.Reference<any>, start: number, option: UCPMapRangeOption, surrogateValue: number, filter: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>, context: interop.Pointer | interop.Reference<any>, pValue: interop.Pointer | interop.Reference<number>): number;
+declare function ucpmap_getRange(map: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, start: number, option: UCPMapRangeOption, surrogateValue: number, filter: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => number>> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_IDNToASCII(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_IDNToASCII(src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_IDNToUnicode(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_IDNToUnicode(src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_close(idna: interop.Pointer | interop.Reference<any>): void;
+declare function uidna_close(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uidna_compare(s1: interop.Pointer | interop.Reference<number>, length1: number, s2: interop.Pointer | interop.Reference<number>, length2: number, options: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_compare(s1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length1: number, s2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length2: number, options: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_labelToASCII(idna: interop.Pointer | interop.Reference<any>, label: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_labelToASCII(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, label: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_labelToASCII_UTF8(idna: interop.Pointer | interop.Reference<any>, label: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_labelToASCII_UTF8(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_labelToUnicode(idna: interop.Pointer | interop.Reference<any>, label: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_labelToUnicode(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, label: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_labelToUnicodeUTF8(idna: interop.Pointer | interop.Reference<any>, label: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_labelToUnicodeUTF8(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, label: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_nameToASCII(idna: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_nameToASCII(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_nameToASCII_UTF8(idna: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_nameToASCII_UTF8(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_nameToUnicode(idna: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_nameToUnicode(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_nameToUnicodeUTF8(idna: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_nameToUnicodeUTF8(idna: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number, dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo> | ArrayBufferLike | ArrayBufferView | null, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_openUTS46(options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function uidna_openUTS46(options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function uidna_toASCII(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_toASCII(src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uidna_toUnicode(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uidna_toUnicode(src: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, srcLength: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uiter_current32(iter: interop.Pointer | interop.Reference<UCharIterator>): number;
+declare function uiter_current32(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uiter_getState(iter: interop.Pointer | interop.Reference<UCharIterator>): number;
+declare function uiter_getState(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uiter_next32(iter: interop.Pointer | interop.Reference<UCharIterator>): number;
+declare function uiter_next32(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uiter_previous32(iter: interop.Pointer | interop.Reference<UCharIterator>): number;
+declare function uiter_previous32(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uiter_setState(iter: interop.Pointer | interop.Reference<UCharIterator>, state: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uiter_setState(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null, state: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uiter_setString(iter: interop.Pointer | interop.Reference<UCharIterator>, s: interop.Pointer | interop.Reference<number>, length: number): void;
+declare function uiter_setString(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null, s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number): void;
 
-declare function uiter_setUTF16BE(iter: interop.Pointer | interop.Reference<UCharIterator>, s: string | interop.Pointer | interop.Reference<any>, length: number): void;
+declare function uiter_setUTF16BE(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null, s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number): void;
 
-declare function uiter_setUTF8(iter: interop.Pointer | interop.Reference<UCharIterator>, s: string | interop.Pointer | interop.Reference<any>, length: number): void;
+declare function uiter_setUTF8(iter: interop.Pointer | interop.Reference<UCharIterator> | ArrayBufferLike | ArrayBufferView | null, s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number): void;
 
-declare function uregex_appendReplacement(regexp: interop.Pointer | interop.Reference<any>, replacementText: interop.Pointer | interop.Reference<number>, replacementLength: number, destBuf: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, destCapacity: interop.Pointer | interop.Reference<number>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_appendReplacement(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, replacementText: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, replacementLength: number, destBuf: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, destCapacity: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_appendReplacementUText(regexp: interop.Pointer | interop.Reference<any>, replacementText: interop.Pointer | interop.Reference<UText>, dest: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_appendReplacementUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, replacementText: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_appendTail(regexp: interop.Pointer | interop.Reference<any>, destBuf: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, destCapacity: interop.Pointer | interop.Reference<number>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_appendTail(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destBuf: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, destCapacity: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_appendTailUText(regexp: interop.Pointer | interop.Reference<any>, dest: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function uregex_appendTailUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function uregex_clone(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function uregex_clone(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function uregex_close(regexp: interop.Pointer | interop.Reference<any>): void;
+declare function uregex_close(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_end(regexp: interop.Pointer | interop.Reference<any>, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_end(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_end64(regexp: interop.Pointer | interop.Reference<any>, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_end64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_find(regexp: interop.Pointer | interop.Reference<any>, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_find(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_find64(regexp: interop.Pointer | interop.Reference<any>, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_find64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_findNext(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_findNext(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_flags(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_flags(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_getFindProgressCallback(regexp: interop.Pointer | interop.Reference<any>, callback: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>>, context: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_getFindProgressCallback(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => number>> | null> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_getMatchCallback(regexp: interop.Pointer | interop.Reference<any>, callback: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>>, context: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_getMatchCallback(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => number>> | null> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_getStackLimit(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_getStackLimit(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_getText(regexp: interop.Pointer | interop.Reference<any>, textLength: interop.Pointer | interop.Reference<number>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function uregex_getText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, textLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function uregex_getTimeLimit(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_getTimeLimit(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_getUText(regexp: interop.Pointer | interop.Reference<any>, dest: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function uregex_getUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function uregex_group(regexp: interop.Pointer | interop.Reference<any>, groupNum: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_group(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupNum: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_groupCount(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_groupCount(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_groupNumberFromCName(regexp: interop.Pointer | interop.Reference<any>, groupName: string | interop.Pointer | interop.Reference<any>, nameLength: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_groupNumberFromCName(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupName: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, nameLength: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_groupNumberFromName(regexp: interop.Pointer | interop.Reference<any>, groupName: interop.Pointer | interop.Reference<number>, nameLength: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_groupNumberFromName(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupName: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, nameLength: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_groupUText(regexp: interop.Pointer | interop.Reference<any>, groupNum: number, dest: interop.Pointer | interop.Reference<UText>, groupLength: interop.Pointer | interop.Reference<number>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function uregex_groupUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupNum: number, dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, groupLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function uregex_hasAnchoringBounds(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_hasAnchoringBounds(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_hasTransparentBounds(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_hasTransparentBounds(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_hitEnd(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_hitEnd(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_lookingAt(regexp: interop.Pointer | interop.Reference<any>, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_lookingAt(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_lookingAt64(regexp: interop.Pointer | interop.Reference<any>, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_lookingAt64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_matches(regexp: interop.Pointer | interop.Reference<any>, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_matches(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_matches64(regexp: interop.Pointer | interop.Reference<any>, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_matches64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_open(pattern: interop.Pointer | interop.Reference<number>, patternLength: number, flags: number, pe: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function uregex_open(pattern: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, patternLength: number, flags: number, pe: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function uregex_openC(pattern: string | interop.Pointer | interop.Reference<any>, flags: number, pe: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function uregex_openC(pattern: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number, pe: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function uregex_openUText(pattern: interop.Pointer | interop.Reference<UText>, flags: number, pe: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+declare function uregex_openUText(pattern: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, flags: number, pe: interop.Pointer | interop.Reference<UParseError> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function uregex_pattern(regexp: interop.Pointer | interop.Reference<any>, patLength: interop.Pointer | interop.Reference<number>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
+declare function uregex_pattern(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, patLength: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<number> | null;
 
-declare function uregex_patternUText(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function uregex_patternUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function uregex_refreshUText(regexp: interop.Pointer | interop.Reference<any>, text: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_refreshUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, text: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_regionEnd(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_regionEnd(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_regionEnd64(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_regionEnd64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_regionStart(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_regionStart(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_regionStart64(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_regionStart64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_replaceAll(regexp: interop.Pointer | interop.Reference<any>, replacementText: interop.Pointer | interop.Reference<number>, replacementLength: number, destBuf: interop.Pointer | interop.Reference<number>, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_replaceAll(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, replacementText: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, replacementLength: number, destBuf: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_replaceAllUText(regexp: interop.Pointer | interop.Reference<any>, replacement: interop.Pointer | interop.Reference<UText>, dest: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function uregex_replaceAllUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, replacement: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function uregex_replaceFirst(regexp: interop.Pointer | interop.Reference<any>, replacementText: interop.Pointer | interop.Reference<number>, replacementLength: number, destBuf: interop.Pointer | interop.Reference<number>, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_replaceFirst(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, replacementText: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, replacementLength: number, destBuf: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_replaceFirstUText(regexp: interop.Pointer | interop.Reference<any>, replacement: interop.Pointer | interop.Reference<UText>, dest: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function uregex_replaceFirstUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, replacement: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function uregex_requireEnd(regexp: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_requireEnd(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_reset(regexp: interop.Pointer | interop.Reference<any>, index: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_reset(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_reset64(regexp: interop.Pointer | interop.Reference<any>, index: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_reset64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, index: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setFindProgressCallback(regexp: interop.Pointer | interop.Reference<any>, callback: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>, context: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setFindProgressCallback(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => number>> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setMatchCallback(regexp: interop.Pointer | interop.Reference<any>, callback: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>, context: interop.Pointer | interop.Reference<any>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setMatchCallback(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, callback: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number) => number>> | ArrayBufferLike | ArrayBufferView | null, context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setRegion(regexp: interop.Pointer | interop.Reference<any>, regionStart: number, regionLimit: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setRegion(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regionStart: number, regionLimit: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setRegion64(regexp: interop.Pointer | interop.Reference<any>, regionStart: number, regionLimit: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setRegion64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regionStart: number, regionLimit: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setRegionAndStart(regexp: interop.Pointer | interop.Reference<any>, regionStart: number, regionLimit: number, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setRegionAndStart(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, regionStart: number, regionLimit: number, startIndex: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setStackLimit(regexp: interop.Pointer | interop.Reference<any>, limit: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setStackLimit(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, limit: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setText(regexp: interop.Pointer | interop.Reference<any>, text: interop.Pointer | interop.Reference<number>, textLength: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, text: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, textLength: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setTimeLimit(regexp: interop.Pointer | interop.Reference<any>, limit: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setTimeLimit(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, limit: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_setUText(regexp: interop.Pointer | interop.Reference<any>, text: interop.Pointer | interop.Reference<UText>, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_setUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, text: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_split(regexp: interop.Pointer | interop.Reference<any>, destBuf: interop.Pointer | interop.Reference<number>, destCapacity: number, requiredCapacity: interop.Pointer | interop.Reference<number>, destFields: interop.Reference<interop.Pointer | interop.Reference<number>>, destFieldsCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_split(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destBuf: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, requiredCapacity: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destFields: interop.Reference<interop.Pointer | interop.Reference<number> | null>, destFieldsCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_splitUText(regexp: interop.Pointer | interop.Reference<any>, destFields: interop.Reference<interop.Pointer | interop.Reference<UText>>, destFieldsCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_splitUText(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destFields: interop.Reference<interop.Pointer | interop.Reference<UText> | null>, destFieldsCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_start(regexp: interop.Pointer | interop.Reference<any>, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_start(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_start64(regexp: interop.Pointer | interop.Reference<any>, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function uregex_start64(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, groupNum: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function uregex_useAnchoringBounds(regexp: interop.Pointer | interop.Reference<any>, b: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_useAnchoringBounds(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, b: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function uregex_useTransparentBounds(regexp: interop.Pointer | interop.Reference<any>, b: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function uregex_useTransparentBounds(regexp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, b: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function utext_char32At(ut: interop.Pointer | interop.Reference<UText>, nativeIndex: number): number;
+declare function utext_char32At(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeIndex: number): number;
 
-declare function utext_clone(dest: interop.Pointer | interop.Reference<UText>, src: interop.Pointer | interop.Reference<UText>, deep: number, readOnly: number, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function utext_clone(dest: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, src: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, deep: number, readOnly: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function utext_close(ut: interop.Pointer | interop.Reference<UText>): interop.Pointer | interop.Reference<UText>;
+declare function utext_close(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function utext_copy(ut: interop.Pointer | interop.Reference<UText>, nativeStart: number, nativeLimit: number, destIndex: number, move: number, status: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function utext_copy(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeStart: number, nativeLimit: number, destIndex: number, move: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function utext_current32(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_current32(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_equals(a: interop.Pointer | interop.Reference<UText>, b: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_equals(a: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, b: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_extract(ut: interop.Pointer | interop.Reference<UText>, nativeStart: number, nativeLimit: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function utext_extract(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeStart: number, nativeLimit: number, dest: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, destCapacity: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_freeze(ut: interop.Pointer | interop.Reference<UText>): void;
+declare function utext_freeze(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function utext_getNativeIndex(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_getNativeIndex(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_getPreviousNativeIndex(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_getPreviousNativeIndex(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_hasMetaData(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_hasMetaData(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_isLengthExpensive(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_isLengthExpensive(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_isWritable(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_isWritable(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_moveIndex32(ut: interop.Pointer | interop.Reference<UText>, delta: number): number;
+declare function utext_moveIndex32(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, delta: number): number;
 
-declare function utext_nativeLength(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_nativeLength(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_next32(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_next32(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_next32From(ut: interop.Pointer | interop.Reference<UText>, nativeIndex: number): number;
+declare function utext_next32From(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeIndex: number): number;
 
-declare function utext_openUChars(ut: interop.Pointer | interop.Reference<UText>, s: interop.Pointer | interop.Reference<number>, length: number, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function utext_openUChars(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, s: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function utext_openUTF8(ut: interop.Pointer | interop.Reference<UText>, s: string | interop.Pointer | interop.Reference<any>, length: number, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function utext_openUTF8(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function utext_previous32(ut: interop.Pointer | interop.Reference<UText>): number;
+declare function utext_previous32(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_previous32From(ut: interop.Pointer | interop.Reference<UText>, nativeIndex: number): number;
+declare function utext_previous32From(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeIndex: number): number;
 
-declare function utext_replace(ut: interop.Pointer | interop.Reference<UText>, nativeStart: number, nativeLimit: number, replacementText: interop.Pointer | interop.Reference<number>, replacementLength: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+declare function utext_replace(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeStart: number, nativeLimit: number, replacementText: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, replacementLength: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utext_setNativeIndex(ut: interop.Pointer | interop.Reference<UText>, nativeIndex: number): void;
+declare function utext_setNativeIndex(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, nativeIndex: number): void;
 
-declare function utext_setup(ut: interop.Pointer | interop.Reference<UText>, extraSpace: number, status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<UText>;
+declare function utext_setup(ut: interop.Pointer | interop.Reference<UText> | ArrayBufferLike | ArrayBufferView | null, extraSpace: number, status: interop.Pointer | interop.Reference<UErrorCode> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<UText> | null;
 
-declare function utf8_appendCharSafeBody(s: string | interop.Pointer | interop.Reference<any>, i: number, length: number, c: number, pIsError: interop.Pointer | interop.Reference<number>): number;
+declare function utf8_appendCharSafeBody(s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, i: number, length: number, c: number, pIsError: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function utf8_back1SafeBody(s: string | interop.Pointer | interop.Reference<any>, start: number, i: number): number;
+declare function utf8_back1SafeBody(s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, start: number, i: number): number;
 
 declare var utf8_countTrailBytes: interop.Reference<number>;
 
-declare function utf8_nextCharSafeBody(s: string | interop.Pointer | interop.Reference<any>, pi: interop.Pointer | interop.Reference<number>, length: number, c: number, strict: number): number;
+declare function utf8_nextCharSafeBody(s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, pi: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: number, c: number, strict: number): number;
 
-declare function utf8_prevCharSafeBody(s: string | interop.Pointer | interop.Reference<any>, start: number, pi: interop.Pointer | interop.Reference<number>, c: number, strict: number): number;
+declare function utf8_prevCharSafeBody(s: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, start: number, pi: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, c: number, strict: number): number;

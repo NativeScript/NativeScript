@@ -12,11 +12,11 @@ declare class DCAppAttestService extends NSObject {
 
 	static readonly sharedService: DCAppAttestService;
 
-	attestKeyClientDataHashCompletionHandler(keyId: string, clientDataHash: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	attestKeyClientDataHashCompletionHandler(keyId: string, clientDataHash: NSData, completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	generateAssertionClientDataHashCompletionHandler(keyId: string, clientDataHash: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	generateAssertionClientDataHashCompletionHandler(keyId: string, clientDataHash: NSData, completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
-	generateKeyWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
+	generateKeyWithCompletionHandler(completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -32,7 +32,7 @@ declare class DCDevice extends NSObject {
 
 	static readonly currentDevice: DCDevice;
 
-	generateTokenWithCompletionHandler(completion: (p1: NSData, p2: NSError) => void): void;
+	generateTokenWithCompletionHandler(completion: (p1: NSData | null, p2: NSError | null) => void): void;
 }
 
 /**

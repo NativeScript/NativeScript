@@ -39,6 +39,7 @@ export class Background {
 	public borderTopRightRadius = 0;
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
+	public cornerShape: CoreTypes.CornerShapeType = CoreTypes.CornerShape.round;
 	public clipPath: string | ClipPathFunction;
 	public boxShadows: BoxShadow[];
 	public clearFlags: number = BackgroundClearFlags.NONE;
@@ -63,6 +64,7 @@ export class Background {
 		clone.borderTopRightRadius = this.borderTopRightRadius;
 		clone.borderBottomRightRadius = this.borderBottomRightRadius;
 		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
+		clone.cornerShape = this.cornerShape;
 		clone.clipPath = this.clipPath;
 		clone.boxShadows = this.boxShadows;
 		clone.clearFlags = this.clearFlags;
@@ -192,6 +194,13 @@ export class Background {
 		return clone;
 	}
 
+	public withCornerShape(value: CoreTypes.CornerShapeType): Background {
+		const clone = this.clone();
+		clone.cornerShape = value;
+
+		return clone;
+	}
+
 	public withClipPath(value: string | ClipPathFunction): Background {
 		const clone = this.clone();
 		clone.clipPath = value;
@@ -256,6 +265,7 @@ export class Background {
 			value1.borderTopRightRadius === value2.borderTopRightRadius &&
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
+			value1.cornerShape === value2.cornerShape &&
 			isClipPathEqual
 			// && value1.clearFlags === value2.clearFlags
 		);

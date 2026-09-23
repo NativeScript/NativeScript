@@ -11,12 +11,12 @@ declare class AVCustomDeviceRoute extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	readonly bluetoothIdentifier: NSUUID;
+	readonly bluetoothIdentifier: NSUUID | null;
 
 	/**
 	 * @since 16.0
 	 */
-	readonly networkEndpoint: NSObject & OS_nw_endpoint;
+	readonly networkEndpoint: NSObject & OS_nw_endpoint | null;
 }
 
 /**
@@ -31,7 +31,7 @@ declare class AVCustomRoutingActionItem extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	overrideTitle: string;
+	overrideTitle: string | null;
 
 	/**
 	 * @since 16.0
@@ -61,7 +61,7 @@ declare class AVCustomRoutingController extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	delegate: AVCustomRoutingControllerDelegate;
+	delegate: AVCustomRoutingControllerDelegate | null;
 
 	/**
 	 * @since 16.1
@@ -172,7 +172,7 @@ declare class AVRoutingPlaybackArbiter extends NSObject {
 	/**
 	 * @since 26.0
 	 */
-	preferredParticipantForExternalPlayback: AVRoutingPlaybackParticipant;
+	preferredParticipantForExternalPlayback: AVRoutingPlaybackParticipant | null;
 }
 
 /**

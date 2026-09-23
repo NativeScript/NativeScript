@@ -103,19 +103,19 @@ declare class MLComputePlan extends NSObject {
 
 	static alloc(): MLComputePlan; // inherited from NSObject
 
-	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLComputePlan, p2: NSError) => void): void;
+	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLComputePlan | null, p2: NSError | null) => void): void;
 
-	static loadModelAssetConfigurationCompletionHandler(asset: MLModelAsset, configuration: MLModelConfiguration, handler: (p1: MLComputePlan, p2: NSError) => void): void;
+	static loadModelAssetConfigurationCompletionHandler(asset: MLModelAsset, configuration: MLModelConfiguration, handler: (p1: MLComputePlan | null, p2: NSError | null) => void): void;
 
 	static new(): MLComputePlan; // inherited from NSObject
 
 	readonly modelStructure: MLModelStructure;
 
-	computeDeviceUsageForMLProgramOperation(operation: MLModelStructureProgramOperation): MLComputePlanDeviceUsage;
+	computeDeviceUsageForMLProgramOperation(operation: MLModelStructureProgramOperation): MLComputePlanDeviceUsage | null;
 
-	computeDeviceUsageForNeuralNetworkLayer(layer: MLModelStructureNeuralNetworkLayer): MLComputePlanDeviceUsage;
+	computeDeviceUsageForNeuralNetworkLayer(layer: MLModelStructureNeuralNetworkLayer): MLComputePlanDeviceUsage | null;
 
-	estimatedCostOfMLProgramOperation(operation: MLModelStructureProgramOperation): MLComputePlanCost;
+	estimatedCostOfMLProgramOperation(operation: MLModelStructureProgramOperation): MLComputePlanCost | null;
 }
 
 /**
@@ -169,7 +169,7 @@ interface MLCustomLayer {
 
 	initWithParameterDictionaryError?(parameters: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLCustomLayer;
 
-	outputShapesForInputShapesError(inputShapes: NSArray<NSArray<number>> | NSArray<number>[], error?: interop.Reference<NSError>): NSArray<NSArray<number>>;
+	outputShapesForInputShapesError(inputShapes: NSArray<NSArray<number>> | NSArray<number>[], error?: interop.Reference<NSError>): NSArray<NSArray<number>> | null;
 
 	setWeightDataError(weights: NSArray<NSData> | NSData[], error?: interop.Reference<NSError>): boolean;
 }
@@ -185,9 +185,9 @@ interface MLCustomModel {
 
 	initWithModelDescriptionParameterDictionaryError?(modelDescription: MLModelDescription, parameters: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLCustomModel;
 
-	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider;
+	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider | null;
 
-	predictionsFromBatchOptionsError?(inputBatch: MLBatchProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLBatchProvider;
+	predictionsFromBatchOptionsError?(inputBatch: MLBatchProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLBatchProvider | null;
 }
 declare var MLCustomModel: {
 
@@ -236,13 +236,13 @@ declare class MLDictionaryFeatureProvider extends NSObject implements MLFeatureP
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	featureValueForName(featureName: string): MLFeatureValue;
+	featureValueForName(featureName: string): MLFeatureValue | null;
 
 	initWithCoder(coder: NSCoder): this;
 
 	initWithDictionaryError(dictionary: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
-	objectForKeyedSubscript(featureName: string): MLFeatureValue;
+	objectForKeyedSubscript(featureName: string): MLFeatureValue | null;
 }
 
 /**
@@ -254,11 +254,11 @@ declare class MLFeatureDescription extends NSObject implements NSCopying, NSSecu
 
 	static new(): MLFeatureDescription; // inherited from NSObject
 
-	readonly dictionaryConstraint: MLDictionaryConstraint;
+	readonly dictionaryConstraint: MLDictionaryConstraint | null;
 
-	readonly imageConstraint: MLImageConstraint;
+	readonly imageConstraint: MLImageConstraint | null;
 
-	readonly multiArrayConstraint: MLMultiArrayConstraint;
+	readonly multiArrayConstraint: MLMultiArrayConstraint | null;
 
 	readonly name: string;
 
@@ -267,12 +267,12 @@ declare class MLFeatureDescription extends NSObject implements NSCopying, NSSecu
 	/**
 	 * @since 12.0
 	 */
-	readonly sequenceConstraint: MLSequenceConstraint;
+	readonly sequenceConstraint: MLSequenceConstraint | null;
 
 	/**
 	 * @since 18.0
 	 */
-	readonly stateConstraint: MLStateConstraint;
+	readonly stateConstraint: MLStateConstraint | null;
 
 	readonly type: MLFeatureType;
 
@@ -280,7 +280,7 @@ declare class MLFeatureDescription extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -296,7 +296,7 @@ interface MLFeatureProvider {
 
 	featureNames: NSSet<string>;
 
-	featureValueForName(featureName: string): MLFeatureValue;
+	featureValueForName(featureName: string): MLFeatureValue | null;
 }
 declare var MLFeatureProvider: {
 
@@ -334,25 +334,25 @@ declare class MLFeatureValue extends NSObject implements NSCopying, NSSecureCodi
 
 	static alloc(): MLFeatureValue; // inherited from NSObject
 
-	static featureValueWithCGImageConstraintOptionsError(cgImage: any, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithCGImageConstraintOptionsError(cgImage: any, constraint: MLImageConstraint, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithCGImageOrientationConstraintOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithCGImageOrientationConstraintOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithCGImageOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithCGImageOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithCGImagePixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithCGImagePixelsWidePixelsHighPixelFormatTypeOptionsError(cgImage: any, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
 	static featureValueWithDictionaryError(value: NSDictionary<any, number>, error?: interop.Reference<NSError>): MLFeatureValue;
 
 	static featureValueWithDouble(value: number): MLFeatureValue;
 
-	static featureValueWithImageAtURLConstraintOptionsError(url: NSURL, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithImageAtURLConstraintOptionsError(url: NSURL, constraint: MLImageConstraint, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithImageAtURLOrientationConstraintOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithImageAtURLOrientationConstraintOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, constraint: MLImageConstraint, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithImageAtURLOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithImageAtURLOrientationPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, orientation: CGImagePropertyOrientation, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
-	static featureValueWithImageAtURLPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MLFeatureValue;
+	static featureValueWithImageAtURLPixelsWidePixelsHighPixelFormatTypeOptionsError(url: NSURL, pixelsWide: number, pixelsHigh: number, pixelFormatType: number, options: NSDictionary<string, any> | null, error?: interop.Reference<NSError>): MLFeatureValue;
 
 	static featureValueWithInt64(value: number): MLFeatureValue;
 
@@ -375,16 +375,16 @@ declare class MLFeatureValue extends NSObject implements NSCopying, NSSecureCodi
 
 	readonly doubleValue: number;
 
-	readonly imageBufferValue: any;
+	readonly imageBufferValue: any | null;
 
 	readonly int64Value: number;
 
-	readonly multiArrayValue: MLMultiArray;
+	readonly multiArrayValue: MLMultiArray | null;
 
 	/**
 	 * @since 12.0
 	 */
-	readonly sequenceValue: MLSequence;
+	readonly sequenceValue: MLSequence | null;
 
 	readonly stringValue: string;
 
@@ -396,7 +396,7 @@ declare class MLFeatureValue extends NSObject implements NSCopying, NSSecureCodi
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -561,13 +561,13 @@ declare class MLKey extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly name: string;
 
-	readonly scope: string;
+	readonly scope: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -600,23 +600,23 @@ declare class MLModel extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	static compileModelAtURLCompletionHandler(modelURL: NSURL, handler: (p1: NSURL, p2: NSError) => void): void;
+	static compileModelAtURLCompletionHandler(modelURL: NSURL, handler: (p1: NSURL | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 11.0
 	 * @deprecated 100000
 	 */
-	static compileModelAtURLError(modelURL: NSURL, error?: interop.Reference<NSError>): NSURL;
+	static compileModelAtURLError(modelURL: NSURL, error?: interop.Reference<NSError>): NSURL | null;
 
 	/**
 	 * @since 14.0
 	 */
-	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLModel, p2: NSError) => void): void;
+	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLModel | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 16.0
 	 */
-	static loadModelAssetConfigurationCompletionHandler(asset: MLModelAsset, configuration: MLModelConfiguration, handler: (p1: MLModel, p2: NSError) => void): void;
+	static loadModelAssetConfigurationCompletionHandler(asset: MLModelAsset, configuration: MLModelConfiguration, handler: (p1: MLModel | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 12.0
@@ -647,46 +647,46 @@ declare class MLModel extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	parameterValueForKeyError(key: MLParameterKey, error?: interop.Reference<NSError>): any;
+	parameterValueForKeyError(key: MLParameterKey, error?: interop.Reference<NSError>): any | null;
 
 	/**
 	 * @since 17.0
 	 */
-	predictionFromFeaturesCompletionHandler(input: MLFeatureProvider, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
+	predictionFromFeaturesCompletionHandler(input: MLFeatureProvider, completionHandler: (p1: MLFeatureProvider | null, p2: NSError | null) => void): void;
 
-	predictionFromFeaturesError(input: MLFeatureProvider, error?: interop.Reference<NSError>): MLFeatureProvider;
+	predictionFromFeaturesError(input: MLFeatureProvider, error?: interop.Reference<NSError>): MLFeatureProvider | null;
 
 	/**
 	 * @since 17.0
 	 */
-	predictionFromFeaturesOptionsCompletionHandler(input: MLFeatureProvider, options: MLPredictionOptions, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
+	predictionFromFeaturesOptionsCompletionHandler(input: MLFeatureProvider, options: MLPredictionOptions, completionHandler: (p1: MLFeatureProvider | null, p2: NSError | null) => void): void;
 
-	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider;
-
-	/**
-	 * @since 18.0
-	 */
-	predictionFromFeaturesUsingStateError(inputFeatures: MLFeatureProvider, state: MLState, error?: interop.Reference<NSError>): MLFeatureProvider;
+	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider | null;
 
 	/**
 	 * @since 18.0
 	 */
-	predictionFromFeaturesUsingStateOptionsCompletionHandler(inputFeatures: MLFeatureProvider, state: MLState, options: MLPredictionOptions, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
+	predictionFromFeaturesUsingStateError(inputFeatures: MLFeatureProvider, state: MLState, error?: interop.Reference<NSError>): MLFeatureProvider | null;
 
 	/**
 	 * @since 18.0
 	 */
-	predictionFromFeaturesUsingStateOptionsError(inputFeatures: MLFeatureProvider, state: MLState, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider;
+	predictionFromFeaturesUsingStateOptionsCompletionHandler(inputFeatures: MLFeatureProvider, state: MLState, options: MLPredictionOptions, completionHandler: (p1: MLFeatureProvider | null, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 18.0
+	 */
+	predictionFromFeaturesUsingStateOptionsError(inputFeatures: MLFeatureProvider, state: MLState, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLFeatureProvider | null;
 
 	/**
 	 * @since 12.0
 	 */
-	predictionsFromBatchError(inputBatch: MLBatchProvider, error?: interop.Reference<NSError>): MLBatchProvider;
+	predictionsFromBatchError(inputBatch: MLBatchProvider, error?: interop.Reference<NSError>): MLBatchProvider | null;
 
 	/**
 	 * @since 12.0
 	 */
-	predictionsFromBatchOptionsError(inputBatch: MLBatchProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLBatchProvider;
+	predictionsFromBatchOptionsError(inputBatch: MLBatchProvider, options: MLPredictionOptions, error?: interop.Reference<NSError>): MLBatchProvider | null;
 }
 
 /**
@@ -716,17 +716,17 @@ declare class MLModelAsset extends NSObject {
 	/**
 	 * @since 18.0
 	 */
-	functionNamesWithCompletionHandler(handler: (p1: NSArray<string>, p2: NSError) => void): void;
+	functionNamesWithCompletionHandler(handler: (p1: NSArray<string> | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 18.0
 	 */
-	modelDescriptionOfFunctionNamedCompletionHandler(functionName: string, handler: (p1: MLModelDescription, p2: NSError) => void): void;
+	modelDescriptionOfFunctionNamedCompletionHandler(functionName: string, handler: (p1: MLModelDescription | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 18.0
 	 */
-	modelDescriptionWithCompletionHandler(handler: (p1: MLModelDescription, p2: NSError) => void): void;
+	modelDescriptionWithCompletionHandler(handler: (p1: MLModelDescription | null, p2: NSError | null) => void): void;
 }
 
 /**
@@ -750,27 +750,27 @@ declare class MLModelConfiguration extends NSObject implements NSCopying, NSSecu
 	/**
 	 * @since 18.0
 	 */
-	functionName: string;
+	functionName: string | null;
 
 	/**
 	 * @since 16.0
 	 */
-	modelDisplayName: string;
+	modelDisplayName: string | null;
 
 	/**
 	 * @since 17.4
 	 */
 	optimizationHints: MLOptimizationHints;
 
-	parameters: NSDictionary<MLParameterKey, any>;
+	parameters: NSDictionary<MLParameterKey, any> | null;
 
-	preferredMetalDevice: MTLDevice;
+	preferredMetalDevice: MTLDevice | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -794,7 +794,7 @@ declare class MLModelDescription extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 14.0
 	 */
-	readonly classLabels: NSArray<any>;
+	readonly classLabels: NSArray<any> | null;
 
 	readonly inputDescriptionsByName: NSDictionary<string, MLFeatureDescription>;
 
@@ -806,9 +806,9 @@ declare class MLModelDescription extends NSObject implements NSSecureCoding {
 
 	readonly parameterDescriptionsByKey: NSDictionary<MLParameterKey, MLParameterDescription>;
 
-	readonly predictedFeatureName: string;
+	readonly predictedFeatureName: string | null;
 
-	readonly predictedProbabilitiesName: string;
+	readonly predictedProbabilitiesName: string | null;
 
 	/**
 	 * @since 18.0
@@ -876,17 +876,17 @@ declare class MLModelStructure extends NSObject {
 
 	static alloc(): MLModelStructure; // inherited from NSObject
 
-	static loadContentsOfURLCompletionHandler(url: NSURL, handler: (p1: MLModelStructure, p2: NSError) => void): void;
+	static loadContentsOfURLCompletionHandler(url: NSURL, handler: (p1: MLModelStructure | null, p2: NSError | null) => void): void;
 
-	static loadModelAssetCompletionHandler(asset: MLModelAsset, handler: (p1: MLModelStructure, p2: NSError) => void): void;
+	static loadModelAssetCompletionHandler(asset: MLModelAsset, handler: (p1: MLModelStructure | null, p2: NSError | null) => void): void;
 
 	static new(): MLModelStructure; // inherited from NSObject
 
-	readonly neuralNetwork: MLModelStructureNeuralNetwork;
+	readonly neuralNetwork: MLModelStructureNeuralNetwork | null;
 
-	readonly pipeline: MLModelStructurePipeline;
+	readonly pipeline: MLModelStructurePipeline | null;
 
-	readonly program: MLModelStructureProgram;
+	readonly program: MLModelStructureProgram | null;
 }
 
 /**
@@ -966,9 +966,9 @@ declare class MLModelStructureProgramBinding extends NSObject {
 
 	static new(): MLModelStructureProgramBinding; // inherited from NSObject
 
-	readonly name: string;
+	readonly name: string | null;
 
-	readonly value: MLModelStructureProgramValue;
+	readonly value: MLModelStructureProgramValue | null;
 }
 
 /**
@@ -1078,14 +1078,14 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 	 * @since 11.0
 	 * @deprecated 100000
 	 */
-	readonly dataPointer: interop.Pointer | interop.Reference<any>;
+	readonly dataPointer: interop.Pointer | interop.Reference<any> | null;
 
 	readonly dataType: MLMultiArrayDataType;
 
 	/**
 	 * @since 16.0
 	 */
-	readonly pixelBuffer: any;
+	readonly pixelBuffer: any | null;
 
 	readonly shape: NSArray<number>;
 
@@ -1096,7 +1096,7 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { dataPointer: interop.Pointer | interop.Reference<any>; shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; strides: NSArray<number> | number[]; deallocator: (p1: interop.Pointer | interop.Reference<any>) => void; });
+	constructor(o: { dataPointer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView; shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; strides: NSArray<number> | number[]; deallocator: (p1: interop.Pointer | interop.Reference<any> | null) => void | null; });
 
 	/**
 	 * @since 16.0
@@ -1115,16 +1115,16 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 15.4
 	 */
-	getBytesWithHandler(handler: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
+	getBytesWithHandler(handler: (p1: interop.Pointer | interop.Reference<any> | null, p2: number) => void): void;
 
 	/**
 	 * @since 15.4
 	 */
-	getMutableBytesWithHandler(handler: (p1: interop.Pointer | interop.Reference<any>, p2: number, p3: NSArray<number>) => void): void;
+	getMutableBytesWithHandler(handler: (p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: NSArray<number>) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void, error?: interop.Reference<NSError>): this;
+	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any> | null) => void | null, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 16.0
@@ -1287,7 +1287,7 @@ declare class MLNumericConstraint extends NSObject implements NSSecureCoding {
 
 	static new(): MLNumericConstraint; // inherited from NSObject
 
-	readonly enumeratedNumbers: NSSet<number>;
+	readonly enumeratedNumbers: NSSet<number> | null;
 
 	readonly maxNumber: number;
 
@@ -1322,7 +1322,7 @@ declare class MLOptimizationHints extends NSObject implements NSCopying, NSSecur
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1342,7 +1342,7 @@ declare class MLParameterDescription extends NSObject implements NSSecureCoding 
 
 	readonly key: MLParameterKey;
 
-	readonly numericConstraint: MLNumericConstraint;
+	readonly numericConstraint: MLNumericConstraint | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1538,7 +1538,7 @@ declare class MLTask extends NSObject {
 
 	static new(): MLTask; // inherited from NSObject
 
-	readonly error: NSError;
+	readonly error: NSError | null;
 
 	readonly state: MLTaskState;
 
@@ -1600,9 +1600,9 @@ declare class MLUpdateProgressHandlers extends NSObject {
 
 	static new(): MLUpdateProgressHandlers; // inherited from NSObject
 
-	constructor(o: { forEvents: MLUpdateProgressEvent; progressHandler: (p1: MLUpdateContext) => void; completionHandler: (p1: MLUpdateContext) => void; });
+	constructor(o: { forEvents: MLUpdateProgressEvent; progressHandler: (p1: MLUpdateContext) => void | null; completionHandler: (p1: MLUpdateContext) => void; });
 
-	initForEventsProgressHandlerCompletionHandler(interestedEvents: MLUpdateProgressEvent, progressHandler: (p1: MLUpdateContext) => void, completionHandler: (p1: MLUpdateContext) => void): this;
+	initForEventsProgressHandlerCompletionHandler(interestedEvents: MLUpdateProgressEvent, progressHandler: (p1: MLUpdateContext) => void | null, completionHandler: (p1: MLUpdateContext) => void): this;
 }
 
 /**
@@ -1619,9 +1619,9 @@ declare class MLUpdateTask extends MLTask {
 	 */
 	static updateTaskForModelAtURLTrainingDataCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, completionHandler: (p1: MLUpdateContext) => void, error?: interop.Reference<NSError>): MLUpdateTask;
 
-	static updateTaskForModelAtURLTrainingDataConfigurationCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, completionHandler: (p1: MLUpdateContext) => void, error?: interop.Reference<NSError>): MLUpdateTask;
+	static updateTaskForModelAtURLTrainingDataConfigurationCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration | null, completionHandler: (p1: MLUpdateContext) => void, error?: interop.Reference<NSError>): MLUpdateTask;
 
-	static updateTaskForModelAtURLTrainingDataConfigurationProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, progressHandlers: MLUpdateProgressHandlers, error?: interop.Reference<NSError>): MLUpdateTask;
+	static updateTaskForModelAtURLTrainingDataConfigurationProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration | null, progressHandlers: MLUpdateProgressHandlers, error?: interop.Reference<NSError>): MLUpdateTask;
 
 	/**
 	 * @since 14.0

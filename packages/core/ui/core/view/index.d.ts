@@ -7,9 +7,10 @@ import { GestureTypes, GesturesObserver, TouchAnimationOptions, VisionHoverOptio
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
-import { ViewBase } from '../view-base';
+import { ShowModalOptions, ViewBase } from '../view-base';
 import { GlassEffectType, ViewCommon } from './view-common';
 import type { Point, ShownModallyData, Size } from './view-interfaces';
+import type { NativeWindow } from '../../../native-window';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -70,6 +71,15 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {ShownModallyData} shownModally
 	 */
 	public static shownModallyEvent: string;
+
+	/**
+	 * String value used when hooking to closedModally event. Fired on the
+	 * modal view once its native dismissal has fully completed (after the
+	 * close callback and UI teardown).
+	 *
+	 * @nsEvent {EventData} closedModally
+	 */
+	public static closedModallyEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityBlur event.
@@ -415,6 +425,22 @@ export abstract class View extends ViewCommon {
 	 * @nsProperty
 	 */
 	minHeight: CoreTypes.LengthType;
+
+	/**
+	 * Gets or sets the maximum width the view may grow to. Accepts a fixed length
+	 * or a percentage of the available width. Defaults to 'auto' (no maximum).
+	 *
+	 * @nsProperty
+	 */
+	maxWidth: CoreTypes.PercentLengthType;
+
+	/**
+	 * Gets or sets the maximum height the view may grow to. Accepts a fixed length
+	 * or a percentage of the available height. Defaults to 'auto' (no maximum).
+	 *
+	 * @nsProperty
+	 */
+	maxHeight: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the desired width of the view.
@@ -929,6 +955,30 @@ export abstract class View extends ViewCommon {
 	 */
 	_getRootModalViews(): Array<ViewBase>;
 
+	/**
+	 * Internal method:
+	 * Walks up the view tree — through the presenting view of any modal on the way —
+	 * to the root this view ultimately lives under, which is the root view of its window.
+	 */
+	_getRootModalHost(): ViewBase;
+
+	/**
+	 * Internal property:
+	 * The window this view is the root view of. Only ever set on a window's root view;
+	 * use `getNativeWindow()` to resolve the window of any other view.
+	 */
+	_nativeWindow?: NativeWindow;
+
+	/**
+	 * The window currently hosting this view, or `undefined` when the view is not part of
+	 * any window's view tree — including a view whose window has been closed.
+	 *
+	 * Resolved on every call by walking up to the root view — through the presenting view
+	 * of any modal on the way — so a view re-parented into another window's tree reports
+	 * the window it moved to.
+	 */
+	getNativeWindow(): NativeWindow | undefined;
+
 	_eachLayoutView(callback: (View) => void): void;
 
 	/**
@@ -981,6 +1031,13 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 */
 	_modalParent?: View;
+	/**
+	 * The ShowModalOptions this view is currently presented with (set while
+	 * shown modally, cleared on close). Lets tooling re-present the modal
+	 * with its original options.
+	 * @private
+	 */
+	_modalOptions?: ShowModalOptions;
 	/**
 	 * @private
 	 */

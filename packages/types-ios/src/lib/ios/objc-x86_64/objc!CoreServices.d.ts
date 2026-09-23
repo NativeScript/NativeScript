@@ -9,43 +9,43 @@ declare function UTTypeConformsTo(inUTI: string, inConformsToUTI: string): boole
  * @since 8.0
  * @deprecated 15.0
  */
-declare function UTTypeCopyAllTagsWithClass(inUTI: string, inTagClass: string): interop.Unmanaged<NSArray<any>>;
+declare function UTTypeCopyAllTagsWithClass(inUTI: string, inTagClass: string): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 3.0
  * @deprecated 15.0
  */
-declare function UTTypeCopyDeclaration(inUTI: string): interop.Unmanaged<NSDictionary<any, any>>;
+declare function UTTypeCopyDeclaration(inUTI: string): interop.Unmanaged<NSDictionary<any, any> | null>;
 
 /**
  * @since 3.0
  * @deprecated 14.0
  */
-declare function UTTypeCopyDeclaringBundleURL(inUTI: string): interop.Unmanaged<NSURL>;
+declare function UTTypeCopyDeclaringBundleURL(inUTI: string): interop.Unmanaged<NSURL | null>;
 
 /**
  * @since 3.0
  * @deprecated 15.0
  */
-declare function UTTypeCopyDescription(inUTI: string): interop.Unmanaged<string>;
+declare function UTTypeCopyDescription(inUTI: string): interop.Unmanaged<string | null>;
 
 /**
  * @since 3.0
  * @deprecated 15.0
  */
-declare function UTTypeCopyPreferredTagWithClass(inUTI: string, inTagClass: string): interop.Unmanaged<string>;
+declare function UTTypeCopyPreferredTagWithClass(inUTI: string, inTagClass: string): interop.Unmanaged<string | null>;
 
 /**
  * @since 3.0
  * @deprecated 15.0
  */
-declare function UTTypeCreateAllIdentifiersForTag(inTagClass: string, inTag: string, inConformingToUTI: string): interop.Unmanaged<NSArray<any>>;
+declare function UTTypeCreateAllIdentifiersForTag(inTagClass: string, inTag: string, inConformingToUTI: string | null): interop.Unmanaged<NSArray<any> | null>;
 
 /**
  * @since 3.0
  * @deprecated 15.0
  */
-declare function UTTypeCreatePreferredIdentifierForTag(inTagClass: string, inTag: string, inConformingToUTI: string): interop.Unmanaged<string>;
+declare function UTTypeCreatePreferredIdentifierForTag(inTagClass: string, inTag: string, inConformingToUTI: string | null): interop.Unmanaged<string | null>;
 
 /**
  * @since 3.0

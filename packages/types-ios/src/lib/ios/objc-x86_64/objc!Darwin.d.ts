@@ -15,38 +15,38 @@ interface DIR {
 	__dd_fd: number;
 	__dd_loc: number;
 	__dd_size: number;
-	__dd_buf: interop.Pointer | interop.Reference<any>;
+	__dd_buf: interop.Pointer | interop.Reference<any> | null;
 	__dd_len: number;
 	__dd_seek: number;
 	__padding: number;
 	__dd_flags: number;
 	__dd_lock: _opaque_pthread_mutex_t;
-	__dd_td: interop.Pointer | interop.Reference<any>;
+	__dd_td: interop.Pointer | interop.Reference<any> | null;
 }
 declare var DIR: interop.StructType<DIR>;
 
 interface Dl_info {
-	dli_fname: interop.Pointer | interop.Reference<any>;
-	dli_fbase: interop.Pointer | interop.Reference<any>;
-	dli_sname: interop.Pointer | interop.Reference<any>;
-	dli_saddr: interop.Pointer | interop.Reference<any>;
+	dli_fname: interop.Pointer | interop.Reference<any> | null;
+	dli_fbase: interop.Pointer | interop.Reference<any> | null;
+	dli_sname: interop.Pointer | interop.Reference<any> | null;
+	dli_saddr: interop.Pointer | interop.Reference<any> | null;
 }
 declare var Dl_info: interop.StructType<Dl_info>;
 
 interface ENTRY {
-	key: interop.Pointer | interop.Reference<any>;
-	data: interop.Pointer | interop.Reference<any>;
+	key: interop.Pointer | interop.Reference<any> | null;
+	data: interop.Pointer | interop.Reference<any> | null;
 }
 declare var ENTRY: interop.StructType<ENTRY>;
 
 interface FTSENT {
-	fts_cycle: interop.Pointer | interop.Reference<FTSENT>;
-	fts_parent: interop.Pointer | interop.Reference<FTSENT>;
-	fts_link: interop.Pointer | interop.Reference<FTSENT>;
+	fts_cycle: interop.Pointer | interop.Reference<FTSENT> | null;
+	fts_parent: interop.Pointer | interop.Reference<FTSENT> | null;
+	fts_link: interop.Pointer | interop.Reference<FTSENT> | null;
 	fts_number: number;
-	fts_pointer: interop.Pointer | interop.Reference<any>;
-	fts_accpath: interop.Pointer | interop.Reference<any>;
-	fts_path: interop.Pointer | interop.Reference<any>;
+	fts_pointer: interop.Pointer | interop.Reference<any> | null;
+	fts_accpath: interop.Pointer | interop.Reference<any> | null;
+	fts_path: interop.Pointer | interop.Reference<any> | null;
 	fts_errno: number;
 	fts_symfd: number;
 	fts_pathlen: number;
@@ -58,7 +58,7 @@ interface FTSENT {
 	fts_info: number;
 	fts_flags: number;
 	fts_instr: number;
-	fts_statp: interop.Pointer | interop.Reference<statStruct>;
+	fts_statp: interop.Pointer | interop.Reference<statStruct> | null;
 	fts_name: interop.Reference<number>;
 }
 declare var FTSENT: interop.StructType<FTSENT>;
@@ -139,202 +139,202 @@ declare var NumVersion: interop.StructType<NumVersion>;
 /**
  * @since 2.0
  */
-declare function OSAtomicAdd32(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAdd32(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicAdd32Barrier(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAdd32Barrier(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicAdd64(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAdd64(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicAdd64Barrier(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAdd64Barrier(__theAmount: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicAnd32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAnd32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicAnd32Barrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAnd32Barrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicAnd32Orig(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAnd32Orig(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicAnd32OrigBarrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicAnd32OrigBarrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwap32(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwap32(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwap32Barrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwap32Barrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwap64(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwap64(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicCompareAndSwap64Barrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwap64Barrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwapInt(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwapInt(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwapIntBarrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwapIntBarrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwapLong(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwapLong(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwapLongBarrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSAtomicCompareAndSwapLongBarrier(__oldValue: number, __newValue: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwapPtr(__oldValue: interop.Pointer | interop.Reference<any>, __newValue: interop.Pointer | interop.Reference<any>, __theValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function OSAtomicCompareAndSwapPtr(__oldValue: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __newValue: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __theValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicCompareAndSwapPtrBarrier(__oldValue: interop.Pointer | interop.Reference<any>, __newValue: interop.Pointer | interop.Reference<any>, __theValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function OSAtomicCompareAndSwapPtrBarrier(__oldValue: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __newValue: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __theValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicDecrement32(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicDecrement32(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicDecrement32Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicDecrement32Barrier(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicDecrement64(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicDecrement64(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicDecrement64Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicDecrement64Barrier(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.0
  */
-declare function OSAtomicDequeue(__list: interop.Pointer | interop.Reference<OSQueueHead>, __offset: number): interop.Pointer | interop.Reference<any>;
+declare function OSAtomicDequeue(__list: interop.Pointer | interop.Reference<OSQueueHead> | ArrayBufferLike | ArrayBufferView | null, __offset: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.0
  */
-declare function OSAtomicEnqueue(__list: interop.Pointer | interop.Reference<OSQueueHead>, __new: interop.Pointer | interop.Reference<any>, __offset: number): void;
+declare function OSAtomicEnqueue(__list: interop.Pointer | interop.Reference<OSQueueHead> | ArrayBufferLike | ArrayBufferView | null, __new: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __offset: number): void;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicIncrement32(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicIncrement32(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicIncrement32Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicIncrement32Barrier(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicIncrement64(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicIncrement64(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.1
  */
-declare function OSAtomicIncrement64Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicIncrement64Barrier(__theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicOr32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicOr32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicOr32Barrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicOr32Barrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicOr32Orig(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicOr32Orig(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicOr32OrigBarrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicOr32OrigBarrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicTestAndClear(__n: number, __theAddress: interop.Pointer | interop.Reference<any>): boolean;
+declare function OSAtomicTestAndClear(__n: number, __theAddress: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicTestAndClearBarrier(__n: number, __theAddress: interop.Pointer | interop.Reference<any>): boolean;
+declare function OSAtomicTestAndClearBarrier(__n: number, __theAddress: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicTestAndSet(__n: number, __theAddress: interop.Pointer | interop.Reference<any>): boolean;
+declare function OSAtomicTestAndSet(__n: number, __theAddress: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicTestAndSetBarrier(__n: number, __theAddress: interop.Pointer | interop.Reference<any>): boolean;
+declare function OSAtomicTestAndSetBarrier(__n: number, __theAddress: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicXor32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicXor32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function OSAtomicXor32Barrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicXor32Barrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicXor32Orig(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicXor32Orig(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function OSAtomicXor32OrigBarrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
+declare function OSAtomicXor32OrigBarrier(__theMask: number, __theValue: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const OSBigEndian: number;
 
@@ -346,7 +346,7 @@ declare const OSLittleEndian: number;
 declare function OSMemoryBarrier(): void;
 
 interface OSQueueHead {
-	opaque1: interop.Pointer | interop.Reference<any>;
+	opaque1: interop.Pointer | interop.Reference<any> | null;
 	opaque2: number;
 }
 declare var OSQueueHead: interop.StructType<OSQueueHead>;
@@ -354,17 +354,17 @@ declare var OSQueueHead: interop.StructType<OSQueueHead>;
 /**
  * @since 2.0
  */
-declare function OSSpinLockLock(__lock: interop.Pointer | interop.Reference<number>): void;
+declare function OSSpinLockLock(__lock: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 2.0
  */
-declare function OSSpinLockTry(__lock: interop.Pointer | interop.Reference<number>): boolean;
+declare function OSSpinLockTry(__lock: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
 /**
  * @since 2.0
  */
-declare function OSSpinLockUnlock(__lock: interop.Pointer | interop.Reference<number>): void;
+declare function OSSpinLockUnlock(__lock: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare const OSUnknownByteOrder: number;
 
@@ -391,7 +391,7 @@ declare var Rect: interop.StructType<Rect>;
 interface TimeRecord {
 	value: wide;
 	scale: number;
-	base: interop.Pointer | interop.Reference<any>;
+	base: interop.Pointer | interop.Reference<any> | null;
 }
 declare var TimeRecord: interop.StructType<TimeRecord>;
 
@@ -420,27 +420,27 @@ interface VersRec {
 }
 declare var VersRec: interop.StructType<VersRec>;
 
-declare function _Block_copy(aBlock: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function _Block_copy(aBlock: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function _Block_object_assign(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number): void;
+declare function _Block_object_assign(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): void;
 
-declare function _Block_object_dispose(p1: interop.Pointer | interop.Reference<any>, p2: number): void;
+declare function _Block_object_dispose(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): void;
 
-declare function _Block_release(aBlock: interop.Pointer | interop.Reference<any>): void;
+declare function _Block_release(aBlock: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare var _NSConcreteGlobalBlock: interop.Reference<interop.Pointer | interop.Reference<any>>;
+declare var _NSConcreteGlobalBlock: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 
-declare var _NSConcreteStackBlock: interop.Reference<interop.Pointer | interop.Reference<any>>;
+declare var _NSConcreteStackBlock: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 
-declare function _NSGetArgc(): interop.Pointer | interop.Reference<number>;
+declare function _NSGetArgc(): interop.Pointer | interop.Reference<number> | null;
 
-declare function _NSGetArgv(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>>;
+declare function _NSGetArgv(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null> | null;
 
-declare function _NSGetEnviron(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>>;
+declare function _NSGetEnviron(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null> | null;
 
-declare function _NSGetMachExecuteHeader(): interop.Pointer | interop.Reference<mach_header_64>;
+declare function _NSGetMachExecuteHeader(): interop.Pointer | interop.Reference<mach_header_64> | null;
 
-declare function _NSGetProgname(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+declare function _NSGetProgname(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 
 interface __Reply___host_page_size_t {
 	Head: mach_msg_header_t;
@@ -941,6 +941,19 @@ interface __Reply__mach_memory_entry_purgable_control_t {
 	state: number;
 }
 declare var __Reply__mach_memory_entry_purgable_control_t: interop.StructType<__Reply__mach_memory_entry_purgable_control_t>;
+
+interface __Reply__mach_memory_info_redacted_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	names: mach_msg_ool_descriptor_t;
+	info: mach_msg_ool_descriptor_t;
+	memory_info: mach_msg_ool_descriptor_t;
+	NDR: NDR_record_t;
+	namesCnt: number;
+	infoCnt: number;
+	memory_infoCnt: number;
+}
+declare var __Reply__mach_memory_info_redacted_t: interop.StructType<__Reply__mach_memory_info_redacted_t>;
 
 interface __Reply__mach_memory_info_t {
 	Head: mach_msg_header_t;
@@ -2175,6 +2188,13 @@ interface __Reply__thread_policy_t {
 }
 declare var __Reply__thread_policy_t: interop.StructType<__Reply__thread_policy_t>;
 
+interface __Reply__thread_resume2_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+}
+declare var __Reply__thread_resume2_t: interop.StructType<__Reply__thread_resume2_t>;
+
 interface __Reply__thread_resume_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -2223,6 +2243,13 @@ interface __Reply__thread_set_state_t {
 	RetCode: number;
 }
 declare var __Reply__thread_set_state_t: interop.StructType<__Reply__thread_set_state_t>;
+
+interface __Reply__thread_suspend2_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	suspend_token: mach_msg_port_descriptor_t;
+}
+declare var __Reply__thread_suspend2_t: interop.StructType<__Reply__thread_suspend2_t>;
 
 interface __Reply__thread_suspend_t {
 	Head: mach_msg_header_t;
@@ -2403,6 +2430,14 @@ interface __Reply__vm_read_t {
 	dataCnt: number;
 }
 declare var __Reply__vm_read_t: interop.StructType<__Reply__vm_read_t>;
+
+interface __Reply__vm_reallocate_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	dst: number;
+}
+declare var __Reply__vm_reallocate_t: interop.StructType<__Reply__vm_reallocate_t>;
 
 interface __Reply__vm_region_64_t {
 	Head: mach_msg_header_t;
@@ -2967,6 +3002,11 @@ interface __Request__mach_memory_entry_purgable_control_t {
 	state: number;
 }
 declare var __Request__mach_memory_entry_purgable_control_t: interop.StructType<__Request__mach_memory_entry_purgable_control_t>;
+
+interface __Request__mach_memory_info_redacted_t {
+	Head: mach_msg_header_t;
+}
+declare var __Request__mach_memory_info_redacted_t: interop.StructType<__Request__mach_memory_info_redacted_t>;
 
 interface __Request__mach_memory_info_t {
 	Head: mach_msg_header_t;
@@ -4130,6 +4170,11 @@ interface __Request__thread_policy_t {
 }
 declare var __Request__thread_policy_t: interop.StructType<__Request__thread_policy_t>;
 
+interface __Request__thread_resume2_t {
+	Head: mach_msg_header_t;
+}
+declare var __Request__thread_resume2_t: interop.StructType<__Request__thread_resume2_t>;
+
 interface __Request__thread_resume_t {
 	Head: mach_msg_header_t;
 }
@@ -4190,6 +4235,11 @@ interface __Request__thread_set_state_t {
 	new_state: interop.Reference<number>;
 }
 declare var __Request__thread_set_state_t: interop.StructType<__Request__thread_set_state_t>;
+
+interface __Request__thread_suspend2_t {
+	Head: mach_msg_header_t;
+}
+declare var __Request__thread_suspend2_t: interop.StructType<__Request__thread_suspend2_t>;
 
 interface __Request__thread_suspend_t {
 	Head: mach_msg_header_t;
@@ -4398,6 +4448,19 @@ interface __Request__vm_read_t {
 }
 declare var __Request__vm_read_t: interop.StructType<__Request__vm_read_t>;
 
+interface __Request__vm_reallocate_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	src: number;
+	src_size: number;
+	dst: number;
+	dst_size: number;
+	align_mask: number;
+	options: number;
+	flags: number;
+}
+declare var __Request__vm_reallocate_t: interop.StructType<__Request__vm_reallocate_t>;
+
 interface __Request__vm_region_64_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -4491,17 +4554,17 @@ interface __darwin_ucontext64 {
 	uc_onstack: number;
 	uc_sigmask: number;
 	uc_stack: __darwin_sigaltstack;
-	uc_link: interop.Pointer | interop.Reference<__darwin_ucontext64>;
+	uc_link: interop.Pointer | interop.Reference<__darwin_ucontext64> | null;
 	uc_mcsize: number;
-	uc_mcontext64: interop.Pointer | interop.Reference<__darwin_mcontext64>;
+	uc_mcontext64: interop.Pointer | interop.Reference<__darwin_mcontext64> | null;
 }
 declare var __darwin_ucontext64: interop.StructType<__darwin_ucontext64>;
 
-declare function __iconv(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<number>, p6: number, p7: interop.Pointer | interop.Reference<number>): number;
+declare function __iconv(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p6: number, p7: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function __iconv_free_list(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): void;
+declare function __iconv_free_list(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): void;
 
-declare function __iconv_get_list(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>>, p2: interop.Pointer | interop.Reference<number>, p3: boolean): number;
+declare function __iconv_get_list(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p3: boolean): number;
 
 interface __msfilterreq {
 	msfr_ifindex: number;
@@ -4509,7 +4572,7 @@ interface __msfilterreq {
 	msfr_nsrcs: number;
 	__msfr_align: number;
 	msfr_group: sockaddr_storage;
-	msfr_srcs: interop.Pointer | interop.Reference<sockaddr_storage>;
+	msfr_srcs: interop.Pointer | interop.Reference<sockaddr_storage> | null;
 }
 declare var __msfilterreq: interop.StructType<__msfilterreq>;
 
@@ -4532,7 +4595,7 @@ interface __msqid_ds_new {
 }
 declare var __msqid_ds_new: interop.StructType<__msqid_ds_new>;
 
-declare function __opendir2(p1: string | interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<DIR>;
+declare function __opendir2(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): interop.Pointer | interop.Reference<DIR> | null;
 
 interface __semid_ds_new {
 	sem_perm: ipc_perm;
@@ -4555,7 +4618,7 @@ interface __shmid_ds_new {
 	shm_atime: number;
 	shm_dtime: number;
 	shm_ctime: number;
-	shm_internal: interop.Pointer | interop.Reference<any>;
+	shm_internal: interop.Pointer | interop.Reference<any> | null;
 }
 declare var __shmid_ds_new: interop.StructType<__shmid_ds_new>;
 
@@ -4565,7 +4628,7 @@ interface __sockaddr_header {
 }
 declare var __sockaddr_header: interop.StructType<__sockaddr_header>;
 
-declare function _host_page_size(host: number, out_page_size: interop.Pointer | interop.Reference<number>): number;
+declare function _host_page_size(host: number, out_page_size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface _inpcb_list_entry {
 	le_next: number;
@@ -4573,7 +4636,7 @@ interface _inpcb_list_entry {
 }
 declare var _inpcb_list_entry: interop.StructType<_inpcb_list_entry>;
 
-declare function _kernelrpc_mach_port_allocate_trap(target: number, right: number, name: interop.Pointer | interop.Reference<number>): number;
+declare function _kernelrpc_mach_port_allocate_trap(target: number, right: number, name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function _kernelrpc_mach_port_deallocate_trap(target: number, name: number): number;
 
@@ -4581,7 +4644,7 @@ declare function _kernelrpc_mach_port_destruct_trap(target: number, name: number
 
 declare function _kernelrpc_mach_port_extract_member_trap(target: number, name: number, pset: number): number;
 
-declare function _kernelrpc_mach_port_get_attributes_trap(target: number, name: number, flavor: number, port_info_out: interop.Pointer | interop.Reference<number>, port_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function _kernelrpc_mach_port_get_attributes_trap(target: number, name: number, flavor: number, port_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, port_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function _kernelrpc_mach_port_guard_trap(target: number, name: number, guard: number, strict: number): number;
 
@@ -4593,27 +4656,27 @@ declare function _kernelrpc_mach_port_mod_refs_trap(target: number, name: number
 
 declare function _kernelrpc_mach_port_move_member_trap(target: number, member: number, after: number): number;
 
-declare function _kernelrpc_mach_port_request_notification_trap(task: number, name: number, msgid: number, sync: number, notify: number, notifyPoly: number, previous: interop.Pointer | interop.Reference<number>): number;
+declare function _kernelrpc_mach_port_request_notification_trap(task: number, name: number, msgid: number, sync: number, notify: number, notifyPoly: number, previous: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function _kernelrpc_mach_port_type_trap(task: number, name: number, ptype: interop.Pointer | interop.Reference<number>): number;
+declare function _kernelrpc_mach_port_type_trap(task: number, name: number, ptype: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function _kernelrpc_mach_port_unguard_trap(target: number, name: number, guard: number): number;
 
-declare function _kernelrpc_mach_vm_allocate_trap(target: number, addr: interop.Pointer | interop.Reference<number>, size: number, flags: number): number;
+declare function _kernelrpc_mach_vm_allocate_trap(target: number, addr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, flags: number): number;
 
 declare function _kernelrpc_mach_vm_deallocate_trap(target: number, address: number, size: number): number;
 
-declare function _kernelrpc_mach_vm_map_trap(target: number, address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, cur_protection: number): number;
+declare function _kernelrpc_mach_vm_map_trap(target: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, mask: number, flags: number, cur_protection: number): number;
 
 declare function _kernelrpc_mach_vm_protect_trap(target: number, address: number, size: number, set_maximum: number, new_protection: number): number;
 
-declare function _kernelrpc_mach_vm_purgable_control_trap(target: number, address: number, control: number, state: interop.Pointer | interop.Reference<number>): number;
+declare function _kernelrpc_mach_vm_purgable_control_trap(target: number, address: number, control: number, state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare var _libiconv_version: number;
 
 interface _pcred {
 	pc_lock: interop.Reference<number>;
-	pc_ucred: interop.Pointer | interop.Reference<any>;
+	pc_ucred: interop.Pointer | interop.Reference<any> | null;
 	p_ruid: number;
 	p_svuid: number;
 	p_rgid: number;
@@ -4630,41 +4693,41 @@ interface _ucred {
 }
 declare var _ucred: interop.StructType<_ucred>;
 
-declare function accept(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>, p3: interop.Pointer | interop.Reference<number>): number;
+declare function accept(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_add_flag_np(flagset_d: interop.Pointer | interop.Reference<any>, flag: acl_flag_t): number;
+declare function acl_add_flag_np(flagset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flag: acl_flag_t): number;
 
-declare function acl_add_perm(permset_d: interop.Pointer | interop.Reference<any>, perm: acl_perm_t): number;
+declare function acl_add_perm(permset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, perm: acl_perm_t): number;
 
-declare function acl_calc_mask(acl_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function acl_calc_mask(acl_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_clear_flags_np(flagset_d: interop.Pointer | interop.Reference<any>): number;
+declare function acl_clear_flags_np(flagset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_clear_perms(permset_d: interop.Pointer | interop.Reference<any>): number;
+declare function acl_clear_perms(permset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_copy_entry(dest_d: interop.Pointer | interop.Reference<any>, src_d: interop.Pointer | interop.Reference<any>): number;
+declare function acl_copy_entry(dest_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_copy_ext(buf_p: interop.Pointer | interop.Reference<any>, acl: interop.Pointer | interop.Reference<any>, size: number): number;
+declare function acl_copy_ext(buf_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): number;
 
-declare function acl_copy_ext_native(buf_p: interop.Pointer | interop.Reference<any>, acl: interop.Pointer | interop.Reference<any>, size: number): number;
+declare function acl_copy_ext_native(buf_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): number;
 
-declare function acl_copy_int(buf_p: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function acl_copy_int(buf_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_copy_int_native(buf_p: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function acl_copy_int_native(buf_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_create_entry(acl_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, entry_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function acl_create_entry(acl_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, entry_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_create_entry_np(acl_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, entry_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, entry_index: number): number;
+declare function acl_create_entry_np(acl_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, entry_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, entry_index: number): number;
 
-declare function acl_delete_def_file(path_p: string | interop.Pointer | interop.Reference<any>): number;
+declare function acl_delete_def_file(path_p: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_delete_entry(acl: interop.Pointer | interop.Reference<any>, entry_d: interop.Pointer | interop.Reference<any>): number;
+declare function acl_delete_entry(acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_delete_flag_np(flagset_d: interop.Pointer | interop.Reference<any>, flag: acl_flag_t): number;
+declare function acl_delete_flag_np(flagset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flag: acl_flag_t): number;
 
-declare function acl_delete_perm(permset_d: interop.Pointer | interop.Reference<any>, perm: acl_perm_t): number;
+declare function acl_delete_perm(permset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, perm: acl_perm_t): number;
 
-declare function acl_dup(acl: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function acl_dup(acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare const enum acl_entry_id_t {
 
@@ -4692,43 +4755,43 @@ declare const enum acl_flag_t {
 	ACL_ENTRY_ONLY_INHERIT = 256
 }
 
-declare function acl_free(obj_p: interop.Pointer | interop.Reference<any>): number;
+declare function acl_free(obj_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_from_text(buf_p: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function acl_from_text(buf_p: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_get_entry(acl: interop.Pointer | interop.Reference<any>, entry_id: number, entry_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function acl_get_entry(acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, entry_id: number, entry_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_get_fd(fd: number): interop.Pointer | interop.Reference<any>;
+declare function acl_get_fd(fd: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_get_fd_np(fd: number, type: acl_type_t): interop.Pointer | interop.Reference<any>;
+declare function acl_get_fd_np(fd: number, type: acl_type_t): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_get_file(path_p: string | interop.Pointer | interop.Reference<any>, type: acl_type_t): interop.Pointer | interop.Reference<any>;
+declare function acl_get_file(path_p: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: acl_type_t): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_get_flag_np(flagset_d: interop.Pointer | interop.Reference<any>, flag: acl_flag_t): number;
+declare function acl_get_flag_np(flagset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flag: acl_flag_t): number;
 
-declare function acl_get_flagset_np(obj_p: interop.Pointer | interop.Reference<any>, flagset_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function acl_get_flagset_np(obj_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flagset_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_get_link_np(path_p: string | interop.Pointer | interop.Reference<any>, type: acl_type_t): interop.Pointer | interop.Reference<any>;
+declare function acl_get_link_np(path_p: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: acl_type_t): interop.Pointer | interop.Reference<any> | null;
 
-declare function acl_get_perm_np(permset_d: interop.Pointer | interop.Reference<any>, perm: acl_perm_t): number;
+declare function acl_get_perm_np(permset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, perm: acl_perm_t): number;
 
-declare function acl_get_permset(entry_d: interop.Pointer | interop.Reference<any>, permset_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
-
-/**
- * @since 4.3
- */
-declare function acl_get_permset_mask_np(entry_d: interop.Pointer | interop.Reference<any>, mask_p: interop.Pointer | interop.Reference<number>): number;
-
-declare function acl_get_qualifier(entry_d: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function acl_get_tag_type(entry_d: interop.Pointer | interop.Reference<any>, tag_type_p: interop.Pointer | interop.Reference<acl_tag_t>): number;
-
-declare function acl_init(count: number): interop.Pointer | interop.Reference<any>;
+declare function acl_get_permset(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, permset_p: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.3
  */
-declare function acl_maximal_permset_mask_np(mask_p: interop.Pointer | interop.Reference<number>): number;
+declare function acl_get_permset_mask_np(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, mask_p: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function acl_get_qualifier(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
+
+declare function acl_get_tag_type(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, tag_type_p: interop.Pointer | interop.Reference<acl_tag_t> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function acl_init(count: number): interop.Pointer | interop.Reference<any> | null;
+
+/**
+ * @since 4.3
+ */
+declare function acl_maximal_permset_mask_np(mask_p: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum acl_perm_t {
 
@@ -4769,28 +4832,28 @@ declare const enum acl_perm_t {
 	ACL_SYNCHRONIZE = 1048576
 }
 
-declare function acl_set_fd(fd: number, acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_set_fd(fd: number, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_set_fd_np(fd: number, acl: interop.Pointer | interop.Reference<any>, acl_type: acl_type_t): number;
+declare function acl_set_fd_np(fd: number, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, acl_type: acl_type_t): number;
 
-declare function acl_set_file(path_p: string | interop.Pointer | interop.Reference<any>, type: acl_type_t, acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_set_file(path_p: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: acl_type_t, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_set_flagset_np(obj_p: interop.Pointer | interop.Reference<any>, flagset_d: interop.Pointer | interop.Reference<any>): number;
+declare function acl_set_flagset_np(obj_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flagset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_set_link_np(path_p: string | interop.Pointer | interop.Reference<any>, type: acl_type_t, acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_set_link_np(path_p: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: acl_type_t, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_set_permset(entry_d: interop.Pointer | interop.Reference<any>, permset_d: interop.Pointer | interop.Reference<any>): number;
+declare function acl_set_permset(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, permset_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.3
  */
-declare function acl_set_permset_mask_np(entry_d: interop.Pointer | interop.Reference<any>, mask: number): number;
+declare function acl_set_permset_mask_np(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, mask: number): number;
 
-declare function acl_set_qualifier(entry_d: interop.Pointer | interop.Reference<any>, tag_qualifier_p: interop.Pointer | interop.Reference<any>): number;
+declare function acl_set_qualifier(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, tag_qualifier_p: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_set_tag_type(entry_d: interop.Pointer | interop.Reference<any>, tag_type: acl_tag_t): number;
+declare function acl_set_tag_type(entry_d: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, tag_type: acl_tag_t): number;
 
-declare function acl_size(acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_size(acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum acl_tag_t {
 
@@ -4801,7 +4864,7 @@ declare const enum acl_tag_t {
 	ACL_EXTENDED_DENY = 2
 }
 
-declare function acl_to_text(acl: interop.Pointer | interop.Reference<any>, len_p: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+declare function acl_to_text(acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len_p: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare const enum acl_type_t {
 
@@ -4820,19 +4883,19 @@ declare const enum acl_type_t {
 	ACL_TYPE_NWFS = 5
 }
 
-declare function acl_valid(acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_valid(acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_valid_fd_np(fd: number, type: acl_type_t, acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_valid_fd_np(fd: number, type: acl_type_t, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_valid_file_np(path: string | interop.Pointer | interop.Reference<any>, type: acl_type_t, acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_valid_file_np(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: acl_type_t, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function acl_valid_link_np(path: string | interop.Pointer | interop.Reference<any>, type: acl_type_t, acl: interop.Pointer | interop.Reference<any>): number;
+declare function acl_valid_link_np(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, type: acl_type_t, acl: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function act_get_state(target_act: number, flavor: number, old_state: interop.Pointer | interop.Reference<number>, old_stateCnt: interop.Pointer | interop.Reference<number>): number;
+declare function act_get_state(target_act: number, flavor: number, old_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_stateCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function act_set_state(target_act: number, flavor: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: number): number;
+declare function act_set_state(target_act: number, flavor: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: number): number;
 
-declare function addr2ascii(p1: number, p2: interop.Pointer | interop.Reference<any>, __size: number, p4: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function addr2ascii(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __size: number, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface addrinfo {
 	ai_flags: number;
@@ -4840,19 +4903,19 @@ interface addrinfo {
 	ai_socktype: number;
 	ai_protocol: number;
 	ai_addrlen: number;
-	ai_canonname: interop.Pointer | interop.Reference<any>;
-	ai_addr: interop.Pointer | interop.Reference<sockaddr>;
-	ai_next: interop.Pointer | interop.Reference<addrinfo>;
+	ai_canonname: interop.Pointer | interop.Reference<any> | null;
+	ai_addr: interop.Pointer | interop.Reference<sockaddr> | null;
+	ai_next: interop.Pointer | interop.Reference<addrinfo> | null;
 }
 declare var addrinfo: interop.StructType<addrinfo>;
 
-declare function adjtime(p1: interop.Pointer | interop.Reference<timeval>, p2: interop.Pointer | interop.Reference<timeval>): number;
+declare function adjtime(p1: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const alphaStage: number;
 
-declare function alphasort(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>): number;
+declare function alphasort(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function ascii2addr(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>): number;
+declare function ascii2addr(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface attribute_set_t {
 	commonattr: number;
@@ -4909,7 +4972,7 @@ interface au_qctrl {
 declare var au_qctrl: interop.StructType<au_qctrl>;
 
 interface au_session {
-	as_aia_p: interop.Pointer | interop.Reference<auditinfo_addr>;
+	as_aia_p: interop.Pointer | interop.Reference<auditinfo_addr> | null;
 	as_mask: au_mask;
 }
 declare var au_session: interop.StructType<au_session>;
@@ -4927,7 +4990,7 @@ interface au_tid_addr {
 }
 declare var au_tid_addr: interop.StructType<au_tid_addr>;
 
-declare function audit(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function audit(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 interface audit_fstat {
 	af_filesz: number;
@@ -4952,7 +5015,7 @@ declare const enum audit_session_flags {
 
 declare function audit_session_join(port: number): number;
 
-declare function audit_session_port(asid: number, portname: interop.Pointer | interop.Reference<number>): number;
+declare function audit_session_port(asid: number, portname: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function audit_session_self(): number;
 
@@ -4979,7 +5042,7 @@ interface audit_token_t {
 }
 declare var audit_token_t: interop.StructType<audit_token_t>;
 
-declare function auditctl(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function auditctl(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface auditinfo {
 	ai_auid: number;
@@ -4998,7 +5061,7 @@ interface auditinfo_addr {
 }
 declare var auditinfo_addr: interop.StructType<auditinfo_addr>;
 
-declare function auditon(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function auditon(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
 interface auditpinfo {
 	ap_pid: number;
@@ -5024,89 +5087,89 @@ declare var averunnable: loadavg;
 /**
  * @since 2.0
  */
-declare function backtrace(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __size: number): number;
+declare function backtrace(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __size: number): number;
 
 /**
  * @since 15.0
  */
-declare function backtrace_async(array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, length: number, task_id: interop.Pointer | interop.Reference<number>): number;
+declare function backtrace_async(array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, length: number, task_id: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 12.0
  */
-declare function backtrace_from_fp(startfp: interop.Pointer | interop.Reference<any>, array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size: number): number;
+declare function backtrace_from_fp(startfp: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, size: number): number;
 
 /**
  * @since 12.0
  */
-declare function backtrace_image_offsets(array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, image_offsets: interop.Pointer | interop.Reference<image_offset>, size: number): void;
+declare function backtrace_image_offsets(array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, image_offsets: interop.Pointer | interop.Reference<image_offset> | ArrayBufferLike | ArrayBufferView | null, size: number): void;
 
 /**
  * @since 2.0
  */
-declare function backtrace_symbols(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __size: number): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+declare function backtrace_symbols(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __size: number): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 
 /**
  * @since 2.0
  */
-declare function backtrace_symbols_fd(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __size: number, p3: number): void;
+declare function backtrace_symbols_fd(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __size: number, p3: number): void;
 
-declare function basename(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function basename(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 10.0
  */
-declare function basename_r(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function basename_r(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare const betaStage: number;
 
-declare function bind(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>, p3: number): number;
+declare function bind(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function bindresvport(p1: number, p2: interop.Pointer | interop.Reference<sockaddr_in>): number;
+declare function bindresvport(p1: number, p2: interop.Pointer | interop.Reference<sockaddr_in> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function bindresvport_sa(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>): number;
+declare function bindresvport_sa(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const bold: number;
 
 declare var bootstrap_port: number;
 
-declare function cfgetispeed(p1: interop.Pointer | interop.Reference<termios>): number;
+declare function cfgetispeed(p1: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function cfgetospeed(p1: interop.Pointer | interop.Reference<termios>): number;
+declare function cfgetospeed(p1: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function cfmakeraw(p1: interop.Pointer | interop.Reference<termios>): void;
+declare function cfmakeraw(p1: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function cfsetispeed(p1: interop.Pointer | interop.Reference<termios>, p2: number): number;
+declare function cfsetispeed(p1: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function cfsetospeed(p1: interop.Pointer | interop.Reference<termios>, p2: number): number;
+declare function cfsetospeed(p1: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function cfsetspeed(p1: interop.Pointer | interop.Reference<termios>, p2: number): number;
+declare function cfsetspeed(p1: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function chflags(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function chflags(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function chmod(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function chmod(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function chmodx_np(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
+declare function chmodx_np(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function clock_alarm(clock_serv: number, alarm_type: number, alarm_time: mach_timespec, alarm_port: number): number;
 
 declare function clock_alarm_reply(alarm_port: number, alarm_portPoly: number, alarm_code: number, alarm_type: number, alarm_time: mach_timespec): number;
 
-declare function clock_get_attributes(clock_serv: number, flavor: number, clock_attr: interop.Pointer | interop.Reference<number>, clock_attrCnt: interop.Pointer | interop.Reference<number>): number;
+declare function clock_get_attributes(clock_serv: number, flavor: number, clock_attr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, clock_attrCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function clock_get_res(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function clock_get_res(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function clock_get_time(clock_serv: number, cur_time: interop.Pointer | interop.Reference<mach_timespec>): number;
+declare function clock_get_time(clock_serv: number, cur_time: interop.Pointer | interop.Reference<mach_timespec> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function clock_set_attributes(clock_ctrl: number, flavor: number, clock_attr: interop.Pointer | interop.Reference<number>, clock_attrCnt: number): number;
+declare function clock_set_attributes(clock_ctrl: number, flavor: number, clock_attr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, clock_attrCnt: number): number;
 
 declare function clock_set_res(p1: number, p2: number): number;
 
 declare function clock_set_time(clock_ctrl: number, new_time: mach_timespec): number;
 
-declare function clock_sleep(p1: number, p2: number, p3: mach_timespec, p4: interop.Pointer | interop.Reference<mach_timespec>): number;
+declare function clock_sleep(p1: number, p2: number, p3: mach_timespec, p4: interop.Pointer | interop.Reference<mach_timespec> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function clock_sleep_trap(clock_name: number, sleep_type: number, sleep_sec: number, sleep_nsec: number, wakeup_time: interop.Pointer | interop.Reference<mach_timespec>): number;
+declare function clock_sleep_trap(clock_name: number, sleep_type: number, sleep_sec: number, sleep_nsec: number, wakeup_time: interop.Pointer | interop.Reference<mach_timespec> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface clockinfo {
 	hz: number;
@@ -5120,14 +5183,14 @@ declare var clockinfo: interop.StructType<clockinfo>;
 /**
  * @since 10.0
  */
-declare function clonefile(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function clonefile(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
 /**
  * @since 10.0
  */
-declare function clonefileat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: string | interop.Pointer | interop.Reference<any>, p5: number): number;
+declare function clonefileat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p5: number): number;
 
-declare function closedir(p1: interop.Pointer | interop.Reference<DIR>): number;
+declare function closedir(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function closelog(): void;
 
@@ -5140,24 +5203,24 @@ declare var cmsghdr: interop.StructType<cmsghdr>;
 
 declare const condense: number;
 
-declare function connect(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>, p3: number): number;
+declare function connect(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
 /**
  * @since 9.0
  */
-declare function connectx(p1: number, p2: interop.Pointer | interop.Reference<sa_endpoints_t>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<iovec>, p6: number, p7: interop.Pointer | interop.Reference<number>, p8: interop.Pointer | interop.Reference<number>): number;
+declare function connectx(p1: number, p2: interop.Pointer | interop.Reference<sa_endpoints_t> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number, p5: interop.Pointer | interop.Reference<iovec> | ArrayBufferLike | ArrayBufferView | null, p6: number, p7: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p8: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function copyfile(from: string | interop.Pointer | interop.Reference<any>, to: string | interop.Pointer | interop.Reference<any>, state: interop.Pointer | interop.Reference<any>, flags: number): number;
+declare function copyfile(from: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, to: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number): number;
 
-declare function copyfile_state_alloc(): interop.Pointer | interop.Reference<any>;
+declare function copyfile_state_alloc(): interop.Pointer | interop.Reference<any> | null;
 
-declare function copyfile_state_free(p1: interop.Pointer | interop.Reference<any>): number;
+declare function copyfile_state_free(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function copyfile_state_get(s: interop.Pointer | interop.Reference<any>, flag: number, dst: interop.Pointer | interop.Reference<any>): number;
+declare function copyfile_state_get(s: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flag: number, dst: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function copyfile_state_set(s: interop.Pointer | interop.Reference<any>, flag: number, src: interop.Pointer | interop.Reference<any>): number;
+declare function copyfile_state_set(s: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flag: number, src: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function creat(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function creat(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 declare const enum cryptex_auth_type_t {
 
@@ -5169,44 +5232,46 @@ declare const enum cryptex_auth_type_t {
 
 	CRYPTEX_AUTH_MOBILE_ASSET = 8,
 
-	CRYPTEX_AUTH_MAX = 8
+	CRYPTEX_AUTH_MOBILE_ASSET_WITH_CODE = 9,
+
+	CRYPTEX_AUTH_MAX = 9
 }
 
 interface ctlname {
-	ctl_name: interop.Pointer | interop.Reference<any>;
+	ctl_name: interop.Pointer | interop.Reference<any> | null;
 	ctl_type: number;
 }
 declare var ctlname: interop.StructType<ctlname>;
 
 interface datum {
-	dptr: interop.Pointer | interop.Reference<any>;
+	dptr: interop.Pointer | interop.Reference<any> | null;
 	dsize: number;
 }
 declare var datum: interop.StructType<datum>;
 
-declare function dbm_clearerr(p1: interop.Pointer | interop.Reference<DBM>): number;
+declare function dbm_clearerr(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dbm_close(p1: interop.Pointer | interop.Reference<DBM>): void;
+declare function dbm_close(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function dbm_delete(p1: interop.Pointer | interop.Reference<DBM>, p2: datum): number;
+declare function dbm_delete(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null, p2: datum): number;
 
-declare function dbm_dirfno(p1: interop.Pointer | interop.Reference<DBM>): number;
+declare function dbm_dirfno(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dbm_error(p1: interop.Pointer | interop.Reference<DBM>): number;
+declare function dbm_error(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dbm_fetch(p1: interop.Pointer | interop.Reference<DBM>, p2: datum): datum;
+declare function dbm_fetch(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null, p2: datum): datum;
 
-declare function dbm_firstkey(p1: interop.Pointer | interop.Reference<DBM>): datum;
+declare function dbm_firstkey(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null): datum;
 
-declare function dbm_forder(p1: interop.Pointer | interop.Reference<DBM>, p2: datum): number;
+declare function dbm_forder(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null, p2: datum): number;
 
-declare function dbm_nextkey(p1: interop.Pointer | interop.Reference<DBM>): datum;
+declare function dbm_nextkey(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null): datum;
 
-declare function dbm_open(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number): interop.Pointer | interop.Reference<DBM>;
+declare function dbm_open(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): interop.Pointer | interop.Reference<DBM> | null;
 
-declare function dbm_store(p1: interop.Pointer | interop.Reference<DBM>, p2: datum, p3: datum, p4: number): number;
+declare function dbm_store(p1: interop.Pointer | interop.Reference<DBM> | ArrayBufferLike | ArrayBufferView | null, p2: datum, p3: datum, p4: number): number;
 
-declare function debug_control_port_for_pid(target_tport: number, pid: number, t: interop.Pointer | interop.Reference<number>): number;
+declare function debug_control_port_for_pid(target_tport: number, pid: number, t: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const developStage: number;
 
@@ -5223,14 +5288,14 @@ declare var dirent: interop.StructType<dirent>;
 /**
  * @since 6.0
  */
-declare function dirfd(dirp: interop.Pointer | interop.Reference<DIR>): number;
+declare function dirfd(dirp: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dirname(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function dirname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 10.0
  */
-declare function dirname_r(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function dirname_r(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 9.0
@@ -5243,20 +5308,20 @@ interface diskextent {
 }
 declare var diskextent: interop.StructType<diskextent>;
 
-declare function dladdr(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<Dl_info>): number;
+declare function dladdr(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<Dl_info> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dlclose(__handle: interop.Pointer | interop.Reference<any>): number;
+declare function dlclose(__handle: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dlerror(): interop.Pointer | interop.Reference<any>;
+declare function dlerror(): interop.Pointer | interop.Reference<any> | null;
 
-declare function dlopen(__path: string | interop.Pointer | interop.Reference<any>, __mode: number): interop.Pointer | interop.Reference<any>;
+declare function dlopen(__path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __mode: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function dlopen_preflight(__path: string | interop.Pointer | interop.Reference<any>): boolean;
+declare function dlopen_preflight(__path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
-declare function dlsym(__handle: interop.Pointer | interop.Reference<any>, __symbol: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function dlsym(__handle: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __symbol: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface dqblk {
 	dqb_bhardlimit: number;
@@ -5337,8 +5402,8 @@ declare function endutxent(): void;
 declare function endutxent_wtmp(): void;
 
 interface eproc {
-	e_paddr: interop.Pointer | interop.Reference<any>;
-	e_sess: interop.Pointer | interop.Reference<any>;
+	e_paddr: interop.Pointer | interop.Reference<any> | null;
+	e_sess: interop.Pointer | interop.Reference<any> | null;
 	e_pcred: _pcred;
 	e_ucred: _ucred;
 	e_vm: vmspace;
@@ -5347,7 +5412,7 @@ interface eproc {
 	e_jobc: number;
 	e_tdev: number;
 	e_tpgid: number;
-	e_tsess: interop.Pointer | interop.Reference<any>;
+	e_tsess: interop.Pointer | interop.Reference<any> | null;
 	e_wmesg: interop.Reference<number>;
 	e_xsize: number;
 	e_xrssize: number;
@@ -5359,14 +5424,14 @@ interface eproc {
 }
 declare var eproc: interop.StructType<eproc>;
 
-declare function err_set_exit(p1: interop.FunctionReference<(p1: number) => void>): void;
+declare function err_set_exit(p1: interop.FunctionReference<(p1: number) => void> | null): void;
 
 /**
  * @since 3.2
  */
-declare function err_set_exit_b(p1: (p1: number) => void): void;
+declare function err_set_exit_b(p1: (p1: number) => void | null): void;
 
-declare function err_set_file(p1: interop.Pointer | interop.Reference<any>): void;
+declare function err_set_file(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function etap_trace_thread(target_act: number, trace_status: number): number;
 
@@ -5375,7 +5440,7 @@ interface ether_addr_t {
 }
 declare var ether_addr_t: interop.StructType<ether_addr_t>;
 
-declare function ether_aton(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<ether_addr_t>;
+declare function ether_aton(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<ether_addr_t> | null;
 
 interface ether_header_t {
 	ether_dhost: interop.Reference<number>;
@@ -5384,19 +5449,19 @@ interface ether_header_t {
 }
 declare var ether_header_t: interop.StructType<ether_header_t>;
 
-declare function ether_hostton(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<ether_addr_t>): number;
+declare function ether_hostton(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<ether_addr_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function ether_line(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<ether_addr_t>, p3: string | interop.Pointer | interop.Reference<any>): number;
+declare function ether_line(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<ether_addr_t> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function ether_ntoa(p1: interop.Pointer | interop.Reference<ether_addr_t>): interop.Pointer | interop.Reference<any>;
+declare function ether_ntoa(p1: interop.Pointer | interop.Reference<ether_addr_t> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function ether_ntohost(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<ether_addr_t>): number;
+declare function ether_ntohost(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<ether_addr_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function exception_raise(exception_port: number, thread: number, task: number, exception: number, code: interop.Pointer | interop.Reference<number>, codeCnt: number): number;
+declare function exception_raise(exception_port: number, thread: number, task: number, exception: number, code: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, codeCnt: number): number;
 
-declare function exception_raise_state(exception_port: number, exception: number, code: interop.Pointer | interop.Reference<number>, codeCnt: number, flavor: interop.Pointer | interop.Reference<number>, old_state: interop.Pointer | interop.Reference<number>, old_stateCnt: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: interop.Pointer | interop.Reference<number>): number;
+declare function exception_raise_state(exception_port: number, exception: number, code: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, codeCnt: number, flavor: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_stateCnt: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function exception_raise_state_identity(exception_port: number, thread: number, task: number, exception: number, code: interop.Pointer | interop.Reference<number>, codeCnt: number, flavor: interop.Pointer | interop.Reference<number>, old_state: interop.Pointer | interop.Reference<number>, old_stateCnt: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: interop.Pointer | interop.Reference<number>): number;
+declare function exception_raise_state_identity(exception_port: number, thread: number, task: number, exception: number, code: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, codeCnt: number, flavor: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_stateCnt: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const extend: number;
 
@@ -5427,7 +5492,7 @@ declare var fattributiontag_t: interop.StructType<fattributiontag_t>;
 interface fchecklv_t {
 	lv_file_start: number;
 	lv_error_message_size: number;
-	lv_error_message: interop.Pointer | interop.Reference<any>;
+	lv_error_message: interop.Pointer | interop.Reference<any> | null;
 }
 declare var fchecklv_t: interop.StructType<fchecklv_t>;
 
@@ -5438,21 +5503,36 @@ declare function fchmod(p1: number, p2: number): number;
 /**
  * @since 8.0
  */
-declare function fchmodat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+declare function fchmodat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
-declare function fchmodx_np(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
+declare function fchmodx_np(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 10.0
  */
-declare function fclonefileat(p1: number, p2: number, p3: string | interop.Pointer | interop.Reference<any>, p4: number): number;
+declare function fclonefileat(p1: number, p2: number, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number): number;
 
-declare function fcopyfile(from_fd: number, to_fd: number, p3: interop.Pointer | interop.Reference<any>, flags: number): number;
+declare function fcopyfile(from_fd: number, to_fd: number, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number): number;
+
+/**
+ * @since 26.4
+ */
+declare function fdclosedir(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
  */
-declare function fdopendir(p1: number): interop.Pointer | interop.Reference<DIR>;
+declare function fdopendir(p1: number): interop.Pointer | interop.Reference<DIR> | null;
+
+/**
+ * @since 26.4
+ */
+declare function fdscandir(p1: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<dirent> | null) => number>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null) => number>): number;
+
+/**
+ * @since 26.4
+ */
+declare function fdscandir_b(p1: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p3: (p1: interop.Pointer | interop.Reference<dirent> | null) => number, p4: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null) => number): number;
 
 interface fgetsigsinfo_t {
 	fg_file_start: number;
@@ -5461,7 +5541,7 @@ interface fgetsigsinfo_t {
 }
 declare var fgetsigsinfo_t: interop.StructType<fgetsigsinfo_t>;
 
-declare function fgetxattr(fd: number, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, size: number, position: number, options: number): number;
+declare function fgetxattr(fd: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, position: number, options: number): number;
 
 interface fhandle {
 	fh_len: number;
@@ -5469,7 +5549,7 @@ interface fhandle {
 }
 declare var fhandle: interop.StructType<fhandle>;
 
-declare function fhopen(p1: interop.Pointer | interop.Reference<fhandle>, p2: number): number;
+declare function fhopen(p1: interop.Pointer | interop.Reference<fhandle> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 4.3
@@ -5479,15 +5559,15 @@ declare function fileport_makefd(p1: number): number;
 /**
  * @since 4.3
  */
-declare function fileport_makeport(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function fileport_makeport(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function filesec_dup(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function filesec_dup(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function filesec_free(p1: interop.Pointer | interop.Reference<any>): void;
+declare function filesec_free(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function filesec_get_property(p1: interop.Pointer | interop.Reference<any>, p2: filesec_property_t, p3: interop.Pointer | interop.Reference<any>): number;
+declare function filesec_get_property(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: filesec_property_t, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function filesec_init(): interop.Pointer | interop.Reference<any>;
+declare function filesec_init(): interop.Pointer | interop.Reference<any> | null;
 
 declare const enum filesec_property_t {
 
@@ -5508,18 +5588,18 @@ declare const enum filesec_property_t {
 	FILESEC_ACL_ALLOCSIZE = 101
 }
 
-declare function filesec_query_property(p1: interop.Pointer | interop.Reference<any>, p2: filesec_property_t, p3: interop.Pointer | interop.Reference<number>): number;
+declare function filesec_query_property(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: filesec_property_t, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function filesec_set_property(p1: interop.Pointer | interop.Reference<any>, p2: filesec_property_t, p3: interop.Pointer | interop.Reference<any>): number;
+declare function filesec_set_property(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: filesec_property_t, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function filesec_unset_property(p1: interop.Pointer | interop.Reference<any>, p2: filesec_property_t): number;
+declare function filesec_unset_property(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: filesec_property_t): number;
 
 declare const finalStage: number;
 
-declare function flistxattr(fd: number, namebuff: string | interop.Pointer | interop.Reference<any>, size: number, options: number): number;
+declare function flistxattr(fd: number, namebuff: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, options: number): number;
 
 declare function flock(p1: number, p2: number): number;
 
@@ -5541,15 +5621,15 @@ declare var flocktimeout: interop.StructType<flocktimeout>;
 /**
  * @since 11.0
  */
-declare function fmount(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
+declare function fmount(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fmtmsg(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: string | interop.Pointer | interop.Reference<any>, p5: string | interop.Pointer | interop.Reference<any>, p6: string | interop.Pointer | interop.Reference<any>): number;
+declare function fmtmsg(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p5: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p6: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fnmatch(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function fnmatch(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function forkpty(p1: interop.Pointer | interop.Reference<number>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<termios>, p4: interop.Pointer | interop.Reference<winsize>): number;
+declare function forkpty(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<winsize> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fparseln(p1: interop.Pointer | interop.Reference<FILE>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Reference<number>, p5: number): interop.Pointer | interop.Reference<any>;
+declare function fparseln(p1: interop.Pointer | interop.Reference<FILE> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Reference<number>, p5: number): interop.Pointer | interop.Reference<any> | null;
 
 interface fpunchhole_t {
 	fp_flags: number;
@@ -5559,25 +5639,25 @@ interface fpunchhole_t {
 }
 declare var fpunchhole_t: interop.StructType<fpunchhole_t>;
 
-declare function freeaddrinfo(p1: interop.Pointer | interop.Reference<addrinfo>): void;
+declare function freeaddrinfo(p1: interop.Pointer | interop.Reference<addrinfo> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function freehostent(p1: interop.Pointer | interop.Reference<hostent>): void;
+declare function freehostent(p1: interop.Pointer | interop.Reference<hostent> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function freeifaddrs(p1: interop.Pointer | interop.Reference<ifaddrs>): void;
+declare function freeifaddrs(p1: interop.Pointer | interop.Reference<ifaddrs> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 4.3
  */
-declare function freeifmaddrs(p1: interop.Pointer | interop.Reference<ifmaddrs>): void;
+declare function freeifmaddrs(p1: interop.Pointer | interop.Reference<ifmaddrs> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function fremovexattr(fd: number, name: string | interop.Pointer | interop.Reference<any>, options: number): number;
+declare function fremovexattr(fd: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, options: number): number;
 
-declare function fsetxattr(fd: number, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, size: number, position: number, options: number): number;
+declare function fsetxattr(fd: number, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, position: number, options: number): number;
 
 /**
  * @since 11.0
  */
-declare function fsgetpath(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<fsid_t>, p4: number): number;
+declare function fsgetpath(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<fsid_t> | ArrayBufferLike | ArrayBufferView | null, p4: number): number;
 
 interface fsid_t {
 	val: interop.Reference<number>;
@@ -5586,7 +5666,7 @@ declare var fsid_t: interop.StructType<fsid_t>;
 
 interface fsignatures_t {
 	fs_file_start: number;
-	fs_blob_start: interop.Pointer | interop.Reference<any>;
+	fs_blob_start: interop.Pointer | interop.Reference<any> | null;
 	fs_blob_size: number;
 	fs_fsignatures_size: number;
 	fs_cdhash: interop.Reference<number>;
@@ -5609,42 +5689,42 @@ interface fspecread_t {
 declare var fspecread_t: interop.StructType<fspecread_t>;
 
 interface fssearchblock {
-	returnattrs: interop.Pointer | interop.Reference<attrlist>;
-	returnbuffer: interop.Pointer | interop.Reference<any>;
+	returnattrs: interop.Pointer | interop.Reference<attrlist> | null;
+	returnbuffer: interop.Pointer | interop.Reference<any> | null;
 	returnbuffersize: number;
 	maxmatches: number;
 	timelimit: timeval;
-	searchparams1: interop.Pointer | interop.Reference<any>;
+	searchparams1: interop.Pointer | interop.Reference<any> | null;
 	sizeofsearchparams1: number;
-	searchparams2: interop.Pointer | interop.Reference<any>;
+	searchparams2: interop.Pointer | interop.Reference<any> | null;
 	sizeofsearchparams2: number;
 	searchattrs: attrlist;
 }
 declare var fssearchblock: interop.StructType<fssearchblock>;
 
 interface fstab {
-	fs_spec: interop.Pointer | interop.Reference<any>;
-	fs_file: interop.Pointer | interop.Reference<any>;
-	fs_vfstype: interop.Pointer | interop.Reference<any>;
-	fs_mntops: interop.Pointer | interop.Reference<any>;
-	fs_type: interop.Pointer | interop.Reference<any>;
+	fs_spec: interop.Pointer | interop.Reference<any> | null;
+	fs_file: interop.Pointer | interop.Reference<any> | null;
+	fs_vfstype: interop.Pointer | interop.Reference<any> | null;
+	fs_mntops: interop.Pointer | interop.Reference<any> | null;
+	fs_type: interop.Pointer | interop.Reference<any> | null;
 	fs_freq: number;
 	fs_passno: number;
 }
 declare var fstab: interop.StructType<fstab>;
 
-declare function fstat(p1: number, p2: interop.Pointer | interop.Reference<statStruct>): number;
+declare function fstat(p1: number, p2: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
  */
-declare function fstatat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<statStruct>, p4: number): number;
+declare function fstatat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null, p4: number): number;
 
-declare function fstatfs(p1: number, p2: interop.Pointer | interop.Reference<statfsStruct>): number;
+declare function fstatfs(p1: number, p2: interop.Pointer | interop.Reference<statfsStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fstatvfs(p1: number, p2: interop.Pointer | interop.Reference<statvfsStruct>): number;
+declare function fstatvfs(p1: number, p2: interop.Pointer | interop.Reference<statvfsStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function fstatx_np(p1: number, p2: interop.Pointer | interop.Reference<statStruct>, p3: interop.Pointer | interop.Reference<any>): number;
+declare function fstatx_np(p1: number, p2: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface fstore_t {
 	fst_flags: number;
@@ -5663,9 +5743,9 @@ interface fsupplement_t {
 }
 declare var fsupplement_t: interop.StructType<fsupplement_t>;
 
-declare function ftime(p1: interop.Pointer | interop.Reference<timeb>): number;
+declare function ftime(p1: interop.Pointer | interop.Reference<timeb> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function ftok(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function ftok(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 interface ftrimactivefile_t {
 	fta_offset: number;
@@ -5673,7 +5753,7 @@ interface ftrimactivefile_t {
 }
 declare var ftrimactivefile_t: interop.StructType<ftrimactivefile_t>;
 
-declare function ftw(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statStruct>, p3: number) => number>, p3: number): number;
+declare function ftw(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<statStruct> | null, p3: number) => number>, p3: number): number;
 
 /**
  * @since 19.0
@@ -5685,166 +5765,166 @@ declare function funmount(p1: number, p2: number): number;
  */
 declare function futimens(__fd: number, __times: interop.Reference<timespec>): number;
 
-declare function futimes(p1: number, p2: interop.Pointer | interop.Reference<timeval>): number;
+declare function futimes(p1: number, p2: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function gai_strerror(p1: number): interop.Pointer | interop.Reference<any>;
+declare function gai_strerror(p1: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function getaddrinfo(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<addrinfo>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<addrinfo>>): number;
+declare function getaddrinfo(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<addrinfo> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<addrinfo> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  * @deprecated 6.0
  */
-declare function getaudit(p1: interop.Pointer | interop.Reference<auditinfo>): number;
+declare function getaudit(p1: interop.Pointer | interop.Reference<auditinfo> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getaudit_addr(p1: interop.Pointer | interop.Reference<auditinfo_addr>, p2: number): number;
+declare function getaudit_addr(p1: interop.Pointer | interop.Reference<auditinfo_addr> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function getauid(p1: interop.Pointer | interop.Reference<number>): number;
+declare function getauid(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getdirentries(p1: number, p2: string | interop.Pointer | interop.Reference<any>, __nbytes: number, p4: interop.Pointer | interop.Reference<number>): number;
+declare function getdirentries(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __nbytes: number, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getfh(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<fhandle>): number;
+declare function getfh(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<fhandle> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getfsent(): interop.Pointer | interop.Reference<fstab>;
+declare function getfsent(): interop.Pointer | interop.Reference<fstab> | null;
 
-declare function getfsfile(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<fstab>;
+declare function getfsfile(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<fstab> | null;
 
-declare function getfsspec(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<fstab>;
+declare function getfsspec(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<fstab> | null;
 
-declare function getfsstat(p1: interop.Pointer | interop.Reference<statfsStruct>, p2: number, p3: number): number;
+declare function getfsstat(p1: interop.Pointer | interop.Reference<statfsStruct> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
-declare function getgrent(): interop.Pointer | interop.Reference<group>;
+declare function getgrent(): interop.Pointer | interop.Reference<group> | null;
 
-declare function getgrgid(p1: number): interop.Pointer | interop.Reference<group>;
+declare function getgrgid(p1: number): interop.Pointer | interop.Reference<group> | null;
 
-declare function getgrgid_r(p1: number, p2: interop.Pointer | interop.Reference<group>, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<group>>): number;
+declare function getgrgid_r(p1: number, p2: interop.Pointer | interop.Reference<group> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<group> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getgrnam(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<group>;
+declare function getgrnam(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<group> | null;
 
-declare function getgrnam_r(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<group>, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<group>>): number;
+declare function getgrnam_r(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<group> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<group> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getgruuid(p1: interop.Reference<number>): interop.Pointer | interop.Reference<group>;
+declare function getgruuid(p1: interop.Reference<number>): interop.Pointer | interop.Reference<group> | null;
 
-declare function getgruuid_r(p1: interop.Reference<number>, p2: interop.Pointer | interop.Reference<group>, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<group>>): number;
+declare function getgruuid_r(p1: interop.Reference<number>, p2: interop.Pointer | interop.Reference<group> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<group> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function gethostbyaddr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): interop.Pointer | interop.Reference<hostent>;
+declare function gethostbyaddr(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): interop.Pointer | interop.Reference<hostent> | null;
 
-declare function gethostbyname(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<hostent>;
+declare function gethostbyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<hostent> | null;
 
-declare function gethostbyname2(p1: string | interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<hostent>;
+declare function gethostbyname2(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): interop.Pointer | interop.Reference<hostent> | null;
 
-declare function gethostent(): interop.Pointer | interop.Reference<hostent>;
+declare function gethostent(): interop.Pointer | interop.Reference<hostent> | null;
 
-declare function getifaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifaddrs>>): number;
-
-/**
- * @since 4.3
- */
-declare function getifmaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifmaddrs>>): number;
-
-declare function getipnodebyaddr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<hostent>;
-
-declare function getipnodebyname(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<hostent>;
+declare function getifaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifaddrs> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.3
  */
-declare function getipv4sourcefilter(p1: number, p2: in_addr, p3: in_addr, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<in_addr>): number;
+declare function getifmaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifmaddrs> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getitimer(p1: number, p2: interop.Pointer | interop.Reference<itimerval>): number;
+declare function getipnodebyaddr(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<hostent> | null;
+
+declare function getipnodebyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<hostent> | null;
+
+/**
+ * @since 4.3
+ */
+declare function getipv4sourcefilter(p1: number, p2: in_addr, p3: in_addr, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p6: interop.Pointer | interop.Reference<in_addr> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function getitimer(p1: number, p2: interop.Pointer | interop.Reference<itimerval> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function getlastlogx(p1: number, p2: interop.Pointer | interop.Reference<lastlogx>): interop.Pointer | interop.Reference<lastlogx>;
+declare function getlastlogx(p1: number, p2: interop.Pointer | interop.Reference<lastlogx> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<lastlogx> | null;
 
 /**
  * @since 2.0
  */
-declare function getlastlogxbyname(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<lastlogx>): interop.Pointer | interop.Reference<lastlogx>;
+declare function getlastlogxbyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<lastlogx> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<lastlogx> | null;
 
-declare function getmntinfo(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<statfsStruct>>, p2: number): number;
+declare function getmntinfo(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<statfsStruct> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 11.0
  */
-declare function getmntinfo_r_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<statfsStruct>>, p2: number): number;
+declare function getmntinfo_r_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<statfsStruct> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function getnameinfo(p1: interop.Pointer | interop.Reference<sockaddr>, p2: number, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: string | interop.Pointer | interop.Reference<any>, p6: number, p7: number): number;
+declare function getnameinfo(p1: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p6: number, p7: number): number;
 
-declare function getnetbyaddr(p1: number, p2: number): interop.Pointer | interop.Reference<netent>;
+declare function getnetbyaddr(p1: number, p2: number): interop.Pointer | interop.Reference<netent> | null;
 
-declare function getnetbyname(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<netent>;
+declare function getnetbyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<netent> | null;
 
-declare function getnetent(): interop.Pointer | interop.Reference<netent>;
+declare function getnetent(): interop.Pointer | interop.Reference<netent> | null;
 
-declare function getnetgrent(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function getnetgrent(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getopt(__argc: number, p2: interop.Reference<interop.Pointer | interop.Reference<any>>, p3: string | interop.Pointer | interop.Reference<any>): number;
+declare function getopt(__argc: number, p2: interop.Reference<interop.Pointer | interop.Reference<any> | null>, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getopt_long(__argc: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: string | interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<option>, p5: interop.Pointer | interop.Reference<number>): number;
+declare function getopt_long(__argc: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<option> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getopt_long_only(__argc: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: string | interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<option>, p5: interop.Pointer | interop.Reference<number>): number;
+declare function getopt_long_only(__argc: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<option> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getpeername(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>, p3: interop.Pointer | interop.Reference<number>): number;
+declare function getpeername(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getprotobyname(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<protoent>;
+declare function getprotobyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<protoent> | null;
 
-declare function getprotobynumber(p1: number): interop.Pointer | interop.Reference<protoent>;
+declare function getprotobynumber(p1: number): interop.Pointer | interop.Reference<protoent> | null;
 
-declare function getprotoent(): interop.Pointer | interop.Reference<protoent>;
+declare function getprotoent(): interop.Pointer | interop.Reference<protoent> | null;
 
-declare function getpwent(): interop.Pointer | interop.Reference<passwd>;
+declare function getpwent(): interop.Pointer | interop.Reference<passwd> | null;
 
-declare function getpwnam(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<passwd>;
+declare function getpwnam(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<passwd> | null;
 
-declare function getpwnam_r(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<passwd>, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<passwd>>): number;
+declare function getpwnam_r(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<passwd> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<passwd> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getpwuid(p1: number): interop.Pointer | interop.Reference<passwd>;
+declare function getpwuid(p1: number): interop.Pointer | interop.Reference<passwd> | null;
 
-declare function getpwuid_r(p1: number, p2: interop.Pointer | interop.Reference<passwd>, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<passwd>>): number;
+declare function getpwuid_r(p1: number, p2: interop.Pointer | interop.Reference<passwd> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<passwd> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getpwuuid(p1: interop.Reference<number>): interop.Pointer | interop.Reference<passwd>;
+declare function getpwuuid(p1: interop.Reference<number>): interop.Pointer | interop.Reference<passwd> | null;
 
-declare function getpwuuid_r(p1: interop.Reference<number>, p2: interop.Pointer | interop.Reference<passwd>, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<passwd>>): number;
+declare function getpwuuid_r(p1: interop.Reference<number>, p2: interop.Pointer | interop.Reference<passwd> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<passwd> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getrpcbyname(name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<rpcent>;
+declare function getrpcbyname(name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<rpcent> | null;
 
-declare function getrpcbynumber(number: number): interop.Pointer | interop.Reference<rpcent>;
+declare function getrpcbynumber(number: number): interop.Pointer | interop.Reference<rpcent> | null;
 
-declare function getrpcent(): interop.Pointer | interop.Reference<rpcent>;
+declare function getrpcent(): interop.Pointer | interop.Reference<rpcent> | null;
 
-declare function getservbyname(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<servent>;
+declare function getservbyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<servent> | null;
 
-declare function getservbyport(p1: number, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<servent>;
+declare function getservbyport(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<servent> | null;
 
-declare function getservent(): interop.Pointer | interop.Reference<servent>;
+declare function getservent(): interop.Pointer | interop.Reference<servent> | null;
 
-declare function getsockname(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>, p3: interop.Pointer | interop.Reference<number>): number;
+declare function getsockname(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getsockopt(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>): number;
+declare function getsockopt(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.3
  */
-declare function getsourcefilter(p1: number, p2: number, p3: interop.Pointer | interop.Reference<sockaddr>, p4: number, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<number>, p7: interop.Pointer | interop.Reference<sockaddr_storage>): number;
+declare function getsourcefilter(p1: number, p2: number, p3: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p6: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p7: interop.Pointer | interop.Reference<sockaddr_storage> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function gettimeofday(p1: interop.Pointer | interop.Reference<timeval>, p2: interop.Pointer | interop.Reference<any>): number;
+declare function gettimeofday(p1: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getutxent(): interop.Pointer | interop.Reference<utmpx>;
+declare function getutxent(): interop.Pointer | interop.Reference<utmpx> | null;
 
 /**
  * @since 2.0
  */
-declare function getutxent_wtmp(): interop.Pointer | interop.Reference<utmpx>;
+declare function getutxent_wtmp(): interop.Pointer | interop.Reference<utmpx> | null;
 
-declare function getutxid(p1: interop.Pointer | interop.Reference<utmpx>): interop.Pointer | interop.Reference<utmpx>;
+declare function getutxid(p1: interop.Pointer | interop.Reference<utmpx> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<utmpx> | null;
 
-declare function getutxline(p1: interop.Pointer | interop.Reference<utmpx>): interop.Pointer | interop.Reference<utmpx>;
+declare function getutxline(p1: interop.Pointer | interop.Reference<utmpx> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<utmpx> | null;
 
-declare function getvfsbyname(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<vfsconf>): number;
+declare function getvfsbyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<vfsconf> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function getxattr(path: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, size: number, position: number, options: number): number;
+declare function getxattr(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, position: number, options: number): number;
 
 interface gpu_energy_data {
 	task_gpu_utilisation: number;
@@ -5870,18 +5950,20 @@ declare const enum graftdmg_type_t {
 
 	GRAFTDMG_CRYPTEX_MOBILE_ASSET = 8,
 
-	GRAFTDMG_CRYPTEX_MAX = 8
+	GRAFTDMG_CRYPTEX_MOBILE_ASSET_WITH_CODE = 9,
+
+	GRAFTDMG_CRYPTEX_MAX = 9
 }
 
 interface group {
-	gr_name: interop.Pointer | interop.Reference<any>;
-	gr_passwd: interop.Pointer | interop.Reference<any>;
+	gr_name: interop.Pointer | interop.Reference<any> | null;
+	gr_passwd: interop.Pointer | interop.Reference<any> | null;
 	gr_gid: number;
-	gr_mem: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	gr_mem: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 }
 declare var group: interop.StructType<group>;
 
-declare function group_from_gid(p1: number, p2: number): interop.Pointer | interop.Reference<any>;
+declare function group_from_gid(p1: number, p2: number): interop.Pointer | interop.Reference<any> | null;
 
 interface group_req {
 	gr_interface: number;
@@ -5907,7 +5989,7 @@ declare function hcreate(p1: number): number;
 
 declare function hdestroy(): void;
 
-declare function herror(p1: string | interop.Pointer | interop.Reference<any>): void;
+declare function herror(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface host_basic_info {
 	max_cpus: number;
@@ -5929,38 +6011,38 @@ interface host_can_has_debugger_info {
 }
 declare var host_can_has_debugger_info: interop.StructType<host_can_has_debugger_info>;
 
-declare function host_check_multiuser_mode(host: number, multiuser_mode: interop.Pointer | interop.Reference<number>): number;
+declare function host_check_multiuser_mode(host: number, multiuser_mode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface host_cpu_load_info {
 	cpu_ticks: interop.Reference<number>;
 }
 declare var host_cpu_load_info: interop.StructType<host_cpu_load_info>;
 
-declare function host_create_mach_voucher(host: number, recipes: string | interop.Pointer | interop.Reference<any>, recipesCnt: number, voucher: interop.Pointer | interop.Reference<number>): number;
+declare function host_create_mach_voucher(host: number, recipes: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recipesCnt: number, voucher: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_create_mach_voucher_trap(host: number, recipes: string | interop.Pointer | interop.Reference<any>, recipes_size: number, voucher: interop.Pointer | interop.Reference<number>): number;
+declare function host_create_mach_voucher_trap(host: number, recipes: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recipes_size: number, voucher: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_default_memory_manager(host_priv: number, default_manager: interop.Pointer | interop.Reference<number>, cluster_size: number): number;
+declare function host_default_memory_manager(host_priv: number, default_manager: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, cluster_size: number): number;
 
-declare function host_get_UNDServer(host: number, server: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_UNDServer(host: number, server: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_get_atm_diagnostic_flag(host: number, diagnostic_flag: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_atm_diagnostic_flag(host: number, diagnostic_flag: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function host_get_boot_info(host_priv: number, boot_info: interop.Reference<number>): number;
 
-declare function host_get_clock_control(host_priv: number, clock_id: number, clock_ctrl: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_clock_control(host_priv: number, clock_id: number, clock_ctrl: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_get_clock_service(host: number, clock_id: number, clock_serv: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_clock_service(host: number, clock_id: number, clock_serv: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_get_exception_ports(host_priv: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_exception_ports(host_priv: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_get_io_main(host: number, io_main: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_io_main(host: number, io_main: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_get_multiuser_config_flags(host: number, multiuser_flags: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_multiuser_config_flags(host: number, multiuser_flags: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_get_special_port(host_priv: number, node: number, which: number, port: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_special_port(host_priv: number, node: number, which: number, port: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_info(host: number, flavor: number, host_info_out: interop.Pointer | interop.Reference<number>, host_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_info(host: number, flavor: number, host_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, host_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function host_kernel_version(host: number, kernel_version: interop.Reference<number>): number;
 
@@ -5970,9 +6052,9 @@ interface host_load_info {
 }
 declare var host_load_info: interop.StructType<host_load_info>;
 
-declare function host_lockgroup_info(host: number, lockgroup_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<lockgroup_info_t>>, lockgroup_infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_lockgroup_info(host: number, lockgroup_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<lockgroup_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, lockgroup_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_page_size(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
+declare function host_page_size(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface host_preferred_user_arch {
 	cpu_type: number;
@@ -5992,21 +6074,21 @@ interface host_priority_info {
 }
 declare var host_priority_info: interop.StructType<host_priority_info>;
 
-declare function host_priv_statistics(host_priv: number, flavor: number, host_info_out: interop.Pointer | interop.Reference<number>, host_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_priv_statistics(host_priv: number, flavor: number, host_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, host_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_processor_info(host: number, flavor: number, out_processor_count: interop.Pointer | interop.Reference<number>, out_processor_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, out_processor_infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_processor_info(host: number, flavor: number, out_processor_count: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, out_processor_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, out_processor_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_processor_set_priv(host_priv: number, set_name: number, set: interop.Pointer | interop.Reference<number>): number;
+declare function host_processor_set_priv(host_priv: number, set_name: number, set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_processor_sets(host_priv: number, processor_sets: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, processor_setsCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_processor_sets(host_priv: number, processor_sets: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, processor_setsCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_processors(host_priv: number, out_processor_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, out_processor_listCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_processors(host_priv: number, out_processor_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, out_processor_listCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function host_reboot(host_priv: number, options: number): number;
 
-declare function host_register_mach_voucher_attr_manager(host: number, attr_manager: number, default_value: number, new_key: interop.Pointer | interop.Reference<number>, new_attr_control: interop.Pointer | interop.Reference<number>): number;
+declare function host_register_mach_voucher_attr_manager(host: number, attr_manager: number, default_value: number, new_key: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_attr_control: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_register_well_known_mach_voucher_attr_manager(host: number, attr_manager: number, default_value: number, key: number, new_attr_control: interop.Pointer | interop.Reference<number>): number;
+declare function host_register_well_known_mach_voucher_attr_manager(host: number, attr_manager: number, default_value: number, key: number, new_attr_control: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function host_request_notification(host: number, notify_type: number, notify_port: number): number;
 
@@ -6016,7 +6098,7 @@ interface host_sched_info {
 }
 declare var host_sched_info: interop.StructType<host_sched_info>;
 
-declare function host_security_create_task_token(host_security: number, parent_task: number, sec_token: security_token_t, audit_token: audit_token_t, host: number, ledgers: interop.Pointer | interop.Reference<number>, ledgersCnt: number, inherit_memory: number, child_task: interop.Pointer | interop.Reference<number>): number;
+declare function host_security_create_task_token(host_security: number, parent_task: number, sec_token: security_token_t, audit_token: audit_token_t, host: number, ledgers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, ledgersCnt: number, inherit_memory: number, child_task: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function host_security_set_task_token(host_security: number, target_task: number, sec_token: security_token_t, audit_token: audit_token_t, host: number): number;
 
@@ -6030,30 +6112,30 @@ declare function host_set_multiuser_config_flags(host_priv: number, multiuser_fl
 
 declare function host_set_special_port(host_priv: number, which: number, port: number): number;
 
-declare function host_statistics(host_priv: number, flavor: number, host_info_out: interop.Pointer | interop.Reference<number>, host_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_statistics(host_priv: number, flavor: number, host_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, host_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_statistics64(host_priv: number, flavor: number, host_info64_out: interop.Pointer | interop.Reference<number>, host_info64_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_statistics64(host_priv: number, flavor: number, host_info64_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, host_info64_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_swap_exception_ports(host_priv: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlerss: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function host_swap_exception_ports(host_priv: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlerss: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function host_virtual_physical_table_info(host: number, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<hash_info_bucket_t>>, infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function host_virtual_physical_table_info(host: number, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<hash_info_bucket_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface hostent {
-	h_name: interop.Pointer | interop.Reference<any>;
-	h_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	h_name: interop.Pointer | interop.Reference<any> | null;
+	h_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 	h_addrtype: number;
 	h_length: number;
-	h_addr_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	h_addr_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 }
 declare var hostent: interop.StructType<hostent>;
 
-declare function hsearch(p1: ENTRY, p2: ACTION): interop.Pointer | interop.Reference<ENTRY>;
+declare function hsearch(p1: ENTRY, p2: ACTION): interop.Pointer | interop.Reference<ENTRY> | null;
 
-declare function hstrerror(p1: number): interop.Pointer | interop.Reference<any>;
+declare function hstrerror(p1: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function i386_get_ldt(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function i386_get_ldt(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function i386_set_ldt(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function i386_set_ldt(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
 interface icmp6_filter {
 	icmp6_filt: interop.Reference<number>;
@@ -6108,40 +6190,40 @@ interface icmp_ra_addr {
 }
 declare var icmp_ra_addr: interop.StructType<icmp_ra_addr>;
 
-declare function iconv(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<number>): number;
+declare function iconv(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface iconv_allocation_t {
-	spaceholder: interop.Reference<interop.Pointer | interop.Reference<any>>;
+	spaceholder: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 }
 declare var iconv_allocation_t: interop.StructType<iconv_allocation_t>;
 
-declare function iconv_canonicalize(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function iconv_canonicalize(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function iconv_close(p1: interop.Pointer | interop.Reference<any>): number;
+declare function iconv_close(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface iconv_fallbacks {
-	mb_to_uc_fallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>;
-	uc_to_mb_fallback: interop.FunctionReference<(p1: number, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
-	mb_to_wc_fallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>;
-	wc_to_mb_fallback: interop.FunctionReference<(p1: number, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
-	data: interop.Pointer | interop.Reference<any>;
+	mb_to_uc_fallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<number> | null, p2: number, p3: interop.Pointer | interop.Reference<any> | null) => void>, p4: interop.Pointer | interop.Reference<any> | null, p5: interop.Pointer | interop.Reference<any> | null) => void>;
+	uc_to_mb_fallback: interop.FunctionReference<(p1: number, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: interop.Pointer | interop.Reference<any> | null) => void>, p3: interop.Pointer | interop.Reference<any> | null, p4: interop.Pointer | interop.Reference<any> | null) => void>;
+	mb_to_wc_fallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<number> | null, p2: number, p3: interop.Pointer | interop.Reference<any> | null) => void>, p4: interop.Pointer | interop.Reference<any> | null, p5: interop.Pointer | interop.Reference<any> | null) => void>;
+	wc_to_mb_fallback: interop.FunctionReference<(p1: number, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: number, p3: interop.Pointer | interop.Reference<any> | null) => void>, p3: interop.Pointer | interop.Reference<any> | null, p4: interop.Pointer | interop.Reference<any> | null) => void>;
+	data: interop.Pointer | interop.Reference<any> | null;
 }
 declare var iconv_fallbacks: interop.StructType<iconv_fallbacks>;
 
 interface iconv_hooks {
-	uc_hook: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>) => void>;
-	wc_hook: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>) => void>;
-	data: interop.Pointer | interop.Reference<any>;
+	uc_hook: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any> | null) => void>;
+	wc_hook: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any> | null) => void>;
+	data: interop.Pointer | interop.Reference<any> | null;
 }
 declare var iconv_hooks: interop.StructType<iconv_hooks>;
 
-declare function iconv_open(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function iconv_open(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function iconv_open_into(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<iconv_allocation_t>): number;
+declare function iconv_open_into(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<iconv_allocation_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function iconvctl(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
+declare function iconvctl(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function iconvlist(do_one: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<any>) => number>, p2: interop.Pointer | interop.Reference<any>): void;
+declare function iconvlist(do_one: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null, p3: interop.Pointer | interop.Reference<any> | null) => number>, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface id_ip {
 	idi_ip: ip;
@@ -6185,7 +6267,7 @@ declare var if_cellular_status_v1: interop.StructType<if_cellular_status_v1>;
 interface if_clonereq {
 	ifcr_total: number;
 	ifcr_count: number;
-	ifcr_buffer: interop.Pointer | interop.Reference<any>;
+	ifcr_buffer: interop.Pointer | interop.Reference<any> | null;
 }
 declare var if_clonereq: interop.StructType<if_clonereq>;
 
@@ -6251,9 +6333,9 @@ interface if_data64 {
 }
 declare var if_data64: interop.StructType<if_data64>;
 
-declare function if_freenameindex(p1: interop.Pointer | interop.Reference<if_nameindexStruct>): void;
+declare function if_freenameindex(p1: interop.Pointer | interop.Reference<if_nameindexStruct> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function if_indextoname(p1: number, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function if_indextoname(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface if_msghdr {
 	ifm_msglen: number;
@@ -6281,15 +6363,15 @@ interface if_msghdr2 {
 }
 declare var if_msghdr2: interop.StructType<if_msghdr2>;
 
-declare function if_nameindex(): interop.Pointer | interop.Reference<if_nameindexStruct>;
+declare function if_nameindex(): interop.Pointer | interop.Reference<if_nameindexStruct> | null;
 
 interface if_nameindexStruct {
 	if_index: number;
-	if_name: interop.Pointer | interop.Reference<any>;
+	if_name: interop.Pointer | interop.Reference<any> | null;
 }
 declare var if_nameindexStruct: interop.StructType<if_nameindexStruct>;
 
-declare function if_nametoindex(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function if_nametoindex(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface if_wifi_status_v1 {
 	valid_bitmask: number;
@@ -6331,13 +6413,13 @@ interface ifa_msghdr {
 declare var ifa_msghdr: interop.StructType<ifa_msghdr>;
 
 interface ifaddrs {
-	ifa_next: interop.Pointer | interop.Reference<ifaddrs>;
-	ifa_name: interop.Pointer | interop.Reference<any>;
+	ifa_next: interop.Pointer | interop.Reference<ifaddrs> | null;
+	ifa_name: interop.Pointer | interop.Reference<any> | null;
 	ifa_flags: number;
-	ifa_addr: interop.Pointer | interop.Reference<sockaddr>;
-	ifa_netmask: interop.Pointer | interop.Reference<sockaddr>;
-	ifa_dstaddr: interop.Pointer | interop.Reference<sockaddr>;
-	ifa_data: interop.Pointer | interop.Reference<any>;
+	ifa_addr: interop.Pointer | interop.Reference<sockaddr> | null;
+	ifa_netmask: interop.Pointer | interop.Reference<sockaddr> | null;
+	ifa_dstaddr: interop.Pointer | interop.Reference<sockaddr> | null;
+	ifa_data: interop.Pointer | interop.Reference<any> | null;
 }
 declare var ifaddrs: interop.StructType<ifaddrs>;
 
@@ -6360,7 +6442,7 @@ interface ifdrv {
 	ifd_name: interop.Reference<number>;
 	ifd_cmd: number;
 	ifd_len: number;
-	ifd_data: interop.Pointer | interop.Reference<any>;
+	ifd_data: interop.Pointer | interop.Reference<any> | null;
 }
 declare var ifdrv: interop.StructType<ifdrv>;
 
@@ -6386,10 +6468,10 @@ interface ifma_msghdr2 {
 declare var ifma_msghdr2: interop.StructType<ifma_msghdr2>;
 
 interface ifmaddrs {
-	ifma_next: interop.Pointer | interop.Reference<ifmaddrs>;
-	ifma_name: interop.Pointer | interop.Reference<sockaddr>;
-	ifma_addr: interop.Pointer | interop.Reference<sockaddr>;
-	ifma_lladdr: interop.Pointer | interop.Reference<sockaddr>;
+	ifma_next: interop.Pointer | interop.Reference<ifmaddrs> | null;
+	ifma_name: interop.Pointer | interop.Reference<sockaddr> | null;
+	ifma_addr: interop.Pointer | interop.Reference<sockaddr> | null;
+	ifma_lladdr: interop.Pointer | interop.Reference<sockaddr> | null;
 }
 declare var ifmaddrs: interop.StructType<ifmaddrs>;
 
@@ -6400,7 +6482,7 @@ interface ifmediareq {
 	ifm_status: number;
 	ifm_active: number;
 	ifm_count: number;
-	ifm_ulist: interop.Pointer | interop.Reference<number>;
+	ifm_ulist: interop.Pointer | interop.Reference<number> | null;
 }
 declare var ifmediareq: interop.StructType<ifmediareq>;
 
@@ -6542,8 +6624,8 @@ interface ifnet_traffic_rule_action_steer {
 declare var ifnet_traffic_rule_action_steer: interop.StructType<ifnet_traffic_rule_action_steer>;
 
 interface ifqueue {
-	ifq_head: interop.Pointer | interop.Reference<any>;
-	ifq_tail: interop.Pointer | interop.Reference<any>;
+	ifq_head: interop.Pointer | interop.Reference<any> | null;
+	ifq_tail: interop.Pointer | interop.Reference<any> | null;
 	ifq_len: number;
 	ifq_maxlen: number;
 	ifq_drops: number;
@@ -6599,35 +6681,35 @@ interface in_pktinfo {
 }
 declare var in_pktinfo: interop.StructType<in_pktinfo>;
 
-declare function inet_addr(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function inet_addr(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function inet_aton(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<in_addr>): number;
+declare function inet_aton(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<in_addr> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function inet_lnaof(p1: in_addr): number;
 
 declare function inet_makeaddr(p1: number, p2: number): in_addr;
 
-declare function inet_net_ntop(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: string | interop.Pointer | interop.Reference<any>, __size: number): interop.Pointer | interop.Reference<any>;
+declare function inet_net_ntop(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __size: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function inet_net_pton(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, __size: number): number;
+declare function inet_net_pton(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __size: number): number;
 
-declare function inet_neta(p1: number, p2: string | interop.Pointer | interop.Reference<any>, __size: number): interop.Pointer | interop.Reference<any>;
+declare function inet_neta(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __size: number): interop.Pointer | interop.Reference<any> | null;
 
 declare function inet_netof(p1: in_addr): number;
 
-declare function inet_network(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function inet_network(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function inet_nsap_addr(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, __maxlen: number): number;
+declare function inet_nsap_addr(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __maxlen: number): number;
 
-declare function inet_nsap_ntoa(__binlen: number, p2: string | interop.Pointer | interop.Reference<any>, p3: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function inet_nsap_ntoa(__binlen: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function inet_ntoa(p1: in_addr): interop.Pointer | interop.Reference<any>;
+declare function inet_ntoa(p1: in_addr): interop.Pointer | interop.Reference<any> | null;
 
-declare function inet_ntop(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: string | interop.Pointer | interop.Reference<any>, __size: number): interop.Pointer | interop.Reference<any>;
+declare function inet_ntop(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __size: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function inet_pton(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>): number;
+declare function inet_pton(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function innetgr(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: string | interop.Pointer | interop.Reference<any>, p4: string | interop.Pointer | interop.Reference<any>): number;
+declare function innetgr(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface inpcb64_list_entry {
 	le_next: number;
@@ -6635,7 +6717,7 @@ interface inpcb64_list_entry {
 }
 declare var inpcb64_list_entry: interop.StructType<inpcb64_list_entry>;
 
-declare function insque(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): void;
+declare function insque(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface io_stat_entry {
 	count: number;
@@ -6653,7 +6735,7 @@ interface io_stat_info {
 declare var io_stat_info: interop.StructType<io_stat_info>;
 
 interface iovec {
-	iov_base: interop.Pointer | interop.Reference<any>;
+	iov_base: interop.Pointer | interop.Reference<any> | null;
 	iov_len: number;
 }
 declare var iovec: interop.StructType<iovec>;
@@ -6906,6 +6988,8 @@ declare const enum ipc_info_object_type_t {
 
 	IPC_OTYPE_EXCLAVES_RESOURCE = 53,
 
+	IPC_OTYPE_THREAD_RESUME = 54,
+
 	IPC_OTYPE_UNKNOWN = 4294967295
 }
 
@@ -6952,13 +7036,13 @@ interface ipc_perm {
 }
 declare var ipc_perm: interop.StructType<ipc_perm>;
 
-declare function ipsec_dump_policy(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function ipsec_dump_policy(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function ipsec_get_policylen(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function ipsec_get_policylen(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function ipsec_set_policy(p1: string | interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
+declare function ipsec_set_policy(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function ipsec_strerror(): interop.Pointer | interop.Reference<any>;
+declare function ipsec_strerror(): interop.Pointer | interop.Reference<any> | null;
 
 interface ipsec_wake_pkt_event_data {
 	wake_uuid: interop.Reference<number>;
@@ -7062,9 +7146,9 @@ interface kev_dl_proto_data {
 }
 declare var kev_dl_proto_data: interop.StructType<kev_dl_proto_data>;
 
-declare function kevent(kq: number, changelist: interop.Pointer | interop.Reference<keventStruct>, nchanges: number, eventlist: interop.Pointer | interop.Reference<keventStruct>, nevents: number, timeout: interop.Pointer | interop.Reference<timespec>): number;
+declare function kevent(kq: number, changelist: interop.Pointer | interop.Reference<keventStruct> | ArrayBufferLike | ArrayBufferView | null, nchanges: number, eventlist: interop.Pointer | interop.Reference<keventStruct> | ArrayBufferLike | ArrayBufferView | null, nevents: number, timeout: interop.Pointer | interop.Reference<timespec> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function kevent64(kq: number, changelist: interop.Pointer | interop.Reference<kevent64_s>, nchanges: number, eventlist: interop.Pointer | interop.Reference<kevent64_s>, nevents: number, flags: number, timeout: interop.Pointer | interop.Reference<timespec>): number;
+declare function kevent64(kq: number, changelist: interop.Pointer | interop.Reference<kevent64_s> | ArrayBufferLike | ArrayBufferView | null, nchanges: number, eventlist: interop.Pointer | interop.Reference<kevent64_s> | ArrayBufferLike | ArrayBufferView | null, nevents: number, flags: number, timeout: interop.Pointer | interop.Reference<timespec> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface kevent64_s {
 	ident: number;
@@ -7083,24 +7167,24 @@ interface keventStruct {
 	flags: number;
 	fflags: number;
 	data: number;
-	udata: interop.Pointer | interop.Reference<any>;
+	udata: interop.Pointer | interop.Reference<any> | null;
 }
 declare var keventStruct: interop.StructType<keventStruct>;
 
-declare function kext_request(host_priv: number, user_log_flags: number, request_data: number, request_dataCnt: number, response_data: interop.Pointer | interop.Reference<number>, response_dataCnt: interop.Pointer | interop.Reference<number>, log_data: interop.Pointer | interop.Reference<number>, log_dataCnt: interop.Pointer | interop.Reference<number>, op_result: interop.Pointer | interop.Reference<number>): number;
+declare function kext_request(host_priv: number, user_log_flags: number, request_data: number, request_dataCnt: number, response_data: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, response_dataCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, log_data: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, log_dataCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, op_result: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface klist {
-	slh_first: interop.Pointer | interop.Reference<any>;
+	slh_first: interop.Pointer | interop.Reference<any> | null;
 }
 declare var klist: interop.StructType<klist>;
 
-declare function kmod_control(host_priv: number, module: number, flavor: number, data: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, dataCnt: interop.Pointer | interop.Reference<number>): number;
+declare function kmod_control(host_priv: number, module: number, flavor: number, data: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, dataCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function kmod_create(host_priv: number, info: number, module: interop.Pointer | interop.Reference<number>): number;
+declare function kmod_create(host_priv: number, info: number, module: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function kmod_destroy(host_priv: number, module: number): number;
 
-declare function kmod_get_info(host: number, modules: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, modulesCnt: interop.Pointer | interop.Reference<number>): number;
+declare function kmod_get_info(host: number, modules: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, modulesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface kmod_info_32_v1_t {
 	next_addr: number;
@@ -7135,24 +7219,24 @@ interface kmod_info_64_v1_t {
 declare var kmod_info_64_v1_t: interop.StructType<kmod_info_64_v1_t>;
 
 interface kmod_info_t {
-	next: interop.Pointer | interop.Reference<kmod_info_t>;
+	next: interop.Pointer | interop.Reference<kmod_info_t> | null;
 	info_version: number;
 	id: number;
 	name: interop.Reference<number>;
 	version: interop.Reference<number>;
 	reference_count: number;
-	reference_list: interop.Pointer | interop.Reference<kmod_reference_t>;
+	reference_list: interop.Pointer | interop.Reference<kmod_reference_t> | null;
 	address: number;
 	size: number;
 	hdr_size: number;
-	start: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<kmod_info_t>, p2: interop.Pointer | interop.Reference<any>) => number>>;
-	stop: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<kmod_info_t>, p2: interop.Pointer | interop.Reference<any>) => number>>;
+	start: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<kmod_info_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>> | null;
+	stop: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<kmod_info_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>> | null;
 }
 declare var kmod_info_t: interop.StructType<kmod_info_t>;
 
 interface kmod_reference_t {
-	next: interop.Pointer | interop.Reference<kmod_reference_t>;
-	info: interop.Pointer | interop.Reference<kmod_info_t>;
+	next: interop.Pointer | interop.Reference<kmod_reference_t> | null;
+	info: interop.Pointer | interop.Reference<kmod_info_t> | null;
 }
 declare var kmod_reference_t: interop.StructType<kmod_reference_t>;
 
@@ -7168,16 +7252,16 @@ declare var lastlogx: interop.StructType<lastlogx>;
 /**
  * @since 2.0
  */
-declare function lchflags(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function lchflags(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 2.0
  */
-declare function lchmod(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function lchmod(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function lfind(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: number, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
+declare function lfind(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>): interop.Pointer | interop.Reference<any> | null;
 
-declare function libiconv_set_relocation_prefix(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): void;
+declare function libiconv_set_relocation_prefix(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface linger {
 	l_onoff: number;
@@ -7185,13 +7269,13 @@ interface linger {
 }
 declare var linger: interop.StructType<linger>;
 
-declare function link_addr(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<sockaddr_dl>): void;
+declare function link_addr(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<sockaddr_dl> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function link_ntoa(p1: interop.Pointer | interop.Reference<sockaddr_dl>): interop.Pointer | interop.Reference<any>;
+declare function link_ntoa(p1: interop.Pointer | interop.Reference<sockaddr_dl> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function listen(p1: number, p2: number): number;
 
-declare function listxattr(path: string | interop.Pointer | interop.Reference<any>, namebuff: string | interop.Pointer | interop.Reference<any>, size: number, options: number): number;
+declare function listxattr(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, namebuff: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, options: number): number;
 
 interface loadavg {
 	ldavg: interop.Reference<number>;
@@ -7199,7 +7283,7 @@ interface loadavg {
 }
 declare var loadavg: interop.StructType<loadavg>;
 
-declare function lock_set_create(task: number, new_lock_set: interop.Pointer | interop.Reference<number>, n_ulocks: number, policy: number): number;
+declare function lock_set_create(task: number, new_lock_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, n_ulocks: number, policy: number): number;
 
 declare function lock_set_destroy(task: number, lock_set: number): number;
 
@@ -7246,18 +7330,18 @@ declare function login_tty(p1: number): number;
  * @since 2.0
  * @deprecated 2.0
  */
-declare function logwtmp(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: string | interop.Pointer | interop.Reference<any>): void;
+declare function logwtmp(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function lsearch(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: number, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
+declare function lsearch(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>): interop.Pointer | interop.Reference<any> | null;
 
-declare function lstat(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statStruct>): number;
+declare function lstat(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function lstatx_np(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statStruct>, p3: interop.Pointer | interop.Reference<any>): number;
+declare function lstatx_np(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function lutimes(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<timeval>): number;
+declare function lutimes(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_absolute_time(): number;
 
@@ -7327,29 +7411,31 @@ interface mach_dead_name_notification_t {
 }
 declare var mach_dead_name_notification_t: interop.StructType<mach_dead_name_notification_t>;
 
-declare function mach_error(str: string | interop.Pointer | interop.Reference<any>, error_value: number): void;
+declare function mach_error(str: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, error_value: number): void;
 
-declare function mach_error_string(error_value: number): interop.Pointer | interop.Reference<any>;
+declare function mach_error_string(error_value: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function mach_error_type(error_value: number): interop.Pointer | interop.Reference<any>;
+declare function mach_error_type(error_value: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function mach_generate_activity_id(target: number, count: number, activity_id: interop.Pointer | interop.Reference<number>): number;
+declare function mach_generate_activity_id(target: number, count: number, activity_id: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_host_self(): number;
 
-declare function mach_make_memory_entry(target_task: number, size: interop.Pointer | interop.Reference<number>, offset: number, permission: number, object_handle: interop.Pointer | interop.Reference<number>, parent_entry: number): number;
+declare function mach_make_memory_entry(target_task: number, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, offset: number, permission: number, object_handle: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, parent_entry: number): number;
 
-declare function mach_make_memory_entry_64(target_task: number, size: interop.Pointer | interop.Reference<number>, offset: number, permission: number, object_handle: interop.Pointer | interop.Reference<number>, parent_entry: number): number;
+declare function mach_make_memory_entry_64(target_task: number, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, offset: number, permission: number, object_handle: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, parent_entry: number): number;
 
-declare function mach_memory_entry_access_tracking(mem_entry: number, access_tracking: interop.Pointer | interop.Reference<number>, access_tracking_reads: interop.Pointer | interop.Reference<number>, access_tracking_writes: interop.Pointer | interop.Reference<number>): number;
+declare function mach_memory_entry_access_tracking(mem_entry: number, access_tracking: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, access_tracking_reads: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, access_tracking_writes: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_memory_entry_get_page_counts(mem_entry: number, resident_cnt: interop.Pointer | interop.Reference<number>, dirty_cnt: interop.Pointer | interop.Reference<number>, swapped_cnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_memory_entry_get_page_counts(mem_entry: number, resident_cnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, dirty_cnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, swapped_cnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_memory_entry_ownership(mem_entry: number, owner: number, ledger_tag: number, ledger_flags: number): number;
 
-declare function mach_memory_entry_purgable_control(mem_entry: number, control: number, state: interop.Pointer | interop.Reference<number>): number;
+declare function mach_memory_entry_purgable_control(mem_entry: number, control: number, state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_memory_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t>>, namesCnt: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t>>, infoCnt: interop.Pointer | interop.Reference<number>, memory_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_memory_info_t>>, memory_infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_memory_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, memory_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_memory_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, memory_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function mach_memory_info_redacted(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, memory_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_memory_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, memory_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_memory_info_t {
 	flags: number;
@@ -7368,11 +7454,11 @@ interface mach_memory_info_t {
 }
 declare var mach_memory_info_t: interop.StructType<mach_memory_info_t>;
 
-declare function mach_memory_object_memory_entry(host: number, internal: number, size: number, permission: number, pager: number, entry_handle: interop.Pointer | interop.Reference<number>): number;
+declare function mach_memory_object_memory_entry(host: number, internal: number, size: number, permission: number, pager: number, entry_handle: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_memory_object_memory_entry_64(host: number, internal: number, size: number, permission: number, pager: number, entry_handle: interop.Pointer | interop.Reference<number>): number;
+declare function mach_memory_object_memory_entry_64(host: number, internal: number, size: number, permission: number, pager: number, entry_handle: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_msg(msg: interop.Pointer | interop.Reference<mach_msg_header_t>, option: number, send_size: number, rcv_size: number, rcv_name: number, timeout: number, notify: number): number;
+declare function mach_msg(msg: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null, option: number, send_size: number, rcv_size: number, rcv_name: number, timeout: number, notify: number): number;
 
 interface mach_msg_audit_trailer_t {
 	msgh_trailer_type: number;
@@ -7404,7 +7490,7 @@ interface mach_msg_context_trailer_t {
 }
 declare var mach_msg_context_trailer_t: interop.StructType<mach_msg_context_trailer_t>;
 
-declare function mach_msg_destroy(p1: interop.Pointer | interop.Reference<mach_msg_header_t>): void;
+declare function mach_msg_destroy(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface mach_msg_empty_rcv_t {
 	header: mach_msg_header_t;
@@ -7487,7 +7573,7 @@ interface mach_msg_ool_descriptor64_t {
 declare var mach_msg_ool_descriptor64_t: interop.StructType<mach_msg_ool_descriptor64_t>;
 
 interface mach_msg_ool_descriptor_t {
-	address: interop.Pointer | interop.Reference<any>;
+	address: interop.Pointer | interop.Reference<any> | null;
 	deallocate: number;
 	copy: number;
 	pad1: number;
@@ -7517,7 +7603,7 @@ interface mach_msg_ool_ports_descriptor64_t {
 declare var mach_msg_ool_ports_descriptor64_t: interop.StructType<mach_msg_ool_ports_descriptor64_t>;
 
 interface mach_msg_ool_ports_descriptor_t {
-	address: interop.Pointer | interop.Reference<any>;
+	address: interop.Pointer | interop.Reference<any> | null;
 	deallocate: number;
 	copy: number;
 	disposition: number;
@@ -7526,7 +7612,7 @@ interface mach_msg_ool_ports_descriptor_t {
 }
 declare var mach_msg_ool_ports_descriptor_t: interop.StructType<mach_msg_ool_ports_descriptor_t>;
 
-declare function mach_msg_overwrite(msg: interop.Pointer | interop.Reference<mach_msg_header_t>, option: number, send_size: number, rcv_size: number, rcv_name: number, timeout: number, notify: number, rcv_msg: interop.Pointer | interop.Reference<mach_msg_header_t>, rcv_limit: number): number;
+declare function mach_msg_overwrite(msg: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null, option: number, send_size: number, rcv_size: number, rcv_name: number, timeout: number, notify: number, rcv_msg: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null, rcv_limit: number): number;
 
 interface mach_msg_port_descriptor_t {
 	name: number;
@@ -7537,7 +7623,7 @@ interface mach_msg_port_descriptor_t {
 }
 declare var mach_msg_port_descriptor_t: interop.StructType<mach_msg_port_descriptor_t>;
 
-declare function mach_msg_receive(p1: interop.Pointer | interop.Reference<mach_msg_header_t>): number;
+declare function mach_msg_receive(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_msg_security_trailer_t {
 	msgh_trailer_type: number;
@@ -7547,7 +7633,7 @@ interface mach_msg_security_trailer_t {
 }
 declare var mach_msg_security_trailer_t: interop.StructType<mach_msg_security_trailer_t>;
 
-declare function mach_msg_send(p1: interop.Pointer | interop.Reference<mach_msg_header_t>): number;
+declare function mach_msg_send(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_msg_seqno_trailer_t {
 	msgh_trailer_type: number;
@@ -7556,11 +7642,11 @@ interface mach_msg_seqno_trailer_t {
 }
 declare var mach_msg_seqno_trailer_t: interop.StructType<mach_msg_seqno_trailer_t>;
 
-declare function mach_msg_server(p1: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>) => number>, p2: number, p3: number, p4: number): number;
+declare function mach_msg_server(p1: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => number>, p2: number, p3: number, p4: number): number;
 
-declare function mach_msg_server_importance(p1: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>) => number>, p2: number, p3: number, p4: number): number;
+declare function mach_msg_server_importance(p1: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => number>, p2: number, p3: number, p4: number): number;
 
-declare function mach_msg_server_once(p1: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>) => number>, p2: number, p3: number, p4: number): number;
+declare function mach_msg_server_once(p1: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => number>, p2: number, p3: number, p4: number): number;
 
 interface mach_msg_trailer_t {
 	msgh_trailer_type: number;
@@ -7584,15 +7670,15 @@ interface mach_no_senders_notification_t {
 }
 declare var mach_no_senders_notification_t: interop.StructType<mach_no_senders_notification_t>;
 
-declare function mach_port_allocate(task: number, right: number, name: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_allocate(task: number, right: number, name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_allocate_full(task: number, right: number, proto: number, qos: interop.Pointer | interop.Reference<mach_port_qos_t>, name: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_allocate_full(task: number, right: number, proto: number, qos: interop.Pointer | interop.Reference<mach_port_qos_t> | ArrayBufferLike | ArrayBufferView | null, name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_port_allocate_name(task: number, right: number, name: number): number;
 
-declare function mach_port_allocate_qos(task: number, right: number, qos: interop.Pointer | interop.Reference<mach_port_qos_t>, name: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_allocate_qos(task: number, right: number, qos: interop.Pointer | interop.Reference<mach_port_qos_t> | ArrayBufferLike | ArrayBufferView | null, name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_assert_attributes(task: number, name: number, flavor: number, info: interop.Pointer | interop.Reference<number>, infoCnt: number): number;
+declare function mach_port_assert_attributes(task: number, name: number, flavor: number, info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, infoCnt: number): number;
 
 declare function mach_port_deallocate(task: number, name: number): number;
 
@@ -7620,23 +7706,23 @@ declare var mach_port_destroyed_notification_t: interop.StructType<mach_port_des
 
 declare function mach_port_destruct(task: number, name: number, srdelta: number, guard: number): number;
 
-declare function mach_port_dnrequest_info(task: number, name: number, dnr_total: interop.Pointer | interop.Reference<number>, dnr_used: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_dnrequest_info(task: number, name: number, dnr_total: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, dnr_used: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_port_extract_member(task: number, name: number, pset: number): number;
 
-declare function mach_port_extract_right(task: number, name: number, msgt_name: number, poly: interop.Pointer | interop.Reference<number>, polyPoly: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_extract_right(task: number, name: number, msgt_name: number, poly: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, polyPoly: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_get_attributes(task: number, name: number, flavor: number, port_info_out: interop.Pointer | interop.Reference<number>, port_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_get_attributes(task: number, name: number, flavor: number, port_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, port_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_get_context(task: number, name: number, context: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_get_context(task: number, name: number, context: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_get_refs(task: number, name: number, right: number, refs: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_get_refs(task: number, name: number, right: number, refs: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_get_service_port_info(task: number, name: number, sp_info_out: interop.Pointer | interop.Reference<mach_service_port_info_data_t>): number;
+declare function mach_port_get_service_port_info(task: number, name: number, sp_info_out: interop.Pointer | interop.Reference<mach_service_port_info_data_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_get_set_status(task: number, name: number, members: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, membersCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_get_set_status(task: number, name: number, members: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, membersCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_get_srights(task: number, name: number, srights: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_get_srights(task: number, name: number, srights: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_port_guard(task: number, name: number, guard: number, strict: number): number;
 
@@ -7706,11 +7792,17 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_SERVICE_PORT_VIOLATION_NON_FATAL = 1048577,
 
-	kGUARD_EXC_PROVISIONAL_REPLY_PORT = 1048578,
+	kGUARD_EXC_INVALID_NOTIFICATION_PORT = 1048582,
+
+	kGUARD_EXC_MACH_EXC_THREAD_SET_STATE = 1048583,
+
+	kGUARD_EXC_CV_NOTIFICATION_PORT_REQ = 1048584,
+
+	kGUARD_EXC_WEAK_REPLY_PORT = 1048578,
 
 	kGUARD_EXC_OOL_PORT_ARRAY_CREATION = 1048579,
 
-	kGUARD_EXC_MOVE_PROVISIONAL_REPLY_PORT = 1048580,
+	kGUARD_EXC_MOVE_WEAK_REPLY_PORT = 1048580,
 
 	kGUARD_EXC_REPLY_PORT_SINGLE_SO_RIGHT = 1048581,
 
@@ -7737,13 +7829,13 @@ declare function mach_port_insert_member(task: number, name: number, pset: numbe
 
 declare function mach_port_insert_right(task: number, name: number, poly: number, polyPoly: number): number;
 
-declare function mach_port_is_connection_for_service(task: number, connection_port: number, service_port: number, filter_policy_id: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_is_connection_for_service(task: number, connection_port: number, service_port: number, filter_policy_id: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_kernel_object(task: number, name: number, object_type: interop.Pointer | interop.Reference<number>, object_addr: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_kernel_object(task: number, name: number, object_type: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, object_addr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_kobject(task: number, name: number, object_type: interop.Pointer | interop.Reference<ipc_info_object_type_t>, object_addr: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_kobject(task: number, name: number, object_type: interop.Pointer | interop.Reference<ipc_info_object_type_t> | ArrayBufferLike | ArrayBufferView | null, object_addr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_kobject_description(task: number, name: number, object_type: interop.Pointer | interop.Reference<ipc_info_object_type_t>, object_addr: interop.Pointer | interop.Reference<number>, description: interop.Reference<number>): number;
+declare function mach_port_kobject_description(task: number, name: number, object_type: interop.Pointer | interop.Reference<ipc_info_object_type_t> | ArrayBufferLike | ArrayBufferView | null, object_addr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, description: interop.Reference<number>): number;
 
 interface mach_port_limits_t {
 	mpl_qlimit: number;
@@ -7754,9 +7846,9 @@ declare function mach_port_mod_refs(task: number, name: number, right: number, d
 
 declare function mach_port_move_member(task: number, member: number, after: number): number;
 
-declare function mach_port_names(task: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, namesCnt: interop.Pointer | interop.Reference<number>, types: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, typesCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_names(task: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, types: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, typesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_peek(task: number, name: number, trailer_type: number, request_seqnop: interop.Pointer | interop.Reference<number>, msg_sizep: interop.Pointer | interop.Reference<number>, msg_idp: interop.Pointer | interop.Reference<number>, trailer_infop: string | interop.Pointer | interop.Reference<any>, trailer_infopCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_peek(task: number, name: number, trailer_type: number, request_seqnop: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, msg_sizep: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, msg_idp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, trailer_infop: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, trailer_infopCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_port_qos_t {
 	name: number;
@@ -7768,9 +7860,9 @@ declare var mach_port_qos_t: interop.StructType<mach_port_qos_t>;
 
 declare function mach_port_rename(task: number, old_name: number, new_name: number): number;
 
-declare function mach_port_request_notification(task: number, name: number, msgid: number, sync: number, notify: number, notifyPoly: number, previous: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_request_notification(task: number, name: number, msgid: number, sync: number, notify: number, notifyPoly: number, previous: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_set_attributes(task: number, name: number, flavor: number, port_info: interop.Pointer | interop.Reference<number>, port_infoCnt: number): number;
+declare function mach_port_set_attributes(task: number, name: number, flavor: number, port_info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, port_infoCnt: number): number;
 
 declare function mach_port_set_context(task: number, name: number, context: number): number;
 
@@ -7778,9 +7870,9 @@ declare function mach_port_set_mscount(task: number, name: number, mscount: numb
 
 declare function mach_port_set_seqno(task: number, name: number, seqno: number): number;
 
-declare function mach_port_space_basic_info(task: number, basic_info: interop.Pointer | interop.Reference<ipc_info_space_basic_t>): number;
+declare function mach_port_space_basic_info(task: number, basic_info: interop.Pointer | interop.Reference<ipc_info_space_basic_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_port_space_info(space: number, space_info: interop.Pointer | interop.Reference<ipc_info_space_t>, table_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_name_t>>, table_infoCnt: interop.Pointer | interop.Reference<number>, tree_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_tree_name_t>>, tree_infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_space_info(space: number, space_info: interop.Pointer | interop.Reference<ipc_info_space_t> | ArrayBufferLike | ArrayBufferView | null, table_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, table_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, tree_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_tree_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, tree_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_port_status_t {
 	mps_pset: number;
@@ -7798,13 +7890,13 @@ declare var mach_port_status_t: interop.StructType<mach_port_status_t>;
 
 declare function mach_port_swap_guard(task: number, name: number, old_guard: number, new_guard: number): number;
 
-declare function mach_port_type(task: number, name: number, ptype: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_type(task: number, name: number, ptype: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_port_unguard(task: number, name: number, guard: number): number;
 
-declare function mach_ports_lookup(target_task: number, init_port_set: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, init_port_setCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_ports_lookup(target_task: number, init_port_set: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, init_port_setCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_ports_register(target_task: number, init_port_set: interop.Pointer | interop.Reference<number>, init_port_setCnt: number): number;
+declare function mach_ports_register(target_task: number, init_port_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, init_port_setCnt: number): number;
 
 interface mach_send_once_notification_t {
 	not_header: mach_msg_header_t;
@@ -7846,7 +7938,7 @@ declare var mach_task_self_: number;
 
 declare function mach_thread_self(): number;
 
-declare function mach_timebase_info(info: interop.Pointer | interop.Reference<mach_timebase_infoStruct>): number;
+declare function mach_timebase_info(info: interop.Pointer | interop.Reference<mach_timebase_infoStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_timebase_infoStruct {
 	numer: number;
@@ -7915,15 +8007,15 @@ interface mach_vm_read_entry {
 }
 declare var mach_vm_read_entry: interop.StructType<mach_vm_read_entry>;
 
-declare function mach_vm_reclaim_update_kernel_accounting_trap(target_tport: number, bytes_reclaimed: interop.Pointer | interop.Reference<number>): number;
+declare function mach_vm_reclaim_update_kernel_accounting_trap(target_tport: number, bytes_reclaimed: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, next_deadline: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_vm_region_info(task: number, address: number, region: interop.Pointer | interop.Reference<vm_info_region_t>, objects: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<vm_info_object_t>>, objectsCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_vm_region_info(task: number, address: number, region: interop.Pointer | interop.Reference<vm_info_region_t> | ArrayBufferLike | ArrayBufferView | null, objects: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<vm_info_object_t> | null> | ArrayBufferLike | ArrayBufferView | null, objectsCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_vm_region_info_64(task: number, address: number, region: interop.Pointer | interop.Reference<vm_info_region_64_t>, objects: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<vm_info_object_t>>, objectsCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_vm_region_info_64(task: number, address: number, region: interop.Pointer | interop.Reference<vm_info_region_64_t> | ArrayBufferLike | ArrayBufferView | null, objects: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<vm_info_object_t> | null> | ArrayBufferLike | ArrayBufferView | null, objectsCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_vm_wire(host_priv: number, task: number, address: number, size: number, desired_access: number): number;
 
-declare function mach_voucher_attr_command(voucher: number, key: number, command: number, in_content: string | interop.Pointer | interop.Reference<any>, in_contentCnt: number, out_content: string | interop.Pointer | interop.Reference<any>, out_contentCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_voucher_attr_command(voucher: number, key: number, command: number, in_content: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, in_contentCnt: number, out_content: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, out_contentCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_voucher_attr_recipe_data_t {
 	key: number;
@@ -7936,21 +8028,21 @@ declare var mach_voucher_attr_recipe_data_t: interop.StructType<mach_voucher_att
 
 declare function mach_voucher_deallocate(voucher: number): number;
 
-declare function mach_voucher_debug_info(task: number, voucher_name: number, recipes: string | interop.Pointer | interop.Reference<any>, recipesCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_voucher_debug_info(task: number, voucher_name: number, recipes: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recipesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_voucher_extract_all_attr_recipes(voucher: number, recipes: string | interop.Pointer | interop.Reference<any>, recipesCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_voucher_extract_all_attr_recipes(voucher: number, recipes: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recipesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_voucher_extract_attr_content(voucher: number, key: number, content: string | interop.Pointer | interop.Reference<any>, contentCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_voucher_extract_attr_content(voucher: number, key: number, content: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, contentCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_voucher_extract_attr_recipe(voucher: number, key: number, recipe: string | interop.Pointer | interop.Reference<any>, recipeCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_voucher_extract_attr_recipe(voucher: number, key: number, recipe: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recipeCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_voucher_extract_attr_recipe_trap(voucher_name: number, key: number, recipe: string | interop.Pointer | interop.Reference<any>, recipe_size: interop.Pointer | interop.Reference<number>): number;
+declare function mach_voucher_extract_attr_recipe_trap(voucher_name: number, key: number, recipe: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, recipe_size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_wait_until(deadline: number): number;
 
-declare function mach_zone_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t>>, namesCnt: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t>>, infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_zone_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mach_zone_info_for_zone(host: number, name: mach_zone_name_t, info: interop.Pointer | interop.Reference<mach_zone_info_t>): number;
+declare function mach_zone_info_for_zone(host: number, name: mach_zone_name_t, info: interop.Pointer | interop.Reference<mach_zone_info_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface mach_zone_info_t {
 	mzi_count: number;
@@ -7979,42 +8071,42 @@ declare function macx_swapon(filename: number, flags: number, size: number, prio
 
 declare function macx_triggers(hi_water: number, low_water: number, flags: number, alert_port: number): number;
 
-declare function madvise(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+declare function madvise(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
-declare function malloc_create_zone(start_size: number, flags: number): interop.Pointer | interop.Reference<malloc_zone_t>;
+declare function malloc_create_zone(start_size: number, flags: number): interop.Pointer | interop.Reference<malloc_zone_t> | null;
 
 /**
  * @since 3.0
  */
-declare function malloc_default_purgeable_zone(): interop.Pointer | interop.Reference<malloc_zone_t>;
+declare function malloc_default_purgeable_zone(): interop.Pointer | interop.Reference<malloc_zone_t> | null;
 
-declare function malloc_default_zone(): interop.Pointer | interop.Reference<malloc_zone_t>;
+declare function malloc_default_zone(): interop.Pointer | interop.Reference<malloc_zone_t> | null;
 
-declare function malloc_destroy_zone(zone: interop.Pointer | interop.Reference<malloc_zone_t>): void;
+declare function malloc_destroy_zone(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_get_all_zones(task: number, reader: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, addresses: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, count: interop.Pointer | interop.Reference<number>): number;
+declare function malloc_get_all_zones(task: number, reader: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null) => number>, addresses: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, count: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function malloc_get_zone_name(zone: interop.Pointer | interop.Reference<malloc_zone_t>): interop.Pointer | interop.Reference<any>;
+declare function malloc_get_zone_name(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function malloc_good_size(size: number): number;
 
 interface malloc_introspection_t {
-	enumerator: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, p6: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<vm_range_t>, p5: number) => void>) => number>;
-	good_size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => number>;
-	check: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => number>;
-	print: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => void>;
-	log: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => void>;
-	force_lock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => void>;
-	force_unlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => void>;
-	statistics: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<malloc_statistics_t>) => void>;
-	zone_locked: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => number>;
-	enable_discharge_checking: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => number>;
-	disable_discharge_checking: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => void>;
-	discharge: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => void>;
-	enumerate_discharged_pointers: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void) => void>;
-	reinit_lock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => void>;
-	print_task: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => void>;
-	task_statistics: interop.FunctionReference<(p1: number, p2: number, p3: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, p4: interop.Pointer | interop.Reference<malloc_statistics_t>) => void>;
+	enumerator: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: number, p5: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null) => number>, p6: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: interop.Pointer | interop.Reference<vm_range_t> | null, p5: number) => void>) => number>;
+	good_size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number) => number>;
+	check: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => number>;
+	print: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number) => void>;
+	log: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => void>;
+	force_lock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => void>;
+	force_unlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => void>;
+	statistics: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<malloc_statistics_t> | null) => void>;
+	zone_locked: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => number>;
+	enable_discharge_checking: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => number>;
+	disable_discharge_checking: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => void>;
+	discharge: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => void>;
+	enumerate_discharged_pointers: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: (p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void) => void>;
+	reinit_lock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => void>;
+	print_task: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null) => number>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>) => void>;
+	task_statistics: interop.FunctionReference<(p1: number, p2: number, p3: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null) => number>, p4: interop.Pointer | interop.Reference<malloc_statistics_t> | null) => void>;
 	zone_type: number;
 }
 declare var malloc_introspection_t: interop.StructType<malloc_introspection_t>;
@@ -8022,16 +8114,16 @@ declare var malloc_introspection_t: interop.StructType<malloc_introspection_t>;
 /**
  * @since 3.0
  */
-declare function malloc_make_nonpurgeable(ptr: interop.Pointer | interop.Reference<any>): number;
+declare function malloc_make_nonpurgeable(ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.0
  */
-declare function malloc_make_purgeable(ptr: interop.Pointer | interop.Reference<any>): void;
+declare function malloc_make_purgeable(ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_set_zone_name(zone: interop.Pointer | interop.Reference<malloc_zone_t>, name: string | interop.Pointer | interop.Reference<any>): void;
+declare function malloc_set_zone_name(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_size(ptr: interop.Pointer | interop.Reference<any>): number;
+declare function malloc_size(ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface malloc_statistics_t {
 	blocks_in_use: number;
@@ -8086,43 +8178,43 @@ declare var malloc_type_summary_v0_t: interop.StructType<malloc_type_summary_v0_
 /**
  * @since 26.0
  */
-declare function malloc_type_zone_malloc_with_options(zone: interop.Pointer | interop.Reference<malloc_zone_t>, alignment: number, size: number, type_id: number, opts: malloc_zone_malloc_options_t): interop.Pointer | interop.Reference<any>;
+declare function malloc_type_zone_malloc_with_options(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, alignment: number, size: number, type_id: number, opts: malloc_zone_malloc_options_t): interop.Pointer | interop.Reference<any> | null;
 
-declare function malloc_zone_batch_free(zone: interop.Pointer | interop.Reference<malloc_zone_t>, to_be_freed: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, num: number): void;
+declare function malloc_zone_batch_free(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, to_be_freed: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, num: number): void;
 
-declare function malloc_zone_batch_malloc(zone: interop.Pointer | interop.Reference<malloc_zone_t>, size: number, results: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, num_requested: number): number;
+declare function malloc_zone_batch_malloc(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, size: number, results: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, num_requested: number): number;
 
-declare function malloc_zone_calloc(zone: interop.Pointer | interop.Reference<malloc_zone_t>, num_items: number, size: number): interop.Pointer | interop.Reference<any>;
+declare function malloc_zone_calloc(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, num_items: number, size: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function malloc_zone_check(zone: interop.Pointer | interop.Reference<malloc_zone_t>): number;
-
-/**
- * @since 4.3
- */
-declare function malloc_zone_disable_discharge_checking(zone: interop.Pointer | interop.Reference<malloc_zone_t>): void;
+declare function malloc_zone_check(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 4.3
  */
-declare function malloc_zone_discharge(zone: interop.Pointer | interop.Reference<malloc_zone_t>, memory: interop.Pointer | interop.Reference<any>): void;
+declare function malloc_zone_disable_discharge_checking(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 4.3
  */
-declare function malloc_zone_enable_discharge_checking(zone: interop.Pointer | interop.Reference<malloc_zone_t>): number;
+declare function malloc_zone_discharge(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, memory: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 4.3
  */
-declare function malloc_zone_enumerate_discharged_pointers(zone: interop.Pointer | interop.Reference<malloc_zone_t>, report_discharged: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void): void;
+declare function malloc_zone_enable_discharge_checking(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function malloc_zone_free(zone: interop.Pointer | interop.Reference<malloc_zone_t>, ptr: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 4.3
+ */
+declare function malloc_zone_enumerate_discharged_pointers(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, report_discharged: (p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => void): void;
 
-declare function malloc_zone_from_ptr(ptr: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<malloc_zone_t>;
+declare function malloc_zone_free(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_zone_log(zone: interop.Pointer | interop.Reference<malloc_zone_t>, address: interop.Pointer | interop.Reference<any>): void;
+declare function malloc_zone_from_ptr(ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<malloc_zone_t> | null;
 
-declare function malloc_zone_malloc(zone: interop.Pointer | interop.Reference<malloc_zone_t>, size: number): interop.Pointer | interop.Reference<any>;
+declare function malloc_zone_log(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, address: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
+
+declare function malloc_zone_malloc(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, size: number): interop.Pointer | interop.Reference<any> | null;
 
 declare const enum malloc_zone_malloc_options_t {
 
@@ -8136,80 +8228,80 @@ declare const enum malloc_zone_malloc_options_t {
 /**
  * @since 26.0
  */
-declare function malloc_zone_malloc_with_options(zone: interop.Pointer | interop.Reference<malloc_zone_t>, align: number, size: number, opts: malloc_zone_malloc_options_t): interop.Pointer | interop.Reference<any>;
+declare function malloc_zone_malloc_with_options(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, align: number, size: number, opts: malloc_zone_malloc_options_t): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 3.0
  */
-declare function malloc_zone_memalign(zone: interop.Pointer | interop.Reference<malloc_zone_t>, alignment: number, size: number): interop.Pointer | interop.Reference<any>;
+declare function malloc_zone_memalign(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, alignment: number, size: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 4.3
  */
-declare function malloc_zone_pressure_relief(zone: interop.Pointer | interop.Reference<malloc_zone_t>, goal: number): number;
+declare function malloc_zone_pressure_relief(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, goal: number): number;
 
-declare function malloc_zone_print(zone: interop.Pointer | interop.Reference<malloc_zone_t>, verbose: number): void;
+declare function malloc_zone_print(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, verbose: number): void;
 
-declare function malloc_zone_print_ptr_info(ptr: interop.Pointer | interop.Reference<any>): void;
+declare function malloc_zone_print_ptr_info(ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_zone_realloc(zone: interop.Pointer | interop.Reference<malloc_zone_t>, ptr: interop.Pointer | interop.Reference<any>, size: number): interop.Pointer | interop.Reference<any>;
+declare function malloc_zone_realloc(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, ptr: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function malloc_zone_register(zone: interop.Pointer | interop.Reference<malloc_zone_t>): void;
+declare function malloc_zone_register(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_zone_statistics(zone: interop.Pointer | interop.Reference<malloc_zone_t>, stats: interop.Pointer | interop.Reference<malloc_statistics_t>): void;
+declare function malloc_zone_statistics(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, stats: interop.Pointer | interop.Reference<malloc_statistics_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface malloc_zone_t {
-	reserved1: interop.Pointer | interop.Reference<any>;
-	reserved2: interop.Pointer | interop.Reference<any>;
-	size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => number>;
-	malloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => interop.Pointer | interop.Reference<any>>;
-	calloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number) => interop.Pointer | interop.Reference<any>>;
-	valloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => interop.Pointer | interop.Reference<any>>;
-	free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => void>;
-	realloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>, p3: number) => interop.Pointer | interop.Reference<any>>;
-	destroy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => void>;
-	zone_name: interop.Pointer | interop.Reference<any>;
-	batch_malloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: number) => number>;
-	batch_free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: number) => void>;
-	introspect: interop.Pointer | interop.Reference<malloc_introspection_t>;
+	reserved1: interop.Pointer | interop.Reference<any> | null;
+	reserved2: interop.Pointer | interop.Reference<any> | null;
+	size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>;
+	malloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number) => interop.Pointer | interop.Reference<any> | null>;
+	calloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number) => interop.Pointer | interop.Reference<any> | null>;
+	valloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number) => interop.Pointer | interop.Reference<any> | null>;
+	free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => void>;
+	realloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number) => interop.Pointer | interop.Reference<any> | null>;
+	destroy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null) => void>;
+	zone_name: interop.Pointer | interop.Reference<any> | null;
+	batch_malloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null, p4: number) => number>;
+	batch_free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null, p3: number) => void>;
+	introspect: interop.Pointer | interop.Reference<malloc_introspection_t> | null;
 	version: number;
-	memalign: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number) => interop.Pointer | interop.Reference<any>>;
-	free_definite_size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
-	pressure_relief: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => number>;
-	claimed_address: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => number>;
-	try_free_default: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => void>;
-	malloc_with_options: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any>>;
-	malloc_type_malloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number) => interop.Pointer | interop.Reference<any>>;
-	malloc_type_calloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any>>;
-	malloc_type_realloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number) => interop.Pointer | interop.Reference<any>>;
-	malloc_type_memalign: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any>>;
-	malloc_type_malloc_with_options: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number, p4: number, p5: number) => interop.Pointer | interop.Reference<any>>;
+	memalign: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number) => interop.Pointer | interop.Reference<any> | null>;
+	free_definite_size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number) => void>;
+	pressure_relief: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number) => number>;
+	claimed_address: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>;
+	try_free_default: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null) => void>;
+	malloc_with_options: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any> | null>;
+	malloc_type_malloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number) => interop.Pointer | interop.Reference<any> | null>;
+	malloc_type_calloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any> | null>;
+	malloc_type_realloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: number, p4: number) => interop.Pointer | interop.Reference<any> | null>;
+	malloc_type_memalign: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any> | null>;
+	malloc_type_malloc_with_options: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t> | null, p2: number, p3: number, p4: number, p5: number) => interop.Pointer | interop.Reference<any> | null>;
 }
 declare var malloc_zone_t: interop.StructType<malloc_zone_t>;
 
-declare function malloc_zone_unregister(zone: interop.Pointer | interop.Reference<malloc_zone_t>): void;
+declare function malloc_zone_unregister(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function malloc_zone_valloc(zone: interop.Pointer | interop.Reference<malloc_zone_t>, size: number): interop.Pointer | interop.Reference<any>;
+declare function malloc_zone_valloc(zone: interop.Pointer | interop.Reference<malloc_zone_t> | ArrayBufferLike | ArrayBufferView | null, size: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function mbr_check_membership(user: interop.Reference<number>, group: interop.Reference<number>, ismember: interop.Pointer | interop.Reference<number>): number;
+declare function mbr_check_membership(user: interop.Reference<number>, group: interop.Reference<number>, ismember: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mbr_check_service_membership(user: interop.Reference<number>, servicename: string | interop.Pointer | interop.Reference<any>, ismember: interop.Pointer | interop.Reference<number>): number;
+declare function mbr_check_service_membership(user: interop.Reference<number>, servicename: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, ismember: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mbr_gid_to_uuid(gid: number, uu: interop.Reference<number>): number;
 
-declare function mbr_identifier_to_uuid(id_type: number, identifier: interop.Pointer | interop.Reference<any>, identifier_size: number, uu: interop.Reference<number>): number;
+declare function mbr_identifier_to_uuid(id_type: number, identifier: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, identifier_size: number, uu: interop.Reference<number>): number;
 
-declare function mbr_sid_to_string(sid: interop.Pointer | interop.Reference<nt_sid_t>, string: string | interop.Pointer | interop.Reference<any>): number;
+declare function mbr_sid_to_string(sid: interop.Pointer | interop.Reference<nt_sid_t> | ArrayBufferLike | ArrayBufferView | null, string: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mbr_sid_to_uuid(sid: interop.Pointer | interop.Reference<nt_sid_t>, uu: interop.Reference<number>): number;
+declare function mbr_sid_to_uuid(sid: interop.Pointer | interop.Reference<nt_sid_t> | ArrayBufferLike | ArrayBufferView | null, uu: interop.Reference<number>): number;
 
-declare function mbr_string_to_sid(string: string | interop.Pointer | interop.Reference<any>, sid: interop.Pointer | interop.Reference<nt_sid_t>): number;
+declare function mbr_string_to_sid(string: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, sid: interop.Pointer | interop.Reference<nt_sid_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mbr_uid_to_uuid(uid: number, uu: interop.Reference<number>): number;
 
-declare function mbr_uuid_to_id(uu: interop.Reference<number>, uid_or_gid: interop.Pointer | interop.Reference<number>, id_type: interop.Pointer | interop.Reference<number>): number;
+declare function mbr_uuid_to_id(uu: interop.Reference<number>, uid_or_gid: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, id_type: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mbr_uuid_to_sid(uu: interop.Reference<number>, sid: interop.Pointer | interop.Reference<nt_sid_t>): number;
+declare function mbr_uuid_to_sid(uu: interop.Reference<number>, sid: interop.Pointer | interop.Reference<nt_sid_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface memory_object_attr_info {
 	copy_strategy: number;
@@ -8234,7 +8326,7 @@ interface memory_object_perf_info {
 }
 declare var memory_object_perf_info: interop.StructType<memory_object_perf_info>;
 
-declare function mig_allocate(p1: interop.Pointer | interop.Reference<number>, p2: number): void;
+declare function mig_allocate(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: number): void;
 
 declare function mig_dealloc_reply_port(reply_port: number): void;
 
@@ -8251,16 +8343,16 @@ interface mig_reply_error_t {
 }
 declare var mig_reply_error_t: interop.StructType<mig_reply_error_t>;
 
-declare function mig_reply_setup(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>): void;
+declare function mig_reply_setup(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function mig_strncpy(dest: string | interop.Pointer | interop.Reference<any>, src: string | interop.Pointer | interop.Reference<any>, len: number): number;
+declare function mig_strncpy(dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
-declare function mig_strncpy_zerofill(dest: string | interop.Pointer | interop.Reference<any>, src: string | interop.Pointer | interop.Reference<any>, len: number): number;
+declare function mig_strncpy_zerofill(dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
-declare function mig_strncpy_zerofillFunction(dest: string | interop.Pointer | interop.Reference<any>, src: string | interop.Pointer | interop.Reference<any>, len: number): number;
+declare function mig_strncpy_zerofillFunction(dest: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, src: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, len: number): number;
 
 interface mig_subsystem {
-	server: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>) => interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>) => void>>;
+	server: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => void>>;
 	start: number;
 	end: number;
 	maxsize: number;
@@ -8270,48 +8362,48 @@ interface mig_subsystem {
 declare var mig_subsystem: interop.StructType<mig_subsystem>;
 
 interface mig_symtab_t {
-	ms_routine_name: interop.Pointer | interop.Reference<any>;
+	ms_routine_name: interop.Pointer | interop.Reference<any> | null;
 	ms_routine_number: number;
 	ms_routine: interop.FunctionReference<() => void>;
 }
 declare var mig_symtab_t: interop.StructType<mig_symtab_t>;
 
-declare function mincore(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string | interop.Pointer | interop.Reference<any>): number;
+declare function mincore(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function minherit(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+declare function minherit(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
-declare function mkdir(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function mkdir(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 8.0
  */
-declare function mkdirat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function mkdirat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function mkdirx_np(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
+declare function mkdirx_np(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function mkfifo(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
-
-/**
- * @since 16.0
- */
-declare function mkfifoat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
-
-declare function mkfifox_np(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function mknod(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+declare function mkfifo(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 16.0
  */
-declare function mknodat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+declare function mkfifoat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function mlock(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function mkfifox_np(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function mknod(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
+
+/**
+ * @since 16.0
+ */
+declare function mknodat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
+
+declare function mlock(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 declare function mlockall(p1: number): number;
 
-declare function mmap(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number, p6: number): interop.Pointer | interop.Reference<any>;
+declare function mmap(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: number, p5: number, p6: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function mount(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
+declare function mount(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum mpo_flags_t {
 
@@ -8323,21 +8415,23 @@ declare const enum mpo_flags_t {
 
 	MPO_REPLY_PORT = 4096,
 
-	MPO_PROVISIONAL_REPLY_PORT = 16384,
+	MPO_WEAK_REPLY_PORT = 16384,
+
+	MPO_NOTIFICATION_PORT = 17408,
 
 	MPO_EXCEPTION_PORT = 32768,
 
 	MPO_CONNECTION_PORT_WITH_PORT_ARRAY = 65536
 }
 
-declare function mprotect(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+declare function mprotect(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
 interface msg {
-	msg_next: interop.Pointer | interop.Reference<msg>;
+	msg_next: interop.Pointer | interop.Reference<msg> | null;
 	msg_type: number;
 	msg_ts: number;
 	msg_spot: number;
-	label: interop.Pointer | interop.Reference<any>;
+	label: interop.Pointer | interop.Reference<any> | null;
 }
 declare var msg: interop.StructType<msg>;
 
@@ -8346,16 +8440,16 @@ interface msg_labels_t {
 }
 declare var msg_labels_t: interop.StructType<msg_labels_t>;
 
-declare function msgctl(p1: number, p2: number, p3: interop.Pointer | interop.Reference<__msqid_ds_new>): number;
+declare function msgctl(p1: number, p2: number, p3: interop.Pointer | interop.Reference<__msqid_ds_new> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function msgget(p1: number, p2: number): number;
 
 interface msghdr {
-	msg_name: interop.Pointer | interop.Reference<any>;
+	msg_name: interop.Pointer | interop.Reference<any> | null;
 	msg_namelen: number;
-	msg_iov: interop.Pointer | interop.Reference<iovec>;
+	msg_iov: interop.Pointer | interop.Reference<iovec> | null;
 	msg_iovlen: number;
-	msg_control: interop.Pointer | interop.Reference<any>;
+	msg_control: interop.Pointer | interop.Reference<any> | null;
 	msg_controllen: number;
 	msg_flags: number;
 }
@@ -8371,9 +8465,9 @@ interface msginfo {
 }
 declare var msginfo: interop.StructType<msginfo>;
 
-declare function msgrcv(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: number): number;
+declare function msgrcv(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number, p5: number): number;
 
-declare function msgsnd(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+declare function msgsnd(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
 declare function mstats(): mstatsStruct;
 
@@ -8386,13 +8480,13 @@ interface mstatsStruct {
 }
 declare var mstatsStruct: interop.StructType<mstatsStruct>;
 
-declare function msync(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+declare function msync(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
-declare function munlock(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function munlock(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 declare function munlockall(): number;
 
-declare function munmap(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function munmap(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 interface mymsg {
 	mtype: number;
@@ -8482,8 +8576,8 @@ interface net_event_data {
 declare var net_event_data: interop.StructType<net_event_data>;
 
 interface netent {
-	n_name: interop.Pointer | interop.Reference<any>;
-	n_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	n_name: interop.Pointer | interop.Reference<any> | null;
+	n_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 	n_addrtype: number;
 	n_net: number;
 }
@@ -8498,7 +8592,7 @@ interface netfs_status {
 }
 declare var netfs_status: interop.StructType<netfs_status>;
 
-declare function nftw(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statStruct>, p3: number, p4: interop.Pointer | interop.Reference<FTW>) => number>, p3: number, p4: number): number;
+declare function nftw(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<statStruct> | null, p3: number, p4: interop.Pointer | interop.Reference<FTW> | null) => number>, p3: number, p4: number): number;
 
 interface ni_reply_fqdn {
 	ni_fqdn_ttl: number;
@@ -8507,9 +8601,9 @@ interface ni_reply_fqdn {
 }
 declare var ni_reply_fqdn: interop.StructType<ni_reply_fqdn>;
 
-declare function nl_langinfo(p1: number): interop.Pointer | interop.Reference<any>;
+declare function nl_langinfo(p1: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function nl_langinfo_l(p1: number, p2: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function nl_langinfo_l(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare const noErr: number;
 
@@ -8531,28 +8625,28 @@ interface ntsid_t {
 }
 declare var ntsid_t: interop.StructType<ntsid_t>;
 
-declare function openat_authenticated_np(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+declare function openat_authenticated_np(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
-declare function opendev(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function opendev(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function opendir(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<DIR>;
+declare function opendir(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<DIR> | null;
 
-declare function openlog(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number): void;
+declare function openlog(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): void;
 
-declare function openpty(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: string | interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<termios>, p5: interop.Pointer | interop.Reference<winsize>): number;
+declare function openpty(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<winsize> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function openx_np(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
+declare function openx_np(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare var optarg: interop.Pointer | interop.Reference<any>;
+declare var optarg: interop.Pointer | interop.Reference<any> | null;
 
 declare var opterr: number;
 
 declare var optind: number;
 
 interface option {
-	name: interop.Pointer | interop.Reference<any>;
+	name: interop.Pointer | interop.Reference<any> | null;
 	has_arg: number;
-	flag: interop.Pointer | interop.Reference<number>;
+	flag: interop.Pointer | interop.Reference<number> | null;
 	val: number;
 }
 declare var option: interop.StructType<option>;
@@ -8579,12 +8673,12 @@ declare var os_unfair_lock: interop.StructType<os_unfair_lock>;
 /**
  * @since 10.0
  */
-declare function os_unfair_lock_assert_not_owner(lock: interop.Pointer | interop.Reference<os_unfair_lock>): void;
+declare function os_unfair_lock_assert_not_owner(lock: interop.Pointer | interop.Reference<os_unfair_lock> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 10.0
  */
-declare function os_unfair_lock_assert_owner(lock: interop.Pointer | interop.Reference<os_unfair_lock>): void;
+declare function os_unfair_lock_assert_owner(lock: interop.Pointer | interop.Reference<os_unfair_lock> | ArrayBufferLike | ArrayBufferView): void;
 
 declare const enum os_unfair_lock_flags_t {
 
@@ -8596,22 +8690,22 @@ declare const enum os_unfair_lock_flags_t {
 /**
  * @since 10.0
  */
-declare function os_unfair_lock_lock(lock: interop.Pointer | interop.Reference<os_unfair_lock>): void;
+declare function os_unfair_lock_lock(lock: interop.Pointer | interop.Reference<os_unfair_lock> | ArrayBufferLike | ArrayBufferView): void;
 
 /**
  * @since 18.0
  */
-declare function os_unfair_lock_lock_with_flags(lock: interop.Pointer | interop.Reference<os_unfair_lock>, flags: os_unfair_lock_flags_t): void;
+declare function os_unfair_lock_lock_with_flags(lock: interop.Pointer | interop.Reference<os_unfair_lock> | ArrayBufferLike | ArrayBufferView, flags: os_unfair_lock_flags_t): void;
 
 /**
  * @since 10.0
  */
-declare function os_unfair_lock_trylock(lock: interop.Pointer | interop.Reference<os_unfair_lock>): boolean;
+declare function os_unfair_lock_trylock(lock: interop.Pointer | interop.Reference<os_unfair_lock> | ArrayBufferLike | ArrayBufferView): boolean;
 
 /**
  * @since 10.0
  */
-declare function os_unfair_lock_unlock(lock: interop.Pointer | interop.Reference<os_unfair_lock>): void;
+declare function os_unfair_lock_unlock(lock: interop.Pointer | interop.Reference<os_unfair_lock> | ArrayBufferLike | ArrayBufferView): void;
 
 interface ostat {
 	st_dev: number;
@@ -8637,15 +8731,15 @@ declare const outline: number;
 declare function panic_init(p1: number): void;
 
 interface passwd {
-	pw_name: interop.Pointer | interop.Reference<any>;
-	pw_passwd: interop.Pointer | interop.Reference<any>;
+	pw_name: interop.Pointer | interop.Reference<any> | null;
+	pw_passwd: interop.Pointer | interop.Reference<any> | null;
 	pw_uid: number;
 	pw_gid: number;
 	pw_change: number;
-	pw_class: interop.Pointer | interop.Reference<any>;
-	pw_gecos: interop.Pointer | interop.Reference<any>;
-	pw_dir: interop.Pointer | interop.Reference<any>;
-	pw_shell: interop.Pointer | interop.Reference<any>;
+	pw_class: interop.Pointer | interop.Reference<any> | null;
+	pw_gecos: interop.Pointer | interop.Reference<any> | null;
+	pw_dir: interop.Pointer | interop.Reference<any> | null;
+	pw_shell: interop.Pointer | interop.Reference<any> | null;
 	pw_expire: number;
 }
 declare var passwd: interop.StructType<passwd>;
@@ -8662,11 +8756,9 @@ interface persona_token {
 }
 declare var persona_token: interop.StructType<persona_token>;
 
-declare function pfctlinput(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>): void;
+declare function pfctlinput(p1: number, p2: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function pid_for_task(t: number, x: interop.Pointer | interop.Reference<number>): number;
-
-declare function pidlock(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: string | interop.Pointer | interop.Reference<any>): number;
+declare function pid_for_task(t: number, x: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface policy_bases {
 	ts: policy_timeshare_base;
@@ -8746,7 +8838,7 @@ interface policy_timeshare_limit {
 }
 declare var policy_timeshare_limit: interop.StructType<policy_timeshare_limit>;
 
-declare function poll(p1: interop.Pointer | interop.Reference<pollfd>, p2: number, p3: number): number;
+declare function poll(p1: interop.Pointer | interop.Reference<pollfd> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
 interface pollfd {
 	fd: number;
@@ -8757,161 +8849,163 @@ declare var pollfd: interop.StructType<pollfd>;
 
 declare function port_obj_init(p1: number): void;
 
-declare var port_obj_table: interop.Pointer | interop.Reference<port_obj_tentry>;
+declare var port_obj_table: interop.Pointer | interop.Reference<port_obj_tentry> | null;
 
 declare var port_obj_table_size: number;
 
 interface port_obj_tentry {
-	pos_value: interop.Pointer | interop.Reference<any>;
+	pos_value: interop.Pointer | interop.Reference<any> | null;
 	pos_type: number;
 }
 declare var port_obj_tentry: interop.StructType<port_obj_tentry>;
 
-declare function posix_madvise(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+declare function posix_madvise(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawn(p1: interop.Pointer | interop.Reference<number>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __argv: interop.Reference<interop.Pointer | interop.Reference<any>>, __envp: interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function posix_spawn(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __argv: interop.Reference<interop.Pointer | interop.Reference<any> | null>, __envp: interop.Reference<interop.Pointer | interop.Reference<any> | null>): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawn_file_actions_addclose(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+declare function posix_spawn_file_actions_addclose(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawn_file_actions_adddup2(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: number): number;
+declare function posix_spawn_file_actions_adddup2(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
 /**
  * @since 4.3
  */
-declare function posix_spawn_file_actions_addinherit_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+declare function posix_spawn_file_actions_addinherit_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawn_file_actions_addopen(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: string | interop.Pointer | interop.Reference<any>, p4: number, p5: number): number;
+declare function posix_spawn_file_actions_addopen(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawn_file_actions_destroy(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function posix_spawn_file_actions_destroy(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawn_file_actions_init(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function posix_spawn_file_actions_init(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_destroy(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function posix_spawnattr_destroy(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
  */
-declare function posix_spawnattr_get_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __qos_class: interop.Pointer | interop.Reference<qos_class_t>): number;
+declare function posix_spawnattr_get_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __qos_class: interop.Pointer | interop.Reference<qos_class_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 14.0
  */
-declare function posix_spawnattr_getarchpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_getarchpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_getbinpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_getbinpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_getflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_getflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_getpgroup(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_getpgroup(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_getsigdefault(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_getsigdefault(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_getsigmask(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_getsigmask(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_init(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function posix_spawnattr_init(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function posix_spawnattr_set_csm_np(attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number): number;
+declare function posix_spawnattr_set_4k_page_size_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function posix_spawnattr_set_csm_np(attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, flags: number): number;
 
 /**
  * @since 8.0
  */
-declare function posix_spawnattr_set_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __qos_class: qos_class_t): number;
+declare function posix_spawnattr_set_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __qos_class: qos_class_t): number;
 
 /**
  * @since 14.0
  */
-declare function posix_spawnattr_setarchpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_setarchpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 3.2
  */
-declare function posix_spawnattr_setauditsessionport_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+declare function posix_spawnattr_setauditsessionport_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_setbinpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_setbinpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_setexceptionports_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: number, p4: number, p5: number): number;
+declare function posix_spawnattr_setexceptionports_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: number, p5: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_setflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+declare function posix_spawnattr_setflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function posix_spawnattr_setnosmt_np(attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
-
-/**
- * @since 2.0
- */
-declare function posix_spawnattr_setpgroup(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+declare function posix_spawnattr_setnosmt_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_setsigdefault(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_setpgroup(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_setsigmask(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function posix_spawnattr_setsigdefault(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnattr_setspecialport_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: number): number;
+declare function posix_spawnattr_setsigmask(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 2.0
  */
-declare function posix_spawnp(p1: interop.Pointer | interop.Reference<number>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __argv: interop.Reference<interop.Pointer | interop.Reference<any>>, __envp: interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function posix_spawnattr_setspecialport_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
+
+/**
+ * @since 2.0
+ */
+declare function posix_spawnp(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, __argv: interop.Reference<interop.Pointer | interop.Reference<any> | null>, __envp: interop.Reference<interop.Pointer | interop.Reference<any> | null>): number;
 
 /**
  * @since 14.0
  */
-declare function preadv(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number, p4: number): number;
+declare function preadv(p1: number, p2: interop.Pointer | interop.Reference<iovec> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
 interface proc_persona_info {
 	unique_pid: number;
@@ -8927,7 +9021,7 @@ declare var proc_persona_info: interop.StructType<proc_persona_info>;
 
 declare function processor_assign(processor: number, new_set: number, wait: number): number;
 
-declare function processor_control(processor: number, processor_cmd: interop.Pointer | interop.Reference<number>, processor_cmdCnt: number): number;
+declare function processor_control(processor: number, processor_cmd: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, processor_cmdCnt: number): number;
 
 interface processor_cpu_load_info {
 	cpu_ticks: interop.Reference<number>;
@@ -8936,9 +9030,9 @@ declare var processor_cpu_load_info: interop.StructType<processor_cpu_load_info>
 
 declare function processor_exit(processor: number): number;
 
-declare function processor_get_assignment(processor: number, assigned_set: interop.Pointer | interop.Reference<number>): number;
+declare function processor_get_assignment(processor: number, assigned_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function processor_info(processor: number, flavor: number, host: interop.Pointer | interop.Reference<number>, processor_info_out: interop.Pointer | interop.Reference<number>, processor_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function processor_info(processor: number, flavor: number, host: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, processor_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, processor_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface processor_set_basic_info {
 	processor_count: number;
@@ -8946,13 +9040,13 @@ interface processor_set_basic_info {
 }
 declare var processor_set_basic_info: interop.StructType<processor_set_basic_info>;
 
-declare function processor_set_create(host: number, new_set: interop.Pointer | interop.Reference<number>, new_name: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_create(host: number, new_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function processor_set_default(host: number, default_set: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_default(host: number, default_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function processor_set_destroy(set: number): number;
 
-declare function processor_set_info(set_name: number, flavor: number, host: interop.Pointer | interop.Reference<number>, info_out: interop.Pointer | interop.Reference<number>, info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_info(set_name: number, flavor: number, host: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface processor_set_load_info {
 	task_count: number;
@@ -8964,27 +9058,27 @@ declare var processor_set_load_info: interop.StructType<processor_set_load_info>
 
 declare function processor_set_max_priority(processor_set: number, max_priority: number, change_threads: number): number;
 
-declare function processor_set_policy_control(pset: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number>, policy_infoCnt: number, change: number): number;
+declare function processor_set_policy_control(pset: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, policy_infoCnt: number, change: number): number;
 
 declare function processor_set_policy_disable(processor_set: number, policy: number, change_threads: number): number;
 
 declare function processor_set_policy_enable(processor_set: number, policy: number): number;
 
-declare function processor_set_stack_usage(pset: number, ltotal: interop.Pointer | interop.Reference<number>, space: interop.Pointer | interop.Reference<number>, resident: interop.Pointer | interop.Reference<number>, maxusage: interop.Pointer | interop.Reference<number>, maxstack: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_stack_usage(pset: number, ltotal: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, space: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, resident: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, maxusage: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, maxstack: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function processor_set_statistics(pset: number, flavor: number, info_out: interop.Pointer | interop.Reference<number>, info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_statistics(pset: number, flavor: number, info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function processor_set_tasks(processor_set: number, task_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, task_listCnt: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_tasks(processor_set: number, task_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, task_listCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function processor_set_tasks_with_flavor(processor_set: number, flavor: number, task_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, task_listCnt: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_tasks_with_flavor(processor_set: number, flavor: number, task_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, task_listCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function processor_set_threads(processor_set: number, thread_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, thread_listCnt: interop.Pointer | interop.Reference<number>): number;
+declare function processor_set_threads(processor_set: number, thread_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, thread_listCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function processor_start(processor: number): number;
 
 interface protoent {
-	p_name: interop.Pointer | interop.Reference<any>;
-	p_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	p_name: interop.Pointer | interop.Reference<any> | null;
+	p_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 	p_proto: number;
 }
 declare var protoent: interop.StructType<protoent>;
@@ -8992,16 +9086,16 @@ declare var protoent: interop.StructType<protoent>;
 /**
  * @since 10.0
  */
-declare function pthread_create_from_mach_thread(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_opaque_pthread_t>>, p2: interop.Pointer | interop.Reference<_opaque_pthread_attr_t>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<any>): number;
+declare function pthread_create_from_mach_thread(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_opaque_pthread_t> | null> | ArrayBufferLike | ArrayBufferView, p2: interop.Pointer | interop.Reference<_opaque_pthread_attr_t> | ArrayBufferLike | ArrayBufferView | null, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null>, p4: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function pututxline(p1: interop.Pointer | interop.Reference<utmpx>): interop.Pointer | interop.Reference<utmpx>;
+declare function pututxline(p1: interop.Pointer | interop.Reference<utmpx> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<utmpx> | null;
 
 /**
  * @since 14.0
  */
-declare function pwritev(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number, p4: number): number;
+declare function pwritev(p1: number, p2: interop.Pointer | interop.Reference<iovec> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
-declare function quotactl(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string | interop.Pointer | interop.Reference<any>): number;
+declare function quotactl(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number, p4: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface radvisory {
 	ra_offset: number;
@@ -9010,92 +9104,92 @@ interface radvisory {
 declare var radvisory: interop.StructType<radvisory>;
 
 interface rb_node_t {
-	opaque: interop.Reference<interop.Pointer | interop.Reference<any>>;
+	opaque: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 }
 declare var rb_node_t: interop.StructType<rb_node_t>;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_count(p1: interop.Pointer | interop.Reference<rb_tree_t>): number;
+declare function rb_tree_count(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_find_node(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function rb_tree_find_node(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_find_node_geq(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function rb_tree_find_node_geq(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_find_node_leq(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function rb_tree_find_node_leq(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_init(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<rb_tree_ops_t>): void;
+declare function rb_tree_init(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<rb_tree_ops_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_insert_node(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function rb_tree_insert_node(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_iterate(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<any>, p3: number): interop.Pointer | interop.Reference<any>;
+declare function rb_tree_iterate(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): interop.Pointer | interop.Reference<any> | null;
 
 interface rb_tree_ops_t {
-	rbto_compare_nodes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => number>;
-	rbto_compare_key: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => number>;
+	rbto_compare_nodes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => number>;
+	rbto_compare_key: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => number>;
 	rbto_node_offset: number;
-	rbto_context: interop.Pointer | interop.Reference<any>;
+	rbto_context: interop.Pointer | interop.Reference<any> | null;
 }
 declare var rb_tree_ops_t: interop.StructType<rb_tree_ops_t>;
 
 /**
  * @since 7.0
  */
-declare function rb_tree_remove_node(p1: interop.Pointer | interop.Reference<rb_tree_t>, p2: interop.Pointer | interop.Reference<any>): void;
+declare function rb_tree_remove_node(p1: interop.Pointer | interop.Reference<rb_tree_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface rb_tree_t {
-	opaque: interop.Reference<interop.Pointer | interop.Reference<any>>;
+	opaque: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 }
 declare var rb_tree_t: interop.StructType<rb_tree_t>;
 
-declare function readdir(p1: interop.Pointer | interop.Reference<DIR>): interop.Pointer | interop.Reference<dirent>;
+declare function readdir(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<dirent> | null;
 
-declare function readdir_r(p1: interop.Pointer | interop.Reference<DIR>, p2: interop.Pointer | interop.Reference<dirent>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>): number;
+declare function readdir_r(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<dirent> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function readpassphrase(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, __bufsiz: number, p4: number): interop.Pointer | interop.Reference<any>;
+declare function readpassphrase(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __bufsiz: number, p4: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function readv(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number): number;
+declare function readv(p1: number, p2: interop.Pointer | interop.Reference<iovec> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function recv(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+declare function recv(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
-declare function recvfrom(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<sockaddr>, p6: interop.Pointer | interop.Reference<number>): number;
+declare function recvfrom(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number, p5: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p6: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function recvmsg(p1: number, p2: interop.Pointer | interop.Reference<msghdr>, p3: number): number;
+declare function recvmsg(p1: number, p2: interop.Pointer | interop.Reference<msghdr> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function regcomp(p1: interop.Pointer | interop.Reference<regex_t>, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
+declare function regcomp(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function regerror(p1: number, p2: interop.Pointer | interop.Reference<regex_t>, p3: string | interop.Pointer | interop.Reference<any>, __errbuf_size: number): number;
+declare function regerror(p1: number, p2: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p3: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __errbuf_size: number): number;
 
 interface regex_t {
 	re_magic: number;
 	re_nsub: number;
-	re_endp: interop.Pointer | interop.Reference<any>;
-	re_g: interop.Pointer | interop.Reference<any>;
+	re_endp: interop.Pointer | interop.Reference<any> | null;
+	re_g: interop.Pointer | interop.Reference<any> | null;
 }
 declare var regex_t: interop.StructType<regex_t>;
 
-declare function regexec(p1: interop.Pointer | interop.Reference<regex_t>, p2: string | interop.Pointer | interop.Reference<any>, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p5: number): number;
+declare function regexec(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p5: number): number;
 
-declare function regfree(p1: interop.Pointer | interop.Reference<regex_t>): void;
+declare function regfree(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface regmatch_t {
 	rm_so: number;
@@ -9106,45 +9200,45 @@ declare var regmatch_t: interop.StructType<regmatch_t>;
 /**
  * @since 6.0
  */
-declare function regncomp(p1: interop.Pointer | interop.Reference<regex_t>, p2: string | interop.Pointer | interop.Reference<any>, __len: number, p4: number): number;
+declare function regncomp(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __len: number, p4: number): number;
 
 /**
  * @since 6.0
  */
-declare function regnexec(p1: interop.Pointer | interop.Reference<regex_t>, p2: string | interop.Pointer | interop.Reference<any>, __len: number, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p6: number): number;
+declare function regnexec(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __len: number, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p6: number): number;
 
 /**
  * @since 6.0
  */
-declare function regwcomp(p1: interop.Pointer | interop.Reference<regex_t>, p2: interop.Pointer | interop.Reference<number>, p3: number): number;
+declare function regwcomp(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
 /**
  * @since 6.0
  */
-declare function regwexec(p1: interop.Pointer | interop.Reference<regex_t>, p2: interop.Pointer | interop.Reference<number>, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p5: number): number;
+declare function regwexec(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p5: number): number;
 
 /**
  * @since 6.0
  */
-declare function regwncomp(p1: interop.Pointer | interop.Reference<regex_t>, p2: interop.Pointer | interop.Reference<number>, __len: number, p4: number): number;
+declare function regwncomp(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __len: number, p4: number): number;
 
 /**
  * @since 6.0
  */
-declare function regwnexec(p1: interop.Pointer | interop.Reference<regex_t>, p2: interop.Pointer | interop.Reference<number>, __len: number, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p6: number): number;
+declare function regwnexec(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __len: number, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p6: number): number;
 
-declare function removexattr(path: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, options: number): number;
+declare function removexattr(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, options: number): number;
 
-declare function remque(p1: interop.Pointer | interop.Reference<any>): void;
+declare function remque(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function rewinddir(p1: interop.Pointer | interop.Reference<DIR>): void;
+declare function rewinddir(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface routine_descriptor {
 	impl_routine: interop.FunctionReference<() => number>;
-	stub_routine: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>) => void>;
+	stub_routine: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => void>;
 	argc: number;
 	descr_count: number;
-	arg_descr: interop.Pointer | interop.Reference<mach_msg_type_descriptor_t>;
+	arg_descr: interop.Pointer | interop.Reference<mach_msg_type_descriptor_t> | null;
 	max_reply_msg: number;
 }
 declare var routine_descriptor: interop.StructType<routine_descriptor>;
@@ -9159,10 +9253,10 @@ declare var rpc_routine_arg_descriptor: interop.StructType<rpc_routine_arg_descr
 
 interface rpc_routine_descriptor {
 	impl_routine: interop.FunctionReference<() => number>;
-	stub_routine: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t>, p2: interop.Pointer | interop.Reference<mach_msg_header_t>) => void>;
+	stub_routine: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_msg_header_t> | null, p2: interop.Pointer | interop.Reference<mach_msg_header_t> | null) => void>;
 	argc: number;
 	descr_count: number;
-	arg_descr: interop.Pointer | interop.Reference<rpc_routine_arg_descriptor>;
+	arg_descr: interop.Pointer | interop.Reference<rpc_routine_arg_descriptor> | null;
 	max_reply_msg: number;
 }
 declare var rpc_routine_descriptor: interop.StructType<rpc_routine_descriptor>;
@@ -9174,7 +9268,7 @@ interface rpc_signature {
 declare var rpc_signature: interop.StructType<rpc_signature>;
 
 interface rpc_subsystem {
-	reserved: interop.Pointer | interop.Reference<any>;
+	reserved: interop.Pointer | interop.Reference<any> | null;
 	start: number;
 	end: number;
 	maxsize: number;
@@ -9185,23 +9279,23 @@ interface rpc_subsystem {
 declare var rpc_subsystem: interop.StructType<rpc_subsystem>;
 
 interface rpcent {
-	r_name: interop.Pointer | interop.Reference<any>;
-	r_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	r_name: interop.Pointer | interop.Reference<any> | null;
+	r_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 	r_number: number;
 }
 declare var rpcent: interop.StructType<rpcent>;
 
 interface rslvmulti_req {
-	sa: interop.Pointer | interop.Reference<sockaddr>;
-	llsa: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sockaddr>>;
+	sa: interop.Pointer | interop.Reference<sockaddr> | null;
+	llsa: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sockaddr> | null> | null;
 }
 declare var rslvmulti_req: interop.StructType<rslvmulti_req>;
 
 interface sa_endpoints_t {
 	sae_srcif: number;
-	sae_srcaddr: interop.Pointer | interop.Reference<sockaddr>;
+	sae_srcaddr: interop.Pointer | interop.Reference<sockaddr> | null;
 	sae_srcaddrlen: number;
-	sae_dstaddr: interop.Pointer | interop.Reference<sockaddr>;
+	sae_dstaddr: interop.Pointer | interop.Reference<sockaddr> | null;
 	sae_dstaddrlen: number;
 }
 declare var sa_endpoints_t: interop.StructType<sa_endpoints_t>;
@@ -9387,12 +9481,22 @@ interface sastat {
 }
 declare var sastat: interop.StructType<sastat>;
 
-declare function scandir(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<dirent>) => number>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>) => number>): number;
+declare function scandir(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<dirent> | null) => number>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null) => number>): number;
 
 /**
  * @since 3.2
  */
-declare function scandir_b(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>>, p3: (p1: interop.Pointer | interop.Reference<dirent>) => number, p4: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>) => number): number;
+declare function scandir_b(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p3: (p1: interop.Pointer | interop.Reference<dirent> | null) => number, p4: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null) => number): number;
+
+/**
+ * @since 26.4
+ */
+declare function scandirat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<dirent> | null) => number>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null) => number>): number;
+
+/**
+ * @since 26.4
+ */
+declare function scandirat_b(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null> | ArrayBufferLike | ArrayBufferView | null, p4: (p1: interop.Pointer | interop.Reference<dirent> | null) => number, p5: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent> | null> | null) => number): number;
 
 interface searchstate {
 	ss_union_flags: number;
@@ -9416,7 +9520,7 @@ interface security_token_t {
 }
 declare var security_token_t: interop.StructType<security_token_t>;
 
-declare function seekdir(p1: interop.Pointer | interop.Reference<DIR>, p2: number): void;
+declare function seekdir(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null, p2: number): void;
 
 interface sem {
 	semval: number;
@@ -9426,23 +9530,23 @@ interface sem {
 }
 declare var sem: interop.StructType<sem>;
 
-declare function sem_close(p1: interop.Pointer | interop.Reference<number>): number;
+declare function sem_close(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function sem_destroy(p1: interop.Pointer | interop.Reference<number>): number;
+declare function sem_destroy(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function sem_getvalue(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>): number;
+declare function sem_getvalue(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function sem_init(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: number): number;
+declare function sem_init(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: number): number;
 
-declare function sem_post(p1: interop.Pointer | interop.Reference<number>): number;
+declare function sem_post(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function sem_trywait(p1: interop.Pointer | interop.Reference<number>): number;
+declare function sem_trywait(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function sem_unlink(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function sem_unlink(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function sem_wait(p1: interop.Pointer | interop.Reference<number>): number;
+declare function sem_wait(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function semaphore_create(task: number, semaphore: interop.Pointer | interop.Reference<number>, policy: number, value: number): number;
+declare function semaphore_create(task: number, semaphore: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, policy: number, value: number): number;
 
 declare function semaphore_destroy(task: number, semaphore: number): number;
 
@@ -9469,21 +9573,21 @@ declare var sembuf: interop.StructType<sembuf>;
 
 declare function semget(p1: number, p2: number, p3: number): number;
 
-declare function semop(p1: number, p2: interop.Pointer | interop.Reference<sembuf>, p3: number): number;
+declare function semop(p1: number, p2: interop.Pointer | interop.Reference<sembuf> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function send(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+declare function send(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
-declare function sendfile(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<sf_hdtr>, p6: number): number;
+declare function sendfile(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<sf_hdtr> | ArrayBufferLike | ArrayBufferView | null, p6: number): number;
 
-declare function sendmsg(p1: number, p2: interop.Pointer | interop.Reference<msghdr>, p3: number): number;
+declare function sendmsg(p1: number, p2: interop.Pointer | interop.Reference<msghdr> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
-declare function sendto(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<sockaddr>, p6: number): number;
+declare function sendto(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number, p5: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p6: number): number;
 
 interface servent {
-	s_name: interop.Pointer | interop.Reference<any>;
-	s_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	s_name: interop.Pointer | interop.Reference<any> | null;
+	s_aliases: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 	s_port: number;
-	s_proto: interop.Pointer | interop.Reference<any>;
+	s_proto: interop.Pointer | interop.Reference<any> | null;
 }
 declare var servent: interop.StructType<servent>;
 
@@ -9491,17 +9595,17 @@ declare var servent: interop.StructType<servent>;
  * @since 2.0
  * @deprecated 6.0
  */
-declare function setaudit(p1: interop.Pointer | interop.Reference<auditinfo>): number;
+declare function setaudit(p1: interop.Pointer | interop.Reference<auditinfo> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function setaudit_addr(p1: interop.Pointer | interop.Reference<auditinfo_addr>, p2: number): number;
+declare function setaudit_addr(p1: interop.Pointer | interop.Reference<auditinfo_addr> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function setauid(p1: interop.Pointer | interop.Reference<number>): number;
+declare function setauid(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function setfsent(): number;
 
 declare function setgrent(): void;
 
-declare function setgrfile(p1: string | interop.Pointer | interop.Reference<any>): void;
+declare function setgrfile(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function setgroupent(p1: number): number;
 
@@ -9510,15 +9614,15 @@ declare function sethostent(p1: number): void;
 /**
  * @since 4.3
  */
-declare function setipv4sourcefilter(p1: number, p2: in_addr, p3: in_addr, p4: number, p5: number, p6: interop.Pointer | interop.Reference<in_addr>): number;
+declare function setipv4sourcefilter(p1: number, p2: in_addr, p3: in_addr, p4: number, p5: number, p6: interop.Pointer | interop.Reference<in_addr> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function setitimer(p1: number, p2: interop.Pointer | interop.Reference<itimerval>, p3: interop.Pointer | interop.Reference<itimerval>): number;
+declare function setitimer(p1: number, p2: interop.Pointer | interop.Reference<itimerval> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<itimerval> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function setlogmask(p1: number): number;
 
 declare function setnetent(p1: number): void;
 
-declare function setnetgrent(p1: string | interop.Pointer | interop.Reference<any>): void;
+declare function setnetgrent(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
 declare function setpassent(p1: number): number;
 
@@ -9530,14 +9634,14 @@ declare function setrpcent(stayopen: number): void;
 
 declare function setservent(p1: number): void;
 
-declare function setsockopt(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: number): number;
+declare function setsockopt(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p5: number): number;
 
 /**
  * @since 4.3
  */
-declare function setsourcefilter(p1: number, p2: number, p3: interop.Pointer | interop.Reference<sockaddr>, p4: number, p5: number, p6: number, p7: interop.Pointer | interop.Reference<sockaddr_storage>): number;
+declare function setsourcefilter(p1: number, p2: number, p3: interop.Pointer | interop.Reference<sockaddr> | ArrayBufferLike | ArrayBufferView | null, p4: number, p5: number, p6: number, p7: interop.Pointer | interop.Reference<sockaddr_storage> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function settimeofday(p1: interop.Pointer | interop.Reference<timeval>, p2: interop.Pointer | interop.Reference<timezone>): number;
+declare function settimeofday(p1: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<timezone> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function setutxent(): void;
 
@@ -9546,31 +9650,31 @@ declare function setutxent(): void;
  */
 declare function setutxent_wtmp(p1: number): void;
 
-declare function setxattr(path: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, size: number, position: number, options: number): number;
+declare function setxattr(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, size: number, position: number, options: number): number;
 
 interface sf_hdtr {
-	headers: interop.Pointer | interop.Reference<iovec>;
+	headers: interop.Pointer | interop.Reference<iovec> | null;
 	hdr_cnt: number;
-	trailers: interop.Pointer | interop.Reference<iovec>;
+	trailers: interop.Pointer | interop.Reference<iovec> | null;
 	trl_cnt: number;
 }
 declare var sf_hdtr: interop.StructType<sf_hdtr>;
 
 declare const shadow: number;
 
-declare function shm_unlink(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function shm_unlink(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function shmat(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number): interop.Pointer | interop.Reference<any>;
+declare function shmat(p1: number, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number): interop.Pointer | interop.Reference<any> | null;
 
-declare function shmctl(p1: number, p2: number, p3: interop.Pointer | interop.Reference<__shmid_ds_new>): number;
+declare function shmctl(p1: number, p2: number, p3: interop.Pointer | interop.Reference<__shmid_ds_new> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function shmdt(p1: interop.Pointer | interop.Reference<any>): number;
+declare function shmdt(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function shmget(p1: number, p2: number, p3: number): number;
 
 declare function shutdown(p1: number, p2: number): number;
 
-declare function slot_name(p1: number, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
+declare function slot_name(p1: number, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): void;
 
 interface so_np_extensions {
 	npx_flags: number;
@@ -9674,7 +9778,7 @@ declare function sockatmark(p1: number): number;
 
 declare function socket(p1: number, p2: number, p3: number): number;
 
-declare function socketpair(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>): number;
+declare function socketpair(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface sockproto {
 	sp_family: number;
@@ -9682,7 +9786,7 @@ interface sockproto {
 }
 declare var sockproto: interop.StructType<sockproto>;
 
-declare function stat(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statStruct>): number;
+declare function stat(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface statStruct {
 	st_dev: number;
@@ -9706,7 +9810,7 @@ interface statStruct {
 }
 declare var statStruct: interop.StructType<statStruct>;
 
-declare function statfs(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statfsStruct>): number;
+declare function statfs(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<statfsStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface statfsStruct {
 	f_bsize: number;
@@ -9729,7 +9833,7 @@ interface statfsStruct {
 }
 declare var statfsStruct: interop.StructType<statfsStruct>;
 
-declare function statvfs(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statvfsStruct>): number;
+declare function statvfs(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<statvfsStruct> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface statvfsStruct {
 	f_bsize: number;
@@ -9746,22 +9850,22 @@ interface statvfsStruct {
 }
 declare var statvfsStruct: interop.StructType<statvfsStruct>;
 
-declare function statx_np(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<statStruct>, p3: interop.Pointer | interop.Reference<any>): number;
+declare function statx_np(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<statStruct> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function swtch(): number;
 
 declare function swtch_pri(pri: number): number;
 
-declare function sysctl(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: interop.Pointer | interop.Reference<any>, oldlenp: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<any>, newlen: number): number;
+declare function sysctl(p1: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, oldlenp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p5: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, newlen: number): number;
 
-declare function sysctlbyname(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, oldlenp: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<any>, newlen: number): number;
+declare function sysctlbyname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, oldlenp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, newlen: number): number;
 
-declare function sysctlnametomib(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, sizep: interop.Pointer | interop.Reference<number>): number;
+declare function sysctlnametomib(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, sizep: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 10.0
  */
-declare function sysdir_get_next_search_path_enumeration(state: number, path: string | interop.Pointer | interop.Reference<any>): number;
+declare function sysdir_get_next_search_path_enumeration(state: number, path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum sysdir_search_path_directory_t {
 
@@ -9887,9 +9991,9 @@ interface task_category_policy {
 }
 declare var task_category_policy: interop.StructType<task_category_policy>;
 
-declare function task_create(target_task: number, ledgers: interop.Pointer | interop.Reference<number>, ledgersCnt: number, inherit_memory: number, child_task: interop.Pointer | interop.Reference<number>): number;
+declare function task_create(target_task: number, ledgers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, ledgersCnt: number, inherit_memory: number, child_task: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_create_identity_token(task: number, token: interop.Pointer | interop.Reference<number>): number;
+declare function task_create_identity_token(task: number, token: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface task_dyld_info {
 	all_image_info_addr: number;
@@ -9900,7 +10004,7 @@ declare var task_dyld_info: interop.StructType<task_dyld_info>;
 
 declare function task_dyld_process_info_notify_deregister(target_task: number, notify: number): number;
 
-declare function task_dyld_process_info_notify_get(names_addr: interop.Pointer | interop.Reference<number>, names_count_addr: interop.Pointer | interop.Reference<number>): number;
+declare function task_dyld_process_info_notify_get(names_addr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, names_count_addr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function task_dyld_process_info_notify_register(target_task: number, notify: number): number;
 
@@ -9927,33 +10031,33 @@ interface task_flags_info {
 }
 declare var task_flags_info: interop.StructType<task_flags_info>;
 
-declare function task_for_pid(target_tport: number, pid: number, t: interop.Pointer | interop.Reference<number>): number;
+declare function task_for_pid(target_tport: number, pid: number, t: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_generate_corpse(task: number, corpse_task_port: interop.Pointer | interop.Reference<number>): number;
+declare function task_generate_corpse(task: number, corpse_task_port: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_assignment(task: number, assigned_set: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_assignment(task: number, assigned_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_dyld_image_infos(task: number, dyld_images: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dyld_kernel_image_info>>, dyld_imagesCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_dyld_image_infos(task: number, dyld_images: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dyld_kernel_image_info> | null> | ArrayBufferLike | ArrayBufferView | null, dyld_imagesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_emulation_vector(task: number, vector_start: interop.Pointer | interop.Reference<number>, emulation_vector: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, emulation_vectorCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_emulation_vector(task: number, vector_start: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, emulation_vector: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, emulation_vectorCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_exc_guard_behavior(task: number, behavior: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_exc_guard_behavior(task: number, behavior: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_exception_ports(task: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_exception_ports(task: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_exception_ports_info(port: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers_info: interop.Pointer | interop.Reference<ipc_info_port_t>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_exception_ports_info(port: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers_info: interop.Pointer | interop.Reference<ipc_info_port_t> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_mach_voucher(task: number, which: number, voucher: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_mach_voucher(task: number, which: number, voucher: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_special_port(task: number, which_port: number, special_port: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_special_port(task: number, which_port: number, special_port: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_get_state(task: number, flavor: number, old_state: interop.Pointer | interop.Reference<number>, old_stateCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_get_state(task: number, flavor: number, old_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_stateCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_identity_token_get_task_port(token: number, flavor: number, task_port: interop.Pointer | interop.Reference<number>): number;
+declare function task_identity_token_get_task_port(token: number, flavor: number, task_port: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_info(target_task: number, flavor: number, task_info_out: interop.Pointer | interop.Reference<number>, task_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_info(target_task: number, flavor: number, task_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, task_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_inspect(task: number, flavor: number, info_out: interop.Pointer | interop.Reference<number>, info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_inspect(task: number, flavor: number, info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface task_inspect_basic_counts {
 	instructions: number;
@@ -9996,19 +10100,19 @@ declare const enum task_latency_qos {
 	LATENCY_QOS_TIER_5 = 16711686
 }
 
-declare function task_map_corpse_info(task: number, corspe_task: number, kcd_addr_begin: interop.Pointer | interop.Reference<number>, kcd_size: interop.Pointer | interop.Reference<number>): number;
+declare function task_map_corpse_info(task: number, corspe_task: number, kcd_addr_begin: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, kcd_size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_map_corpse_info_64(task: number, corspe_task: number, kcd_addr_begin: interop.Pointer | interop.Reference<number>, kcd_size: interop.Pointer | interop.Reference<number>): number;
+declare function task_map_corpse_info_64(task: number, corspe_task: number, kcd_addr_begin: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, kcd_size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_map_kcdata_object_64(task: number, kcdata_object: number, kcd_addr_begin: interop.Pointer | interop.Reference<number>, kcd_size: interop.Pointer | interop.Reference<number>): number;
+declare function task_map_kcdata_object_64(task: number, kcdata_object: number, kcd_addr_begin: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, kcd_size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_name_for_pid(target_tport: number, pid: number, tn: interop.Pointer | interop.Reference<number>): number;
+declare function task_name_for_pid(target_tport: number, pid: number, tn: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_policy(task: number, policy: number, base: interop.Pointer | interop.Reference<number>, baseCnt: number, set_limit: number, change: number): number;
+declare function task_policy(task: number, policy: number, base: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, baseCnt: number, set_limit: number, change: number): number;
 
-declare function task_policy_get(task: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number>, policy_infoCnt: interop.Pointer | interop.Reference<number>, get_default: interop.Pointer | interop.Reference<number>): number;
+declare function task_policy_get(task: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, policy_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, get_default: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_policy_set(task: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number>, policy_infoCnt: number): number;
+declare function task_policy_set(task: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, policy_infoCnt: number): number;
 
 interface task_power_info {
 	total_user: number;
@@ -10028,7 +10132,7 @@ interface task_power_info_v2 {
 }
 declare var task_power_info_v2: interop.StructType<task_power_info_v2>;
 
-declare function task_purgable_info(task: number, stats: interop.Pointer | interop.Reference<vm_purgeable_info>): number;
+declare function task_purgable_info(task: number, stats: interop.Pointer | interop.Reference<vm_purgeable_info> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface task_qos_policy {
 	task_latency_qos_tier: number;
@@ -10036,9 +10140,9 @@ interface task_qos_policy {
 }
 declare var task_qos_policy: interop.StructType<task_qos_policy>;
 
-declare function task_register_dyld_get_process_state(task: number, dyld_process_state: interop.Pointer | interop.Reference<dyld_kernel_process_info>): number;
+declare function task_register_dyld_get_process_state(task: number, dyld_process_state: interop.Pointer | interop.Reference<dyld_kernel_process_info> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_register_dyld_image_infos(task: number, dyld_images: interop.Pointer | interop.Reference<dyld_kernel_image_info>, dyld_imagesCnt: number): number;
+declare function task_register_dyld_image_infos(task: number, dyld_images: interop.Pointer | interop.Reference<dyld_kernel_image_info> | ArrayBufferLike | ArrayBufferView | null, dyld_imagesCnt: number): number;
 
 declare function task_register_dyld_set_dyld_state(task: number, dyld_state: number): number;
 
@@ -10088,19 +10192,19 @@ declare function task_set_corpse_forking_behavior(task: number, behavior: number
 
 declare function task_set_emulation(target_port: number, routine_entry_pt: number, routine_number: number): number;
 
-declare function task_set_emulation_vector(task: number, vector_start: number, emulation_vector: interop.Pointer | interop.Reference<number>, emulation_vectorCnt: number): number;
+declare function task_set_emulation_vector(task: number, vector_start: number, emulation_vector: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, emulation_vectorCnt: number): number;
 
 declare function task_set_exc_guard_behavior(task: number, behavior: number): number;
 
 declare function task_set_exception_ports(task: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number): number;
 
-declare function task_set_info(target_task: number, flavor: number, task_info_in: interop.Pointer | interop.Reference<number>, task_info_inCnt: number): number;
+declare function task_set_info(target_task: number, flavor: number, task_info_in: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, task_info_inCnt: number): number;
 
 declare function task_set_mach_voucher(task: number, voucher: number): number;
 
-declare function task_set_phys_footprint_limit(task: number, new_limit: number, old_limit: interop.Pointer | interop.Reference<number>): number;
+declare function task_set_phys_footprint_limit(task: number, new_limit: number, old_limit: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_set_policy(task: number, pset: number, policy: number, base: interop.Pointer | interop.Reference<number>, baseCnt: number, limit: interop.Pointer | interop.Reference<number>, limitCnt: number, change: number): number;
+declare function task_set_policy(task: number, pset: number, policy: number, base: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, baseCnt: number, limit: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, limitCnt: number, change: number): number;
 
 declare function task_set_port_space(task: number, table_entries: number): number;
 
@@ -10108,15 +10212,15 @@ declare function task_set_ras_pc(target_task: number, basepc: number, boundspc: 
 
 declare function task_set_special_port(task: number, which_port: number, special_port: number): number;
 
-declare function task_set_state(task: number, flavor: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: number): number;
+declare function task_set_state(task: number, flavor: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: number): number;
 
 declare function task_suspend(target_task: number): number;
 
-declare function task_suspend2(target_task: number, suspend_token: interop.Pointer | interop.Reference<number>): number;
+declare function task_suspend2(target_task: number, suspend_token: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_swap_exception_ports(task: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function task_swap_exception_ports(task: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function task_swap_mach_voucher(task: number, new_voucher: number, old_voucher: interop.Pointer | interop.Reference<number>): number;
+declare function task_swap_mach_voucher(task: number, new_voucher: number, old_voucher: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function task_terminate(target_task: number): number;
 
@@ -10130,7 +10234,7 @@ interface task_thread_times_info {
 }
 declare var task_thread_times_info: interop.StructType<task_thread_times_info>;
 
-declare function task_threads(target_task: number, act_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, act_listCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_threads(target_task: number, act_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, act_listCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const enum task_throughput_qos {
 
@@ -10156,7 +10260,7 @@ interface task_trace_memory_info {
 }
 declare var task_trace_memory_info: interop.StructType<task_trace_memory_info>;
 
-declare function task_unregister_dyld_image_infos(task: number, dyld_images: interop.Pointer | interop.Reference<dyld_kernel_image_info>, dyld_imagesCnt: number): number;
+declare function task_unregister_dyld_image_infos(task: number, dyld_images: interop.Pointer | interop.Reference<dyld_kernel_image_info> | ArrayBufferLike | ArrayBufferView | null, dyld_imagesCnt: number): number;
 
 interface task_vm_info {
 	virtual_size: number;
@@ -10219,7 +10323,7 @@ declare var task_wait_state_info: interop.StructType<task_wait_state_info>;
 
 declare function task_wire(target_task: number, must_wire: number): number;
 
-declare function task_zone_info(target_task: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t>>, namesCnt: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<task_zone_info_t>>, infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function task_zone_info(target_task: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<task_zone_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface task_zone_info_t {
 	tzi_count: number;
@@ -10242,7 +10346,7 @@ declare function tcflow(p1: number, p2: number): number;
 
 declare function tcflush(p1: number, p2: number): number;
 
-declare function tcgetattr(p1: number, p2: interop.Pointer | interop.Reference<termios>): number;
+declare function tcgetattr(p1: number, p2: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function tcgetsid(p1: number): number;
 
@@ -10578,6 +10682,8 @@ interface tcpstat {
 	tcps_ka_offload_drops: number;
 	tcps_mptcp_triggered_cell: number;
 	tcps_fin_timeout_drops: number;
+	tcps_rst_dup_suppressed: number;
+	tcps_rst_not_suppressed: number;
 }
 declare var tcpstat: interop.StructType<tcpstat>;
 
@@ -10606,11 +10712,11 @@ declare var tcpstat_local: interop.StructType<tcpstat_local>;
 
 declare function tcsendbreak(p1: number, p2: number): number;
 
-declare function tcsetattr(p1: number, p2: number, p3: interop.Pointer | interop.Reference<termios>): number;
+declare function tcsetattr(p1: number, p2: number, p3: interop.Pointer | interop.Reference<termios> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function tdelete(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
+declare function tdelete(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>): interop.Pointer | interop.Reference<any> | null;
 
-declare function telldir(p1: interop.Pointer | interop.Reference<DIR>): number;
+declare function telldir(p1: interop.Pointer | interop.Reference<DIR> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface termios {
 	c_iflag: number;
@@ -10623,7 +10729,7 @@ interface termios {
 }
 declare var termios: interop.StructType<termios>;
 
-declare function tfind(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
+declare function tfind(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>): interop.Pointer | interop.Reference<any> | null;
 
 declare function thread_abort(target_act: number): number;
 
@@ -10657,11 +10763,11 @@ interface thread_basic_info {
 }
 declare var thread_basic_info: interop.StructType<thread_basic_info>;
 
-declare function thread_convert_thread_state(thread: number, direction: number, flavor: number, in_state: interop.Pointer | interop.Reference<number>, in_stateCnt: number, out_state: interop.Pointer | interop.Reference<number>, out_stateCnt: interop.Pointer | interop.Reference<number>): number;
+declare function thread_convert_thread_state(thread: number, direction: number, flavor: number, in_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, in_stateCnt: number, out_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, out_stateCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_create(parent_task: number, child_act: interop.Pointer | interop.Reference<number>): number;
+declare function thread_create(parent_task: number, child_act: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_create_running(parent_task: number, flavor: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: number, child_act: interop.Pointer | interop.Reference<number>): number;
+declare function thread_create_running(parent_task: number, flavor: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: number, child_act: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function thread_depress_abort(thread: number): number;
 
@@ -10685,22 +10791,22 @@ interface thread_extended_policy {
 }
 declare var thread_extended_policy: interop.StructType<thread_extended_policy>;
 
-declare function thread_get_assignment(thread: number, assigned_set: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_assignment(thread: number, assigned_set: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_get_exception_ports(thread: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_exception_ports(thread: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_get_exception_ports_info(port: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers_info: interop.Pointer | interop.Reference<ipc_info_port_t>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_exception_ports_info(port: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers_info: interop.Pointer | interop.Reference<ipc_info_port_t> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_get_mach_voucher(thr_act: number, which: number, voucher: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_mach_voucher(thr_act: number, which: number, voucher: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 12.0
  */
-declare function thread_get_register_pointer_values(thread: number, sp: interop.Pointer | interop.Reference<number>, length: interop.Pointer | interop.Reference<number>, values: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_register_pointer_values(thread: number, sp: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, length: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, values: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_get_special_port(thr_act: number, which_port: number, special_port: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_special_port(thr_act: number, which_port: number, special_port: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_get_state(target_act: number, flavor: number, old_state: interop.Pointer | interop.Reference<number>, old_stateCnt: interop.Pointer | interop.Reference<number>): number;
+declare function thread_get_state(target_act: number, flavor: number, old_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_stateCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface thread_identifier_info {
 	thread_id: number;
@@ -10709,18 +10815,18 @@ interface thread_identifier_info {
 }
 declare var thread_identifier_info: interop.StructType<thread_identifier_info>;
 
-declare function thread_info(target_act: number, flavor: number, thread_info_out: interop.Pointer | interop.Reference<number>, thread_info_outCnt: interop.Pointer | interop.Reference<number>): number;
+declare function thread_info(target_act: number, flavor: number, thread_info_out: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, thread_info_outCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface thread_latency_qos_policy {
 	thread_latency_qos_tier: number;
 }
 declare var thread_latency_qos_policy: interop.StructType<thread_latency_qos_policy>;
 
-declare function thread_policy(thr_act: number, policy: number, base: interop.Pointer | interop.Reference<number>, baseCnt: number, set_limit: number): number;
+declare function thread_policy(thr_act: number, policy: number, base: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, baseCnt: number, set_limit: number): number;
 
-declare function thread_policy_get(thread: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number>, policy_infoCnt: interop.Pointer | interop.Reference<number>, get_default: interop.Pointer | interop.Reference<number>): number;
+declare function thread_policy_get(thread: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, policy_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, get_default: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_policy_set(thread: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number>, policy_infoCnt: number): number;
+declare function thread_policy_set(thread: number, flavor: number, policy_info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, policy_infoCnt: number): number;
 
 interface thread_precedence_policy {
 	importance: number;
@@ -10729,17 +10835,21 @@ declare var thread_precedence_policy: interop.StructType<thread_precedence_polic
 
 declare function thread_resume(target_act: number): number;
 
+declare function thread_resume2(suspend_token: number): number;
+
 declare function thread_sample(thread: number, reply: number): number;
 
 declare function thread_set_exception_ports(thread: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number): number;
 
 declare function thread_set_mach_voucher(thr_act: number, voucher: number): number;
 
-declare function thread_set_policy(thr_act: number, pset: number, policy: number, base: interop.Pointer | interop.Reference<number>, baseCnt: number, limit: interop.Pointer | interop.Reference<number>, limitCnt: number): number;
+declare function thread_set_policy(thr_act: number, pset: number, policy: number, base: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, baseCnt: number, limit: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, limitCnt: number): number;
 
 declare function thread_set_special_port(thr_act: number, which_port: number, special_port: number): number;
 
-declare function thread_set_state(target_act: number, flavor: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: number): number;
+declare function thread_set_state(target_act: number, flavor: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: number): number;
+
+declare function thread_set_x86_64_compat(enable: number): number;
 
 interface thread_standard_policy {
 	no_data: number;
@@ -10748,9 +10858,11 @@ declare var thread_standard_policy: interop.StructType<thread_standard_policy>;
 
 declare function thread_suspend(target_act: number): number;
 
-declare function thread_swap_exception_ports(thread: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
+declare function thread_suspend2(target_act: number, suspend_token: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function thread_swap_mach_voucher(thr_act: number, new_voucher: number, old_voucher: interop.Pointer | interop.Reference<number>): number;
+declare function thread_swap_exception_ports(thread: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function thread_swap_mach_voucher(thr_act: number, new_voucher: number, old_voucher: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function thread_switch(thread_name: number, option: number, option_time: number): number;
 
@@ -10785,7 +10897,7 @@ interface timeb {
 }
 declare var timeb: interop.StructType<timeb>;
 
-declare function times(p1: interop.Pointer | interop.Reference<tms>): number;
+declare function times(p1: interop.Pointer | interop.Reference<tms> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface timeval32 {
 	tv_sec: number;
@@ -10813,20 +10925,14 @@ interface tms {
 }
 declare var tms: interop.StructType<tms>;
 
-declare function tracker_action(action: number, buffer: string | interop.Pointer | interop.Reference<any>, buffer_size: number): number;
+declare function tracker_action(action: number, buffer: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, buffer_size: number): number;
 
-declare function tsearch(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
+declare function tsearch(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null) => number>): interop.Pointer | interop.Reference<any> | null;
 
 interface tsegqe_head {
 	lh_first: number;
 }
 declare var tsegqe_head: interop.StructType<tsegqe_head>;
-
-declare function ttyaction(tty: string | interop.Pointer | interop.Reference<any>, act: string | interop.Pointer | interop.Reference<any>, user: string | interop.Pointer | interop.Reference<any>): number;
-
-declare function ttylock(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
-
-declare function ttymsg(p1: interop.Pointer | interop.Reference<iovec>, p2: number, p3: string | interop.Pointer | interop.Reference<any>, p4: number): interop.Pointer | interop.Reference<any>;
 
 interface ttysize {
 	ts_lines: number;
@@ -10836,9 +10942,7 @@ interface ttysize {
 }
 declare var ttysize: interop.StructType<ttysize>;
 
-declare function ttyunlock(p1: string | interop.Pointer | interop.Reference<any>): number;
-
-declare function twalk(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: VISIT, p3: number) => void>): void;
+declare function twalk(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: VISIT, p3: number) => void>): void;
 
 interface udphdr {
 	uh_sport: number;
@@ -10857,13 +10961,13 @@ declare const enum uio_rw {
 
 declare function umask(p1: number): number;
 
-declare function uname(p1: interop.Pointer | interop.Reference<utsname>): number;
+declare function uname(p1: interop.Pointer | interop.Reference<utsname> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare const underline: number;
 
-declare function unmount(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function unmount(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
-declare function user_from_uid(p1: number, p2: number): interop.Pointer | interop.Reference<any>;
+declare function user_from_uid(p1: number, p2: number): interop.Pointer | interop.Reference<any> | null;
 
 interface utimbuf {
 	actime: number;
@@ -10871,14 +10975,14 @@ interface utimbuf {
 }
 declare var utimbuf: interop.StructType<utimbuf>;
 
-declare function utime(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<utimbuf>): number;
+declare function utime(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<utimbuf> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 11.0
  */
-declare function utimensat(__fd: number, __path: string | interop.Pointer | interop.Reference<any>, __times: interop.Reference<timespec>, __flag: number): number;
+declare function utimensat(__fd: number, __path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __times: interop.Reference<timespec>, __flag: number): number;
 
-declare function utimes(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<timeval>): number;
+declare function utimes(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface utmpx {
 	ut_user: interop.Reference<number>;
@@ -10895,7 +10999,7 @@ declare var utmpx: interop.StructType<utmpx>;
 /**
  * @since 2.0
  */
-declare function utmpxname(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function utmpxname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface utsname {
 	sysname: interop.Reference<number>;
@@ -10948,7 +11052,7 @@ declare var vfsconf: interop.StructType<vfsconf>;
 interface vfsidctl {
 	vc_vers: number;
 	vc_fsid: fsid_t;
-	vc_ptr: interop.Pointer | interop.Reference<any>;
+	vc_ptr: interop.Pointer | interop.Reference<any> | null;
 	vc_len: number;
 	vc_spare: interop.Reference<number>;
 }
@@ -10976,7 +11080,7 @@ interface vfsstatfs {
 	f_mntonname: interop.Reference<number>;
 	f_mntfromname: interop.Reference<number>;
 	f_fssubtype: number;
-	f_reserved: interop.Reference<interop.Pointer | interop.Reference<any>>;
+	f_reserved: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 }
 declare var vfsstatfs: interop.StructType<vfsstatfs>;
 
@@ -10998,18 +11102,30 @@ declare const enum virtual_memory_guard_exception_code_t {
 
 	kGUARD_EXC_SEC_UPL_WRITE_ON_EXEC_REGION = 12,
 
+	kGUARD_EXC_LARGE_ALLOCATION_TELEMETRY = 13,
+
 	kGUARD_EXC_SEC_ACCESS_FAULT = 98,
 
 	kGUARD_EXC_SEC_ASYNC_ACCESS_FAULT = 99,
 
 	kGUARD_EXC_SEC_COPY_DENIED = 100,
 
-	kGUARD_EXC_SEC_SHARING_DENIED = 101
+	kGUARD_EXC_SEC_SHARING_DENIED = 101,
+
+	kGUARD_EXC_MTE_SYNC_FAULT = 200,
+
+	kGUARD_EXC_MTE_ASYNC_USER_FAULT = 201,
+
+	kGUARD_EXC_MTE_ASYNC_KERN_FAULT = 202,
+
+	kGUARD_EXC_GUARD_OBJECT_ASYNC_USER_FAULT = 203,
+
+	kGUARD_EXC_GUARD_OBJECT_ASYNC_KERN_FAULT = 204
 }
 
-declare function vm_allocate(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, flags: number): number;
+declare function vm_allocate(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, flags: number): number;
 
-declare function vm_allocate_cpm(host_priv: number, task: number, address: interop.Pointer | interop.Reference<number>, size: number, flags: number): number;
+declare function vm_allocate_cpm(host_priv: number, task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, flags: number): number;
 
 declare function vm_behavior_set(target_task: number, address: number, size: number, new_behavior: number): number;
 
@@ -11097,17 +11213,17 @@ declare var vm_kernel_page_shift: number;
  */
 declare var vm_kernel_page_size: number;
 
-declare function vm_machine_attribute(target_task: number, address: number, size: number, attribute: number, value: interop.Pointer | interop.Reference<number>): number;
+declare function vm_machine_attribute(target_task: number, address: number, size: number, attribute: number, value: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function vm_map(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, object: number, offset: number, copy: number, cur_protection: number, max_protection: number, inheritance: number): number;
+declare function vm_map(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, mask: number, flags: number, object: number, offset: number, copy: number, cur_protection: number, max_protection: number, inheritance: number): number;
 
-declare function vm_map_64(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, object: number, offset: number, copy: number, cur_protection: number, max_protection: number, inheritance: number): number;
+declare function vm_map_64(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, mask: number, flags: number, object: number, offset: number, copy: number, cur_protection: number, max_protection: number, inheritance: number): number;
 
 declare function vm_map_exec_lockdown(target_task: number): number;
 
-declare function vm_map_page_query(target_map: number, offset: number, disposition: interop.Pointer | interop.Reference<number>, ref_count: interop.Pointer | interop.Reference<number>): number;
+declare function vm_map_page_query(target_map: number, offset: number, disposition: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, ref_count: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function vm_mapped_pages_info(task: number, pages: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, pagesCnt: interop.Pointer | interop.Reference<number>): number;
+declare function vm_mapped_pages_info(task: number, pages: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number> | null> | ArrayBufferLike | ArrayBufferView | null, pagesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function vm_msync(target_task: number, address: number, size: number, sync_flags: number): number;
 
@@ -11129,7 +11245,7 @@ declare var vm_page_size: number;
 
 declare function vm_protect(target_task: number, address: number, size: number, set_maximum: number, new_protection: number): number;
 
-declare function vm_purgable_control(target_task: number, address: number, control: number, state: interop.Pointer | interop.Reference<number>): number;
+declare function vm_purgable_control(target_task: number, address: number, control: number, state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface vm_purgeable_info {
 	fifo_data: interop.Reference<vm_purgeable_stat_t>;
@@ -11150,7 +11266,7 @@ interface vm_range_t {
 }
 declare var vm_range_t: interop.StructType<vm_range_t>;
 
-declare function vm_read(target_task: number, address: number, size: number, data: interop.Pointer | interop.Reference<number>, dataCnt: interop.Pointer | interop.Reference<number>): number;
+declare function vm_read(target_task: number, address: number, size: number, data: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, dataCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface vm_read_entry {
 	address: number;
@@ -11160,11 +11276,13 @@ declare var vm_read_entry: interop.StructType<vm_read_entry>;
 
 declare function vm_read_list(target_task: number, data_list: interop.Reference<vm_read_entry>, count: number): number;
 
-declare function vm_read_overwrite(target_task: number, address: number, size: number, data: number, outsize: interop.Pointer | interop.Reference<number>): number;
+declare function vm_read_overwrite(target_task: number, address: number, size: number, data: number, outsize: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function vm_region(target_task: number, address: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, flavor: number, info: interop.Pointer | interop.Reference<number>, infoCnt: interop.Pointer | interop.Reference<number>, object_name: interop.Pointer | interop.Reference<number>): number;
+declare function vm_reallocate(target_task: number, src: number, src_size: number, dst: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, dst_size: number, align_mask: number, options: number, flags: number): number;
 
-declare function vm_region_64(target_task: number, address: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, flavor: number, info: interop.Pointer | interop.Reference<number>, infoCnt: interop.Pointer | interop.Reference<number>, object_name: interop.Pointer | interop.Reference<number>): number;
+declare function vm_region(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, flavor: number, info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, object_name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function vm_region_64(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, flavor: number, info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, object_name: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface vm_region_basic_info {
 	protection: number;
@@ -11205,9 +11323,9 @@ interface vm_region_extended_info {
 }
 declare var vm_region_extended_info: interop.StructType<vm_region_extended_info>;
 
-declare function vm_region_recurse(target_task: number, address: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, nesting_depth: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<number>, infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function vm_region_recurse(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, nesting_depth: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function vm_region_recurse_64(target_task: number, address: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, nesting_depth: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<number>, infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function vm_region_recurse_64(target_task: number, address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, nesting_depth: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface vm_region_submap_info {
 	protection: number;
@@ -11281,9 +11399,9 @@ interface vm_region_top_info {
 }
 declare var vm_region_top_info: interop.StructType<vm_region_top_info>;
 
-declare function vm_remap(target_task: number, target_address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, src_task: number, src_address: number, copy: number, cur_protection: interop.Pointer | interop.Reference<number>, max_protection: interop.Pointer | interop.Reference<number>, inheritance: number): number;
+declare function vm_remap(target_task: number, target_address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, mask: number, flags: number, src_task: number, src_address: number, copy: number, cur_protection: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, max_protection: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, inheritance: number): number;
 
-declare function vm_remap_new(target_task: number, target_address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, src_task: number, src_address: number, copy: number, cur_protection: interop.Pointer | interop.Reference<number>, max_protection: interop.Pointer | interop.Reference<number>, inheritance: number): number;
+declare function vm_remap_new(target_task: number, target_address: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: number, mask: number, flags: number, src_task: number, src_address: number, copy: number, cur_protection: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, max_protection: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, inheritance: number): number;
 
 interface vm_statistics {
 	free_count: number;
@@ -11330,10 +11448,19 @@ interface vm_statistics64 {
 	internal_page_count: number;
 	total_uncompressed_pages_in_compressor: number;
 	swapped_count: number;
+	total_tag_storage_pages: number;
+	nontag_pageable_tag_storage_pages: number;
+	nontag_wired_tag_storage_pages: number;
+	free_tag_storage_pages: number;
+	tag_storing_tag_storage_pages: number;
+	total_tagged_pages: number;
+	resident_tagged_pages: number;
+	compressed_tagged_pages: number;
+	tagged_compressions: number;
+	tagged_decompressions: number;
+	compressed_tag_storage_bytes: number;
 }
 declare var vm_statistics64: interop.StructType<vm_statistics64>;
-
-declare function vm_stats(info: interop.Pointer | interop.Reference<any>, count: interop.Pointer | interop.Reference<number>): number;
 
 declare function vm_wire(host_priv: number, task: number, address: number, size: number, desired_access: number): number;
 
@@ -11341,9 +11468,9 @@ declare function vm_write(target_task: number, address: number, data: number, da
 
 interface vmspace {
 	dummy: number;
-	dummy2: interop.Pointer | interop.Reference<any>;
+	dummy2: interop.Pointer | interop.Reference<any> | null;
 	dummy3: interop.Reference<number>;
-	dummy4: interop.Reference<interop.Pointer | interop.Reference<any>>;
+	dummy4: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
 }
 declare var vmspace: interop.StructType<vmspace>;
 
@@ -11359,13 +11486,13 @@ interface vol_capabilities_attr_t {
 }
 declare var vol_capabilities_attr_t: interop.StructType<vol_capabilities_attr_t>;
 
-declare function voucher_mach_msg_adopt(msg: interop.Pointer | interop.Reference<mach_msg_header_t>): interop.Pointer | interop.Reference<any>;
+declare function voucher_mach_msg_adopt(msg: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
-declare function voucher_mach_msg_clear(msg: interop.Pointer | interop.Reference<mach_msg_header_t>): void;
+declare function voucher_mach_msg_clear(msg: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function voucher_mach_msg_revert(state: interop.Pointer | interop.Reference<any>): void;
+declare function voucher_mach_msg_revert(state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
-declare function voucher_mach_msg_set(msg: interop.Pointer | interop.Reference<mach_msg_header_t>): number;
+declare function voucher_mach_msg_set(msg: interop.Pointer | interop.Reference<mach_msg_header_t> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface wide {
 	lo: number;
@@ -11383,17 +11510,17 @@ declare var winsize: interop.StructType<winsize>;
 
 interface wordexp_t {
 	we_wordc: number;
-	we_wordv: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	we_wordv: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
 	we_offs: number;
 }
 declare var wordexp_t: interop.StructType<wordexp_t>;
 
-declare function writev(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number): number;
+declare function writev(p1: number, p2: interop.Pointer | interop.Reference<iovec> | ArrayBufferLike | ArrayBufferView | null, p3: number): number;
 
 /**
  * @since 2.0
  */
-declare function wtmpxname(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function wtmpxname(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface x86_state_hdr {
 	flavor: number;
@@ -11404,7 +11531,7 @@ declare var x86_state_hdr: interop.StructType<x86_state_hdr>;
 /**
  * @since 8.0
  */
-declare function xattr_flags_from_name(p1: string | interop.Pointer | interop.Reference<any>): number;
+declare function xattr_flags_from_name(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
  * @since 8.0
@@ -11414,17 +11541,17 @@ declare function xattr_intent_with_flags(p1: number, p2: number): number;
 /**
  * @since 8.0
  */
-declare function xattr_name_with_flags(p1: string | interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
+declare function xattr_name_with_flags(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 8.0
  */
-declare function xattr_name_without_flags(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function xattr_name_without_flags(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 8.0
  */
-declare function xattr_preserve_for_intent(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function xattr_preserve_for_intent(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): number;
 
 interface xinpgen {
 	xig_len: number;

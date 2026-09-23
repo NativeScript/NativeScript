@@ -76,7 +76,7 @@ NOTE: There are three test apps in the repository, located in the `/demo` direct
 
 4. Build the app for Android or iOS.
     ``` bash
-    tns run android/ios
+    ns run android/ios
     ```
 
 5. Install [appium](http://appium.io/) globally.

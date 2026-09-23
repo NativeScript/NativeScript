@@ -38,22 +38,22 @@ interface ExpandedAnimator extends android.animation.Animator {
 }
 
 export interface ExpandedEntry extends BackstackEntry {
-	enterTransitionListener: ExpandedTransitionListener;
-	exitTransitionListener: ExpandedTransitionListener;
-	reenterTransitionListener: ExpandedTransitionListener;
-	returnTransitionListener: ExpandedTransitionListener;
+	enterTransitionListener?: ExpandedTransitionListener;
+	exitTransitionListener?: ExpandedTransitionListener;
+	reenterTransitionListener?: ExpandedTransitionListener;
+	returnTransitionListener?: ExpandedTransitionListener;
 
-	enterAnimator: ExpandedAnimator;
-	exitAnimator: ExpandedAnimator;
-	popEnterAnimator: ExpandedAnimator;
-	popExitAnimator: ExpandedAnimator;
+	enterAnimator?: ExpandedAnimator;
+	exitAnimator?: ExpandedAnimator;
+	popEnterAnimator?: ExpandedAnimator;
+	popExitAnimator?: ExpandedAnimator;
 
-	transition: Transition;
-	transitionName: string;
-	frameId: number;
+	transition?: Transition;
+	transitionName?: string;
+	frameId?: number;
 
-	isNestedDefaultTransition: boolean;
-	isAnimationRunning: boolean;
+	isNestedDefaultTransition?: boolean;
+	isAnimationRunning?: boolean;
 }
 
 export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void {

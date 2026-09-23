@@ -1,0 +1,48 @@
+import type { ViteDevServer } from 'vite';
+import { setDeviceModuleHeaders } from './route-helpers.js';
+
+export interface RegisterTxnHandlerOptions {
+	resolveTxnIds(version: number, fallbackChangedIds: string[]): string[];
+}
+
+export function buildTxnModuleCode(version: number, ids: string[]): string {
+	const lines: string[] = [];
+	lines.push(`// [txn] version=${version} count=${ids.length}`);
+	for (const id of ids) {
+		const isVue = /\.vue$/i.test(id);
+		const safeId = id.startsWith('/') ? id : `/${id}`;
+		// Canonical URLs for both module kinds: the txn batch only re-imports;
+		// the client evicted the changed set (app modules + SFC artifacts)
+		// before importing the batch, so each import fetches fresh.
+		const importPath = isVue ? `/ns/asm?path=${encodeURIComponent(safeId)}` : `/ns/m${safeId}`;
+		lines.push(`await import(${JSON.stringify(importPath)});`);
+	}
+	lines.push('export default true;');
+	return lines.join('\n');
+}
+
+export function registerTxnHandler(server: ViteDevServer, options: RegisterTxnHandlerOptions): void {
+	server.middlewares.use(async (req, res, next) => {
+		try {
+			const urlObj = new URL(req.url || '', 'http://localhost');
+			const pathname = urlObj.pathname || '';
+			if (!pathname.startsWith('/ns/txn')) return next();
+
+			const versionSegment = pathname.replace('/ns/txn', '').replace(/^\//, '');
+			const version = Number(versionSegment || urlObj.searchParams.get('v') || 0);
+			const fallbackChangedIds = (urlObj.searchParams.get('ids') || '')
+				.split(',')
+				.map((value) => value.trim())
+				.filter(Boolean);
+			const ids = options.resolveTxnIds(version, fallbackChangedIds);
+			const code = buildTxnModuleCode(version, ids);
+
+			setDeviceModuleHeaders(res);
+			res.statusCode = 200;
+			res.end(code);
+			return;
+		} catch {
+			return next();
+		}
+	});
+}

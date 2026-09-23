@@ -29,7 +29,7 @@ declare class PDFAction extends NSObject implements NSCopying {
 
 	readonly type: string;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -45,7 +45,7 @@ declare class PDFActionGoTo extends PDFAction implements NSCopying {
 
 	constructor(o: { destination: PDFDestination; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithDestination(destination: PDFDestination): this;
 }
@@ -63,7 +63,7 @@ declare class PDFActionNamed extends PDFAction implements NSCopying {
 
 	constructor(o: { name: PDFActionNamedName; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithName(name: PDFActionNamedName): this;
 }
@@ -112,7 +112,7 @@ declare class PDFActionRemoteGoTo extends PDFAction implements NSCopying {
 
 	constructor(o: { pageIndex: number; atPoint: CGPoint; fileURL: NSURL; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithPageIndexAtPointFileURL(pageIndex: number, point: CGPoint, url: NSURL): this;
 }
@@ -126,11 +126,11 @@ declare class PDFActionResetForm extends PDFAction implements NSCopying {
 
 	static new(): PDFActionResetForm; // inherited from NSObject
 
-	fields: NSArray<string>;
+	fields: NSArray<string> | null;
 
 	fieldsIncludedAreCleared: boolean;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -142,11 +142,11 @@ declare class PDFActionURL extends PDFAction implements NSCopying {
 
 	static new(): PDFActionURL; // inherited from NSObject
 
-	URL: NSURL;
+	URL: NSURL | null;
 
 	constructor(o: { URL: NSURL; });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithURL(url: NSURL): this;
 }
@@ -164,12 +164,12 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	static new(): PDFAnnotation; // inherited from NSObject
 
-	URL: NSURL;
+	URL: NSURL | null;
 
 	/**
 	 * @since 11.0
 	 */
-	action: PDFAction;
+	action: PDFAction | null;
 
 	readonly activatableTextField: boolean;
 
@@ -182,12 +182,12 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 	 */
 	readonly annotationKeyValues: NSDictionary<any, any>;
 
-	backgroundColor: UIColor;
+	backgroundColor: UIColor | null;
 
 	/**
 	 * @since 11.0
 	 */
-	border: PDFBorder;
+	border: PDFBorder | null;
 
 	bounds: CGRect;
 
@@ -195,9 +195,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	buttonWidgetStateString: string;
 
-	caption: string;
+	caption: string | null;
 
-	choices: NSArray<string>;
+	choices: NSArray<string> | null;
 
 	/**
 	 * @since 11.0
@@ -209,19 +209,19 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 	/**
 	 * @since 11.0
 	 */
-	contents: string;
+	contents: string | null;
 
-	destination: PDFDestination;
+	destination: PDFDestination | null;
 
 	endLineStyle: PDFLineStyle;
 
 	endPoint: CGPoint;
 
-	fieldName: string;
+	fieldName: string | null;
 
-	font: UIFont;
+	font: UIFont | null;
 
-	fontColor: UIColor;
+	fontColor: UIColor | null;
 
 	readonly hasAppearanceStream: boolean;
 
@@ -232,7 +232,7 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	iconType: PDFTextAnnotationIconType;
 
-	interiorColor: UIColor;
+	interiorColor: UIColor | null;
 
 	readonly isPasswordField: boolean;
 
@@ -245,22 +245,22 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 	/**
 	 * @since 11.0
 	 */
-	modificationDate: Date;
+	modificationDate: Date | null;
 
 	multiline: boolean;
 
 	open: boolean;
 
-	page: PDFPage;
+	page: PDFPage | null;
 
-	readonly paths: NSArray<UIBezierPath>;
+	readonly paths: NSArray<UIBezierPath> | null;
 
 	/**
 	 * @since 11.0
 	 */
-	popup: PDFAnnotation;
+	popup: PDFAnnotation | null;
 
-	quadrilateralPoints: NSArray<NSValue>;
+	quadrilateralPoints: NSArray<NSValue> | null;
 
 	radiosInUnison: boolean;
 
@@ -270,39 +270,39 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	shouldPrint: boolean;
 
-	stampName: string;
+	stampName: string | null;
 
 	startLineStyle: PDFLineStyle;
 
 	startPoint: CGPoint;
 
-	type: string;
+	type: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	userName: string;
+	userName: string | null;
 
-	values: NSArray<string>;
+	values: NSArray<string> | null;
 
 	widgetControlType: PDFWidgetControlType;
 
-	widgetDefaultStringValue: string;
+	widgetDefaultStringValue: string | null;
 
 	widgetFieldType: string;
 
-	widgetStringValue: string;
+	widgetStringValue: string | null;
 
 	/**
 	 * @since 11.0
 	 */
-	constructor(o: { bounds: CGRect; forType: string; withProperties: NSDictionary<any, any>; });
+	constructor(o: { bounds: CGRect; forType: string; withProperties: NSDictionary<any, any> | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	addBezierPath(path: UIBezierPath): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 11.0
@@ -314,7 +314,7 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 	/**
 	 * @since 11.0
 	 */
-	initWithBoundsForTypeWithProperties(bounds: CGRect, annotationType: string, properties: NSDictionary<any, any>): this;
+	initWithBoundsForTypeWithProperties(bounds: CGRect, annotationType: string, properties: NSDictionary<any, any> | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -343,7 +343,7 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 	/**
 	 * @since 11.0
 	 */
-	valueForAnnotationKey(key: string): any;
+	valueForAnnotationKey(key: string): any | null;
 }
 
 /**
@@ -737,21 +737,21 @@ declare class PDFAppearanceCharacteristics extends NSObject implements NSCopying
 
 	readonly appearanceCharacteristicsKeyValues: NSDictionary<any, any>;
 
-	backgroundColor: UIColor;
+	backgroundColor: UIColor | null;
 
-	borderColor: UIColor;
+	borderColor: UIColor | null;
 
-	caption: string;
+	caption: string | null;
 
 	controlType: PDFWidgetControlType;
 
-	downCaption: string;
+	downCaption: string | null;
 
-	rolloverCaption: string;
+	rolloverCaption: string | null;
 
 	rotation: number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 }
 
 /**
@@ -820,7 +820,7 @@ declare class PDFBorder extends NSObject implements NSCoding, NSCopying {
 
 	readonly borderKeyValues: NSDictionary<any, any>;
 
-	dashPattern: NSArray<any>;
+	dashPattern: NSArray<any> | null;
 
 	lineWidth: number;
 
@@ -828,7 +828,7 @@ declare class PDFBorder extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	drawInRect(rect: CGRect): void;
 
@@ -874,7 +874,7 @@ declare class PDFDestination extends NSObject implements NSCopying {
 
 	static new(): PDFDestination; // inherited from NSObject
 
-	readonly page: PDFPage;
+	readonly page: PDFPage | null;
 
 	readonly point: CGPoint;
 
@@ -890,7 +890,7 @@ declare class PDFDestination extends NSObject implements NSCopying {
 	 */
 	compare(destination: PDFDestination): NSComparisonResult;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithPageAtPoint(page: PDFPage, point: CGPoint): this;
 }
@@ -972,13 +972,13 @@ declare class PDFDocument extends NSObject implements NSCopying {
 	 */
 	readonly allowsPrinting: boolean;
 
-	delegate: PDFDocumentDelegate;
+	delegate: PDFDocumentDelegate | null;
 
-	documentAttributes: NSDictionary<any, any>;
+	documentAttributes: NSDictionary<any, any> | null;
 
-	readonly documentRef: any;
+	readonly documentRef: any | null;
 
-	readonly documentURL: NSURL;
+	readonly documentURL: NSURL | null;
 
 	readonly isEncrypted: boolean;
 
@@ -993,7 +993,7 @@ declare class PDFDocument extends NSObject implements NSCopying {
 	/**
 	 * @since 11.0
 	 */
-	outlineRoot: PDFOutline;
+	outlineRoot: PDFOutline | null;
 
 	readonly pageClass: typeof NSObject;
 
@@ -1004,9 +1004,9 @@ declare class PDFDocument extends NSObject implements NSCopying {
 	 */
 	readonly permissionsStatus: PDFDocumentPermissions;
 
-	readonly selectionForEntireDocument: PDFSelection;
+	readonly selectionForEntireDocument: PDFSelection | null;
 
-	readonly string: string;
+	readonly string: string | null;
 
 	constructor(o: { data: NSData; });
 
@@ -1021,18 +1021,18 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	cancelFindString(): void;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
-	dataRepresentation(): NSData;
+	dataRepresentation(): NSData | null;
 
 	/**
 	 * @since 11.0
 	 */
-	dataRepresentationWithOptions(options: NSDictionary<any, any>): NSData;
+	dataRepresentationWithOptions(options: NSDictionary<any, any>): NSData | null;
 
 	exchangePageAtIndexWithPageAtIndex(indexA: number, indexB: number): void;
 
-	findStringFromSelectionWithOptions(string: string, selection: PDFSelection, options: NSStringCompareOptions): PDFSelection;
+	findStringFromSelectionWithOptions(string: string, selection: PDFSelection | null, options: NSStringCompareOptions): PDFSelection | null;
 
 	findStringWithOptions(string: string, options: NSStringCompareOptions): NSArray<PDFSelection>;
 
@@ -1044,30 +1044,30 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	insertPageAtIndex(page: PDFPage, index: number): void;
 
-	outlineItemForSelection(selection: PDFSelection): PDFOutline;
+	outlineItemForSelection(selection: PDFSelection): PDFOutline | null;
 
-	pageAtIndex(index: number): PDFPage;
+	pageAtIndex(index: number): PDFPage | null;
 
 	removePageAtIndex(index: number): void;
 
-	selectionFromPageAtCharacterIndexToPageAtCharacterIndex(startPage: PDFPage, startCharacter: number, endPage: PDFPage, endCharacter: number): PDFSelection;
+	selectionFromPageAtCharacterIndexToPageAtCharacterIndex(startPage: PDFPage, startCharacter: number, endPage: PDFPage, endCharacter: number): PDFSelection | null;
 
-	selectionFromPageAtPointToPageAtPoint(startPage: PDFPage, startPoint: CGPoint, endPage: PDFPage, endPoint: CGPoint): PDFSelection;
+	selectionFromPageAtPointToPageAtPoint(startPage: PDFPage, startPoint: CGPoint, endPage: PDFPage, endPoint: CGPoint): PDFSelection | null;
 
 	/**
 	 * @since 18.0
 	 */
-	selectionFromPageAtPointToPageAtPointWithGranularity(startPage: PDFPage, startPoint: CGPoint, endPage: PDFPage, endPoint: CGPoint, granularity: PDFSelectionGranularity): PDFSelection;
+	selectionFromPageAtPointToPageAtPointWithGranularity(startPage: PDFPage, startPoint: CGPoint, endPage: PDFPage, endPoint: CGPoint, granularity: PDFSelectionGranularity): PDFSelection | null;
 
 	unlockWithPassword(password: string): boolean;
 
 	writeToFile(path: string): boolean;
 
-	writeToFileWithOptions(path: string, options: NSDictionary<string, any>): boolean;
+	writeToFileWithOptions(path: string, options: NSDictionary<string, any> | null): boolean;
 
 	writeToURL(url: NSURL): boolean;
 
-	writeToURLWithOptions(url: NSURL, options: NSDictionary<string, any>): boolean;
+	writeToURLWithOptions(url: NSURL, options: NSDictionary<string, any> | null): boolean;
 }
 
 /**
@@ -1292,11 +1292,11 @@ declare class PDFOutline extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	action: PDFAction;
+	action: PDFAction | null;
 
-	destination: PDFDestination;
+	destination: PDFDestination | null;
 
-	readonly document: PDFDocument;
+	readonly document: PDFDocument | null;
 
 	/**
 	 * @since 11.0
@@ -1308,16 +1308,16 @@ declare class PDFOutline extends NSObject {
 	 */
 	isOpen: boolean;
 
-	label: string;
+	label: string | null;
 
 	readonly numberOfChildren: number;
 
 	/**
 	 * @since 11.0
 	 */
-	readonly parent: PDFOutline;
+	readonly parent: PDFOutline | null;
 
-	childAtIndex(index: number): PDFOutline;
+	childAtIndex(index: number): PDFOutline | null;
 
 	/**
 	 * @since 11.0
@@ -1341,23 +1341,23 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	readonly annotations: NSArray<PDFAnnotation>;
 
-	readonly attributedString: NSAttributedString;
+	readonly attributedString: NSAttributedString | null;
 
-	readonly dataRepresentation: NSData;
+	readonly dataRepresentation: NSData | null;
 
 	displaysAnnotations: boolean;
 
-	readonly document: PDFDocument;
+	readonly document: PDFDocument | null;
 
-	readonly label: string;
+	readonly label: string | null;
 
 	readonly numberOfCharacters: number;
 
-	readonly pageRef: any;
+	readonly pageRef: any | null;
 
 	rotation: number;
 
-	readonly string: string;
+	readonly string: string | null;
 
 	/**
 	 * @since 11.0
@@ -1371,7 +1371,7 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	addAnnotation(annotation: PDFAnnotation): void;
 
-	annotationAtPoint(point: CGPoint): PDFAnnotation;
+	annotationAtPoint(point: CGPoint): PDFAnnotation | null;
 
 	boundsForBox(box: PDFDisplayBox): CGRect;
 
@@ -1379,7 +1379,7 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	characterIndexAtPoint(point: CGPoint): number;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	/**
 	 * @since 11.0
@@ -1398,15 +1398,15 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	removeAnnotation(annotation: PDFAnnotation): void;
 
-	selectionForLineAtPoint(point: CGPoint): PDFSelection;
+	selectionForLineAtPoint(point: CGPoint): PDFSelection | null;
 
-	selectionForRange(range: NSRange): PDFSelection;
+	selectionForRange(range: NSRange): PDFSelection | null;
 
-	selectionForRect(rect: CGRect): PDFSelection;
+	selectionForRect(rect: CGRect): PDFSelection | null;
 
-	selectionForWordAtPoint(point: CGPoint): PDFSelection;
+	selectionForWordAtPoint(point: CGPoint): PDFSelection | null;
 
-	selectionFromPointToPoint(startPoint: CGPoint, endPoint: CGPoint): PDFSelection;
+	selectionFromPointToPoint(startPoint: CGPoint, endPoint: CGPoint): PDFSelection | null;
 
 	setBoundsForBox(bounds: CGRect, box: PDFDisplayBox): void;
 
@@ -1451,7 +1451,7 @@ declare var PDFPageImageInitializationOptionUpscaleIfSmaller: string;
  */
 interface PDFPageOverlayViewProvider extends NSObjectProtocol {
 
-	pdfViewOverlayViewForPage(view: PDFView, page: PDFPage): UIView;
+	pdfViewOverlayViewForPage(view: PDFView, page: PDFPage): UIView | null;
 
 	pdfViewWillDisplayOverlayViewForPage?(pdfView: PDFView, overlayView: UIView, page: PDFPage): void;
 
@@ -1471,16 +1471,16 @@ declare class PDFSelection extends NSObject implements NSCopying {
 
 	static new(): PDFSelection; // inherited from NSObject
 
-	readonly attributedString: NSAttributedString;
+	readonly attributedString: NSAttributedString | null;
 
 	/**
 	 * @since 11.0
 	 */
-	color: UIColor;
+	color: UIColor | null;
 
 	readonly pages: NSArray<PDFPage>;
 
-	readonly string: string;
+	readonly string: string | null;
 
 	/**
 	 * @since 11.0
@@ -1496,7 +1496,7 @@ declare class PDFSelection extends NSObject implements NSCopying {
 
 	boundsForPage(page: PDFPage): CGRect;
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	drawForPageActive(page: PDFPage, active: boolean): void;
 
@@ -1583,7 +1583,7 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFThumbnailView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PDFThumbnailView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1594,7 +1594,7 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFThumbnailView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PDFThumbnailView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1603,7 +1603,7 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 
 	static new(): PDFThumbnailView; // inherited from NSObject
 
-	PDFView: PDFView;
+	PDFView: PDFView | null;
 
 	/**
 	 * @since 11.0
@@ -1615,7 +1615,7 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 	 */
 	layoutMode: PDFThumbnailLayoutMode;
 
-	readonly selectedPages: NSArray<PDFPage>;
+	readonly selectedPages: NSArray<PDFPage> | null;
 
 	thumbnailSize: CGSize;
 
@@ -1649,7 +1649,7 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	 * @since 8.0
 	 * @deprecated 9.0
 	 */
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject | null): PDFView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1660,7 +1660,7 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	 * @since 5.0
 	 * @deprecated 9.0
 	 */
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject | null): PDFView; // inherited from UIAppearance
 
 	/**
 	 * @since 9.0
@@ -1687,13 +1687,13 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	readonly canZoomOut: boolean;
 
-	readonly currentDestination: PDFDestination;
+	readonly currentDestination: PDFDestination | null;
 
-	readonly currentPage: PDFPage;
+	readonly currentPage: PDFPage | null;
 
-	currentSelection: PDFSelection;
+	currentSelection: PDFSelection | null;
 
-	delegate: PDFViewDelegate;
+	delegate: PDFViewDelegate | null;
 
 	displayBox: PDFDisplayBox;
 
@@ -1713,9 +1713,9 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	 */
 	displaysRTL: boolean;
 
-	document: PDFDocument;
+	document: PDFDocument | null;
 
-	readonly documentView: UIView;
+	readonly documentView: UIView | null;
 
 	/**
 	 * @since 11.0
@@ -1736,7 +1736,7 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	/**
 	 * @since 11.0
 	 */
-	highlightedSelections: NSArray<PDFSelection>;
+	highlightedSelections: NSArray<PDFSelection> | null;
 
 	/**
 	 * @since 16.0
@@ -1771,7 +1771,7 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	/**
 	 * @since 16.0
 	 */
-	pageOverlayViewProvider: PDFPageOverlayViewProvider;
+	pageOverlayViewProvider: PDFPageOverlayViewProvider | null;
 
 	/**
 	 * @since 12.0
@@ -1841,7 +1841,7 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	findInteractionDidEndFindSession(interaction: UIFindInteraction, session: UIFindSession): void;
 
-	findInteractionSessionForView(interaction: UIFindInteraction, view: UIView): UIFindSession;
+	findInteractionSessionForView(interaction: UIFindInteraction, view: UIView): UIFindSession | null;
 
 	/**
 	 * @since 7.0
@@ -1866,21 +1866,21 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	 */
 	gestureRecognizerShouldRequireFailureOfGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean;
 
-	goBack(sender: any): void;
+	goBack(sender: any | null): void;
 
-	goForward(sender: any): void;
+	goForward(sender: any | null): void;
 
 	goToDestination(destination: PDFDestination): void;
 
-	goToFirstPage(sender: any): void;
+	goToFirstPage(sender: any | null): void;
 
-	goToLastPage(sender: any): void;
+	goToLastPage(sender: any | null): void;
 
-	goToNextPage(sender: any): void;
+	goToNextPage(sender: any | null): void;
 
 	goToPage(page: PDFPage): void;
 
-	goToPreviousPage(sender: any): void;
+	goToPreviousPage(sender: any | null): void;
 
 	goToRectOnPage(rect: CGRect, page: PDFPage): void;
 
@@ -1894,7 +1894,7 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	layoutDocumentView(): void;
 
-	pageForPointNearest(point: CGPoint, nearest: boolean): PDFPage;
+	pageForPointNearest(point: CGPoint, nearest: boolean): PDFPage | null;
 
 	/**
 	 * @since 11.0
@@ -1913,23 +1913,23 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	rowSizeForPage(page: PDFPage): CGSize;
 
-	scrollSelectionToVisible(sender: any): void;
+	scrollSelectionToVisible(sender: any | null): void;
 
 	self(): this;
 
 	/**
 	 * @since 11.0
 	 */
-	setCurrentSelectionAnimate(selection: PDFSelection, animate: boolean): void;
+	setCurrentSelectionAnimate(selection: PDFSelection | null, animate: boolean): void;
 
 	/**
 	 * @since 11.0
 	 */
-	usePageViewControllerWithViewOptions(enable: boolean, viewOptions: NSDictionary<any, any>): void;
+	usePageViewControllerWithViewOptions(enable: boolean, viewOptions: NSDictionary<any, any> | null): void;
 
-	zoomIn(sender: any): void;
+	zoomIn(sender: any | null): void;
 
-	zoomOut(sender: any): void;
+	zoomOut(sender: any | null): void;
 }
 
 /**

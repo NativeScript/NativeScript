@@ -5,12 +5,18 @@ import { IOSHelper } from '../ui/core/view/view-helper';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
-import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
-import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
-import { ApplicationEventData, SceneEventData } from './application-interfaces';
+import { ios as iosUtils, dataSerialize, dataDeserialize } from '../utils/native-helper';
+import { ApplicationCommon } from './application-common';
+import { ApplicationEventData, SceneContinueUserActivityEventData, SceneEventData, SceneOpenURLContextsEventData, ScenePerformActionForShortcutItemEventData } from './application-interfaces';
+import { deliverShortcutItem, forwardContinueUserActivity, forwardOpenURLContexts, oneShotCompletion } from './scene-delegate-bridge';
 import { Observable } from '../data/observable';
 import type { iOSApplication as IiOSApplication } from './application';
 import { Trace } from '../trace';
+import { IOSNativeWindow } from '../native-window/native-window.ios';
+import { NativeWindow } from '../native-window/native-window-common';
+import type { WindowRole } from '../native-window/window-base';
+import { NativeWindowEvents } from '../native-window/native-window-interfaces';
+import type { NativeWindowEventData, WindowOpenOptions } from '../native-window/native-window-interfaces';
 import {
 	AccessibilityServiceEnabledPropName,
 	CommonA11YServiceEnabledObservable,
@@ -93,6 +99,7 @@ class CADisplayLinkTarget extends NSObject {
 			object: owner,
 			ios: UIApplication.sharedApplication,
 		});
+		owner.primaryWindow?._notifyEvent(NativeWindowEvents.displayed);
 		owner.displayedLinkTarget = null;
 		owner.displayedLink = null;
 	}
@@ -127,6 +134,16 @@ function supportsMultipleScenes(): boolean {
 	return UIApplication.sharedApplication?.supportsMultipleScenes;
 }
 
+/**
+ * Number of times the JS runtime has been soft-rebooted in this process via
+ * NativeScriptRuntime.reloadApplication / restartWithConfig. 0 on first boot.
+ * Provided as a global by the iOS runtime (v9+); older runtimes report 0.
+ */
+function getRuntimeReloadCount(): number {
+	const runtime = (globalThis as any).NativeScriptRuntime;
+	return runtime && typeof runtime.reloadCount === 'number' ? runtime.reloadCount : 0;
+}
+
 @NativeClass
 class Responder extends UIResponder implements UIApplicationDelegate {
 	get window(): UIWindow {
@@ -140,26 +157,102 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 	static ObjCProtocols = [UIApplicationDelegate];
 }
 
-if (supportsScenes()) {
-	/**
-	 * This method is called when a new scene session is being created.
-	 * Important: When this method is implemented, the app assumes scene-based lifecycle management.
-	 * Detected by the Info.plist existence 'UIApplicationSceneManifest'.
-	 * If this method is implemented when there is no manifest defined,
-	 * the app will boot to a white screen.
-	 */
-	(Responder.prototype as UIApplicationDelegate).applicationConfigurationForConnectingSceneSessionOptions = function (application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
-		const config = UISceneConfiguration.configurationWithNameSessionRole('Default Configuration', connectingSceneSession.role);
-		config.sceneClass = UIWindowScene as any;
-		config.delegateClass = SceneDelegate;
-		return config;
-	};
+const delegateWindowKey = Symbol('nativescript.delegateWindow');
 
-	// scene session destruction handling
-	(Responder.prototype as UIApplicationDelegate).applicationDidDiscardSceneSessions = function (application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
-		// Note: we could emit an event here if needed
-		// console.log('Scene sessions discarded:', sceneSessions.count);
-	};
+/**
+ * Installs NativeScript's default `UIApplicationDelegate` members on the class that will
+ * be handed to `UIApplicationMain`, so scenes keep working with a custom delegate.
+ *
+ * Each member is installed only when the class does not already provide one (its own or
+ * inherited), so a delegate that implements a method keeps it and can forward to
+ * `Application.ios.defaultSceneConfiguration` / `defaultDiscardSceneSessions` itself.
+ *
+ * @internal
+ */
+function installSceneDelegateDefaults(delegateClass: unknown): void {
+	const proto = (delegateClass as { prototype?: UIApplicationDelegate })?.prototype;
+
+	if (!proto) {
+		return;
+	}
+
+	// Implementing the scene methods makes the app assume scene-based lifecycle management,
+	// which boots to a white screen when Info.plist has no UIApplicationSceneManifest.
+	// Configuring the delegate here is also why UISceneConfigurations does not have to be
+	// declared in Info.plist — UIApplicationSceneManifest on its own is enough.
+	if (supportsScenes()) {
+		if (!proto.applicationConfigurationForConnectingSceneSessionOptions) {
+			proto.applicationConfigurationForConnectingSceneSessionOptions = function (application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
+				return Application.ios.defaultSceneConfiguration(application, connectingSceneSession, options);
+			};
+		}
+
+		if (!proto.applicationDidDiscardSceneSessions) {
+			proto.applicationDidDiscardSceneSessions = function (application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
+				Application.ios.defaultDiscardSceneSessions(application, sceneSessions);
+			};
+		}
+	}
+
+	if (!('window' in proto)) {
+		Object.defineProperty(proto, 'window', {
+			get(this: Record<symbol, UIWindow>): UIWindow {
+				return this[delegateWindowKey] ?? Application.ios.window;
+			},
+			// UIKit assigns `delegate.window` on non-scene apps and a delegate may assign it
+			// itself, so the value has to be kept: a discarding setter would leave the
+			// delegate reporting a window it never set.
+			set(this: Record<symbol, UIWindow>, value: UIWindow) {
+				this[delegateWindowKey] = value;
+			},
+			enumerable: true,
+			configurable: true,
+		});
+	}
+}
+
+installSceneDelegateDefaults(Responder);
+
+let warnedAboutDelegateProtocols = false;
+let warnedAboutDelegateAfterStart = false;
+
+function warnAboutDelegate(message: string): void {
+	Trace.write(message, Trace.categories.Error, Trace.messageType.warn);
+	console.warn(message);
+}
+
+/**
+ * Reports the two custom-delegate mistakes NativeScript cannot correct on the app's behalf:
+ * a delegate class that never declared `UIApplicationDelegate` conformance, and a delegate
+ * assigned once `UIApplicationMain` has already been given a class.
+ */
+function warnAboutDelegateClass(delegateClass: unknown, alreadyStarted: boolean): void {
+	const protocols = (delegateClass as { ObjCProtocols?: unknown[] })?.ObjCProtocols;
+
+	if (!warnedAboutDelegateProtocols && !(Array.isArray(protocols) && protocols.indexOf(UIApplicationDelegate) !== -1)) {
+		warnedAboutDelegateProtocols = true;
+		warnAboutDelegate('Application.ios.delegate was set to a class that does not list UIApplicationDelegate in its static ObjCProtocols. Add `static ObjCProtocols = [UIApplicationDelegate];` to the class body: the Objective-C class is built from ObjCProtocols and cached, so conformance cannot be declared from here and UIKit may never dispatch the delegate methods.');
+	}
+
+	if (alreadyStarted && !warnedAboutDelegateAfterStart) {
+		warnedAboutDelegateAfterStart = true;
+		warnAboutDelegate('Application.ios.delegate was set after the application started. UIApplicationMain has already been given a delegate class, so this assignment has no effect — set Application.ios.delegate before calling Application.run().');
+	}
+}
+
+/**
+ * Reads the payload `openWindow()` put on the activating NSUserActivity.
+ */
+function getSceneConnectionData(connectionOptions: UISceneConnectionOptions): Record<string, any> | undefined {
+	const activities = connectionOptions?.userActivities;
+
+	if (!activities || activities.count === 0) {
+		return undefined;
+	}
+
+	const activity = activities.allObjects.objectAtIndex(0) as NSUserActivity;
+
+	return activity?.userInfo ? (dataDeserialize(activity.userInfo) as Record<string, any>) : undefined;
 }
 
 @NativeClass
@@ -187,71 +280,305 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			return;
 		}
 
-		const isFirstScene = !Application.ios.getPrimaryScene() && !Application.hasLaunched();
+		const windowScene = scene as UIWindowScene;
+		const isFirstScene = Application.ios._getWindows().length === 0;
 
-		this._scene = scene;
+		this._scene = windowScene;
 
 		// Create window for this scene
-		this._window = UIWindow.alloc().initWithWindowScene(scene);
+		this._window = UIWindow.alloc().initWithWindowScene(windowScene);
 
-		// Store the window scene for this window
-		Application.ios._setWindowForScene(this._window, scene);
+		// Set up window background
+		if (!__VISIONOS__) {
+			this._window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+		}
 
-		// Set up the window content
-		Application.ios._setupWindowForScene(this._window, scene);
+		const nativeWindowId = IOSNativeWindow.getSceneId(windowScene);
+		const knownWindow = nativeWindowId ? (Application.ios.getWindowById(nativeWindowId) as IOSNativeWindow) : undefined;
+		let nativeWindow: IOSNativeWindow;
 
-		// Notify that scene will connect
-		Application.ios.notify({
-			eventName: SceneEvents.sceneWillConnect,
-			object: Application.ios,
-			scene: scene,
-			window: this._window,
+		if (knownWindow?.state === 'detached') {
+			// iOS reconnected a session we already have a window for: the same window
+			// instance carries on, keeping its listeners and identity.
+			nativeWindow = knownWindow;
+			nativeWindow._reattach(windowScene, this._window);
+		} else {
+			const isPrimary = isFirstScene || !Application.ios.primaryWindow;
+			nativeWindow = new IOSNativeWindow(windowScene, this._window, nativeWindowId, isPrimary);
+			Application.ios._registerWindow(nativeWindow);
+		}
+
+		const isPrimary = nativeWindow.isPrimary;
+
+		nativeWindow._notifyEvent(NativeWindowEvents.attached);
+
+		if (isPrimary) {
+			// For primary, also set the legacy global window reference
+			setiOSWindow(this._window);
+		}
+
+		// Notify on NativeWindow first
+		nativeWindow.notify({
+			eventName: NativeWindowEvents.sceneWillConnect,
+			object: nativeWindow,
+			window: nativeWindow,
+			scene: windowScene,
+			uiWindow: this._window,
 			connectionOptions: connectionOptions,
 		} as SceneEventData);
 
-		if (scene === Application.ios.getPrimaryScene()) {
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneWillConnect,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+			uiWindow: this._window,
+			connectionOptions: connectionOptions,
+		} as SceneEventData);
+
+		if (isPrimary) {
 			// primary scene, activate right away
 			this._window.makeKeyAndVisible();
-		} else {
-			// For secondary scenes, emit an event to allow developers to set up custom content for the window
-			Application.ios.notify({
-				eventName: SceneEvents.sceneContentSetup,
-				object: Application.ios,
-				scene: scene,
-				window: this._window,
-				connectionOptions: connectionOptions,
+		}
+
+		if (nativeWindow.role === 'application') {
+			// A re-attached window carries a torn down root view on a brand new UIWindow,
+			// so it needs its content resolved again just like a fresh one.
+			Application.ios._resolveWindowContent(nativeWindow, {
+				window: nativeWindow,
+				isPrimary,
+				data: getSceneConnectionData(connectionOptions),
+				ios: { connectionOptions },
+			});
+		}
+	}
+
+	sceneDidBecomeActive(scene: UIScene): void {
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+		if (nativeWindow) {
+			nativeWindow._notifyEvent(NativeWindowEvents.activate);
+			// Emit sceneDidActivate on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneDidActivate,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
 			} as SceneEventData);
 		}
 
-		// If this is the first scene, trigger app startup
-		if (isFirstScene) {
-			Application.ios._notifySceneAppStarted();
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneDidActivate,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+		} as SceneEventData);
+
+		Application.ios._setWindowActive(nativeWindow, true, windowScene);
+
+		const rootView = nativeWindow?.rootView;
+		if (rootView && !rootView.isLoaded) {
+			rootView.callLoaded();
 		}
-	}
-	sceneDidBecomeActive(scene: UIScene): void {
-		// This will be handled by the notification observer in iOSApplication
-		// The notification system will automatically trigger sceneDidActivate
 	}
 
 	sceneWillResignActive(scene: UIScene): void {
-		// Notify that scene will resign active
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+		if (nativeWindow) {
+			nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
+			// Emit sceneWillResignActive on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneWillResignActive,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+			} as SceneEventData);
+		}
+
 		Application.ios.notify({
-			eventName: SceneEvents.sceneWillResignActive,
+			eventName: NativeWindowEvents.sceneWillResignActive,
 			object: Application.ios,
-			scene: scene,
+			window: nativeWindow,
+			scene: windowScene,
 		} as SceneEventData);
+
+		Application.ios._setWindowActive(nativeWindow, false, windowScene);
 	}
 
 	sceneWillEnterForeground(scene: UIScene): void {
-		// This will be handled by the notification observer in iOSApplication
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+		if (nativeWindow) {
+			nativeWindow._notifyEvent(NativeWindowEvents.foreground);
+			// Emit sceneWillEnterForeground on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneWillEnterForeground,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+			} as SceneEventData);
+		}
+
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneWillEnterForeground,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+		} as SceneEventData);
+
+		Application.ios._setWindowInForeground(nativeWindow, true, windowScene);
 	}
 
 	sceneDidEnterBackground(scene: UIScene): void {
-		// This will be handled by the notification observer in iOSApplication
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+		if (nativeWindow) {
+			nativeWindow._notifyEvent(NativeWindowEvents.background);
+			// Emit sceneDidEnterBackground on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneDidEnterBackground,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+			} as SceneEventData);
+		}
+
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneDidEnterBackground,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+		} as SceneEventData);
+
+		Application.ios._setWindowInForeground(nativeWindow, false, windowScene);
+
+		const rootView = nativeWindow?.rootView;
+		if (rootView && rootView.isLoaded) {
+			rootView.callUnloaded();
+		}
 	}
 
 	sceneDidDisconnect(scene: UIScene): void {
-		// This will be handled by the notification observer in iOSApplication
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+
+		// A scene can disconnect without first resigning or backgrounding, so the window has
+		// to leave the app-level aggregates here as well.
+		Application.ios._setWindowActive(nativeWindow, false, windowScene);
+		Application.ios._setWindowInForeground(nativeWindow, false, windowScene);
+
+		if (nativeWindow) {
+			nativeWindow._surfaceGone = true;
+
+			// A disconnect only ends the window session when the app asked for it —
+			// otherwise iOS may reconnect the same session later. A window with no session
+			// identity is the exception: a reconnect could never be matched back to it.
+			const isClosing = nativeWindow._closeRequested || !nativeWindow._hasSessionIdentity;
+
+			if (isClosing) {
+				nativeWindow._notifyEvent(NativeWindowEvents.close);
+			}
+
+			// Emit sceneDidDisconnect on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneDidDisconnect,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+			} as SceneEventData);
+
+			if (isClosing) {
+				Application.ios._unregisterWindow(nativeWindow);
+			} else {
+				nativeWindow._detach();
+			}
+		}
+
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneDidDisconnect,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+		} as SceneEventData);
+	}
+
+	sceneOpenURLContexts(scene: UIScene, URLContexts: NSSet<UIOpenURLContext>): void {
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+
+		if (nativeWindow) {
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneOpenURLContexts,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+				urlContexts: URLContexts,
+			} as SceneOpenURLContextsEventData);
+		}
+
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneOpenURLContexts,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+			urlContexts: URLContexts,
+		} as SceneOpenURLContextsEventData);
+
+		forwardOpenURLContexts(Application.ios.delegate, UIApplication.sharedApplication, URLContexts);
+	}
+
+	sceneContinueUserActivity(scene: UIScene, userActivity: NSUserActivity): void {
+		const windowScene = scene as UIWindowScene;
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+
+		if (nativeWindow) {
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneContinueUserActivity,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+				userActivity,
+			} as SceneContinueUserActivityEventData);
+		}
+
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneContinueUserActivity,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+			userActivity,
+		} as SceneContinueUserActivityEventData);
+
+		forwardContinueUserActivity(Application.ios.delegate, UIApplication.sharedApplication, userActivity);
+	}
+
+	windowScenePerformActionForShortcutItemCompletionHandler(windowScene: UIWindowScene, shortcutItem: UIApplicationShortcutItem, completionHandler: (p1: boolean) => void): void {
+		const nativeWindow = Application.ios._getWindowForScene(windowScene);
+		// Shared by the listeners and the legacy handler, so it has to tolerate several callers.
+		const deliver = oneShotCompletion(completionHandler);
+
+		if (nativeWindow) {
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.scenePerformActionForShortcutItem,
+				object: nativeWindow,
+				window: nativeWindow,
+				scene: windowScene,
+				shortcutItem,
+				completionHandler: deliver,
+			} as ScenePerformActionForShortcutItemEventData);
+		}
+
+		Application.ios.notify({
+			eventName: NativeWindowEvents.scenePerformActionForShortcutItem,
+			object: Application.ios,
+			window: nativeWindow,
+			scene: windowScene,
+			shortcutItem,
+			completionHandler: deliver,
+		} as ScenePerformActionForShortcutItemEventData);
+
+		deliverShortcutItem(Application.ios.delegate, UIApplication.sharedApplication, shortcutItem, deliver);
 	}
 }
 // ensure available globally
@@ -261,18 +588,49 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
-	private launchEventCalled = false;
+	/** Set when `shouldDelayLaunchEvent` defers the primary window's content until the app first becomes active. */
+	private _pendingWindowContentResolve: (() => void) | null;
 	private _sceneDelegate: UIWindowSceneDelegate;
-	private _windowSceneMap = new Map<UIScene, UIWindow>();
-	private _primaryScene: UIWindowScene | null = null;
-	private _openedScenesById = new Map<string, UIWindowScene>();
+	/**
+	 * User-provided callback to intercept scene configuration.
+	 * Called for every new scene session. Return a UISceneConfiguration to handle
+	 * the scene yourself, or return null/undefined to let NativeScript handle it
+	 * (only for UIWindowSceneSessionRoleApplication scenes).
+	 * @internal
+	 */
+	_onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
+
+	// The window whose root view the app-level root view state mirrors.
+	private _mirroredWindow: NativeWindow;
+
+	// Application-role windows currently in the foreground / currently active. Membership,
+	// not a count, so a repeated or missing scene callback cannot drift the aggregate.
+	private _foregroundWindows = new Set<NativeWindow>();
+	private _activeWindows = new Set<NativeWindow>();
 
 	private _notificationObservers: NotificationObserver[] = [];
+
+	// Strong references to delegates recreated after an in-process soft reboot
+	// (NativeScriptRuntime.reloadApplication). UIApplication.delegate is an
+	// `assign` property and UIScene keeps its own reference to the delegate we
+	// replace, so without these the fresh instances would be deallocated.
+	private _softRebootAppDelegate: UIApplicationDelegate;
+	private _softRebootSceneDelegates = new Map<UIScene, UIWindowSceneDelegate>();
 
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
 	displayedLink: CADisplayLink;
 
+	/**
+	 * Delays the 'launch' event, and with it the creation of the first window's content, until the
+	 * app first becomes active, instead of raising it while the app finishes launching.
+	 *
+	 * Applies to non-scene apps only. It has no effect in a scene-based app, where each window's
+	 * content is resolved as its scene connects.
+	 *
+	 * @deprecated Use the 'ready' event for application initialization, and
+	 * Application.setWindowContentResolver() to provide window UI.
+	 */
 	shouldDelayLaunchEvent = false;
 
 	/**
@@ -287,23 +645,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
 		this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
 		this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
-
-		// Add scene lifecycle notification observers only if scenes are supported
-		if (this.supportsScenes()) {
-			this.addNotificationObserver('UISceneWillConnectNotification', this.sceneWillConnect.bind(this));
-			this.addNotificationObserver('UISceneDidActivateNotification', this.sceneDidActivate.bind(this));
-			this.addNotificationObserver('UISceneWillEnterForegroundNotification', this.sceneWillEnterForeground.bind(this));
-			this.addNotificationObserver('UISceneDidEnterBackgroundNotification', this.sceneDidEnterBackground.bind(this));
-			this.addNotificationObserver('UISceneDidDisconnectNotification', this.sceneDidDisconnect.bind(this));
-		}
 	}
 
 	getRootView(): View {
 		return this._rootView;
 	}
 
-	resetRootView(view?: View) {
-		super.resetRootView(view);
+	resetRootView(entry?: NavigationEntry | string) {
+		super.resetRootView(entry);
 		this.setWindowContent();
 	}
 
@@ -312,6 +661,42 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.started = true;
 
 		if (this.nativeApp) {
+			// During Vite HMR dev boot, the placeholder has already started
+			// the app lifecycle. A second run() with an entry should replace
+			// the placeholder root, NOT present a modal via runAsEmbeddedApp.
+			// The HTTP ESM realm creates a separate @nativescript/core instance,
+			// so JS-level patching of Application.run can't intercept this call.
+			// Detect HMR mode via the placeholder's global flag and use
+			// setWindowContent on the PRIMARY Application singleton (bundled realm)
+			// which has the actual window and root view hierarchy.
+			const g = globalThis as any;
+			if (g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__ || g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__) {
+				if (entry) {
+					// Defer to next run loop tick so resetRootView executes outside the
+					// HTTP ESM import context. Direct calls can fail with
+					// "ReferenceError: __COMMONJS__ is not defined" because the JS
+					// execution stack is in the HTTP realm when Builder loads modules.
+					const resolvedEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+					setTimeout(() => {
+						try {
+							const primaryApp = g.Application;
+							if (primaryApp && typeof primaryApp.resetRootView === 'function') {
+								primaryApp.resetRootView(resolvedEntry);
+							}
+						} catch (e) {
+							if (__DEV__) console.warn('[app-ios] deferred resetRootView failed:', e);
+						}
+						delete g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
+						delete g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
+					}, 0);
+				} else {
+					// Framework (e.g. Angular) calls run() with no entry — it manages
+					// root views itself via resetRootView(). No-op to avoid presenting
+					// a modal via runAsEmbeddedApp or throwing "Main entry is missing".
+					if (__DEV__) console.info('[app-ios] run() called with no entry during HMR placeholder; framework manages root view');
+				}
+				return;
+			}
 			this.runAsEmbeddedApp();
 		} else {
 			this.runAsMainApp();
@@ -323,6 +708,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private runAsEmbeddedApp() {
+		this.notifyReady();
+
+		this._reattachNativeDelegatesAfterSoftReboot();
+
 		// TODO: this rootView should be held alive until rootController dismissViewController is called.
 		const rootView = this.createRootView(this._rootView, true);
 		if (!rootView) {
@@ -331,44 +720,142 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this._rootView = rootView;
 		setRootView(rootView);
 		// Attach to the existing iOS app
-		const window = getWindow() as UIWindow;
+		let window = getWindow() as UIWindow;
+
+		if (!window) {
+			// In-process soft reboot with OTAs.
+			// Original UIWindow is deallocated when the old JS isolate is torn down.
+			// Recreate a window bound to the active UIWindowScene so the
+			// root has somewhere to attach.
+			const app = UIApplication.sharedApplication;
+			const all = app && app.connectedScenes ? app.connectedScenes.allObjects : null;
+			let targetScene: UIWindowScene;
+			if (all) {
+				for (let i = 0; i < all.count; i++) {
+					const s = all.objectAtIndex(i) as UIWindowScene;
+					// Only UIWindowScene exposes `windows`; prefer a foreground-active one.
+					if (s && typeof s.windows !== 'undefined') {
+						targetScene = s;
+						if (s.activationState === UISceneActivationState.ForegroundActive) {
+							break;
+						}
+					}
+				}
+			}
+			if (targetScene) {
+				window = UIWindow.alloc().initWithWindowScene(targetScene);
+
+				if (!__VISIONOS__) {
+					window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+				}
+
+				// The registry lives in JS and was lost with the previous isolate, so
+				// the still-connected scene needs a fresh NativeWindow to be reachable.
+				const isPrimary = !this.primaryWindow;
+				const nativeWindow = new IOSNativeWindow(targetScene, window, IOSNativeWindow.getSceneId(targetScene), isPrimary);
+				this._registerWindow(nativeWindow);
+
+				if (isPrimary) {
+					setiOSWindow(window);
+				}
+
+				// If the scene's delegate was recreated after a soft reboot, point it
+				// at the new window so `scene.delegate.window` queries resolve.
+				const freshSceneDelegate = this._softRebootSceneDelegates.get(targetScene);
+				if (freshSceneDelegate) {
+					freshSceneDelegate.window = window;
+				}
+			}
+		}
 
 		if (!window) {
 			return;
 		}
 
+		// May be null on a freshly recreated window — expected; the replace-root
+		// path below sets it. Only the embedder path needs an existing controller.
 		const rootController = window.rootViewController;
-		if (!rootController) {
+		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+
+		// Embed into host app requires an existing root view controller
+		if (embedderDelegate && !rootController) {
 			return;
 		}
 
-		const controller = this.getViewController(rootView);
-		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
-
-		rootView._setupAsRootView({});
-
-		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
-			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
-			this.setSystemAppearance(newSystemAppearance);
-		});
-
-		rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, () => {
-			const layoutDirection = controller.traitCollection.layoutDirection;
-			const newLayoutDirection = this.getLayoutDirectionValue(layoutDirection);
-			this.setLayoutDirection(newLayoutDirection);
-		});
-
-		if (embedderDelegate) {
-			this.setViewControllerView(rootView);
-			embedderDelegate.presentNativeScriptApp(controller);
-		} else {
-			const visibleVC = iosUtils.getVisibleViewController(rootController);
-			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
+		let hostWindow = this.primaryWindow as IOSNativeWindow;
+		if (!hostWindow) {
+			// Only an embedder delegate makes this window a guest: without one NativeScript
+			// owns the UIApplication and the window has to attach its own content.
+			const role: WindowRole = embedderDelegate ? 'embedded' : 'application';
+			hostWindow = new IOSNativeWindow(window.windowScene ?? undefined, window, 'embedded-main', true, role);
+			this._registerWindow(hostWindow);
+			hostWindow._notifyEvent(NativeWindowEvents.attached);
 		}
 
-		this.initRootView(rootView);
+		hostWindow.setContent(rootView);
+
 		this.notifyAppStarted();
+	}
+
+	/**
+	 * After an in-process soft reboot (NativeScriptRuntime.reloadApplication /
+	 * restartWithConfig), the Objective-C delegate classes created by the
+	 * previous JS isolate still exist and UIKit keeps dispatching to their
+	 * now-inert instances: their method callbacks bail out because the isolate
+	 * that implemented them is gone. Notification-center observers are
+	 * re-registered by the new isolate, but delegate-based dispatch (custom
+	 * UIApplicationDelegate methods like push-token/openURL callbacks, and the
+	 * UIScene delegates used by scene-lifecycle apps) stays pinned to the old
+	 * bundle. Recreate those delegates from this bundle's classes and re-point
+	 * UIKit at them.
+	 */
+	private _reattachNativeDelegatesAfterSoftReboot(): void {
+		if (getRuntimeReloadCount() <= 0) {
+			// First boot: UIApplicationMain (or the host app) set up delegates.
+			return;
+		}
+
+		if (isEmbedded()) {
+			// The host app owns the UIApplication delegate; never touch it.
+			return;
+		}
+
+		const app = UIApplication.sharedApplication;
+		if (!app) {
+			return;
+		}
+
+		// Fresh application delegate from the new bundle. Assigning `delegate`
+		// does not retain (unlike the UIApplicationMain launch path), so keep a
+		// strong reference ourselves.
+		this.delegate ??= Responder as any;
+		const freshDelegate = (<any>this.delegate).new() as UIApplicationDelegate;
+		this._softRebootAppDelegate = freshDelegate;
+		app.delegate = freshDelegate;
+
+		// Re-point already-connected scenes at fresh scene delegates so scene
+		// lifecycle and user-implemented scene delegate methods (shortcuts,
+		// openURLContexts, userActivity continuation, etc.) reach this isolate.
+		// Newly connecting scenes are covered by the fresh application delegate's
+		// applicationConfigurationForConnectingSceneSessionOptions, which returns
+		// this bundle's SceneDelegate class.
+		if (this.supportsScenes()) {
+			this._softRebootSceneDelegates.clear();
+			const scenes = app.connectedScenes?.allObjects;
+			for (let i = 0; scenes && i < scenes.count; i++) {
+				const scene = scenes.objectAtIndex(i);
+				if (!(scene instanceof UIWindowScene)) {
+					continue;
+				}
+				const freshSceneDelegate = SceneDelegate.new() as UIWindowSceneDelegate;
+				scene.delegate = freshSceneDelegate;
+				this._softRebootSceneDelegates.set(scene, freshSceneDelegate);
+			}
+		}
+
+		if (Trace.isEnabled()) {
+			Trace.write(`Reattached application delegate${this._softRebootSceneDelegates.size ? ` and ${this._softRebootSceneDelegates.size} scene delegate(s)` : ''} after soft reboot (reloadCount: ${getRuntimeReloadCount()})`, Trace.categories.NativeLifecycle);
+		}
 	}
 
 	private getViewController(rootView: View): UIViewController {
@@ -466,7 +953,69 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	set delegate(value: UIApplicationDelegate | unknown) {
 		if (this._delegate !== value) {
 			this._delegate = value as UIApplicationDelegate;
+
+			if (value) {
+				warnAboutDelegateClass(value, this.started);
+				installSceneDelegateDefaults(value);
+			}
 		}
+	}
+
+	/**
+	 * NativeScript's default implementation of the `UIApplicationDelegate`
+	 * `applicationConfigurationForConnectingSceneSessionOptions` method.
+	 *
+	 * It is installed automatically on the application delegate class unless that class
+	 * already implements the method. A delegate that does implement it can handle the
+	 * scenes it cares about and forward the rest here:
+	 *
+	 * ```ts
+	 * applicationConfigurationForConnectingSceneSessionOptions(app, session, options) {
+	 *   if (session.role === myCustomRole) {
+	 *     return myConfig;
+	 *   }
+	 *   return Application.ios.defaultSceneConfiguration(app, session, options);
+	 * }
+	 * ```
+	 *
+	 * `onSceneConfiguration` is consulted first. Scenes with the
+	 * `UIWindowSceneSessionRoleApplication` role then get a configuration backed by
+	 * NativeScript's SceneDelegate; every other role gets a bare configuration that
+	 * NativeScript does not manage.
+	 */
+	defaultSceneConfiguration(application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
+		// Let the user intercept scene configuration for any/all scenes
+		const userHandler = this._onSceneConfiguration;
+		if (userHandler) {
+			const userConfig = userHandler(application, connectingSceneSession, options);
+			if (userConfig) {
+				return userConfig;
+			}
+		}
+
+		// Only handle the standard window scene role — skip CarPlay, external displays, etc.
+		if (connectingSceneSession.role !== UIWindowSceneSessionRoleApplication) {
+			// Return a bare configuration so iOS doesn't crash, but NativeScript won't manage it
+			return UISceneConfiguration.configurationWithNameSessionRole('Unmanaged', connectingSceneSession.role);
+		}
+
+		const config = UISceneConfiguration.configurationWithNameSessionRole('Default Configuration', connectingSceneSession.role);
+		config.sceneClass = UIWindowScene as any;
+		config.delegateClass = SceneDelegate;
+		return config;
+	}
+
+	/**
+	 * NativeScript's default implementation of the `UIApplicationDelegate`
+	 * `applicationDidDiscardSceneSessions` method, which retires the `NativeWindow`s
+	 * belonging to the discarded sessions.
+	 *
+	 * It is installed automatically on the application delegate class unless that class
+	 * already implements the method, in which case forward to it from there so window
+	 * bookkeeping stays correct.
+	 */
+	defaultDiscardSceneSessions(application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
+		this._onSceneSessionsDiscarded(sceneSessions);
 	}
 
 	addDelegateHandler<T extends keyof UIApplicationDelegate>(methodName: T, handler: (typeof UIApplicationDelegate.prototype)[T]): void {
@@ -475,8 +1024,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 
-		// ensure we have a delegate
-		this.delegate ??= Responder as any;
+		// ensure we have a delegate; Responder already carries the defaults, so it is
+		// stored directly rather than through the setter, whose warnings only apply to
+		// a delegate class the app supplied.
+		this._delegate ??= Responder as any;
 
 		const handlers = this._delegateHandlers.get(methodName) ?? [];
 
@@ -589,7 +1140,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
-		this.launchEventCalled = true;
 		const root = this.notifyLaunch({
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
@@ -601,11 +1151,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		} else {
 			setiOSWindow(this.window);
 		}
-	}
-
-	// Public method for scene-based app startup
-	_notifySceneAppStarted() {
-		this.notifyAppStarted();
 	}
 
 	public _onLivesync(context?: ModuleContext): void {
@@ -624,15 +1169,27 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private setWindowContent(view?: View): void {
+		const rootView = this.createRootView(view);
+		const primaryWindow = this.primaryWindow;
+
+		if (primaryWindow) {
+			primaryWindow.setContent(rootView);
+			return;
+		}
+
+		this.setWindowContentFallback(rootView);
+	}
+
+	/**
+	 * Attaches content to the raw `UIWindow`. Every launch path registers a primary
+	 * NativeWindow, so this only runs when no window is left to own the content.
+	 */
+	private setWindowContentFallback(rootView: View): void {
 		if (this._rootView) {
-			// if we already have a root view, we reset it.
 			this._rootView._onRootViewReset();
 		}
-		const rootView = this.createRootView(view);
-		const controller = this.getViewController(rootView);
 
-		this._rootView = rootView;
-		setRootView(rootView);
+		const controller = this.getViewController(rootView);
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
@@ -640,7 +1197,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.setViewControllerView(rootView);
 
 		const win = this.window;
-
 		const haveController = win.rootViewController !== null;
 		win.rootViewController = controller;
 
@@ -648,20 +1204,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			win.makeKeyAndVisible();
 		}
 
-		this.initRootView(rootView);
-
-		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
-			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
-
-			this.setSystemAppearance(newSystemAppearance);
-		});
-
-		rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, () => {
-			const layoutDirection = controller.traitCollection.layoutDirection;
-			const newLayoutDirection = this.getLayoutDirectionValue(layoutDirection);
-			this.setLayoutDirection(newLayoutDirection);
-		});
+		this.adoptRootView(rootView);
 	}
 
 	// Observers
@@ -681,6 +1224,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				}
 			}
 		}
+
+		// Must precede every window registration below and every scene connect that follows.
+		this.notifyReady();
+
 		this.setMaxRefreshRate();
 
 		// Only set up window if NOT using scene-based lifecycle
@@ -698,9 +1245,31 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 			}
 
-			this.launchEventCalled = false;
-			if (!this.shouldDelayLaunchEvent) {
-				this.notifyAppStarted();
+			if (!this.primaryWindow) {
+				const nativeWindow = new IOSNativeWindow(undefined, this.window, 'main', true, 'application');
+				this._registerWindow(nativeWindow);
+				nativeWindow._notifyEvent(NativeWindowEvents.attached);
+			}
+
+			const primaryWindow = this.primaryWindow;
+			const resolveContent = () =>
+				this._resolveWindowContent(
+					primaryWindow,
+					{
+						window: primaryWindow,
+						isPrimary: true,
+					},
+					{
+						launchData: {
+							ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
+						},
+					},
+				);
+
+			if (this.shouldDelayLaunchEvent) {
+				this._pendingWindowContentResolve = resolveContent;
+			} else {
+				resolveContent();
 			}
 		} else {
 			// Scene-based app - window creation will happen in scene delegate
@@ -709,31 +1278,42 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	@profile
 	private didBecomeActive(notification: NSNotification) {
-		if (!this.launchEventCalled) {
-			this.notifyAppStarted(notification);
+		const pendingWindowContentResolve = this._pendingWindowContentResolve;
+		if (pendingWindowContentResolve) {
+			this._pendingWindowContentResolve = null;
+			pendingWindowContentResolve();
 		}
-		const additionalData = {
-			ios: UIApplication.sharedApplication,
-		};
-		this.setInBackground(false, additionalData);
-		this.setSuspended(false, additionalData);
 
-		const rootView = this._rootView;
-		if (rootView && !rootView.isLoaded) {
-			rootView.callLoaded();
+		// A scene app derives app-level state from its windows, so this notification must not
+		// drive it as well. In scene mode the root view belongs to a window too, so the scene
+		// delegate loads it.
+		if (!this.supportsScenes()) {
+			const additionalData = {
+				ios: UIApplication.sharedApplication,
+			};
+			this.setInBackground(false, additionalData);
+			this.setSuspended(false, additionalData);
+
+			const rootView = this._rootView;
+			if (rootView && !rootView.isLoaded) {
+				rootView.callLoaded();
+			}
 		}
 	}
 
 	private didEnterBackground(notification: NSNotification) {
-		const additionalData = {
-			ios: UIApplication.sharedApplication,
-		};
-		this.setInBackground(true, additionalData);
-		this.setSuspended(true, additionalData);
+		// See didBecomeActive: in scene mode the windows drive app-level state.
+		if (!this.supportsScenes()) {
+			const additionalData = {
+				ios: UIApplication.sharedApplication,
+			};
+			this.setInBackground(true, additionalData);
+			this.setSuspended(true, additionalData);
 
-		const rootView = this._rootView;
-		if (rootView && rootView.isLoaded) {
-			rootView.callUnloaded();
+			const rootView = this._rootView;
+			if (rootView && rootView.isLoaded) {
+				rootView.callUnloaded();
+			}
 		}
 	}
 
@@ -759,172 +1339,179 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private didChangeStatusBarOrientation(notification: NSNotification) {
-		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
-		const newOrientation = this.getOrientationValue(statusBarOrientation);
-		this.setOrientation(newOrientation);
+		// The notification is app-wide, but scenes rotate independently, so every attached
+		// window is refreshed from its own scene.
+		for (const nativeWindow of this._windows) {
+			if (nativeWindow.state !== 'attached') {
+				continue;
+			}
+
+			const orientation = nativeWindow.ios?.scene?.interfaceOrientation ?? UIApplication.sharedApplication.statusBarOrientation;
+			nativeWindow._setOrientation(this.getOrientationValue(orientation));
+		}
 	}
 
-	// Scene lifecycle notification handlers
-	private sceneWillConnect(notification: NSNotification) {
-		const scene = notification.object as UIWindowScene;
-		if (!scene || !(scene instanceof UIWindowScene)) {
+	// --- App-level root view mirror ---
+
+	/**
+	 * Keeps the app-level root view state (`getRootView()`, the global root view and the
+	 * `initRootView` event) following whatever the primary window shows.
+	 */
+	private mirrorPrimaryWindow(nativeWindow: NativeWindow): void {
+		if (this._mirroredWindow === nativeWindow) {
 			return;
 		}
 
-		// Store as primary scene if it's the first one
-		if (!this._primaryScene) {
-			this._primaryScene = scene;
-		}
+		this._mirroredWindow?.off(NativeWindowEvents.contentLoaded, this.onPrimaryWindowContentLoaded, this);
+		this._mirroredWindow = nativeWindow;
+		nativeWindow.on(NativeWindowEvents.contentLoaded, this.onPrimaryWindowContentLoaded, this);
 
-		this.notify({
-			eventName: SceneEvents.sceneWillConnect,
-			object: this,
-			scene: scene,
-			userInfo: notification.userInfo,
-		} as SceneEventData);
-	}
-
-	private sceneDidActivate(notification: NSNotification) {
-		const scene = notification.object as UIScene;
-		this.notify({
-			eventName: SceneEvents.sceneDidActivate,
-			object: this,
-			scene: scene,
-		} as SceneEventData);
-
-		// If this is the primary scene, trigger traditional app lifecycle
-		if (scene === this._primaryScene) {
-			const additionalData = {
-				ios: UIApplication.sharedApplication,
-				scene: scene,
-			};
-			this.setInBackground(false, additionalData);
-			this.setSuspended(false, additionalData);
-
-			if (this._rootView && !this._rootView.isLoaded) {
-				this._rootView.callLoaded();
-			}
+		if (nativeWindow.rootView && nativeWindow.rootView !== this._rootView) {
+			this.adoptRootView(nativeWindow.rootView);
 		}
 	}
 
-	private sceneWillEnterForeground(notification: NSNotification) {
-		const scene = notification.object as UIScene;
-		this.notify({
-			eventName: SceneEvents.sceneWillEnterForeground,
-			object: this,
-			scene: scene,
-		} as SceneEventData);
+	private onPrimaryWindowContentLoaded(data: NativeWindowEventData): void {
+		this.adoptRootView(data.window.rootView);
 	}
 
-	private sceneDidEnterBackground(notification: NSNotification) {
-		const scene = notification.object as UIScene;
-		this.notify({
-			eventName: SceneEvents.sceneDidEnterBackground,
-			object: this,
-			scene: scene,
-		} as SceneEventData);
-
-		// If this is the primary scene, trigger traditional app lifecycle
-		if (scene === this._primaryScene) {
-			const additionalData = {
-				ios: UIApplication.sharedApplication,
-				scene: scene,
-			};
-			this.setInBackground(true, additionalData);
-			this.setSuspended(true, additionalData);
-
-			if (this._rootView && this._rootView.isLoaded) {
-				this._rootView.callUnloaded();
-			}
-		}
-	}
-
-	private sceneDidDisconnect(notification: NSNotification) {
-		const scene = notification.object as UIScene;
-		this._removeWindowForScene(scene);
-
-		// If primary scene disconnected, clear it
-		if (scene === this._primaryScene) {
-			this._primaryScene = null;
-		}
-
-		if (this._primaryScene) {
-			if (SDK_VERSION >= 17) {
-				const request = UISceneSessionActivationRequest.requestWithSession(this._primaryScene.session);
-
-				UIApplication.sharedApplication.activateSceneSessionForRequestErrorHandler(request, (err: NSError) => {
-					if (err) {
-						console.log('Failed to activate primary scene:', err.localizedDescription);
-					}
-				});
-			} else {
-				UIApplication.sharedApplication.requestSceneSessionActivationUserActivityOptionsErrorHandler(this._primaryScene.session, null, null, (err: NSError) => {
-					if (err) {
-						console.log('Failed to activate primary scene (legacy):', err.localizedDescription);
-					}
-				});
-			}
-		}
-
-		this.notify({
-			eventName: SceneEvents.sceneDidDisconnect,
-			object: this,
-			scene: scene,
-		} as SceneEventData);
-	}
-
-	// Scene management helper methods
-	_setWindowForScene(window: UIWindow, scene: UIScene): void {
-		this._windowSceneMap.set(scene, window);
-	}
-
-	_removeWindowForScene(scene: UIScene): void {
-		this._windowSceneMap.delete(scene);
-		// also untrack opened scene id
-		try {
-			const s: any = scene as any;
-			if (s && s.session) {
-				const id = this._getSceneId(s as UIWindowScene);
-				this._openedScenesById.delete(id);
-			}
-		} catch {}
-	}
-
-	_getWindowForScene(scene: UIScene): UIWindow | undefined {
-		return this._windowSceneMap.get(scene);
-	}
-
-	_setupWindowForScene(window: UIWindow, scene: UIWindowScene): void {
-		if (!window) {
+	private adoptRootView(rootView: View): void {
+		if (!rootView) {
 			return;
 		}
 
-		// track opened scene
-		try {
-			const id = this._getSceneId(scene);
-			this._openedScenesById.set(id, scene);
-		} catch {}
+		this._rootView = rootView;
+		setRootView(rootView);
+		this.initRootView(rootView, this._mirroredWindow);
+	}
 
-		// Set up window background
-		if (!__VISIONOS__) {
-			window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+	// --- NativeWindow registry ---
+
+	/**
+	 * @internal - hands the discarded sessions' ids to the window registry, which decides
+	 * which of them name a window that is actually finished with.
+	 */
+	_onSceneSessionsDiscarded(sessions: NSSet<UISceneSession>): void {
+		const all = sessions?.allObjects;
+		if (!all) {
+			return;
 		}
 
-		// If this is the primary scene, set up the main application content
-		if (scene === this._primaryScene || !this._primaryScene) {
-			this._primaryScene = scene;
+		const ids: string[] = [];
 
-			if (!getiOSWindow()) {
-				setiOSWindow(window);
-			}
+		for (let i = 0; i < all.count; i++) {
+			const persistentIdentifier = all.objectAtIndex(i)?.persistentIdentifier;
 
-			// During initial scene startup we must wait for launch to be notified first.
-			// Some frameworks provide root content from launch handlers.
-			if (this.hasLaunched()) {
-				this.setWindowContent();
+			if (persistentIdentifier) {
+				ids.push(`${persistentIdentifier}`);
 			}
+		}
+
+		this._retireDiscardedWindows(ids);
+	}
+
+	/**
+	 * @internal - Get a NativeWindow by its scene.
+	 */
+	_getWindowForScene(scene: UIWindowScene): IOSNativeWindow | undefined {
+		return this._windows.find((nw) => nw.ios?.scene === scene) as IOSNativeWindow | undefined;
+	}
+
+	/**
+	 * @internal - Feeds a window's foreground state into the application-level
+	 * 'foreground'/'background' events, which describe the app as a whole: they are raised
+	 * when the first application-role window enters the foreground and when the last one
+	 * leaves it. Windows in any other role never speak for the app.
+	 */
+	_setWindowInForeground(nativeWindow: NativeWindow | undefined, inForeground: boolean, scene?: UIScene): void {
+		if (this._trackWindowState(this._foregroundWindows, nativeWindow, inForeground)) {
+			this.setInBackground(!inForeground, {
+				ios: UIApplication.sharedApplication,
+				scene,
+			});
 		}
 	}
+
+	/**
+	 * @internal - Feeds a window's active state into the application-level 'resume'/'suspend'
+	 * events, raised when the first application-role window becomes active and when the last
+	 * active one resigns.
+	 */
+	_setWindowActive(nativeWindow: NativeWindow | undefined, active: boolean, scene?: UIScene): void {
+		if (this._trackWindowState(this._activeWindows, nativeWindow, active)) {
+			this.setSuspended(!active, {
+				ios: UIApplication.sharedApplication,
+				scene,
+			});
+		}
+	}
+
+	/**
+	 * @returns whether the set flipped between empty and non-empty, which is the only point
+	 * at which app-level state changes.
+	 */
+	private _trackWindowState(windows: Set<NativeWindow>, nativeWindow: NativeWindow | undefined, member: boolean): boolean {
+		if (nativeWindow?.role !== 'application') {
+			return false;
+		}
+
+		const wasPopulated = windows.size > 0;
+
+		if (member) {
+			windows.add(nativeWindow);
+		} else {
+			windows.delete(nativeWindow);
+		}
+
+		return wasPopulated !== windows.size > 0;
+	}
+
+	protected _onWindowRegistered(nativeWindow: NativeWindow): void {
+		if (nativeWindow.isPrimary) {
+			this.mirrorPrimaryWindow(nativeWindow);
+		}
+	}
+
+	protected _onPrimaryWindowPromoted(nativeWindow: NativeWindow): void {
+		const promotedWindow = nativeWindow.ios?.uiWindow;
+		if (promotedWindow) {
+			setiOSWindow(promotedWindow);
+		}
+		this.mirrorPrimaryWindow(nativeWindow);
+	}
+
+	/**
+	 * Register a callback to intercept scene configuration.
+	 *
+	 * Called for every new scene session. Return a `UISceneConfiguration` to handle
+	 * the scene yourself (e.g. CarPlay, external display), or return `null`/`undefined`
+	 * to let NativeScript handle it with the default SceneDelegate.
+	 *
+	 * NativeScript only auto-manages `UIWindowSceneSessionRoleApplication` scenes.
+	 * All other scene roles are ignored unless you provide a configuration here.
+	 *
+	 * @example
+	 * ```ts
+	 * Application.ios.onSceneConfiguration = (app, session, options) => {
+	 *   if (session.role === CPTemplateApplicationSceneSessionRoleApplication) {
+	 *     const config = UISceneConfiguration.configurationWithNameSessionRole('CarPlay', session.role);
+	 *     config.delegateClass = MyCarPlaySceneDelegate;
+	 *     return config;
+	 *   }
+	 *   // Return null to let NativeScript handle the default window scene
+	 *   return null;
+	 * };
+	 * ```
+	 */
+	set onSceneConfiguration(handler: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null) {
+		this._onSceneConfiguration = handler;
+	}
+
+	get onSceneConfiguration(): ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null {
+		return this._onSceneConfiguration;
+	}
+
+	// Scene management helper methods (kept for backward compat)
 
 	get sceneDelegate(): UIWindowSceneDelegate {
 		if (!this._sceneDelegate) {
@@ -942,10 +1529,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	 */
 
 	/**
-	 * Opens a new window with the specified data.
-	 * @param data The data to pass to the new window.
+	 * Opens a new window (scene).
+	 *
+	 * @param options Options for the new window. `options.data` is serialized into the
+	 * activating scene's `NSUserActivity.userInfo`.
 	 */
-	openWindow(data: Record<any, any>) {
+	openWindow(options?: WindowOpenOptions) {
 		if (!supportsMultipleScenes()) {
 			console.log('Cannot create a new scene - not supported on this device.');
 			return;
@@ -956,41 +1545,22 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			// iOS 17+
 			if (SDK_VERSION >= 17) {
-				// Create a new scene activation request with proper role
 				let request: UISceneSessionActivationRequest;
 
 				try {
-					// Use the correct factory method to create request with role
-					// Based on the type definitions, this is the proper way
 					request = UISceneSessionActivationRequest.requestWithRole(UIWindowSceneSessionRoleApplication);
 
-					// Note: may be useful to allow user defined activity type through optional string typed data in future
 					const activity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
-					activity.userInfo = dataSerialize(data);
+					activity.userInfo = dataSerialize(options?.data ?? {});
 					request.userActivity = activity;
 
-					// Set proper options with requesting scene
-					const options = UISceneActivationRequestOptions.new();
+					const activationOptions = UISceneActivationRequestOptions.new();
+					const primary = this.primaryWindow;
+					if (primary?.ios?.scene) {
+						activationOptions.requestingScene = primary.ios.scene;
+					}
 
-					// Note: explore secondary windows spawning other windows
-					// and if this context needs to change in those cases
-					const mainWindow = Application.ios.getPrimaryWindow();
-					options.requestingScene = mainWindow?.windowScene;
-
-					/**
-					 * Note: This does not work in testing but worth exploring further sometime
-					 * regarding the size/dimensions of opened secondary windows.
-					 * The initial size is ultimately determined by the system
-					 * based on available space and user context.
-					 */
-					// Get the size restrictions from the window scene
-					// const sizeRestrictions = (options.requestingScene as UIWindowScene).sizeRestrictions;
-
-					// // Set your minimum and maximum dimensions
-					// sizeRestrictions.minimumSize = CGSizeMake(320, 400);
-					// sizeRestrictions.maximumSize = CGSizeMake(600, 800);
-
-					request.options = options;
+					request.options = activationOptions;
 				} catch (roleError) {
 					console.log('Error creating request:', roleError);
 					return;
@@ -1000,35 +1570,24 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					if (error) {
 						console.log('Error creating new scene (iOS 17+):', error);
 
-						// Log additional debugging info
 						if (error.userInfo) {
 							console.error(`Error userInfo: ${error.userInfo.description}`);
 						}
 
-						// Handle specific error types
 						if (error.localizedDescription.includes('role') && error.localizedDescription.includes('nil')) {
-							this.createSceneWithLegacyAPI(data);
+							this.createSceneWithLegacyAPI(options?.data);
 						} else if (error.domain === 'FBSWorkspaceErrorDomain' && error.code === 2) {
-							this.createSceneWithLegacyAPI(data);
+							this.createSceneWithLegacyAPI(options?.data);
 						}
 					}
 				});
-			}
-			// iOS 13-16 - Use the legacy requestSceneSessionActivationUserActivityOptionsErrorHandler method
-			else if (SDK_VERSION >= 13 && SDK_VERSION < 17) {
-				app.requestSceneSessionActivationUserActivityOptionsErrorHandler(
-					null, // session
-					null, // userActivity
-					null, // options
-					(error) => {
-						if (error) {
-							console.log('Error creating new scene (legacy):', error);
-						}
-					},
-				);
-			}
-			// Fallback for older iOS versions or unsupported configurations
-			else {
+			} else if (SDK_VERSION >= 13 && SDK_VERSION < 17) {
+				app.requestSceneSessionActivationUserActivityOptionsErrorHandler(null, null, null, (error) => {
+					if (error) {
+						console.log('Error creating new scene (legacy):', error);
+					}
+				});
+			} else {
 				console.log('Neither new nor legacy scene activation methods are available');
 			}
 		} catch (error) {
@@ -1038,76 +1597,72 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	/**
 	 * Closes a secondary window/scene.
-	 * Usage examples:
-	 *  - Application.ios.closeWindow() // best-effort close of a non-primary scene
-	 *  - Application.ios.closeWindow(button) // from a tap handler within the scene
-	 *  - Application.ios.closeWindow(window)
-	 *  - Application.ios.closeWindow(scene)
-	 *  - Application.ios.closeWindow('scene-id')
+	 * Accepts a NativeWindow, View, UIWindow, UIWindowScene, or string id.
 	 */
-	public closeWindow(target?: View | UIWindow | UIWindowScene | string): void {
+	public closeWindow(target?: NativeWindow | View | UIWindow | UIWindowScene | string): void {
 		if (!__APPLE__) {
 			return;
 		}
 		try {
-			const scene = this._resolveScene(target);
-			if (!scene) {
-				console.log('closeWindow: No scene resolved for target');
-				return;
-			}
+			let nativeWindow: NativeWindow | undefined;
 
-			// Don't allow closing the primary scene
-			if (scene === this._primaryScene) {
-				console.log('closeWindow: Refusing to close the primary scene');
-				return;
-			}
-
-			const session = scene.session;
-			if (!session) {
-				console.log('closeWindow: Scene has no session to destroy');
-				return;
-			}
-
-			const app = UIApplication.sharedApplication;
-			if (app.requestSceneSessionDestructionOptionsErrorHandler) {
-				app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
-					if (error) {
-						console.log('closeWindow: destruction error', error);
-					} else {
-						// clean up tracked id
-						const id = this._getSceneId(scene);
-						this._openedScenesById.delete(id);
-					}
-				});
+			if (target instanceof NativeWindow) {
+				nativeWindow = target;
 			} else {
-				console.info('closeWindow: Scene destruction API not available on this iOS version');
+				const scene = this._resolveScene(target);
+				if (scene) {
+					nativeWindow = this._getWindowForScene(scene);
+				}
 			}
+
+			if (!nativeWindow) {
+				console.log('closeWindow: No window resolved for target');
+				return;
+			}
+
+			nativeWindow.close();
 		} catch (err) {
 			console.log('closeWindow: Unexpected error', err);
 		}
 	}
 
+	/**
+	 * @deprecated Use `getWindows()` instead.
+	 */
 	getAllWindows(): UIWindow[] {
-		return Array.from(this._windowSceneMap.values());
+		return this._windows.map((nw) => nw.ios?.uiWindow).filter(Boolean) as UIWindow[];
 	}
 
+	/**
+	 * @deprecated Use `getWindows()` instead.
+	 */
 	getAllScenes(): UIScene[] {
-		return Array.from(this._windowSceneMap.keys());
+		return this._windows.map((nw) => nw.ios?.scene).filter(Boolean) as UIScene[];
 	}
 
+	/**
+	 * @deprecated Use `getWindows()` instead.
+	 */
 	getWindowScenes(): UIWindowScene[] {
 		return this.getAllScenes().filter((scene) => scene instanceof UIWindowScene) as UIWindowScene[];
 	}
 
+	/**
+	 * @deprecated Use `primaryWindow?.ios?.uiWindow` instead.
+	 */
 	getPrimaryWindow(): UIWindow {
-		if (this._primaryScene) {
-			return this._getWindowForScene(this._primaryScene) || getiOSWindow();
+		const primary = this.primaryWindow;
+		if (primary?.ios?.uiWindow) {
+			return primary.ios.uiWindow;
 		}
 		return getiOSWindow();
 	}
 
+	/**
+	 * @deprecated Use `primaryWindow?.ios?.scene` instead.
+	 */
 	getPrimaryScene(): UIWindowScene | null {
-		return this._primaryScene;
+		return this.primaryWindow?.ios?.scene || null;
 	}
 
 	// Scene lifecycle management
@@ -1120,7 +1675,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	isUsingSceneLifecycle(): boolean {
-		return this.supportsScenes() && this._windowSceneMap.size > 0;
+		return this.supportsScenes() && this._windows.length > 0;
 	}
 
 	// Call this to set up scene-based configuration
@@ -1129,35 +1684,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			console.warn('Scene-based lifecycle is only supported on iOS 13+ iPad or visionOS with multi-scene enabled apps.');
 			return;
 		}
-
-		// Additional scene configuration can be added here
-		// For now, the notification observers are already set up in the constructor
-	}
-
-	// Stable scene id for lookups
-	private _getSceneId(scene: UIWindowScene): string {
-		try {
-			if (!scene) {
-				return 'Unknown';
-			}
-			// Prefer session persistentIdentifier when available (stable across lifetime)
-			const session = scene.session;
-			const persistentId = session && session.persistentIdentifier;
-			if (persistentId) {
-				return `${persistentId}`;
-			}
-			// Fallbacks
-			if (scene.hash != null) {
-				return `${scene.hash}`;
-			}
-			const desc = scene.description;
-			if (desc) {
-				return `${desc}`;
-			}
-		} catch (err) {
-			// ignore
-		}
-		return 'Unknown';
 	}
 
 	// Resolve a UIWindowScene from various input types
@@ -1166,12 +1692,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return null;
 		}
 		if (!target) {
-			// Try to pick a non-primary foreground active scene, else last known scene
-			const scenes = this.getWindowScenes?.() || [];
-			const nonPrimary = scenes.filter((s) => s !== this._primaryScene);
-			return nonPrimary[0] || scenes[0] || null;
+			// Try to pick a non-primary window's scene
+			const nonPrimary = this._windows.filter((nw) => !nw.isPrimary);
+			return nonPrimary[0]?.ios?.scene || this.primaryWindow?.ios?.scene || null;
 		}
-		// If a View was passed, derive its window.scene
 		if (target && typeof target === 'object') {
 			// UIWindowScene
 			if ((target as UIWindowScene).session && (target as UIWindowScene).activationState !== undefined) {
@@ -1190,22 +1714,22 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 		// String id lookup
 		if (typeof target === 'string') {
-			if (this._openedScenesById.has(target)) {
-				return this._openedScenesById.get(target);
+			const found = this.getWindowById(target);
+			if (found) {
+				return found.ios?.scene || null;
 			}
-			// Try matching by persistentIdentifier or hash among known scenes
-			const scenes = this.getWindowScenes?.() || [];
-			for (const s of scenes) {
-				const sid = this._getSceneId(s);
-				if (sid === target) {
-					return s;
+			// Try matching among known scenes
+			for (const nw of this._windows) {
+				const scene = nw.ios?.scene;
+				if (scene && IOSNativeWindow.getSceneId(scene) === target) {
+					return scene;
 				}
 			}
 		}
 		return null;
 	}
 
-	private createSceneWithLegacyAPI(data: Record<any, any>) {
+	private createSceneWithLegacyAPI(data?: Record<string, any>) {
 		const windowScene = this.window?.windowScene;
 
 		if (!windowScene) {
@@ -1214,7 +1738,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 		// Create user activity for the new scene
 		const userActivity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
-		userActivity.userInfo = dataSerialize(data);
+		userActivity.userInfo = dataSerialize(data ?? {});
 
 		// Use the legacy API
 		const options = UISceneActivationRequestOptions.new();
@@ -1264,6 +1788,7 @@ global.__onLiveSyncCore = function (context?: ModuleContext) {
 };
 
 export * from './application-common';
+export * from './application-interfaces';
 export const Application = iosApp;
 export const AndroidApplication = undefined;
 
@@ -1666,7 +2191,7 @@ export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnab
 }
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
-export function ensureClasses() {
+export function ensureA11yClasses() {
 	if (accessibilityServiceObservable) {
 		return;
 	}
@@ -1674,9 +2199,6 @@ export function ensureClasses() {
 	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
-
-	// Initialize SDK version CSS class once
-	initializeSdkVersionClass(Application.getRootView());
 }
 
 export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
@@ -1757,7 +2279,7 @@ function applyFontScaleToRootViews(): void {
 }
 
 export function initAccessibilityCssHelper(): void {
-	ensureClasses();
+	ensureA11yClasses();
 	updateCurrentHelperClasses(applyRootCssClass);
 	applyFontScaleToRootViews();
 
