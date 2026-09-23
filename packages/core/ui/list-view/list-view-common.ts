@@ -60,6 +60,15 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public showSearch: boolean;
 	public searchAutoHide: boolean;
 	public iosSearchInsetBehavior: ListViewSearchInsetBehavior;
+	public iosScrollEdgeEffect: CoreTypes.ScrollEdgeEffectType;
+
+	public addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void {
+		// iOS 26+ only; see the iOS implementation.
+	}
+
+	public removeScrollEdgeContainer(view: View): void {
+		// iOS 26+ only; see the iOS implementation.
+	}
 
 	get separatorColor(): Color {
 		return this.style.separatorColor;
@@ -393,3 +402,9 @@ export const iosSearchInsetBehaviorProperty = new Property<ListViewBase, ListVie
 	name: 'iosSearchInsetBehavior',
 });
 iosSearchInsetBehaviorProperty.register(ListViewBase);
+
+export const iosScrollEdgeEffectProperty = new Property<ListViewBase, CoreTypes.ScrollEdgeEffectType>({
+	name: 'iosScrollEdgeEffect',
+	defaultValue: 'automatic',
+});
+iosScrollEdgeEffectProperty.register(ListViewBase);

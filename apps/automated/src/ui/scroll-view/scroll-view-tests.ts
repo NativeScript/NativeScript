@@ -35,6 +35,34 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		TKUnit.assertTrue(scrollView !== null, 'ScrollView should be created.');
 	}
 
+	public test_default_iosScrollEdgeEffect() {
+		const scroll = new ScrollView();
+		TKUnit.assertEqual(scroll.iosScrollEdgeEffect, 'automatic', 'Default iosScrollEdgeEffect');
+	}
+
+	public test_iosScrollEdgeEffect_maps_to_native_edge_effects() {
+		const nativeEffects = __APPLE__ && parseFloat(UIDevice.currentDevice.systemVersion) >= 26;
+		this.testView.iosScrollEdgeEffect = 'none';
+		if (nativeEffects) {
+			const native = this.testView.ios as UIScrollView;
+			TKUnit.assertTrue(native.topEdgeEffect.hidden, 'none hides the top edge effect');
+			TKUnit.assertTrue(native.bottomEdgeEffect.hidden, 'none hides the bottom edge effect');
+		}
+		this.testView.iosScrollEdgeEffect = 'soft';
+		if (nativeEffects) {
+			const native = this.testView.ios as UIScrollView;
+			TKUnit.assertFalse(native.topEdgeEffect.hidden, 'soft shows the top edge effect');
+			TKUnit.assertTrue(native.topEdgeEffect.style.isEqual(UIScrollEdgeEffectStyle.softStyle), 'soft maps to the soft style');
+		}
+	}
+
+	public test_addScrollEdgeContainer_accepts_unloaded_views() {
+		const scroll = new ScrollView();
+		const bar = new Button();
+		scroll.addScrollEdgeContainer(bar, 'top');
+		scroll.removeScrollEdgeContainer(bar);
+	}
+
 	public test_default_TNS_values() {
 		const scroll = new ScrollView();
 		TKUnit.assertEqual(scroll.orientation, 'vertical', 'Default this.testView.orientation');

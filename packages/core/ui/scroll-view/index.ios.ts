@@ -1,8 +1,9 @@
 import type { ScrollEventData } from './scroll-view-common';
-import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty, iosContentInsetAdjustmentBehaviorProperty } from './scroll-view-common';
+import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty, iosContentInsetAdjustmentBehaviorProperty, iosScrollEdgeEffectProperty } from './scroll-view-common';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { View } from '../core/view';
+import { IOSHelper, ScrollEdgeContainers } from '../core/view/view-helper';
 import { CoreTypes } from '../enums';
 
 export * from './scroll-view-common';
@@ -40,6 +41,7 @@ export class ScrollView extends ScrollViewBase {
 	private _contentMeasuredHeight = 0;
 	private _isFirstLayout: boolean = true;
 	private _delegate: UIScrollViewDelegateImpl;
+	private _scrollEdgeContainers: ScrollEdgeContainers;
 
 	public createNativeView() {
 		return UIScrollView.new();
@@ -52,12 +54,25 @@ export class ScrollView extends ScrollViewBase {
 		// UIKit defaults to `automatic` while the property defaults to `never`, and
 		// setNative only runs for non-default values — so apply it up front.
 		this.updateContentInsetAdjustmentBehavior(this.iosContentInsetAdjustmentBehavior);
+		this._scrollEdgeContainers?.attach();
 	}
 
 	public disposeNativeView() {
+		this._scrollEdgeContainers?.detach();
 		super.disposeNativeView();
 
 		this._isFirstLayout = true;
+	}
+
+	public addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void {
+		if (!this._scrollEdgeContainers) {
+			this._scrollEdgeContainers = new ScrollEdgeContainers(this);
+		}
+		this._scrollEdgeContainers.add(view, edge);
+	}
+
+	public removeScrollEdgeContainer(view: View): void {
+		this._scrollEdgeContainers?.remove(view);
 	}
 
 	_setNativeClipToBounds() {
@@ -151,6 +166,10 @@ export class ScrollView extends ScrollViewBase {
 
 	[iosContentInsetAdjustmentBehaviorProperty.setNative](value: 'never' | 'automatic' | 'scrollableAxes' | 'always') {
 		this.updateContentInsetAdjustmentBehavior(value);
+	}
+
+	[iosScrollEdgeEffectProperty.setNative](value: CoreTypes.ScrollEdgeEffectType) {
+		IOSHelper.setScrollEdgeEffect(this.nativeViewProtected, value);
 	}
 
 	public scrollToVerticalOffset(value: number, animated: boolean) {

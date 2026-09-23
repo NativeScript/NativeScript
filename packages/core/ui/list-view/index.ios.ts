@@ -1,7 +1,8 @@
 import { ItemEventData, SearchEventData, ItemsSource } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty, iosSearchInsetBehaviorProperty, ListViewSearchInsetBehavior } from './list-view-common';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty, iosSearchInsetBehaviorProperty, iosScrollEdgeEffectProperty, ListViewSearchInsetBehavior } from './list-view-common';
 import { CoreTypes } from '../../core-types';
 import { View, type KeyedTemplate, type Template } from '../core/view';
+import { IOSHelper, ScrollEdgeContainers } from '../core/view/view-helper';
 import { Length } from '../styling/length-shared';
 import { Observable, EventData } from '../../data/observable';
 import { Color } from '../../color';
@@ -450,6 +451,7 @@ export class ListView extends ListViewBase {
 	private _searchDelegate: UISearchResultsUpdatingImpl;
 	_isSearchActive: boolean = false;
 	widthMeasureSpec = 0;
+	private _scrollEdgeContainers: ScrollEdgeContainers;
 
 	constructor() {
 		super();
@@ -481,13 +483,26 @@ export class ListView extends ListViewBase {
 		}
 
 		this._setNativeClipToBounds();
+		this._scrollEdgeContainers?.attach();
 	}
 
 	disposeNativeView() {
+		this._scrollEdgeContainers?.detach();
 		this._cleanupSearchController();
 		this._delegate = null;
 		this._dataSource = null;
 		super.disposeNativeView();
+	}
+
+	public addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void {
+		if (!this._scrollEdgeContainers) {
+			this._scrollEdgeContainers = new ScrollEdgeContainers(this);
+		}
+		this._scrollEdgeContainers.add(view, edge);
+	}
+
+	public removeScrollEdgeContainer(view: View): void {
+		this._scrollEdgeContainers?.remove(view);
 	}
 
 	private _setupSearchController() {
@@ -1190,5 +1205,12 @@ export class ListView extends ListViewBase {
 			}
 		}
 		// If search is not enabled yet, the property will be used when _setupSearchController is called
+	}
+
+	// Keep this after the `string | Template` setNative: TypeScript folds the
+	// computed symbol members into one index signature, and a string-union
+	// member declared ahead of that one fails the index-type check (TS2411).
+	[iosScrollEdgeEffectProperty.setNative](value: CoreTypes.ScrollEdgeEffectType) {
+		IOSHelper.setScrollEdgeEffect(this.nativeViewProtected, value);
 	}
 }
