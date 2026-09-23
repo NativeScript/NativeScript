@@ -202,12 +202,20 @@ export class TextField extends TextFieldBase {
 				// 2. emoji's should not replace value
 				// 3. convenient keyboard shortcuts should not replace value (eg, '.com')
 				const shouldReplaceString = (textField.secureTextEntry && this._firstEdit) || (delta > 1 && !isEmoji(replacementString) && delta !== replacementString.length);
+				let typedText: string;
 				if (shouldReplaceString) {
-					textProperty.nativeValueChange(this, replacementString);
-				} else {
-					if (range.location <= textField.text.length) {
-						const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-						textProperty.nativeValueChange(this, newText);
+					typedText = replacementString;
+				} else if (range.location <= textField.text.length) {
+					typedText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
+				}
+				if (typedText !== undefined) {
+					textProperty.nativeValueChange(this, typedText);
+					// A textChange listener that set a different `text` has already
+					// pushed it to the native field; letting UIKit apply the typed
+					// replacement on top of it would repeat the keystroke.
+					if (this.text !== typedText) {
+						this._firstEdit = false;
+						return false;
 					}
 				}
 			}
