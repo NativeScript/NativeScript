@@ -40,12 +40,12 @@ export class ListView extends View {
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
-	android: any /* android.widget.ListView */;
+	android: any; /* android.widget.ListView */
 
 	/**
 	 * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
 	 */
-	ios: any /* UITableView */;
+	ios: any; /* UITableView */
 
 	/**
 	 * Gets or set the items collection of the ListView.
@@ -174,9 +174,41 @@ export class ListView extends View {
 	iosSearchInsetBehavior: 'automatic' | 'scrollableAxes' | 'never' | 'always';
 
 	/**
+	 * iOS 26+ only. The scroll edge effect UIKit draws where the list scrolls
+	 * under a bar, applied to every edge of the native table view.
+	 *
+	 * - `automatic` (default): UIKit chooses.
+	 * - `soft`: rows beneath the status bar (and any bar registered with
+	 *   `addScrollEdgeContainer`) blur and fade out.
+	 * - `hard`: a flat edge instead of a blur.
+	 * - `none`: no effect.
+	 *
+	 * Ignored before iOS 26 and on Android.
+	 *
+	 * @nsProperty
+	 */
+	iosScrollEdgeEffect: CoreTypes.ScrollEdgeEffectType;
+
+	/**
 	 * Forces the ListView to reload all its items.
 	 */
 	refresh();
+
+	/**
+	 * iOS 26+ only. Registers `view` as a bar this list's rows pass beneath:
+	 * the scroll edge effect extends under the bar and follows it as it moves.
+	 * A bar in another window (a keyboard accessory) works too. Either view
+	 * may still be loading; registration completes once both native views
+	 * exist. No-op elsewhere.
+	 * @param view The bar.
+	 * @param edge The edge of the list the bar sits on.
+	 */
+	addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void;
+
+	/**
+	 * Unregisters a bar passed to `addScrollEdgeContainer`.
+	 */
+	removeScrollEdgeContainer(view: View): void;
 
 	/**
 	 * Scrolls the specified item with index into view.

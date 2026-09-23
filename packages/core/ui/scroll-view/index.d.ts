@@ -1,5 +1,6 @@
 ﻿import { ContentView } from '../content-view';
 import { Property } from '../core/properties';
+import { View } from '../core/view';
 import { EventData } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 
@@ -81,6 +82,38 @@ export class ScrollView extends ContentView {
 	 * @nsProperty
 	 */
 	iosContentInsetAdjustmentBehavior: 'never' | 'automatic' | 'scrollableAxes' | 'always';
+
+	/**
+	 * iOS 26+ only. The scroll edge effect UIKit draws where content scrolls
+	 * under a bar, applied to every edge of the native scroll view.
+	 *
+	 * - `automatic` (default): UIKit chooses.
+	 * - `soft`: content beneath the status bar (and any bar registered with
+	 *   `addScrollEdgeContainer`) blurs and fades out.
+	 * - `hard`: a flat edge instead of a blur.
+	 * - `none`: no effect.
+	 *
+	 * Ignored before iOS 26 and on Android.
+	 *
+	 * @nsProperty
+	 */
+	iosScrollEdgeEffect: CoreTypes.ScrollEdgeEffectType;
+
+	/**
+	 * iOS 26+ only. Registers `view` as a bar this scroll view's content passes
+	 * beneath: the scroll edge effect extends under the bar and follows it as
+	 * it moves. A bar in another window (a keyboard accessory) works too.
+	 * Either view may still be loading; registration completes once both
+	 * native views exist. No-op elsewhere.
+	 * @param view The bar.
+	 * @param edge The edge of the scroll view the bar sits on.
+	 */
+	addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void;
+
+	/**
+	 * Unregisters a bar passed to `addScrollEdgeContainer`.
+	 */
+	removeScrollEdgeContainer(view: View): void;
 
 	/**
 	 * Adds a listener for the specified event name.

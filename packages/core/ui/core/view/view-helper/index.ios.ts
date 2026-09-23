@@ -7,6 +7,8 @@ import { ViewHelper } from './view-helper-common';
 import { SDK_VERSION } from '../../../../utils/constants';
 import { layout, Trace } from './view-helper-shared';
 import { ios as iosUtils, getWindow } from '../../../../utils';
+import { CoreTypes } from '../../../../core-types';
+import type { EventData } from '../../../../data/observable';
 
 export * from './view-helper-common';
 export const AndroidHelper = 0;
@@ -208,12 +210,115 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 	}
 }
 
+// UIRectEdge values; the enum lives in the UIUtilities typings.
+const RECT_EDGES: Record<CoreTypes.ScrollEdgeType, number> = { top: 1, left: 2, bottom: 4, right: 8 };
+
+interface ScrollEdgeContainerEntry {
+	edge: CoreTypes.ScrollEdgeType;
+	interaction: UIScrollEdgeElementContainerInteraction | null;
+}
+
+/**
+ * Bars a scroll view's content passes beneath, registered with UIKit so its
+ * scroll edge effect covers them (iOS 26+). A bar may load after the scroll
+ * view, be recreated, or live in another window (a keyboard accessory), so
+ * entries are kept per NativeScript view and registered whenever both native
+ * views exist.
+ */
+export class ScrollEdgeContainers {
+	private readonly entries = new Map<View, ScrollEdgeContainerEntry>();
+	private readonly onContainerLoaded = () => this.attach();
+	private readonly onContainerUnloaded = (args: EventData) => {
+		const view = args.object as View;
+		const entry = this.entries.get(view);
+		if (entry) {
+			this.release(view, entry);
+		}
+	};
+
+	constructor(private readonly owner: { nativeViewProtected: UIScrollView }) {}
+
+	add(view: View, edge: CoreTypes.ScrollEdgeType): void {
+		this.remove(view);
+		this.entries.set(view, { edge, interaction: null });
+		view.on('loaded', this.onContainerLoaded);
+		view.on('unloaded', this.onContainerUnloaded);
+		this.attach();
+	}
+
+	remove(view: View): void {
+		const entry = this.entries.get(view);
+		if (!entry) {
+			return;
+		}
+		view.off('loaded', this.onContainerLoaded);
+		view.off('unloaded', this.onContainerUnloaded);
+		this.release(view, entry);
+		this.entries.delete(view);
+	}
+
+	/** Registers every entry whose native views exist. */
+	attach(): void {
+		const scrollView = this.owner.nativeViewProtected;
+		if (!scrollView || SDK_VERSION < 26) {
+			return;
+		}
+		this.entries.forEach((entry, view) => {
+			const container = view.nativeViewProtected as UIView;
+			if (entry.interaction || !container) {
+				return;
+			}
+			const interaction = UIScrollEdgeElementContainerInteraction.new();
+			interaction.scrollView = scrollView;
+			interaction.edge = RECT_EDGES[entry.edge];
+			container.addInteraction(interaction);
+			entry.interaction = interaction;
+		});
+	}
+
+	/** Unregisters every entry; they register again on the next attach. */
+	detach(): void {
+		this.entries.forEach((entry, view) => this.release(view, entry));
+	}
+
+	private release(view: View, entry: ScrollEdgeContainerEntry): void {
+		if (!entry.interaction) {
+			return;
+		}
+		(view.nativeViewProtected as UIView)?.removeInteraction(entry.interaction);
+		entry.interaction = null;
+	}
+}
+
 export class IOSHelper {
 	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
 	static traitCollectionLayoutDirectionChangedEvent = 'traitCollectionLayoutDirectionChanged';
 	static UILayoutViewController = UILayoutViewController;
 	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
 	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;
+
+	/**
+	 * Styles the scroll edge effect on every edge of a scroll view, or hides
+	 * them all for `none`. No-op before iOS 26.
+	 */
+	static setScrollEdgeEffect(scrollView: UIScrollView, effect: CoreTypes.ScrollEdgeEffectType): void {
+		if (!scrollView || SDK_VERSION < 26) {
+			return;
+		}
+		const hidden = effect === CoreTypes.ScrollEdgeEffect.none;
+		let style = UIScrollEdgeEffectStyle.automaticStyle;
+		if (effect === CoreTypes.ScrollEdgeEffect.soft) {
+			style = UIScrollEdgeEffectStyle.softStyle;
+		} else if (effect === CoreTypes.ScrollEdgeEffect.hard) {
+			style = UIScrollEdgeEffectStyle.hardStyle;
+		}
+		for (const edgeEffect of [scrollView.topEdgeEffect, scrollView.bottomEdgeEffect, scrollView.leftEdgeEffect, scrollView.rightEdgeEffect]) {
+			edgeEffect.hidden = hidden;
+			if (!hidden) {
+				edgeEffect.style = style;
+			}
+		}
+	}
 
 	static getParentWithViewController(view: View): View {
 		while (view && !view.viewController) {
