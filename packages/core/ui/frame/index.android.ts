@@ -545,14 +545,6 @@ export class Frame extends FrameBase {
 		super.disposeNativeView();
 	}
 
-	public _popFromFrameStack() {
-		if (!this._isInFrameStack) {
-			return;
-		}
-
-		super._popFromFrameStack();
-	}
-
 	public _getNavBarVisible(page: Page): boolean {
 		switch (this.actionBarVisibility) {
 			case 'never':

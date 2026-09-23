@@ -1,3 +1,23 @@
+## 8.0.11 (2026-09-22)
+
+### 🩹 Fixes
+
+- **vite:** let a framework flavor exclude packages from the dev deps bundle seed ([#11442](https://github.com/NativeScript/NativeScript/pull/11442), [#11440](https://github.com/NativeScript/NativeScript/issues/11440))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.0.10 (2026-09-16)
+
+### 🩹 Fixes
+
+- **vite:** declare @babel/traverse and @babel/types as dependencies ([ba45aefcd](https://github.com/NativeScript/NativeScript/commit/ba45aefcd))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.9 (2026-09-14)
 
 ### 🩹 Fixes

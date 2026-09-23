@@ -97,6 +97,23 @@ Register at module scope, before `baseConfig` can run. `baseConfig` installs the
 
 `getTypeCheckPlugins` takes the *kind* of type-check, not the flavor name: `'typescript'` for a `.ts`/`.tsx` project, `'vue'` for `vue-tsc`.
 
+### Keeping a runtime package out of the dev vendor bundle
+
+A dev session evaluates node_modules code from one bundle, seeded on the very first boot from every root in the app's `dependencies`. That seed is a guess at what the device will need, and a compiler can make it wrong: Octane rewrites `import { useState } from 'octane'` in the components it compiles to `@nativescript-community/octane`, which imports only `octane/universal/native`. Left in the seed, the `octane` root drags its whole DOM-side runtime into every dev boot for nothing.
+
+The flavor is the one party that knows this, so it declares it:
+
+```ts
+registerFrameworkFlavor({
+  flavor: 'octane',
+  server: octaneServerStrategy,
+  client: '@nativescript-community/vite-octane/client',
+  vendor: { exclude: ['octane'] },
+});
+```
+
+`vendor.exclude` names package roots the vendor collection must not seed, even though the app depends on them directly; they are not traversed for peer dependencies either. An excluded package still reaches the bundle through whichever vendored package imports it (`@nativescript-community/octane` above), and anything the device imports that the bundle lacks is served per-module and recorded for the next boot. The semantics match the `NS_VENDOR_EXCLUDE` environment variable an app can set itself.
+
 ## 2. The server strategy
 
 Most frameworks need nothing new on the server. `typescriptServerStrategy` is the generic device-module pipeline — it serves app files over `/ns/m`, primes the module graph, and emits deltas. Spread it, rename the flavor, and write the one thing that differs: the hot-update tail.
@@ -230,6 +247,7 @@ On a device, five saves cover the matrix: a component, a plain dependency, a wor
 - [ ] Server strategy spreads `typescriptServerStrategy`, sets `flavor` and `deferDeltaBroadcast: true`, purges before it broadcasts.
 - [ ] Client module: plain ESM, `.js` extensions, imports only from `@nativescript/vite/hmr/client/framework.js`, exports `default`.
 - [ ] `package.json` exports `./client` and declares `nativescript.vite.flavor` (+ `config` for `init`).
+- [ ] `vendor.exclude` lists runtime packages the compiler rewrites away, so the dev deps bundle is not seeded with them.
 - [ ] `shouldQueueReimport` declines modules the main realm never loaded.
 - [ ] Every path ends the overlay: `setUpdateStage('complete', …)`.
 - [ ] A failed re-import leaves the app on the previous revision and the next good save applies in place.
