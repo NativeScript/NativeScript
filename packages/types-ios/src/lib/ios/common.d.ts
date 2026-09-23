@@ -27,6 +27,7 @@
 /// <reference path="objc-x86_64/objc!SystemConfiguration.d.ts" />
 /// <reference path="objc-x86_64/objc!TNSWidgets.d.ts" />
 /// <reference path="objc-x86_64/objc!UIKit.d.ts" />
+/// <reference path="objc-x86_64/objc!UIUtilities.d.ts" />
 /// <reference path="objc-x86_64/objc!UniformTypeIdentifiers.d.ts" />
 /// <reference path="objc-x86_64/objc!UserNotifications.d.ts" />
 /// <reference path="objc-x86_64/objc!UserNotificationsUI.d.ts" />
