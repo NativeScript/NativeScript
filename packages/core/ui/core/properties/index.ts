@@ -7,6 +7,9 @@ import { Style } from '../../styling/style';
 import { profile } from '../../../profiling';
 import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
 import { calc } from '@csstools/css-calc';
+import { _evaluateCssEnvExpression, isCssEnvExpression } from '../../styling/css-env';
+import { paddingLonghandEdge, padsSafeAreaEdge, safeAreaEdgesPaddedByShorthand } from '../../styling/safe-area-padding';
+import { SafeAreaEdgeAll } from '../view/safe-area-edges';
 
 // Backwards compatibility
 export { unsetValue } from './property-shared';
@@ -166,7 +169,7 @@ export function _expandCssShorthand(cssName: string, value: string): [string, an
 		return undefined;
 	}
 
-	if (typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value))) {
+	if (typeof value === 'string' && isCssExpression(value)) {
 		return undefined;
 	}
 
@@ -195,6 +198,53 @@ export function isCssCalcExpression(value: string) {
 
 export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
+}
+
+export { isCssEnvExpression };
+
+/**
+ * Whether the value has to be resolved against a view before it can be converted.
+ */
+export function isCssExpression(value: string): boolean {
+	return typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value) || isCssEnvExpression(value));
+}
+
+/**
+ * Resolves the `env()`, `var()` and `calc()` in a declaration value, or returns
+ * `unsetValue` when it is invalid at computed-value time.
+ */
+export function _evaluateCssExpressions(view: ViewBase, property: string, value: string): string | typeof unsetValue {
+	// An expanded shorthand cascades values its converter already produced.
+	if (typeof value !== 'string') {
+		return value;
+	}
+
+	// env() first, so a var() in a fallback the spec never reads cannot invalidate it.
+	let output = _evaluateCssEnvExpression(value, view);
+	if (output === 'unset') {
+		return unsetValue;
+	}
+
+	output = _evaluateCssVariableExpression(view, property, output);
+	if (output === 'unset') {
+		return unsetValue;
+	}
+
+	// A custom property set at runtime is unevaluated, so it may expand to an env().
+	if (isCssEnvExpression(output)) {
+		output = _evaluateCssEnvExpression(output, view);
+		if (output === 'unset') {
+			return unsetValue;
+		}
+	}
+
+	try {
+		return _evaluateCssCalcExpression(output);
+	} catch (e) {
+		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${output}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+
+		return unsetValue;
+	}
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
@@ -271,6 +321,45 @@ function _replaceKeywordsWithValues(value: string) {
 		cssValue = cssValue.replace(INFINITY_RE, '999999');
 	}
 	return cssValue;
+}
+
+// Remembers the source text while it holds an env(), to resolve again on a change.
+function resolveLocalCssExpression(style: any, view: ViewBase, propertyName: string, cssName: string, value: any): any {
+	if (typeof value !== 'string' || !isCssExpression(value)) {
+		if (style._hasCssEnvLocalValues) {
+			style._clearCssEnvLocalValue(propertyName);
+		}
+
+		recordLocalSafeAreaPadding(style, propertyName, value, value);
+
+		return value;
+	}
+
+	if (isCssEnvExpression(value)) {
+		style._setCssEnvLocalValue(propertyName, value);
+	} else if (style._hasCssEnvLocalValues) {
+		style._clearCssEnvLocalValue(propertyName);
+	}
+
+	const resolved = _evaluateCssExpressions(view, cssName, value);
+	recordLocalSafeAreaPadding(style, propertyName, value, resolved);
+
+	return resolved;
+}
+
+// The source text is gone once resolved, so this is the only place a local padding
+// write can say whether it pads from the safe area.
+function recordLocalSafeAreaPadding(style: any, propertyName: string, source: unknown, resolved: unknown): void {
+	const edge = paddingLonghandEdge(propertyName);
+	if (edge === undefined || style._applyingPaddingShorthand) {
+		return;
+	}
+
+	if (resolved == null || resolved === '' || isResetValue(resolved)) {
+		style._clearLocalSafeAreaPadding(edge);
+	} else {
+		style._setLocalSafeAreaPadding(edge, padsSafeAreaEdge(edge, source) ? edge : 0);
+	}
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
@@ -780,6 +869,8 @@ export class CssProperty<T extends Style, U> {
 
 			this._localValueVersion++;
 
+			newValue = resolveLocalCssExpression(this, view, propertyName, property.cssLocalName, newValue);
+
 			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
@@ -1066,6 +1157,10 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 						return;
 					}
 
+					if (propertySource === ValueSource.Local) {
+						boxedValue = resolveLocalCssExpression(this, view, propertyName, cssLocalName, boxedValue);
+					}
+
 					const oldValue = this[computedValue];
 					const oldSource = this[computedSource];
 					const wasSet = oldSource !== ValueSource.Default;
@@ -1251,6 +1346,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 				if (isLocalWrite) {
 					this._localValueVersion++;
+					boxedValue = resolveLocalCssExpression(this, view, propertyName, property.cssLocalName, boxedValue);
 				}
 
 				const reset = isResetValue(boxedValue) || boxedValue === '';
@@ -1383,6 +1479,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 	constructor(options: ShorthandPropertyOptions<P>) {
 		this.name = options.name;
+		const shorthandName = options.name;
+		const cssLocalName = options.cssName;
 
 		const key = Symbol(this.name + ':propertyKey');
 		this.key = key;
@@ -1401,9 +1499,40 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 				return;
 			}
 
+			const resolved = resolveLocalCssExpression(this, view, shorthandName, cssLocalName, value);
+
 			view._batchUpdate(() => {
-				for (const [p, v] of converter(value)) {
-					this[p.name] = v;
+				// Invalid at computed-value time unsets every longhand.
+				if (resolved === unsetValue) {
+					for (const [p] of converter(unsetValue as never)) {
+						this[p.name] = unsetValue;
+					}
+
+					return;
+				}
+
+				// The longhands receive resolved lengths, so the shorthand records for them.
+				const isPadding = shorthandName === 'padding';
+				if (isPadding) {
+					(this as any)._applyingPaddingShorthand = true;
+				}
+
+				try {
+					for (const [p, v] of converter(resolved)) {
+						this[p.name] = v;
+					}
+				} finally {
+					if (isPadding) {
+						(this as any)._applyingPaddingShorthand = false;
+					}
+				}
+
+				if (isPadding) {
+					if (isResetValue(resolved)) {
+						(this as any)._clearLocalSafeAreaPadding(SafeAreaEdgeAll);
+					} else {
+						(this as any)._setLocalSafeAreaPadding(SafeAreaEdgeAll, safeAreaEdgesPaddedByShorthand(shorthandName, value));
+					}
 				}
 			});
 		}

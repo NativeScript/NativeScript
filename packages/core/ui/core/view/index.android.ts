@@ -1,8 +1,9 @@
 import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
-import { OverflowEdgeIgnore, OverflowEdgeNone, parseEdges } from './overflow-edges.android';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, overflowSafeAreaProperty, statusBarStyleProperty } from './view-common';
+import { OverflowEdgeIgnore, OverflowEdgeNone, OverflowEdgeBottom, OverflowEdgeCutout, OverflowEdgeLeft, OverflowEdgeRight, OverflowEdgeTop, parseEdges } from './overflow-edges.android';
+import { parseSafeAreaEdges, SafeAreaEdgeAuto, SafeAreaEdgeBottom, SafeAreaEdgeLeft, SafeAreaEdgeRight, SafeAreaEdgeTop } from './safe-area-edges';
 import { directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -613,6 +614,37 @@ class Inset {
 	}
 }
 
+// An overflowed edge is consumed without padding; OverflowEdgeNone pads the rest.
+function toOverflowEdges(safeAreaEdges: number): number {
+	let edge = OverflowEdgeNone;
+	if (safeAreaEdges & SafeAreaEdgeLeft) {
+		edge |= OverflowEdgeLeft;
+	}
+	if (safeAreaEdges & SafeAreaEdgeTop) {
+		edge |= OverflowEdgeTop;
+	}
+	if (safeAreaEdges & SafeAreaEdgeRight) {
+		edge |= OverflowEdgeRight;
+	}
+	if (safeAreaEdges & SafeAreaEdgeBottom) {
+		edge |= OverflowEdgeBottom;
+	}
+
+	return edge;
+}
+
+const PLAIN_OVERFLOW_EDGES = OverflowEdgeLeft | OverflowEdgeTop | OverflowEdgeRight | OverflowEdgeBottom | OverflowEdgeCutout;
+
+// A view padding an edge from the safe area takes it without LayoutBase padding it again.
+// Ignore pads nothing already, and the richer tokens are left as the author wrote them.
+function withSafeAreaPaddedEdges(edge: number, padded: number): number {
+	if (!padded || edge === OverflowEdgeIgnore || (edge & ~PLAIN_OVERFLOW_EDGES) !== 0) {
+		return edge;
+	}
+
+	return edge | toOverflowEdges(padded);
+}
+
 export class View extends ViewCommon {
 	public static androidBackPressedEvent = androidBackPressedEvent;
 
@@ -766,32 +798,55 @@ export class View extends ViewCommon {
 		return manager;
 	}
 
-	[androidOverflowEdgeProperty.setNative](value: CoreTypes.AndroidOverflow) {
+	[androidOverflowEdgeProperty.setNative]() {
+		this.applyOverflowEdge();
+	}
+
+	[overflowSafeAreaProperty.setNative]() {
+		this.applyOverflowEdge();
+	}
+
+	public override _onSafeAreaPaddingChanged(): void {
+		this.applyOverflowEdge();
+	}
+
+	// Both properties drive the same flags, so neither wins by being applied last.
+	private applyOverflowEdge(): void {
 		const nativeView = this.nativeViewProtected as any;
-		if (typeof value !== 'string' || nativeView === null || nativeView == undefined) {
+		if (!nativeView || !('setOverflowEdge' in nativeView)) {
 			return;
 		}
 
-		if (!('setOverflowEdge' in nativeView)) {
+		const androidValue = this.androidOverflowEdge;
+		const safeAreaEdges = parseSafeAreaEdges(this.overflowSafeArea);
+		const padded = this._safeAreaPaddedEdges;
+
+		// androidOverflowEdge has a vocabulary overflowSafeArea cannot express.
+		if (androidValue !== 'ignore' || safeAreaEdges === SafeAreaEdgeAuto) {
+			if (safeAreaEdges !== SafeAreaEdgeAuto && androidValue !== 'ignore') {
+				Trace.write(`androidOverflowEdge [${androidValue}] takes precedence over overflowSafeArea [${this.overflowSafeArea}] on ${this}.`, Trace.categories.Style, Trace.messageType.warn);
+			}
+
+			nativeView.setOverflowEdge(withSafeAreaPaddedEdges(this.parseAndroidOverflowEdge(androidValue), padded));
+
 			return;
+		}
+
+		nativeView.setOverflowEdge(withSafeAreaPaddedEdges(toOverflowEdges(safeAreaEdges), padded));
+	}
+
+	private parseAndroidOverflowEdge(value: CoreTypes.AndroidOverflow): number {
+		if (typeof value !== 'string') {
+			return OverflowEdgeIgnore;
 		}
 
 		switch (value) {
 			case 'none':
-				nativeView.setOverflowEdge(OverflowEdgeNone);
-				break;
+				return OverflowEdgeNone;
 			case 'ignore':
-				nativeView.setOverflowEdge(OverflowEdgeIgnore);
-				break;
+				return OverflowEdgeIgnore;
 			default:
-				{
-					const edge = parseEdges(value);
-
-					if (edge != null) {
-						nativeView.setOverflowEdge(edge);
-					}
-				}
-				break;
+				return parseEdges(value) ?? OverflowEdgeIgnore;
 		}
 	}
 

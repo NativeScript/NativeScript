@@ -1,5 +1,5 @@
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
-import { unsetValue } from '../core/properties/property-shared';
+import { isResetValue, unsetValue } from '../core/properties/property-shared';
 import { Style } from './style';
 
 import { Color } from '../../color';
@@ -16,6 +16,7 @@ import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
 import { parseCSSCommaSeparatedListOfValues, splitOnTopLevelSpacesAndCommas } from './css-utils';
+import { safeAreaPaddingValue, splitBoxShorthand } from './safe-area-padding';
 
 interface ShorthandPositioning {
 	top: string;
@@ -204,6 +205,26 @@ function convertToPaddings(value: string | CoreTypes.LengthType): [CssProperty<S
 			[paddingLeftProperty, value],
 		];
 	}
+}
+
+function convertToSafeAreaPaddings(value: string | CoreTypes.LengthType): [CssProperty<Style, CoreTypes.LengthType>, CoreTypes.LengthType][] {
+	const lengths = isResetValue(value) ? null : splitBoxShorthand(typeof value === 'string' ? value : Length.convertToString(value));
+	if (!lengths) {
+		return [
+			[paddingTopProperty, unsetValue],
+			[paddingRightProperty, unsetValue],
+			[paddingBottomProperty, unsetValue],
+			[paddingLeftProperty, unsetValue],
+		];
+	}
+
+	// Resolved per view, so each edge takes only what an ancestor has not consumed.
+	return [
+		[paddingTopProperty, safeAreaPaddingValue('top', lengths[0]) as CoreTypes.LengthType],
+		[paddingRightProperty, safeAreaPaddingValue('right', lengths[1]) as CoreTypes.LengthType],
+		[paddingBottomProperty, safeAreaPaddingValue('bottom', lengths[2]) as CoreTypes.LengthType],
+		[paddingLeftProperty, safeAreaPaddingValue('left', lengths[3]) as CoreTypes.LengthType],
+	];
 }
 
 function convertToGaps(value: string | CoreTypes.LengthType): [CssProperty<Style, CoreTypes.LengthType>, CoreTypes.LengthType][] {
@@ -423,6 +444,20 @@ const paddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthTy
 	converter: convertToPaddings,
 });
 paddingProperty.register(Style);
+
+/**
+ * `padding`, plus whatever safe area inset is still left on each edge. The padded edges
+ * are consumed, so neither the framework nor a descendant insets them again.
+ */
+export const safeAreaPaddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
+	name: 'safeAreaPadding',
+	cssName: 'safe-area-padding',
+	getter: function (this: Style) {
+		return this.padding;
+	},
+	converter: convertToSafeAreaPaddings,
+});
+safeAreaPaddingProperty.register(Style);
 
 export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingLeft',

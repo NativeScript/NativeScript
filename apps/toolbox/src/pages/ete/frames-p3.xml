@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" backgroundColor="#1d4ed8">
+  <GridLayout rows="auto, auto, *">
+    <StackLayout row="0" padding="12">
+      <Label text="page 3 - no scroll, hosts page 4" color="#ffffff" fontWeight="bold" fontSize="16" />
+      <Label text="page 3 cannot pad, because it does not know whether page 4 scrolls" color="#bfdbfe" fontSize="13" textWrap="true" />
+    </StackLayout>
+    <GridLayout row="1" columns="*, *, *, *" padding="6">
+      <Button col="0" text="p1" tap="{{ go1 }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="1" text="p2" tap="{{ go2 }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="2" text="p3" tap="{{ go3 }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="3" text="exit" tap="{{ back }}" color="#ffffff" backgroundColor="#1e40af" />
+    </GridLayout>
+    <!-- Page 4 lives here and has to deal with the bottom inset itself. -->
+    <Frame row="2" id="inner" defaultPage="pages/ete/frames-p4" />
+  </GridLayout>
+</Page>

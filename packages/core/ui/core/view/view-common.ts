@@ -8,6 +8,8 @@ import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
 import { Property, InheritedProperty, CssProperty } from '../properties';
 import { Style } from '../../styling/style';
+import { notifyCssEnvironmentChanged } from '../../styling/css-env';
+import { remainingSafeAreaInsets } from './safe-area-chain';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
 import { setupAccessibleView } from '../../../application/helpers';
@@ -1126,6 +1128,41 @@ export abstract class ViewCommon extends ViewBase {
 		this._cssType = type.toLowerCase();
 	}
 
+	public getRemainingSafeAreaInsets(): { top: number; right: number; bottom: number; left: number } {
+		return remainingSafeAreaInsets(this as any);
+	}
+
+	get overflowSafeArea(): CoreTypes.SafeAreaEdges {
+		return this.style.overflowSafeArea;
+	}
+
+	set overflowSafeArea(value: CoreTypes.SafeAreaEdges) {
+		this.style.overflowSafeArea = value;
+	}
+
+	get safeAreaPadding(): string | CoreTypes.LengthType {
+		return this.style.safeAreaPadding;
+	}
+
+	set safeAreaPadding(value: string | CoreTypes.LengthType) {
+		this.style.safeAreaPadding = value;
+	}
+
+	/**
+	 * The edges this view pads from the safe area itself.
+	 */
+	get _safeAreaPaddedEdges(): number {
+		return this.style._safeAreaPaddedEdges;
+	}
+
+	// The platform stops insetting an edge the view now pads itself. A padding value
+	// change relayouts anyway; this covers switching to an env() of the same length.
+	public _onSafeAreaPaddingChanged(): void {
+		if (this.isLoaded) {
+			this.requestLayout();
+		}
+	}
+
 	get statusBarStyle(): 'light' | 'dark' {
 		return this.style.statusBarStyle;
 	}
@@ -1238,6 +1275,10 @@ export abstract class ViewCommon extends ViewBase {
 	public focus(): boolean {
 		return undefined;
 	}
+
+	// UIKit reduces safeAreaInsets down the hierarchy; Android distributes through
+	// LayoutBase instead and has no per view equivalent.
+	public _supportsPerViewSafeArea = false;
 
 	public getSafeAreaInsets(): Position {
 		return { left: 0, top: 0, right: 0, bottom: 0 };
@@ -1487,6 +1528,19 @@ export const androidOverflowEdgeProperty = new Property<ViewCommon, CoreTypes.An
 	defaultValue: 'ignore',
 });
 androidOverflowEdgeProperty.register(ViewCommon);
+
+/**
+ * Property backing overflowSafeArea.
+ */
+export const overflowSafeAreaProperty = new CssProperty<Style, CoreTypes.SafeAreaEdges>({
+	name: 'overflowSafeArea',
+	cssName: 'overflow-safe-area',
+	defaultValue: 'auto',
+	affectsLayout: true,
+	// Descendants resolve env(ns-safe-area-inset-*) against this, so they have to re-run.
+	valueChanged: () => notifyCssEnvironmentChanged(),
+});
+overflowSafeAreaProperty.register(Style);
 
 /**
  * Glass effects

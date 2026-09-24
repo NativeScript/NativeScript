@@ -18,6 +18,12 @@ export namespace CoreTypes {
 	 * It has no effect alongside `ignore` or `dont-apply`.
 	 */
 	export type AndroidOverflow = AndroidOverflowBase | 'cutout' | `${AndroidOverflowBase},cutout`;
+	type SafeAreaEdge = 'top' | 'right' | 'bottom' | 'left';
+	/**
+	 * The safe area edges a view overflows into, leaving their inset to the view.
+	 * Edges may be separated by spaces or commas.
+	 */
+	export type SafeAreaEdges = 'auto' | 'none' | 'all' | SafeAreaEdge | `${SafeAreaEdge} ${SafeAreaEdge}` | `${SafeAreaEdge} ${SafeAreaEdge} ${SafeAreaEdge}` | `${SafeAreaEdge} ${SafeAreaEdge} ${SafeAreaEdge} ${SafeAreaEdge}`;
 	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
 
 	/**
@@ -42,7 +48,11 @@ export namespace CoreTypes {
 	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit | `${number}dip` | `${number}px` | CSSWideKeywords;
+	/**
+	 * A value that is only a length once resolved against the view.
+	 */
+	export type CssFunctionValue = `calc(${string})` | `env(${string})` | `var(--${string})`;
+	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit | `${number}dip` | `${number}px` | CSSWideKeywords | CssFunctionValue;
 	export type LengthType = 'auto' | FixedLengthType;
 	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit | `${number}%`;
 

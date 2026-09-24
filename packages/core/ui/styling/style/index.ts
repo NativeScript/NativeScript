@@ -4,6 +4,7 @@ import { Background } from '../background';
 import { ViewBase } from '../../core/view-base';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { Observable } from '../../../data/observable';
+import { _scheduleCssEnvironmentChanged, _trackCssEnvironmentDependent, _untrackCssEnvironmentDependent, type CssEnvironmentDependent } from '../css-env';
 
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf, FlexFlow, Flex } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
@@ -34,9 +35,11 @@ export interface CommonLayoutParams {
 	verticalAlignment: CoreTypes.VerticalAlignmentType;
 }
 
-export class Style extends Observable {
+export class Style extends Observable implements CssEnvironmentDependent {
 	private unscopedCssVariables = new Map<string, string>();
 	private scopedCssVariables = new Map<string, string>();
+	// Undefined until the first env() local value, so the common style pays nothing.
+	private _cssEnvLocalValues: Map<string, string>;
 
 	constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
 		super();
@@ -47,6 +50,96 @@ export class Style extends Observable {
 		} else {
 			this.viewRef = new WeakRef(<ViewBase>ownerView);
 		}
+	}
+
+	public _setCssEnvLocalValue(propertyName: string, value: string): void {
+		if (!this._cssEnvLocalValues) {
+			this._cssEnvLocalValues = new Map();
+			_trackCssEnvironmentDependent(this);
+		}
+
+		this._cssEnvLocalValues.set(propertyName, value);
+	}
+
+	public _clearCssEnvLocalValue(propertyName: string): void {
+		const values = this._cssEnvLocalValues;
+		if (!values?.delete(propertyName) || values.size !== 0) {
+			return;
+		}
+
+		this._cssEnvLocalValues = undefined;
+		_untrackCssEnvironmentDependent(this);
+	}
+
+	public get _hasCssEnvLocalValues(): boolean {
+		return this._cssEnvLocalValues !== undefined;
+	}
+
+	public _reevaluateCssEnvironment(): void {
+		const values = this._cssEnvLocalValues;
+		if (!values) {
+			return;
+		}
+
+		// The setter re-records the source text, so iterate a snapshot.
+		for (const [propertyName, value] of Array.from(values)) {
+			this[propertyName] = value;
+		}
+	}
+
+	/**
+	 * The edges this view pads from the safe area itself, so neither the framework nor
+	 * a descendant insets them again.
+	 */
+	public get _safeAreaPaddedEdges(): number {
+		return this._safeAreaPaddedLocal | (this._safeAreaPaddedCss & ~this._safeAreaPaddingLocalEdges);
+	}
+
+	public _setCssSafeAreaPadding(padded: number): void {
+		if (padded === this._safeAreaPaddedCss) {
+			return;
+		}
+
+		const previous = this._safeAreaPaddedEdges;
+		this._safeAreaPaddedCss = padded;
+		this.onSafeAreaPaddingChanged(previous);
+	}
+
+	/**
+	 * Records a local padding write: `edges` were written, `padded` of them from the safe area.
+	 */
+	public _setLocalSafeAreaPadding(edges: number, padded: number): void {
+		const local = this._safeAreaPaddingLocalEdges | edges;
+		const localPadded = (this._safeAreaPaddedLocal & ~edges) | (padded & edges);
+		if (local === this._safeAreaPaddingLocalEdges && localPadded === this._safeAreaPaddedLocal) {
+			return;
+		}
+
+		const previous = this._safeAreaPaddedEdges;
+		this._safeAreaPaddingLocalEdges = local;
+		this._safeAreaPaddedLocal = localPadded;
+		this.onSafeAreaPaddingChanged(previous);
+	}
+
+	public _clearLocalSafeAreaPadding(edges: number): void {
+		if ((this._safeAreaPaddingLocalEdges & edges) === 0) {
+			return;
+		}
+
+		const previous = this._safeAreaPaddedEdges;
+		this._safeAreaPaddingLocalEdges &= ~edges;
+		this._safeAreaPaddedLocal &= ~edges;
+		this.onSafeAreaPaddingChanged(previous);
+	}
+
+	private onSafeAreaPaddingChanged(previous: number): void {
+		if (this._safeAreaPaddedEdges === previous) {
+			return;
+		}
+
+		(this.viewRef.get() as any)?._onSafeAreaPaddingChanged?.();
+		// Descendants resolve env(ns-safe-area-inset-*) against this.
+		_scheduleCssEnvironmentChanged();
 	}
 
 	public setScopedCssVariable(varName: string, value: string): void {
@@ -200,6 +293,7 @@ export class Style extends Observable {
 	public marginRight: CoreTypes.PercentLengthType;
 	public marginBottom: CoreTypes.PercentLengthType;
 	public padding: string | CoreTypes.LengthType;
+	public safeAreaPadding: string | CoreTypes.LengthType;
 	public paddingLeft: CoreTypes.LengthType;
 	public paddingTop: CoreTypes.LengthType;
 	public paddingRight: CoreTypes.LengthType;
@@ -226,6 +320,7 @@ export class Style extends Observable {
 
 	// Page-specific props
 	public statusBarStyle: 'light' | 'dark';
+	public overflowSafeArea: CoreTypes.SafeAreaEdges;
 	public androidStatusBarBackground: Color;
 
 	// ActionBar-specific props
@@ -272,6 +367,9 @@ export class Style extends Observable {
 	 * shadows, so this is what tells the css state its recorded values may be stale.
 	 */
 	public _localValueVersion: number;
+	private _safeAreaPaddedCss: number;
+	private _safeAreaPaddedLocal: number;
+	private _safeAreaPaddingLocalEdges: number;
 
 	public get view(): ViewBase {
 		if (this.viewRef) {
@@ -285,3 +383,7 @@ Style.prototype.PropertyBag = class {
 	[property: string]: string;
 };
 Style.prototype._localValueVersion = 0;
+// On the prototype, so a style that never pads from the safe area carries nothing.
+(Style.prototype as any)._safeAreaPaddedCss = 0;
+(Style.prototype as any)._safeAreaPaddedLocal = 0;
+(Style.prototype as any)._safeAreaPaddingLocalEdges = 0;

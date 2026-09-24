@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="navigatedTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <!--
+    frame
+      page 1 - no scroll
+      page 2 - scroll
+      page 3 - no scroll
+        page 4 - nested in page 3, with scroll
+  -->
+  <Frame id="outer" defaultPage="pages/ete/frames-p1" />
+</Page>

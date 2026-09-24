@@ -1,7 +1,9 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssShorthand, _isCssPendingSubstitution, _isCssValueStillApplied, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { _evaluateCssExpressions, _expandCssShorthand, _isCssPendingSubstitution, _isCssValueStillApplied, CssPendingSubstitution, isCssVariable, isCssExpression } from '../core/properties';
+import { _trackCssEnvironmentDependent, _untrackCssEnvironmentDependent, isCssEnvExpression, type CssEnvironmentDependent } from './css-env';
+import { PADDING_CSS_LONGHANDS, padsSafeAreaEdge, SAFE_AREA_PADDING_SHORTHAND, safeAreaEdgesPaddedByShorthand } from './safe-area-padding';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
@@ -75,7 +77,7 @@ const pattern = /('|")(.*?)\1/;
  * against the view; a value that does not survive evaluation leaves its longhands unset.
  */
 function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitution): Record<string, unknown> {
-	const value = evaluateCssExpressions(view, pending.shorthand, pending.value);
+	const value = _evaluateCssExpressions(view, pending.shorthand, pending.value);
 	if (value === unsetValue) {
 		return CssState.emptyPropertyBag;
 	}
@@ -89,32 +91,31 @@ function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitut
 
 	const resolved: Record<string, unknown> = {};
 	for (let i = 0, length = expanded.length; i < length; i++) {
-		resolved[expanded[i][0]] = expanded[i][1];
+		const [property, longhand] = expanded[i];
+		// A converter may expand into expressions of its own, like safe-area-padding.
+		const longhandValue = typeof longhand === 'string' && isCssExpression(longhand) ? _evaluateCssExpressions(view, property, longhand) : longhand;
+		if (longhandValue !== unsetValue) {
+			resolved[property] = longhandValue;
+		}
 	}
 
 	return resolved;
 }
 
 /**
- * Evaluate css-variable and css-calc expressions
+ * The edges the cascade pads from the safe area, read from the declarations before
+ * they are resolved, since resolving loses which ones named an inset.
  */
-function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
-	const newValue = _evaluateCssVariableExpression(view, property, value);
-	if (newValue === 'unset') {
-		return unsetValue;
+function cascadeSafeAreaPadding(declarations: Record<string, unknown>): number {
+	let mask = 0;
+	for (const [property, edge] of PADDING_CSS_LONGHANDS) {
+		const value = declarations[property];
+		if (_isCssPendingSubstitution(value) ? safeAreaEdgesPaddedByShorthand(value.shorthand, value.value) & edge : padsSafeAreaEdge(edge, value)) {
+			mask |= edge;
+		}
 	}
 
-	value = newValue;
-
-	try {
-		value = _evaluateCssCalcExpression(value);
-	} catch (e) {
-		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
-
-		return unsetValue;
-	}
-
-	return value;
+	return mask;
 }
 
 /**
@@ -673,7 +674,7 @@ function changeMapsEqual(applied: Readonly<ChangeMap<ViewBase>>, current: Change
 	return true;
 }
 
-export class CssState {
+export class CssState implements CssEnvironmentDependent {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
 	static emptyPropertyBag: Record<string, unknown> = {};
 	static emptyAnimationArray: ReadonlyArray<KeyframeAnimation> = Object.freeze([]);
@@ -695,6 +696,7 @@ export class CssState {
 	_match: SelectorsMatch<ViewBase>;
 	_matchInvalid: boolean;
 	_playsKeyframeAnimations: boolean;
+	private _dependsOnCssEnvironment = false;
 
 	constructor(private viewRef: WeakRef<ViewBase>) {
 		this._onDynamicStateChangeHandler = () => this.updateDynamicState();
@@ -747,6 +749,31 @@ export class CssState {
 	public onUnloaded(): void {
 		this.unsubscribeFromDynamicUpdates();
 		this.stopKeyframeAnimations();
+		this.trackCssEnvironment(false);
+	}
+
+	public _reevaluateCssEnvironment(): void {
+		const view = this.viewRef.get();
+		if (!view) {
+			return;
+		}
+
+		// Tracking only happens after an env() value was applied, and unload untracks.
+		// The style re-applies its own local values.
+		this.updateDynamicState();
+	}
+
+	private trackCssEnvironment(dependsOnIt: boolean): void {
+		if (dependsOnIt === this._dependsOnCssEnvironment) {
+			return;
+		}
+
+		this._dependsOnCssEnvironment = dependsOnIt;
+		if (dependsOnIt) {
+			_trackCssEnvironmentDependent(this);
+		} else {
+			_untrackCssEnvironmentDependent(this);
+		}
 	}
 
 	@profile
@@ -865,6 +892,8 @@ export class CssState {
 		const newPropertyValues = new view.style.PropertyBag();
 		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
+		view.style._setCssSafeAreaPadding(cascadeSafeAreaPadding(newPropertyValues));
+
 		const oldProperties = this._appliedPropertyValues;
 		// A local write is the only thing that can drop a value the cascade already
 		// applied, so the recorded values only have to be verified after one.
@@ -877,6 +906,7 @@ export class CssState {
 		let valuesToApply: Record<string, unknown>;
 		let cssExpsProperties: Record<string, string>;
 		let pendingProperties: Record<string, CssPendingSubstitution>;
+		let dependsOnEnvironment = false;
 
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
@@ -887,11 +917,12 @@ export class CssState {
 					pendingProperties = {};
 				}
 				pendingProperties[property] = value;
+				dependsOnEnvironment ||= isCssEnvExpression(value.value) || value.shorthand === SAFE_AREA_PADDING_SHORTHAND;
 				continue;
 			}
 
 			// Expanded shorthand values are already converted and may not be strings.
-			const isCssExp = typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value));
+			const isCssExp = typeof value === 'string' && isCssExpression(value);
 
 			if (isCssExp) {
 				// we handle css exp separately because css vars must be evaluated first
@@ -899,6 +930,7 @@ export class CssState {
 					cssExpsProperties = {};
 				}
 				cssExpsProperties[property] = value;
+				dependsOnEnvironment ||= isCssEnvExpression(value);
 				continue;
 			}
 
@@ -933,7 +965,7 @@ export class CssState {
 				delete oldProperties[property];
 			}
 
-			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
+			const value = _evaluateCssExpressions(view, property, cssExpsProperties[property]);
 
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
@@ -995,6 +1027,8 @@ export class CssState {
 			}
 			valuesToApply[property] = value;
 		}
+
+		this.trackCssEnvironment(dependsOnEnvironment);
 
 		// Unset removed values - the bag is keyed by longhands only, so unsetting
 		// one entry cannot clear a value another one set.
@@ -1400,8 +1434,8 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 		}
 	});
 
-	// Pending-substitution longhands share one placeholder - resolve it once.
-	let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+	// Pending-substitution longhands share one placeholder - write its shorthand once.
+	let appliedShorthands: Set<CssPendingSubstitution>;
 
 	inlineRuleSet[0].declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
@@ -1412,27 +1446,21 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 				return;
 			}
 
-			let value: unknown;
+			// A style property resolves its own expressions, which keeps the source text
+			// so an env() is re-evaluated when the environment changes.
 			if (_isCssPendingSubstitution(d.value)) {
-				if (!resolvedShorthands) {
-					resolvedShorthands = new Map();
+				if (!appliedShorthands) {
+					appliedShorthands = new Set();
 				}
 
-				let resolved = resolvedShorthands.get(d.value);
-				if (!resolved) {
-					resolved = resolvePendingSubstitution(view, d.value);
-					resolvedShorthands.set(d.value, resolved);
+				if (!appliedShorthands.has(d.value)) {
+					appliedShorthands.add(d.value);
+					view.style[d.value.shorthand] = d.value.value;
 				}
-
-				value = property in resolved ? resolved[property] : unsetValue;
+			} else if (property in view.style) {
+				view.style[property] = d.value;
 			} else {
-				value = evaluateCssExpressions(view, property, d.value);
-			}
-
-			if (property in view.style) {
-				view.style[property] = value;
-			} else {
-				view[property] = value;
+				view[property] = _evaluateCssExpressions(view, property, d.value);
 			}
 		} catch (e) {
 			Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
