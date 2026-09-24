@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 
 import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
+import { SafeArea } from '../../safe-area';
 
 /**
  * Counts how many times css applies a value to a style property, by wrapping the
@@ -391,5 +392,200 @@ describe('CssState.onChange subscriptions', () => {
 
 		expect(calls.added).toEqual([]);
 		expect(view.style.color.toString()).toBe('#0000FF');
+	});
+});
+
+describe('CssState env() resolution', () => {
+	beforeEach(() => {
+		SafeArea._setInsets(24, 0, 48, 0);
+		SafeArea._resetMaxInsets();
+	});
+
+	afterEach(() => {
+		SafeArea._setInsets(0, 0, 0, 0);
+		SafeArea._resetMaxInsets();
+	});
+
+	it('resolves a bare env() to the inset in dip', () => {
+		const { view } = styled('label { padding-bottom: env(safe-area-inset-bottom); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	it('resolves an env() inside a calc()', () => {
+		const { view } = styled('label { padding-bottom: calc(12dip + env(safe-area-inset-bottom)); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(60);
+	});
+
+	it('resolves an env() held by a custom property', () => {
+		const { view } = styled('label { --pad: env(safe-area-inset-bottom); padding-bottom: var(--pad); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	it('resolves an env() in a var() fallback', () => {
+		const { view } = styled('label { padding-bottom: var(--missing, env(safe-area-inset-bottom)); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	// env() is substituted before var(), so an unread fallback cannot invalidate.
+	it('ignores a missing variable in an unused env() fallback', () => {
+		const { view } = styled('label { padding-bottom: env(safe-area-inset-bottom, var(--missing)); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	it('expands a shorthand holding an env()', () => {
+		const { view } = styled('label { padding: env(safe-area-inset-top) 16 env(safe-area-inset-bottom) 16; }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingTop).toBe(24);
+		expect(view.style.paddingRight).toBe(16);
+		expect(view.style.paddingBottom).toBe(48);
+		expect(view.style.paddingLeft).toBe(16);
+	});
+
+	it('leaves the property unset for an unknown variable with no fallback', () => {
+		const { view } = styled('label { padding-bottom: env(not-a-real-variable); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(styled('').view.style.paddingBottom);
+	});
+
+	it('uses the fallback for an unknown variable', () => {
+		const { view } = styled('label { padding-bottom: env(not-a-real-variable, 7); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.paddingBottom).toBe(7);
+	});
+
+	it('re-resolves when the insets change', () => {
+		const { view } = styled('label { padding-bottom: calc(12dip + env(safe-area-inset-bottom)); }');
+		view._cssState.onLoaded();
+		expect(view.style.paddingBottom).toBe(60);
+
+		SafeArea._setInsets(24, 0, 21, 0);
+
+		expect(view.style.paddingBottom).toBe(33);
+	});
+
+	it('stops re-resolving once the view is unloaded', () => {
+		const { view } = styled('label { padding-bottom: env(safe-area-inset-bottom); }');
+		view._cssState.onLoaded();
+		view._cssState.onUnloaded();
+
+		SafeArea._setInsets(24, 0, 21, 0);
+
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	it('does not re-resolve a view with no env() value', () => {
+		const { view } = styled('label { padding-bottom: 10; }');
+		view._cssState.onLoaded();
+
+		const writes = countCssWrites(view, 'padding-bottom');
+		SafeArea._setInsets(24, 0, 21, 0);
+
+		expect(writes.count).toBe(0);
+	});
+});
+
+describe('local css expressions', () => {
+	beforeEach(() => {
+		SafeArea._setInsets(24, 0, 48, 0);
+		SafeArea._resetMaxInsets();
+	});
+
+	afterEach(() => {
+		SafeArea._setInsets(0, 0, 0, 0);
+		SafeArea._resetMaxInsets();
+	});
+
+	it('resolves an env() written straight to the style', () => {
+		const { view } = styled('');
+
+		view.style.paddingBottom = 'env(safe-area-inset-bottom)';
+
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	it('resolves an env() inside a calc() written straight to the style', () => {
+		const { view } = styled('');
+
+		view.style.paddingBottom = 'calc(12dip + env(safe-area-inset-bottom))';
+
+		expect(view.style.paddingBottom).toBe(60);
+	});
+
+	it('resolves through the view alias as well as the style', () => {
+		const { view } = styled('');
+
+		view.paddingBottom = 'calc(12dip + env(safe-area-inset-bottom))';
+
+		expect(view.style.paddingBottom).toBe(60);
+	});
+
+	it('resolves a plain calc() written straight to the style', () => {
+		const { view } = styled('');
+
+		view.style.paddingBottom = 'calc(10dip + 2dip)';
+
+		expect(view.style.paddingBottom).toBe(12);
+	});
+
+	it('resolves a shorthand written straight to the style', () => {
+		const { view } = styled('');
+
+		view.style.padding = 'env(safe-area-inset-top) 16 env(safe-area-inset-bottom) 16';
+
+		expect(view.style.paddingTop).toBe(24);
+		expect(view.style.paddingBottom).toBe(48);
+	});
+
+	it('re-resolves a local env() value when the insets change', () => {
+		const { view } = styled('');
+		view.style.paddingBottom = 'calc(12dip + env(safe-area-inset-bottom))';
+
+		SafeArea._setInsets(24, 0, 21, 0);
+
+		expect(view.style.paddingBottom).toBe(33);
+	});
+
+	it('stops re-resolving once the value is overwritten', () => {
+		const { view } = styled('');
+		view.style.paddingBottom = 'env(safe-area-inset-bottom)';
+		view.style.paddingBottom = 5;
+
+		SafeArea._setInsets(24, 0, 21, 0);
+
+		expect(view.style.paddingBottom).toBe(5);
+	});
+
+	it('leaves a local value with no expression untouched', () => {
+		const { view } = styled('');
+
+		view.style.paddingBottom = '10';
+
+		expect(view.style.paddingBottom).toBe(10);
+	});
+});
+
+describe('local shorthand invalid at computed-value time', () => {
+	it('unsets every longhand', () => {
+		const { view } = styled('');
+		view.style.padding = '10';
+		expect(view.style.paddingTop).toBe(10);
+
+		view.style.padding = 'env(not-a-real-variable) 16 16 16';
+
+		expect(view.style.paddingTop).toBe(styled('').view.style.paddingTop);
+		expect(view.style.paddingRight).toBe(styled('').view.style.paddingRight);
 	});
 });

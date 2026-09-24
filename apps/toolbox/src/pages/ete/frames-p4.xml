@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" backgroundColor="#b45309">
+  <GridLayout rows="auto, *">
+    <GridLayout row="0" columns="*, auto" padding="6">
+      <Label col="0" text="page 4 (nested)" color="#ffffff" fontWeight="bold" verticalAlignment="center" />
+      <Button col="1" text="{{ 'mode: ' + mode }}" tap="{{ toggle }}" color="#ffffff" backgroundColor="#92400e" />
+    </GridLayout>
+    <ScrollView row="1" id="scroll">
+      <StackLayout>
+        <Label text="{{ numbers }}" color="#fed7aa" fontFamily="monospace" fontSize="13" textWrap="true" padding="10" />
+        <Label text="{{ verdict }}" color="#fde68a" fontWeight="bold" fontSize="15" textWrap="true" padding="10" />
+        <StackLayout id="filler" height="600" backgroundColor="#92400e" />
+        <StackLayout id="marker" class="ns-safe-bottom" backgroundColor="#166534">
+          <Label text="last row of page 4" color="#ffffff" fontSize="11" textAlignment="center" padding="4" />
+          <StackLayout id="line-p4" height="4" backgroundColor="#b45309" />
+        </StackLayout>
+      </StackLayout>
+    </ScrollView>
+  </GridLayout>
+</Page>

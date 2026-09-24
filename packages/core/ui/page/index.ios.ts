@@ -6,6 +6,7 @@ import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } 
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils/layout-helper';
+import { SafeArea } from '../../safe-area';
 import { SDK_VERSION } from '../../utils/constants';
 import { getLastFocusedViewOnPage } from '../../accessibility/accessibility-common';
 import { SharedTransition } from '../transition/shared-transition';
@@ -261,6 +262,8 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
+		// UIKit has no notification for this, and the insets are settled by now.
+		SafeArea.refresh();
 		if (this.isRunningLayout || !this.didFirstLayout) {
 			return;
 		}

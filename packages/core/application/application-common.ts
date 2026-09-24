@@ -1,6 +1,7 @@
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
 import { Device, Screen } from '../platform';
+import { SafeArea } from '../safe-area';
 import { profile } from '../profiling';
 import { Trace } from '../trace';
 import { clearResolverCache, prepareAppForModuleResolver, _setResolver } from '../module-name-resolver/helpers';
@@ -879,6 +880,8 @@ export class ApplicationCommon {
 	 * classes; without it they come from the primary window.
 	 */
 	initRootView(rootView: View, window?: NativeWindow) {
+		// A recreated Android activity brings a new decor view to subscribe to.
+		SafeArea.refresh();
 		this.setRootViewCSSClasses(rootView, window);
 		readyInitAccessibilityCssHelper();
 		readyInitFontScale();

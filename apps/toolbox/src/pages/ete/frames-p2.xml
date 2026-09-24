@@ -1,0 +1,26 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" backgroundColor="#1d4ed8">
+  <GridLayout rows="auto, auto, *">
+    <StackLayout row="0" padding="12">
+      <Label text="page 2 - scrolls" color="#ffffff" fontWeight="bold" fontSize="16" />
+      <Label text="content should run under the bar, and the LAST item should still be reachable" color="#bfdbfe" fontSize="13" textWrap="true" />
+    </StackLayout>
+    <GridLayout row="1" columns="*, *, *, *" padding="6">
+      <Button col="0" text="p1" tap="{{ go1 }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="1" text="p2" tap="{{ go2 }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="2" text="p3" tap="{{ go3 }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="3" text="exit" tap="{{ back }}" color="#ffffff" backgroundColor="#1e40af" />
+    </GridLayout>
+    <ScrollView row="2" id="scroll">
+      <StackLayout>
+        <Label text="{{ numbers }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" padding="12" />
+        <Label text="{{ verdict }}" color="#fde68a" fontWeight="bold" fontSize="15" textWrap="true" padding="12" />
+        <Label text="filler" color="#1d4ed8" height="300" backgroundColor="#1e40af" textAlignment="center" />
+        <Label text="filler" color="#1d4ed8" height="300" backgroundColor="#1d4ed8" textAlignment="center" />
+        <StackLayout id="marker" backgroundColor="#166534">
+          <Label text="last row of the scroll content" color="#ffffff" fontSize="11" textAlignment="center" padding="4" />
+          <StackLayout id="line-p2" height="4" backgroundColor="#b45309" />
+        </StackLayout>
+      </StackLayout>
+    </ScrollView>
+  </GridLayout>
+</Page>

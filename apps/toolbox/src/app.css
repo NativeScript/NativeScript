@@ -368,3 +368,22 @@ Button {
 .sliders-demo-page Slider.stops-slider {
     background: linear-gradient(to right, red 0%, yellow 50%, green 100%);
 }
+
+/* The env() half of the edge-to-edge suite. */
+.env-css-probe {
+    overflow-safe-area: bottom;
+    padding-top: 6dip;
+    padding-bottom: calc(6dip + env(safe-area-inset-bottom));
+    padding-left: calc(6dip + env(safe-area-inset-left));
+    padding-right: calc(6dip + env(safe-area-inset-right));
+}
+
+/* padding plus the inset still left at the view. */
+.env-shorthand-probe {
+    safe-area-padding: 6dip;
+}
+
+/* The nested case: correct whatever an ancestor already consumed. */
+.ns-safe-bottom {
+    padding-bottom: env(ns-safe-area-inset-bottom);
+}

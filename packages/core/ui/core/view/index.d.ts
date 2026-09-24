@@ -6,11 +6,12 @@ import { Animation, AnimationDefinition, AnimationPromise } from '../../animatio
 import { GestureTypes, GesturesObserver, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
-import { InheritedProperty, Property } from '../properties';
+import { CssProperty, InheritedProperty, Property } from '../properties';
 import { ShowModalOptions, ViewBase } from '../view-base';
 import { GlassEffectType, ViewCommon } from './view-common';
 import type { Point, ShownModallyData, Size } from './view-interfaces';
 import type { NativeWindow } from '../../../native-window';
+import type { Style } from '../../styling/style';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -618,6 +619,30 @@ export abstract class View extends ViewCommon {
 	isUserInteractionEnabled: boolean;
 
 	/**
+	 * The safe area edges this view overflows into, leaving their inset to the view -
+	 * typically padded back with `env(safe-area-inset-*)`. Default value: auto
+	 *
+	 * `auto` keeps the platform's own handling, `none` insets every edge, `all` insets
+	 * none. Settable from css as `overflow-safe-area`. An explicitly set
+	 * `androidOverflowEdge` takes precedence.
+	 *
+	 * @nsProperty
+	 */
+	overflowSafeArea: CoreTypes.SafeAreaEdges;
+
+	/**
+	 * Takes the same 1 to 4 values as `padding`, and adds whatever safe area inset is
+	 * still left on each edge. Settable from css as `safe-area-padding`.
+	 *
+	 * A shorthand for `padding-*: calc(<value> + env(ns-safe-area-inset-*))`. Like any
+	 * padding that names an edge's inset, the padded edges are consumed: the framework
+	 * stops insetting them on this view, and descendants see them as taken.
+	 *
+	 * @nsProperty
+	 */
+	safeAreaPadding: string | CoreTypes.LengthType;
+
+	/**
 	 * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: false
 	 *
 	 * @nsProperty
@@ -887,6 +912,15 @@ export abstract class View extends ViewCommon {
 	 * Returns the iOS safe area insets of this view.
 	 */
 	public getSafeAreaInsets(): Position;
+
+	/**
+	 * The window safe area insets minus whatever an ancestor already took, in dip.
+	 *
+	 * An ancestor that does not overflow an edge is insetting itself there, so its
+	 * subtree must not inset it again. Backs `env(ns-safe-area-inset-*)`, which is what
+	 * a nested page uses when it cannot know what its host did.
+	 */
+	public getRemainingSafeAreaInsets(): { top: number; right: number; bottom: number; left: number };
 
 	/**
 	 * Returns the location of this view in the window coordinate system.
@@ -1263,6 +1297,7 @@ export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
+export const overflowSafeAreaProperty: CssProperty<Style, CoreTypes.SafeAreaEdges>;
 export const iosOverflowSafeAreaProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaEnabledProperty: InheritedProperty<View, boolean>;
 export const visionHoverStyleProperty: Property<View, string | VisionHoverOptions>;

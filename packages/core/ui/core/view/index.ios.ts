@@ -7,6 +7,7 @@ import { Trace } from '../../../trace';
 import { layout, ios as iosUtils, getWindow } from '../../../utils';
 import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
+import { parseSafeAreaEdges, SafeAreaEdgeAuto, SafeAreaEdgeBottom, SafeAreaEdgeLeft, SafeAreaEdgeRight, SafeAreaEdgeTop } from './safe-area-edges';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
@@ -336,7 +337,41 @@ export class View extends ViewCommon {
 		return null;
 	}
 
+	public override _supportsPerViewSafeArea = true;
+
 	public getSafeAreaInsets(): Position {
+		const insets = this._getPlatformSafeAreaInsets();
+
+		// An overflowed or self-padded edge is the view's to pad; the default skips the parse.
+		const overflowSafeArea = this.overflowSafeArea;
+		let overflowed = overflowSafeArea && overflowSafeArea !== 'auto' ? parseSafeAreaEdges(overflowSafeArea) : SafeAreaEdgeAuto;
+		const padded = this._safeAreaPaddedEdges;
+		if (padded) {
+			overflowed = overflowed === SafeAreaEdgeAuto ? padded : overflowed | padded;
+		}
+		if (overflowed !== SafeAreaEdgeAuto) {
+			if (overflowed & SafeAreaEdgeLeft) {
+				insets.left = 0;
+			}
+			if (overflowed & SafeAreaEdgeTop) {
+				insets.top = 0;
+			}
+			if (overflowed & SafeAreaEdgeRight) {
+				insets.right = 0;
+			}
+			if (overflowed & SafeAreaEdgeBottom) {
+				insets.bottom = 0;
+			}
+		}
+
+		return insets;
+	}
+
+	/**
+	 * What UIKit reports is left at this view, before the view's own overflow and padding
+	 * are taken out.
+	 */
+	public _getPlatformSafeAreaInsets(): Position {
 		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
 		const insets = { left: 0, top: 0, right: 0, bottom: 0 };
 		if (this.iosIgnoreSafeArea) {

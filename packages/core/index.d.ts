@@ -21,6 +21,8 @@ export namespace AccessibilityEvents {
 }
 export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 export { Color } from './color';
+export { SafeArea } from './safe-area';
+export type { SafeAreaInsets, SafeAreaInsetsChangedEventData } from './safe-area';
 export * as Connectivity from './connectivity';
 // import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
 // export declare const Connectivity: {

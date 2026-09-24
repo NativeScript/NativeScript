@@ -26,6 +26,9 @@
       <Button text="5. Modals" tap="{{ open }}" id="ete/modals" class="btn btn-primary btn-view-demo" />
       <Button text="6. System bars" tap="{{ open }}" id="ete/bars" class="btn btn-primary btn-view-demo" />
       <Button text="7. Scrolling content" tap="{{ open }}" id="ete/scroll" class="btn btn-primary btn-view-demo" />
+      <Button text="8. env(safe-area-inset-*)" tap="{{ open }}" id="ete/env" class="btn btn-primary btn-view-demo" />
+      <Button text="9. Double padding" tap="{{ open }}" id="ete/double" class="btn btn-primary btn-view-demo" />
+      <Button text="10. Nested frames and scroll" tap="{{ open }}" id="ete/frames" class="btn btn-primary btn-view-demo" />
     </StackLayout>
   </ScrollView>
 </Page>

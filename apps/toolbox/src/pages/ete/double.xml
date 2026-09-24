@@ -1,0 +1,31 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <!--
+    The host is the view the framework insets. The probe inside it is what an author
+    would pad with env(). When both happen the gap below the probe is two insets.
+  -->
+  <GridLayout id="host" rows="auto, auto, auto, *" backgroundColor="#1d4ed8">
+    <StackLayout row="0" padding="12">
+      <Label text="{{ heading }}" color="#ffffff" fontWeight="bold" fontSize="14" textWrap="true" fontFamily="monospace" />
+      <Label text="{{ description }}" color="#bfdbfe" fontSize="13" textWrap="true" marginTop="4" />
+    </StackLayout>
+
+    <GridLayout row="1" columns="*, *, *" padding="8">
+      <Button col="0" text="&lt; prev" tap="{{ prev }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="1" text="next &gt;" tap="{{ next }}" color="#ffffff" backgroundColor="#1e40af" />
+      <Button col="2" text="back" tap="{{ back }}" color="#ffffff" backgroundColor="#1e40af" />
+    </GridLayout>
+
+    <StackLayout row="2" padding="12">
+      <Label text="{{ numbers }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+      <Label text="{{ verdict }}" color="#fde68a" fontWeight="bold" fontSize="15" textWrap="true" marginTop="8" />
+      <Label text="{{ hint }}" color="#bfdbfe" fontSize="12" marginTop="4" />
+      <Label text="{{ report }}" color="#a7f3d0" fontFamily="monospace" fontSize="10" textWrap="true" marginTop="8" />
+    </StackLayout>
+
+    <!-- The probe is pinned to the bottom; the orange line is its last content pixel. -->
+    <StackLayout row="3" id="marker" verticalAlignment="bottom" backgroundColor="#166534">
+      <Label text="probe" color="#ffffff" fontSize="11" textAlignment="center" padding="4" />
+      <StackLayout id="line" height="4" backgroundColor="#b45309" />
+    </StackLayout>
+  </GridLayout>
+</Page>
