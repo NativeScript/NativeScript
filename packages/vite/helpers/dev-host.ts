@@ -89,7 +89,8 @@
  *      the host's LAN IP when a LAN NIC is up (reachable from both
  *      physical devices and the Simulator), otherwise `localhost`.
  *      `NS_HMR_PREFER_LAN_HOST=0` forces `localhost`. iOS/visionOS
- *      loopback passes through unchanged.
+ *      loopback passes through unchanged. Windows apps run on the
+ *      host itself, so Windows emits `127.0.0.1` and keeps loopback.
  *
  * Every dev-mode emitter that bakes a URL into `bundle.mjs` or sends
  * one to a device-side fetch site MUST run through this helper so the
@@ -699,6 +700,12 @@ function platformDefault(opts: ResolveDeviceHostOptions): DeviceHostResolution {
 		// can't use `adb reverse` need NS_HMR_HOST=<LAN IP> or
 		// NS_HMR_PREFER_LAN_HOST=1.
 		return { host: '10.0.2.2', source: 'platform-default' };
+	}
+	if (opts.platform === 'windows') {
+		// Windows apps run on the dev machine itself, so loopback always
+		// reaches Vite: no LAN lookup, no adb. IPv4 literal because
+		// `localhost` may resolve to `::1` while Vite is bound to IPv4.
+		return { host: '127.0.0.1', source: 'platform-default' };
 	}
 	// iOS / visionOS. `localhost` only works from simulators (they share
 	// the host's network stack); on physical hardware it points at the

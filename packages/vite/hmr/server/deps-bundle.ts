@@ -62,7 +62,7 @@ import { getGlobalDefines, getUserDefineEntries } from '../../helpers/global-def
 import { getProjectFlavor } from '../../helpers/flavor.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuild-plugin.js';
-import type { Platform } from '../../helpers/platform-types.js';
+import { isPlatform, platformExtensions, type Platform } from '../../helpers/platform-types.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { createNodeBuiltinPolyfillEsbuildPlugin, createSolidJsxEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createVendorEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createOptionalDependencyStubEsbuildPlugin, createNativeAddonStubEsbuildPlugin } from '../shared/vendor/vendor-esbuild-plugins.js';
@@ -113,10 +113,9 @@ export function depsRegistryKeyForFile(absPath: string): string | null {
 }
 
 function platformResolveExtensions(platform: string): string[] {
-	if (platform === 'android') {
-		return ['.android.tsx', '.tsx', '.android.jsx', '.jsx', '.android.ts', '.ts', '.android.js', '.js', '.mjs', '.cjs', '.json'];
-	}
-	return ['.ios.tsx', '.visionos.tsx', '.tsx', '.ios.jsx', '.visionos.jsx', '.jsx', '.ios.ts', '.visionos.ts', '.ts', '.ios.js', '.visionos.js', '.js', '.mjs', '.cjs', '.json'];
+	// Unknown platform strings historically resolved as Apple; keep that default.
+	const target: Platform = isPlatform(platform) ? platform : 'ios';
+	return [...platformExtensions(target, ['.tsx', '.jsx', '.ts', '.js']), '.mjs', '.cjs', '.json'];
 }
 
 /**
@@ -616,6 +615,29 @@ function isEsbuildDefineValue(expr: string): boolean {
 	}
 }
 
+/** The node_modules package a file path lives in (`…/node_modules/@scope/name/x.js` → `@scope/name`). */
+export function packageOfPath(filePath: string): string | null {
+	return /.*node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(filePath.replace(/\\/g, '/'))?.[1] ?? null;
+}
+
+/**
+ * Packages behind esbuild "Could not resolve" errors: the package the failing
+ * importer lives in, or (for an entry imported by the synthetic entry file) 
+ * the package of the unresolved path. Empty when any error is something else.
+ */
+export function unresolvablePackagesOf(error: unknown): string[] {
+	const messages: Array<{ text?: string; location?: { file?: string } | null }> = (error as any)?.errors ?? [];
+	const out = new Set<string>();
+	for (const message of messages) {
+		const spec = /^Could not resolve "([^"]+)"/.exec(message.text ?? '')?.[1];
+		if (!spec) return [];
+		const pkg = packageOfPath(message.location?.file ?? '') ?? packageOfPath(spec);
+		if (!pkg) return [];
+		out.add(pkg);
+	}
+	return Array.from(out);
+}
+
 export async function generateDepsBundle(options: GenerateDepsBundleOptions): Promise<DepsBundleState | null> {
 	const { projectRoot, platform, mode, flavor, verbose } = options;
 	const t0 = Date.now();
@@ -725,22 +747,55 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// Pass 1: discover the full static input closure of the entries. Pass 2
 	// registers EVERY input, so any /ns/m URL that later resolves to a bundled
 	// file serves a shim into the single bundle realm.
-	const entryKeySet = new Set(entries.map((e) => e.key));
-	const discovery = await esbuild.build({
-		...sharedBuildOptions,
-		stdin: {
-			contents: entries.map((e) => `import ${JSON.stringify(e.absPath)};`).join('\n'),
-			resolveDir: projectRoot,
-			sourcefile: 'ns-deps-bundle-discovery.ts',
-			loader: 'ts',
+	//
+	// The closure is recorded by an onLoad hook rather than `metafile`: esbuild
+	// (0.27) crashes the whole process with an exception thrown outside the build
+	// promise when a build with `metafile` set fails, and failures here are
+	// expected and recovered from below.
+	const discoveredInputs = new Set<string>();
+	const inputRecorder: esbuild.Plugin = {
+		name: 'ns-deps-input-recorder',
+		setup(build) {
+			build.onLoad({ filter: /.*/ }, (args) => {
+				if (args.namespace === 'file') discoveredInputs.add(args.path);
+				return undefined;
+			});
 		},
-		metafile: true,
-		plugins: buildPlugins(),
-	});
+	};
+	// A dependency that cannot resolve for this platform (a plugin shipping only
+	// .ios/.android sources: common on Windows) would fail the whole bundle.
+	// Drop the packages behind "Could not resolve" errors and retry.
+	for (let attempt = 0; ; attempt++) {
+		discoveredInputs.clear();
+		try {
+			await esbuild.build({
+				...sharedBuildOptions,
+				stdin: {
+					contents: entries.map((e) => `import ${JSON.stringify(e.absPath)};`).join('\n'),
+					resolveDir: projectRoot,
+					sourcefile: 'ns-deps-bundle-discovery.ts',
+					loader: 'ts',
+				},
+				// First, so it sees every load before a plugin that returns contents.
+				plugins: [inputRecorder, ...buildPlugins()],
+			});
+			break;
+		} catch (error) {
+			const unresolved = unresolvablePackagesOf(error);
+			const before = entries.length;
+			for (let i = entries.length - 1; i >= 0; i--) {
+				const pkg = packageOfPath(entries[i].absPath);
+				if (pkg && unresolved.includes(pkg)) entries.splice(i, 1);
+			}
+			if (entries.length === before || attempt >= 5) throw error;
+			console.warn(`[ns-deps-bundle] ${unresolved.join(', ')} cannot be resolved for ${platform}; excluded from the deps bundle`);
+		}
+	}
+	const entryKeySet = new Set(entries.map((e) => e.key));
 
 	const files: { key: string; absPath: string }[] = entries.map(({ key, absPath }) => ({ key, absPath }));
-	for (const input of Object.keys(discovery.metafile?.inputs ?? {})) {
-		if (input === '<stdin>' || input.includes(':') || !input.includes('node_modules/')) continue;
+	for (const input of discoveredInputs) {
+		if (!input.replace(/\\/g, '/').includes('node_modules/')) continue;
 		const absPath = path.resolve(projectRoot, input);
 		if (!existsSync(absPath)) continue;
 		const key = depsRegistryKeyForFile(absPath);

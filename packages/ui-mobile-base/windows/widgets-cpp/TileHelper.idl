@@ -1,0 +1,11 @@
+namespace NativeScript.Widgets
+{
+    static runtimeclass TileHelper
+    {
+        // Tiles `source` (an encoded image) across a targetWidth x targetHeight (device px) surface
+        // and returns the result as encoded PNG bytes. repeatX/repeatY mirror CSS background-repeat:
+        // when an axis does not repeat, the image appears once on that axis and the remainder is
+        // transparent (matching repeat-x / repeat-y / no-repeat semantics).
+        static Windows.Foundation.IAsyncOperation<Windows.Storage.Streams.IBuffer> CreateTiledImageAsync(Windows.Storage.Streams.IBuffer source, Int32 targetWidth, Int32 targetHeight, Boolean repeatX, Boolean repeatY);
+    }
+}

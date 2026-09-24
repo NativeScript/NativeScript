@@ -10,10 +10,10 @@ import { getFlavorClientPackages } from '../framework-flavors.js';
 
 const ESM_FRAMEWORK_PACKAGE_ROOTS = new Set(['@nativescript/angular', 'nativescript-angular']);
 
-const BUILD_TIME_ONLY_PACKAGE_ROOTS = new Set(['@nativescript/vite', '@nativescript/webpack', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', 'vite', 'webpack', 'esbuild', 'typescript', 'ts-node', 'prettier']);
+const BUILD_TIME_ONLY_PACKAGE_ROOTS = new Set(['@nativescript/vite', '@nativescript/webpack', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', '@nativescript/windows', 'vite', 'webpack', 'esbuild', 'typescript', 'ts-node', 'prettier']);
 
 const BUILD_TIME_ONLY_PACKAGE_PREFIXES = ['@vitejs/', '@rollup/', '@babel/', '@angular-devkit/', '@angular/build', '@analogjs/', 'vite-plugin-'];
-const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
+const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos|windows))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
 
 function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
 	return EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE.test(segment);
@@ -775,7 +775,7 @@ function subpathMatchesMainEntry(subpath: string, mainEntries: Set<string>): boo
 	if (mainEntries.has(subpath)) {
 		return true;
 	}
-	const normalize = (value: string) => value.replace(/\.(m|c)?(js|ts)$/, '').replace(/\.(ios|android|visionos)$/, '');
+	const normalize = (value: string) => value.replace(/\.(m|c)?(js|ts)$/, '').replace(/\.(ios|android|visionos|windows)$/, '');
 	const strippedSubpath = normalize(subpath);
 	if (mainEntries.has(strippedSubpath)) {
 		return true;
@@ -820,7 +820,7 @@ export function shouldPreserveBareRuntimePluginSubpathImport(spec: string, proje
 
 	if (!subpath.includes('/')) {
 		const packageBaseName = packageName.split('/').pop() || '';
-		const withoutPlatform = lastSegment.replace(/\.(ios|android|visionos)$/i, '');
+		const withoutPlatform = lastSegment.replace(/\.(ios|android|visionos|windows)$/i, '');
 		if (withoutPlatform === 'index' || withoutPlatform === packageBaseName || withoutPlatform.startsWith(`${packageBaseName}.`)) {
 			return false;
 		}
@@ -844,7 +844,7 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 			return false;
 		}
 		const withoutExt = subpath.replace(/\.[^.]+$/, '');
-		const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+		const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos|windows)$/i, '');
 		return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
 	})();
 
@@ -868,11 +868,11 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 		return null;
 	}
 
-	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/i.test(nodeModulesSpec) && isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && isRootLevelMainEntry) {
+	if (/\.(ios|android|visionos|windows)\.(js|ts|mjs|mts)$/i.test(nodeModulesSpec) && isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && isRootLevelMainEntry) {
 		return { route: 'vendor', bareSpec: pkgName };
 	}
 
-	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
+	if (/\.(ios|android|visionos|windows)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
 		return { route: 'http' };
 	}
 

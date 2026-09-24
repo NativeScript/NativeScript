@@ -1,6 +1,8 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import * as path from 'node:path';
 import { normalizeCoreSub } from '../../helpers/ns-core-url.js';
+import { resolvePlatform } from '../../helpers/cli-flags.js';
+import { PLATFORMS, platformSuffixes, type Platform } from '../../helpers/platform-types.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 export type CoreExportOrigin = {
@@ -22,7 +24,7 @@ export type ParsedCoreBridgeRequest = {
 	 *
 	 * `normalizeCoreSub` strips `.js`/`.mjs`/`.cjs`/`.ts` extensions,
 	 * trailing `/index`, and platform suffixes (`.ios`, `.android`,
-	 * `.visionos`) because Vite's path resolver legitimately emits those
+	 * `.visionos`, `.windows`) because Vite's path resolver legitimately emits those
 	 * shapes when it follows a package's `exports` map to a
 	 * platform-specific file (`ui/text-base/index.ios.js`) for the
 	 * extensionless import (`@nativescript/core/ui/text-base`). The 301
@@ -179,11 +181,25 @@ function appendCoreExportOrigin(map: Record<string, CoreExportOrigin[]>, exporte
 	existing.push(origin);
 }
 
+let platformVariantExtensions: string[] | null = null;
+function getPlatformVariantExtensions(): string[] {
+	if (!platformVariantExtensions) {
+		let platform: Platform = 'ios';
+		try {
+			platform = resolvePlatform() ?? 'ios';
+		} catch {}
+		const own = platformSuffixes(platform);
+		const ordered = [...own, ...PLATFORMS.filter((p) => !own.includes(p))];
+		platformVariantExtensions = ordered.flatMap((p) => [`.${p}.ts`, `.${p}.js`, `.${p}.mjs`]);
+	}
+	return platformVariantExtensions;
+}
+
 function resolveLocalExportTarget(spec: string, importerId: string): string | null {
 	const importerPath = String(importerId || '').replace(/[?#].*$/, '');
 	if (!importerPath) return null;
 	const importerDir = path.dirname(importerPath);
-	// Include platform-specific variants (.ios.js / .android.js / .visionos.js).
+	// Include platform-specific variants (.ios.js / .android.js / .windows.js …).
 	// @nativescript/core ships only platform-specific files for many submodules
 	// (e.g. `./application/index.ios.js`, no plain `./application/index.js`), so
 	// a plain Node-style resolution misses them and the recursive export-name
@@ -192,9 +208,9 @@ function resolveLocalExportTarget(spec: string, importerId: string): string | nu
 	// `import { Application } from '@nativescript/core'` through the bridge
 	// fails with "module does not provide an export named 'Application'".
 	//
-	// Prefer .ios variants at the top since the HMR dev server is iOS-first;
-	// .android variants are still tried so Android serving also works.
-	const platformVariants = ['.ios.ts', '.ios.js', '.ios.mjs', '.android.ts', '.android.js', '.android.mjs', '.visionos.ts', '.visionos.js', '.visionos.mjs'];
+	// The current platform's variants come first so its export names win;
+	// other platforms' variants remain as a last resort.
+	const platformVariants = getPlatformVariantExtensions();
 	const candidates = [path.resolve(importerDir, spec), path.resolve(importerDir, `${spec}.ts`), path.resolve(importerDir, `${spec}.js`), path.resolve(importerDir, `${spec}.mjs`), ...platformVariants.map((ext) => path.resolve(importerDir, `${spec}${ext}`)), path.resolve(importerDir, spec, 'index.ts'), path.resolve(importerDir, spec, 'index.js'), path.resolve(importerDir, spec, 'index.mjs'), ...platformVariants.map((ext) => path.resolve(importerDir, spec, `index${ext}`))];
 	for (const candidate of candidates) {
 		if (existsSync(candidate) && !statSync(candidate).isDirectory()) {

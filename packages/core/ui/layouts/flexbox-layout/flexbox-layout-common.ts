@@ -32,15 +32,16 @@ export namespace FlexWrap {
 	export const parse = makeParser<FlexWrap>(isValid);
 }
 
-export type JustifyContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
+export type JustifyContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly';
 export namespace JustifyContent {
 	export const FLEX_START = 'flex-start' as const;
 	export const FLEX_END = 'flex-end' as const;
 	export const CENTER = 'center' as const;
 	export const SPACE_BETWEEN = 'space-between';
 	export const SPACE_AROUND = 'space-around';
+	export const SPACE_EVENLY = 'space-evenly';
 
-	export const isValid = makeValidator<JustifyContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND);
+	export const isValid = makeValidator<JustifyContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND, SPACE_EVENLY);
 	export const parse = makeParser<JustifyContent>(isValid);
 }
 
@@ -61,7 +62,7 @@ export namespace AlignItems {
 	export const parse = makeParser<AlignItems>(isValid);
 }
 
-export type AlignContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'stretch';
+export type AlignContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'stretch' | 'space-evenly';
 export namespace AlignContent {
 	export const FLEX_START = 'flex-start';
 	export const FLEX_END = 'flex-end';
@@ -69,8 +70,9 @@ export namespace AlignContent {
 	export const SPACE_BETWEEN = 'space-between';
 	export const SPACE_AROUND = 'space-around';
 	export const STRETCH = 'stretch';
+	export const SPACE_EVENLY = 'space-evenly';
 
-	export const isValid = makeValidator<AlignContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND, STRETCH);
+	export const isValid = makeValidator<AlignContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND, STRETCH, SPACE_EVENLY);
 	export const parse = makeParser<AlignContent>(isValid);
 }
 
@@ -165,7 +167,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 		return this.style.justifyContent;
 	}
 	set justifyContent(value: JustifyContent) {
-		this.style.justifyContent = value;
+		this.style.justifyContent = value as any;
 	}
 
 	get alignItems(): AlignItems {
@@ -179,7 +181,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 		return this.style.alignContent;
 	}
 	set alignContent(value: AlignContent) {
-		this.style.alignContent = value;
+		this.style.alignContent = value as any;
 	}
 
 	get gap(): string | CoreTypes.LengthType {

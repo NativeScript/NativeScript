@@ -212,3 +212,19 @@ describe('collectVendorModules', () => {
 		expect(code).toContain('export default vendorManifest;');
 	});
 });
+
+describe('unresolvableVendorPackages', () => {
+	it('maps esbuild resolve failures to the vendor entries that caused them', async () => {
+		const { unresolvableVendorPackages } = await import('./manifest.js');
+		const error = {
+			errors: [
+				{ text: 'Could not resolve "@nativescript/imagepicker"', location: { file: 'ns-vendor-entry.ts' } },
+				{ text: 'Could not resolve "./bridge"', location: { file: '../../node_modules/@valor/nativescript-websockets/websocket.js' } },
+			],
+		};
+		expect(unresolvableVendorPackages(error, ['@nativescript/imagepicker', '@valor/nativescript-websockets', 'lodash']).sort()).toEqual(['@nativescript/imagepicker', '@valor/nativescript-websockets']);
+		// Anything other than a resolve failure (or an unknown package) is not recoverable.
+		expect(unresolvableVendorPackages({ errors: [{ text: 'Unexpected token' }] }, ['lodash'])).toEqual([]);
+		expect(unresolvableVendorPackages({ errors: [{ text: 'Could not resolve "x"', location: { file: 'node_modules/other/i.js' } }] }, ['lodash'])).toEqual([]);
+	});
+});

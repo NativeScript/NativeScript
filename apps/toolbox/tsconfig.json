@@ -6,5 +6,6 @@
 		"paths": {
 			"~/*": ["src/*"]
 		}
-	}
+	},
+	"exclude": ["node_modules", "tmp", "platforms", "__tests__", "vite.config.ts"]
 }

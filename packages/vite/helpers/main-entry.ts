@@ -13,6 +13,7 @@ import { setAppCssState } from './app-css-state.js';
 import { createAppCssRefresher } from './app-css-refresh.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { buildGlobalSeedStatements, getRuntimeSeedValues } from './global-defines.js';
+import type { Platform } from './platform-types.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -102,7 +103,7 @@ const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
 const DEFINES_SEED_VIRTUAL_ID = 'virtual:ns-defines-seed';
 const DEFINES_SEED_RESOLVED = '\0' + DEFINES_SEED_VIRTUAL_ID;
 
-export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean; flavor?: string }) {
+export function mainEntryPlugin(opts: { platform: Platform; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean; flavor?: string }) {
 	let resolvedConfig: ResolvedConfig;
 	// Prefer the flavor the active config DECLARES (threaded from baseConfig)
 	// over deps-based detection: in workspaces whose app package.json doesn't
@@ -690,7 +691,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- HMR bootstrap prerequisites ----
-			if (opts.hmrActive) {
+			// The Windows runtime provides WebSocket natively; the polyfill has no Windows
+			// implementation and would fail to resolve.
+			if (opts.hmrActive && opts.platform !== 'windows') {
 				// WebSocket polyfill needed for dev hot reload messaging
 				imports += "import '@valor/nativescript-websockets';\n";
 				if (opts.verbose) {

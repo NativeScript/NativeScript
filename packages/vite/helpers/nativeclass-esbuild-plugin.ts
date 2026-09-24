@@ -1,6 +1,6 @@
 import type { Plugin as EsbuildPlugin } from 'esbuild';
 import { isNativeESClassesEnabled, transformNativeClassSource } from './nativeclass-transform.js';
-import type { Platform } from './platform-types.js';
+import { isOtherPlatformTagged, type Platform } from './platform-types.js';
 
 /**
  * Esbuild plugin that applies the NativeClass transformer to TypeScript/JavaScript files.
@@ -25,10 +25,7 @@ export function createNativeClassEsbuildPlugin(platform: Platform): EsbuildPlugi
 				const path = args.path;
 
 				// Skip wrong platform files
-				if (path.includes('.android.') && platform !== 'android') {
-					return undefined; // Let default loader handle it
-				}
-				if ((path.includes('.ios.') || path.includes('.visionos.')) && platform === 'android') {
+				if (isOtherPlatformTagged(path, platform)) {
 					return undefined; // Let default loader handle it
 				}
 

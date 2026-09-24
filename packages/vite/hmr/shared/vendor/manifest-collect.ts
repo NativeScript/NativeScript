@@ -20,6 +20,8 @@ const ALWAYS_INCLUDE = new Set<string>(['stacktrace-js']);
 const ALWAYS_EXCLUDE = new Set<string>([
 	'@nativescript/android',
 	'@nativescript/ios',
+	'@nativescript/visionos',
+	'@nativescript/windows',
 	'@nativescript/types',
 	'@nativescript/webpack',
 	// Angular browser animations are not used in NativeScript; excluding reduces
@@ -746,6 +748,9 @@ function compiledJsExtensionsForPlatform(platform: string | undefined): string[]
 			break;
 		case 'visionos':
 			exts.push('.visionos.js', '.ios.js');
+			break;
+		case 'windows':
+			exts.push('.windows.js');
 			break;
 	}
 	return exts;
