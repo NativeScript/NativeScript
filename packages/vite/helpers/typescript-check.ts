@@ -5,7 +5,7 @@ import path from 'node:path';
 import type * as TS from 'typescript';
 import { getCliFlags, resolvePlatform } from './cli-flags.js';
 import { getProjectTSConfigPath } from './project.js';
-import type { Platform } from './platform-types.js';
+import { isOtherPlatformTagged, platformSuffixes, type Platform } from './platform-types.js';
 import { loadTypeScript, type TypeScript } from './typescript.js';
 
 const require = createRequire(import.meta.url);
@@ -38,19 +38,14 @@ type ResolvedTypeCheckOptions = {
 };
 
 function getModuleSuffixes(platform: PlatformType | undefined): string[] {
-	if (platform === 'android') {
-		return ['.android', '.native', ''];
+	if (!platform) {
+		return ['.native', ''];
 	}
 
-	if (platform === 'ios') {
-		return ['.ios', '.native', ''];
-	}
-
-	if (platform === 'visionos') {
-		return ['.visionos', '.ios', '.native', ''];
-	}
-
-	return ['.native', ''];
+	// iOS type-checks against `.ios` only; its `.visionos` files are skipped
+	// (see shouldSkipFileForPlatform).
+	const suffixes = platform === 'ios' ? ['ios'] : platformSuffixes(platform);
+	return [...suffixes.map((s) => `.${s}`), '.native', ''];
 }
 
 function getFormatHost(ts: TypeScript): TS.FormatDiagnosticsHost {
@@ -250,23 +245,16 @@ function getParsedConfig(ts: TypeScript, tsConfigPath: string, platform: Platfor
 }
 
 function shouldSkipFileForPlatform(fileName: string, platform: PlatformType | undefined): boolean {
+	if (!platform) {
+		return false;
+	}
+
 	const normalized = fileName.replace(/\\/g, '/');
-	const isAndroidTagged = /\.android\./.test(normalized);
-	const isIosTagged = /\.(ios|visionos)\./.test(normalized);
-
-	if (platform === 'android') {
-		return isIosTagged;
+	if (platform === 'ios' && /\.visionos\./.test(normalized)) {
+		return true;
 	}
 
-	if (platform === 'ios') {
-		return isAndroidTagged || /\.visionos\./.test(normalized);
-	}
-
-	if (platform === 'visionos') {
-		return isAndroidTagged;
-	}
-
-	return false;
+	return isOtherPlatformTagged(normalized, platform);
 }
 
 export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean; failOnError?: boolean; logDiagnostics?: boolean }): Plugin {

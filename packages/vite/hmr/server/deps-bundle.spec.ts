@@ -621,3 +621,19 @@ describe('createDepsBundleService', () => {
 		expect(service.getState()).not.toBeNull();
 	});
 });
+
+describe('unresolvablePackagesOf', () => {
+	it('names the packages behind resolve failures and nothing else', async () => {
+		const { unresolvablePackagesOf, packageOfPath } = await import('./deps-bundle.js');
+		expect(packageOfPath(String.raw`C:\app\node_modules\@valor\nativescript-websockets\websocket.js`)).toBe('@valor/nativescript-websockets');
+		expect(
+			unresolvablePackagesOf({
+				errors: [
+					{ text: 'Could not resolve "./bridge"', location: { file: 'node_modules/@valor/nativescript-websockets/websocket.js' } },
+					{ text: 'Could not resolve "/app/node_modules/lodash/index.js"', location: { file: 'ns-deps-bundle-discovery.ts' } },
+				],
+			}).sort(),
+		).toEqual(['@valor/nativescript-websockets', 'lodash']);
+		expect(unresolvablePackagesOf({ errors: [{ text: 'Unexpected "}"' }] })).toEqual([]);
+	});
+});

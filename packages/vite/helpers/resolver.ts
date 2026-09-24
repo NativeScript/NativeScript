@@ -2,6 +2,7 @@ import type { Plugin } from 'vite';
 import path from 'path';
 import { resolveNativeScriptPlatformFile } from './utils.js';
 import { normalizeModuleId } from './normalize-id.js';
+import type { Platform } from './platform-types.js';
 
 const normalizeImporterId = (importer: string): string => {
 	const cleanImporter = importer.split('?', 1)[0];
@@ -13,7 +14,7 @@ const normalizeImporterId = (importer: string): string => {
 	return /^\/\@fs\/[A-Za-z]:/.test(cleanImporter) ? cleanImporter.slice('/@fs/'.length) : cleanImporter.slice('/@fs'.length);
 };
 
-export default function NativeScriptPlugin(options: { platform: 'ios' | 'android' | 'visionos' }): Plugin {
+export default function NativeScriptPlugin(options: { platform: Platform }): Plugin {
 	return {
 		name: 'vite:nativescript',
 		enforce: 'pre',

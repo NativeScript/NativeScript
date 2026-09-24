@@ -44,6 +44,8 @@ describe('ns-core-url — Invariant A canonical form', () => {
 			expect(normalizeCoreSub('ui/text-base/index.ios')).toBe('ui/text-base');
 			expect(normalizeCoreSub('runtime/runtime.android')).toBe('runtime/runtime');
 			expect(normalizeCoreSub('ui/text-base/index.visionos')).toBe('ui/text-base');
+			expect(normalizeCoreSub('application/index.windows.js')).toBe('application');
+			expect(normalizeCoreSub('application/window-helper.windows')).toBe('application/window-helper');
 		});
 
 		it('preserves deep subpaths verbatim', () => {
