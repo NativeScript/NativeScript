@@ -1,6 +1,8 @@
 import type { Plugin } from 'vite';
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import os from 'node:os';
 import path from 'node:path';
 import type * as TS from 'typescript';
 import { getCliFlags, resolvePlatform } from './cli-flags.js';
@@ -64,6 +66,108 @@ function getFormatHost(ts: TypeScript): TS.FormatDiagnosticsHost {
 function getVueTscBinPath(): string {
 	const pkgPath = require.resolve('vue-tsc/package.json');
 	return path.resolve(path.dirname(pkgPath), 'bin/vue-tsc.js');
+}
+
+function getTsrxTscBinPath(): string | undefined {
+	try {
+		const projectRequire = createRequire(path.join(process.cwd(), 'package.json'));
+		const pkgPath = projectRequire.resolve('@tsrx/typescript-plugin/package.json');
+		const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { bin?: string | Record<string, string> };
+		const bin = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin?.['tsrx-tsc'];
+		return bin ? path.resolve(path.dirname(pkgPath), bin) : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+function hasTsrxImports(ts: TypeScript, fileNames: readonly string[]): boolean {
+	return fileNames.some((fileName) => {
+		if (fileName.toLowerCase().endsWith('.tsrx')) {
+			return true;
+		}
+
+		const source = ts.sys.readFile(fileName);
+		return source ? ts.preProcessFile(source).importedFiles.some((file) => file.fileName.toLowerCase().endsWith('.tsrx')) : false;
+	});
+}
+
+function createTsrxCheckConfig(tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], platform: PlatformType | undefined): { configPath: string; cleanup: () => void } {
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-vite-tsrx-check-'));
+	const configPath = path.join(tempDir, 'tsconfig.json');
+	const references = parsedConfig.projectReferences?.map(({ path: referencePath, prepend, circular }) => ({ path: referencePath, prepend, circular }));
+
+	try {
+		fs.writeFileSync(
+			configPath,
+			JSON.stringify(
+				{
+					extends: path.resolve(tsConfigPath),
+					files: rootNames,
+					include: [],
+					...(references?.length ? { references } : {}),
+					compilerOptions: {
+						noEmit: true,
+						incremental: false,
+						moduleSuffixes: getModuleSuffixes(platform),
+					},
+				},
+				null,
+				2,
+			),
+		);
+	} catch (error) {
+		fs.rmSync(tempDir, { recursive: true, force: true });
+		throw error;
+	}
+
+	return {
+		configPath,
+		cleanup: () => fs.rmSync(tempDir, { recursive: true, force: true }),
+	};
+}
+
+function runTsrxTypeCheck(
+	binPath: string,
+	options: { platform?: PlatformType; verbose?: boolean; logDiagnostics?: boolean },
+	tsConfigPath: string,
+	parsedConfig: TS.ParsedCommandLine,
+	rootNames: readonly string[],
+	failOnError: boolean,
+): void {
+	const config = createTsrxCheckConfig(tsConfigPath, parsedConfig, rootNames, options.platform);
+	let result: ReturnType<typeof spawnSync>;
+	try {
+		result = spawnSync(process.execPath, [binPath, '--noEmit', '--pretty', '-p', config.configPath, '--moduleSuffixes', getModuleSuffixes(options.platform).join(',')], {
+			cwd: process.cwd(),
+			env: { ...process.env, FORCE_COLOR: '1' },
+			encoding: 'utf8',
+		});
+	} finally {
+		config.cleanup();
+	}
+
+	if (result.error) {
+		throw result.error;
+	}
+
+	if (result.status === 0) {
+		if (options.verbose) {
+			console.log(`[ns-vite] TSRX TypeScript check passed (${rootNames.length} files).`);
+		}
+		return;
+	}
+
+	const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
+	if (output && options.logDiagnostics !== false) {
+		(failOnError ? console.error : console.warn)(output);
+	}
+
+	if (!failOnError) {
+		console.warn('[ns-vite] tsrx-tsc reported type errors; continuing build because tsconfig does not require failing on type errors.');
+		return;
+	}
+
+	throw new Error('[ns-vite] tsrx-tsc reported type errors.');
 }
 
 function coerceBoolean(value: unknown): boolean | undefined {
@@ -288,6 +392,12 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 			const parsedConfig = getParsedConfig(ts, tsConfigPath, opts.platform);
 			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
 			const rootNames = parsedConfig.fileNames.filter((fileName) => !shouldSkipFileForPlatform(fileName, opts.platform));
+			const tsrxTscBinPath = hasTsrxImports(ts, rootNames) ? getTsrxTscBinPath() : undefined;
+			if (tsrxTscBinPath) {
+				runTsrxTypeCheck(tsrxTscBinPath, opts, tsConfigPath, parsedConfig, rootNames, failOnError);
+				return;
+			}
+
 			const program = ts.createProgram({
 				rootNames,
 				options: parsedConfig.options,

@@ -97,6 +97,8 @@ Register at module scope, before `baseConfig` can run. `baseConfig` installs the
 
 `getTypeCheckPlugins` takes the *kind* of type-check, not the flavor name: `'typescript'` for a `.ts`/`.tsx` project, `'vue'` for `vue-tsc`.
 
+When a TypeScript project imports `.tsrx` files and has `@tsrx/typescript-plugin` installed, the build-time checker delegates to `tsrx-tsc` so TSRX files are transformed for type checking. The checker passes only the files selected for the current NativeScript platform.
+
 ### Keeping a runtime package out of the dev vendor bundle
 
 A dev session evaluates node_modules code from one bundle, seeded on the very first boot from every root in the app's `dependencies`. That seed is a guess at what the device will need, and a compiler can make it wrong: Octane rewrites `import { useState } from 'octane'` in the components it compiles to `@nativescript-community/octane`, which imports only `octane/universal/native`. Left in the seed, the `octane` root drags its whole DOM-side runtime into every dev boot for nothing.
