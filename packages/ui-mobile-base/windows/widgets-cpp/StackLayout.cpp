@@ -13,9 +13,9 @@ using namespace winrt::Microsoft::UI::Xaml;
 namespace winrt::NativeScript::Widgets::implementation
 {
     // A child "fills" the main axis when its main-axis alignment is Stretch (e.g. a ScrollView with
-    // height:100% in a vertical stack — the Windows View maps 100% → Stretch). Such a child is sized
+    // height:100% in a vertical stack; the Windows View maps 100% → Stretch). Such a child is sized
     // to the space the stack actually has left, which is what gives a ScrollView a bounded, scrollable
-    // viewport — no JS clamp needed.
+    // viewport: no JS clamp needed.
     static bool IsMainStretch(UIElement const& child, bool vertical)
     {
         if (auto fe = child.try_as<FrameworkElement>())
@@ -39,7 +39,7 @@ namespace winrt::NativeScript::Widgets::implementation
         std::vector<UIElement> fillChildren;
 
         // Pass 1: content children take their natural main size (measured with unbounded main).
-        // Main-axis fill children are deferred — they only make sense when the main axis is bounded.
+        // Main-axis fill children are deferred. They only make sense when the main axis is bounded.
         for (auto const& child : Children())
         {
             if (child.Visibility() == Visibility::Collapsed)

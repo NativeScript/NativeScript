@@ -73,7 +73,7 @@ export class Image extends ImageBase {
 
 	public disposeImageSource() {
 		// Do NOT null this._image.Source here. dispose is always followed by a _setNativeImage that
-		// either sets the new bitmap (XAML replaces in one pass) or nulls for the clear case — nulling
+		// either sets the new bitmap (XAML replaces in one pass) or nulls for the clear case. Nulling
 		// here forced a second render pass per rebind on a list that swaps the image every row. We only
 		// release the JS-side refs; the old bitmap is dropped when the new Source is assigned.
 		if (this.imageSource?.windows) {
@@ -109,9 +109,9 @@ export class Image extends ImageBase {
 		}
 
 		if (!nativeImage) {
-			// Clearing: null out the existing source (and only then — see below). Setting a NEW source
+			// Clearing: null out the existing source (and only then; see below). Setting a NEW source
 			// does NOT need a null first; XAML replaces it in one pass. Nulling-then-setting forced two
-			// render passes per row on a list that swaps the image every rebind — pure waste.
+			// render passes per row on a list that swaps the image every rebind. Pure waste.
 			if (this._image.Source) {
 				this._image.Source = null as never;
 			}

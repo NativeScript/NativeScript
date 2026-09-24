@@ -14,7 +14,7 @@ namespace NativeScript.Widgets
             Double cornerRadiusX, Double cornerRadiusY);
 
         // Polygon clip from a CSS polygon() rule string, e.g. "50% 0%, 100% 100%, 0% 100%".
-        // Uses Direct2D IGeometrySource2D — no Win2D NuGet needed.
+        // Uses Direct2D IGeometrySource2D: no Win2D NuGet needed.
         static void ApplyPolygonClip(
             Microsoft.UI.Xaml.UIElement element,
             Double elementWidth, Double elementHeight,

@@ -11,7 +11,7 @@ export class DockLayout extends DockLayoutBase {
 
 	constructor() {
 		super();
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
+		// WinRT deferred to createNativeView(): keeps constructor pure-JS.
 	}
 
 	public createNativeView(): Microsoft.UI.Xaml.Controls.Canvas {

@@ -192,7 +192,7 @@ export class NetworkDomainDebugger implements inspectorCommands.NetworkDomain.Ne
         this.events = new inspectorCommands.NetworkDomain.NetworkFrontend();
 
         // By default start enabled because we can miss the "enable" event when
-        // running with `--debug-brk` -- the frontend will send it before we've been created
+        // running with `--debug-brk`; the frontend will send it before we've been created
         this.enable();
     }
 

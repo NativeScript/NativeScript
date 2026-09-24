@@ -92,7 +92,7 @@ export class WebView extends WebViewBase {
 
 	public _loadUrl(src: string): void {
 		// knownFolders.currentApp().path is a Windows backslash path, so web-view-common builds a
-		// file:// URI containing backslashes that encodeURI turns into %5C — WebView2 can't resolve
+		// file:// URI containing backslashes that encodeURI turns into %5C: WebView2 can't resolve
 		// it. Normalise back/encoded-back slashes to forward slashes for local file URIs.
 		if (/^file:/i.test(src)) {
 			src = src.replace(/%5C/gi, '/').replace(/\\/g, '/');

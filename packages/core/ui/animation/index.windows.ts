@@ -50,12 +50,12 @@ function _clearActiveStoryboard(native: object, property: string): void {
 const num = (v: any, d = 0) => (typeof v === 'number' ? v : (v && typeof v.value === 'number' ? v.value : (v && typeof v.x === 'number' ? v.x : d)));
 
 // Duration struct: { TimeSpan: { Duration: <100ns ticks> }, Type: 1 (DurationType.TimeSpan) }.
-// Keep ticks as a JS number — the struct marshaler uses number_value; a BigInt would read as 0.
+// Keep ticks as a JS number. The struct marshaler uses number_value; a BigInt would read as 0.
 function _duration(ms: number): Microsoft.UI.Xaml.Duration {
 	return { TimeSpan: { Duration: Math.max(0, Math.round(ms)) * 10000 }, Type: 1 } as never;
 }
 
-// Easing function objects are stateless in XAML — the same CubicEase/BackEase can be shared
+// Easing function objects are stateless in XAML. The same CubicEase/BackEase can be shared
 // across all concurrent animations that use the same curve. Cache per curve name so 100
 // simultaneous animations only pay the WinRT construction cost once.
 const _xamlEasingCache = new Map<string, any>();
@@ -69,7 +69,7 @@ export class Animation extends AnimationBase {
 	private _activeCancels: Array<() => void> = [];
 
 	// Maps a NativeScript curve to a XAML easing function; returns null for linear/unknown (native linear).
-	// Results are cached in the module-level _xamlEasingCache — easing objects are stateless in XAML
+	// Results are cached in the module-level _xamlEasingCache. Easing objects are stateless in XAML
 	// so 100 animations with the same curve share one object instead of paying 100× WinRT construction.
 	private _xamlEasing(curve: any): any {
 		try {
@@ -191,7 +191,7 @@ export class Animation extends AnimationBase {
 								try { native.Background = brush; } catch (_e) {}
 							}
 						}
-						// Resources.Insert wires Button VSM theme brushes — only needed for actual Button
+						// Resources.Insert wires Button VSM theme brushes. Only needed for actual Button
 						// controls. `'IsDefault' in native` is a free prototype check (no WinRT getter).
 						if ('IsDefault' in native) {
 							try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_e) {}
@@ -201,7 +201,7 @@ export class Animation extends AnimationBase {
 						// Use ColorAnimationUsingKeyFrames + EasingColorKeyFrame/LinearColorKeyFrame instead
 						// of ColorAnimation.  ColorAnimation.To requires IReference<Windows.UI.Color> (a COM
 						// nullable wrapper) which the JS→Rust bridge cannot produce from a plain JS object.
-						// EasingColorKeyFrame.Value is a plain Windows.UI.Color struct — the bridge handles
+						// EasingColorKeyFrame.Value is a plain Windows.UI.Color struct. The bridge handles
 						// it via append_struct_object_bytes without any COM boxing.
 						const cauk = new A.ColorAnimationUsingKeyFrames();
 						cauk.EnableDependentAnimation = true;
@@ -266,7 +266,7 @@ export class Animation extends AnimationBase {
 			if (del2 > 0) setTimeout(begin, del2); else begin();
 
 			// Safety net so the promise can't hang if Completed never fires (element detached, etc.).
-			// Skipped for infinite animations — those resolve only via cancel().
+			// Skipped for infinite animations. Those resolve only via cancel().
 			if (!infinite) {
 				const total = del2 + dur2 * Math.max(1, reps) + 400;
 				safety = setTimeout(finalize, total);
@@ -278,7 +278,7 @@ export class Animation extends AnimationBase {
 	// Instead of spawning N storyboards (one per target), this builds ONE Storyboard with N
 	// ColorAnimations, each having a BeginTime for its cascade delay.  This reduces WinRT
 	// crossings from ~8N to ~5N+2 and, more importantly, cuts the number of Storyboard.Begin()
-	// calls from N to 1 — eliminating the ~4ms-per-tick setTimeout storm on large batches.
+	// calls from N to 1, eliminating the ~4ms-per-tick setTimeout storm on large batches.
 	//
 	// BeginTime is a nullable TimeSpan (IReference<TimeSpan> in ABI).  Pass null for del=0
 	// (immediate start) and Windows.Foundation.PropertyValue.CreateTimeSpan() to box a
@@ -325,17 +325,17 @@ export class Animation extends AnimationBase {
 
 			try {
 				// ColorAnimationUsingKeyFrames: EasingColorKeyFrame.Value is a plain Windows.UI.Color
-				// struct — no IReference<Color> boxing needed (unlike ColorAnimation.To).
+				// struct: no IReference<Color> boxing needed (unlike ColorAnimation.To).
 				const cauk = new A.ColorAnimationUsingKeyFrames();
 				cauk.EnableDependentAnimation = true;
-				// BeginTime is IReference<TimeSpan> — box via PropertyValue for non-zero delays.
+				// BeginTime is IReference<TimeSpan>: box via PropertyValue for non-zero delays.
 				// For del2=0, leave unset (null → immediate start).
 				if (del2 > 0) {
 					try {
 						const ts = Windows.Foundation.PropertyValue.CreateTimeSpan({ Duration: del2 * 10000 } as any);
 						cauk.BeginTime = ts as never;
 					} catch (_e) {
-						// PropertyValue unavailable — animation will start at t=0 instead of del2
+						// PropertyValue unavailable: animation will start at t=0 instead of del2
 					}
 				}
 				let kf: any;
@@ -405,7 +405,7 @@ export class Animation extends AnimationBase {
 				} else {
 					const anims = this._propertyAnimations;
 					// Fast path: all parallel animations target backgroundColor with finite iterations.
-					// Merge into one Storyboard with per-animation BeginTime — single Begin() call,
+					// Merge into one Storyboard with per-animation BeginTime. Single Begin() call,
 					// no per-animation setTimeout storm, compositor handles all cascade timing.
 					const canBatch = anims.length > 1 && anims.every(a =>
 						a.property === Properties.backgroundColor &&
@@ -466,7 +466,7 @@ export class Animation extends AnimationBase {
 			if (native) {
 				this._startStoryboardForProperty(native, property, to, duration, delay, '', target, animation.curve, iterations).then(() => resolve());
 			} else {
-				// No native view yet — apply final value immediately so the animation doesn't hang.
+				// No native view yet. Apply final value immediately so the animation doesn't hang.
 				_applyFinalValue(target, property, to);
 				resolve();
 			}

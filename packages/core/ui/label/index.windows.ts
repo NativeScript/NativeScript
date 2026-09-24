@@ -4,7 +4,7 @@ import { booleanConverter } from '../core/view-base';
 
 @CSSType('Label')
 export class Label extends TextBase {
-	// nativeViewProtected is the Border wrapper — carries Background, CornerRadius, and border via CompositionBorderHandler.
+	// nativeViewProtected is the Border wrapper. Carries Background, CornerRadius, and border via CompositionBorderHandler.
 	nativeViewProtected: Microsoft.UI.Xaml.Controls.Border;
 	private _border: Microsoft.UI.Xaml.Controls.Border;
 	private _textBlock: Microsoft.UI.Xaml.Controls.TextBlock;

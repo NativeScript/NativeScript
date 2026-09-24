@@ -1,4 +1,4 @@
-// Stubs to avoid bundler warnings on Windows — mirrors helpers.ios.ts shape.
+// Stubs to avoid bundler warnings on Windows. Mirrors helpers.ios.ts shape.
 export const updateContentDescription = (_view: any, _forceUpdate?: boolean): string | null => null;
 
 export function applyContentDescription(_view: any, _forceUpdate?: boolean) {

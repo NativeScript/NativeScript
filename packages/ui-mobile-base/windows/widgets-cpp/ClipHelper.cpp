@@ -1,10 +1,10 @@
 #include "pch.h"
-// Direct2D for polygon clip geometry — included here (not in pch.h) to avoid
+// Direct2D for polygon clip geometry. Included here (not in pch.h) to avoid
 // combaseapi.h redeclaring DllCanUnloadNow as HRESULT in exports.cpp.
 #include <d2d1.h>
 #pragma comment(lib, "d2d1.lib")
 #include <winrt/Windows.Graphics.h>
-// ABI::Windows::Graphics::IGeometrySource2DInterop — the bridge CompositionPath uses to pull an
+// ABI::Windows::Graphics::IGeometrySource2DInterop: the bridge CompositionPath uses to pull an
 // ID2D1Geometry out of a WinRT IGeometrySource2D.
 #include <windows.graphics.interop.h>
 #include "ClipHelper.h"

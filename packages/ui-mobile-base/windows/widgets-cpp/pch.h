@@ -5,7 +5,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 // xaml_typename<T>() (used to register attached DependencyProperties) returns the universal
-// Windows.UI.Xaml.Interop.TypeName — Microsoft.UI.Xaml.DependencyProperty.RegisterAttached takes it.
+// Windows.UI.Xaml.Interop.TypeName: Microsoft.UI.Xaml.DependencyProperty.RegisterAttached takes it.
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>

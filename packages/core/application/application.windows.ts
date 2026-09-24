@@ -34,6 +34,26 @@ export class WindowsApplication extends ApplicationCommon {
 
 	run(entry?: string | NavigationEntry): void {
 		if (this.started) {
+			// Vite HMR dev boot: the placeholder already started the lifecycle, and the app's own
+			// run() can come from a separate HTTP-ESM core realm the placeholder's patch can't
+			// reach. Replace the placeholder root on the primary Application instead of throwing.
+			const g = globalThis as any;
+			if (g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__ || g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__) {
+				if (entry) {
+					const resolvedEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+					setTimeout(() => {
+						try {
+							const primaryApp = g.Application && typeof g.Application.resetRootView === 'function' ? g.Application : this;
+							primaryApp.resetRootView(resolvedEntry);
+						} catch (e) {
+							if (__DEV__) console.warn('[app-windows] deferred resetRootView failed:', e);
+						}
+						delete g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
+						delete g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
+					}, 0);
+				}
+				return;
+			}
 			throw new Error('Application is already started.');
 		}
 
@@ -48,12 +68,20 @@ export class WindowsApplication extends ApplicationCommon {
 	}
 
 
-	private setWindowContent(view?: View): void {
-		if (this._rootView) {
-			this._rootView._onRootViewReset();
-		}
-		const rootView = this.createRootView(view, true);
+	resetRootView(entry?: NavigationEntry | string): void {
+		super.resetRootView(entry);
+		this.setWindowContent(undefined, false);
+	}
+
+	private setWindowContent(view?: View, fireLaunchEvent = true): void {
+		const rootView = this.createRootView(view, fireLaunchEvent);
 		if (!rootView) return;
+
+		const previousRoot = this._rootView;
+		if (previousRoot && previousRoot !== rootView) {
+			previousRoot.callUnloaded();
+			previousRoot._onRootViewReset();
+		}
 
 		this._rootView = rootView;
 		setRootView(rootView);
@@ -215,7 +243,7 @@ export class WindowsApplication extends ApplicationCommon {
 	}
 
 	// Desktop windows resize continuously, so width-based @media rules and matchMedia listeners must
-	// re-evaluate on resize — not just on portrait/landscape flips. setOrientation() short-circuits
+	// re-evaluate on resize: not just on portrait/landscape flips. setOrientation() short-circuits
 	// when the orientation value is unchanged, so we additionally force a CSS/media re-evaluation
 	// when only the dimensions changed.
 	private _applyResize(): void {
@@ -231,7 +259,7 @@ export class WindowsApplication extends ApplicationCommon {
 		this._lastResizeW = w;
 		this._lastResizeH = h;
 
-		// Capture the page variant currently on screen BEFORE the orientation handling below — the
+		// Capture the page variant currently on screen BEFORE the orientation handling below. The
 		// framework resets the module resolver on orientationChanged (application-common), so reading
 		// it afterwards would already reflect the NEW metrics, hiding the change.
 		const displayed = this._currentPageVariant();
@@ -243,7 +271,7 @@ export class WindowsApplication extends ApplicationCommon {
 		this.setOrientation(newOrientation);
 
 		if (!orientationChanged) {
-			// Same orientation but dimensions changed — re-match @media against the (live) Screen
+			// Same orientation but dimensions changed: re-match @media against the (live) Screen
 			// metrics and notify matchMedia listeners (which key off orientationChangedEvent).
 			const rootView = this.getRootView();
 			if (rootView) {
@@ -297,7 +325,7 @@ export class WindowsApplication extends ApplicationCommon {
 			return;
 		}
 		const { frame, moduleName } = displayed;
-		// Resolve against the CURRENT (resized) metrics via a throwaway resolver — independent of the
+		// Resolve against the CURRENT (resized) metrics via a throwaway resolver. Independent of the
 		// global resolver's state (which the orientation handler may or may not have reset).
 		const ctx = {
 			width: Screen.mainScreen.widthDIPs,
@@ -314,7 +342,7 @@ export class WindowsApplication extends ApplicationCommon {
 			return;
 		}
 		if (candidateXml === displayed.xml && candidateJs === displayed.js) {
-			return; // no qualifier boundary crossed — keep the current page
+			return; // no qualifier boundary crossed. Keep the current page
 		}
 
 		// Variant changed: point the global resolver at the new metrics so Builder resolves the new
@@ -363,3 +391,6 @@ setApplicationPropertiesCallback(() => {
 		systemAppearance: Application.systemAppearance(),
 	};
 });
+
+export * from './application-common';
+export * from './application-interfaces';

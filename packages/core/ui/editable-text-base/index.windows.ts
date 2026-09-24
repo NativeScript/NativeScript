@@ -51,7 +51,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		let value = rawText;
 		const formatter = this.valueFormatter;
 		if (typeof formatter === 'function') {
-			// valueFormatter is user code — guard it so a throw can't break native input.
+			// valueFormatter is user code. Guard it so a throw can't break native input.
 			let formatted = rawText;
 			try {
 				formatted = formatter(rawText);
@@ -77,7 +77,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		textProperty.nativeValueChange(this, value);
 	}
 
-	//@ts-ignore — guard native writes so our own TextChanged handler ignores them.
+	//@ts-ignore: guard native writes so our own TextChanged handler ignores them.
 	[textProperty.setNative](value: string | symbol) {
 		this._changeFromCode = true;
 		try {
@@ -119,7 +119,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 	[returnKeyTypeProperty.setNative](_value: any) {}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[editableProperty.setNative](value: boolean) {
 		// IsReadOnly only exists on TextBox; on a (secure) PasswordBox this is a no-op.
 		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
@@ -141,7 +141,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 	// Hint colour. Set PlaceholderForeground and also override the TextControlPlaceholderForeground*
 	// theme brushes (the visual states re-apply them, so the property alone only holds at rest).
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[placeholderColorProperty.setNative](value: Color | null) {
 		const nativeView = this.nativeViewProtected as any;
 		if (!nativeView) {
@@ -165,7 +165,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[maxLengthProperty.setNative](value: number) {
 		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
 		if (typeof nativeView.MaxLength !== 'undefined') {

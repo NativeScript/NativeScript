@@ -38,7 +38,7 @@ export class GridLayout extends GridLayoutBase {
 
     constructor() {
         super();
-        // WinRT deferred to createNativeView() — keeps constructor pure-JS.
+        // WinRT deferred to createNativeView(): keeps constructor pure-JS.
     }
 
     public createNativeView() {
@@ -60,7 +60,7 @@ export class GridLayout extends GridLayoutBase {
     }
 
     // GridLength is a plain value struct {Value: f64, GridUnitType: i32} in WinRT ABI.
-    // Pass as a plain JS object via the bridge's append_struct_object_bytes path — same
+    // Pass as a plain JS object via the bridge's append_struct_object_bytes path. Same
     // technique as Windows.UI.Color / Thickness. Skips the GridLengthHelper static WinRT
     // call that was previously required (constructing GridLength via `new` silently fails).
     // WinUI GridUnitType enum: Auto=0, Pixel=1, Star=2.

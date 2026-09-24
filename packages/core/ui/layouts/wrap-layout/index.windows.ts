@@ -15,7 +15,7 @@ export class WrapLayout extends WrapLayoutBase {
 
 	constructor() {
 		super();
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
+		// WinRT deferred to createNativeView(): keeps constructor pure-JS.
 	}
 
 	createNativeView(): Microsoft.UI.Xaml.Controls.Canvas {
@@ -81,7 +81,7 @@ export class WrapLayout extends WrapLayoutBase {
 	[orientationProperty.setNative](_v: 'horizontal' | 'vertical') {
 		this._runWrapLayout();
 	}
-	//@ts-ignore — itemWidth/itemHeight use valueChanged for effective* but we still relayout natively
+	//@ts-ignore: itemWidth/itemHeight use valueChanged for effective* but we still relayout natively
 	[itemWidthProperty.setNative]() {
 		this._runWrapLayout();
 	}

@@ -25,7 +25,7 @@ export class ImageAsset extends ImageAssetBase {
 		try {
 			// Use _windows first, fall back to base-class nativeImage (set via asset.nativeImage = x).
 			// fromAsset dispatches on type: string paths go through fromFile, StorageFile objects
-			// go through OpenAsync — no conversion needed here.
+			// go through OpenAsync: no conversion needed here.
 			const image = this._windows ?? this.nativeImage;
 			if (image == null) {
 				callback(null, new Error('ImageAsset: no image data'));

@@ -24,7 +24,7 @@
 	height: 100%;
 }
 
-/* Simple shadow/gradient fallbacks — some Windows hosts may not fully support composition */
+/* Simple shadow/gradient fallbacks: some Windows hosts may not fully support composition */
 .shadow {
 	box-shadow: 0 2 6 rgba(0,0,0,0.2);
 	border-radius: 4;

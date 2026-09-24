@@ -15,7 +15,7 @@ export class ScrollView extends ScrollViewBase {
 
 	constructor() {
 		super();
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
+		// WinRT deferred to createNativeView(): keeps constructor pure-JS.
 	}
 
 	public createNativeView() {

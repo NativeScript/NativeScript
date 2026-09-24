@@ -21,7 +21,7 @@ export class Frame extends FrameBase {
 	private _pageHost: Microsoft.UI.Xaml.Controls.Grid;
 	// Backward-compat alias so _navigateCore and _goBackCore work unchanged.
 	private get _windows(): Microsoft.UI.Xaml.Controls.Grid { return this._pageHost; }
-	// Plain Grid (not CommandBar) — CommandBar constrains its Content to the left side via its
+	// Plain Grid (not CommandBar): CommandBar constrains its Content to the left side via its
 	// template's ContentPresenter, preventing the title's Star column from actually filling the bar.
 	private _topBar: Microsoft.UI.Xaml.Controls.Grid | null = null;
 	private _backButton: Microsoft.UI.Xaml.Controls.Button | null = null;
@@ -39,7 +39,7 @@ export class Frame extends FrameBase {
 	// ActionBar `color` brush for the current page; applied to title, back button and action items.
 	private _abFgBrush: Microsoft.UI.Xaml.Media.SolidColorBrush | null = null;
 	// LRU native-view cache. Keeps the last N pages' XAML trees alive so navigating
-	// back — or forward — to a previously-visited page skips the entire view-creation +
+	// back (or forward) to a previously-visited page skips the entire view-creation +
 	// applyAllNativeSetters pipeline. This mirrors what iOS UINavigationController and
 	// Android FragmentManager provide natively: visited pages stay in memory until evicted.
 	// Map insertion order = arrival order; oldest entry is keys().next().value (LRU eviction).
@@ -194,13 +194,13 @@ export class Frame extends FrameBase {
 	}
 
 	private _setupTransitions(): void {
-		// ContentControl doesn't support ContentTransitions — transitions skipped.
+		// ContentControl doesn't support ContentTransitions. Transitions skipped.
 	}
 
 	// Override frame-common._removeEntry to cache module-based pages instead of tearing
 	// them down. The default path calls frame._removeView(page) → _removeViewCore →
 	// _tearDownUI, which nulls nativeViewProtected and _context. Cached pages skip
-	// _tearDownUI entirely — their native views remain alive in memory so re-navigating
+	// _tearDownUI entirely: their native views remain alive in memory so re-navigating
 	// to the same module path is instant (no view creation, no applyAllNativeSetters).
 	public _removeEntry(removed: any): void {
 		const page = removed?.resolvedPage;
@@ -220,7 +220,7 @@ export class Frame extends FrameBase {
 					}, 0);
 				}
 			}
-			// else: already torn down — nothing to do.
+			// else: already torn down. Nothing to do.
 		}
 		if (removed) removed.resolvedPage = null;
 	}
@@ -239,7 +239,7 @@ export class Frame extends FrameBase {
 		}
 		this._nativePageCache.set(moduleName, page);
 		// Fire JS unloaded lifecycle (CSS transitions + observers need this).
-		// _tearDownUI is deliberately NOT called — native views stay alive.
+		// _tearDownUI is deliberately NOT called. Native views stay alive.
 		try { (page as any).callUnloaded?.(); } catch (_e) { }
 	}
 
@@ -266,7 +266,7 @@ export class Frame extends FrameBase {
 			this._processNavigationQueue(entry.resolvedPage);
 		} else {
 			// No resolved page (module failed to load) or page already current.
-			// _executingContext was set by performNavigation — must clear it unconditionally or
+			// _executingContext was set by performNavigation. Must clear it unconditionally or
 			// all future navigations are permanently blocked.
 			this._executingContext = null;
 			const queue = (this as any)._navigationQueue as Array<any>;
@@ -279,7 +279,7 @@ export class Frame extends FrameBase {
 	public _navigateCore(backstackEntry: BackstackEntry) {
 		// Restore cached native page before frame-common resolves to a freshly-created one.
 		// performNavigation sets backstackEntry.resolvedPage via _resolvePageFromEntry (pure JS,
-		// no WinRT), then calls _navigateCore — we replace the just-created page with the cached
+		// no WinRT), then calls _navigateCore. We replace the just-created page with the cached
 		// one here. The cached page's _context is intact, so setCurrent → _addView → _setupUI
 		// returns early (page.frame === this), keeping all native views alive with zero WinRT cost.
 		const moduleName = (backstackEntry as any)?.entry?.moduleName;
@@ -293,7 +293,7 @@ export class Frame extends FrameBase {
 
 		const fromPage = this.currentPage as Page; // capture before setCurrent swaps it
 		// Capture pending queue depth before setCurrent drains it. If taps arrived faster than
-		// animations finish, queue.length > 1 here — animate only the final destination.
+		// animations finish, queue.length > 1 here. Animate only the final destination.
 		const pendingAhead = ((this as any)._navigationQueue?.length ?? 1) - 1;
 		super._navigateCore(backstackEntry);
 
@@ -320,7 +320,7 @@ export class Frame extends FrameBase {
 		}
 
 		this._setPageContent(page.nativeViewProtected);
-		// Skip animation for intermediate navigations — stacking 250ms Storyboards causes
+		// Skip animation for intermediate navigations. Stacking 250ms Storyboards causes
 		// the app to appear frozen while the queue drains.
 		const effectiveDur = pendingAhead > 0 ? 0 : durMs;
 		// Default to slide; fade only when explicitly requested.
@@ -333,7 +333,7 @@ export class Frame extends FrameBase {
 	}
 
 	// Captures each FROM-element's rect before the page swap, then does a normal _setPageContent swap
-	// and animates only the incoming elements' transforms. Does NOT keep both pages mounted — that
+	// and animates only the incoming elements' transforms. Does NOT keep both pages mounted. That
 	// earlier approach collided with frame page management and froze later navigation.
 	private _runSharedTransition(fromPage: Page, toPage: Page, transitionInst: any, durMs: number): boolean {
 		try {
@@ -364,7 +364,7 @@ export class Frame extends FrameBase {
 			}
 			if (pairs.length === 0) return false;
 
-			// Normal page swap — frame keeps full control of the host.
+			// Normal page swap: frame keeps full control of the host.
 			this._setPageContent(toNative);
 			try { host.UpdateLayout(); } catch (_e) { }
 
@@ -388,7 +388,7 @@ export class Frame extends FrameBase {
 	// Override _removeViewCore to decouple the JS lifecycle from the native teardown.
 	// ViewBase._removeViewCore calls both unloadView (JS) and _tearDownUI (native) synchronously.
 	// _tearDownUI on a 40-view page fires ~100 WinRT calls (disposeNativeView + Children.RemoveAt
-	// per child) while the page is still on screen — this blocks the animation start by 10-20ms.
+	// per child) while the page is still on screen. This blocks the animation start by 10-20ms.
 	// Fix: fire callUnloaded() synchronously (CSS animations + observers depend on it), but defer
 	// _tearDownUI to a setTimeout(0). By then _setPageContent has already removed the root from
 	// _pageHost, so the WinRT calls operate on a detached subtree with no XAML layout cascade.
@@ -405,7 +405,7 @@ export class Frame extends FrameBase {
 	// subtree with _suspendNativeUpdatesCount set (every setNative queued, never applied). callLoaded()
 	// flips isLoaded and flushes the queued setNatives via _resumeNativeUpdates.
 	// Early-exit: if a view is already loaded, NativeScript guarantees its entire subtree is also
-	// loaded — skip the O(N) recursion entirely. This is the common case on back navigation.
+	// loaded: skip the O(N) recursion entirely. This is the common case on back navigation.
 	private _ensureLoaded(view: any): void {
 		if (!view || view.isLoaded) return;
 		try {
@@ -472,7 +472,7 @@ export class Frame extends FrameBase {
 		}
 	}
 
-	// Slides in from right (forward) or left (back). Uses TranslateTransform.X — CompositeTransform.TranslateX
+	// Slides in from right (forward) or left (back). Uses TranslateTransform.X: CompositeTransform.TranslateX
 	// did not animate reliably in this host.
 	private _slideIn(native: Microsoft.UI.Xaml.UIElement, fromRight: boolean, durationMs: number): void {
 		if (durationMs <= 0) {

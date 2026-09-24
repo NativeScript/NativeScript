@@ -6,7 +6,7 @@ export class Color extends ColorBase implements IColor {
 
     get windows(): Windows.UI.Color {
         if (!this._windows) {
-            // Windows.UI.Color is a plain {A,R,G,B} struct — bridge reads fields directly,
+            // Windows.UI.Color is a plain {A,R,G,B} struct. Bridge reads fields directly,
             // no need to round-trip through ColorHelper.FromArgb.
             this._windows = { A: Math.round(this.a), R: Math.round(this.r), G: Math.round(this.g), B: Math.round(this.b) } as unknown as Windows.UI.Color;
         }
@@ -14,7 +14,7 @@ export class Color extends ColorBase implements IColor {
     }
 
     get windowsArgb(): number {
-        // _argb already stores the packed unsigned ARGB integer — no WinRT round-trip needed.
+        // _argb already stores the packed unsigned ARGB integer. No WinRT round-trip needed.
         return this.argb;
     }
 

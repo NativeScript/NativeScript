@@ -8,7 +8,7 @@ namespace winrt::NativeScript::Widgets::implementation
     {
         FlexboxLayout() = default;
 
-        // ── Container properties (changing any re-measures) ──────────────────
+        // Container properties (changing any re-measures)
         int32_t FlexDirection() const noexcept { return m_flexDirection; }
         void FlexDirection(int32_t v) { if (m_flexDirection != v) { m_flexDirection = v; InvalidateMeasure(); } }
 
@@ -30,11 +30,11 @@ namespace winrt::NativeScript::Widgets::implementation
         double RowGap() const noexcept { return m_rowGap; }
         void RowGap(double v) { if (m_rowGap != v) { m_rowGap = v; InvalidateMeasure(); } }
 
-        // ── Layout ───────────────────────────────────────────────────────────
+        // Layout
         winrt::Windows::Foundation::Size MeasureOverride(winrt::Windows::Foundation::Size const& availableSize);
         winrt::Windows::Foundation::Size ArrangeOverride(winrt::Windows::Foundation::Size const& finalSize);
 
-        // ── Attached properties (per child) — static accessors used by JS ────
+        // Attached properties (per child): static accessors used by JS
         static int32_t GetOrder(winrt::Microsoft::UI::Xaml::UIElement const& e);
         static void SetOrder(winrt::Microsoft::UI::Xaml::UIElement const& e, int32_t v);
         static double GetFlexGrow(winrt::Microsoft::UI::Xaml::UIElement const& e);
@@ -50,7 +50,7 @@ namespace winrt::NativeScript::Widgets::implementation
 
     private:
         // Lazily-registered attached DependencyProperties (one-time, thread-safe via function-local
-        // statics). Not projected — internal storage + change notification only.
+        // statics). Not projected: internal storage + change notification only.
         static winrt::Microsoft::UI::Xaml::DependencyProperty OrderProperty();
         static winrt::Microsoft::UI::Xaml::DependencyProperty FlexGrowProperty();
         static winrt::Microsoft::UI::Xaml::DependencyProperty FlexShrinkProperty();
@@ -76,7 +76,7 @@ namespace winrt::NativeScript::Widgets::implementation
         {
             winrt::Microsoft::UI::Xaml::UIElement Element{ nullptr };
             int32_t OriginalIndex{ 0 };
-            int32_t Order{ 1 };            // cached from DependencyProperty — avoids per-comparison WinRT reads
+            int32_t Order{ 1 };            // cached from DependencyProperty: avoids per-comparison WinRT reads
             double FlexGrow{ 0.0 };
             double FlexShrink{ 1.0 };
             double FlexBasisPercent{ -1.0 };

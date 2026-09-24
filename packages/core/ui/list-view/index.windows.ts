@@ -31,15 +31,15 @@ interface Row {
 }
 
 // Virtualized + recycling ListView (RecyclerView/UITableView model).
-// ItemsSource is a native IVector<IInspectable> (NSWinRT.makeItemsSource) — JS arrays can't marshal to ItemsSource.
+// ItemsSource is a native IVector<IInspectable> (NSWinRT.makeItemsSource): JS arrays can't marshal to ItemsSource.
 // ChoosingItemContainer supplies our own ListViewItem containers so WinUI virtualizes + recycles them, avoiding the
-// DataTemplate ContentTemplateRoot typing problem. ContainerContentChanging binds each NS view as a ViewHolder —
-// reusing on rebind, building only on first use or template change.
+// DataTemplate ContentTemplateRoot typing problem. ContainerContentChanging binds each NS view as a ViewHolder.
+// Reusing on rebind, building only on first use or template change.
 export class ListView extends ListViewBase {
 	nativeViewProtected!: Microsoft.UI.Xaml.Controls.ListView;
 
 	private _clickDelegate: Microsoft.UI.Xaml.Controls.ItemClickEventHandler | null = null;
-	// Held so their JS wrappers aren't GC'd — if collected, the events fire into dead callbacks and rows never bind.
+	// Held so their JS wrappers aren't GC'd. If collected, the events fire into dead callbacks and rows never bind.
 	private _choosingDelegate: any = null;
 	private _ccDelegate: any = null;
 	private _rows: Row[] = [];
@@ -47,7 +47,7 @@ export class ListView extends ListViewBase {
 	private _lastLoadMoreLen = -1;
 	private _cacheLengthSet = false;
 	// The observable index vector assigned to ItemsSource. Kept so growth can extend it in place
-	// (NSWinRT.extendItemsSource) — reading lv.ItemsSource back yields an untyped proxy without IVector methods.
+	// (NSWinRT.extendItemsSource): reading lv.ItemsSource back yields an untyped proxy without IVector methods.
 	private _itemsSource: any = null;
 	private _viewPool = new Map<string, View[]>();
 	private _active = new Set<View>();
@@ -64,7 +64,7 @@ export class ListView extends ListViewBase {
 		lv.HorizontalAlignment = 3; // Stretch
 		lv.HorizontalContentAlignment = 3;
 		lv.VerticalAlignment = 3;
-		// Kill the per-container entrance/reposition animations WinUI runs on realize — pointless work
+		// Kill the per-container entrance/reposition animations WinUI runs on realize. Pointless work
 		// per row in a recycling virtualized list.
 		try { lv.ItemContainerTransitions = new Microsoft.UI.Xaml.Media.Animation.TransitionCollection(); } catch (_e) {}
 
@@ -101,7 +101,7 @@ export class ListView extends ListViewBase {
 		if (!lv) return;
 		const ref = new WeakRef(this);
 
-		// ChoosingItemContainer/ContainerContentChanging are generic TypedEventHandlers — the runtime can't
+		// ChoosingItemContainer/ContainerContentChanging are generic TypedEventHandlers. The runtime can't
 		// derive their parameterized GUID from a plain assignment, so build them via asDelegate.
 		try {
 			this._choosingDelegate = NSWinRT.asDelegate(CHOOSING_TYPE, (_s: any, args: any) => {
@@ -180,8 +180,8 @@ export class ListView extends ListViewBase {
 	}
 
 	// Append-only growth (infinite-scroll loadMore appends a page): extend the existing observable
-	// ItemsSource in place so WinUI adds the new rows at the bottom — preserving scroll and realized cells
-	// — instead of replacing the source (which reset scroll to top and re-realized every cell). Returns
+	// ItemsSource in place so WinUI adds the new rows at the bottom. Preserving scroll and realized cells
+	// instead of replacing the source (which reset scroll to top and re-realized every cell). Returns
 	// false (→ full rebuild) for any non-append change (replace / filter / reorder / shrink).
 	private _tryAppendRows(lv: any): boolean {
 		const extend = (typeof NSWinRT !== 'undefined') ? (NSWinRT as any).extendItemsSource : null;
@@ -192,7 +192,7 @@ export class ListView extends ListViewBase {
 		const oldCount = this._rows.length;
 		if (oldCount === 0 || newCount <= oldCount) return false;
 
-		// Only an append if the existing prefix is unchanged (same data refs) — otherwise it's a
+		// Only an append if the existing prefix is unchanged (same data refs). Otherwise it's a
 		// replace/filter and must go through the full rebuild.
 		for (let i = 0; i < oldCount; i++) {
 			const data = (this as any)._getDataItem ? (this as any)._getDataItem(i) : items[i];
@@ -217,7 +217,7 @@ export class ListView extends ListViewBase {
 	// Replace the data set (filter / search / sort / reorder) WITHOUT tearing down realized cells: a full
 	// _teardown bumps the generation and rebuilds every visible cell (element creation is the expensive
 	// part on Windows). Instead keep the views, pool and generation, rebuild only the row map, and reset
-	// the index ItemsSource — WinUI re-realizes the containers and rebinds their existing cells.
+	// the index ItemsSource: WinUI re-realizes the containers and rebinds their existing cells.
 	// Returns false (→ full rebuild) for the sectioned case or if no items source can be made.
 	private _tryReplaceRows(lv: any): boolean {
 		const make = (typeof NSWinRT !== 'undefined') ? (NSWinRT as any).makeItemsSource : null;
@@ -282,7 +282,7 @@ export class ListView extends ListViewBase {
 			this._itemsSource = typeof NSWinRT !== 'undefined' && NSWinRT.makeItemsSource ? NSWinRT.makeItemsSource(rows.length) : null;
 			lv.ItemsSource = this._itemsSource;
 		} catch (_e) {}
-		// loadMoreItems fires from _onContainerContentChanging on scroll, not here — firing on every
+		// loadMoreItems fires from _onContainerContentChanging on scroll, not here. Firing on every
 		// items-set would cascade (each appended page would immediately request the next).
 		this._lastLoadMoreLen = -1;
 	}
@@ -372,7 +372,7 @@ export class ListView extends ListViewBase {
 		(container as any).__ns_row_index = idx;
 
 		// Scroll-driven loadMoreItems: when a container within LOAD_MORE_THRESHOLD rows of the end is
-		// realized, request the next page — once per data-set length so it never cascades.
+		// realized, request the next page. Once per data-set length so it never cascades.
 		const total = this._rows.length;
 		if (total > 0 && idx >= total - LOAD_MORE_THRESHOLD && this._lastLoadMoreLen !== total) {
 			this._lastLoadMoreLen = total;
@@ -384,20 +384,20 @@ export class ListView extends ListViewBase {
 		let view = (container as any).__ns_view as View;
 		const stale = !!view && ((view as any).__ns_gen !== this._generation || (view as any).__ns_templateKey !== row.templateKey);
 
-		// Fast path — container already displays this exact row with a live view: do nothing. WinUI
+		// Fast path: container already displays this exact row with a live view: do nothing. WinUI
 		// re-raises ContainerContentChanging for the SAME item on every layout / scroll-settle / re-measure
 		// pass, not just on genuine recycle; without this guard each re-fires itemLoading and re-binds the
 		// cell, starving layout during a fling (blank rows, dropped frames). Bind only when data changed.
 		if (view && !stale && (container as any).__ns_boundData === row.data) {
 			const boundNative = (view as any)?.nativeViewProtected;
-			// WinUI can null a reused container's Content even when we keep the view — restore it cheaply.
+			// WinUI can null a reused container's Content even when we keep the view. Restore it cheaply.
 			try { if (boundNative && container.Content !== boundNative) container.Content = boundNative; } catch (_e) {}
 			try { container.IsHitTestVisible = !row.header; } catch (_e) {}
 			try { args.Handled = true; } catch (_e) {}
 			return;
 		}
 
-		// View currently hosted by this container (null once stale) — lets us tell a plain rebind, where
+		// View currently hosted by this container (null once stale). Lets us tell a plain rebind, where
 		// _bind hands back the SAME view, from a real attach.
 		const attachedView = stale ? null : view;
 		if (stale) {
@@ -477,7 +477,7 @@ export class ListView extends ListViewBase {
 			const t = this._templateByKey(key);
 			try { view = t?.createView() ?? null; } catch (_e) {}
 			// No view from the template (e.g. nativescript-vue supplies the cell from its itemLoading
-			// handler instead) — _bind defers to itemLoading and only then falls back to default content.
+			// handler instead): _bind defers to itemLoading and only then falls back to default content.
 		}
 		if (!view) {
 			return null;
@@ -540,7 +540,7 @@ export class ListView extends ListViewBase {
 	}
 
 	private _teardown(): void {
-		// Invalidate any views still referenced by live containers — the generation guard in
+		// Invalidate any views still referenced by live containers. The generation guard in
 		// _onContainerContentChanging will discard them instead of reusing torn-down views.
 		this._generation++;
 		for (const v of this._active) {
@@ -589,7 +589,7 @@ export class ListView extends ListViewBase {
 		this.refresh();
 	}
 
-	// Granular ObservableArray updates — edit `_rows` and the native index ItemsSource in place (each op
+	// Granular ObservableArray updates: edit `_rows` and the native index ItemsSource in place (each op
 	// fires VectorChanged → WinUI realizes/drops only the touched containers), preserving scroll and every
 	// other realized cell. Anything we can't map to a reliable position (sectioned list, missing source,
 	// an insert whose prefix we can't verify, unknown action) falls back to refresh(). Safe because the
@@ -652,7 +652,7 @@ export class ListView extends ListViewBase {
 					if (newCount !== oldCount - removedCount + addedCount) break;
 					if (removedCount + addedCount > GRANULAR_MAX) { this._resetRowsAndSource(); return; } // bulk → one Reset
 					if (!NS.removeItemsSource || !NS.insertItemsSource || !this._prefixMatches(start)) break;
-					// Remove first, then insert at the same start — the intermediate state (both shrunk by
+					// Remove first, then insert at the same start. The intermediate state (both shrunk by
 					// removedCount) is self-consistent for any synchronous WinUI re-realize.
 					if (removedCount > 0) {
 						this._rows.splice(start, removedCount);
@@ -726,7 +726,7 @@ export class ListView extends ListViewBase {
 		}
 	}
 
-	// True when realized rows [0, n) still hold the same data refs as the mutated collection — i.e. the
+	// True when realized rows [0, n) still hold the same data refs as the mutated collection, i.e. the
 	// mutation was at/after `n`, so earlier positions line up and a granular edit at `n` is safe.
 	private _prefixMatches(n: number): boolean {
 		if (n > this._rows.length) return false;
@@ -757,7 +757,7 @@ export class ListView extends ListViewBase {
 	[separatorColorProperty.getDefault](): Color {
 		return null as unknown as Color;
 	}
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[separatorColorProperty.setNative](value: Color) {
 		this._separatorColor = value instanceof Color ? value.windows : null;
 		const lv = this.nativeViewProtected as any;

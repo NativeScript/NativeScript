@@ -482,3 +482,6 @@ export class FileSystemAccess {
 		}
 	}
 }
+
+// stub to avoid cross platform warning (file-system/index.ts imports it on every platform)
+export class FileSystemAccess29 extends FileSystemAccess {}

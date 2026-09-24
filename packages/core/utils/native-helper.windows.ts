@@ -117,7 +117,7 @@ export function isRealDevice(): boolean {
 
 export const windows = {};
 
-// These don't exist on Windows — stub them to warn in dev.
+// These don't exist on Windows. Stub them to warn in dev.
 export const ad = platformCheck('Utils.ad');
 export const android = platformCheck('Utils.android');
 export const ios = platformCheck('Utils.ios');

@@ -18,7 +18,7 @@ extern "C" __declspec(dllexport) int32_t __stdcall DllGetActivationFactory(void*
 }
 
 // pch.h's <unknwn.h> exposes the system combaseapi declaration of DllCanUnloadNow
-// (HRESULT, no dllexport), so this definition must match it exactly — the export is added
+// (HRESULT, no dllexport), so this definition must match it exactly. The export is added
 // via the linker pragma instead of __declspec(dllexport). PRIVATE keeps it out of the
 // import library (LNK4104), matching COM in-proc server convention.
 #pragma comment(linker, "/export:DllCanUnloadNow,PRIVATE")

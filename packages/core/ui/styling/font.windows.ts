@@ -35,7 +35,7 @@ function _registerFont(key: string, uri: string, score: number): void {
 // registers three lookup keys:
 //   filename stem      → uri#win32Family  (matches Android's filename-based lookup)
 //   win32 family       → uri#win32Family  (e.g. "Muli Black")
-//   typographic family → uri#typoFamily   (e.g. "Muli" — groups all weights)
+//   typographic family → uri#typoFamily   (e.g. "Muli"; groups all weights)
 function ensureFontsScan(): void {
     if (_scanStarted) return;
     _scanStarted = true;
@@ -107,7 +107,7 @@ function _resolveFamilyToken(raw: string): string | null {
     }
 
     if (f.includes('/') || f.includes('\\')) {
-        // Path (with or without #face) — normalise to ms-appx.
+        // Path (with or without #face): normalise to ms-appx.
         return /^ms-appx/i.test(f) ? f : 'ms-appx:///' + f.replace(/^\/+/, '');
     }
 

@@ -4,7 +4,7 @@ import { AbsoluteLayoutBase, leftProperty, topProperty } from './absolute-layout
 import { View } from '../../core/view';
 import { layout } from '../../../utils';
 
-// Canvas does NOT lay out its children — position comes entirely from Canvas.Left/Top attached properties.
+// Canvas does NOT lay out its children. Position comes entirely from Canvas.Left/Top attached properties.
 // (Previously this call was missing, causing all children to pile up at 0,0 and breaking the animation-curves demo.)
 // Prefer the static setter; fall back to SetValue(Canvas.*Property) if the runtime doesn't project it.
 function setCanvasAttachedProperty(prop: 'Left' | 'Top', native: any, value: number) {
@@ -45,7 +45,7 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
 
 	constructor() {
 		super();
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
+		// WinRT deferred to createNativeView(): keeps constructor pure-JS.
 	}
 
 	public createNativeView() {

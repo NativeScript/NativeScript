@@ -80,7 +80,7 @@ export class SearchBar extends SearchBarBase {
 	[textFieldHintColorProperty.setNative](value: Color) {
 		const native = this.nativeViewProtected;
 		if (!native || !(value instanceof Color)) return;
-		// AutoSuggestBox has no PlaceholderForeground — override inner TextBox theme brushes via Resources.
+		// AutoSuggestBox has no PlaceholderForeground. Override inner TextBox theme brushes via Resources.
 		const brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
 		try { (native as any).Resources.Insert('TextControlPlaceholderForeground', brush); } catch (_e) {}
 		try { (native as any).Resources.Insert('TextControlPlaceholderForegroundPointerOver', brush); } catch (_e) {}

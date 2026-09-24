@@ -10,7 +10,7 @@
 #include <algorithm>
 // <winuser.h> (pulled in by d3d11.h) #defines DrawText → DrawTextW. Undefine it BEFORE d2d1 is
 // parsed so ID2D1RenderTarget::DrawText keeps its real method name (and again below for the call
-// site) — otherwise the call rewrites to a nonexistent ID2D1DeviceContext::DrawTextW.
+// site): otherwise the call rewrites to a nonexistent ID2D1DeviceContext::DrawTextW.
 #undef DrawText
 #include <d2d1_1.h>
 #include <d2d1helper.h>
@@ -22,7 +22,7 @@
 #undef DrawText
 
 // Composition interop interfaces, declared by hand. The SDK's Microsoft.UI.Composition.Interop.h
-// can't be used here — it includes the MIDL ABI header Microsoft.ui.composition.h, which this
+// can't be used here. It includes the MIDL ABI header Microsoft.ui.composition.h, which this
 // C++/WinRT (projection-only) project doesn't generate. The IIDs + full vtable order match the SDK
 // header exactly (only the methods we call are bodied; the rest reserve their vtable slots).
 struct __declspec(uuid("FAB19398-6D19-4D8A-B752-8F096C396069")) ICompositorInterop : ::IUnknown
@@ -60,7 +60,7 @@ namespace
 
     // Process-wide (single UI thread) cache of the D3D/D2D device + Composition graphics device +
     // DirectWrite factory. Created once on first use so each text-shadow rebuild is a cheap GPU draw
-    // (no per-call device creation, no PNG encode/decode) — fast enough to redraw on every keystroke.
+    // (no per-call device creation, no PNG encode/decode). Fast enough to redraw on every keystroke.
     struct GfxCache
     {
         com_ptr<ID3D11Device> d3d;
@@ -107,7 +107,7 @@ namespace
         if (FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<::IUnknown**>(dwrite.put())))) return false;
 
         // Legacy (GDI-family) system collection + the typographic-family collection (DWrite 3+). Used to
-        // resolve a font name against the right family model — see BuildTextBoxGlyphMask.
+        // resolve a font name against the right family model. See BuildTextBoxGlyphMask.
         com_ptr<IDWriteFontCollection> systemCollection;
         dwrite->GetSystemFontCollection(systemCollection.put(), FALSE);
         com_ptr<IDWriteFontCollection> typographicCollection;
@@ -136,7 +136,7 @@ namespace
     }
 
     // Rasterize a TextBox's glyphs (white on transparent) straight onto a GPU CompositionDrawingSurface
-    // via D2D, and wrap it as a CompositionSurfaceBrush. Its alpha channel is the glyph coverage — what
+    // via D2D, and wrap it as a CompositionSurfaceBrush. Its alpha channel is the glyph coverage, which is what
     // DropShadow.Mask wants. No PNG/encode/decode, so it can be redrawn cheaply (e.g. on every
     // keystroke) for realtime text shadows. (TextBlock uses the live GetAlphaMask() instead.)
     MUC::CompositionBrush BuildTextBoxGlyphMask(MUC::Compositor const& compositor, MUXC::TextBox const& box)
@@ -153,7 +153,7 @@ namespace
         const int pw = static_cast<int>(std::ceil(wd));
         const int ph = static_cast<int>(std::ceil(hd));
 
-        // Font family — first family if the Source lists several.
+        // Font family: first family if the Source lists several.
         std::wstring family = L"Segoe UI";
         if (auto ff = box.FontFamily())
         {
@@ -183,10 +183,10 @@ namespace
         const auto border = box.BorderThickness();
 
         // Resolve the font name against the right family model. Prefer the legacy GDI collection (most
-        // fontFamily strings are GDI names — "Arial Black", "Segoe UI Variable Text", …); fall back to
+        // fontFamily strings are GDI names, e.g. "Arial Black", "Segoe UI Variable Text", …); fall back to
         // the typographic collection only when the name isn't a GDI family. That's where typographic-only
         // names like "Segoe UI Variable" live, so this resolves ANY variable font (combined with the
-        // optical-size axis below). Bundled ms-appx fonts remain a gap — the system factory can't see them.
+        // optical-size axis below). Bundled ms-appx fonts remain a gap. The system factory can't see them.
         IDWriteFontCollection* collection = nullptr; // null → legacy system collection
         {
             BOOL exists = FALSE; UINT32 famIdx = 0;
@@ -253,7 +253,7 @@ namespace winrt::NativeScript::Widgets::implementation
             MUC::CompositionBrush mask{ nullptr };
             if (auto tb = element.try_as<MUXC::TextBlock>())
             {
-                mask = tb.GetAlphaMask(); // live brush — tracks the TextBlock's text automatically
+                mask = tb.GetAlphaMask(); // live brush: tracks the TextBlock's text automatically
             }
             else if (auto box = element.try_as<MUXC::TextBox>())
             {

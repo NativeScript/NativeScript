@@ -18,7 +18,7 @@ import { ImageSource } from '../../../image-source';
 import { ClipPathFunction } from '../../styling/clip-path-function';
 type WindowsColor = Color & { windows: Windows.UI.Color, windowsArgb: number };
 
-// Windows.UI.Color is a plain {A,R,G,B} struct — bridge reads fields directly, no WinRT call needed.
+// Windows.UI.Color is a plain {A,R,G,B} struct. Bridge reads fields directly, no WinRT call needed.
 const _defaultBackground: Windows.UI.Color = { A: 0, R: 0, G: 0, B: 0 } as unknown as Windows.UI.Color;
 export function getDefaultBackground() {
 	return _defaultBackground;
@@ -36,7 +36,7 @@ function toXamlLength(value: CoreTypes.PercentLengthType | CoreTypes.LengthType)
 	return NaN;
 }
 
-// Color struct cache: Windows.UI.Color is {A,R,G,B} bytes — construct directly, no ColorHelper.FromArgb().
+// Color struct cache: Windows.UI.Color is {A,R,G,B} bytes. Construct directly, no ColorHelper.FromArgb().
 // Cache avoids allocating a new object for every border/shadow color update with the same color.
 const _winColorCache = new Map<number, Windows.UI.Color>();
 function _argbToWinColor(argb: number): Windows.UI.Color {
@@ -119,7 +119,7 @@ function setVisibility(nativeView: Microsoft.UI.Xaml.UIElement & { [hidden]?: bo
 			try { (nativeView as any).IsHitTestVisible = true; } catch (_e) { } // moot while collapsed; correct once shown
 			break;
 		case "hidden":
-			// 'hidden' = invisible but STILL TAKES LAYOUT SPACE — must stay Visibility=Visible (not
+			// 'hidden' = invisible but STILL TAKES LAYOUT SPACE. Must stay Visibility=Visible (not
 			// Collapsed). An invisible element that still captures pointer input blocks taps on whatever
 			// it overlaps, so also disable hit-testing.
 			nativeView[hidden] = true;
@@ -128,7 +128,7 @@ function setVisibility(nativeView: Microsoft.UI.Xaml.UIElement & { [hidden]?: bo
 			try { (nativeView as any).IsHitTestVisible = false; } catch (_e) { }
 			break;
 		case "visible":
-			if (!nativeView[hidden]) return; // symbol unset = native default (Visible/Opacity=1/HitTest=true) — skip 4 WinRT calls
+			if (!nativeView[hidden]) return; // symbol unset = native default (Visible/Opacity=1/HitTest=true). Skip 4 WinRT calls
 			nativeView[hidden] = false;
 			nativeView.Opacity = 1;
 			nativeView.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
@@ -159,7 +159,7 @@ class CompositionBorderHandler {
 	private _element: Microsoft.UI.Xaml.UIElement;
 	private _rootVisual: Microsoft.UI.Composition.Visual;
 	private _container: Microsoft.UI.Composition.ContainerVisual;
-	// Border SpriteVisuals are created lazily in _ensureBorderSprites() — only when UpdateBorder()
+	// Border SpriteVisuals are created lazily in _ensureBorderSprites(). Only when UpdateBorder()
 	// is first called with a non-zero width. Shadow-only handlers never allocate these.
 	private _top: Microsoft.UI.Composition.SpriteVisual | null = null;
 	private _bottom: Microsoft.UI.Composition.SpriteVisual | null = null;
@@ -178,14 +178,14 @@ class CompositionBorderHandler {
 	// Compositor objects kept alive alongside each host for fast-path size-only updates.
 	// Parallel array to _shadowImages (same length, same index correspondence).
 	private _shadowEntries: Array<{ layer: any; shapeVisual: any; geo: any }> = [];
-	// Children collection captured at insert time — re-reading el.Parent at removal returns undefined
+	// Children collection captured at insert time: re-reading el.Parent at removal returns undefined
 	// on this host, causing old shadows to accumulate.
 	private _shadowKids: unknown = null;
 	// Signature of last applied shadow render. UpdateBoxShadow runs on SizeChanged; re-inserting
 	// hosts re-invalidates layout → LayoutCycleException. Only mutate the tree when sig changes.
 	private _lastShadowSig: string | null = null;
 	// Config-only sig (no size). When only w×h changes the host Border and all Compositor objects
-	// are updated in-place — no XAML tree mutation, no new WinRT allocations.
+	// are updated in-place: no XAML tree mutation, no new WinRT allocations.
 	private _lastShadowConfigSig: string | null = null;
 	// Per-side colored border drawn as a bitmap overlay ON TOP of the element (native XAML BorderBrush
 	// is one color, so 4-color borders need a separate bitmap). Inserted right after the element (higher z).
@@ -203,7 +203,7 @@ class CompositionBorderHandler {
 		// RelativeSizeAdjustment(1,1) tracks the parent size natively without an animation.
 		this._container.RelativeSizeAdjustment = new Windows.Foundation.Numerics.Vector2(1, 1);
 
-		// Border SpriteVisuals NOT created here — see _ensureBorderSprites().
+		// Border SpriteVisuals NOT created here. See _ensureBorderSprites().
 		Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(element, this._container);
 	}
 
@@ -255,7 +255,7 @@ class CompositionBorderHandler {
 	// plain panels (no native BorderThickness/BorderBrush) and renders above the element edge.
 	UpdateBorder(w: number, h: number, tW: number, rW: number, bW: number, lW: number, tC: number, rC: number, bC: number, lC: number, radius: number): void {
 		if (w <= 0 || h <= 0) {
-			return; // not laid out yet — _redrawNativeBackground re-runs on SizeChanged
+			return; // not laid out yet: _redrawNativeBackground re-runs on SizeChanged
 		}
 		// Sig guards the WinRT property sets below; UpdateBorder runs on every SizeChanged, so skip
 		// when nothing changed.
@@ -300,7 +300,7 @@ class CompositionBorderHandler {
 	}
 
 	ClearBorder(): void {
-		// No sprites ever created (shadow-only handler) or already cleared — nothing to do.
+		// No sprites ever created (shadow-only handler) or already cleared. Nothing to do.
 		if (!this._top || this._lastBorderUpdateSig === 'none') return;
 		this._lastBorderUpdateSig = 'none';
 		try {
@@ -315,7 +315,7 @@ class CompositionBorderHandler {
 
 	UpdateBoxShadow(shadows: BoxShadow[] | BoxShadow | null, cornerRadius = 0): void {
 		// One element-sized DropShadow host per CSS shadow, inserted as a sibling behind the target.
-		// Overlap-capable parents only — StackPanel would stack the host as a new row (skipped below).
+		// Overlap-capable parents only: StackPanel would stack the host as a new row (skipped below).
 		const el = this._element as Microsoft.UI.Xaml.FrameworkElement;
 		if (!el) {
 			return;
@@ -337,7 +337,7 @@ class CompositionBorderHandler {
 			const w = el.ActualWidth || 0;
 			const h = el.ActualHeight || 0;
 			if (w <= 0 || h <= 0) {
-				return; // not laid out yet — re-applied on the next SizeChanged redraw (sig not cached)
+				return; // not laid out yet: re-applied on the next SizeChanged redraw (sig not cached)
 			}
 
 			// Signature guards against LayoutCycleException: inserting/removing hosts re-invalidates
@@ -383,7 +383,7 @@ class CompositionBorderHandler {
 			}
 
 			this._removeShadowImages();
-			// Now safe to record the new configSig — hosts have been removed, rebuild is starting.
+			// Now safe to record the new configSig. Hosts have been removed, rebuild is starting.
 			this._lastShadowConfigSig = configSig;
 
 			const parent = el.Parent as unknown as Microsoft.UI.Xaml.Controls.Panel;
@@ -392,7 +392,7 @@ class CompositionBorderHandler {
 				return;
 			}
 			if (typeof (parent as unknown as Microsoft.UI.Xaml.Controls.StackPanel).Orientation !== 'undefined') {
-				return; // StackPanel — sibling overlap not possible
+				return; // StackPanel: sibling overlap not possible
 			}
 
 			const G = Microsoft.UI.Xaml.Controls.Grid;
@@ -403,7 +403,7 @@ class CompositionBorderHandler {
 
 			// CRITICAL: ActualWidth/Height and cornerRadius are in DIPs, but blurRadius/spreadRadius/
 			// offsetX/offsetY are in device pixels (style system converts via Length.toDevicePixels).
-			// Convert back to DIPs — mixing units over-blurs and swamps the offset (flat halo artifact).
+			// Convert back to DIPs. Mixing units over-blurs and swamps the offset (flat halo artifact).
 			const built: Array<{ host: Microsoft.UI.Xaml.FrameworkElement; layer: any; shapeVisual: any; geo: any }> = [];
 			for (const s of cssOrder) {
 				const entry = this._buildShadowHost(s, w, h, cornerRadius);
@@ -486,7 +486,7 @@ class CompositionBorderHandler {
 			drop.Color = shadowColor;
 			drop.Offset = new N.Vector3(offX, offY, 0);
 
-			// LayerVisual content isn't painted — only its DropShadow is — giving a pure soft shadow
+			// LayerVisual content isn't painted (only its DropShadow is), giving a pure soft shadow
 			// with no visible opaque caster edge.
 			const cornerR = cr > 0 ? cr + spread : 0;
 			const layer = c.CreateLayerVisual();
@@ -521,7 +521,7 @@ class CompositionBorderHandler {
 		}
 		// Remove by position, not identity: collection has no Remove()/IndexOf; GetAt returns a fresh
 		// JS wrapper per call so `=== img` is false. Only `GetAt(i) === el` is stable. Shadow images
-		// are the `count` siblings immediately before the element — find el, RemoveAt the slots before it.
+		// are the `count` siblings immediately before the element. Find el, RemoveAt the slots before it.
 		const kids = this._shadowKids as { Size: number; GetAt: (i: number) => unknown; RemoveAt: (i: number) => void } | null;
 		const el = this._element;
 		if (!kids || typeof kids.Size !== 'number' || !el) {
@@ -559,7 +559,7 @@ class CompositionBorderHandler {
 				this._removeBorderOverlay();
 				return;
 			}
-			// Not laid out yet — do NOT touch the existing overlay; a transient w=0 pass must not
+			// Not laid out yet. Do NOT touch the existing overlay; a transient w=0 pass must not
 			// tear down a valid overlay (would flicker/vanish).
 			if (b.w <= 0 || b.h <= 0) {
 				return;
@@ -576,7 +576,7 @@ class CompositionBorderHandler {
 				return;
 			}
 			if (typeof (parent as unknown as Microsoft.UI.Xaml.Controls.StackPanel).Orientation !== 'undefined') {
-				return; // StackPanel — overlay positioning not supported
+				return; // StackPanel: overlay positioning not supported
 			}
 			const result = NativeScript.Widgets.ShadowHelper.CreateBorder(b.w, b.h, b.tW, b.rW, b.bW, b.lW, b.tC as never, b.rC as never, b.bC as never, b.lC as never, b.radius);
 			const img = result?.Image;
@@ -653,11 +653,11 @@ export class View extends ViewCommon {
 
 	private _percentWidth: number | null = null; // null = not set
 	private _percentHeight: number | null = null;
-	// Held SizeChanged delegate (prevents GC — see _ensureSizeWatch).
+	// Held SizeChanged delegate (prevents GC; see _ensureSizeWatch).
 	private _sizeChangedDelegate: any = null;
 	private _sizeWatchWired = false;
 	private _sizeRedrawPending = false;
-	// Background-application caches — prevent redundant WinRT calls across repeated _redrawNativeBackground calls.
+	// Background-application caches: prevent redundant WinRT calls across repeated _redrawNativeBackground calls.
 	// IMPORTANT: all sigs are value-based (not object-reference-based) because Background uses a clone pattern:
 	// every withBorderWidth/withBorderRadius/withColor call creates a new object, so reference equality
 	// is always false and would never skip anything.
@@ -665,7 +665,7 @@ export class View extends ViewCommon {
 	private _lastRadiusSig: string | null = null;  // skip CornerRadius set when unchanged
 	private _lastBorderSig: string | null = null;  // skip BorderThickness/UpdateBorder when unchanged
 	private _lastSizeDepSig: string | null = null; // skip ALL of Phase 2 when no size-dependent input changed (color-only rebind)
-	private _isNativeButton: boolean | null = null; // cached once in initNativeView — avoids per-call 'in' check
+	private _isNativeButton: boolean | null = null; // cached once in initNativeView. Avoids per-call 'in' check
 	private _lastMarginSig: string | null = null;  // coalesce the 4 individual margin setNative calls into 1 WinRT set
 	private _lastPaddingSig: string | null = null; // coalesce the 4 individual padding setNative calls into 1 WinRT set
 	private _lastClipSig: string | null = null;    // skip clip-path rebuild when shape+dims unchanged
@@ -765,7 +765,7 @@ export class View extends ViewCommon {
 			this._ensureSizeWatch();
 		}
 
-		// ── Phase 1: Static background (color / gradient / image) ────────────────────────────────
+		// Phase 1: Static background (color / gradient / image)
 		// Sig encodes just color+image (the only static parts); border/radius/shadow are size-dependent
 		// and handled in Phase 2 with their own per-value sigs. Key on pure-JS `color.argb`, not
 		// `color.windowsArgb` (which calls ColorHelper.FromArgb() + 4 WinRT struct reads on every call).
@@ -784,7 +784,7 @@ export class View extends ViewCommon {
 		}
 		// Include position/repeat/size so changes to those (without color/image change) still trigger a redraw.
 		const _staticSig = `${_colorArgb}|${_imageKey}|${background.repeat || ''}|${background.position || ''}|${background.size || ''}`;
-		// Save prior sig BEFORE updating — used below to detect first call (fresh view).
+		// Save prior sig BEFORE updating. Used below to detect first call (fresh view).
 		const _prevStaticSig = this._lastStaticSig;
 		if (_staticSig !== this._lastStaticSig) {
 			this._lastStaticSig = _staticSig;
@@ -823,13 +823,13 @@ export class View extends ViewCommon {
 					brush.EndPoint = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0.5 + dx / 2, 0.5 + dy / 2);
 					brush.MappingMode = Microsoft.UI.Xaml.Media.BrushMappingMode.RelativeToBoundingBox;
 					native.Background = brush;
-					this._colorAnimBrush = null; // background is now a gradient — no reusable solid brush
+					this._colorAnimBrush = null; // background is now a gradient. No reusable solid brush
 				} catch (_e) { /* fallback to solid color below */ }
 			} else if (background.image && typeof background.image === 'string' && background.image !== 'none') {
 				// Raster background-image: url(...). A repeating background needs the element's pixel
 				// size to build the tiled bitmap, so it's deferred to the size-dependent phase below;
 				// here we only handle the non-repeating case via a plain ImageBrush.
-				this._colorAnimBrush = null; // background is now an image — no reusable solid brush
+				this._colorAnimBrush = null; // background is now an image. No reusable solid brush
 				if (!_isTilingRepeat(background.repeat)) {
 					this._applyBackgroundImage(native, background.image as string, background);
 				}
@@ -841,7 +841,7 @@ export class View extends ViewCommon {
 							// Reuse the existing solid brush: mutate its Color instead of allocating a new
 							// SolidColorBrush + reassigning native.Background (which re-triggers the whole
 							// background pipeline + a fresh repaint). Button Resources point at this same
-							// brush instance, so they update automatically — no re-Insert needed.
+							// brush instance, so they update automatically. No re-Insert needed.
 							this._colorAnimBrush.Color = winColor;
 						} else {
 							const brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(winColor);
@@ -850,7 +850,7 @@ export class View extends ViewCommon {
 							this._colorAnimBrush = brush;
 							// For Button controls the default XAML template ignores Background via its VSM
 							// Normal-state animation. Override the ButtonBackground theme resource on the
-							// instance so the template binding picks up our colour. (Only for actual Buttons —
+							// instance so the template binding picks up our colour. (Only for actual Buttons.
 							// Resources.Insert on a non-Button creates a useless ResourceDictionary.)
 							if (this._isNativeButton) {
 								try { native.Resources.Insert('ButtonBackground', brush); } catch (_re) { }
@@ -862,14 +862,14 @@ export class View extends ViewCommon {
 						console.error('[Windows] Background SolidColorBrush failed:', bgErr);
 					}
 				} else {
-					// Transparent color (winColor = null) — XAML default Background is null for non-buttons.
+					// Transparent color (winColor = null): XAML default Background is null for non-buttons.
 					this._colorAnimBrush = null;
 					if (this._isNativeButton || _prevStaticSig !== null) {
 						native.Background = null;
 					}
 				}
 			} else {
-				// No color, no image — same result as transparent.
+				// No color, no image. Same result as transparent.
 				this._colorAnimBrush = null;
 				// Skip null-set on fresh non-button views (XAML default is already null).
 				if (this._isNativeButton || _prevStaticSig !== null) {
@@ -878,11 +878,11 @@ export class View extends ViewCommon {
 			}
 		}
 
-		// ── Phase 2: Size-dependent work (composition, border, radius, shadow) ───────────────────
+		// Phase 2: Size-dependent work (composition, border, radius, shadow)
 		this._applySizeDependentNativeBackground(native, background);
 	}
 
-	// Size-dependent half of background rendering — called from both _redrawNativeBackground
+	// Size-dependent half of background rendering. Called from both _redrawNativeBackground
 	// (full redraw) and _onSizeChanged (size-change-only redraw, skips Phase 1 above).
 	private _applySizeDependentNativeBackground(native: any, background: Background): void {
 		let radius = 0;
@@ -890,9 +890,9 @@ export class View extends ViewCommon {
 			radius = background.getUniformBorderRadius();
 		}
 
-		// Read border-color argb early (pure JS, no WinRT) — used for both needsComposition and
+		// Read border-color argb early (pure JS, no WinRT). Used for both needsComposition and
 		// the border sig / native XAML path below.
-		// Default an unset border-color to opaque black on any side that has a width — matches CSS
+		// Default an unset border-color to opaque black on any side that has a width. Matches CSS
 		// (initial border-color resolves to currentColor → black here) and iOS/Android, which both
 		// fall back to black. Without this, a width-only border renders invisible on Windows.
 		const tCArgb = (background.borderTopColor as any)?.argb ?? (background.borderTopWidth ? 0xff000000 : 0);
@@ -905,7 +905,7 @@ export class View extends ViewCommon {
 		const _hasBoxShadow = typeof background.hasBoxShadows === 'function' && background.hasBoxShadows();
 		// Whether XAML has native BorderThickness + BorderBrush on this element.
 		// Controls (Button, TextBox, etc.) and Border do; layout panels (Grid, StackPanel) do NOT.
-		// `'BorderThickness' in native` is a free prototype check — no WinRT getter invoked.
+		// `'BorderThickness' in native` is a free prototype check. No WinRT getter invoked.
 		const _nativeHasBorderSupport = 'BorderThickness' in native;
 		// Only create the Compositor handler for features XAML can't handle natively:
 		//   • box-shadows (no XAML equivalent at the NativeScript level)
@@ -913,7 +913,7 @@ export class View extends ViewCommon {
 		//   • layout panels: Grid/StackPanel/etc. have no BorderThickness, so they need Compositor
 		//     for any border regardless of uniformity
 		// Controls with uniform-color borders are handled natively via BorderThickness + BorderBrush
-		// + CornerRadius — no WinRT Compositor overhead (~20 WinRT calls per element) needed.
+		// + CornerRadius: no WinRT Compositor overhead (~20 WinRT calls per element) needed.
 		const needsComposition = !!(_hasBoxShadow || _hasNonUniformBorderColor || (_anyBorderWidth && !_nativeHasBorderSupport));
 		if (needsComposition && !this._viewCompositionHandler) {
 			this._viewCompositionHandler = CompositionBorderHandler.Create(native);
@@ -926,12 +926,12 @@ export class View extends ViewCommon {
 		// swapped the brush) leaves every input identical and the whole phase collapses to a compare + return.
 		let _szSig = '';
 		// clip-path geometry is also size-driven (see the clip block below), so the live size is an
-		// input whenever EITHER composition or a clip-path is in play — not just needsComposition.
+		// input whenever EITHER composition or a clip-path is in play. Not just needsComposition.
 		if (needsComposition || background.clipPath) {
 			try {
 				_szSig = `${Math.round(native.ActualWidth || 0)}x${Math.round(native.ActualHeight || 0)}`;
 			} catch (_e) {
-				/* ActualWidth/Height not realized yet — treated as 0x0, recomputed once it lays out */
+				/* ActualWidth/Height not realized yet. Treated as 0x0, recomputed once it lays out */
 			}
 		}
 		const _sizeDepSig = `${radius}|${background.borderTopLeftRadius || 0},${background.borderTopRightRadius || 0},${background.borderBottomRightRadius || 0},${background.borderBottomLeftRadius || 0}|${tCArgb},${rCArgb},${bCArgb},${lCArgb}|${background.borderTopWidth || 0},${background.borderRightWidth || 0},${background.borderBottomWidth || 0},${background.borderLeftWidth || 0}|${_hasBoxShadow ? 1 : 0}|${needsComposition ? 1 : 0}|${(background.clipPath as any) || ''}|${_szSig}`;
@@ -968,8 +968,8 @@ export class View extends ViewCommon {
 		}
 
 		// Border rendering: XAML-native path (BorderThickness + BorderBrush) or composition path.
-		// Only access native.ActualWidth/Height when a composition handler actually exists —
-		// those are WinRT getter calls and are wasted on elements with no handler.
+		// Only access native.ActualWidth/Height when a composition handler actually exists.
+		// Those are WinRT getter calls and are wasted on elements with no handler.
 		// (tCArgb / rCArgb / bCArgb / lCArgb computed above before needsComposition check.)
 		try {
 			const lW = layout.toDeviceIndependentPixels(background.borderLeftWidth || 0);
@@ -978,7 +978,7 @@ export class View extends ViewCommon {
 			const bW = layout.toDeviceIndependentPixels(background.borderBottomWidth || 0);
 			const anyWidth = lW > 0 || tW > 0 || rW > 0 || bW > 0;
 			const radiusDp = layout.toDeviceIndependentPixels(radius || 0);
-			// Border config sig excludes size — size is only needed inside UpdateBorder (lazy).
+			// Border config sig excludes size. Size is only needed inside UpdateBorder (lazy).
 			// Including size would force ActualWidth/Height reads even for elements with no handler.
 			const borderConfigSig = `${tW},${rW},${bW},${lW},${tCArgb},${rCArgb},${bCArgb},${lCArgb},${radiusDp}`;
 			if (borderConfigSig !== this._lastBorderSig) {
@@ -1019,7 +1019,7 @@ export class View extends ViewCommon {
 					this._viewCompositionHandler?.UpdateColorfulBorder(null);
 				}
 			}
-			// ActualWidth/Height reads gated inside the anyWidth branch — shadow-only handlers never
+			// ActualWidth/Height reads gated inside the anyWidth branch: shadow-only handlers never
 			// pay these 2 WinRT getter calls. _argbToWinColor uses the module-level cache.
 			if (this._viewCompositionHandler) {
 				if (anyWidth) {
@@ -1044,7 +1044,7 @@ export class View extends ViewCommon {
 			}
 		}
 
-		// Clip-path via Composition Visual.Clip — rect, inset, circle, ellipse, polygon.
+		// Clip-path via Composition Visual.Clip. Rect, inset, circle, ellipse, polygon.
 		const clipPath = background.clipPath;
 		if (clipPath) {
 			try {
@@ -1155,7 +1155,7 @@ export class View extends ViewCommon {
 		// Cache whether this is a Button-family control (gates the button-template VSM resource inserts).
 		try {
 			const nv = this.nativeViewProtected as any;
-			// `in` is unreliable on COM proxy objects — use direct property access instead.
+			// `in` is unreliable on COM proxy objects. Use direct property access instead.
 			// ClickMode is declared on ButtonBase (Button/AppBarButton/etc.) and returns 0 (Release)
 			// by default; non-button controls return `undefined` for absent properties.
 			this._isNativeButton = !!(nv && nv.ClickMode !== undefined);
@@ -1229,7 +1229,7 @@ export class View extends ViewCommon {
 						rx, ry);
 				}
 			} else if (shape === 'polygon') {
-				// Direct2D path via C++ helper — no Win2D NuGet needed.
+				// Direct2D path via C++ helper. No Win2D NuGet needed.
 				NativeScript.Widgets.ClipHelper.ApplyPolygonClip(native, w, h, rule, density);
 			}
 		} catch (_e) { }
@@ -1326,7 +1326,7 @@ export class View extends ViewCommon {
 			let w = NaN, h = NaN;
 			try { w = n.ActualWidth; h = n.ActualHeight; } catch (_e) { return; }
 			if (Math.abs(w - owner._lastLayoutW) < 0.5 && Math.abs(h - owner._lastLayoutH) < 0.5) {
-				return; // size unchanged (e.g. scrolling) — nothing to redraw
+				return; // size unchanged (e.g. scrolling): nothing to redraw
 			}
 			owner._lastLayoutW = w;
 			owner._lastLayoutH = h;
@@ -1409,7 +1409,7 @@ export class View extends ViewCommon {
 			// Full redraw needed (background property changed while view had no size yet).
 			this._redrawNativeBackground(background);
 		} else if (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize) {
-			// Size changed — only re-run the size-dependent phase. The static background (brush
+			// Size changed: only re-run the size-dependent phase. The static background (brush
 			// creation, native.Background=, Resources.Insert) is unchanged, so skip it.
 			const native = this.nativeViewProtected as any;
 			if (native && background && typeof background === 'object') {
@@ -1604,7 +1604,7 @@ export class View extends ViewCommon {
 			const t = toXamlLength(this.style.marginTop) || 0;
 			const r = toXamlLength(this.style.marginRight) || 0;
 			const b = toXamlLength(this.style.marginBottom) || 0;
-			// All 4 margin properties share this helper — CSS `margin:` decomposes into 4 separate
+			// All 4 margin properties share this helper: CSS `margin:` decomposes into 4 separate
 			// setNative calls in the same synchronous applyAllNativeSetters loop. The sig check
 			// coalesces them: the first call does the WinRT set; the remaining 3 are no-ops.
 			const sig = `${l},${t},${r},${b}`;
@@ -1615,7 +1615,7 @@ export class View extends ViewCommon {
 			// already {0,0,0,0}, so setting it is a no-op. Only safe when prev===null (native never
 			// touched); if margin was previously non-zero and is now reset to 0, we still call WinRT.
 			if (l === 0 && t === 0 && r === 0 && b === 0 && prev === null) return;
-			// Thickness is a plain value struct {Left,Top,Right,Bottom: f64} — pass as a plain JS
+			// Thickness is a plain value struct {Left,Top,Right,Bottom: f64}. Pass as a plain JS
 			// object via the bridge's append_struct_object_bytes path (same as Windows.UI.Color).
 			// Saves the ThicknessHelper.FromLengths WinRT static call on every margin change.
 			(this.nativeViewProtected as any).Margin = { Left: l, Top: t, Right: r, Bottom: b } as any;
@@ -1643,7 +1643,7 @@ export class View extends ViewCommon {
 			if (sig === this._lastPaddingSig) return;
 			const prev = this._lastPaddingSig;
 			this._lastPaddingSig = sig;
-			// XAML default Padding is {0,0,0,0} — skip the WinRT call on the first zero-padding set.
+			// XAML default Padding is {0,0,0,0}. Skip the WinRT call on the first zero-padding set.
 			if (l === 0 && t === 0 && r === 0 && b === 0 && prev === null) return;
 			native.Padding = { Left: l, Top: t, Right: r, Bottom: b } as any;
 		} catch (_e) { }
@@ -1786,7 +1786,7 @@ export class View extends ViewCommon {
 
 			transforms.rotate.Angle = (this as any).rotate || 0;
 
-			// translateX/Y are in DIPs — WinUI TranslateTransform also uses DIPs. No conversion.
+			// translateX/Y are in DIPs: WinUI TranslateTransform also uses DIPs. No conversion.
 			transforms.translate.X = (this as any).translateX || 0;
 			transforms.translate.Y = (this as any).translateY || 0;
 
@@ -2044,7 +2044,7 @@ export class CustomLayoutView extends ContainerView {
 		// Grid (single default cell), not StackPanel: a StackPanel measures its child with INFINITE
 		// extent along its orientation, so a scrollable child (ListView/ScrollView) never gets a bounded
 		// height and realizes every row (no virtualization). A Grid stretches its child to the bounded
-		// available size — the correct fill semantics here. Children API is shared.
+		// available size: the correct fill semantics here. Children API is shared.
 		return new Microsoft.UI.Xaml.Controls.Grid();
 	}
 

@@ -18,7 +18,7 @@ using BitmapImage = winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage;
 // runtime hosts V8 on the UI thread and only marshals WinRT async `Completed` callbacks back into
 // JS when they fire on that (UI) apartment. WinRT async operations started on the UI apartment
 // marshal their completion back to it automatically, so awaiting them inline keeps every resume on
-// the UI thread — which is also where the UI-affine BitmapImage must be created. Hopping to a
+// the UI thread, which is also where the UI-affine BitmapImage must be created. Hopping to a
 // background thread (resume_background) would make the final completion fire on a pool thread where
 // the runtime's thread-local isolate pointer is null, so the JS promise would silently never settle.
 // The awaited ops are themselves async (non-blocking), so the UI thread is not stalled.
@@ -106,7 +106,7 @@ namespace winrt::NativeScript::Widgets::implementation
 
     IAsyncOperation<IBuffer> ImageHelper::ReadFileAsync(hstring path)
     {
-        // Single native call — return the operation directly.
+        // Single native call: return the operation directly.
         return PathIO::ReadBufferAsync(path);
     }
 

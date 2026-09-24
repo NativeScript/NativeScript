@@ -1,5 +1,5 @@
 #include "pch.h"
-// DirectWrite font-set enumeration — included here (not in pch.h) to keep COM headers out of
+// DirectWrite font-set enumeration: included here (not in pch.h) to keep COM headers out of
 // the shared PCH (see ClipHelper.cpp for the DllCanUnloadNow background).
 #include <dwrite_3.h>
 #pragma comment(lib, "dwrite.lib")

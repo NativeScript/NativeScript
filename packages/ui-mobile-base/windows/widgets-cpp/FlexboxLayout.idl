@@ -1,7 +1,7 @@
 namespace NativeScript.Widgets
 {
     // CSS Flexible Box Layout (flexbox) as a WinUI3 (Microsoft.UI.Xaml) Panel. Direct C++ measure/
-    // arrange — the JS layout class is a thin wrapper. Replaces the legacy C# FlexboxLayout, which
+    // arrange: the JS layout class is a thin wrapper. Replaces the legacy C# FlexboxLayout, which
     // derived from the UWP Windows.UI.Xaml.Controls.Panel and so was incompatible with the WinUI3
     // visual tree. Integer enums are kept in sync with the TS maps in flexbox-layout/index.windows.ts:
     //   FlexDirection  0=row 1=row-reverse 2=column 3=column-reverse

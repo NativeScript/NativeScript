@@ -1,5 +1,5 @@
 #include "pch.h"
-// IBufferByteAccess (raw byte pointer into an IBuffer) — included here, not in pch.h.
+// IBufferByteAccess (raw byte pointer into an IBuffer). Included here, not in pch.h.
 #include <robuffer.h>
 #include <cstring>
 #include "TileHelper.h"
@@ -54,7 +54,7 @@ namespace winrt::NativeScript::Widgets::implementation
         const uint8_t* sp = BufferData(srcBuf);
 
         // Compose the tiled target. For a non-repeating axis the image appears once (offset 0) and
-        // the rest stays transparent — this is exactly CSS repeat-x / repeat-y / no-repeat.
+        // the rest stays transparent. This is exactly CSS repeat-x / repeat-y / no-repeat.
         const uint32_t dstLen = static_cast<uint32_t>(targetWidth) * static_cast<uint32_t>(targetHeight) * 4u;
         Buffer dstBuf{ dstLen };
         dstBuf.Length(dstLen);

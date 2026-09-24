@@ -9,7 +9,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 	}
 }
 
-// WinUI3 has no built-in segmented control — built as a horizontal row of ToggleButtons.
+// WinUI3 has no built-in segmented control. Built as a horizontal row of ToggleButtons.
 export class SegmentedBar extends SegmentedBarBase {
 	nativeViewProtected: Microsoft.UI.Xaml.Controls.StackPanel;
 	private _buttons: Microsoft.UI.Xaml.Controls.Primitives.ToggleButton[] = [];
@@ -40,7 +40,7 @@ export class SegmentedBar extends SegmentedBarBase {
 			}
 			btn.Content = (item as SegmentedBarItemBase).title ?? '';
 			btn.MinWidth = 72;
-			// MUST wire via asDelegate — a raw RoutedEventHandler assignment doesn't reliably subscribe
+			// MUST wire via asDelegate. A raw RoutedEventHandler assignment doesn't reliably subscribe
 			// here; taps only toggle the native button without our handler running.
 			try {
 				const cb = () => {

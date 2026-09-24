@@ -11,7 +11,7 @@ export class Switch extends SwitchBase {
 
 	constructor() {
 		super();
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
+		// WinRT deferred to createNativeView(): keeps constructor pure-JS.
 	}
 
 	public createNativeView() {
@@ -29,7 +29,7 @@ export class Switch extends SwitchBase {
 		const that = new WeakRef(this);
 		const native = this.nativeViewProtected;
 
-		// Toggled is a generic TypedEventHandler<ToggleSwitch, RoutedEventArgs> — the runtime can't derive
+		// Toggled is a generic TypedEventHandler<ToggleSwitch, RoutedEventArgs>. The runtime can't derive
 		// the parameterized GUID from a plain assignment, so build via asDelegate (can throw; keep guarded).
 		const handler = (s: Microsoft.UI.Xaml.Controls.ToggleSwitch) => {
 			const owner = that.deref();

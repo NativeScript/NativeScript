@@ -18,7 +18,7 @@ using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
 // THREADING: synchronous by design. JS calls these on the UI/V8 thread, so the SoftwareBitmap /
 // SoftwareBitmapSource / Image are created inline on that thread. The blur is a small element-sized
 // buffer and the result is cached by the caller, so the on-thread cost is negligible. (The C#
-// version offloaded the blur with Parallel.For; here it's a plain serial loop — same output.)
+// version offloaded the blur with Parallel.For; here it's a plain serial loop. Same output.)
 
 namespace
 {

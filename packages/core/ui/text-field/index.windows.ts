@@ -23,7 +23,7 @@ function applyInputScope(nativeView: Microsoft.UI.Xaml.Controls.TextBox, kbType:
 	const scope = new Microsoft.UI.Xaml.Input.InputScope();
 	const scopeName = new Microsoft.UI.Xaml.Input.InputScopeName(scopeValue);
 	// Names is typed as `IVector | array`; the runtime hands back the IVector, so building
-	// the collection can throw across the bridge — keep this guarded.
+	// the collection can throw across the bridge. Keep this guarded.
 	try {
 		(scope.Names as Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Input.InputScopeName>).Append(scopeName);
 		nativeView.InputScope = scope;
@@ -54,7 +54,7 @@ export class TextField extends TextFieldBase {
 
 	// WinUI TextBox/PasswordBox swap their background to light theme brushes
 	// (TextControlBackgroundPointerOver/Focused) in those visual states, overriding the control's
-	// Background — so an app-set (or transparent) background flashes white on hover/focus. Insert
+	// Background, so an app-set (or transparent) background flashes white on hover/focus. Insert
 	// transparent brushes for those keys into the instance ResourceDictionary so the control keeps the
 	// app background across every state and blends with its container, matching iOS/Android.
 	private _neutralizeStateBackgrounds(): void {
@@ -83,7 +83,7 @@ export class TextField extends TextFieldBase {
 			}
 		});
 		// AddHandler(KeyDownEvent) throws E_INVALIDARG (0x80070057) in the runtime's RoutedEvent
-		// projection — an uncaught throw jams frame navigation. Fall back to instance KeyDown.
+		// projection: an uncaught throw jams frame navigation. Fall back to instance KeyDown.
 		try {
 			nv.AddHandler(Microsoft.UI.Xaml.UIElement.KeyDownEvent, this._keyDownDelegate, true);
 		} catch (_e) {
@@ -93,7 +93,7 @@ export class TextField extends TextFieldBase {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[secureProperty.setNative](value: boolean) {
 		if (this._isSecure === !!value) {
 			return;
@@ -106,8 +106,8 @@ export class TextField extends TextFieldBase {
 
 		const newView = this._isSecure ? new Microsoft.UI.Xaml.Controls.PasswordBox() : new Microsoft.UI.Xaml.Controls.TextBox();
 
-		// Must swap in the ACTUAL visual parent (not the NS parent's nativeViewProtected) —
-		// using the NS parent's Border missed the real container and the swap silently no-op'd,
+		// Must swap in the ACTUAL visual parent (not the NS parent's nativeViewProtected).
+		// Using the NS parent's Border missed the real container and the swap silently no-op'd,
 		// leaving secure fields as cleartext TextBoxes.
 		const visualParent = prev?.Parent;
 		let swapped = false;
@@ -155,7 +155,7 @@ export class TextField extends TextFieldBase {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[editableProperty.setNative](value: boolean) {
 		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
 		if (typeof nativeView.IsReadOnly !== 'undefined') {
@@ -163,7 +163,7 @@ export class TextField extends TextFieldBase {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[maxLengthProperty.setNative](value: number) {
 		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
 		if (typeof nativeView.MaxLength !== 'undefined') {
@@ -171,14 +171,14 @@ export class TextField extends TextFieldBase {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[keyboardTypeProperty.setNative](value: CoreTypes.KeyboardInputType) {
 		if (this.nativeViewProtected) {
 			applyInputScope(this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox, value);
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[autocapitalizationTypeProperty.setNative](value: CoreTypes.AutocapitalizationInputType) {
 		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
 		if (typeof nativeView.CharacterCasing !== 'undefined') {
@@ -186,7 +186,7 @@ export class TextField extends TextFieldBase {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[colorProperty.setNative](value: Color | null) {
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && value instanceof Color) {

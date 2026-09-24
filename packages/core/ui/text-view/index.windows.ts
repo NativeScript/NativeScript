@@ -35,7 +35,7 @@ export class TextView extends TextViewBase {
 		const scope = new Microsoft.UI.Xaml.Input.InputScope();
 		const scopeName = new Microsoft.UI.Xaml.Input.InputScopeName(scopeValue);
 		// Names is typed as `IVector | array`; the runtime hands back the IVector, so
-		// building the collection can throw across the bridge — keep this guarded.
+		// building the collection can throw across the bridge. Keep this guarded.
 		try {
 			(scope.Names as Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Input.InputScopeName>).Append(scopeName);
 			nativeView.InputScope = scope;

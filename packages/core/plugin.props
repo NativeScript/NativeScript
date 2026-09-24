@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  @nativescript/core — Windows plugin props.
+  @nativescript/core: Windows plugin props.
 
   Intentionally empty. The NativeScript.Widgets C++/WinRT component is copied to
   the package root by plugin.targets (an explicit Copy that survives MSIX Content

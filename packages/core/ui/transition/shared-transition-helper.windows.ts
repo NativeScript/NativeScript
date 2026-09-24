@@ -3,7 +3,7 @@ import { SharedTransition, SharedTransitionAnimationType, SharedTransitionState 
 import { isNumber } from '../../utils/types';
 
 // Supplied by the Frame after it captures FROM-element rects and performs the normal page swap.
-// An earlier design kept both pages mounted + removed host children asynchronously — that froze
+// An earlier design kept both pages mounted + removed host children asynchronously. That froze
 // later navigation. We only animate the incoming elements' transforms; no host surgery.
 interface MorphPair {
 	toNative: any; // incoming shared element native

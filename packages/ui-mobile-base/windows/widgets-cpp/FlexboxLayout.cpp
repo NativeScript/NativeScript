@@ -42,7 +42,7 @@ namespace
 
 namespace winrt::NativeScript::Widgets::implementation
 {
-    // ── Attached DependencyProperties ────────────────────────────────────────
+    // Attached DependencyProperties
     DependencyProperty FlexboxLayout::OrderProperty()
     {
         static DependencyProperty const prop = DependencyProperty::RegisterAttached(
@@ -110,7 +110,7 @@ namespace winrt::NativeScript::Widgets::implementation
         }
     }
 
-    // ── MeasureOverride ──────────────────────────────────────────────────────
+    // MeasureOverride
     Size FlexboxLayout::MeasureOverride(Size const& avail)
     {
         m_lines.clear();
@@ -127,7 +127,7 @@ namespace winrt::NativeScript::Widgets::implementation
         const bool mainInf = std::isinf(mainAv);
         const bool crossInf = std::isinf(crossAv);
 
-        // CollectItems — gather visible children with their flex props, then stable-sort by Order.
+        // CollectItems: gather visible children with their flex props, then stable-sort by Order.
         // Order is cached in FlexItem to avoid O(N log N) WinRT DependencyProperty reads in the comparator.
         std::vector<FlexItem> items;
         items.reserve(children.Size());
@@ -149,13 +149,13 @@ namespace winrt::NativeScript::Widgets::implementation
             fi.WrapBefore = GetWrapBefore(child);
             items.push_back(std::move(fi));
         }
-        // Stable sort: primary = Order (cached — no WinRT per comparison), secondary = insertion order.
+        // Stable sort: primary = Order (cached; no WinRT per comparison), secondary = insertion order.
         std::stable_sort(items.begin(), items.end(), [](FlexItem const& a, FlexItem const& b) {
             if (a.Order != b.Order) return a.Order < b.Order;
             return a.OriginalIndex < b.OriginalIndex;
         });
 
-        // MeasureInitial — each item at its flex-basis (or natural) main size.
+        // MeasureInitial: each item at its flex-basis (or natural) main size.
         for (auto& item : items)
         {
             const double basisMain = (!mainInf && item.FlexBasisPercent >= 0)
@@ -173,7 +173,7 @@ namespace winrt::NativeScript::Widgets::implementation
             item.CrossSize = CrossOf(d, isRow);
         }
 
-        // BuildLines — wrap into flex lines.
+        // BuildLines: wrap into flex lines.
         // mainGap = CSS column-gap (row direction) or row-gap (column direction): gap between items.
         // crossGap = CSS row-gap (row direction) or column-gap (column direction): gap between lines.
         const double mainGap = isRow ? m_columnGap : m_rowGap;
@@ -202,7 +202,7 @@ namespace winrt::NativeScript::Widgets::implementation
             if (!cur.Items.empty()) lines.push_back(std::move(cur));
         }
 
-        // ResolveFlexFactors — grow/shrink each line to the available main extent.
+        // ResolveFlexFactors: grow/shrink each line to the available main extent.
         if (!mainInf)
         {
             for (auto& line : lines)
@@ -276,7 +276,7 @@ namespace winrt::NativeScript::Widgets::implementation
         return AsSize(totalMain, totalCross, isRow);
     }
 
-    // ── ArrangeOverride ──────────────────────────────────────────────────────
+    // ArrangeOverride
     Size FlexboxLayout::ArrangeOverride(Size const& final)
     {
         if (m_lines.empty())
@@ -303,7 +303,7 @@ namespace winrt::NativeScript::Widgets::implementation
             ? freeCross / lineCount
             : 0.0;
 
-        // ComputeLineOffsets — cross-axis position/size of each visual line slot.
+        // ComputeLineOffsets: cross-axis position/size of each visual line slot.
         std::vector<double> lineStart(lineCount, 0.0);
         std::vector<double> lineSize(lineCount, 0.0);
         {
@@ -335,7 +335,7 @@ namespace winrt::NativeScript::Widgets::implementation
             const double crossStart = lineStart[vi];
             const double lineCross = lineSize[vi];
 
-            // ComputeMainPositions — main-axis position of each visual item slot.
+            // ComputeMainPositions: main-axis position of each visual item slot.
             // Reuse scratch buffer to avoid per-line heap allocation.
             const int n = static_cast<int>(line.Items.size());
             m_scratchMainPos.resize(n);

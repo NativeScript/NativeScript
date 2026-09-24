@@ -14,7 +14,7 @@ export SKIP_PACK=true
 ./build.android.sh
 ./build.ios.sh
 
-# Windows widgets — requires PowerShell and the Windows SDK (Windows host only).
+# Windows widgets: requires PowerShell and the Windows SDK (Windows host only).
 # Skipped automatically on macOS/Linux CI; run build.windows.ps1 directly on Windows.
 if command -v powershell.exe >/dev/null 2>&1; then
   echo "Build Windows widgets"

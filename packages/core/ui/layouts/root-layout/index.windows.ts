@@ -101,7 +101,7 @@ export class RootLayout extends RootLayoutBase {
 		}
 
 		// getEnterAnimation animates opacity to 1 (fully opaque), but the intended shade is semi-transparent
-		// (e.g. 0.7) to let page content show through — match iOS by applying targetOpacity as the final state.
+		// (e.g. 0.7) to let page content show through. Match iOS by applying targetOpacity as the final state.
 		// Pre-set before play() so a freshly-mounted element doesn't flash opaque.
 		const targetOpacity = typeof options.opacity === 'number' ? options.opacity : 0.5;
 		const enterFrom = options.animation && options.animation.enterFrom ? options.animation.enterFrom : defaultShadeCoverOptions.animation.enterFrom;

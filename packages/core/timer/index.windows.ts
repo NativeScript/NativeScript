@@ -1,7 +1,7 @@
 // __ns__setTimeout / __ns__setInterval are Rust-backed timers registered by
 // the windows-runtime. They use a background scheduler thread and post
 // callbacks back to the V8 thread via a per-thread channel that is drained
-// on every pump() tick — no XAML dispatcher required.
+// on every pump() tick. No XAML dispatcher required.
 declare function __ns__setTimeout(callback: Function, ms: number): number;
 declare function __ns__setInterval(callback: Function, ms: number): number;
 declare function __ns__clearTimeout(id: number): void;

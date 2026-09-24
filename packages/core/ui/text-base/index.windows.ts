@@ -9,7 +9,7 @@ import { FontWeightType } from '../styling/font-interfaces';
 import type { ShadowCSSValues } from '../styling/css-shadow';
 import { layout } from '../../utils';
 
-// WinUI uses DIPs — do not multiply by density. Convert px→dip for 'px' unit values.
+// WinUI uses DIPs: do not multiply by density. Convert px→dip for 'px' unit values.
 function toDip(value: CoreTypes.LengthType, auto = 0): number {
 	if (typeof value === 'number') return value;
 	if (!value || typeof value === 'string') return auto;
@@ -74,7 +74,7 @@ function fromFontWeight(value: any): FontWeightType {
 	}
 }
 
-// FontStyle is `Windows.UI.Text.FontStyle` — NOT `Microsoft.UI.Text` (which was NOT migrated from
+// FontStyle is `Windows.UI.Text.FontStyle`: NOT `Microsoft.UI.Text` (which was NOT migrated from
 // WinUI3; only FontWeights was). `Microsoft.UI.Text.FontStyle` is undefined, so `.Normal` throws.
 // Guard: a throw inside applyAllNativeSetters aborts loading every following sibling, blanking the page.
 function toFontStyle(value: 'normal' | 'italic' | 'oblique'): Windows.UI.Text.FontStyle | null {
@@ -162,7 +162,7 @@ function _buildFormattedInlines(formattedText: any, inlines: any): void {
 			try { run.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush((span.color as any).windows); } catch (_e) {}
 		}
 
-		// Span-level decoration only — host-level decoration is set on the TextBlock itself and
+		// Span-level decoration only: host-level decoration is set on the TextBlock itself and
 		// renders block-wide without needing per-run flags.
 		const flags = toTextDecorations(span.textDecoration);
 		if (flags) {
@@ -234,7 +234,7 @@ export class TextBase extends TextBaseCommon {
 		} catch (_e) { }
 	}
 
-	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	// @ts-ignore: setNative is a symbol index whose value type is widened across properties.
 	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		// Guarded: a throw here would abort page setup / navigation.
 		try {
@@ -261,7 +261,7 @@ export class TextBase extends TextBaseCommon {
 				} else {
 					// TextField/TextView are a WinUI TextBox (no GetAlphaMask, no hoistable Content). The
 					// C++ TextShadowHelper rasterizes the glyphs onto a GPU composition surface and applies
-					// the same DropShadow mask — no PNG round-trip, so it's cheap to redraw. Remember the
+					// the same DropShadow mask. No PNG round-trip, so it's cheap to redraw. Remember the
 					// value so the snapshot mask can be rebuilt when the text changes (see _setNativeText).
 					this._applyTextBoxShadow(nv, value);
 					return;
@@ -278,7 +278,7 @@ export class TextBase extends TextBaseCommon {
 				return;
 			}
 
-			// GetAlphaMask gives the text's exact silhouette as a CompositionBrush — the correct
+			// GetAlphaMask gives the text's exact silhouette as a CompositionBrush. The correct
 			// mask for a text DropShadow (WinUI's canonical text-shadow technique).
 			const sprite = compositor.CreateSpriteVisual();
 			// Track the host element's size natively. Expression animations on `Size` throw E_INVALIDARG
@@ -311,7 +311,7 @@ export class TextBase extends TextBaseCommon {
 			try {
 				let brush: any = null;
 				if (value instanceof Color) {
-					// Reuse cached brush for the same ARGB — avoids a new SolidColorBrush COM object
+					// Reuse cached brush for the same ARGB. Avoids a new SolidColorBrush COM object
 					// per text view when multiple views share the same color (e.g. theme text color).
 					const argb = (value as any).argb as number;
 					brush = _fgBrushCache.get(argb) ?? null;
@@ -344,7 +344,7 @@ export class TextBase extends TextBaseCommon {
 
 	[fontSizeProperty.getDefault](): { nativeSize: number } {
 		// WinUI3 default FontSize = 14. Hardcoded to avoid a WinRT property read per text view
-		// during applyAllNativeSetters — saves 1 WinRT call per Label/Button/TextField created.
+		// during applyAllNativeSetters: saves 1 WinRT call per Label/Button/TextField created.
 		return { nativeSize: 14 };
 	}
 
@@ -416,11 +416,11 @@ export class TextBase extends TextBaseCommon {
 		if (value && nativeView) {
 			let inlinesHost = nativeView;
 			if (typeof nativeView.Inlines === 'undefined' && typeof nativeView.Content !== 'undefined') {
-				// Button: no Inlines on the control itself — host the spans in a TextBlock Content.
+				// Button: no Inlines on the control itself. Host the spans in a TextBlock Content.
 				if (!this._wrapTextBlock) {
 					this._wrapTextBlock = new Microsoft.UI.Xaml.Controls.TextBlock();
 					nativeView.Content = this._wrapTextBlock;
-					// The Button itself has no TextDecorations — carry the host-level value over
+					// The Button itself has no TextDecorations. Carry the host-level value over
 					// to the freshly created TextBlock.
 					this._wrapTextBlock.TextDecorations = toTextDecorations(this.style.textDecoration);
 				}
@@ -429,7 +429,7 @@ export class TextBase extends TextBaseCommon {
 			if (typeof inlinesHost.Inlines !== 'undefined') {
 				_buildFormattedInlines(value, inlinesHost.Inlines);
 			} else {
-				// TextBox/PasswordBox: no rich text support — plain text fallback.
+				// TextBox/PasswordBox: no rich text support. Plain text fallback.
 				this._setNativeText();
 			}
 		} else {
@@ -514,7 +514,7 @@ export class TextBase extends TextBaseCommon {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
 
-		// Button has no TextWrapping — use a TextBlock as its Content so word-wrap works.
+		// Button has no TextWrapping. Use a TextBlock as its Content so word-wrap works.
 		if (typeof nativeView.TextWrapping === 'undefined' && typeof nativeView.Content !== 'undefined') {
 			if (value !== 'nowrap') {
 				if (!this._wrapTextBlock) {
@@ -545,7 +545,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	// CharacterSpacing is in 1/1000 em units; NativeScript letterSpacing is in em.
-	// @ts-ignore — setNative is a symbol index
+	// @ts-ignore: setNative is a symbol index
 	[letterSpacingProperty.setNative](value: number) {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
@@ -554,7 +554,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index
+	// @ts-ignore: setNative is a symbol index
 	[lineHeightProperty.setNative](value: number) {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
@@ -565,7 +565,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	// @ts-ignore — setNative is a symbol index
+	// @ts-ignore: setNative is a symbol index
 	[textDecorationProperty.setNative](value: CoreTypes.TextDecorationType) {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
@@ -573,7 +573,7 @@ export class TextBase extends TextBaseCommon {
 		// Property existence on COM proxies must be checked via value access, not `in`.
 		let host = (this._wrapTextBlock as any) ?? nativeView;
 		if (host.TextDecorations === undefined && flags && typeof nativeView.Content !== 'undefined') {
-			// Button: string Content can't render decorations — hoist it into a TextBlock.
+			// Button: string Content can't render decorations. Hoist it into a TextBlock.
 			if (!this._wrapTextBlock) {
 				const tb = new Microsoft.UI.Xaml.Controls.TextBlock();
 				// Read the text from the model, not nativeView.Content: a Button's Content getter does
@@ -588,7 +588,7 @@ export class TextBase extends TextBaseCommon {
 		if (host.TextDecorations !== undefined) {
 			host.TextDecorations = flags;
 		}
-		// TextBox/PasswordBox have no TextDecorations — no-op there (matches WinUI capability).
+		// TextBox/PasswordBox have no TextDecorations: no-op there (matches WinUI capability).
 	}
 
 
@@ -597,13 +597,13 @@ export class TextBase extends TextBaseCommon {
 		if (!nativeView) return;
 
 		const transformed = reset ? '' : getTransformedText(this.text ?? '', this.textTransform);
-		// Native Text/Content are HSTRING — a non-string value (e.g. a number bound straight from a
+		// Native Text/Content are HSTRING. A non-string value (e.g. a number bound straight from a
 		// ListView item) fails to marshal with 0x80004005. Coerce so any bound value renders as text.
 		const text = typeof transformed === 'string' ? transformed : String(transformed ?? '');
 
 		if (typeof nativeView.Text !== 'undefined') {
 			nativeView.Text = text;
-			// The TextBox shadow mask is a glyph snapshot (no live GetAlphaMask) — rebuild it on text
+			// The TextBox shadow mask is a glyph snapshot (no live GetAlphaMask). Rebuild it on text
 			// change so the shadow tracks the new text. Only set for a TextBox.
 			if (this._textBoxShadow) {
 				this._applyTextBoxShadow(nativeView, this._textBoxShadow);

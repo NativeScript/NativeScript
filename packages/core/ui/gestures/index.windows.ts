@@ -323,7 +323,7 @@ export class GesturesObserver extends GesturesObserverBase {
 			const pt = extractPoint(e, relativeTo);
 			// Capture WinRT hardware timestamp (µs since device boot) alongside JS time.
 			// If V8 is busy when PointerReleased arrives, Date.now() will be inflated by the
-			// scheduling delay — the WinRT timestamp is immune to this and gives the real gesture duration.
+			// scheduling delay: the WinRT timestamp is immune to this and gives the real gesture duration.
 			const nativeTs: number | null = typeof e?.Timestamp === 'number' ? e.Timestamp : null;
 			this._pointerDownMap.set(id, { x: pt.x, y: pt.y, t: Date.now(), nativeTs });
 

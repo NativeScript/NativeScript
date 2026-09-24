@@ -10,7 +10,7 @@ function isString(value: any): value is string {
 
 // ContentDialog cannot be used here: the dialog renders but NONE of its callbacks (Closed,
 // PrimaryButtonClick, ShowAsync Completed, etc.) reach V8. Event subscription succeeds; the
-// templated-popup surface simply never invokes the JsDelegate. Fix: use a plain Popup overlay —
+// templated-popup surface simply never invokes the JsDelegate. Fix: use a plain Popup overlay.
 // Popup-hosted Buttons DO fire Click in this host (same pattern as View._showNativeModalView).
 const _activeOverlays = new Set<any>();
 
@@ -129,7 +129,7 @@ function showOverlayDialog(opts: OverlayDialogOptions): Promise<any> {
 				resolve(val);
 			};
 
-			// Hold the click delegates + popup alive for the dialog's lifetime (GC guard — mirrors how the
+			// Hold the click delegates + popup alive for the dialog's lifetime (GC guard; mirrors how the
 			// modal path keeps its popup on the instance).
 			const held: any[] = [];
 			(popup as any).__nsHeldDelegates = held;
@@ -169,7 +169,7 @@ function showOverlayDialog(opts: OverlayDialogOptions): Promise<any> {
 			card.Child = stack;
 			overlay.Children.Append(card);
 			popup.Child = overlay;
-			popup.IsLightDismissEnabled = false; // modal — dismissal is via the dialog's own buttons
+			popup.IsLightDismissEnabled = false; // modal: dismissal is via the dialog's own buttons
 			if (xamlRoot && typeof (popup as any).XamlRoot !== 'undefined') {
 				try { (popup as any).XamlRoot = xamlRoot; } catch (_e) {}
 			}

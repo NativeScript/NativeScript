@@ -232,7 +232,7 @@ export class TabView extends TabViewBase {
 				try { view.callLoaded?.(); } catch (_e) {}
 			}
 		} else if (!native) {
-			// nativeViewProtected not yet created — defer until after the layout pass.
+			// nativeViewProtected not yet created. Defer until after the layout pass.
 			setTimeout(() => {
 				if (!this._contentArea) return;
 				const deferred = (this.items?.[index] as any)?.view;

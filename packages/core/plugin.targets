@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  @nativescript/core — Windows plugin targets.
+  @nativescript/core: Windows plugin targets.
 
   Copies the active-architecture NativeScript.Widgets C++/WinRT component (its
   native .dll + .winmd metadata) to the package root ($(OutDir)). The runtime
@@ -37,13 +37,13 @@
     Registers the NativeScript.Widgets C++/WinRT runtimeclasses as an in-proc activatable-class
     server in the app's Package.appxmanifest, so the OS RoGetActivationFactory can create them.
     Owned here in @nativescript/core (which ships the DLL) so apps NEVER hand-maintain the list in
-    their App_Resources manifest — adding a new C++ widget class only requires updating
+    their App_Resources manifest: adding a new C++ widget class only requires updating
     NSWidgetsActivatableClass below. The injection is idempotent (skips classes already present),
     so it is safe even if an app's manifest still lists some entries.
 
     Runs after the app's manifest overrides/merge (ApplyManifestOverrides / MergeAppResourcesManifest
     in the Windows project template's Directory.Build.targets), while the manifest is still being
-    assembled in the BeforeBuild phase — before the appx packaging consumes it.
+    assembled in the BeforeBuild phase, before the appx packaging consumes it.
   -->
   <ItemGroup>
     <!-- Keep in sync with the runtimeclasses exported by NativeScript.Widgets.dll. -->

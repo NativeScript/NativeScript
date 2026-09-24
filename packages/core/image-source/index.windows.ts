@@ -45,7 +45,7 @@ function fileUri(filePath: string): string {
 	return 'file:///' + filePath.replace(/\\/g, '/');
 }
 
-// Packaged MSIX apps cannot load bundled assets via file:// — currentApp().path is the
+// Packaged MSIX apps cannot load bundled assets via file://: currentApp().path is the
 // InstalledLocation, which is access-restricted for file:// URIs (BitmapImage.ImageFailed fires).
 // App-relative ~/ paths must use the ms-appx:/// scheme instead (the same scheme the
 // background-image path already relies on). Other schemes / absolute paths pass through fileUri.
@@ -85,7 +85,7 @@ function bufferToStream(buffer: any): Promise<any> {
 
 function bitmapFromStream(stream: any): Promise<any> {
 	return new Promise((resolve, reject) => {
-		// BitmapImage has UI thread affinity — create and load on the UI thread.
+		// BitmapImage has UI thread affinity. Create and load on the UI thread.
 		const create = () => {
 			try {
 				(stream as any).Seek(0);
