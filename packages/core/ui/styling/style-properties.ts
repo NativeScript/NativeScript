@@ -1058,7 +1058,7 @@ export const cornerShapeProperty = new CssProperty<Style, CoreTypes.IOSCornerSha
 	cssName: 'corner-shape',
 	defaultValue: CoreTypes.CornerShape.round,
 	// Only CALayer can draw `continuous`; other platforms keep the spec grammar.
-	valueConverter: __APPLE__ ? CoreTypes.IOSCornerShape.parse : CoreTypes.CornerShape.parse,
+	valueConverter: (value) => (__APPLE__ ? CoreTypes.IOSCornerShape.parse(value) : CoreTypes.CornerShape.parse(value)),
 	valueChanged: (target, oldValue, newValue) => {
 		target.backgroundInternal = target.backgroundInternal.withCornerShape(newValue);
 	},

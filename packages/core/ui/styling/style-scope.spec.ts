@@ -1,8 +1,29 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 
 import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
+
+function onAndroid(): void {
+	let previousApple: boolean;
+	let previousIOS: boolean;
+	let previousAndroid: boolean;
+
+	beforeEach(() => {
+		previousApple = (globalThis as any).__APPLE__;
+		previousIOS = (globalThis as any).__IOS__;
+		previousAndroid = (globalThis as any).__ANDROID__;
+		(globalThis as any).__APPLE__ = false;
+		(globalThis as any).__IOS__ = false;
+		(globalThis as any).__ANDROID__ = true;
+	});
+
+	afterEach(() => {
+		(globalThis as any).__APPLE__ = previousApple;
+		(globalThis as any).__IOS__ = previousIOS;
+		(globalThis as any).__ANDROID__ = previousAndroid;
+	});
+}
 
 /**
  * Counts how many times css applies a value to a style property, by wrapping the
@@ -82,6 +103,31 @@ describe('-ios-corner-shape alias', () => {
 		applyInlineStyle(view, '-ios-corner-shape: continuous');
 
 		expect(view.style.cornerShape).toBe('continuous');
+	});
+});
+
+describe('-ios-corner-shape alias on Android', () => {
+	onAndroid();
+
+	it('is dropped from the cascade', () => {
+		const { view } = styled('label { corner-shape: squircle; -ios-corner-shape: continuous; }');
+		view._cssState.onLoaded();
+
+		expect(view.style.cornerShape).toBe('squircle');
+	});
+
+	it('leaves corner-shape at its default when declared alone', () => {
+		const { view } = styled('label { -ios-corner-shape: continuous; }');
+		view._cssState.onLoaded();
+
+		expect(view.style.cornerShape).toBe('round');
+	});
+
+	it('is ignored in an inline style', () => {
+		const view = new Label();
+		applyInlineStyle(view, '-ios-corner-shape: continuous');
+
+		expect(view.style.cornerShape).toBe('round');
 	});
 });
 
