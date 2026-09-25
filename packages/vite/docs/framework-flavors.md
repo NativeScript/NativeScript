@@ -97,7 +97,7 @@ Register at module scope, before `baseConfig` can run. `baseConfig` installs the
 
 `getTypeCheckPlugins` takes the *kind* of type-check, not the flavor name: `'typescript'` for a `.ts`/`.tsx` project, `'vue'` for `vue-tsc`.
 
-When a TypeScript project imports `.tsrx` files and has `@tsrx/typescript-plugin` installed, the build-time checker delegates to `tsrx-tsc` so TSRX files are transformed for type checking. The checker passes only the files selected for the current NativeScript platform.
+When a TypeScript project imports `.tsrx` files and has `@tsrx/typescript-plugin` installed, the build-time checker delegates to `tsrx-tsc` so TSRX files are transformed for type checking. It runs `tsrx-tsc` against a generated tsconfig under `node_modules/.ns-vite/` that extends the project's tsconfig, lists only the files selected for the current NativeScript platform, and declares `tsrx.platform` for that platform (`ios` for visionOS) so platform guards compile the way the build does. Without the plugin installed, `.tsrx` imports surface as unresolved modules in the regular check, with a hint to install it.
 
 ### Keeping a runtime package out of the dev vendor bundle
 
