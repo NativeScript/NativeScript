@@ -24,19 +24,19 @@ export class Font extends FontBase {
 	}
 
 	public withFontWeight(weight: FontWeightType): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, 1, this.fontVariationSettings);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale, this.fontVariationSettings);
 	}
 
 	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
+		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale, this.fontVariationSettings);
 	}
 
 	public withFontScale(scale: number): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale, this.fontVariationSettings);
 	}
 
 	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, 1, variationSettings);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, variationSettings);
 	}
 
 	getAndroidTypeface(): android.graphics.Typeface {
