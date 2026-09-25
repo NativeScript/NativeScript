@@ -280,6 +280,13 @@ export namespace CoreTypes {
 		export const parse = makeParser<CornerShapeType>(isValid);
 	}
 
+	export type IOSCornerShapeType = CornerShapeType | 'continuous';
+	export namespace IOSCornerShape {
+		export const continuous: IOSCornerShapeType = 'continuous';
+		export const isValid = makeValidator<IOSCornerShapeType>(CornerShape.round, CornerShape.squircle, continuous);
+		export const parse = makeParser<IOSCornerShapeType>(isValid);
+	}
+
 	export namespace AnimationCurve {
 		export const ease = 'ease';
 		export const easeIn = 'easeIn';

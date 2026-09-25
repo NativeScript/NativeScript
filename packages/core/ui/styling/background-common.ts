@@ -39,7 +39,7 @@ export class Background {
 	public borderTopRightRadius = 0;
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
-	public cornerShape: CoreTypes.CornerShapeType = CoreTypes.CornerShape.round;
+	public cornerShape: CoreTypes.IOSCornerShapeType = CoreTypes.CornerShape.round;
 	public clipPath: string | ClipPathFunction;
 	public boxShadows: BoxShadow[];
 	public clearFlags: number = BackgroundClearFlags.NONE;
@@ -194,7 +194,7 @@ export class Background {
 		return clone;
 	}
 
-	public withCornerShape(value: CoreTypes.CornerShapeType): Background {
+	public withCornerShape(value: CoreTypes.IOSCornerShapeType): Background {
 		const clone = this.clone();
 		clone.cornerShape = value;
 
