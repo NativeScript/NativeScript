@@ -60,4 +60,28 @@ describe('corner-shape', () => {
 
 		expect(() => (label.style.cornerShape = 'bevel' as any)).toThrow();
 	});
+
+	it('accepts continuous on Apple platforms', () => {
+		const label = new Label();
+		label.style.cornerShape = 'continuous';
+
+		expect(label.style.backgroundInternal.cornerShape).toBe('continuous');
+	});
+});
+
+describe('-ios-corner-shape', () => {
+	it('sets corner-shape and reads it back', () => {
+		const label = new Label();
+		label.style.iosCornerShape = 'continuous';
+
+		expect(label.style.cornerShape).toBe('continuous');
+		expect(label.style.iosCornerShape).toBe('continuous');
+		expect(label.style.backgroundInternal.cornerShape).toBe('continuous');
+	});
+
+	it('rejects unknown keywords', () => {
+		const label = new Label();
+
+		expect(() => (label.style.iosCornerShape = 'bevel' as any)).toThrow();
+	});
 });

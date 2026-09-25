@@ -43,6 +43,48 @@ function styled(css: string, className?: string): { view: any; scope: StyleScope
 	return { view, scope };
 }
 
+describe('-ios-corner-shape alias', () => {
+	it('cascades in place of corner-shape, so the later declaration wins', () => {
+		const { view } = styled('label { corner-shape: squircle; -ios-corner-shape: continuous; }');
+		view._cssState.onLoaded();
+
+		expect(view.style.cornerShape).toBe('continuous');
+	});
+
+	it('loses to a later corner-shape declaration', () => {
+		const { view } = styled('label { -ios-corner-shape: continuous; corner-shape: squircle; }');
+		view._cssState.onLoaded();
+
+		expect(view.style.cornerShape).toBe('squircle');
+	});
+
+	it('follows specificity like any other declaration', () => {
+		const { view } = styled('label.card { corner-shape: squircle; } label { -ios-corner-shape: continuous; }');
+		view.className = 'card';
+		view._cssState.onLoaded();
+
+		expect(view.style.cornerShape).toBe('squircle');
+	});
+
+	it('is unset when its rule stops matching', () => {
+		const { view } = styled('label:highlighted { -ios-corner-shape: continuous; }');
+		view._cssState.onLoaded();
+
+		view.addPseudoClass('highlighted');
+		expect(view.style.cornerShape).toBe('continuous');
+
+		view.deletePseudoClass('highlighted');
+		expect(view.style.cornerShape).toBe('round');
+	});
+
+	it('applies from an inline style', () => {
+		const view = new Label();
+		applyInlineStyle(view, '-ios-corner-shape: continuous');
+
+		expect(view.style.cornerShape).toBe('continuous');
+	});
+});
+
 describe('CssState.setPropertyValues', () => {
 	it('applies matched declarations', () => {
 		const { view } = styled('label { color: red; }');
