@@ -50,12 +50,26 @@ export type IosOverlayRefs = {
 	currentPosition: HmrOverlayPosition;
 };
 
+export type AndroidOverlayRefs = {
+	decor: any;
+	root: any;
+	panel: any;
+	panelBackground: any;
+	titleLabel: any;
+	statusLabel: any;
+	density: number;
+	wasVisible: boolean;
+	currentPosition: HmrOverlayPosition;
+};
+
 export type HmrOverlayRuntimeState = {
 	snapshot: HmrOverlaySnapshot;
 	bootRefs: BootOverlayRefs | null;
 	liveRefs: LiveOverlayRefs | null;
 	iosRefs: IosOverlayRefs | null;
 	iosBuildFailed: boolean;
+	androidRefs: AndroidOverlayRefs | null;
+	androidBuildFailed: boolean;
 	verbose: boolean;
 	// Single auto-hide timer for HMR apply completions. Held on the
 	// runtime state (not per-API-instance) so re-entrant calls from
@@ -104,6 +118,8 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 			liveRefs: null,
 			iosRefs: null,
 			iosBuildFailed: false,
+			androidRefs: null,
+			androidBuildFailed: false,
 			verbose: false,
 			updateAutoHideTimer: null,
 			updateCycleStartedAt: 0,
@@ -114,6 +130,8 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 	// so we never observe an undefined iosRefs/iosBuildFailed at runtime.
 	if (typeof state.iosRefs === 'undefined') state.iosRefs = null;
 	if (typeof state.iosBuildFailed === 'undefined') state.iosBuildFailed = false;
+	if (typeof state.androidRefs === 'undefined') state.androidRefs = null;
+	if (typeof state.androidBuildFailed === 'undefined') state.androidBuildFailed = false;
 	if (typeof state.updateAutoHideTimer === 'undefined') state.updateAutoHideTimer = null;
 	if (typeof state.updateCycleStartedAt !== 'number') state.updateCycleStartedAt = 0;
 	return state as HmrOverlayRuntimeState;
