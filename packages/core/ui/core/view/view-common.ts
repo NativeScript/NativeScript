@@ -1341,10 +1341,6 @@ export abstract class ViewCommon extends ViewBase {
 		this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, availableHeight);
 	}
 
-	public _setNativeClipToBounds() {
-		//
-	}
-
 	public _redrawNativeBackground(value: any): void {
 		//
 	}

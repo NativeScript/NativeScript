@@ -479,8 +479,6 @@ export class ListView extends ListViewBase {
 			}
 			// When stickyHeaderTopPadding is true, don't set the property to use iOS default
 		}
-
-		this._setNativeClipToBounds();
 	}
 
 	disposeNativeView() {
@@ -631,14 +629,6 @@ export class ListView extends ListViewBase {
 			parent = parent.parent;
 		}
 		return null;
-	}
-
-	_setNativeClipToBounds() {
-		// Always set clipsToBounds for list-view
-		const view = this.nativeViewProtected;
-		if (view) {
-			view.clipsToBounds = true;
-		}
 	}
 
 	@profile

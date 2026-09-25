@@ -1,4 +1,3 @@
-import type { NativeScriptUIView } from '../../utils';
 import { supportsGlass } from '../../../utils/constants';
 import { GlassEffectType, iosGlassEffectProperty, View } from '../../core/view';
 import { LiquidGlassContainerCommon } from './liquid-glass-container-common';
@@ -36,18 +35,13 @@ export class LiquidGlassContainer extends LiquidGlassContainerCommon {
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
 		const parentNativeView = this._contentHost;
-		const childNativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
+		const childNativeView = child.nativeViewProtected;
 
 		if (parentNativeView && childNativeView) {
 			if (typeof atIndex !== 'number' || atIndex >= parentNativeView.subviews.count) {
 				parentNativeView.addSubview(childNativeView);
 			} else {
 				parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
-			}
-
-			// Add outer shadow layer manually as it belongs to parent layer tree (this is needed for reusable views)
-			if (childNativeView.outerShadowContainerLayer && !childNativeView.outerShadowContainerLayer.superlayer) {
-				this.nativeViewProtected.layer.insertSublayerBelow(childNativeView.outerShadowContainerLayer, childNativeView.layer);
 			}
 
 			// Normalize in case the child comes in with a residual translate from a previous state
