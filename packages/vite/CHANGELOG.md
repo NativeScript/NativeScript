@@ -1,3 +1,13 @@
+## 8.0.13 (2026-09-25)
+
+### 🩹 Fixes
+
+- **vite:** android dev overlay improvements ([345acfc51](https://github.com/NativeScript/NativeScript/commit/345acfc51))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.12 (2026-09-25)
 
 ### 🩹 Fixes
