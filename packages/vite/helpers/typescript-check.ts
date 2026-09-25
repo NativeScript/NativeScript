@@ -110,82 +110,68 @@ function getTsrxPlatform(platform: PlatformType | undefined): 'ios' | 'android' 
 	}
 }
 
-function createTsrxCheckConfig(tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], platform: PlatformType | undefined): { configPath: string; cleanup: () => void } {
+function createTsrxCheckConfig(tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], platform: PlatformType | undefined): object {
+	const references = parsedConfig.projectReferences?.map(({ path: referencePath, prepend, circular }) => ({ path: referencePath, prepend, circular }));
+	const tsrxPlatform = getTsrxPlatform(platform);
+
+	return {
+		extends: path.resolve(tsConfigPath),
+		files: rootNames,
+		include: [],
+		...(references?.length ? { references } : {}),
+		// The nearest tsconfig layer wins over the project's tsrx.platform.
+		...(tsrxPlatform ? { tsrx: { platform: tsrxPlatform } } : {}),
+		compilerOptions: {
+			noEmit: true,
+			incremental: false,
+			moduleSuffixes: getModuleSuffixes(platform),
+		},
+	};
+}
+
+function runTsrxTypeCheck(binPath: string, opts: { platform?: PlatformType; verbose?: boolean; logDiagnostics?: boolean }, tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], failOnError: boolean): void {
 	// TypeScript resolves typeRoots and `types` entries from the config's directory.
 	const scratchRoot = path.join(getProjectRootPath(), 'node_modules', '.ns-vite');
 	fs.mkdirSync(scratchRoot, { recursive: true });
 	const tempDir = fs.mkdtempSync(path.join(scratchRoot, 'tsrx-check-'));
-	const configPath = path.join(tempDir, 'tsconfig.json');
-	const references = parsedConfig.projectReferences?.map(({ path: referencePath, prepend, circular }) => ({ path: referencePath, prepend, circular }));
-	const tsrxPlatform = getTsrxPlatform(platform);
-
 	try {
-		fs.writeFileSync(
-			configPath,
-			JSON.stringify(
-				{
-					extends: path.resolve(tsConfigPath),
-					files: rootNames,
-					include: [],
-					...(references?.length ? { references } : {}),
-					// The nearest tsconfig layer wins over the project's tsrx.platform.
-					...(tsrxPlatform ? { tsrx: { platform: tsrxPlatform } } : {}),
-					compilerOptions: {
-						noEmit: true,
-						incremental: false,
-						moduleSuffixes: getModuleSuffixes(platform),
-					},
-				},
-				null,
-				2,
-			),
-		);
-	} catch (error) {
+		const configPath = path.join(tempDir, 'tsconfig.json');
+		fs.writeFileSync(configPath, JSON.stringify(createTsrxCheckConfig(tsConfigPath, parsedConfig, rootNames, opts.platform)));
+		runTscBinary('tsrx-tsc', [binPath, '--pretty', '-p', configPath], opts, failOnError);
+	} finally {
 		fs.rmSync(tempDir, { recursive: true, force: true });
-		throw error;
 	}
-
-	return {
-		configPath,
-		cleanup: () => fs.rmSync(tempDir, { recursive: true, force: true }),
-	};
 }
 
-function runTsrxTypeCheck(binPath: string, options: { platform?: PlatformType; verbose?: boolean; logDiagnostics?: boolean }, tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], failOnError: boolean): void {
-	const config = createTsrxCheckConfig(tsConfigPath, parsedConfig, rootNames, options.platform);
-	let result: ReturnType<typeof spawnSync>;
-	try {
-		result = spawnSync(process.execPath, [binPath, '--pretty', '-p', config.configPath], {
-			cwd: process.cwd(),
-			env: { ...process.env, FORCE_COLOR: '1' },
-			encoding: 'utf8',
-		});
-	} finally {
-		config.cleanup();
-	}
+function runTscBinary(tool: string, args: string[], opts: { verbose?: boolean; logDiagnostics?: boolean }, failOnError: boolean): void {
+	const result = spawnSync(process.execPath, args, {
+		cwd: process.cwd(),
+		env: { ...process.env, FORCE_COLOR: '1' },
+		encoding: 'utf8',
+	});
 
 	if (result.error) {
 		throw result.error;
 	}
 
 	if (result.status === 0) {
-		if (options.verbose) {
-			console.log(`[ns-vite] TSRX TypeScript check passed (${rootNames.length} files).`);
+		if (opts.verbose) {
+			console.log(`[ns-vite] ${tool} check passed.`);
 		}
 		return;
 	}
 
 	const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
-	if (output && options.logDiagnostics !== false) {
+	if (output && opts.logDiagnostics !== false) {
 		(failOnError ? console.error : console.warn)(output);
 	}
 
 	if (!failOnError) {
-		console.warn('[ns-vite] tsrx-tsc reported type errors; continuing build because tsconfig does not require failing on type errors.');
+		console.warn(`[ns-vite] ${tool} reported type errors; continuing build because tsconfig does not require failing on type errors.`);
 		return;
 	}
 
-	throw new Error('[ns-vite] tsrx-tsc reported type errors.');
+	throw new Error(`[ns-vite] ${tool} reported type errors.`);
 }
 
 function coerceBoolean(value: unknown): boolean | undefined {
@@ -468,34 +454,7 @@ export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: bo
 
 			const vueTscBinPath = getVueTscBinPath();
 			const moduleSuffixes = getModuleSuffixes(opts.platform).join(',');
-			const result = spawnSync(process.execPath, [vueTscBinPath, '--noEmit', '--pretty', '-p', tsConfigPath, '--moduleSuffixes', moduleSuffixes], {
-				cwd: process.cwd(),
-				env: { ...process.env, FORCE_COLOR: '1' },
-				encoding: 'utf8',
-			});
-
-			if (result.error) {
-				throw result.error;
-			}
-
-			if (result.status === 0) {
-				if (opts.verbose) {
-					console.log('[ns-vite] vue-tsc check passed.');
-				}
-				return;
-			}
-
-			const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
-			if (output && opts.logDiagnostics !== false) {
-				(failOnError ? console.error : console.warn)(output);
-			}
-
-			if (!failOnError) {
-				console.warn('[ns-vite] vue-tsc reported type errors; continuing build because tsconfig does not require failing on type errors.');
-				return;
-			}
-
-			throw new Error('[ns-vite] vue-tsc reported type errors.');
+			runTscBinary('vue-tsc', [vueTscBinPath, '--noEmit', '--pretty', '-p', tsConfigPath, '--moduleSuffixes', moduleSuffixes], opts, failOnError);
 		},
 	};
 }
