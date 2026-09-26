@@ -2,6 +2,7 @@ export * from './stack-layout-common';
 
 import { StackLayoutBase, orientationProperty } from './stack-layout-common';
 import type { ViewCommon } from '../../core/view/view-common';
+import { removeNativeChild } from '../../core/view/native-children.windows';
 
 export class StackLayout extends StackLayoutBase {
     // Border wrapper carries Padding; the inner NativeScript.Widgets.StackLayout (C++/WinRT, no DotNetBridge)
@@ -52,15 +53,9 @@ export class StackLayout extends StackLayoutBase {
 
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
         const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.UIElement;
-        if (nativeChild) {
-            const children = this._panel.Children;
-            const count: number = children?.Size ?? 0;
-            for (let i = 0; i < count; i++) {
-                if (children.GetAt(i) === nativeChild) {
-                    children.RemoveAt(i);
-                    break;
-                }
-            }
+        const children = this._panel.Children;
+        if (nativeChild && children) {
+            removeNativeChild(children, nativeChild);
         }
         super._removeViewFromNativeVisualTree(child);
     }

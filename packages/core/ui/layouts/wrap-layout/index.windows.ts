@@ -2,6 +2,7 @@ export * from './wrap-layout-common';
 
 import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty } from './wrap-layout-common';
 import { View } from '../../core/view';
+import { removeNativeChild } from '../../core/view/native-children.windows';
 
 // XAML owns measure/arrange so the shared onMeasure/onLayout is a no-op on Windows.
 // Wrapping is implemented manually (same as FlexboxLayout): a Canvas whose children are
@@ -64,15 +65,7 @@ export class WrapLayout extends WrapLayoutBase {
 		const nativeChild = (child as any).nativeViewProtected as Microsoft.UI.Xaml.UIElement;
 		const children = this._canvas?.Children;
 		if (nativeChild && children) {
-			const count: number = children.Size ?? 0;
-			for (let i = 0; i < count; i++) {
-				try {
-					if (children.GetAt(i) === nativeChild) {
-						children.RemoveAt(i);
-						break;
-					}
-				} catch (_e) {}
-			}
+			removeNativeChild(children, nativeChild);
 		}
 		super._removeViewFromNativeVisualTree(child);
 		this._runWrapLayout();

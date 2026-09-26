@@ -82,6 +82,7 @@
     <ClInclude Include="ShadowImageResult.h" />
     <ClInclude Include="ShadowHelper.h" />
     <ClInclude Include="ClipHelper.h" />
+    <ClInclude Include="PanelHelper.h" />
     <ClInclude Include="FontHelper.h" />
     <ClInclude Include="ScrollHelper.h" />
     <ClInclude Include="TileHelper.h" />
@@ -96,6 +97,7 @@
     <ClCompile Include="ImageHelper.cpp" />
     <ClCompile Include="ShadowHelper.cpp" />
     <ClCompile Include="ClipHelper.cpp" />
+    <ClCompile Include="PanelHelper.cpp" />
     <ClCompile Include="FontHelper.cpp" />
     <ClCompile Include="ScrollHelper.cpp" />
     <ClCompile Include="TileHelper.cpp" />
@@ -115,6 +117,7 @@
     <Midl Include="ImageHelper.idl" />
     <Midl Include="ShadowHelper.idl" />
     <Midl Include="ClipHelper.idl" />
+    <Midl Include="PanelHelper.idl" />
     <Midl Include="FontHelper.idl" />
     <Midl Include="ScrollHelper.idl" />
     <Midl Include="TileHelper.idl" />

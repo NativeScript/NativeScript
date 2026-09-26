@@ -47,6 +47,10 @@ declare namespace NativeScript.Widgets {
       readonly RawBuffer: Windows.Storage.Streams.IBuffer;
       readonly Width: number;
     }
+    class PanelHelper {
+      static IndexOf(result: Microsoft.UI.Xaml.Controls.UIElementCollection, children: Microsoft.UI.Xaml.UIElement): number;
+      static Remove(result: Microsoft.UI.Xaml.Controls.UIElementCollection, children: Microsoft.UI.Xaml.UIElement): boolean;
+    }
     class ScrollHelper {
       static ScrollToVerticalOffset(result: Microsoft.UI.Xaml.UIElement, element: number, offset: boolean): boolean;
       static ScrollToHorizontalOffset(result: Microsoft.UI.Xaml.UIElement, element: number, offset: boolean): boolean;

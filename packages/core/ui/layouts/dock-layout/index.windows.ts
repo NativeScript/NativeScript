@@ -2,6 +2,7 @@ export * from './dock-layout-common';
 
 import { DockLayoutBase, stretchLastChildProperty } from './dock-layout-common';
 import { View } from '../../core/view';
+import { removeNativeChild } from '../../core/view/native-children.windows';
 import type { CoreTypes } from '../../../core-types';
 
 export class DockLayout extends DockLayoutBase {
@@ -76,15 +77,7 @@ export class DockLayout extends DockLayoutBase {
 		const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.UIElement;
 		const children = this._canvas?.Children;
 		if (nativeChild && children) {
-			const count: number = children.Size ?? 0;
-			for (let i = 0; i < count; i++) {
-				try {
-					if (children.GetAt(i) === nativeChild) {
-						children.RemoveAt(i);
-						break;
-					}
-				} catch (_e) { }
-			}
+			removeNativeChild(children, nativeChild);
 		}
 		super._removeViewFromNativeVisualTree(child);
 		this._runDockLayout();

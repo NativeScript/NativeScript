@@ -333,10 +333,13 @@ export class TextBase extends TextBaseCommon {
 				if (brush) {
 					this.nativeTextViewProtected.Foreground = brush;
 					// Override ButtonForeground resource so the XAML template binding picks up
-					// our colour even when the Normal-state VSM animation replaces it.
-					try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForeground', brush); } catch (_re) {}
-					try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForegroundPointerOver', brush); } catch (_re) {}
-					try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForegroundPressed', brush); } catch (_re) {}
+					// our colour even when the Normal-state VSM animation replaces it. Reading
+					// Resources on anything else creates a dictionary nothing uses.
+					if ((this as any)._nativeIsButton()) {
+						try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForeground', brush); } catch (_re) {}
+						try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForegroundPointerOver', brush); } catch (_re) {}
+						try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForegroundPressed', brush); } catch (_re) {}
+					}
 				}
 			} catch (_e) { }
 		}

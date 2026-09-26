@@ -5,6 +5,7 @@ import { hintProperty, editableProperty, maxLengthProperty, keyboardTypeProperty
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import type { CoreTypes } from '../../core-types';
+import { nativeChildIndex } from '../core/view/native-children.windows';
 
 const KEYBOARD_SCOPE: Record<string, number> = {
 	number: 29,
@@ -113,15 +114,11 @@ export class TextField extends TextFieldBase {
 		let swapped = false;
 		if (visualParent) {
 			const children = (visualParent as Microsoft.UI.Xaml.Controls.Panel).Children;
-			if (children && typeof children.Size === 'number') {
-				for (let i = 0; i < children.Size; i++) {
-					if (children.GetAt(i) === prev) {
-						children.RemoveAt(i);
-						children.InsertAt(i, newView); // preserve position
-						swapped = true;
-						break;
-					}
-				}
+			const index = children ? nativeChildIndex(children, prev) : -1;
+			if (index >= 0) {
+				children.RemoveAt(index);
+				children.InsertAt(index, newView);
+				swapped = true;
 			}
 			if (!swapped) {
 				const contentHost = visualParent as Microsoft.UI.Xaml.Controls.ContentControl;

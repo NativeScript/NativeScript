@@ -52,6 +52,7 @@
     <NSWidgetsActivatableClass Include="NativeScript.Widgets.ImageHelper" />
     <NSWidgetsActivatableClass Include="NativeScript.Widgets.ShadowHelper" />
     <NSWidgetsActivatableClass Include="NativeScript.Widgets.ClipHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.PanelHelper" />
     <NSWidgetsActivatableClass Include="NativeScript.Widgets.FontHelper" />
     <NSWidgetsActivatableClass Include="NativeScript.Widgets.ScrollHelper" />
     <NSWidgetsActivatableClass Include="NativeScript.Widgets.TileHelper" />

@@ -16,6 +16,7 @@ import { hiddenProperty } from '../view-base';
 import { getCurrentWindowBounds, getCurrentWindowContent } from '../../../application/window-helper.windows';
 import { ImageSource } from '../../../image-source';
 import { ClipPathFunction } from '../../styling/clip-path-function';
+import { nativeChildIndex, removeNativeChild } from './native-children.windows';
 type WindowsColor = Color & { windows: Windows.UI.Color, windowsArgb: number };
 
 // Windows.UI.Color is a plain {A,R,G,B} struct. Bridge reads fields directly, no WinRT call needed.
@@ -430,13 +431,7 @@ class CompositionBorderHandler {
 
 			// Insert behind the element (lower index = lower z). Always inserting at the element's index
 			// pushes earlier-inserted images up, so the first-listed shadow ends up nearest (per CSS).
-			let idx = -1;
-			for (let i = 0; i < kids.Size; i++) {
-				if (kids.GetAt(i) === el) {
-					idx = i;
-					break;
-				}
-			}
+			const idx = nativeChildIndex(kids, el);
 			for (const entry of built) {
 				if (idx < 0) {
 					kids.Append(entry.host);
@@ -519,19 +514,14 @@ class CompositionBorderHandler {
 		if (count <= 0) {
 			return;
 		}
-		// Remove by position, not identity: collection has no Remove()/IndexOf; GetAt returns a fresh
-		// JS wrapper per call so `=== img` is false. Only `GetAt(i) === el` is stable. Shadow images
-		// are the `count` siblings immediately before the element. Find el, RemoveAt the slots before it.
+		// Shadow images are the `count` siblings immediately before the element; remove those slots.
 		const kids = this._shadowKids as { Size: number; GetAt: (i: number) => unknown; RemoveAt: (i: number) => void } | null;
 		const el = this._element;
 		if (!kids || typeof kids.Size !== 'number' || !el) {
 			return;
 		}
 		try {
-			let elIdx = -1;
-			for (let i = 0; i < kids.Size; i++) {
-				if (kids.GetAt(i) === el) { elIdx = i; break; }
-			}
+			const elIdx = nativeChildIndex(kids as never, el);
 			if (elIdx < 0) {
 				return;
 			}
@@ -593,10 +583,7 @@ class CompositionBorderHandler {
 				G.SetColumnSpan(img, G.GetColumnSpan(el));
 			} catch (_e) { }
 			// Insert immediately AFTER the element (just above it in z-order).
-			let elIdx = -1;
-			for (let i = 0; i < kids.Size; i++) {
-				if (kids.GetAt(i) === el) { elIdx = i; break; }
-			}
+			const elIdx = nativeChildIndex(kids as never, el);
 			if (elIdx < 0 || elIdx + 1 >= kids.Size) {
 				kids.Append(img);
 			} else {
@@ -620,10 +607,7 @@ class CompositionBorderHandler {
 		try {
 			// Overlay sits immediately after the element (or last if appended). Position-based removal
 			// since wrapper identity for our Image is unreliable (fresh wrapper per GetAt).
-			let elIdx = -1;
-			for (let i = 0; i < kids.Size; i++) {
-				if (kids.GetAt(i) === el) { elIdx = i; break; }
-			}
+			const elIdx = nativeChildIndex(kids as never, el);
 			if (elIdx >= 0 && elIdx + 1 < kids.Size) {
 				kids.RemoveAt(elIdx + 1);
 			} else if (kids.Size > 0) {
@@ -665,7 +649,7 @@ export class View extends ViewCommon {
 	private _lastRadiusSig: string | null = null;  // skip CornerRadius set when unchanged
 	private _lastBorderSig: string | null = null;  // skip BorderThickness/UpdateBorder when unchanged
 	private _lastSizeDepSig: string | null = null; // skip ALL of Phase 2 when no size-dependent input changed (color-only rebind)
-	private _isNativeButton: boolean | null = null; // cached once in initNativeView. Avoids per-call 'in' check
+	private _isNativeButton: boolean | null = null;
 	private _lastMarginSig: string | null = null;  // coalesce the 4 individual margin setNative calls into 1 WinRT set
 	private _lastPaddingSig: string | null = null; // coalesce the 4 individual padding setNative calls into 1 WinRT set
 	private _lastClipSig: string | null = null;    // skip clip-path rebuild when shape+dims unchanged
@@ -746,11 +730,8 @@ export class View extends ViewCommon {
 		const native = this.nativeViewProtected as any;
 		if (!native) return;
 
-		const background = value as Background;
-
-		if (!(background && typeof background === 'object')) {
-			return;
-		}
+		// A reset passes the property default; drawing the empty background clears what was painted.
+		const background = value instanceof Background ? value : Background.default;
 
 		// Wire size watcher for size-dependent backgrounds (border/shadow/clip/radius/image). Not wired
 		// on every view so plain views skip SizeChanged and fast scroll stays cheap.
@@ -852,7 +833,7 @@ export class View extends ViewCommon {
 							// Normal-state animation. Override the ButtonBackground theme resource on the
 							// instance so the template binding picks up our colour. (Only for actual Buttons.
 							// Resources.Insert on a non-Button creates a useless ResourceDictionary.)
-							if (this._isNativeButton) {
+							if (this._nativeIsButton()) {
 								try { native.Resources.Insert('ButtonBackground', brush); } catch (_re) { }
 								try { native.Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_re) { }
 								try { native.Resources.Insert('ButtonBackgroundPressed', brush); } catch (_re) { }
@@ -864,7 +845,7 @@ export class View extends ViewCommon {
 				} else {
 					// Transparent color (winColor = null): XAML default Background is null for non-buttons.
 					this._colorAnimBrush = null;
-					if (this._isNativeButton || _prevStaticSig !== null) {
+					if (this._nativeIsButton() || _prevStaticSig !== null) {
 						native.Background = null;
 					}
 				}
@@ -872,7 +853,7 @@ export class View extends ViewCommon {
 				// No color, no image. Same result as transparent.
 				this._colorAnimBrush = null;
 				// Skip null-set on fresh non-button views (XAML default is already null).
-				if (this._isNativeButton || _prevStaticSig !== null) {
+				if (this._nativeIsButton() || _prevStaticSig !== null) {
 					native.Background = null;
 				}
 			}
@@ -998,7 +979,7 @@ export class View extends ViewCommon {
 								native.BorderBrush = borderBrush;
 								// Button VSM overrides BorderBrush via {ThemeResource ButtonBorderBrush}.
 								// Insert into the instance ResourceDictionary so the binding resolves our value.
-								if (this._isNativeButton && borderBrush) {
+								if (this._nativeIsButton() && borderBrush) {
 									try { native.Resources.Insert('ButtonBorderBrush', borderBrush); } catch (_re) { }
 									try { native.Resources.Insert('ButtonBorderBrushPointerOver', borderBrush); } catch (_re) { }
 									try { native.Resources.Insert('ButtonBorderBrushPressed', borderBrush); } catch (_re) { }
@@ -1151,17 +1132,22 @@ export class View extends ViewCommon {
 		// Size-dependent work (percent sizing, border/shadow/clip redraw) is wired ON DEMAND via
 		// _ensureSizeWatch(). SizeChanged fires for every recycled cell + child during fast scroll;
 		// wiring it unconditionally crossed the JS bridge per cell and blocked scrolling.
-		//
-		// Cache whether this is a Button-family control (gates the button-template VSM resource inserts).
-		try {
-			const nv = this.nativeViewProtected as any;
-			// `in` is unreliable on COM proxy objects. Use direct property access instead.
-			// ClickMode is declared on ButtonBase (Button/AppBarButton/etc.) and returns 0 (Release)
-			// by default; non-button controls return `undefined` for absent properties.
-			this._isNativeButton = !!(nv && nv.ClickMode !== undefined);
-		} catch (_e) {
-			this._isNativeButton = false;
+	}
+
+	// Button-family controls override their template's brush resources. Probed on first need: most
+	// views never set a colour or background, and the probe is a WinRT call.
+	protected _nativeIsButton(): boolean {
+		if (this._isNativeButton === null) {
+			try {
+				// `in` is unreliable on COM proxy objects. ClickMode is declared on ButtonBase
+				// (Button/AppBarButton/etc.); other controls return undefined for it.
+				const nv = this.nativeViewProtected as any;
+				this._isNativeButton = !!(nv && nv.ClickMode !== undefined);
+			} catch (_e) {
+				this._isNativeButton = false;
+			}
 		}
+		return this._isNativeButton;
 	}
 
 	// Applies CSS clip-path by calling the C++ NativeScript.Widgets.ClipHelper, which performs
@@ -1375,16 +1361,24 @@ export class View extends ViewCommon {
 
 	disposeNativeView(): void {
 		const nativeView = this.nativeViewProtected as any;
-		if (nativeView) {
+		if (nativeView && this._sizeWatchWired) {
 			nativeView.SizeChanged = null;
 		}
 		// Reset so a recycled view re-wires on the next size-dependent property set.
 		this._sizeWatchWired = false;
 		this._sizeChangedDelegate = null;
-		// Reset background caches so recycled view re-applies on next use.
+		// Its shadow and border overlays are siblings in the old parent.
+		this._viewCompositionHandler?.Free();
+		this._viewCompositionHandler = null;
+		// Reset background caches so recycled view re-applies on next use; a stale size-dependent
+		// signature would skip radius and border on the new element.
 		this._lastStaticSig = null;
 		this._lastRadiusSig = null;
 		this._lastBorderSig = null;
+		this._lastSizeDepSig = null;
+		this._lastClipSig = null;
+		this._lastTileSig = null;
+		this._nativeBackgroundState = 'invalid';
 		this._isNativeButton = null;
 		this._lastMarginSig = null;
 		this._lastPaddingSig = null;
@@ -1459,13 +1453,7 @@ export class View extends ViewCommon {
 	}
 
 	[backgroundInternalProperty.getDefault](): any {
-		const native = this.nativeViewProtected as any;
-		if (!native) return null;
-		try {
-			return native.Background ?? null;
-		} catch (_e) {
-			return null;
-		}
+		return null;
 	}
 
 	private _viewCompositionHandler: any;
@@ -2055,9 +2043,8 @@ export class CustomLayoutView extends ContainerView {
 		if (nativeParent && nativeChild) {
 			const children = nativeParent.Children;
 			if (children) {
-				const size = children.Size;
 				try {
-					if (_atIndex >= 0 && _atIndex < size && _atIndex < Number.MAX_SAFE_INTEGER) {
+					if (_atIndex >= 0 && _atIndex < Number.MAX_SAFE_INTEGER && _atIndex < children.Size) {
 						children.InsertAt(_atIndex, nativeChild);
 					} else {
 						children.Append(nativeChild);
@@ -2065,8 +2052,6 @@ export class CustomLayoutView extends ContainerView {
 				} catch {
 					return false;
 				}
-
-				try { if (!(nativeChild as any).__ns_view) (nativeChild as any).__ns_view = child; } catch (_e) { }
 
 				// Do NOT call UpdateLayout() / InvalidateMeasure() / InvalidateArrange() here. Append() /
 				// InsertAt() already mark the child and parent panel dirty for the next layout pass. Forcing
@@ -2087,13 +2072,7 @@ export class CustomLayoutView extends ContainerView {
 		if (nativeParent && nativeChild) {
 			const children = nativeParent.Children;
 			if (children) {
-				const count = children.Size;
-				for (let i = 0; i < count; i++) {
-					if (children.GetAt(i) === nativeChild) {
-						children.RemoveAt(i);
-						break;
-					}
-				}
+				removeNativeChild(children, nativeChild);
 			}
 		}
 
