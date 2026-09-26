@@ -66,6 +66,11 @@ export namespace IOSHelper {
 	export function invalidateStatusBarAppearance(controller?: any /* UIViewController */, reason?: string): void;
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
+	/**
+	 * Add `childNativeView` to `parentNativeView` at subview index `atIndex`, or append it when the index is absent or past the end.
+	 * Uses `insertSubview:belowSubview:` — `insertSubview:atIndex:` resolves the index against the layer's sublayers, which also hold non-view layers (gradient backgrounds, shadow layers).
+	 */
+	export function insertSubview(parentNativeView: any /* UIView */, childNativeView: any /* UIView */, atIndex?: number): void;
 	export function layoutView(controller: any /* UIViewController */, owner: View): void;
 	export function getPositionFromFrame(frame: any /* CGRect */): Position;
 	export function getFrameFromPosition(position: Position, insets?: Position): any; /* CGRect */

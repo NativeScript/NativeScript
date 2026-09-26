@@ -1270,11 +1270,7 @@ export class CustomLayoutView extends ContainerView {
 		const childNativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
 
 		if (parentNativeView && childNativeView) {
-			if (typeof atIndex !== 'number' || atIndex >= parentNativeView.subviews.count) {
-				parentNativeView.addSubview(childNativeView);
-			} else {
-				parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
-			}
+			IOSHelper.insertSubview(parentNativeView, childNativeView, atIndex);
 
 			// Add outer shadow layer manually as it belongs to parent layer tree (this is needed for reusable views)
 			if (childNativeView.outerShadowContainerLayer && !childNativeView.outerShadowContainerLayer.superlayer) {
