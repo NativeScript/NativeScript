@@ -307,6 +307,22 @@ export namespace CoreTypes {
 		export const ltr = 'ltr';
 		export const rtl = 'rtl';
 	}
+
+	export type ScrollEdgeEffectType = 'automatic' | 'soft' | 'hard' | 'none';
+	export namespace ScrollEdgeEffect {
+		export const automatic = 'automatic';
+		export const soft = 'soft';
+		export const hard = 'hard';
+		export const none = 'none';
+	}
+
+	export type ScrollEdgeType = 'top' | 'bottom' | 'left' | 'right';
+	export namespace ScrollEdge {
+		export const top = 'top';
+		export const bottom = 'bottom';
+		export const left = 'left';
+		export const right = 'right';
+	}
 }
 
 /**
@@ -388,6 +404,8 @@ export const Enums = {
 	NavigationBarVisibility: CoreTypes.NavigationBarVisibility,
 	Orientation: CoreTypes.Orientation,
 	ReturnKeyType: CoreTypes.ReturnKeyType,
+	ScrollEdge: CoreTypes.ScrollEdge,
+	ScrollEdgeEffect: CoreTypes.ScrollEdgeEffect,
 	StatusBarStyle: CoreTypes.StatusBarStyle,
 	Stretch: CoreTypes.ImageStretch,
 	SystemAppearance: CoreTypes.SystemAppearance,
