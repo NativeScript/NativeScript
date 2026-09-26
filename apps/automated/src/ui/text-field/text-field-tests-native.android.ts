@@ -62,6 +62,10 @@ export function typeTextNatively(textField: TextField, text: string): void {
 	textField.android.clearFocus();
 }
 
+export function typeCharacterNatively(textField: TextField, character: string): void {
+	textField.android.append(character);
+}
+
 export function typeTextNativelyWithReturn(textField: TextField, text: string): void {
 	//
 }
