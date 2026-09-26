@@ -1,0 +1,29 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <GridLayout id="probe" backgroundColor="#166534" androidOverflowEdge="dont-apply">
+    <GridLayout backgroundColor="#1d4ed8" rows="auto, auto, *">
+      <StackLayout row="0" padding="12">
+        <Label text="Lifecycle and reset" color="#ffffff" fontWeight="bold" fontSize="17" />
+        <Label text="Two regressions live here: padding left behind when a view stops handling insets, and the inset event going quiet after the native view is recycled." color="#bfdbfe" fontSize="13" textWrap="true" />
+      </StackLayout>
+
+      <GridLayout row="1" columns="*, *" padding="8">
+        <Button col="0" text="run reset sequence" tap="{{ runReset }}" color="#ffffff" backgroundColor="#1e40af" />
+        <Button col="1" text="back" tap="{{ back }}" color="#ffffff" backgroundColor="#1e40af" />
+      </GridLayout>
+
+      <ScrollView row="2">
+        <StackLayout padding="12">
+          <Label text="reset sequence" color="#ffffff" fontWeight="bold" />
+          <Label text="{{ resetLog }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="{{ resetVerdict }}" color="#fde68a" fontSize="14" fontWeight="bold" textWrap="true" marginTop="8" />
+
+          <Label text="inset events per visit to this page" color="#ffffff" fontWeight="bold" marginTop="16" />
+          <Label text="{{ visitLog }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="{{ visitVerdict }}" color="#fde68a" fontSize="14" fontWeight="bold" textWrap="true" marginTop="8" />
+          <Label text="Leave with back and come straight back in. Every visit has to show a non-zero count." color="#bfdbfe" fontSize="13" textWrap="true" marginTop="4" />
+        </StackLayout>
+      </ScrollView>
+
+    </GridLayout>
+  </GridLayout>
+</Page>

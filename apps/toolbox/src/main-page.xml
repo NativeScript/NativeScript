@@ -36,6 +36,7 @@
         <Button text="webview" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="winter-tc" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="ete" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="ete/hub" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
       </StackLayout>
     </ScrollView>
   </StackLayout>
