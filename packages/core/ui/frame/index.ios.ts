@@ -362,7 +362,22 @@ export class Frame extends FrameBase {
 	}
 
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		//
+		const nativeView = this.nativeViewProtected;
+		const container = nativeView?.superview;
+		if (!container) {
+			return;
+		}
+
+		let parent = this.parent as View;
+		while (parent && !parent.nativeViewProtected) {
+			parent = parent.parent as View;
+		}
+
+		// UIKit never sizes a nested Frame; it keeps UIScreen.main bounds.
+		const isNestedInView = container === parent?.nativeViewProtected;
+		if (isNestedInView && !CGRectEqualToRect(nativeView.frame, container.bounds)) {
+			nativeView.frame = container.bounds;
+		}
 	}
 
 	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
