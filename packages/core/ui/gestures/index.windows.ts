@@ -9,6 +9,31 @@ import * as timer from '../../timer';
 // Per-view hover tracking to enable CSS :hover pseudo-class.
 const _hoverViews = new WeakSet<View>();
 
+type RoutedEvents = { pressed: any; moved: any; released: any; rightTapped: any; entered: any; exited: any };
+let _routedEvents: RoutedEvents | null | undefined;
+
+// The routed events are class statics, read once so adding and removing a handler pass the same ones.
+// Removal used to read them from the element instance, which the attach path only fell back to.
+function routedEvents(): RoutedEvents | null {
+	if (_routedEvents === undefined) {
+		try {
+			const UIElement = Microsoft.UI.Xaml.UIElement;
+			const events = {
+				pressed: UIElement.PointerPressedEvent,
+				moved: UIElement.PointerMovedEvent,
+				released: UIElement.PointerReleasedEvent,
+				rightTapped: UIElement.RightTappedEvent,
+				entered: UIElement.PointerEnteredEvent,
+				exited: UIElement.PointerExitedEvent,
+			};
+			_routedEvents = Object.values(events).every(Boolean) ? events : null;
+		} catch (_e) {
+			_routedEvents = null;
+		}
+	}
+	return _routedEvents;
+}
+
 function _attachHoverHandlers(view: View): void {
 	const native = (view as any).nativeViewProtected as any;
 	if (!native || native.__ns_hover_attached) return;
@@ -31,12 +56,10 @@ function _attachHoverHandlers(view: View): void {
 
 	let usingAddHandler = false;
 	try {
-		const UIElement = Microsoft.UI.Xaml.UIElement;
-		const pee = UIElement?.PointerEnteredEvent ?? native.PointerEnteredEvent;
-		const pxe = UIElement?.PointerExitedEvent ?? native.PointerExitedEvent;
-		if (!pee || !pxe) throw new Error('RoutedEvent statics unavailable');
-		native.AddHandler(pee, enterDelegate, true);
-		native.AddHandler(pxe, leaveDelegate, true);
+		const events = routedEvents();
+		if (!events) throw new Error('RoutedEvent statics unavailable');
+		native.AddHandler(events.entered, enterDelegate, true);
+		native.AddHandler(events.exited, leaveDelegate, true);
 		usingAddHandler = true;
 	} catch (_e) {
 		try {
@@ -57,10 +80,11 @@ function _detachHoverHandlers(view: View): void {
 	const native = (view as any).nativeViewProtected as any;
 	if (!native || !native.__ns_hover_attached) return;
 
-	if (native.__ns_hover_using_add_handler) {
+	const events = routedEvents();
+	if (native.__ns_hover_using_add_handler && events) {
 		try {
-			if (native.__ns_hover_enter_delegate) native.RemoveHandler(native.PointerEnteredEvent, native.__ns_hover_enter_delegate);
-			if (native.__ns_hover_leave_delegate) native.RemoveHandler(native.PointerExitedEvent, native.__ns_hover_leave_delegate);
+			if (native.__ns_hover_enter_delegate) native.RemoveHandler(events.entered, native.__ns_hover_enter_delegate);
+			if (native.__ns_hover_leave_delegate) native.RemoveHandler(events.exited, native.__ns_hover_leave_delegate);
 		} catch (_e) { }
 	}
 
@@ -158,7 +182,6 @@ export class GesturesObserver extends GesturesObserverBase {
 	private _pointerPressedHandler: any;
 	private _pointerMovedHandler: any;
 	private _pointerReleasedHandler: any;
-	private _pointerCanceledHandler: any;
 	private _rightTappedHandler: any;
 
 	private _pointerPressedDelegate: any;
@@ -192,6 +215,14 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	public disconnect() {
 		this._detach();
+		this._pointerPressedHandler = null;
+		this._pointerMovedHandler = null;
+		this._pointerReleasedHandler = null;
+		this._rightTappedHandler = null;
+		this._pointerPressedDelegate = null;
+		this._pointerMovedDelegate = null;
+		this._pointerReleasedDelegate = null;
+		this._rightTappedDelegate = null;
 
 		if (this.target) {
 			if (this._onTargetLoaded) {
@@ -212,12 +243,13 @@ export class GesturesObserver extends GesturesObserverBase {
 		try {
 			const native = (this.target && (this.target as any).nativeViewProtected) as any;
 			if (native) {
-				if (this._usingAddHandler) {
+				const events = routedEvents();
+				if (this._usingAddHandler && events) {
 					try {
-						if (this._pointerPressedDelegate) native.RemoveHandler(native.PointerPressedEvent, this._pointerPressedDelegate);
-						if (this._pointerMovedDelegate) native.RemoveHandler(native.PointerMovedEvent, this._pointerMovedDelegate);
-						if (this._pointerReleasedDelegate) native.RemoveHandler(native.PointerReleasedEvent, this._pointerReleasedDelegate);
-						if (this._rightTappedDelegate) native.RemoveHandler(native.RightTappedEvent, this._rightTappedDelegate);
+						if (this._pointerPressedDelegate) native.RemoveHandler(events.pressed, this._pointerPressedDelegate);
+						if (this._pointerMovedDelegate) native.RemoveHandler(events.moved, this._pointerMovedDelegate);
+						if (this._pointerReleasedDelegate) native.RemoveHandler(events.released, this._pointerReleasedDelegate);
+						if (this._rightTappedDelegate) native.RemoveHandler(events.rightTapped, this._rightTappedDelegate);
 					} catch (_e) { }
 				} else {
 					native.PointerPressed = null as never;
@@ -232,15 +264,6 @@ export class GesturesObserver extends GesturesObserverBase {
 			_detachHoverHandlers(this.target);
 		}
 
-		this._pointerPressedHandler = null;
-		this._pointerMovedHandler = null;
-		this._pointerReleasedHandler = null;
-		this._pointerCanceledHandler = null;
-		this._rightTappedHandler = null;
-		this._pointerPressedDelegate = null;
-		this._pointerMovedDelegate = null;
-		this._pointerReleasedDelegate = null;
-		this._rightTappedDelegate = null;
 		this._usingAddHandler = false;
 		this._pointerDownMap.clear();
 		this._longPressTimeouts.forEach((id) => timer.clearTimeout(id));
@@ -259,43 +282,46 @@ export class GesturesObserver extends GesturesObserverBase {
 			return;
 		}
 
-		this._pointerPressedHandler = (s: any, e: any) => this._onPointerPressed(e || s);
-		this._pointerMovedHandler = (s: any, e: any) => this._onPointerMoved(e || s);
-		this._pointerReleasedHandler = (s: any, e: any) => this._onPointerReleased(e || s);
-
-		this._pointerPressedDelegate = _wrapPointerHandler(this._pointerPressedHandler);
-		this._pointerMovedDelegate = _wrapPointerHandler(this._pointerMovedHandler);
-		this._pointerReleasedDelegate = _wrapPointerHandler(this._pointerReleasedHandler);
+		// Kept across load/unload: a view re-attaches each time it is shown again.
+		if (!this._pointerPressedDelegate) {
+			this._pointerPressedHandler = (s: any, e: any) => this._onPointerPressed(e || s);
+			this._pointerReleasedHandler = (s: any, e: any) => this._onPointerReleased(e || s);
+			this._pointerPressedDelegate = _wrapPointerHandler(this._pointerPressedHandler);
+			this._pointerReleasedDelegate = _wrapPointerHandler(this._pointerReleasedHandler);
+		}
+		// Only touch observers report moves; for the others every mouse move would still call into JS.
+		const wantsMoves = type === GestureTypes.touch;
+		if (wantsMoves && !this._pointerMovedDelegate) {
+			this._pointerMovedHandler = (s: any, e: any) => this._onPointerMoved(e || s);
+			this._pointerMovedDelegate = _wrapPointerHandler(this._pointerMovedHandler);
+		}
 
 		// Use AddHandler with handledEventsToo=true so events fire even when Button (and other
 		// controls) mark pointer events as handled internally.
 		this._usingAddHandler = false;
 		try {
-			const UIElement = Microsoft.UI.Xaml.UIElement;
-			const ppe = UIElement?.PointerPressedEvent ?? native.PointerPressedEvent;
-			const pme = UIElement?.PointerMovedEvent ?? native.PointerMovedEvent;
-			const pre = UIElement?.PointerReleasedEvent ?? native.PointerReleasedEvent;
-			if (!ppe || !pme || !pre) throw new Error('RoutedEvent statics unavailable');
-			native.AddHandler(ppe, this._pointerPressedDelegate, true);
-			native.AddHandler(pme, this._pointerMovedDelegate, true);
-			native.AddHandler(pre, this._pointerReleasedDelegate, true);
+			const events = routedEvents();
+			if (!events) throw new Error('RoutedEvent statics unavailable');
+			native.AddHandler(events.pressed, this._pointerPressedDelegate, true);
+			if (wantsMoves) native.AddHandler(events.moved, this._pointerMovedDelegate, true);
+			native.AddHandler(events.released, this._pointerReleasedDelegate, true);
 			this._usingAddHandler = true;
 		} catch (_e) {
 			// Fallback: plain property assignment (only one handler per event, can be overwritten).
 			_assignPointerHandler(native, 'PointerPressed', this._pointerPressedDelegate);
-			_assignPointerHandler(native, 'PointerMoved', this._pointerMovedDelegate);
+			if (wantsMoves) _assignPointerHandler(native, 'PointerMoved', this._pointerMovedDelegate);
 			_assignPointerHandler(native, 'PointerReleased', this._pointerReleasedDelegate);
 		}
 
 		// RightTapped (mouse right-click) fires longPress for mouse/touchpad users.
 		if (type === GestureTypes.longPress) {
-			this._rightTappedHandler = (s: any, e: any) => this._onRightTapped(e || s);
-			this._rightTappedDelegate = _wrapRightTappedHandler(this._rightTappedHandler);
+			if (!this._rightTappedDelegate) {
+				this._rightTappedHandler = (s: any, e: any) => this._onRightTapped(e || s);
+				this._rightTappedDelegate = _wrapRightTappedHandler(this._rightTappedHandler);
+			}
 			try {
 				if (this._usingAddHandler) {
-					const rte = native.RightTappedEvent;
-					if (!rte) throw new Error('RightTappedEvent unavailable');
-					native.AddHandler(rte, this._rightTappedDelegate, true);
+					native.AddHandler(routedEvents().rightTapped, this._rightTappedDelegate, true);
 				} else {
 					_assignRightTappedHandler(native, this._rightTappedDelegate);
 				}
