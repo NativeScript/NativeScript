@@ -1076,6 +1076,15 @@ export abstract class ViewBase extends Observable {
 	}
 
 	/**
+	 * Whether a child is the one currently shown. Containers that keep several children
+	 * alive but show one at a time (a TabView's items) override it for the hidden ones.
+	 * @param child A direct child of this view.
+	 */
+	public _isChildPresented(child: ViewBase): boolean {
+		return true;
+	}
+
+	/**
 	 * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not use outside the UI Stack implementation.
 	 */
 	public _removeView(view: ViewBase) {
