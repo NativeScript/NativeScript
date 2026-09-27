@@ -117,6 +117,57 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
+// Custom properties may refer to ones declared after them, so re-evaluate until they settle.
+function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, string>) {
+	let names: string[];
+	for (const property in cssExpsProperties) {
+		if (isCssVariable(property)) {
+			if (!names) {
+				names = [];
+			}
+			names.push(property);
+			view.style.setScopedCssVariable(property, evaluateCssExpressions(view, property, cssExpsProperties[property]));
+		}
+	}
+	if (!names || names.length < 2 || !hasForwardCssVariableReference(names, cssExpsProperties)) {
+		return;
+	}
+
+	for (let pass = 1; pass < names.length; pass++) {
+		let changed = false;
+		for (const name of names) {
+			const value = evaluateCssExpressions(view, name, cssExpsProperties[name]);
+			if (value !== view.style.getCssVariable(name)) {
+				view.style.setScopedCssVariable(name, value);
+				changed = true;
+			}
+		}
+		if (!changed) {
+			return;
+		}
+	}
+}
+
+function hasForwardCssVariableReference(names: string[], values: Record<string, string>): boolean {
+	for (let i = 0; i < names.length; i++) {
+		const value = values[names[i]];
+		for (let j = i + 1; j < names.length; j++) {
+			const ref = `var(${names[j]}`;
+			let at = value.indexOf(ref);
+			while (at !== -1) {
+				// `var(--a` must not match `var(--ab`.
+				const next = value[at + ref.length];
+				if (next === ')' || next === ',' || next === ' ' || next === undefined) {
+					return true;
+				}
+				at = value.indexOf(ref, at + 1);
+			}
+		}
+	}
+
+	return false;
+}
+
 /**
  * Only marks the merged list dirty - it is rebuilt on next read, since frameworks
  * register stylesheets one call at a time.
@@ -934,6 +985,9 @@ export class CssState {
 			valuesToApply[property] = value;
 		}
 		//we need to parse CSS vars first before evaluating css expressions
+		if (cssExpsProperties) {
+			settleCssVariables(view, cssExpsProperties);
+		}
 		for (const property in cssExpsProperties) {
 			const hadOldValue = property in oldProperties;
 			const oldValue = hadOldValue ? oldProperties[property] : undefined;
@@ -941,13 +995,12 @@ export class CssState {
 				delete oldProperties[property];
 			}
 
-			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-
 			if (isCssVariable(property)) {
-				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
 				continue;
 			}
+
+			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
 
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
