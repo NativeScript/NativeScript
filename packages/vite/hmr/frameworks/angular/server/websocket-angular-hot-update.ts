@@ -1,6 +1,7 @@
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { isRuntimeGraphExcludedPath } from '../../../server/runtime-graph-filter.js';
 import { canonicalizeTransformRequestCacheKey } from '../../../server/transform-cache-invalidation.js';
+import { stripViteFsPrefix } from '../../../../helpers/normalize-id.js';
 
 const APP_VIRTUAL_WITH_SLASH = `${getProjectAppVirtualPath()}/`;
 
@@ -303,7 +304,7 @@ function normalizeAngularEvictRelativeId(rawId: string | null | undefined, proje
 	// rejecting these outright (the old behavior) silently dropped every
 	// workspace-lib importer from the eviction set.
 	if (id.startsWith('/@fs/')) {
-		id = id.slice('/@fs'.length);
+		id = stripViteFsPrefix(id);
 	}
 	// Project root first — matches the `/ns/m/<projectRel>` URL shape the
 	// device uses for app-local modules. Then the monorepo workspace root:

@@ -7,6 +7,7 @@ import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/regi
 import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName, getPackageRuntimeInfo } from '../shared/package-classifier.js';
 import { getFlavorClientPackages } from '../framework-flavors.js';
+import { normalizeModuleId, stripViteFsPrefix } from '../../helpers/normalize-id.js';
 
 const ESM_FRAMEWORK_PACKAGE_ROOTS = new Set(['@nativescript/angular', 'nativescript-angular']);
 
@@ -354,7 +355,7 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 		let absPath: string | null = null;
 
 		if (cleaned.startsWith('/@fs/')) {
-			absPath = cleaned.slice('/@fs'.length);
+			absPath = stripViteFsPrefix(cleaned);
 		} else if (cleaned.includes('/node_modules/')) {
 			absPath = path.resolve(resolvedRoot, `.${cleaned}`);
 		} else if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
@@ -422,15 +423,13 @@ export function rewriteFsAbsoluteToNsM(spec: string, projectRoot: string, worksp
 
 	// /@fs/<abs-path> — strip the prefix to recover the absolute path.
 	// On posix this is "/Users/...". On Windows Vite emits "/@fs/C:/..."
-	// where the path retains its drive letter.
-	const absPath = cleanSpec.slice('/@fs'.length);
-	if (!absPath.startsWith('/')) return null;
+	// where the path retains its drive letter. The path and both roots go
+	// through the same resolve + normalize so they compare on any host.
+	const toComparable = (value: string) => normalizeModuleId(path.resolve(value)).replace(/\/+$/, '');
+	const absPath = toComparable(stripViteFsPrefix(cleanSpec));
 
-	const toPosix = (value: string) => value.replace(/\\/g, '/');
-	const stripTrailing = (value: string) => value.replace(/\/+$/, '');
-
-	const projectRootPosix = stripTrailing(toPosix(path.resolve(projectRoot)));
-	const workspaceRootPosix = workspaceRoot ? stripTrailing(toPosix(path.resolve(workspaceRoot))) : null;
+	const projectRootPosix = toComparable(projectRoot);
+	const workspaceRootPosix = workspaceRoot ? toComparable(workspaceRoot) : null;
 
 	const tryRoot = (root: string): string | null => {
 		if (!root) return null;

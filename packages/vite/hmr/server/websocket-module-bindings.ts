@@ -8,6 +8,7 @@ import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
+import { stripViteFsPrefix } from '../../helpers/normalize-id.js';
 
 export interface EnsureNativeScriptModuleBindingsOptions {
 	preserveNonPluginVendorImports?: boolean;
@@ -539,7 +540,7 @@ function resolveProcessCodeSourceFilePath(sourceId: string, projectRoot: string)
 
 	const candidates: string[] = [];
 	if (cleaned.startsWith('/@fs/')) {
-		candidates.push(...expandCandidateVariants(cleaned.slice('/@fs'.length)));
+		candidates.push(...expandCandidateVariants(stripViteFsPrefix(cleaned)));
 	}
 	if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
 		candidates.push(...expandCandidateVariants(cleaned));

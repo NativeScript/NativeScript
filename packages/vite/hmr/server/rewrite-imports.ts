@@ -12,6 +12,7 @@ import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } fr
 import { isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, normalizeNodeModulesSpecifier, resolveNodeModulesPackageBoundary, resolveVendorRouting, rewriteFsAbsoluteToNsM, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { ensureDynamicHmrImportHelper } from './websocket-served-module-helpers.js';
 import { collectMixedRuntimePluginHttpRootPackages, findDependencyFileName, getProjectRelativeImportPath, isApplicationImport, normalizeImportPath, stripToProjectRelative, toAppModuleBaseId, toNodeModulesHttpModuleId } from './device-transform-helpers.js';
+import { stripViteFsPrefix } from '../../helpers/normalize-id.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
 
@@ -151,7 +152,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			let fullPath: string;
 			if (cleanPath.startsWith('/@fs/')) {
 				// Vite filesystem URL: `/@fs/<abs-path>`. Strip the `/@fs` prefix
-				// (4 chars, leaving the leading `/`) to recover the absolute
+				// (keeping the Windows drive letter) to recover the absolute
 				// path. This matches `rewriteFsAbsoluteToNsM`'s convention and
 				// covers both bare specifiers Vite pre-resolved out of the
 				// project root (e.g. `emojibase-data/en/compact.json` →
@@ -163,7 +164,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 				// and producing a malformed nested path that always misses on
 				// `existsSync` and triggers a `ReferenceError` at runtime when
 				// the JSON-import-failed comment leaves the binding undefined.
-				fullPath = cleanPath.slice('/@fs'.length);
+				fullPath = stripViteFsPrefix(cleanPath);
 			} else if (cleanPath.startsWith('/')) {
 				// Absolute from project root
 				fullPath = path.join(projectRoot, cleanPath);
