@@ -1070,15 +1070,28 @@ export class CssState {
 		// Set new values to the style
 		for (const property in valuesToApply) {
 			const value = valuesToApply[property];
+			const inStyle = property in view.style;
+			const camelCasedProperty = inStyle ? undefined : property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 			try {
-				if (property in view.style) {
+				if (inStyle) {
 					view.style[`css:${property}`] = value;
 				} else {
-					const camelCasedProperty = property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 					view[camelCasedProperty] = value;
 				}
 			} catch (e) {
 				Trace.write(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+				// A declaration invalid at computed-value time computes as `unset`, so the previous value must not stay applied.
+				// https://drafts.csswg.org/css-values-5/#invalid-substitution
+				delete newPropertyValues[property];
+				try {
+					if (inStyle) {
+						view.style[`css:${property}`] = unsetValue;
+					} else {
+						view[camelCasedProperty] = unsetValue;
+					}
+				} catch (e) {
+					Trace.write(`Failed to unset property [${property}] on ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+				}
 			}
 		}
 

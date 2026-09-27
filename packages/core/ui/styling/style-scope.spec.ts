@@ -139,6 +139,20 @@ describe('CssState.setPropertyValues', () => {
 		expect(view.style.getCssVariable('--stops')).toBe('red, lime');
 	});
 
+	it('unsets a property whose new value is invalid instead of keeping the previous one', () => {
+		const css = `
+			.valid { --fallback: lime; color: var(--missing, var(--fallback)); }
+			.invalid { --fallback: lime; color: var(--missing, var(--fallback), yellow); }
+		`;
+		const { view } = styled(css, 'valid');
+		view._cssState.onLoaded();
+		expect(view.style.color.toString()).toBe('#00FF00');
+
+		view.className = 'invalid';
+		view._cssState.onLoaded();
+		expect(view.style.color).toBeUndefined();
+	});
+
 	it('does not re-apply an unchanged css expression', () => {
 		const { view } = styled('label { --brand: red; color: var(--brand); }');
 		view._cssState.onLoaded();
