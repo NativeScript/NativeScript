@@ -112,6 +112,33 @@ describe('CssState.setPropertyValues', () => {
 		expect(view.style.color.toString()).toBe('#FF0000');
 	});
 
+	it('resolves custom properties that refer to ones declared after them', () => {
+		const { view } = styled('label { --a: var(--b, blue); --b: var(--c); --c: red; color: var(--a); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('evaluates properties after the custom properties they use, whatever the order', () => {
+		const { view } = styled('.a { color: var(--brand); } .b { --brand: var(--base); --base: red; }', 'a b');
+		view._cssState.onLoaded();
+
+		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('prefers a later-defined variable over the fallback that referenced it', () => {
+		const css = `
+			.l { --via-stops: initial; }
+			.from { --from: red; --stops: var(--via-stops, var(--from)); }
+			.via { --via: lime; --via-stops: var(--from), var(--via); --stops: var(--via-stops); }
+			.to { --stops: var(--via-stops, var(--from)); color: var(--stops); }
+		`;
+		const { view } = styled(css, 'l from via to');
+		view._cssState.onLoaded();
+
+		expect(view.style.getCssVariable('--stops')).toBe('red, lime');
+	});
+
 	it('does not re-apply an unchanged css expression', () => {
 		const { view } = styled('label { --brand: red; color: var(--brand); }');
 		view._cssState.onLoaded();
