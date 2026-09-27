@@ -251,4 +251,34 @@ describe('resolveVendorRouting', () => {
 
 		expect(resolveVendorRouting('nativescript-fonticon/angular/fesm2022/nativescript-fonticon-angular.mjs', root)).toEqual({ route: 'http' });
 	});
+
+	it('returns null for a plugin-patterned package absent from the vendor manifest, so the caller falls back to per-module HTTP', () => {
+		// Transitive plugin dep under pnpm's isolated linker: the package exists
+		// on disk (resolvable via Vite's importer-aware resolution) but was never
+		// vendored — collectVendorModules only seeds direct project deps. Routing
+		// it to the sync vendor registry rewrites the import to a
+		// __nsVendorRequire call that resolves to the missing-module stub.
+		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-vendor-route-'));
+		tempRoots.push(root);
+
+		mkdirSync(join(root, 'node_modules', '@nativescript-community', 'ui-image'), { recursive: true });
+		writeFileSync(join(root, 'node_modules', '@nativescript-community', 'ui-image', 'package.json'), JSON.stringify({ name: '@nativescript-community/ui-image', version: '4.6.20', main: './index.js' }, null, 2));
+
+		registerVendorManifest({
+			version: 1,
+			createdAt: '2026-01-01T00:00:00.000Z',
+			hash: 'test',
+			modules: {
+				'@nativescript-community/ui-svg': {
+					id: '@nativescript-community/ui-svg',
+					exports: { default: true },
+				},
+			},
+			aliases: {},
+		});
+
+		// Unvendored plugin dep → HTTP; a vendored plugin still routes vendor.
+		expect(resolveVendorRouting('@nativescript-community/ui-image', root)).toBeNull();
+		expect(resolveVendorRouting('@nativescript-community/ui-svg', root)).toEqual({ route: 'vendor', bareSpec: '@nativescript-community/ui-svg' });
+	});
 });

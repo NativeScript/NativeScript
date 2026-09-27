@@ -8,6 +8,7 @@ import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
+import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
 
 export interface EnsureNativeScriptModuleBindingsOptions {
 	preserveNonPluginVendorImports?: boolean;
@@ -163,6 +164,14 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			}
 			const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 			let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
+			// A canonical that isn't vendored in an active manifest (a
+			// plugin-patterned transitive dependency under pnpm's isolated
+			// linker) would rewrite to __nsVendorRequire and resolve to the
+			// missing-module stub — drop it so the import keeps its bare/HTTP
+			// form. No manifest (unit tests, early boot) keeps the legacy route.
+			if (canonical && getVendorManifest() && !resolveVendorSpecifier(canonical)) {
+				canonical = null;
+			}
 			const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
 			// Preserving a bare vendor id is only correct where the IMPORT MAP
 			// exists to route it (main realm). Worker realms have no import map —
@@ -174,7 +183,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 				preservedImports.push(original);
 				continue;
 			}
-			if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
+			if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath()) && (!getVendorManifest() || resolveVendorSpecifier(specifier))) {
 				canonical = specifier;
 			}
 			if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
@@ -218,6 +227,11 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		}
 		const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 		let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
+		// Same as the side-effect branch above: unvendored plugin-patterned ids
+		// must not reach the registry.
+		if (canonical && getVendorManifest() && !resolveVendorSpecifier(canonical)) {
+			canonical = null;
+		}
 		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
 		// See the side-effect branch above: bare preservation relies on the main
 		// realm's import map; in a worker serve (vendorImportsAsHttp) it must not
@@ -226,7 +240,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			preservedImports.push(original);
 			continue;
 		}
-		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
+		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath()) && (!getVendorManifest() || resolveVendorSpecifier(specifier))) {
 			canonical = specifier;
 		}
 		if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {

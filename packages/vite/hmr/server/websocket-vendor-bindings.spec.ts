@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import { clearVendorManifest, registerVendorManifest } from '../shared/vendor/registry.js';
 import { ensureNativeScriptModuleBindings } from './websocket-module-bindings.js';
 
 // Helper to normalize whitespace for robust assertions
@@ -236,5 +237,38 @@ describe('ensureNativeScriptModuleBindings — output structure', () => {
 		const uniqueNums = new Set(moduleRefs.map((r) => r.replace('__nsVendorModule_', '')));
 		// Should reuse the same module cache variable
 		expect(uniqueNums.size).toBe(1);
+	});
+});
+
+describe('ensureNativeScriptModuleBindings — unvendored plugin deps', () => {
+	afterEach(() => {
+		clearVendorManifest();
+	});
+
+	it('keeps a plugin-patterned import unbound when the package is absent from the vendor manifest', () => {
+		// A leaf package's own dependency (e.g. a published wrapper shipping a
+		// NativeScript plugin transitively under pnpm's isolated linker) is not
+		// vendored by collectVendorModules — which only seeds direct project
+		// deps. Vendor-binding it would emit __nsVendorRequire for a package the
+		// registry has never heard of (the __nsMissing stub); the bare import
+		// survives so the device fetches it through /ns/m per-module HTTP.
+		registerVendorManifest({
+			version: 1,
+			createdAt: '2026-01-01T00:00:00.000Z',
+			hash: 'test',
+			modules: {
+				pinia: {
+					id: 'pinia',
+					exports: { defineStore: true },
+				},
+			},
+			aliases: {},
+		});
+
+		const input = `import { Img } from '@nativescript-community/ui-image';\nexport const x = Img;`;
+		const out = ensureNativeScriptModuleBindings(input);
+		const text = squish(out);
+		expect(text).not.toMatch(/__nsVendorRegistry\.has\(['"]@nativescript-community\/ui-image['"]\)/);
+		expect(text).toContain(`from '@nativescript-community/ui-image'`);
 	});
 });
