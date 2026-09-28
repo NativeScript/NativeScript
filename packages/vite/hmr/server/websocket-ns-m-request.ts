@@ -2,6 +2,7 @@ import type { TransformResult } from 'vite';
 import * as path from 'path';
 
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+import { resolvePlatform } from '../../helpers/cli-flags.js';
 import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 
 export interface NsMRequestContext {
@@ -57,6 +58,44 @@ function normalizeAbsoluteFilesystemSpec(spec: string, serverRoot: string): stri
 		relative = `/${relative}`;
 	}
 	return relative;
+}
+
+let cachedPlatformSuffixes: string[] | undefined;
+
+/**
+ * Platform-suffixed resolution tags (`ios`, `android`, `visionos`, plus the
+ * shared `native` tag used by split-entry packages). Packages shipped with
+ * platform-split entries — e.g. `@nativescript-community/*` plugins carrying
+ * `index.ios.js`/`index.android.js` and a `main` like `./index` — 404 on the
+ * device bridge when only unsuffixed candidates are probed. Candidates are
+ * existence-filtered later, so probing every suffix is safe; the active
+ * platform's variants go first so a package shipping several platforms picks
+ * the right one.
+ */
+function platformSuffixes(): string[] {
+	if (cachedPlatformSuffixes === undefined) {
+		const platform = resolvePlatform();
+		const list = [platform, 'ios', 'android', 'visionos', 'native'].filter(Boolean) as string[];
+		cachedPlatformSuffixes = [...new Set(list)];
+	}
+	return cachedPlatformSuffixes;
+}
+
+const CANDIDATE_EXTS = ['ts', 'tsx', 'js', 'jsx', 'mjs', 'mts', 'cts', 'vue'];
+
+function expandModuleCandidates(spec: string, hasExt: boolean, baseNoExt: string): string[] {
+	const candidates: string[] = [...(hasExt ? [spec] : [])];
+	for (const base of [baseNoExt, `${baseNoExt}/index`]) {
+		for (const suffix of platformSuffixes()) {
+			for (const ext of CANDIDATE_EXTS) {
+				candidates.push(`${base}.${suffix}.${ext}`);
+			}
+		}
+		for (const ext of CANDIDATE_EXTS) {
+			candidates.push(`${base}.${ext}`);
+		}
+	}
+	return candidates;
 }
 
 export function createNsMRequestContext(requestUrl: string, serverRoot: string, appVirtualWithSlash: string, workspaceRoot?: string | null): NsMRequestContextResult {
@@ -123,7 +162,7 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 
 		const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 		const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
-		const candidates = [...(hasExt ? [spec] : []), `${baseNoExt}.ts`, `${baseNoExt}.js`, `${baseNoExt}.tsx`, `${baseNoExt}.jsx`, `${baseNoExt}.mjs`, `${baseNoExt}.mts`, `${baseNoExt}.cts`, `${baseNoExt}.vue`, `${baseNoExt}/index.ts`, `${baseNoExt}/index.js`, `${baseNoExt}/index.tsx`, `${baseNoExt}/index.jsx`, `${baseNoExt}/index.mjs`];
+		const candidates = expandModuleCandidates(spec, hasExt, baseNoExt);
 		const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot, workspaceRoot);
 
 		return {
