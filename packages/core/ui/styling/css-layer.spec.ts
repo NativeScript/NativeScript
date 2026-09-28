@@ -1,16 +1,21 @@
 import { cssTreeParse } from '../../css/css-tree-parser';
+import { parse as reworkCssParse } from '../../css/reworkcss.js';
 import { RuleSet, StyleSheetSelectorScope } from './css-selector';
 import { _populateRules } from './style-scope';
 
 describe('cascade layers', () => {
-	function create(css: string, source = 'css-layer.ts@test'): { rulesets: RuleSet[]; keyframes: any[]; selectorScope: StyleSheetSelectorScope<any> } {
-		const parsed = cssTreeParse(css, source);
+	function createWith(parse: (css: string, source: string) => any, css: string): { rulesets: RuleSet[]; keyframes: any[]; selectorScope: StyleSheetSelectorScope<any> } {
+		const parsed = parse(css, 'css-layer.ts@test');
 		const rulesets: RuleSet[] = [];
 		const keyframes = [];
 
 		_populateRules(parsed.stylesheet.rules, rulesets, keyframes);
 
 		return { rulesets, keyframes, selectorScope: new StyleSheetSelectorScope(rulesets) };
+	}
+
+	function create(css: string) {
+		return createWith(cssTreeParse, css);
 	}
 
 	function winningValue(css: string, node: any, property = 'color') {
@@ -147,5 +152,22 @@ describe('cascade layers', () => {
 	it('leaves ruleset layerPath unset for unlayered rules', () => {
 		const { rulesets } = create(`.login { color: red; }`);
 		expect(rulesets[0].layerPath).toBeUndefined();
+	});
+
+	it('parses @layer through the legacy rework parser (build-time css2json path)', () => {
+		// webpack's css2json-loader and vite's bundled-css serializer both run the
+		// rework parser — the AST they emit must carry layer nodes through to
+		// _populateRules, which is what this exercises end to end.
+		const { rulesets } = createWith(
+			(css, source) => reworkCssParse(css, { source }),
+			`
+			@layer low, high;
+			@layer high { .login { color: green; } }
+			@layer low { #main { color: blue; } }
+			`,
+		);
+		expect(rulesets.length).toBe(2);
+		expect(rulesets[0].layerPath).toHaveLength(1);
+		expect(rulesets[1].layerPath).toHaveLength(1);
 	});
 });

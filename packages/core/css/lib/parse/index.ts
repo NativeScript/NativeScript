@@ -389,6 +389,39 @@ export function parse(css, options) {
 	}
 
 	/**
+	 * Parse layer — block form `@layer name { rules }` (anonymous when the name
+	 * is empty) and statement form `@layer a, b;` (declares order only).
+	 */
+
+	function atlayer() {
+		var pos = position();
+		var m = match(/^@layer\s*([^{;]*)/);
+
+		if (!m) return;
+
+		var name = trim(m[1]);
+
+		if (match(/^;/)) {
+			return pos({
+				type: 'layer',
+				layer: name,
+			});
+		}
+
+		if (!open()) return error("@layer missing '{'");
+
+		var style = comments().concat(rules());
+
+		if (!close()) return error("@layer missing '}'");
+
+		return pos({
+			type: 'layer',
+			layer: name,
+			rules: style,
+		});
+	}
+
+	/**
 	 * Parse custom-media.
 	 */
 
@@ -528,7 +561,7 @@ export function parse(css, options) {
 	function atrule() {
 		if (css[0] != '@') return;
 
-		return atkeyframes() || atmedia() || atcustommedia() || atsupports() || atimport() || atcharset() || atnamespace() || atdocument() || atpage() || athost() || atfontface();
+		return atkeyframes() || atmedia() || atlayer() || atcustommedia() || atsupports() || atimport() || atcharset() || atnamespace() || atdocument() || atpage() || athost() || atfontface();
 	}
 
 	/**
