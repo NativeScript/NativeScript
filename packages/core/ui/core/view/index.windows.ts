@@ -1132,6 +1132,50 @@ export class View extends ViewCommon {
 		// Size-dependent work (percent sizing, border/shadow/clip redraw) is wired ON DEMAND via
 		// _ensureSizeWatch(). SizeChanged fires for every recycled cell + child during fast scroll;
 		// wiring it unconditionally crossed the JS bridge per cell and blocked scrolling.
+		if (this.hasListeners(ViewCommon.layoutChangedEvent)) {
+			this._ensureSizeWatch();
+		}
+	}
+
+	// XAML lays views out natively, so core's own layout pass (and the bounds it records) never runs:
+	// read the bounds off the element. In device pixels relative to the parent, as on Android.
+	_getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
+		const native = this.nativeViewProtected;
+		if (!native || this.isCollapsed) {
+			return { left: 0, top: 0, right: 0, bottom: 0 };
+		}
+		try {
+			const offset = native.ActualOffset;
+			const left = layout.toDevicePixels(offset.X);
+			const top = layout.toDevicePixels(offset.Y);
+			return {
+				left,
+				top,
+				right: left + layout.toDevicePixels(native.ActualWidth),
+				bottom: top + layout.toDevicePixels(native.ActualHeight),
+			};
+		} catch (_e) {
+			return { left: 0, top: 0, right: 0, bottom: 0 };
+		}
+	}
+
+	// `layoutChanged` rides on the size watch: XAML reports size changes (SizeChanged), not moves.
+	addEventListener(eventNames: string, callback: (data: any) => void, thisArg?: any, once?: boolean): void {
+		super.addEventListener(eventNames, callback, thisArg, once);
+		if (typeof eventNames === 'string' && eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1) {
+			this._ensureSizeWatch();
+		}
+	}
+
+	// After the deferred size redraw: records the new bounds and raises `layoutChanged` for them.
+	private _notifyLayoutChanged(): void {
+		if (!this.hasListeners(ViewCommon.layoutChangedEvent)) {
+			return;
+		}
+		const bounds = this._getCurrentLayoutBounds();
+		if (this._setCurrentLayoutBounds(bounds.left, bounds.top, bounds.right, bounds.bottom).boundsChanged) {
+			this._raiseLayoutChangedEvent();
+		}
 	}
 
 	// Button-family controls override their template's brush resources. Probed on first need: most
@@ -1320,7 +1364,13 @@ export class View extends ViewCommon {
 			// (tree mutation inside it risks a 0xC000027B fail-fast).
 			if (owner._sizeRedrawPending) return;
 			owner._sizeRedrawPending = true;
-			setTimeout(() => { const o = ref.deref(); if (o) { o._sizeRedrawPending = false; try { o._onSizeChanged(); } catch (_e) { } } }, 0);
+			setTimeout(() => {
+				const o = ref.deref();
+				if (!o) return;
+				o._sizeRedrawPending = false;
+				try { o._onSizeChanged(); } catch (_e) { }
+				try { o._notifyLayoutChanged(); } catch (_e) { }
+			}, 0);
 		};
 		try {
 			this._sizeChangedDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', onSize);
