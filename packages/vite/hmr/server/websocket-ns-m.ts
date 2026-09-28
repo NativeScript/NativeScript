@@ -9,6 +9,8 @@ import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-shims.js';
 import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
+import { resolveCandidateFilePath } from './websocket-module-specifiers.js';
+import * as path from 'node:path';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
@@ -200,7 +202,23 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// string for `import css from './x.css'`. `app.css` has its own path.
 			if (CSS_MODULE_RE.test(spec)) {
 				try {
-					const inlineRes = await sharedTransformRequest(`${spec}?inline`);
+					// `spec` is workspace-root-relative, not app-root-relative —
+					// workspace css (e.g. `packages/ui/src/tokens.css` in a
+					// monorepo) doesn't exist under the vite `root`, so a bare
+					// `${spec}?inline` transform is denied and the device falls
+					// through to the DOM-oriented CSS module
+					// (`__vite__updateStyle`). Anchor it to the real file via
+					// /@fs/ first, like the module pipeline below does.
+					let inlineSpec = spec;
+					const cssFsRoots = [serverRoot, ...(monorepoWorkspaceRoot && path.resolve(monorepoWorkspaceRoot) !== path.resolve(serverRoot) ? [monorepoWorkspaceRoot] : [])];
+					for (const root of cssFsRoots) {
+						const fsId = `/@fs${String(root).replace(/\\/g, '/').replace(/\/$/, '')}${spec.startsWith('/') ? '' : '/'}${spec}`;
+						if (resolveCandidateFilePath(fsId, serverRoot, monorepoWorkspaceRoot)) {
+							inlineSpec = fsId;
+							break;
+						}
+					}
+					const inlineRes = await sharedTransformRequest(`${inlineSpec}?inline`);
 					const inlineCode = inlineRes?.code || '';
 					// `?inline` output is `export default "<compiled css>"`.
 					const m = inlineCode.match(/export\s+default\s+("(?:[^"\\]|\\.)*")\s*;?/s);
