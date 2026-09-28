@@ -69,6 +69,9 @@ function transformAst(node, css, type = null) {
 			atrule.name = node.prelude ? node.prelude.value : '';
 			atrule.keyframes = transformAst(node.block, css, 'keyframe');
 			atrule.vendor = undefined;
+		} else if (node.name === 'layer') {
+			atrule.layer = node.prelude ? node.prelude.value.trim() : '';
+			atrule.rules = transformAst(node.block, css);
 		} else {
 			atrule.rules = transformAst(node.block, css);
 		}
