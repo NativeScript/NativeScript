@@ -27,6 +27,18 @@ export function extractVitePrebundleId(spec: string): string | null {
 	return null;
 }
 
+/**
+ * The subpath part of a Vite prebundle id, decoded. flattenId encodes '.' as
+ * '__' and '/' as '_', so the dots are decoded first: otherwise
+ * `pkg_lib_file__js` comes back as `lib/file//js`.
+ */
+function decodeFlattenedSubpath(flatSuffix: string): string {
+	return flatSuffix
+		.split('__')
+		.map((segment) => segment.replace(/_/g, '/'))
+		.join('.');
+}
+
 export function getFlattenedManifestMap(manifest: VendorManifest): Map<string, string> {
 	const map = new Map<string, string>();
 	const mods = Object.keys(manifest.modules || {});
@@ -589,9 +601,7 @@ export function viteDepsPathToBareSpecifier(depPath: string): string | null {
 	}
 
 	if (bestKey && bestCanonical) {
-		const flatSuffix = flatId.slice(bestKey.length + 1);
-		const subpath = flatSuffix.replace(/_/g, '/');
-		return `${bestCanonical}/${subpath}`;
+		return `${bestCanonical}/${decodeFlattenedSubpath(flatId.slice(bestKey.length + 1))}`;
 	}
 
 	return null;
