@@ -341,24 +341,75 @@ export function resolveDepsEntriesFromVendorCollection(projectRoot: string, work
 // Bundle generation — two esbuild passes
 // ============================================================================
 
+export interface DepsBundleEntryFile {
+	key: string;
+	absPath: string;
+	/**
+	 * Registered behind a getter that evaluates the file on first read, instead of an eager
+	 * `import *`. For files the bundle only reached transitively: evaluating every one of those up
+	 * front ran modules the app only `require()`s inside a try/catch, some of which throw by design
+	 * on a platform they don't support, and a throw there aborted the whole dev session.
+	 */
+	lazy?: boolean;
+	/** CommonJS (no ESM syntax): its lazy namespace is built the way esbuild's `import *` builds it. */
+	cjs?: boolean;
+}
+
 /**
  * Synthetic esbuild entry: evaluate the dep closure once and expose every
  * bundled file's live namespace through `globalThis.__NS_DEPS_MODULES__`,
  * keyed by node_modules-relative file path.
  */
-export function buildDepsBundleEntryCode(files: readonly { key: string; absPath: string }[]): string {
+export function buildDepsBundleEntryCode(files: readonly DepsBundleEntryFile[]): string {
 	const lines: string[] = [];
-	files.forEach(({ absPath }, i) => {
-		lines.push(`import * as __ns_dep_${i}__ from ${JSON.stringify(absPath)};`);
+	files.forEach(({ absPath, lazy }, i) => {
+		if (!lazy) lines.push(`import * as __ns_dep_${i}__ from ${JSON.stringify(absPath)};`);
 	});
 	lines.push('');
 	lines.push('const __nsDepsReg = (globalThis.__NS_DEPS_MODULES__ || (globalThis.__NS_DEPS_MODULES__ = Object.create(null)));');
-	files.forEach(({ key }, i) => {
-		lines.push(`__nsDepsReg[${JSON.stringify(key)}] = __ns_dep_${i}__;`);
+	if (files.some((f) => f.lazy)) {
+		// What `import * as ns` gives for a CommonJS module (esbuild's __toESM): its exports as named
+		// bindings and itself as `default`, unless it is transpiled ESM (`__esModule`).
+		lines.push('function __nsDepsCjsNamespace(m) {');
+		lines.push('  const ns = Object.create(null);');
+		lines.push("  if (m != null && (typeof m === 'object' || typeof m === 'function')) {");
+		lines.push("    for (const k of Object.keys(m)) if (k !== 'default') Object.defineProperty(ns, k, { enumerable: true, get: () => m[k] });");
+		lines.push('  }');
+		lines.push("  Object.defineProperty(ns, 'default', { enumerable: true, value: m != null && m.__esModule ? m.default : m });");
+		lines.push('  return ns;');
+		lines.push('}');
+		lines.push('function __nsDepsLazy(key, load) {');
+		lines.push('  Object.defineProperty(__nsDepsReg, key, {');
+		lines.push('    configurable: true,');
+		lines.push('    enumerable: true,');
+		lines.push('    get() {');
+		lines.push('      const ns = load();');
+		lines.push('      Object.defineProperty(__nsDepsReg, key, { configurable: true, enumerable: true, writable: true, value: ns });');
+		lines.push('      return ns;');
+		lines.push('    },');
+		lines.push('  });');
+		lines.push('}');
+	}
+	files.forEach(({ key, absPath, lazy, cjs }, i) => {
+		if (!lazy) {
+			lines.push(`__nsDepsReg[${JSON.stringify(key)}] = __ns_dep_${i}__;`);
+		} else if (cjs) {
+			lines.push(`__nsDepsLazy(${JSON.stringify(key)}, () => __nsDepsCjsNamespace(require(${JSON.stringify(absPath)})));`);
+		} else {
+			lines.push(`__nsDepsLazy(${JSON.stringify(key)}, () => require(${JSON.stringify(absPath)}));`);
+		}
 	});
 	lines.push('export {};');
 	lines.push('');
 	return lines.join('\n');
+}
+
+function isCommonJsFile(absPath: string): boolean {
+	try {
+		return !ESM_SYNTAX_RE.test(readFileSync(absPath, 'utf8'));
+	} catch {
+		return false;
+	}
 }
 
 // Node built-ins the device runtime cannot resolve — externalized exactly like
@@ -738,7 +789,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 		plugins: buildPlugins(),
 	});
 
-	const files: { key: string; absPath: string }[] = entries.map(({ key, absPath }) => ({ key, absPath }));
+	const files: DepsBundleEntryFile[] = entries.map(({ key, absPath }) => ({ key, absPath }));
 	for (const input of Object.keys(discovery.metafile?.inputs ?? {})) {
 		if (input === '<stdin>' || input.includes(':') || !input.includes('node_modules/')) continue;
 		const absPath = path.resolve(projectRoot, input);
@@ -746,7 +797,9 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 		const key = depsRegistryKeyForFile(absPath);
 		if (!key || entryKeySet.has(key) || NEVER_BUNDLED_KEY_RE.test(key)) continue;
 		entryKeySet.add(key);
-		files.push({ key, absPath });
+		// Only here so its /ns/m URL can shim into the bundle: evaluated on first use, as the
+		// dependency graph would, not up front.
+		files.push({ key, absPath, lazy: true, cjs: isCommonJsFile(absPath) });
 	}
 
 	const buildResult = await esbuild.build({
