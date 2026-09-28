@@ -42,7 +42,67 @@ export type ParsedCoreBridgeRequest = {
  */
 export const JS_IDENTIFIER_RE = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
 
+/**
+ * Blank `//` line comments and `/* ... *​/` block comments in-place while
+ * leaving string literals untouched, so a commented-out `export const foo`
+ * (or an `// export * from` migration note) cannot surface as a real export
+ * to the regex scanners below. Newlines are preserved so positions stay
+ * meaningful for any caller that maps matches back to the source.
+ */
+export function maskJsComments(code: string): string {
+	if (!code || (code.indexOf('//') === -1 && code.indexOf('/*') === -1)) {
+		return code;
+	}
+	const chars = code.split('');
+	const n = code.length;
+	let i = 0;
+	while (i < n) {
+		const c = code[i];
+		const next = code[i + 1];
+		if (c === '/' && next === '/') {
+			chars[i] = ' ';
+			chars[i + 1] = ' ';
+			i += 2;
+			while (i < n && code[i] !== '\n') {
+				chars[i] = ' ';
+				i++;
+			}
+		} else if (c === '/' && next === '*') {
+			chars[i] = ' ';
+			chars[i + 1] = ' ';
+			i += 2;
+			while (i < n && !(code[i] === '*' && code[i + 1] === '/')) {
+				if (code[i] !== '\n') chars[i] = ' ';
+				i++;
+			}
+			if (i < n) {
+				chars[i] = ' ';
+				chars[i + 1] = ' ';
+				i += 2;
+			}
+		} else if (c === "'" || c === '"' || c === '`') {
+			const quote = c;
+			i++;
+			while (i < n) {
+				if (code[i] === '\\') {
+					i += 2;
+					continue;
+				}
+				if (code[i] === quote) {
+					i++;
+					break;
+				}
+				i++;
+			}
+		} else {
+			i++;
+		}
+	}
+	return chars.join('');
+}
+
 export function extractDirectExportedNames(code: string): string[] {
+	code = maskJsComments(code);
 	const names = new Set<string>();
 	const declRe = /\bexport\s+(?:async\s+)?(?:function|class)\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)/gu;
 	let match: RegExpExecArray | null;

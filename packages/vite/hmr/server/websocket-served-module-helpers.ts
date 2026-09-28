@@ -7,7 +7,7 @@ import * as PAT from './constants.js';
 import { isDeepCoreSubpath } from './core-sanitize.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
-import { extractDirectExportedNames, parseExportSpecList } from './websocket-core-bridge.js';
+import { extractDirectExportedNames, maskJsComments, parseExportSpecList } from './websocket-core-bridge.js';
 import { resolveCandidateFilePath } from './websocket-module-specifiers.js';
 
 let cachedWorkspaceCoreRoot: string | null | undefined;
@@ -395,6 +395,11 @@ type ModuleExportSurface = {
 //   - `extractExportMetadata` (below): does a module have a default export
 //     and which named ones — shape-only, for SFC route metadata.
 function scanModuleExportSurface(code: string): ModuleExportSurface {
+	// Mask comments once up front: extractDirectExportedNames masks again
+	// internally (idempotent — masked text has no comment starts), and the
+	// `export *`/`export {} from` regexes here must not match commented-out
+	// declarations either.
+	code = maskJsComments(code);
 	const ownNames = new Set<string>(extractDirectExportedNames(code));
 	for (const m of code.matchAll(/\bexport\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s*["'][^"']+["']/g)) {
 		ownNames.add(m[1]);
@@ -601,6 +606,7 @@ export function stripViteDynamicImportVirtual(code: string): string {
 // answers "does this module export a default, and which named exports?" for
 // the Vue SFC route metadata. It intentionally ignores re-export sources.
 export function extractExportMetadata(code: string): { hasDefault: boolean; named: string[] } {
+	code = maskJsComments(code);
 	const named = new Set<string>();
 	let hasDefault = /\bexport\s+default\b/.test(code);
 	try {
