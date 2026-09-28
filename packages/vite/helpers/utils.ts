@@ -33,6 +33,10 @@ export function nsConfigToJson() {
 
 /**
  * Resolves the NativeScript platform-specific file for a given module ID.
+ *
+ * Files come before directories, as in Node and webpack: `base.<platform>.ext`, then `base.ext`,
+ * then the directory barrel `base/index.<platform>.ext`. A package that ships both `platform.js`
+ * and a `platform/` directory means the file by `./platform`.
  * @param id The module ID to resolve.
  * @param platform The target platform (e.g., "ios", "android").
  * @returns The resolved file path or undefined if not found.
@@ -41,19 +45,26 @@ export function resolveNativeScriptPlatformFile(id: string, platform: string): s
 	const ext = path.extname(id);
 	const base = id.slice(0, -ext.length);
 
-	let platformFile = `${base}.${platform}${ext}`;
+	const platformFile = `${base}.${platform}${ext}`;
 	if (fs.existsSync(platformFile)) {
 		return platformFile;
+	}
+
+	if (isFile(id)) {
+		return id;
 	}
 
 	// core uses indices for many barrels
-	platformFile = `${base}/index.${platform}${ext}`;
-	if (fs.existsSync(platformFile)) {
-		return platformFile;
-	}
+	const platformIndex = `${base}/index.${platform}${ext}`;
+	return fs.existsSync(platformIndex) ? platformIndex : undefined;
+}
 
-	// fallback to non-platform file
-	return fs.existsSync(id) ? id : undefined;
+function isFile(file: string): boolean {
+	try {
+		return fs.statSync(file).isFile();
+	} catch {
+		return false;
+	}
 }
 
 /**
