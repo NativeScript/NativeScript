@@ -2,7 +2,7 @@ import { getPackageJson, getProjectFilePath, getProjectRootPath } from './projec
 import fs from 'fs';
 import path from 'path';
 import { preprocessCSS, type ResolvedConfig, type ViteDevServer } from 'vite';
-import { parse as parseCssToAst } from 'css';
+import { parseCssAst as parseCssToAst } from './css-ast.js';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
