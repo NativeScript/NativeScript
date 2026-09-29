@@ -5,7 +5,11 @@ function mapSelectors(selector: string): string[] {
 		return [];
 	}
 
-	return selector.split(/\s*(?![^(]*\)),\s*/).map((s) => s.replace(/\u200C/g, ','));
+	// escaped commas (Tailwind arbitrary values) are part of the selector
+	return selector
+		.replace(/\\[\s\S]/g, (m) => (m === '\\,' ? '\\\u200C' : m))
+		.split(/\s*(?![^(]*\)),\s*/)
+		.map((s) => s.replace(/\u200C/g, ','));
 }
 
 function mapPosition(node, css) {
