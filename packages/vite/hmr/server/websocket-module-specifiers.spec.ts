@@ -71,14 +71,11 @@ describe('resolveCandidateFilePath — pnpm-isolated transitive deps', () => {
 	});
 
 	it('finds a dep that only exists under a workspace package node_modules', () => {
-		// pnpm isolated layout: the app has no node_modules entry for the
-		// transitive dep; only packages/gif's private node_modules does.
 		const appRoot = join(ws, 'apps/demo');
 		const depFile = join(ws, 'packages/gif/node_modules/@scope/transitive-dep/index.js');
 		mkdirSync(appRoot, { recursive: true });
 		mkdirSync(join(ws, 'packages/gif/node_modules/@scope/transitive-dep'), { recursive: true });
-		writeFileSync(depFile, 'export {}
-');
+		writeFileSync(depFile, 'export {}\n');
 
 		expect(resolveCandidateFilePath('/node_modules/@scope/transitive-dep/index.js', appRoot, ws)).toBe(depFile);
 	});
@@ -87,10 +84,28 @@ describe('resolveCandidateFilePath — pnpm-isolated transitive deps', () => {
 		const appRoot = join(ws, 'apps/demo');
 		const appHit = join(appRoot, 'node_modules/pkg/index.js');
 		mkdirSync(join(appRoot, 'node_modules/pkg'), { recursive: true });
-		writeFileSync(appHit, 'export {}
-');
+		writeFileSync(appHit, 'export {}\n');
 
 		expect(resolveCandidateFilePath('/node_modules/pkg/index.js', appRoot, ws)).toBe(appHit);
+	});
+
+	it('finds a dep that only exists in the pnpm virtual store', () => {
+		const appRoot = join(ws, 'apps/demo');
+		const depDir = join(ws, 'node_modules/.pnpm/node_modules/@scope/store-only');
+		mkdirSync(appRoot, { recursive: true });
+		mkdirSync(depDir, { recursive: true });
+		writeFileSync(join(depDir, 'index.js'), 'export {}\n');
+
+		expect(resolveCandidateFilePath('/node_modules/@scope/store-only/index.js', appRoot, ws)).toBe(join(depDir, 'index.js'));
+	});
+
+	it('does not let the fallback escape a node_modules dir', () => {
+		const appRoot = join(ws, 'apps/demo');
+		mkdirSync(appRoot, { recursive: true });
+		mkdirSync(join(ws, 'packages/gif/node_modules'), { recursive: true });
+		writeFileSync(join(ws, 'packages/gif/secret.txt'), 'x');
+
+		expect(resolveCandidateFilePath('/node_modules/../secret.txt', appRoot, ws)).toBeNull();
 	});
 
 	it('returns null when the file exists nowhere', () => {

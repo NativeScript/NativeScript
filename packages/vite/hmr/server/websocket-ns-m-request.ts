@@ -60,40 +60,21 @@ function normalizeAbsoluteFilesystemSpec(spec: string, serverRoot: string): stri
 	return relative;
 }
 
-let cachedPlatformSuffixes: string[] | undefined;
+const MODULE_CANDIDATE_EXTS = ['ts', 'js', 'tsx', 'jsx', 'mjs', 'mts', 'cts', 'vue'];
 
 /**
- * Platform-suffixed resolution tags (`ios`, `android`, `visionos`, plus the
- * shared `native` tag used by split-entry packages). Packages shipped with
- * platform-split entries — e.g. `@nativescript-community/*` plugins carrying
- * `index.ios.js`/`index.android.js` and a `main` like `./index` — 404 on the
- * device bridge when only unsuffixed candidates are probed. Candidates are
- * existence-filtered later, so probing every suffix is safe; the active
- * platform's variants go first so a package shipping several platforms picks
- * the right one.
+ * Extension/index variants of an extensionless spec, active-platform files
+ * first: plugins often ship only `index.ios.js`/`index.android.js` behind a
+ * `main: './index'`, which has no unsuffixed file to find.
  */
-function platformSuffixes(): string[] {
-	if (cachedPlatformSuffixes === undefined) {
-		const platform = resolvePlatform();
-		const list = [platform, 'ios', 'android', 'visionos', 'native'].filter(Boolean) as string[];
-		cachedPlatformSuffixes = [...new Set(list)];
-	}
-	return cachedPlatformSuffixes;
-}
-
-const CANDIDATE_EXTS = ['ts', 'tsx', 'js', 'jsx', 'mjs', 'mts', 'cts', 'vue'];
-
 function expandModuleCandidates(spec: string, hasExt: boolean, baseNoExt: string): string[] {
-	const candidates: string[] = [...(hasExt ? [spec] : [])];
+	const platform = resolvePlatform();
+	const candidates = hasExt ? [spec] : [];
 	for (const base of [baseNoExt, `${baseNoExt}/index`]) {
-		for (const suffix of platformSuffixes()) {
-			for (const ext of CANDIDATE_EXTS) {
-				candidates.push(`${base}.${suffix}.${ext}`);
-			}
+		if (platform) {
+			candidates.push(...MODULE_CANDIDATE_EXTS.map((ext) => `${base}.${platform}.${ext}`));
 		}
-		for (const ext of CANDIDATE_EXTS) {
-			candidates.push(`${base}.${ext}`);
-		}
+		candidates.push(...MODULE_CANDIDATE_EXTS.map((ext) => `${base}.${ext}`));
 	}
 	return candidates;
 }

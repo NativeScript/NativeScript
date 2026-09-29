@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, realpathSync, type Dirent } from 'fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'fs';
 import * as path from 'path';
 
 import * as PAT from './constants.js';
@@ -332,6 +332,44 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 	return null;
 }
 
+const workspaceNodeModulesDirsCache = new Map<string, string[]>();
+
+/**
+ * `node_modules` dirs that can hold a package the served URL no longer
+ * anchors: pnpm's hoisted virtual-store dir first, then every workspace
+ * package's private `node_modules` (one group level deep, e.g.
+ * `<ws>/packages/<pkg>/node_modules`). Cached per workspace root; the set
+ * only changes on install.
+ */
+function listWorkspaceNodeModulesDirs(workspaceRoot: string): string[] {
+	const cached = workspaceNodeModulesDirsCache.get(workspaceRoot);
+	if (cached) {
+		return cached;
+	}
+	const dirs: string[] = [];
+	const pushIfPresent = (dir: string) => {
+		if (existsSync(dir)) dirs.push(dir);
+	};
+	const listSubdirs = (dir: string): string[] => {
+		try {
+			return readdirSync(dir, { withFileTypes: true })
+				.filter((entry) => entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.'))
+				.map((entry) => path.join(dir, entry.name));
+		} catch {
+			return [];
+		}
+	};
+	pushIfPresent(path.join(workspaceRoot, 'node_modules', '.pnpm', 'node_modules'));
+	for (const groupDir of listSubdirs(workspaceRoot)) {
+		pushIfPresent(path.join(groupDir, 'node_modules'));
+		for (const packageDir of listSubdirs(groupDir)) {
+			pushIfPresent(path.join(packageDir, 'node_modules'));
+		}
+	}
+	workspaceNodeModulesDirsCache.set(workspaceRoot, dirs);
+	return dirs;
+}
+
 /**
  * Resolve a candidate URL ('/node_modules/...', '/@fs/...', or an
  * absolute fs path) to a real file on disk under one of the allowed
@@ -345,61 +383,6 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
  * request to the dev server's bridge fails with a "transform miss"
  * 404 even though the file is right there at the workspace root.
  */
-const workspacePackageNodeModulesDirsCache = new Map<string, string[]>();
-
-/**
- * Every workspace package's `node_modules` dir, one level of package-group
- * nesting deep (e.g. `<ws>/<packages|apps|tools>/<pkg>/node_modules`).
- * Exists to anchor `/node_modules/<pkg>/<sub>` URLs whose importer was
- * dropped by the URL form: under pnpm's isolated linker a workspace
- * package's own dependency lives in its private `node_modules`, not under
- * the app root or the workspace root. Cached per workspace root — the dir
- * set only changes on install.
- */
-function enumerateWorkspacePackageNodeModulesDirs(workspaceRoot: string): string[] {
-	const resolved = path.resolve(workspaceRoot);
-	const cached = workspacePackageNodeModulesDirsCache.get(resolved);
-	if (cached) {
-		return cached;
-	}
-	const dirs: string[] = [];
-	const pushIfPresent = (dir: string) => {
-		const nm = path.join(dir, 'node_modules');
-		try {
-			if (existsSync(nm)) dirs.push(nm);
-		} catch {
-			// unreadable dirs are skipped — this is a best-effort fallback
-		}
-	};
-	pushIfPresent(resolved);
-	let groups: Dirent[] = [];
-	try {
-		groups = readdirSync(resolved, { withFileTypes: true });
-	} catch {
-		groups = [];
-	}
-	for (const group of groups) {
-		if (!group.isDirectory() || group.name === 'node_modules' || group.name.startsWith('.')) {
-			continue;
-		}
-		const groupDir = path.join(resolved, group.name);
-		pushIfPresent(groupDir);
-		let packages: Dirent[] = [];
-		try {
-			packages = readdirSync(groupDir, { withFileTypes: true });
-		} catch {
-			packages = [];
-		}
-		for (const pkg of packages) {
-			if (pkg.isDirectory() && !pkg.name.startsWith('.')) {
-				pushIfPresent(path.join(groupDir, pkg.name));
-			}
-		}
-	}
-	workspacePackageNodeModulesDirsCache.set(resolved, dirs);
-	return dirs;
-}
-
 export function resolveCandidateFilePath(candidate: string, projectRoot: string, workspaceRoot?: string | null): string | null {
 	const cleaned = candidate.replace(PAT.QUERY_PATTERN, '');
 	if (!cleaned) return null;
@@ -438,16 +421,15 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 			const fromWorkspace = tryUnderRoot(resolvedWorkspace);
 			if (fromWorkspace) return fromWorkspace;
 
-			// Transitive-dep fallback: the `/node_modules/<pkg>/<sub>` URL
-			// form drops the importer, so a package that only exists under a
-			// workspace package's private node_modules (pnpm isolated linker)
-			// can't be anchored to a root. Probe every workspace package's
-			// node_modules for `<pkg>/<sub>` and serve the first hit.
+			// Served URLs keep only the last `/node_modules/<pkg>/...` tail, so a
+			// package installed solely in the pnpm store or in a workspace
+			// package's private node_modules has no root to resolve under.
+			// First hit wins: the importer is gone from the URL.
 			if (cleaned.includes('/node_modules/')) {
-				const afterNodeModules = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
-				for (const nmDir of enumerateWorkspacePackageNodeModulesDirs(resolvedWorkspace)) {
-					const absPath = path.join(nmDir, afterNodeModules);
-					if (existsSync(absPath)) return absPath;
+				const tail = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
+				for (const nmDir of listWorkspaceNodeModulesDirs(resolvedWorkspace)) {
+					const absPath = path.resolve(nmDir, tail);
+					if (absPath.startsWith(nmDir + path.sep) && existsSync(absPath)) return absPath;
 				}
 			}
 		}
@@ -921,26 +903,18 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 		return { route: 'http' };
 	}
 
-	// A plugin-patterned package absent from the active vendor manifest (a
-	// transitive dep under pnpm's isolated linker, or a package excluded from
-	// vendoring) must not take the vendor route — the registry has no entry
-	// and the sync require resolves to the missing-module stub. Fall through
-	// so callers emit the per-module /ns/m HTTP form instead. A null manifest
-	// (early boot) keeps the legacy behavior.
-	const manifest = getVendorManifest();
-	const pluginVendored = !manifest || !!manifest.modules?.[pkgName];
-
-	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && pluginVendored && (!subpath || isRootLevelMainEntry)) {
+	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && (!subpath || isRootLevelMainEntry)) {
 		return { route: 'vendor', bareSpec: pkgName };
 	}
 
-	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && pluginVendored && subpath.includes('/')) {
+	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && subpath.includes('/')) {
 		const exactBareSpecifier = resolveInternalRuntimePluginBareSpecifier(nodeModulesSpec, projectRoot);
 		if (exactBareSpecifier) {
 			return { route: 'vendor', bareSpec: exactBareSpecifier };
 		}
 	}
 
+	const manifest = getVendorManifest();
 	if (!manifest?.modules?.[pkgName]) {
 		return null;
 	}
