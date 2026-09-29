@@ -33,30 +33,39 @@ export function nsConfigToJson() {
 
 /**
  * Resolves the NativeScript platform-specific file for a given module ID.
- *
- * Files come before directories, as in Node and webpack: `base.<platform>.ext`, then `base.ext`,
- * then the directory barrel `base/index.<platform>.ext`. A package that ships both `platform.js`
- * and a `platform/` directory means the file by `./platform`.
  * @param id The module ID to resolve.
  * @param platform The target platform (e.g., "ios", "android").
  * @returns The resolved file path or undefined if not found.
  */
 export function resolveNativeScriptPlatformFile(id: string, platform: string): string | undefined {
 	const ext = path.extname(id);
-	const base = id.slice(0, -ext.length);
+	return resolveNativeScriptPlatformModule(id.slice(0, -ext.length), [ext], platform);
+}
 
-	const platformFile = `${base}.${platform}${ext}`;
-	if (fs.existsSync(platformFile)) {
-		return platformFile;
+/**
+ * Resolves an extensionless module path the way Node and webpack do: every
+ * file candidate (`base.<platform>.ext`, then `base.ext`, per extension)
+ * before any directory barrel (`base/index.<platform>.ext`), so a package
+ * shipping both `platform.js` and a `platform/` directory gets the file.
+ */
+export function resolveNativeScriptPlatformModule(base: string, extensions: readonly string[], platform: string): string | undefined {
+	for (const ext of extensions) {
+		const platformFile = `${base}.${platform}${ext}`;
+		if (isFile(platformFile)) {
+			return platformFile;
+		}
+		if (isFile(base + ext)) {
+			return base + ext;
+		}
 	}
-
-	if (isFile(id)) {
-		return id;
-	}
-
 	// core uses indices for many barrels
-	const platformIndex = `${base}/index.${platform}${ext}`;
-	return fs.existsSync(platformIndex) ? platformIndex : undefined;
+	for (const ext of extensions) {
+		const platformIndex = `${base}/index.${platform}${ext}`;
+		if (isFile(platformIndex)) {
+			return platformIndex;
+		}
+	}
+	return undefined;
 }
 
 function isFile(file: string): boolean {
