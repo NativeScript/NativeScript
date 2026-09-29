@@ -1,3 +1,23 @@
+## 8.0.14 (2026-09-29)
+
+### 🩹 Fixes
+
+- keep escaped commas inside CSS selectors ([#11463](https://github.com/NativeScript/NativeScript/pull/11463))
+- **vite:** resolve a file before a same-named directory ([#11464](https://github.com/NativeScript/NativeScript/pull/11464))
+- **vite:** evaluate transitively bundled deps on first use ([#11465](https://github.com/NativeScript/NativeScript/pull/11465))
+- **vite:** decode dots in prebundled subpath specifiers ([#11466](https://github.com/NativeScript/NativeScript/pull/11466))
+- **vite:** inline release bundle css with minified sentinel, in import order ([#11477](https://github.com/NativeScript/NativeScript/pull/11477))
+- **vite:** resolve workspace css specs to /@fs before ?inline transform ([#11474](https://github.com/NativeScript/NativeScript/pull/11474))
+- **vite:** mask comments before scanning module export names ([#11473](https://github.com/NativeScript/NativeScript/pull/11473))
+- **vite:** serve pnpm-isolated transitive deps over /ns/m ([#11475](https://github.com/NativeScript/NativeScript/pull/11475))
+- **vite:** route unvendored plugin-patterned deps through /ns/m HTTP ([#11459](https://github.com/NativeScript/NativeScript/pull/11459))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+- Nathan Walker
+- Osei Fortune @triniwiz
+
 ## 8.0.13 (2026-09-25)
 
 ### 🩹 Fixes
