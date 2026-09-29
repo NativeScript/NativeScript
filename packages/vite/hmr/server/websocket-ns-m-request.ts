@@ -182,6 +182,24 @@ function getLoadedCode(loadResult: string | { code?: string } | TransformResult 
 	return typeof loadResult.code === 'string' ? loadResult.code : null;
 }
 
+/**
+ * Anchors a root-relative spec to the `/@fs/<abs>` id of the file it names,
+ * probing the project root, then the monorepo workspace root. Vite only
+ * resolves root-relative URLs under its configured `root`, so workspace files
+ * outside it need the absolute form.
+ */
+export function resolveFsAnchoredSpec(spec: string, serverRoot: string, workspaceRoot?: string | null): string | null {
+	const roots = [serverRoot, ...(workspaceRoot && path.resolve(workspaceRoot) !== path.resolve(serverRoot) ? [workspaceRoot] : [])];
+	for (const root of roots) {
+		const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
+		const fsId = `/@fs${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
+		if (resolveCandidateFilePath(fsId, serverRoot, workspaceRoot)) {
+			return fsId;
+		}
+	}
+	return null;
+}
+
 export async function resolveNsMTransformedModule(options: ResolveNsMTransformedModuleOptions): Promise<NsMResolvedTransform> {
 	const { context, transformRequest, resolveId, loadVirtualId, timeoutMs = 120000 } = options;
 	const { spec, serverRoot, workspaceRoot, transformCandidates } = context;
@@ -244,19 +262,11 @@ export async function resolveNsMTransformedModule(options: ResolveNsMTransformed
 		}
 	}
 
-	const buildFsCandidate = (root: string): string => {
-		const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
-		const absolutePosixPath = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
-		return `/@fs${absolutePosixPath}`;
-	};
-	const fsRootsToTry = [serverRoot, ...(workspaceRoot && path.resolve(workspaceRoot) !== path.resolve(serverRoot) ? [workspaceRoot] : [])];
-	for (const root of fsRootsToTry) {
-		const fsId = buildFsCandidate(root);
-		if (resolveCandidateFilePath(fsId, serverRoot, workspaceRoot)) {
-			transformed = await tryTransformRequest(transformRequest, fsId, timeoutMs);
-			if (transformed?.code) {
-				return { transformed, resolvedCandidate: fsId };
-			}
+	const fsId = resolveFsAnchoredSpec(spec, serverRoot, workspaceRoot);
+	if (fsId) {
+		transformed = await tryTransformRequest(transformRequest, fsId, timeoutMs);
+		if (transformed?.code) {
+			return { transformed, resolvedCandidate: fsId };
 		}
 	}
 

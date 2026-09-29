@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
+import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 
 describe('createNsMRequestContext', () => {
 	it('normalizes decorated HMR request paths into canonical module specs', () => {
@@ -128,5 +128,22 @@ describe('resolveNsMTransformedModule', () => {
 		expect(resolved.transformed?.code).toBe('export const v = 1;\n');
 		expect(resolved.resolvedCandidate).toBe(expectedFsId);
 		expect(transformedCalls).toContain(expectedFsId);
+	});
+});
+
+describe('resolveFsAnchoredSpec', () => {
+	it('anchors a workspace css file outside the app root to its /@fs id', () => {
+		const wsRoot = realpathSync(mkdtempSync(join(tmpdir(), 'ns-hmr-ns-m-fs-anchor-')));
+		try {
+			const appRoot = join(wsRoot, 'apps/native');
+			mkdirSync(appRoot, { recursive: true });
+			mkdirSync(join(wsRoot, 'packages/ui/src/theme'), { recursive: true });
+			writeFileSync(join(wsRoot, 'packages/ui/src/theme/tokens.css'), '.a { color: red; }');
+
+			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/tokens.css', appRoot, wsRoot)).toBe(`/@fs${wsRoot}/packages/ui/src/theme/tokens.css`);
+			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/missing.css', appRoot, wsRoot)).toBeNull();
+		} finally {
+			rmSync(wsRoot, { recursive: true, force: true });
+		}
 	});
 });
