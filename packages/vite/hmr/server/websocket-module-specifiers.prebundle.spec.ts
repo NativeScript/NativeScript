@@ -10,7 +10,6 @@ describe('viteDepsPathToBareSpecifier', () => {
 	afterEach(() => clearVendorManifest());
 
 	it('decodes the dots in a subpath under a vendored package', () => {
-		// Vite's flattenId: '/' -> '_', '.' -> '__'.
 		expect(viteDepsPathToBareSpecifier('pkg_addons_env_file__js.js')).toBe('pkg/addons/env/file.js');
 	});
 

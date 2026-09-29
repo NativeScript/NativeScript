@@ -28,12 +28,12 @@ export function extractVitePrebundleId(spec: string): string | null {
 }
 
 /**
- * The subpath part of a Vite prebundle id, decoded. flattenId encodes '.' as
- * '__' and '/' as '_', so the dots are decoded first: otherwise
- * `pkg_lib_file__js` comes back as `lib/file//js`.
+ * Reverses Vite's flattenId, which encodes '.' as '__' and '/' as '_'. The
+ * dots are split out first so `lib_file__js` decodes to `lib/file.js`, not
+ * `lib/file//js`. Lossy for names that themselves contain '_'.
  */
-function decodeFlattenedSubpath(flatSuffix: string): string {
-	return flatSuffix
+export function decodeFlattenedId(flat: string): string {
+	return flat
 		.split('__')
 		.map((segment) => segment.replace(/_/g, '/'))
 		.join('.');
@@ -292,8 +292,7 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 				return canonical;
 			}
 			if (flattenedId.startsWith(`${flatKey}_`)) {
-				const flatSuffix = flattenedId.slice(flatKey.length + 1);
-				const subpath = flatSuffix.replace(/_/g, '/');
+				const subpath = decodeFlattenedId(flattenedId.slice(flatKey.length + 1));
 				if (isFileDistSubpath(subpath)) {
 					return canonical;
 				}
@@ -303,7 +302,7 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 				}
 			}
 		}
-		const guessedId = flattenedId.replace(/__/g, '.').replace(/_/g, '/');
+		const guessedId = decodeFlattenedId(flattenedId);
 		if (guessedId && guessedId !== flattenedId) {
 			const guessedCanonical = resolveVendorSpecifier(guessedId);
 			if (guessedCanonical) {
@@ -601,7 +600,7 @@ export function viteDepsPathToBareSpecifier(depPath: string): string | null {
 	}
 
 	if (bestKey && bestCanonical) {
-		return `${bestCanonical}/${decodeFlattenedSubpath(flatId.slice(bestKey.length + 1))}`;
+		return `${bestCanonical}/${decodeFlattenedId(flatId.slice(bestKey.length + 1))}`;
 	}
 
 	return null;
