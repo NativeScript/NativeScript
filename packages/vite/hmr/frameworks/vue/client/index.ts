@@ -539,7 +539,7 @@ function openHmrReplaceNavWindow(): () => void {
  * that matches no live instances is a no-op (component not currently
  * displayed); the caller treats that as handled.
  */
-function tryInPlaceVueReload(comp: any, rerenderOnly = false): boolean {
+export function tryInPlaceVueReload(comp: any, rerenderOnly = false): boolean {
 	try {
 		const rt: any = (getGlobalScope() as any).__VUE_HMR_RUNTIME__;
 		const id = comp && comp.__hmrId;
