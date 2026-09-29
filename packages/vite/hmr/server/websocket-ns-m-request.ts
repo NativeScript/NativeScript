@@ -2,6 +2,7 @@ import type { TransformResult } from 'vite';
 import * as path from 'path';
 
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+import { resolvePlatform } from '../../helpers/cli-flags.js';
 import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 
 export interface NsMRequestContext {
@@ -57,6 +58,25 @@ function normalizeAbsoluteFilesystemSpec(spec: string, serverRoot: string): stri
 		relative = `/${relative}`;
 	}
 	return relative;
+}
+
+const MODULE_CANDIDATE_EXTS = ['ts', 'js', 'tsx', 'jsx', 'mjs', 'mts', 'cts', 'vue'];
+
+/**
+ * Extension/index variants of an extensionless spec, active-platform files
+ * first: plugins often ship only `index.ios.js`/`index.android.js` behind a
+ * `main: './index'`, which has no unsuffixed file to find.
+ */
+function expandModuleCandidates(spec: string, hasExt: boolean, baseNoExt: string): string[] {
+	const platform = resolvePlatform();
+	const candidates = hasExt ? [spec] : [];
+	for (const base of [baseNoExt, `${baseNoExt}/index`]) {
+		if (platform) {
+			candidates.push(...MODULE_CANDIDATE_EXTS.map((ext) => `${base}.${platform}.${ext}`));
+		}
+		candidates.push(...MODULE_CANDIDATE_EXTS.map((ext) => `${base}.${ext}`));
+	}
+	return candidates;
 }
 
 export function createNsMRequestContext(requestUrl: string, serverRoot: string, appVirtualWithSlash: string, workspaceRoot?: string | null): NsMRequestContextResult {
@@ -123,7 +143,7 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 
 		const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 		const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
-		const candidates = [...(hasExt ? [spec] : []), `${baseNoExt}.ts`, `${baseNoExt}.js`, `${baseNoExt}.tsx`, `${baseNoExt}.jsx`, `${baseNoExt}.mjs`, `${baseNoExt}.mts`, `${baseNoExt}.cts`, `${baseNoExt}.vue`, `${baseNoExt}/index.ts`, `${baseNoExt}/index.js`, `${baseNoExt}/index.tsx`, `${baseNoExt}/index.jsx`, `${baseNoExt}/index.mjs`];
+		const candidates = expandModuleCandidates(spec, hasExt, baseNoExt);
 		const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot, workspaceRoot);
 
 		return {

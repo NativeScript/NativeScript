@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, realpathSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'fs';
 import * as path from 'path';
 
 import * as PAT from './constants.js';
@@ -332,6 +332,44 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 	return null;
 }
 
+const workspaceNodeModulesDirsCache = new Map<string, string[]>();
+
+/**
+ * `node_modules` dirs that can hold a package the served URL no longer
+ * anchors: pnpm's hoisted virtual-store dir first, then every workspace
+ * package's private `node_modules` (one group level deep, e.g.
+ * `<ws>/packages/<pkg>/node_modules`). Cached per workspace root; the set
+ * only changes on install.
+ */
+function listWorkspaceNodeModulesDirs(workspaceRoot: string): string[] {
+	const cached = workspaceNodeModulesDirsCache.get(workspaceRoot);
+	if (cached) {
+		return cached;
+	}
+	const dirs: string[] = [];
+	const pushIfPresent = (dir: string) => {
+		if (existsSync(dir)) dirs.push(dir);
+	};
+	const listSubdirs = (dir: string): string[] => {
+		try {
+			return readdirSync(dir, { withFileTypes: true })
+				.filter((entry) => entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.'))
+				.map((entry) => path.join(dir, entry.name));
+		} catch {
+			return [];
+		}
+	};
+	pushIfPresent(path.join(workspaceRoot, 'node_modules', '.pnpm', 'node_modules'));
+	for (const groupDir of listSubdirs(workspaceRoot)) {
+		pushIfPresent(path.join(groupDir, 'node_modules'));
+		for (const packageDir of listSubdirs(groupDir)) {
+			pushIfPresent(path.join(packageDir, 'node_modules'));
+		}
+	}
+	workspaceNodeModulesDirsCache.set(workspaceRoot, dirs);
+	return dirs;
+}
+
 /**
  * Resolve a candidate URL ('/node_modules/...', '/@fs/...', or an
  * absolute fs path) to a real file on disk under one of the allowed
@@ -380,7 +418,20 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 		const resolvedProject = path.resolve(projectRoot);
 		const resolvedWorkspace = path.resolve(workspaceRoot);
 		if (resolvedWorkspace !== resolvedProject) {
-			return tryUnderRoot(resolvedWorkspace);
+			const fromWorkspace = tryUnderRoot(resolvedWorkspace);
+			if (fromWorkspace) return fromWorkspace;
+
+			// Served URLs keep only the last `/node_modules/<pkg>/...` tail, so a
+			// package installed solely in the pnpm store or in a workspace
+			// package's private node_modules has no root to resolve under.
+			// First hit wins: the importer is gone from the URL.
+			if (cleaned.includes('/node_modules/')) {
+				const tail = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
+				for (const nmDir of listWorkspaceNodeModulesDirs(resolvedWorkspace)) {
+					const absPath = path.resolve(nmDir, tail);
+					if (absPath.startsWith(nmDir + path.sep) && existsSync(absPath)) return absPath;
+				}
+			}
 		}
 	}
 

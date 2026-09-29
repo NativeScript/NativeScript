@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -27,6 +27,23 @@ describe('createNsMRequestContext', () => {
 			statusCode: 404,
 			code: expect.stringContaining('build-time package is not device-loadable: vite'),
 		});
+	});
+});
+
+describe('createNsMRequestContext — platform-suffixed candidates', () => {
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	it('probes only the active platform suffix, ahead of unsuffixed variants', () => {
+		vi.stubEnv('NATIVESCRIPT_BUNDLER_ENV', JSON.stringify({ ios: true }));
+		const result = createNsMRequestContext('/ns/m/src/plugin', '/workspace', '/src/');
+		if (result.kind !== 'context') throw new Error('expected context');
+		const { candidates } = result.value;
+
+		expect(candidates.indexOf('/src/plugin/index.ios.js')).toBeGreaterThan(-1);
+		expect(candidates.indexOf('/src/plugin/index.ios.js')).toBeLessThan(candidates.indexOf('/src/plugin/index.js'));
+		expect(candidates.some((c) => c.includes('.android.'))).toBe(false);
 	});
 });
 
