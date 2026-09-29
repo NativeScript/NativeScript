@@ -27,6 +27,18 @@ export function extractVitePrebundleId(spec: string): string | null {
 	return null;
 }
 
+/**
+ * Reverses Vite's flattenId, which encodes '.' as '__' and '/' as '_'. The
+ * dots are split out first so `lib_file__js` decodes to `lib/file.js`, not
+ * `lib/file//js`. Lossy for names that themselves contain '_'.
+ */
+export function decodeFlattenedId(flat: string): string {
+	return flat
+		.split('__')
+		.map((segment) => segment.replace(/_/g, '/'))
+		.join('.');
+}
+
 export function getFlattenedManifestMap(manifest: VendorManifest): Map<string, string> {
 	const map = new Map<string, string>();
 	const mods = Object.keys(manifest.modules || {});
@@ -280,8 +292,7 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 				return canonical;
 			}
 			if (flattenedId.startsWith(`${flatKey}_`)) {
-				const flatSuffix = flattenedId.slice(flatKey.length + 1);
-				const subpath = flatSuffix.replace(/_/g, '/');
+				const subpath = decodeFlattenedId(flattenedId.slice(flatKey.length + 1));
 				if (isFileDistSubpath(subpath)) {
 					return canonical;
 				}
@@ -291,7 +302,7 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 				}
 			}
 		}
-		const guessedId = flattenedId.replace(/__/g, '.').replace(/_/g, '/');
+		const guessedId = decodeFlattenedId(flattenedId);
 		if (guessedId && guessedId !== flattenedId) {
 			const guessedCanonical = resolveVendorSpecifier(guessedId);
 			if (guessedCanonical) {
@@ -640,9 +651,7 @@ export function viteDepsPathToBareSpecifier(depPath: string): string | null {
 	}
 
 	if (bestKey && bestCanonical) {
-		const flatSuffix = flatId.slice(bestKey.length + 1);
-		const subpath = flatSuffix.replace(/_/g, '/');
-		return `${bestCanonical}/${subpath}`;
+		return `${bestCanonical}/${decodeFlattenedId(flatId.slice(bestKey.length + 1))}`;
 	}
 
 	return null;
