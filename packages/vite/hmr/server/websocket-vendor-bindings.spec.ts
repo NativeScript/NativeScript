@@ -246,12 +246,6 @@ describe('ensureNativeScriptModuleBindings — unvendored plugin deps', () => {
 	});
 
 	it('keeps a plugin-patterned import unbound when the package is absent from the vendor manifest', () => {
-		// A leaf package's own dependency (e.g. a published wrapper shipping a
-		// NativeScript plugin transitively under pnpm's isolated linker) is not
-		// vendored by collectVendorModules — which only seeds direct project
-		// deps. Vendor-binding it would emit __nsVendorRequire for a package the
-		// registry has never heard of (the __nsMissing stub); the bare import
-		// survives so the device fetches it through /ns/m per-module HTTP.
 		registerVendorManifest({
 			version: 1,
 			createdAt: '2026-01-01T00:00:00.000Z',
@@ -270,5 +264,23 @@ describe('ensureNativeScriptModuleBindings — unvendored plugin deps', () => {
 		const text = squish(out);
 		expect(text).not.toMatch(/__nsVendorRegistry\.has\(['"]@nativescript-community\/ui-image['"]\)/);
 		expect(text).toContain(`from '@nativescript-community/ui-image'`);
+	});
+
+	it('still vendor-binds a file subpath of a vendored plugin', () => {
+		registerVendorManifest({
+			version: 1,
+			createdAt: '2026-01-01T00:00:00.000Z',
+			hash: 'test',
+			modules: {
+				'@nativescript-community/ui-image': {
+					id: '@nativescript-community/ui-image',
+					exports: { Img: true },
+				},
+			},
+			aliases: {},
+		});
+
+		const out = ensureNativeScriptModuleBindings(`import { helper } from '@nativescript-community/ui-image/dist/helpers.js';\nexport const x = helper;`);
+		expect(squish(out)).toMatch(/__nsVendorRegistry\.has\(['"]@nativescript-community\/ui-image\/dist\/helpers\.js['"]\)/);
 	});
 });

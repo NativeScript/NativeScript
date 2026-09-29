@@ -852,13 +852,9 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 		return { route: 'http' };
 	}
 
-	// A plugin-patterned package absent from an active vendor manifest (a
-	// transitive dependency under pnpm's isolated linker, an NS_VENDOR_EXCLUDE/
-	// flavor-excluded package) must not take the vendor route — the registry
-	// has no entry and the sync require resolves to the missing-module stub.
-	// Fall through to null so callers emit the per-module /ns/m HTTP form,
-	// which resolves transitive deps through Vite's importer-aware resolution.
-	// A null manifest (unit tests, early boot) keeps the legacy behavior.
+	// Plugin-patterned packages missing from an active manifest (transitive
+	// deps under pnpm's isolated linker, vendor-excluded packages) have no
+	// registry entry on device; null sends callers to per-module HTTP.
 	const manifest = getVendorManifest();
 	const pluginVendored = !manifest || !!manifest.modules?.[pkgName];
 

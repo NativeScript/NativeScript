@@ -253,11 +253,6 @@ describe('resolveVendorRouting', () => {
 	});
 
 	it('returns null for a plugin-patterned package absent from the vendor manifest, so the caller falls back to per-module HTTP', () => {
-		// Transitive plugin dep under pnpm's isolated linker: the package exists
-		// on disk (resolvable via Vite's importer-aware resolution) but was never
-		// vendored — collectVendorModules only seeds direct project deps. Routing
-		// it to the sync vendor registry rewrites the import to a
-		// __nsVendorRequire call that resolves to the missing-module stub.
 		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-vendor-route-'));
 		tempRoots.push(root);
 
@@ -277,7 +272,6 @@ describe('resolveVendorRouting', () => {
 			aliases: {},
 		});
 
-		// Unvendored plugin dep → HTTP; a vendored plugin still routes vendor.
 		expect(resolveVendorRouting('@nativescript-community/ui-image', root)).toBeNull();
 		expect(resolveVendorRouting('@nativescript-community/ui-svg', root)).toEqual({ route: 'vendor', bareSpec: '@nativescript-community/ui-svg' });
 	});
