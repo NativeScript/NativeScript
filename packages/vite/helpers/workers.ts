@@ -1,6 +1,6 @@
 import path from 'path';
 import type { Plugin } from 'vite';
-import { nsConfigToJson, resolveNativeScriptPlatformFile } from './utils.js';
+import { nsConfigToJson, resolveNativeScriptPlatformModule } from './utils.js';
 import { createTsConfigPathsResolver, getTsConfigData } from './ts-config-paths.js';
 import { packagePlatformResolverPlugin } from './package-platform-aliases.js';
 import { nativescriptPackageResolver } from './nativescript-package-resolver.js';
@@ -131,18 +131,11 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 				if (importer) {
 					const resolvedPath = path.resolve(path.dirname(importer), id);
 
-					// Try different extensions with platform-specific resolution
-					const extensions = ['.js', '.mjs', '.ts'];
-
-					for (const ext of extensions) {
-						const testPath = resolvedPath + ext;
-						// Use the existing NativeScript platform file resolver
-						const platformResolvedFile = resolveNativeScriptPlatformFile(testPath, platform);
-						if (platformResolvedFile) {
-							// Canonicalize so the worker bundle dedupes core the same way
-							// the main bundle does (forward slash + uppercase Windows drive).
-							return normalizeModuleId(platformResolvedFile);
-						}
+					const platformResolvedFile = resolveNativeScriptPlatformModule(resolvedPath, ['.js', '.mjs', '.ts'], platform);
+					if (platformResolvedFile) {
+						// Canonicalize so the worker bundle dedupes core the same way
+						// the main bundle does (forward slash + uppercase Windows drive).
+						return normalizeModuleId(platformResolvedFile);
 					}
 
 					return null;
