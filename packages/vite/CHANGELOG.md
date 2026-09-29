@@ -1,3 +1,13 @@
+## 8.0.15 (2026-09-29)
+
+### 🩹 Fixes
+
+- **vite:** hot-update vue screens on plain .ts edits ([#11478](https://github.com/NativeScript/NativeScript/pull/11478))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.14 (2026-09-29)
 
 ### 🩹 Fixes
