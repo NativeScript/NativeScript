@@ -8,6 +8,22 @@ import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
+import { getVendorManifest } from '../shared/vendor/registry.js';
+
+/**
+ * True when a vendor manifest is active and the specifier's root package is
+ * not in it. Such imports must stay HTTP-served: a `__nsVendorRequire` for a
+ * package the device registry never received resolves to the missing-module
+ * stub. Without a manifest nothing is known, so callers keep vendor routing.
+ */
+function isUnvendoredPackage(specifier: string): boolean {
+	const manifest = getVendorManifest();
+	if (!manifest) {
+		return false;
+	}
+	const rootPackageName = extractRootPackageName(normalizeNodeModulesSpecifier(specifier) || specifier);
+	return !!rootPackageName && !manifest.modules?.[rootPackageName] && !manifest.aliases?.[rootPackageName];
+}
 
 export interface EnsureNativeScriptModuleBindingsOptions {
 	preserveNonPluginVendorImports?: boolean;
@@ -163,6 +179,9 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			}
 			const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 			let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
+			if (canonical && isUnvendoredPackage(canonical)) {
+				canonical = null;
+			}
 			const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
 			// Preserving a bare vendor id is only correct where the IMPORT MAP
 			// exists to route it (main realm). Worker realms have no import map —
@@ -174,7 +193,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 				preservedImports.push(original);
 				continue;
 			}
-			if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
+			if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath()) && !isUnvendoredPackage(specifier)) {
 				canonical = specifier;
 			}
 			if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
@@ -218,6 +237,9 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		}
 		const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 		let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
+		if (canonical && isUnvendoredPackage(canonical)) {
+			canonical = null;
+		}
 		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
 		// See the side-effect branch above: bare preservation relies on the main
 		// realm's import map; in a worker serve (vendorImportsAsHttp) it must not
@@ -226,7 +248,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			preservedImports.push(original);
 			continue;
 		}
-		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
+		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath()) && !isUnvendoredPackage(specifier)) {
 			canonical = specifier;
 		}
 		if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {

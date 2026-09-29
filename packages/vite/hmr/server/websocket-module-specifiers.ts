@@ -852,18 +852,23 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 		return { route: 'http' };
 	}
 
-	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && (!subpath || isRootLevelMainEntry)) {
+	// Plugin-patterned packages missing from an active manifest (transitive
+	// deps under pnpm's isolated linker, vendor-excluded packages) have no
+	// registry entry on device; null sends callers to per-module HTTP.
+	const manifest = getVendorManifest();
+	const pluginVendored = !manifest || !!manifest.modules?.[pkgName];
+
+	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && pluginVendored && (!subpath || isRootLevelMainEntry)) {
 		return { route: 'vendor', bareSpec: pkgName };
 	}
 
-	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && subpath.includes('/')) {
+	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && pluginVendored && subpath.includes('/')) {
 		const exactBareSpecifier = resolveInternalRuntimePluginBareSpecifier(nodeModulesSpec, projectRoot);
 		if (exactBareSpecifier) {
 			return { route: 'vendor', bareSpec: exactBareSpecifier };
 		}
 	}
 
-	const manifest = getVendorManifest();
 	if (!manifest?.modules?.[pkgName]) {
 		return null;
 	}
