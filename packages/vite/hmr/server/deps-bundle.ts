@@ -345,10 +345,10 @@ export interface DepsBundleEntryFile {
 	key: string;
 	absPath: string;
 	/**
-	 * Registered behind a getter that evaluates the file on first read, instead of an eager
-	 * `import *`. For files the bundle only reached transitively: evaluating every one of those up
-	 * front ran modules the app only `require()`s inside a try/catch, some of which throw by design
-	 * on a platform they don't support, and a throw there aborted the whole dev session.
+	 * Registered behind a getter that evaluates the file on first read instead
+	 * of an eager `import *`. Transitive files must not run up front: packages
+	 * `require()` some of them inside a try/catch, and those may throw by
+	 * design on an unsupported platform.
 	 */
 	lazy?: boolean;
 	/** CommonJS (no ESM syntax): its lazy namespace is built the way esbuild's `import *` builds it. */
@@ -402,14 +402,6 @@ export function buildDepsBundleEntryCode(files: readonly DepsBundleEntryFile[]):
 	lines.push('export {};');
 	lines.push('');
 	return lines.join('\n');
-}
-
-function isCommonJsFile(absPath: string): boolean {
-	try {
-		return !ESM_SYNTAX_RE.test(readFileSync(absPath, 'utf8'));
-	} catch {
-		return false;
-	}
 }
 
 // Node built-ins the device runtime cannot resolve — externalized exactly like
@@ -790,16 +782,15 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	});
 
 	const files: DepsBundleEntryFile[] = entries.map(({ key, absPath }) => ({ key, absPath }));
-	for (const input of Object.keys(discovery.metafile?.inputs ?? {})) {
+	for (const [input, meta] of Object.entries(discovery.metafile?.inputs ?? {})) {
 		if (input === '<stdin>' || input.includes(':') || !input.includes('node_modules/')) continue;
 		const absPath = path.resolve(projectRoot, input);
 		if (!existsSync(absPath)) continue;
 		const key = depsRegistryKeyForFile(absPath);
 		if (!key || entryKeySet.has(key) || NEVER_BUNDLED_KEY_RE.test(key)) continue;
 		entryKeySet.add(key);
-		// Only here so its /ns/m URL can shim into the bundle: evaluated on first use, as the
-		// dependency graph would, not up front.
-		files.push({ key, absPath, lazy: true, cjs: isCommonJsFile(absPath) });
+		// Evaluated on first use, as the dependency graph would, not up front.
+		files.push({ key, absPath, lazy: true, cjs: meta.format !== 'esm' });
 	}
 
 	const buildResult = await esbuild.build({

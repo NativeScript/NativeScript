@@ -304,7 +304,8 @@ function createFixtureProject(): string {
 	// A package probing an optional dependency with a guarded require. The dependency throws on
 	// evaluation, by design.
 	write('node_modules/pkg-guard/package.json', JSON.stringify({ name: 'pkg-guard', version: '1.0.0', module: 'index.js' }));
-	write('node_modules/pkg-guard/index.js', `export function probe() {\n  try {\n    return require('pkg-media').Audio;\n  } catch (e) {\n    return 'caught';\n  }\n}\n`);
+	write('node_modules/pkg-guard/index.js', `export { helper } from './helper.js';\nexport function probe() {\n  try {\n    return require('pkg-media').Audio;\n  } catch (e) {\n    return 'caught';\n  }\n}\n`);
+	write('node_modules/pkg-guard/helper.js', `exports.helper = () => 'helped';\n`);
 	write('node_modules/pkg-media/package.json', JSON.stringify({ name: 'pkg-media', version: '1.0.0', module: 'index.js' }));
 	write('node_modules/pkg-media/index.js', `export { Audio } from './audio';\n`);
 	write('node_modules/pkg-media/audio.js', `throw new Error('pkg-media is not supported here');\n`);
@@ -398,7 +399,10 @@ describe('generateDepsBundle', () => {
 		const previous = (globalThis as any).__NS_DEPS_MODULES__;
 		try {
 			// The guarded require still sees the throw...
-			expect((await evaluate('guarded'))['node_modules/pkg-guard/index.js'].probe()).toBe('caught');
+			const guarded = await evaluate('guarded');
+			expect(guarded['node_modules/pkg-guard/index.js'].probe()).toBe('caught');
+			expect(guarded['node_modules/pkg-guard/helper.js'].helper()).toBe('helped');
+			expect(guarded['node_modules/pkg-guard/helper.js'].default.helper()).toBe('helped');
 			// ...and a direct read reports it, as importing the module would.
 			const registry = await evaluate('direct');
 			expect(() => registry['node_modules/pkg-media/audio.js']).toThrow('pkg-media is not supported here');
