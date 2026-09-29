@@ -42,12 +42,12 @@ export type ParsedCoreBridgeRequest = {
  */
 export const JS_IDENTIFIER_RE = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
 
+const REGEX_PRECEDING_KEYWORD_RE = /(?:^|[^$\w])(?:return|typeof|instanceof|in|of|new|delete|void|throw|case|do|else|yield|await)$/;
+
 /**
- * Blank `//` line comments and `/* ... *​/` block comments in-place while
- * leaving string literals untouched, so a commented-out `export const foo`
- * (or an `// export * from` migration note) cannot surface as a real export
- * to the regex scanners below. Newlines are preserved so positions stay
- * meaningful for any caller that maps matches back to the source.
+ * Blank line and block comments (preserving newlines) so the regex export
+ * scanners never see a commented-out `export` declaration. String, template
+ * and regex literals are skipped so their contents are left intact.
  */
 export function maskJsComments(code: string): string {
 	if (!code || (code.indexOf('//') === -1 && code.indexOf('/*') === -1)) {
@@ -55,45 +55,55 @@ export function maskJsComments(code: string): string {
 	}
 	const chars = code.split('');
 	const n = code.length;
+	const blank = (from: number, to: number) => {
+		for (let k = from; k < to; k++) {
+			if (chars[k] !== '\n') chars[k] = ' ';
+		}
+	};
+	// A `/` starts a regex literal (not division) when it follows an operator,
+	// an opening bracket, or a keyword — the standard lexer heuristic.
+	const slashStartsRegex = (at: number): boolean => {
+		let j = at - 1;
+		while (j >= 0 && /\s/.test(code[j])) j--;
+		if (j < 0) return true;
+		if ('(,=:[!&|?{};+-*%<>~^'.includes(code[j])) return true;
+		return REGEX_PRECEDING_KEYWORD_RE.test(code.slice(Math.max(0, j - 10), j + 1));
+	};
 	let i = 0;
 	while (i < n) {
 		const c = code[i];
 		const next = code[i + 1];
 		if (c === '/' && next === '/') {
-			chars[i] = ' ';
-			chars[i + 1] = ' ';
-			i += 2;
-			while (i < n && code[i] !== '\n') {
-				chars[i] = ' ';
-				i++;
-			}
+			const eol = code.indexOf('\n', i);
+			const stop = eol === -1 ? n : eol;
+			blank(i, stop);
+			i = stop;
 		} else if (c === '/' && next === '*') {
-			chars[i] = ' ';
-			chars[i + 1] = ' ';
-			i += 2;
-			while (i < n && !(code[i] === '*' && code[i + 1] === '/')) {
-				if (code[i] !== '\n') chars[i] = ' ';
-				i++;
-			}
-			if (i < n) {
-				chars[i] = ' ';
-				chars[i + 1] = ' ';
-				i += 2;
-			}
+			const close = code.indexOf('*/', i + 2);
+			const stop = close === -1 ? n : close + 2;
+			blank(i, stop);
+			i = stop;
 		} else if (c === "'" || c === '"' || c === '`') {
-			const quote = c;
 			i++;
-			while (i < n) {
-				if (code[i] === '\\') {
+			while (i < n && code[i] !== c) {
+				i += code[i] === '\\' ? 2 : 1;
+			}
+			i++;
+		} else if (c === '/' && slashStartsRegex(i)) {
+			i++;
+			let inClass = false;
+			while (i < n && code[i] !== '\n') {
+				const r = code[i];
+				if (r === '\\') {
 					i += 2;
 					continue;
 				}
-				if (code[i] === quote) {
-					i++;
-					break;
-				}
+				if (r === '[') inClass = true;
+				else if (r === ']') inClass = false;
+				else if (r === '/' && !inClass) break;
 				i++;
 			}
+			i++;
 		} else {
 			i++;
 		}

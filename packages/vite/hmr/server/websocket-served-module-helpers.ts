@@ -395,10 +395,6 @@ type ModuleExportSurface = {
 //   - `extractExportMetadata` (below): does a module have a default export
 //     and which named ones — shape-only, for SFC route metadata.
 function scanModuleExportSurface(code: string): ModuleExportSurface {
-	// Mask comments once up front: extractDirectExportedNames masks again
-	// internally (idempotent — masked text has no comment starts), and the
-	// `export *`/`export {} from` regexes here must not match commented-out
-	// declarations either.
 	code = maskJsComments(code);
 	const ownNames = new Set<string>(extractDirectExportedNames(code));
 	for (const m of code.matchAll(/\bexport\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s*["'][^"']+["']/g)) {

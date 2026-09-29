@@ -232,25 +232,14 @@ describe('expandStarExports — transitive star re-export chains', () => {
 	});
 
 	it('ignores commented-out export declarations in the star target', async () => {
-		// Real-world trigger: @nativescript-community/ui-image's
-		// index-common.js is a CJS file carrying a commented-out
-		// `export const roundRadiusProperty = ...` migration note. Without
-		// comment masking the scanner reports a name the served module never
-		// provides, and the expanded `export { ... } from "url"` fails to link
-		// on device.
+		// Shape of @nativescript-community/ui-image's index-common.js.
 		const importer = `export * from "/ns/m/node_modules/ui-image/index-common.js";`;
 		const { server, transformer } = makeServer({
-			'/node_modules/ui-image/index-common.js': [
-				`module.exports = {};`,
-				`// export const roundRadiusProperty = {};`,
-				`/* export let alsoCommented = 1; */`,
-				`exports.createView = () => {};`,
-			].join('\n'),
+			'/node_modules/ui-image/index-common.js': [`module.exports = {};`, `// export const roundRadiusProperty = {};`, `/* export let alsoCommented = 1; */`, `exports.createView = () => {};`].join('\n'),
 		});
 		const out = await expandStarExports(importer, server, '/', false, transformer);
 		expect(out).not.toContain('roundRadiusProperty');
 		expect(out).not.toContain('alsoCommented');
 		expect(warnSpy).not.toHaveBeenCalled();
 	});
-
 });
