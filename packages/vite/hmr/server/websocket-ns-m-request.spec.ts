@@ -19,6 +19,42 @@ describe('createNsMRequestContext', () => {
 		expect(result.value.bootTaggedRequest).toBe(false);
 	});
 
+	it('decodes percent-encoded pathname specs (device-encoded bracketed files)', () => {
+		const encoded = createNsMRequestContext('/ns/m/packages/app/src/app/demo/%5Bid%5D.tsrx?import', '/workspace', '/src/');
+		const raw = createNsMRequestContext('/ns/m/packages/app/src/app/demo/[id].tsrx?import', '/workspace', '/src/');
+
+		expect(encoded.kind).toBe('context');
+		expect(raw.kind).toBe('context');
+		if (encoded.kind !== 'context' || raw.kind !== 'context') {
+			return;
+		}
+
+		expect(encoded.value.spec).toBe('/packages/app/src/app/demo/[id].tsrx');
+		expect(encoded.value.spec).toBe(raw.value.spec);
+	});
+
+	it('does not double-decode the already-decoded ?path= spec', () => {
+		const result = createNsMRequestContext('/ns/m/?path=/app/demo/%255Bid%255D.tsrx', '/workspace', '/src/');
+
+		expect(result.kind).toBe('context');
+		if (result.kind !== 'context') {
+			return;
+		}
+
+		expect(result.value.spec).toBe('/app/demo/%5Bid%5D.tsrx');
+	});
+
+	it('keeps encoded ? and # filename chars instead of stripping them as query delimiters', () => {
+		const result = createNsMRequestContext('/ns/m/app/a%3Fb%23c.ts', '/workspace', '/src/');
+
+		expect(result.kind).toBe('context');
+		if (result.kind !== 'context') {
+			return;
+		}
+
+		expect(result.value.spec).toBe('/app/a?b#c.ts');
+	});
+
 	it('returns a response module for blocked build-time node_modules imports', () => {
 		const result = createNsMRequestContext('/ns/m/node_modules/vite/dist/index.js', '/workspace', '/src/');
 

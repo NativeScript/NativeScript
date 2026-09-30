@@ -89,12 +89,14 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 		let spec = urlObj.searchParams.get('path') || '';
 		let forcedVer = urlObj.searchParams.get('v');
 		let bootTaggedRequest = false;
+		let specFromPathname = false;
 
 		if (!spec) {
 			const base = '/ns/m';
 			const rest = urlObj.pathname.slice(base.length);
 			if (rest && rest !== '/') {
 				spec = rest;
+				specFromPathname = true;
 			}
 		}
 
@@ -115,6 +117,13 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 		}
 
 		spec = spec.replace(/[?#].*$/, '');
+		// URL.pathname stays percent-encoded (URLSearchParams already decoded
+		// `path`). Decode after the ?# strip so %3F/%23 filename chars survive.
+		if (specFromPathname) {
+			try {
+				spec = decodeURIComponent(spec);
+			} catch {}
+		}
 		const decorated = collapseLegacyNsMTags(spec, 'inbound-request-spec');
 		spec = decorated.cleanedSpec;
 		bootTaggedRequest = decorated.bootTaggedRequest;
