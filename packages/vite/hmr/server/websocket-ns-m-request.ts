@@ -192,7 +192,7 @@ export function resolveFsAnchoredSpec(spec: string, serverRoot: string, workspac
 	const roots = [serverRoot, ...(workspaceRoot && path.resolve(workspaceRoot) !== path.resolve(serverRoot) ? [workspaceRoot] : [])];
 	for (const root of roots) {
 		const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
-		const fsId = `/@fs${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
+		const fsId = `/@fs${rootPosix.startsWith('/') ? '' : '/'}${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
 		if (resolveCandidateFilePath(fsId, serverRoot, workspaceRoot)) {
 			return fsId;
 		}

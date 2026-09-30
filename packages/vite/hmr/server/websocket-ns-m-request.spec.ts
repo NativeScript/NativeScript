@@ -140,7 +140,7 @@ describe('resolveFsAnchoredSpec', () => {
 			mkdirSync(join(wsRoot, 'packages/ui/src/theme'), { recursive: true });
 			writeFileSync(join(wsRoot, 'packages/ui/src/theme/tokens.css'), '.a { color: red; }');
 
-			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/tokens.css', appRoot, wsRoot)).toBe(`/@fs${wsRoot}/packages/ui/src/theme/tokens.css`);
+			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/tokens.css', appRoot, wsRoot)).toBe(`/@fs/${wsRoot.replace(/\\/g, '/').replace(/^\//, '')}/packages/ui/src/theme/tokens.css`);
 			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/missing.css', appRoot, wsRoot)).toBeNull();
 		} finally {
 			rmSync(wsRoot, { recursive: true, force: true });
