@@ -44,15 +44,15 @@ describe('createNsMRequestContext', () => {
 		expect(result.value.spec).toBe('/app/demo/%5Bid%5D.tsrx');
 	});
 
-	it('keeps encoded ? and # filename chars instead of stripping them as query delimiters', () => {
-		const result = createNsMRequestContext('/ns/m/app/a%3Fb%23c.ts', '/workspace', '/src/');
+	it('leaves encoded reserved characters encoded, matching Vite', () => {
+		const result = createNsMRequestContext('/ns/m/app/a%3Fb%23c%2Fd.ts', '/workspace', '/src/');
 
 		expect(result.kind).toBe('context');
 		if (result.kind !== 'context') {
 			return;
 		}
 
-		expect(result.value.spec).toBe('/app/a?b#c.ts');
+		expect(result.value.spec).toBe('/app/a%3Fb%23c%2Fd.ts');
 	});
 
 	it('returns a response module for blocked build-time node_modules imports', () => {

@@ -118,10 +118,10 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 
 		spec = spec.replace(/[?#].*$/, '');
 		// URL.pathname stays percent-encoded (URLSearchParams already decoded
-		// `path`). Decode after the ?# strip so %3F/%23 filename chars survive.
+		// `path`). decodeURI matches Vite's transform middleware.
 		if (specFromPathname) {
 			try {
-				spec = decodeURIComponent(spec);
+				spec = decodeURI(spec);
 			} catch {}
 		}
 		const decorated = collapseLegacyNsMTags(spec, 'inbound-request-spec');
