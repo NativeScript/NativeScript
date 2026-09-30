@@ -1826,7 +1826,7 @@ export class CustomLayoutView extends ContainerView {
 			if (Trace.isEnabled()) {
 				Trace.write(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, Trace.categories.VisualTreeEvents);
 			}
-			this.nativeViewProtected.addView(child.nativeViewProtected, atIndex);
+			AndroidHelper.insertNativeSubview(this.nativeViewProtected, child.nativeViewProtected, atIndex);
 			if (child instanceof View) {
 				this._updateNativeLayoutParams(child);
 			}

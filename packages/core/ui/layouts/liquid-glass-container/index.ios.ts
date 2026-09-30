@@ -39,7 +39,7 @@ export class LiquidGlassContainer extends LiquidGlassContainerCommon {
 		const childNativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
 
 		if (parentNativeView && childNativeView) {
-			IOSHelper.insertSubview(parentNativeView, childNativeView, atIndex);
+			IOSHelper.insertNativeSubview(parentNativeView, childNativeView, atIndex);
 
 			// Add outer shadow layer manually as it belongs to parent layer tree (this is needed for reusable views)
 			if (childNativeView.outerShadowContainerLayer && !childNativeView.outerShadowContainerLayer.superlayer) {

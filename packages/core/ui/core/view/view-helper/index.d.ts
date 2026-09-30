@@ -41,6 +41,13 @@ export namespace AndroidHelper {
 	export function setDrawableColor(color: number, drawable: any /* android.graphics.drawable.Drawable */, blendMode?: any /* androidx.core.graphics.BlendModeCompat */): void;
 	export function clearDrawableColor(drawable: any /* android.graphics.drawable.Drawable */): void;
 	export function getCopyOrDrawable(drawable: any /* android.graphics.drawable.Drawable */, resources?: any /* android.content.res.Resources */): any; /* android.graphics.drawable.Drawable */
+	/**
+	 * Inserts a native child view at a child index, appending when the index is absent or out of range.
+	 * @param parentNativeView Parent ViewGroup.
+	 * @param childNativeView Android view to insert.
+	 * @param atIndex Child index to insert at.
+	 */
+	export function insertNativeSubview(parentNativeView: any /* android.view.ViewGroup */, childNativeView: any /* android.view.View */, atIndex?: number): void;
 }
 
 /**
@@ -67,10 +74,12 @@ export namespace IOSHelper {
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
 	/**
-	 * Add `childNativeView` to `parentNativeView` at subview index `atIndex`, or append it when the index is absent or past the end.
-	 * Uses `insertSubview:belowSubview:` — `insertSubview:atIndex:` resolves the index against the layer's sublayers, which also hold non-view layers (gradient backgrounds, shadow layers).
+	 * Inserts a native subview at a subview index, appending when the index is absent or out of range.
+	 * @param parentNativeView Parent UIView.
+	 * @param childNativeView UIView to insert.
+	 * @param atIndex Subview index to insert at.
 	 */
-	export function insertSubview(parentNativeView: any /* UIView */, childNativeView: any /* UIView */, atIndex?: number): void;
+	export function insertNativeSubview(parentNativeView: any /* UIView */, childNativeView: any /* UIView */, atIndex?: number): void;
 	export function layoutView(controller: any /* UIViewController */, owner: View): void;
 	export function getPositionFromFrame(frame: any /* CGRect */): Position;
 	export function getFrameFromPosition(position: Position, insets?: Position): any; /* CGRect */

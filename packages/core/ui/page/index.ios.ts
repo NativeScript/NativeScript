@@ -548,7 +548,7 @@ export class Page extends PageBase {
 		}
 
 		if (nativeParent && nativeChild) {
-			IOSHelper.insertSubview(nativeParent, nativeChild, atIndex);
+			IOSHelper.insertNativeSubview(nativeParent, nativeChild, atIndex);
 
 			return true;
 		}
