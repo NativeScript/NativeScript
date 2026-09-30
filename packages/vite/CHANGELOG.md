@@ -1,3 +1,13 @@
+## 8.0.17 (2026-09-30)
+
+### 🩹 Fixes
+
+- **vite:** decode percent-encoded /ns/m request paths ([#11483](https://github.com/NativeScript/NativeScript/pull/11483))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+
 ## 8.0.16 (2026-09-30)
 
 ### 🩹 Fixes
