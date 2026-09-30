@@ -51,6 +51,14 @@ export class AndroidHelper {
 		}
 	}
 
+	static insertNativeSubview(parentNativeView: android.view.ViewGroup, childNativeView: android.view.View, atIndex?: number): void {
+		if (typeof atIndex !== 'number' || atIndex < 0 || atIndex >= parentNativeView.getChildCount()) {
+			parentNativeView.addView(childNativeView);
+		} else {
+			parentNativeView.addView(childNativeView, atIndex);
+		}
+	}
+
 	static getCopyOrDrawable(drawable: android.graphics.drawable.Drawable, resources?: android.content.res.Resources): android.graphics.drawable.Drawable {
 		if (drawable) {
 			const constantState = drawable.getConstantState();

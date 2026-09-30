@@ -147,7 +147,8 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 			result += this._subViews[i]._getNativeViewsCount();
 		}
 
-		return result;
+		// The platform base accounts for native subviews that are not children.
+		return super._childIndexToNativeChildIndex(result);
 	}
 
 	public eachChildView(callback: (child: View) => boolean): void {
