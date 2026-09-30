@@ -531,24 +531,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				next();
 			});
 
-			// Give `populateInitialGraph` a head start: kicking it off at
-			// `configureServer` time gives populate the full app build/launch
-			// window (typically 2-3s on simulator), so more of its work lands
-			// before the device even connects and starts competing for the
-			// transform slots. Disable via `NS_VITE_HMR_DISABLE_POPULATE=1`
-			// when profiling whether populate is helping or hurting a
-			// specific app.
-			try {
-				const disablePopulate = process.env.NS_VITE_HMR_DISABLE_POPULATE === '1' || process.env.NS_VITE_HMR_DISABLE_POPULATE === 'true';
-				if (disablePopulate) {
-					if (verbose) console.info('[hmr-ws][populate] disabled via NS_VITE_HMR_DISABLE_POPULATE');
-					// Short-circuit: mark as resolved so /ns/m never schedules it and
-					// HMR still works (handleHotUpdate just has no pre-warmed graph).
-					graphInitialPopulationPromise = Promise.resolve();
-				} else {
-					ensureInitialGraphPopulationStarted(server);
-				}
-			} catch {}
+			// Populate is started from the post hook returned below, not here.
+			// Disable via `NS_VITE_HMR_DISABLE_POPULATE=1` when profiling whether
+			// populate is helping or hurting a specific app.
+			const disablePopulate = process.env.NS_VITE_HMR_DISABLE_POPULATE === '1' || process.env.NS_VITE_HMR_DISABLE_POPULATE === 'true';
+			if (disablePopulate) {
+				if (verbose) console.info('[hmr-ws][populate] disabled via NS_VITE_HMR_DISABLE_POPULATE');
+				// Short-circuit: mark as resolved so /ns/m never schedules it and
+				// HMR still works (handleHotUpdate just has no pre-warmed graph).
+				graphInitialPopulationPromise = Promise.resolve();
+			}
 
 			// Attempt early vendor manifest bootstrap once per server.
 			if (!vendorBootstrapDone) {
@@ -801,6 +793,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				}
 				moduleGraph.emitFullGraph(ws as any);
 			});
+
+			// Vite runs post hooks after every plugin's `configureServer`. Starting
+			// populate any earlier transforms modules before framework plugins hold
+			// the dev server (@vitejs/plugin-vue then emits SFCs without HMR code
+			// and with their script imports split out of the graph), and the shared
+			// transform cache serves those results to the device. It still gets the
+			// whole app build/launch window as a head start.
+			return () => {
+				try {
+					ensureInitialGraphPopulationStarted(server);
+				} catch {}
+			};
 		},
 
 		async handleHotUpdate(ctx) {
