@@ -88,6 +88,17 @@ describe('registerSfcHandlers', () => {
 			expect(res.body).toContain('export { default } from "/ns/asm?path=%2Fsrc%2FApp.vue";');
 		});
 
+		it('decodes percent-encoded path-style specs (device-encoded bracketed files)', async () => {
+			const { sfc, transformRequest } = mount();
+			transformRequest.mockResolvedValue({ code: 'export default {}' });
+			const res = makeRes();
+			await sfc({ url: '/ns/sfc/src/pages/%5Bid%5D.vue' }, res, vi.fn());
+			expect(transformRequest).toHaveBeenCalledWith('/src/pages/[id].vue?vue');
+			expect(res.statusCode).toBe(200);
+			expect(res.body).toContain('path=/src/pages/[id].vue');
+			expect(res.body).toContain(`export * from "/ns/asm?path=${encodeURIComponent('/src/pages/[id].vue')}";`);
+		});
+
 		it('returns an empty module for style variants', async () => {
 			const { sfc, transformRequest } = mount();
 			transformRequest.mockResolvedValue({ code: '/* css */' });
