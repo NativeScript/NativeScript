@@ -24,6 +24,7 @@ function makeDeps(overrides: Partial<VueDepPropagationDeps> = {}): VueDepPropaga
 	return {
 		findBoundaries: findNearestSfcBoundaries,
 		loadComponent: vi.fn(async () => ({ name: 'FreshComponent' })),
+		reloadInPlace: vi.fn(() => false),
 		sfcChangedInVersion: () => false,
 		getVersion: () => 42,
 		driveOverlay: driveVueSfcUpdateOverlay,
@@ -63,6 +64,39 @@ describe('propagateDepChangeToSfcBoundary', () => {
 		const propagated = await propagateDepChangeToSfcBoundary(['/src/test2.ts'], ctx, makeDeps());
 		expect(propagated).toBe(true);
 		expect(stages).toEqual(['evicting', 'reimporting', 'rebooting', 'complete']);
+	});
+
+	it('reloads every importing .vue boundary in place, keeping the mounted root', async () => {
+		const graph = makeGraph([
+			['/app/app.ts', ['/app/components/Home.vue']],
+			['/app/components/Home.vue', ['/app/screens/ListenNow.vue', '/app/screens/AlbumDetail.vue']],
+			['/app/screens/AlbumDetail.vue', ['/app/music.ts']],
+			['/app/screens/ListenNow.vue', ['/app/music.ts']],
+			['/app/music.ts', []],
+		]);
+		const stages: string[] = [];
+		const ctx = makeCtx({ graph, getOverlay: () => ({ setUpdateStage: (stage: string) => stages.push(stage) }) });
+		const deps = makeDeps({ loadComponent: vi.fn(async (target: string) => ({ target })), reloadInPlace: vi.fn(() => true) });
+
+		expect(await propagateDepChangeToSfcBoundary(['/app/music.ts'], ctx, deps)).toBe(true);
+		expect(deps.reloadInPlace).toHaveBeenCalledWith({ target: '/app/screens/AlbumDetail.vue' });
+		expect(deps.reloadInPlace).toHaveBeenCalledWith({ target: '/app/screens/ListenNow.vue' });
+		expect(ctx.performResetRoot).not.toHaveBeenCalled();
+		expect(stages).toEqual(['evicting', 'reimporting', 'complete']);
+	});
+
+	it('remounts only the nearest boundary as root when in-place reload is unavailable', async () => {
+		const graph = makeGraph([
+			['/app/screens/AlbumDetail.vue', ['/app/music.ts']],
+			['/app/screens/ListenNow.vue', ['/app/music.ts']],
+			['/app/music.ts', []],
+		]);
+		const ctx = makeCtx({ graph });
+		const deps = makeDeps({ loadComponent: vi.fn(async (target: string) => ({ target })) });
+
+		expect(await propagateDepChangeToSfcBoundary(['/app/music.ts'], ctx, deps)).toBe(true);
+		expect(deps.loadComponent).toHaveBeenCalledTimes(1);
+		expect(ctx.performResetRoot).toHaveBeenCalledWith({ target: '/app/screens/AlbumDetail.vue' });
 	});
 
 	it('falls back when no .vue boundary imports the changed module', async () => {

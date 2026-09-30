@@ -1,9 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
+import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 
 describe('createNsMRequestContext', () => {
 	it('normalizes decorated HMR request paths into canonical module specs', () => {
@@ -27,6 +27,23 @@ describe('createNsMRequestContext', () => {
 			statusCode: 404,
 			code: expect.stringContaining('build-time package is not device-loadable: vite'),
 		});
+	});
+});
+
+describe('createNsMRequestContext — platform-suffixed candidates', () => {
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	it('probes only the active platform suffix, ahead of unsuffixed variants', () => {
+		vi.stubEnv('NATIVESCRIPT_BUNDLER_ENV', JSON.stringify({ ios: true }));
+		const result = createNsMRequestContext('/ns/m/src/plugin', '/workspace', '/src/');
+		if (result.kind !== 'context') throw new Error('expected context');
+		const { candidates } = result.value;
+
+		expect(candidates.indexOf('/src/plugin/index.ios.js')).toBeGreaterThan(-1);
+		expect(candidates.indexOf('/src/plugin/index.ios.js')).toBeLessThan(candidates.indexOf('/src/plugin/index.js'));
+		expect(candidates.some((c) => c.includes('.android.'))).toBe(false);
 	});
 });
 
@@ -111,5 +128,22 @@ describe('resolveNsMTransformedModule', () => {
 		expect(resolved.transformed?.code).toBe('export const v = 1;\n');
 		expect(resolved.resolvedCandidate).toBe(expectedFsId);
 		expect(transformedCalls).toContain(expectedFsId);
+	});
+});
+
+describe('resolveFsAnchoredSpec', () => {
+	it('anchors a workspace css file outside the app root to its /@fs id', () => {
+		const wsRoot = realpathSync(mkdtempSync(join(tmpdir(), 'ns-hmr-ns-m-fs-anchor-')));
+		try {
+			const appRoot = join(wsRoot, 'apps/native');
+			mkdirSync(appRoot, { recursive: true });
+			mkdirSync(join(wsRoot, 'packages/ui/src/theme'), { recursive: true });
+			writeFileSync(join(wsRoot, 'packages/ui/src/theme/tokens.css'), '.a { color: red; }');
+
+			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/tokens.css', appRoot, wsRoot)).toBe(`/@fs${wsRoot}/packages/ui/src/theme/tokens.css`);
+			expect(resolveFsAnchoredSpec('/packages/ui/src/theme/missing.css', appRoot, wsRoot)).toBeNull();
+		} finally {
+			rmSync(wsRoot, { recursive: true, force: true });
+		}
 	});
 });

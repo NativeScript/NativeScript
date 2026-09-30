@@ -822,7 +822,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			}
 		}
 
-		walkForTemplates(path.join(root, 'src'));
+		walkForTemplates(path.join(root, ANGULAR_APP_DIR));
 		try {
 			for (const abs of templateFiles) {
 				try {

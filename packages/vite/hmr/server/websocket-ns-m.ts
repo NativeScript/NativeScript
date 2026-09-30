@@ -8,7 +8,7 @@ import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-shims.js';
 import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
-import { createNsMRequestContext, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
+import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
@@ -200,7 +200,11 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// string for `import css from './x.css'`. `app.css` has its own path.
 			if (CSS_MODULE_RE.test(spec)) {
 				try {
-					const inlineRes = await sharedTransformRequest(`${spec}?inline`);
+					// Workspace css outside the vite root must be anchored to /@fs or
+					// `?inline` is denied and the DOM css module (__vite__updateStyle)
+					// is served instead.
+					const inlineSpec = resolveFsAnchoredSpec(spec, serverRoot, monorepoWorkspaceRoot) || spec;
+					const inlineRes = await sharedTransformRequest(`${inlineSpec}?inline`);
 					const inlineCode = inlineRes?.code || '';
 					// `?inline` output is `export default "<compiled css>"`.
 					const m = inlineCode.match(/export\s+default\s+("(?:[^"\\]|\\.)*")\s*;?/s);

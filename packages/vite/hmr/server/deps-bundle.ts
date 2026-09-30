@@ -340,20 +340,63 @@ export function resolveDepsEntriesFromVendorCollection(projectRoot: string, work
 // Bundle generation — two esbuild passes
 // ============================================================================
 
+export interface DepsBundleEntryFile {
+	key: string;
+	absPath: string;
+	/**
+	 * Registered behind a getter that evaluates the file on first read instead
+	 * of an eager `import *`. Transitive files must not run up front: packages
+	 * `require()` some of them inside a try/catch, and those may throw by
+	 * design on an unsupported platform.
+	 */
+	lazy?: boolean;
+	/** CommonJS (no ESM syntax): its lazy namespace is built the way esbuild's `import *` builds it. */
+	cjs?: boolean;
+}
+
 /**
  * Synthetic esbuild entry: evaluate the dep closure once and expose every
  * bundled file's live namespace through `globalThis.__NS_DEPS_MODULES__`,
  * keyed by node_modules-relative file path.
  */
-export function buildDepsBundleEntryCode(files: readonly { key: string; absPath: string }[]): string {
+export function buildDepsBundleEntryCode(files: readonly DepsBundleEntryFile[]): string {
 	const lines: string[] = [];
-	files.forEach(({ absPath }, i) => {
-		lines.push(`import * as __ns_dep_${i}__ from ${JSON.stringify(absPath)};`);
+	files.forEach(({ absPath, lazy }, i) => {
+		if (!lazy) lines.push(`import * as __ns_dep_${i}__ from ${JSON.stringify(absPath)};`);
 	});
 	lines.push('');
 	lines.push('const __nsDepsReg = (globalThis.__NS_DEPS_MODULES__ || (globalThis.__NS_DEPS_MODULES__ = Object.create(null)));');
-	files.forEach(({ key }, i) => {
-		lines.push(`__nsDepsReg[${JSON.stringify(key)}] = __ns_dep_${i}__;`);
+	if (files.some((f) => f.lazy)) {
+		// What `import * as ns` gives for a CommonJS module (esbuild's __toESM): its exports as named
+		// bindings and itself as `default`, unless it is transpiled ESM (`__esModule`).
+		lines.push('function __nsDepsCjsNamespace(m) {');
+		lines.push('  const ns = Object.create(null);');
+		lines.push("  if (m != null && (typeof m === 'object' || typeof m === 'function')) {");
+		lines.push("    for (const k of Object.keys(m)) if (k !== 'default') Object.defineProperty(ns, k, { enumerable: true, get: () => m[k] });");
+		lines.push('  }');
+		lines.push("  Object.defineProperty(ns, 'default', { enumerable: true, value: m != null && m.__esModule ? m.default : m });");
+		lines.push('  return ns;');
+		lines.push('}');
+		lines.push('function __nsDepsLazy(key, load) {');
+		lines.push('  Object.defineProperty(__nsDepsReg, key, {');
+		lines.push('    configurable: true,');
+		lines.push('    enumerable: true,');
+		lines.push('    get() {');
+		lines.push('      const ns = load();');
+		lines.push('      Object.defineProperty(__nsDepsReg, key, { configurable: true, enumerable: true, writable: true, value: ns });');
+		lines.push('      return ns;');
+		lines.push('    },');
+		lines.push('  });');
+		lines.push('}');
+	}
+	files.forEach(({ key, absPath, lazy, cjs }, i) => {
+		if (!lazy) {
+			lines.push(`__nsDepsReg[${JSON.stringify(key)}] = __ns_dep_${i}__;`);
+		} else if (cjs) {
+			lines.push(`__nsDepsLazy(${JSON.stringify(key)}, () => __nsDepsCjsNamespace(require(${JSON.stringify(absPath)})));`);
+		} else {
+			lines.push(`__nsDepsLazy(${JSON.stringify(key)}, () => require(${JSON.stringify(absPath)}));`);
+		}
 	});
 	lines.push('export {};');
 	lines.push('');
@@ -622,7 +665,7 @@ export function packageOfPath(filePath: string): string | null {
 
 /**
  * Packages behind esbuild "Could not resolve" errors: the package the failing
- * importer lives in, or (for an entry imported by the synthetic entry file) 
+ * importer lives in, or (for an entry imported by the synthetic entry file)
  * the package of the unresolved path. Empty when any error is something else.
  */
 export function unresolvablePackagesOf(error: unknown): string[] {
@@ -747,38 +790,25 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// Pass 1: discover the full static input closure of the entries. Pass 2
 	// registers EVERY input, so any /ns/m URL that later resolves to a bundled
 	// file serves a shim into the single bundle realm.
-	//
-	// The closure is recorded by an onLoad hook rather than `metafile`: esbuild
-	// (0.27) crashes the whole process with an exception thrown outside the build
-	// promise when a build with `metafile` set fails, and failures here are
-	// expected and recovered from below.
-	const discoveredInputs = new Set<string>();
-	const inputRecorder: esbuild.Plugin = {
-		name: 'ns-deps-input-recorder',
-		setup(build) {
-			build.onLoad({ filter: /.*/ }, (args) => {
-				if (args.namespace === 'file') discoveredInputs.add(args.path);
-				return undefined;
-			});
+	const discoveryOptions = () => ({
+		...sharedBuildOptions,
+		stdin: {
+			contents: entries.map((e) => `import ${JSON.stringify(e.absPath)};`).join('\n'),
+			resolveDir: projectRoot,
+			sourcefile: 'ns-deps-bundle-discovery.ts',
+			loader: 'ts' as const,
 		},
-	};
+		plugins: buildPlugins(),
+	});
 	// A dependency that cannot resolve for this platform (a plugin shipping only
 	// .ios/.android sources: common on Windows) would fail the whole bundle.
-	// Drop the packages behind "Could not resolve" errors and retry.
+	// Drop the packages behind "Could not resolve" errors and retry. These probe
+	// builds run without `metafile`: esbuild (0.27) crashes the whole process
+	// with an exception thrown outside the build promise when a build with
+	// `metafile` set fails.
 	for (let attempt = 0; ; attempt++) {
-		discoveredInputs.clear();
 		try {
-			await esbuild.build({
-				...sharedBuildOptions,
-				stdin: {
-					contents: entries.map((e) => `import ${JSON.stringify(e.absPath)};`).join('\n'),
-					resolveDir: projectRoot,
-					sourcefile: 'ns-deps-bundle-discovery.ts',
-					loader: 'ts',
-				},
-				// First, so it sees every load before a plugin that returns contents.
-				plugins: [inputRecorder, ...buildPlugins()],
-			});
+			await esbuild.build(discoveryOptions());
 			break;
 		} catch (error) {
 			const unresolved = unresolvablePackagesOf(error);
@@ -791,17 +821,21 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 			console.warn(`[ns-deps-bundle] ${unresolved.join(', ')} cannot be resolved for ${platform}; excluded from the deps bundle`);
 		}
 	}
+	// The entries now resolve, so this build (recording each input's format) cannot fail.
+	const discovery = await esbuild.build({ ...discoveryOptions(), metafile: true });
 	const entryKeySet = new Set(entries.map((e) => e.key));
 
-	const files: { key: string; absPath: string }[] = entries.map(({ key, absPath }) => ({ key, absPath }));
-	for (const input of discoveredInputs) {
-		if (!input.replace(/\\/g, '/').includes('node_modules/')) continue;
+	const files: DepsBundleEntryFile[] = entries.map(({ key, absPath }) => ({ key, absPath }));
+	for (const [input, meta] of Object.entries(discovery.metafile?.inputs ?? {})) {
+		// A `:` other than a drive letter marks a plugin namespace, not a file.
+		if (input === '<stdin>' || (input.includes(':') && !path.isAbsolute(input)) || !input.replace(/\\/g, '/').includes('node_modules/')) continue;
 		const absPath = path.resolve(projectRoot, input);
 		if (!existsSync(absPath)) continue;
 		const key = depsRegistryKeyForFile(absPath);
 		if (!key || entryKeySet.has(key) || NEVER_BUNDLED_KEY_RE.test(key)) continue;
 		entryKeySet.add(key);
-		files.push({ key, absPath });
+		// Evaluated on first use, as the dependency graph would, not up front.
+		files.push({ key, absPath, lazy: true, cjs: meta.format !== 'esm' });
 	}
 
 	const buildResult = await esbuild.build({

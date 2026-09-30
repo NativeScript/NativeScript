@@ -1,3 +1,6 @@
+import { readdirSync, statSync } from 'fs';
+import * as path from 'path';
+
 export function normalizeRuntimeGraphPath(value: string): string {
 	return String(value || '')
 		.replace(/\\/g, '/')
@@ -28,4 +31,31 @@ export function shouldIncludeRuntimeGraphFile(value: string, filePattern: RegExp
 export function matchesRuntimeGraphModuleId(value: string, appPrefix: string, filePattern: RegExp): boolean {
 	const normalized = normalizeRuntimeGraphPath(value);
 	return normalized.startsWith(appPrefix) && filePattern.test(normalized) && !isRuntimeGraphExcludedPath(normalized);
+}
+
+/**
+ * Absolute paths of the runtime-graph source files under `dir`, skipping
+ * dependency, hidden and test directories. Unreadable entries are ignored.
+ */
+export function listRuntimeGraphSourceFiles(dir: string, filePattern: RegExp): string[] {
+	const files: string[] = [];
+	const walk = (current: string) => {
+		let names: string[];
+		try {
+			names = readdirSync(current);
+		} catch {
+			return;
+		}
+		for (const name of names) {
+			if (name === 'node_modules' || name.startsWith('.') || shouldSkipRuntimeGraphDirectoryName(name)) continue;
+			const full = path.join(current, name);
+			try {
+				const stat = statSync(full);
+				if (stat.isDirectory()) walk(full);
+				else if (stat.isFile() && shouldIncludeRuntimeGraphFile(full, filePattern)) files.push(full);
+			} catch {}
+		}
+	};
+	walk(dir);
+	return files;
 }
