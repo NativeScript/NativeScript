@@ -549,18 +549,20 @@ export abstract class View extends ViewCommon {
 	perspective: number;
 
 	/**
-	 * Gets or sets the translateX affine transform of the view in device independent pixels.
+	 * Gets or sets the translateX affine transform of the view.
+	 * Percentages are resolved against the view's own width.
 	 *
 	 * @nsProperty
 	 */
-	translateX: CoreTypes.dip;
+	translateX: CoreTypes.PercentLengthType;
 
 	/**
-	 * Gets or sets the translateY affine transform of the view in device independent pixels.
+	 * Gets or sets the translateY affine transform of the view.
+	 * Percentages are resolved against the view's own height.
 	 *
 	 * @nsProperty
 	 */
-	translateY: CoreTypes.dip;
+	translateY: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the scaleX affine transform of the view.

@@ -1,4 +1,7 @@
-import { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo } from '../animation/animation-types';
+import { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, TranslatePair } from '../animation/animation-types';
+import { CoreTypes } from '../../core-types';
+import { PercentLength } from './length-shared';
+import { layout } from '../../utils/layout-helper';
 import { radiansToDegrees } from '../../utils/number-utils';
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { hasDuplicates } from '../../utils';
@@ -15,6 +18,7 @@ const IDENTITY_TRANSFORMATION = {
 
 const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
 const TRANSFORMATIONS = Object.freeze<TransformationType[]>(['rotate', 'rotateX', 'rotateY', 'rotate3d', 'translate', 'translate3d', 'translateX', 'translateY', 'scale', 'scale3d', 'scaleX', 'scaleY']);
+const TRANSLATE_TRANSFORMATIONS = Object.freeze<TransformationType[]>(['translate', 'translate3d', 'translateX', 'translateY']);
 
 const STYLE_TRANSFORMATION_MAP: TransformationStyleMap = Object.freeze<TransformationStyleMap>({
 	scale: (value: number) => ({ property: 'scale', value }),
@@ -29,11 +33,11 @@ const STYLE_TRANSFORMATION_MAP: TransformationStyleMap = Object.freeze<Transform
 	}),
 	translate: (value) => ({ property: 'translate', value }),
 	translate3d: (value) => ({ property: 'translate', value }),
-	translateX: ({ x }: Pair) => ({
+	translateX: ({ x }: TranslatePair) => ({
 		property: 'translate',
 		value: { x, y: IDENTITY_TRANSFORMATION.translate.y },
 	}),
-	translateY: ({ y }: Pair) => ({
+	translateY: ({ y }: TranslatePair) => ({
 		property: 'translate',
 		value: { y, x: IDENTITY_TRANSFORMATION.translate.x },
 	}),
@@ -72,7 +76,19 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 		return IDENTITY_TRANSFORMATION;
 	}
 
-	const usedTransforms = transformations.map((t) => t.property);
+	let usedTransforms = transformations.map((t) => t.property);
+	if (hasDuplicates(usedTransforms)) {
+		// Percent translate values can't be resolved to a concrete value at
+		// parse time (they depend on the view's size), so duplicate translate
+		// functions are merged axis-wise instead of going through the matrix
+		// multiplication below.
+		const duplicated = usedTransforms.filter((property, index) => usedTransforms.indexOf(property) !== index);
+		if (duplicated.every((property) => property === 'translate')) {
+			mergeTranslateTransformations(transformations);
+			usedTransforms = transformations.map((t) => t.property);
+		}
+	}
+
 	if (!hasDuplicates(usedTransforms)) {
 		const fullTransformations = { ...IDENTITY_TRANSFORMATION };
 		transformations.forEach((transform) => {
@@ -82,10 +98,41 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 		return fullTransformations;
 	}
 
-	const affineMatrix = transformations.map(getTransformMatrix).reduce(multiplyAffine2d);
+	const affineMatrix = transformations.map(normalizeTransformation).map(getTransformMatrix).reduce(multiplyAffine2d);
 	const cssMatrix = matrixArrayToCssMatrix(affineMatrix);
 
 	return decompose2DTransformMatrix(cssMatrix);
+}
+
+/**
+ * Whether a translate value is a percentage that has to be resolved
+ * against the element's own size.
+ */
+export function isPercentTranslate(value: CoreTypes.PercentLengthType): boolean {
+	return typeof value === 'object' && value !== null && value.unit === '%';
+}
+
+/**
+ * Resolves a translate axis value to dips. Percentage units are resolved
+ * against the given basis, which is the element's own size along that axis.
+ * @param value The translate axis value as a PercentLengthType.
+ * @param basis The element's size in dips along the translated axis.
+ */
+export function resolveTranslate(value: CoreTypes.PercentLengthType, basis: number): CoreTypes.dip {
+	if (typeof value === 'number') {
+		return value;
+	}
+	if (typeof value !== 'object' || value === null) {
+		return 0;
+	}
+	switch (value.unit) {
+		case 'px':
+			return layout.toDeviceIndependentPixels(value.value);
+		case '%':
+			return basis * value.value;
+		default:
+			return value.value;
+	}
 }
 
 function isTransformType(propertyName: string): propertyName is TransformationType {
@@ -112,22 +159,95 @@ function parseTransformString(text: string): Transformation[] {
 }
 
 function convertTransformValue(property: TransformationType, rawValue: string): TransformationValue {
-	const values = rawValue.split(',').map(parseFloat);
-	const x = values[0];
-
-	let y = values[1];
-	let z = values[2];
-
-	if (property === 'translate') {
-		y ??= IDENTITY_TRANSFORMATION.translate.y;
-	} else {
-		y ??= x;
-		z ??= y;
-	}
-
 	if (property === 'rotate' || property === 'rotateX' || property === 'rotateY') {
+		const x = parseFloat(rawValue);
+
 		return rawValue.slice(-3) === 'rad' ? radiansToDegrees(x) : x;
 	}
 
+	if (TRANSLATE_TRANSFORMATIONS.indexOf(property) !== -1) {
+		const values = rawValue.split(',').map(PercentLength.parse);
+		const x = values[0];
+		const y = property === 'translate' ? (values[1] ?? IDENTITY_TRANSFORMATION.translate.y) : (values[1] ?? x);
+
+		return { x, y };
+	}
+
+	const values = rawValue.split(',').map(parseFloat);
+	const x = values[0];
+	const y = values[1] ?? x;
+	const z = values[2] ?? y;
+
 	return { x, y, z };
+}
+
+function mergeTranslateTransformations(transformations: Transformation[]): void {
+	const xValues: CoreTypes.PercentLengthType[] = [];
+	const yValues: CoreTypes.PercentLengthType[] = [];
+
+	for (let i = transformations.length - 1; i >= 0; i--) {
+		const transformation = transformations[i];
+		if (transformation.property === 'translate') {
+			const value = transformation.value as TranslatePair;
+			xValues.unshift(value.x);
+			yValues.unshift(value.y);
+			transformations.splice(i, 1);
+		}
+	}
+
+	transformations.unshift({ property: 'translate', value: { x: mergeTranslateAxis(xValues), y: mergeTranslateAxis(yValues) } });
+}
+
+function mergeTranslateAxis(values: CoreTypes.PercentLengthType[]): CoreTypes.PercentLengthType {
+	const nonZero = values.filter((value) => !isZeroTranslate(value));
+	if (nonZero.length === 0) {
+		return 0;
+	}
+	if (nonZero.length === 1) {
+		return nonZero[0];
+	}
+
+	// Values in the same unit can be summed without losing the unit.
+	const unit = typeof nonZero[0] === 'object' && nonZero[0] !== null ? nonZero[0].unit : null;
+	if (unit !== null && nonZero.every((value) => typeof value === 'object' && value !== null && value.unit === unit)) {
+		return { unit, value: nonZero.reduce((sum: number, value: CoreTypes.LengthPercentUnit) => sum + value.value, 0) } as CoreTypes.PercentLengthType;
+	}
+
+	// Mixed units can't be combined into a single static value; coerce them
+	// to their numeric value like the old parseFloat-based parsing did.
+	return nonZero.reduce((sum: number, value) => sum + translateValueToNumber(value), 0);
+}
+
+function isZeroTranslate(value: CoreTypes.PercentLengthType): boolean {
+	if (typeof value === 'number') {
+		return value === 0;
+	}
+	if (typeof value !== 'object' || value === null) {
+		return true;
+	}
+
+	return value.value === 0;
+}
+
+function translateValueToNumber(value: CoreTypes.PercentLengthType): number {
+	if (typeof value === 'number') {
+		return value;
+	}
+	if (typeof value !== 'object' || value === null) {
+		return 0;
+	}
+
+	// A % value stores its fraction (e.g. -50% => -0.5); the pre-unit-aware
+	// parser produced the raw number (-50), which matrix composition keeps.
+	return value.unit === '%' ? value.value * 100 : value.value;
+}
+
+function normalizeTransformation(transformation: Transformation): Transformation {
+	if (transformation.property === 'translate') {
+		const { x, y } = transformation.value as TranslatePair;
+
+		return { property: 'translate', value: { x: translateValueToNumber(x), y: translateValueToNumber(y) } };
+	}
+
+	return transformation;
 }

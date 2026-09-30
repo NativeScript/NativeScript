@@ -981,17 +981,17 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.textTransform = value;
 	}
 
-	get translateX(): CoreTypes.dip {
+	get translateX(): CoreTypes.PercentLengthType {
 		return this.style.translateX;
 	}
-	set translateX(value: CoreTypes.dip) {
+	set translateX(value: CoreTypes.PercentLengthType) {
 		this.style.translateX = value;
 	}
 
-	get translateY(): CoreTypes.dip {
+	get translateY(): CoreTypes.PercentLengthType {
 		return this.style.translateY;
 	}
-	set translateY(value: CoreTypes.dip) {
+	set translateY(value: CoreTypes.PercentLengthType) {
 		this.style.translateY = value;
 	}
 

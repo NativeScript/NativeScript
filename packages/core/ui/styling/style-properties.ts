@@ -8,7 +8,7 @@ import { Background } from './background';
 
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
-import { Length, FixedLength, PercentLength } from './length-shared';
+import { Length, PercentLength } from './length-shared';
 
 import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
@@ -616,21 +616,21 @@ export const scaleYProperty = new CssAnimationProperty<Style, number>({
 });
 scaleYProperty.register(Style);
 
-export const translateXProperty = new CssAnimationProperty<Style, CoreTypes.FixedLengthType>({
+export const translateXProperty = new CssAnimationProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'translateX',
 	cssName: 'translateX',
 	defaultValue: 0,
-	equalityComparer: FixedLength.equals,
-	valueConverter: FixedLength.parse,
+	equalityComparer: PercentLength.equals,
+	valueConverter: PercentLength.parse,
 });
 translateXProperty.register(Style);
 
-export const translateYProperty = new CssAnimationProperty<Style, CoreTypes.FixedLengthType>({
+export const translateYProperty = new CssAnimationProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'translateY',
 	cssName: 'translateY',
 	defaultValue: 0,
-	equalityComparer: FixedLength.equals,
-	valueConverter: FixedLength.parse,
+	equalityComparer: PercentLength.equals,
+	valueConverter: PercentLength.parse,
 });
 translateYProperty.register(Style);
 
@@ -647,7 +647,7 @@ const transformProperty = new ShorthandProperty<Style, string>({
 		const rotateY = this.rotateY;
 		let result = '';
 		if (translateX !== 0 || translateY !== 0) {
-			result += `translate(${translateX}, ${translateY}) `;
+			result += `translate(${PercentLength.convertToString(translateX)}, ${PercentLength.convertToString(translateY)}) `;
 		}
 		if (scaleX !== 1 || scaleY !== 1) {
 			result += `scale(${scaleX}, ${scaleY}) `;

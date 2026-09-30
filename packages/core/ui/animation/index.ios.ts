@@ -4,6 +4,7 @@ import { View } from '../core/view';
 import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
+import { resolveTranslate } from '../styling/css-transform';
 import { PercentLength } from '../styling/length-shared';
 import { ios as iosBackground } from '../styling/background';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
@@ -385,7 +386,7 @@ export class Animation extends AnimationBase {
 					};
 					propertyNameToAnimate = 'transform';
 					fromValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
-					toValue = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, toValue.x, toValue.y, 0));
+					toValue = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, resolveTranslate(toValue.x, nativeView.bounds.size.width), resolveTranslate(toValue.y, nativeView.bounds.size.height), 0));
 					break;
 				case Properties.scale:
 					if (toValue.x === 0) {
@@ -670,8 +671,9 @@ export class Animation extends AnimationBase {
 		let result: CATransform3D = CATransform3DIdentity;
 
 		if (value[Properties.translate] !== undefined) {
-			const x = value[Properties.translate].x;
-			const y = value[Properties.translate].y;
+			const bounds = animation.target.nativeViewProtected ? animation.target.nativeViewProtected.bounds.size : { width: 0, height: 0 };
+			const x = resolveTranslate(value[Properties.translate].x, bounds.width);
+			const y = resolveTranslate(value[Properties.translate].y, bounds.height);
 			result = CATransform3DTranslate(result, x, y, 0);
 		}
 
@@ -957,7 +959,8 @@ function calculateTransform(view: View): CATransform3D {
 		expectedTransform.m34 = -1 / perspective;
 	}
 
-	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
+	const bounds = view.nativeViewProtected ? view.nativeViewProtected.bounds.size : { width: 0, height: 0 };
+	expectedTransform = CATransform3DTranslate(expectedTransform, resolveTranslate(view.translateX, bounds.width), resolveTranslate(view.translateY, bounds.height), 0);
 	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
 	expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
 

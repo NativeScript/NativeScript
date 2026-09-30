@@ -48,7 +48,7 @@ export class KeyframeAnimationInfo {
 interface Keyframe {
 	backgroundColor?: Color;
 	scale?: { x: number; y: number };
-	translate?: { x: number; y: number };
+	translate?: { x: CoreTypes.PercentLengthType; y: CoreTypes.PercentLengthType };
 	rotate?: { x: number; y: number; z: number };
 	opacity?: number;
 	width?: CoreTypes.PercentLengthType;
