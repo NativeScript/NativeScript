@@ -12,7 +12,7 @@ export type Transformation = {
 
 export type TransformationType = 'rotate' | 'rotate3d' | 'rotateX' | 'rotateY' | 'translate' | 'translate3d' | 'translateX' | 'translateY' | 'scale' | 'scale3d' | 'scaleX' | 'scaleY';
 
-export type TransformationValue = Point3D | Pair | number;
+export type TransformationValue = Point3D | Pair | TranslatePair | number;
 
 export interface Point3D {
 	x: number;
@@ -21,7 +21,7 @@ export interface Point3D {
 }
 
 export type TransformFunctionsInfo = {
-	translate: Pair;
+	translate: TranslatePair;
 	rotate: Point3D;
 	scale: Pair;
 };
@@ -29,6 +29,11 @@ export type TransformFunctionsInfo = {
 export interface Pair {
 	x: number;
 	y: number;
+}
+
+export interface TranslatePair {
+	x: CoreTypes.PercentLengthType;
+	y: CoreTypes.PercentLengthType;
 }
 
 export interface Cancelable {
@@ -41,7 +46,7 @@ export interface AnimationDefinition {
 	target?: View;
 	opacity?: number;
 	backgroundColor?: Color | any;
-	translate?: Pair | { x: number; y: number };
+	translate?: TranslatePair;
 	scale?: Pair | { x: number; y: number };
 	height?: CoreTypes.PercentLengthType | string | any;
 	width?: CoreTypes.PercentLengthType | string | any;

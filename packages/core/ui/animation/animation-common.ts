@@ -139,9 +139,23 @@ export abstract class AnimationBase {
 			if ((item === Properties.opacity || item === 'duration' || item === 'delay' || item === 'iterations') && typeof value !== 'number') {
 				console.error(`Property ${item} must be valid number. Value: ${value}`);
 				return;
-			} else if ((item === Properties.scale || item === Properties.translate) && (typeof (<Pair>value).x !== 'number' || typeof (<Pair>value).y !== 'number')) {
+			} else if (item === Properties.scale && (typeof (<Pair>value).x !== 'number' || typeof (<Pair>value).y !== 'number')) {
 				console.error(`Property ${item} must be valid Pair. Value: ${value}`);
 				return;
+			} else if (item === Properties.translate) {
+				// Coerce input into PercentLength values so that percentage
+				// translates (e.g. from keyframe transforms) are preserved.
+				try {
+					const x = PercentLength.parse((<any>value).x);
+					const y = PercentLength.parse((<any>value).y);
+					if (!isValidTranslateValue(x) || !isValidTranslateValue(y)) {
+						throw new Error();
+					}
+					animationDefinition[item] = { x, y };
+				} catch {
+					console.error(`Property ${item} must be valid Pair. Value: ${value}`);
+					return;
+				}
 			} else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
 				console.error(`Property ${item} must be valid color. Value: ${value}`);
 				return;
@@ -276,4 +290,15 @@ export abstract class AnimationBase {
 			curve: animation.curve,
 		});
 	}
+}
+
+function isValidTranslateValue(value: any): boolean {
+	if (typeof value === 'number') {
+		return true;
+	}
+	if (!value || typeof value !== 'object') {
+		return false;
+	}
+
+	return (value.unit === 'px' || value.unit === 'dip' || value.unit === '%') && typeof value.value === 'number';
 }

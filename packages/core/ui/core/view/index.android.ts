@@ -10,6 +10,8 @@ import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, maxWidthProperty, maxHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import { isPercentTranslate } from '../../styling/css-transform';
+import { PercentLength } from '../../styling/length-shared';
 import { CoreTypes } from '../../../core-types';
 
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
@@ -916,8 +918,17 @@ export class View extends ViewCommon {
 	}
 
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		if (this.nativeViewProtected) {
-			this.nativeViewProtected.layout(left, top, right, bottom);
+		const nativeView = this.nativeViewProtected;
+		if (nativeView) {
+			nativeView.layout(left, top, right, bottom);
+
+			// Percentage translates are resolved against the view's own size.
+			if (isPercentTranslate(this.translateX)) {
+				org.nativescript.widgets.ViewHelper.setTranslateX(nativeView, PercentLength.toDevicePixels(this.translateX, 0, nativeView.getWidth()));
+			}
+			if (isPercentTranslate(this.translateY)) {
+				org.nativescript.widgets.ViewHelper.setTranslateY(nativeView, PercentLength.toDevicePixels(this.translateY, 0, nativeView.getHeight()));
+			}
 		}
 	}
 
@@ -1581,12 +1592,12 @@ export class View extends ViewCommon {
 		org.nativescript.widgets.ViewHelper.setScaleY(this.nativeViewProtected, float(value));
 	}
 
-	[translateXProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
+	[translateXProperty.setNative](value: CoreTypes.PercentLengthType) {
+		org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeViewProtected, PercentLength.toDevicePixels(value, 0, this.nativeViewProtected ? this.nativeViewProtected.getWidth() : 0));
 	}
 
-	[translateYProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
+	[translateYProperty.setNative](value: CoreTypes.PercentLengthType) {
+		org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeViewProtected, PercentLength.toDevicePixels(value, 0, this.nativeViewProtected ? this.nativeViewProtected.getHeight() : 0));
 	}
 
 	[zIndexProperty.getDefault](): number {

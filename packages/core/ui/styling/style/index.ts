@@ -121,8 +121,8 @@ export class Style extends Observable {
 
 	public scaleX: number;
 	public scaleY: number;
-	public translateX: CoreTypes.dip;
-	public translateY: CoreTypes.dip;
+	public translateX: CoreTypes.PercentLengthType;
+	public translateY: CoreTypes.PercentLengthType;
 
 	public clipPath: string | ClipPathFunction;
 	public color: Color;

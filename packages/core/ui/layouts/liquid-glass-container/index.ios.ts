@@ -1,6 +1,7 @@
 import type { NativeScriptUIView } from '../../utils';
 import { supportsGlass } from '../../../utils/constants';
 import { GlassEffectType, iosGlassEffectProperty, View } from '../../core/view';
+import { resolveTranslate } from '../../styling/css-transform';
 import { LiquidGlassContainerCommon } from './liquid-glass-container-common';
 import { toUIGlassStyle } from '../liquid-glass';
 
@@ -136,12 +137,14 @@ export class LiquidGlassContainer extends LiquidGlassContainerCommon {
 		for (let i = 0; i < count; i++) {
 			const child = this.getChildAt(i) as View | undefined;
 			if (!child) continue;
-			const tx = child.translateX || 0;
-			const ty = child.translateY || 0;
-			if (!tx && !ty) continue;
 
 			const native = child.nativeViewProtected as UIView;
 			if (!native) continue;
+
+			const bounds = native.bounds.size;
+			const tx = resolveTranslate(child.translateX, bounds.width);
+			const ty = resolveTranslate(child.translateY, bounds.height);
+			if (!tx && !ty) continue;
 
 			// Skip if the child is still animating (unless forced)
 			if (!force) {

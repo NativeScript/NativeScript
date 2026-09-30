@@ -369,7 +369,7 @@ export class Animation extends AnimationBase {
 					}
 				});
 
-				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'translationX', propertyAnimation.value.x * density), createObjectAnimator(nativeView, 'translationY', propertyAnimation.value.y * density)], propertyAnimation.iterations));
+				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'translationX', PercentLength.toDevicePixels(propertyAnimation.value.x, 0, nativeView.getWidth())), createObjectAnimator(nativeView, 'translationY', PercentLength.toDevicePixels(propertyAnimation.value.y, 0, nativeView.getHeight()))], propertyAnimation.iterations));
 				break;
 
 			case Properties.scale:

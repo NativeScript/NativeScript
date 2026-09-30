@@ -2,7 +2,7 @@ export { ActionBar, ActionItem, ActionItems, NavigationButton } from './action-b
 export { ActivityIndicator } from './activity-indicator';
 export { Animation, _resolveAnimationCurve } from './animation';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation/keyframe-animation';
-export type { AnimationDefinition, Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, Point3D, AnimationPromise, Cancelable } from './animation/animation-types';
+export type { AnimationDefinition, Pair, TranslatePair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, Point3D, AnimationPromise, Cancelable } from './animation/animation-types';
 export * from './animation/animation-shared';
 export { Builder } from './builder';
 export type { LoadOptions } from './builder';
