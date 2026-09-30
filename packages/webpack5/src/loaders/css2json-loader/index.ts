@@ -12,6 +12,7 @@ export default function loader(content: string, map: any) {
 	const requirePrefix = inline ? inlineLoader : '';
 
 	const ast = parse(content);
+	repairSelectors(ast.stylesheet?.rules);
 
 	// todo: revise if this is necessary
 	// todo: perhaps use postCSS and just build imports into a single file?
@@ -36,7 +37,7 @@ export default function loader(content: string, map: any) {
 	this.callback(
 		null,
 		code, //`${dependencies.join('\n')}module.exports = ${str};`,
-		map
+		map,
 	);
 }
 
@@ -46,7 +47,7 @@ function getImportRules(ast: Stylesheet): Import[] {
 	}
 	return <Import[]>(
 		ast.stylesheet.rules.filter(
-			(rule) => rule.type === 'import' && (<any>rule).import
+			(rule) => rule.type === 'import' && (<any>rule).import,
 		)
 	);
 }
@@ -54,7 +55,7 @@ function getImportRules(ast: Stylesheet): Import[] {
 function getAndRemoveImportRules(ast: Stylesheet): Import[] {
 	const imports = getImportRules(ast);
 	ast.stylesheet.rules = ast.stylesheet.rules.filter(
-		(rule) => rule.type !== 'import'
+		(rule) => rule.type !== 'import',
 	);
 
 	return imports;
@@ -78,4 +79,34 @@ function createRequireUri(uri): { uri: string; requireURI: string } {
 		uri: uri,
 		requireURI: urlToRequest(uri),
 	};
+}
+
+/**
+ * `css` splits a selector list on every comma outside parentheses and counts an escaped `\(` as a
+ * parenthesis, so an escaped `\,` in a class name (Tailwind's `grid-cols-[repeat(auto-fill,...)]`)
+ * splits the class in two and neither half matches. A piece ending in an odd number of
+ * backslashes ended on an escaped comma: glue it back to the next one.
+ */
+export function joinEscapedSelectorCommas(selectors: string[]): string[] {
+	const joined: string[] = [];
+	for (const selector of selectors) {
+		const previous = joined[joined.length - 1];
+		if (previous !== undefined && /(?:^|[^\\])(?:\\\\)*\\$/.test(previous)) {
+			joined[joined.length - 1] = `${previous},${selector}`;
+		} else {
+			joined.push(selector);
+		}
+	}
+	return joined;
+}
+
+function repairSelectors(rules: any[] | undefined): void {
+	if (!Array.isArray(rules)) return;
+	for (const rule of rules) {
+		if (Array.isArray(rule?.selectors)) {
+			rule.selectors = joinEscapedSelectorCommas(rule.selectors);
+		}
+		// @media, @supports, ... nest their rules.
+		repairSelectors(rule?.rules);
+	}
 }

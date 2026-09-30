@@ -195,11 +195,15 @@ export function parse(css, options) {
 		var m = match(/^([^{]+)/);
 		if (!m) return;
 		/* @fix Remove all comments from selectors
-		 * http://ostermiller.org/findcomment.html */
+		 * http://ostermiller.org/findcomment.html
+		 * Escaped commas (Tailwind arbitrary values) are masked like quoted ones. */
 		return trim(m[0])
 			.replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
 			.replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, function (m) {
 				return m.replace(/,/g, '\u200C');
+			})
+			.replace(/\\[\s\S]/g, function (m) {
+				return m === '\\,' ? '\\\u200C' : m;
 			})
 			.split(/\s*(?![^(]*\)),\s*/)
 			.map(function (s) {

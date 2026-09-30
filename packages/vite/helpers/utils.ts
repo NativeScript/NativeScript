@@ -39,21 +39,41 @@ export function nsConfigToJson() {
  */
 export function resolveNativeScriptPlatformFile(id: string, platform: string): string | undefined {
 	const ext = path.extname(id);
-	const base = id.slice(0, -ext.length);
+	return resolveNativeScriptPlatformModule(id.slice(0, -ext.length), [ext], platform);
+}
 
-	let platformFile = `${base}.${platform}${ext}`;
-	if (fs.existsSync(platformFile)) {
-		return platformFile;
+/**
+ * Resolves an extensionless module path the way Node and webpack do: every
+ * file candidate (`base.<platform>.ext`, then `base.ext`, per extension)
+ * before any directory barrel (`base/index.<platform>.ext`), so a package
+ * shipping both `platform.js` and a `platform/` directory gets the file.
+ */
+export function resolveNativeScriptPlatformModule(base: string, extensions: readonly string[], platform: string): string | undefined {
+	for (const ext of extensions) {
+		const platformFile = `${base}.${platform}${ext}`;
+		if (isFile(platformFile)) {
+			return platformFile;
+		}
+		if (isFile(base + ext)) {
+			return base + ext;
+		}
 	}
-
 	// core uses indices for many barrels
-	platformFile = `${base}/index.${platform}${ext}`;
-	if (fs.existsSync(platformFile)) {
-		return platformFile;
+	for (const ext of extensions) {
+		const platformIndex = `${base}/index.${platform}${ext}`;
+		if (isFile(platformIndex)) {
+			return platformIndex;
+		}
 	}
+	return undefined;
+}
 
-	// fallback to non-platform file
-	return fs.existsSync(id) ? id : undefined;
+function isFile(file: string): boolean {
+	try {
+		return fs.statSync(file).isFile();
+	} catch {
+		return false;
+	}
 }
 
 /**

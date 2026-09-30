@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { setUserDefineEntries } from '../../helpers/global-defines.js';
@@ -63,6 +64,20 @@ describe('buildDepsBundleEntryCode', () => {
 		expect(code).toContain('globalThis.__NS_DEPS_MODULES__');
 		expect(code).toContain(`__nsDepsReg["node_modules/pkg-a/index.js"] = __ns_dep_0__;`);
 		expect(code).toContain(`__nsDepsReg["node_modules/pkg-b/lib/x.js"] = __ns_dep_1__;`);
+		expect(code).not.toContain('__nsDepsLazy');
+	});
+
+	it('registers lazy files behind a getter instead of importing them', () => {
+		const code = buildDepsBundleEntryCode([
+			{ key: 'node_modules/pkg-a/index.js', absPath: '/proj/node_modules/pkg-a/index.js' },
+			{ key: 'node_modules/pkg-a/esm.js', absPath: '/proj/node_modules/pkg-a/esm.js', lazy: true },
+			{ key: 'node_modules/pkg-a/cjs.js', absPath: '/proj/node_modules/pkg-a/cjs.js', lazy: true, cjs: true },
+		]);
+		expect(code).toContain(`import * as __ns_dep_0__ from "/proj/node_modules/pkg-a/index.js";`);
+		expect(code).not.toContain('from "/proj/node_modules/pkg-a/esm.js"');
+		expect(code).not.toContain('from "/proj/node_modules/pkg-a/cjs.js"');
+		expect(code).toContain(`__nsDepsLazy("node_modules/pkg-a/esm.js", () => require("/proj/node_modules/pkg-a/esm.js"));`);
+		expect(code).toContain(`__nsDepsLazy("node_modules/pkg-a/cjs.js", () => __nsDepsCjsNamespace(require("/proj/node_modules/pkg-a/cjs.js")));`);
 	});
 });
 
@@ -286,6 +301,14 @@ function createFixtureProject(): string {
 	// Dep code reading app-level `__FOO__` defines (Vue feature-flag shape).
 	write('node_modules/pkg-flags/package.json', JSON.stringify({ name: 'pkg-flags', version: '1.0.0', module: 'index.js' }));
 	write('node_modules/pkg-flags/index.js', `export const optionsApi = typeof __VUE_OPTIONS_API__ === 'boolean' ? __VUE_OPTIONS_API__ : 'unset';\nexport const bad = typeof __BAD_DEFINE__ === 'undefined' ? 'unset' : __BAD_DEFINE__;\n`);
+	// A package probing an optional dependency with a guarded require. The dependency throws on
+	// evaluation, by design.
+	write('node_modules/pkg-guard/package.json', JSON.stringify({ name: 'pkg-guard', version: '1.0.0', module: 'index.js' }));
+	write('node_modules/pkg-guard/index.js', `export { helper } from './helper.js';\nexport function probe() {\n  try {\n    return require('pkg-media').Audio;\n  } catch (e) {\n    return 'caught';\n  }\n}\n`);
+	write('node_modules/pkg-guard/helper.js', `exports.helper = () => 'helped';\n`);
+	write('node_modules/pkg-media/package.json', JSON.stringify({ name: 'pkg-media', version: '1.0.0', module: 'index.js' }));
+	write('node_modules/pkg-media/index.js', `export { Audio } from './audio';\n`);
+	write('node_modules/pkg-media/audio.js', `throw new Error('pkg-media is not supported here');\n`);
 	return projectRoot;
 }
 
@@ -355,6 +378,37 @@ describe('generateDepsBundle', () => {
 		expect(second!.hash).toBe(first!.hash);
 		expect(second!.code).toBe(first!.code);
 		expect(second!.keys).toEqual(first!.keys);
+	});
+
+	it('evaluates transitive files on first use, so a guarded require of a throwing module stays guarded', async () => {
+		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths: ['/ns/m/node_modules/pkg-guard/index.js'] });
+		expect(state).not.toBeNull();
+		expect(state!.keys).toContain('node_modules/pkg-media/index.js');
+		expect(state!.keys).toContain('node_modules/pkg-media/audio.js');
+
+		// Each copy evaluates as its own module instance: esbuild's CommonJS wrapper remembers a
+		// module whose first evaluation threw, so each check needs a fresh one.
+		const evaluate = async (name: string) => {
+			const file = path.join(projectRoot, `deps-bundle-${name}-${Date.now()}.mjs`);
+			writeFileSync(file, state!.code);
+			(globalThis as any).__NS_DEPS_MODULES__ = undefined;
+			// Evaluating the bundle must not evaluate the throwing file.
+			await import(pathToFileURL(file).href);
+			return (globalThis as any).__NS_DEPS_MODULES__;
+		};
+		const previous = (globalThis as any).__NS_DEPS_MODULES__;
+		try {
+			// The guarded require still sees the throw...
+			const guarded = await evaluate('guarded');
+			expect(guarded['node_modules/pkg-guard/index.js'].probe()).toBe('caught');
+			expect(guarded['node_modules/pkg-guard/helper.js'].helper()).toBe('helped');
+			expect(guarded['node_modules/pkg-guard/helper.js'].default.helper()).toBe('helped');
+			// ...and a direct read reports it, as importing the module would.
+			const registry = await evaluate('direct');
+			expect(() => registry['node_modules/pkg-media/audio.js']).toThrow('pkg-media is not supported here');
+		} finally {
+			(globalThis as any).__NS_DEPS_MODULES__ = previous;
+		}
 	});
 
 	it('returns null when the recording has no bundleable node_modules entries', async () => {
