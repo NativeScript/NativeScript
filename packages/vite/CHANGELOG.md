@@ -1,3 +1,13 @@
+## 8.0.16 (2026-09-30)
+
+### 🩹 Fixes
+
+- **vite:** start HMR graph population after every plugin's configureServer ([#11479](https://github.com/NativeScript/NativeScript/pull/11479))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.15 (2026-09-29)
 
 ### 🩹 Fixes
