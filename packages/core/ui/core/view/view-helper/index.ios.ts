@@ -312,6 +312,16 @@ export class IOSHelper {
 		return rootView.safeAreaLayoutGuide;
 	}
 
+	static insertNativeSubview(parentNativeView: UIView, childNativeView: UIView, atIndex?: number): void {
+		const subviews = parentNativeView.subviews;
+		if (typeof atIndex !== 'number' || atIndex >= subviews.count) {
+			parentNativeView.addSubview(childNativeView);
+		} else {
+			// insertSubview:atIndex: also counts non-view sublayers, e.g. gradient backgrounds
+			parentNativeView.insertSubviewBelowSubview(childNativeView, subviews.objectAtIndex(atIndex));
+		}
+	}
+
 	static layoutView(controller: UIViewController, owner: View): void {
 		let layoutGuide = controller.view.safeAreaLayoutGuide;
 		if (!layoutGuide) {
