@@ -87,7 +87,7 @@
 		"module-alias": "^2.2.2",
 		"nativescript": "9.1.0-alpha.17",
 		"nativescript-typedoc-theme": "1.1.0",
-		"nx": "22.5.4",
+		"nx": "22.7.12",
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
 		"parserlib": "^1.1.1",
 		"plist": "^5.0.0",
