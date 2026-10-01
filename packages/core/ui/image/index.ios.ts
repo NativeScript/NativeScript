@@ -21,11 +21,6 @@ export class Image extends ImageBase {
 		return imageView;
 	}
 
-	public initNativeView(): void {
-		super.initNativeView();
-		this._setNativeClipToBounds();
-	}
-
 	public disposeImageSource() {
 		if (this.nativeViewProtected?.image === this.imageSource?.ios) {
 			this.nativeViewProtected.image = null;
@@ -79,13 +74,6 @@ export class Image extends ImageBase {
 
 		if (this._imageSourceAffectsLayout) {
 			this.requestLayout();
-		}
-	}
-
-	_setNativeClipToBounds() {
-		if (this.nativeViewProtected) {
-			// Always set clipsToBounds for images
-			this.nativeViewProtected.clipsToBounds = true;
 		}
 	}
 

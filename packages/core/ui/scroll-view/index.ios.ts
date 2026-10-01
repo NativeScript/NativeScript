@@ -48,7 +48,6 @@ export class ScrollView extends ScrollViewBase {
 	initNativeView() {
 		super.initNativeView();
 		this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
-		this._setNativeClipToBounds();
 		// UIKit defaults to `automatic` while the property defaults to `never`, and
 		// setNative only runs for non-default values — so apply it up front.
 		this.updateContentInsetAdjustmentBehavior(this.iosContentInsetAdjustmentBehavior);
@@ -58,14 +57,6 @@ export class ScrollView extends ScrollViewBase {
 		super.disposeNativeView();
 
 		this._isFirstLayout = true;
-	}
-
-	_setNativeClipToBounds() {
-		if (!this.nativeViewProtected) {
-			return;
-		}
-		// Always set clipsToBounds for scroll-view
-		this.nativeViewProtected.clipsToBounds = true;
 	}
 
 	protected attachNative() {

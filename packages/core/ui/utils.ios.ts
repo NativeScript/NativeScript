@@ -1,15 +1,8 @@
 ﻿import { Screen } from '../platform';
 import * as utils from '../utils';
 import { LinearGradient } from './styling/linear-gradient';
-import { NativeScriptUIView } from './utils';
 
 export namespace ios {
-	export type LayerMaskType = 'BORDER' | 'CLIP_PATH';
-	export namespace LayerMask {
-		export const BORDER = 'BORDER';
-		export const CLIP_PATH = 'CLIP_PATH';
-	}
-
 	export function getActualHeight(view: UIView): number {
 		if (view.window && !view.hidden) {
 			return utils.layout.toDevicePixels(view.frame.size.height);

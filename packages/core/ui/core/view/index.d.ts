@@ -1056,10 +1056,6 @@ export abstract class View extends ViewCommon {
 	 */
 	_manager: any;
 	/**
-	 * @private
-	 */
-	_setNativeClipToBounds(): void;
-	/**
 	 * Called by measure method to cache measureSpecs.
 	 * @private
 	 */

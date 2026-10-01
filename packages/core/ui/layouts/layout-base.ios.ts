@@ -24,22 +24,11 @@ export class LayoutBase extends LayoutBaseCommon {
 		this.requestLayout();
 	}
 
-	_setNativeClipToBounds() {
-		if (this.clipToBounds) {
-			const view = this.nativeViewProtected;
-			if (view) {
-				view.clipsToBounds = true;
-			}
-		} else {
-			super._setNativeClipToBounds();
-		}
-	}
-
 	[clipToBoundsProperty.getDefault](): boolean {
-		return false;
+		return this.nativeViewProtected.clipsToBounds;
 	}
 	[clipToBoundsProperty.setNative](value: boolean) {
-		this._setNativeClipToBounds();
+		this.nativeViewProtected.clipsToBounds = value;
 	}
 
 	[isPassThroughParentEnabledProperty.setNative](value: boolean) {

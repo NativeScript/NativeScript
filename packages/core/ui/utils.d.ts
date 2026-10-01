@@ -7,7 +7,6 @@ export interface NativeScriptUIView extends UIView {
 	hasNonUniformBorderColor: boolean;
 	borderLayer: CAShapeLayer;
 
-	maskType: ios.LayerMaskType;
 	originalMask: CALayer;
 
 	gradientLayer: CAGradientLayer;
@@ -15,12 +14,6 @@ export interface NativeScriptUIView extends UIView {
 }
 
 export namespace ios {
-	export type LayerMaskType = 'BORDER' | 'CLIP_PATH';
-	export namespace LayerMask {
-		export const BORDER = 'BORDER';
-		export const CLIP_PATH = 'CLIP_PATH';
-	}
-
 	/**
 	 * Gets actual height of a [UIView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIView_Class/) widget in device pixels.
 	 * @param uiView - An instance of UIView.

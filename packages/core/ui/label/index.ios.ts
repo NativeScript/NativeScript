@@ -180,8 +180,6 @@ export class Label extends TextBase implements LabelDefinition {
 				);
 			}
 		}
-
-		this._setNativeClipToBounds();
 	}
 
 	[borderTopWidthProperty.setNative](value: CoreTypes.LengthType) {

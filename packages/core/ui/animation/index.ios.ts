@@ -6,7 +6,7 @@ import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
 import { PercentLength } from '../styling/length-shared';
 import { ios as iosBackground } from '../styling/background';
-import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
+import { NativeScriptUIView } from '../utils';
 
 import { ios as iosHelper } from '../../utils/native-helper';
 
@@ -249,10 +249,6 @@ export class Animation extends AnimationBase {
 
 						// Shadow animations
 						if (nativeView.outerShadowContainerLayer) {
-							if (nativeView.outerShadowContainerLayer.mask) {
-								nativeView.outerShadowContainerLayer.mask.removeAllAnimations();
-							}
-
 							const outerShadowLayers = nativeView.outerShadowContainerLayer.sublayers;
 							if (outerShadowLayers?.count) {
 								for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
@@ -501,13 +497,6 @@ export class Animation extends AnimationBase {
 			if (args.propertyNameToAnimate === 'bounds') {
 				this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
 			}
-
-			// Shadow container layer belongs to the parent view layer, so animate all its properties (except for colors) separately
-			if (args.propertyNameToAnimate && !args.propertyNameToAnimate.endsWith('Color')) {
-				if (nativeView.outerShadowContainerLayer) {
-					nativeView.outerShadowContainerLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
-				}
-			}
 		}
 		let callback = undefined;
 		if (index + 1 < propertyAnimations.length) {
@@ -620,11 +609,6 @@ export class Animation extends AnimationBase {
 					case _transform:
 						animation._originalValue = nativeView.layer.transform;
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-
-						// Shadow container layer belongs to the parent view layer, so animate its transform separately
-						if (nativeView.outerShadowContainerLayer) {
-							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-						}
 
 						animation._propertyResetCallback = function (value) {
 							nativeView.layer.transform = value;
@@ -763,135 +747,7 @@ export class Animation extends AnimationBase {
 			nativeView.gradientLayer.addAnimationForKey(nativeAnimation, 'bounds');
 		}
 
-		let clipPath; // This is also used for animating shadow
-
-		// Clipping mask animation
-		if (nativeView.layer.mask instanceof CAShapeLayer) {
-			let toValue;
-
-			if (nativeView.maskType === iosViewUtils.LayerMask.BORDER) {
-				toValue = iosBackground.generateNonUniformBorderOuterClipRoundedPath(view, bounds);
-			} else if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH) {
-				clipPath = iosBackground.generateClipPath(view, bounds);
-				toValue = clipPath;
-			} else {
-				Trace.write('Unknown mask on animating view: ' + view, Trace.categories.Animation, Trace.messageType.info);
-			}
-
-			if (toValue) {
-				nativeView.layer.mask.addAnimationForKey(
-					this._createBasicAnimation(
-						{
-							...args,
-							propertyNameToAnimate: 'path',
-							fromValue: nativeView.layer.mask.path,
-							toValue,
-						},
-						animation,
-					),
-					'path',
-				);
-			}
-		}
-
-		// Border animations (uniform and non-uniform)
-		if (nativeView.hasNonUniformBorder) {
-			if (nativeView.borderLayer) {
-				const innerClipPath = iosBackground.generateNonUniformBorderInnerClipRoundedPath(animation.target, bounds);
-
-				if (nativeView.hasNonUniformBorderColor) {
-					const borderMask = nativeView.borderLayer.mask;
-					if (borderMask instanceof CAShapeLayer) {
-						borderMask.addAnimationForKey(
-							this._createBasicAnimation(
-								{
-									...args,
-									propertyNameToAnimate: 'path',
-									fromValue: borderMask.path,
-									toValue: innerClipPath,
-								},
-								animation,
-							),
-							'path',
-						);
-					}
-
-					const borderLayers = nativeView.borderLayer.sublayers;
-					if (borderLayers?.count) {
-						const paths = iosBackground.generateNonUniformMultiColorBorderRoundedPaths(animation.target, bounds);
-
-						for (let i = 0, count = borderLayers.count; i < count; i++) {
-							const layer = nativeView.borderLayer.sublayers[i];
-							if (layer instanceof CAShapeLayer) {
-								layer.addAnimationForKey(
-									this._createBasicAnimation(
-										{
-											...args,
-											propertyNameToAnimate: 'path',
-											fromValue: layer.path,
-											toValue: paths[i],
-										},
-										animation,
-									),
-									'path',
-								);
-							}
-						}
-					}
-				} else {
-					nativeView.borderLayer.addAnimationForKey(
-						this._createBasicAnimation(
-							{
-								...args,
-								propertyNameToAnimate: 'path',
-								fromValue: nativeView.borderLayer.path,
-								toValue: innerClipPath,
-							},
-							animation,
-						),
-						'path',
-					);
-				}
-			}
-		} else {
-			// TODO: Animate border width when borders get support for percentage values
-			// Uniform corner radius also relies on view size
-			if (nativeView.layer.cornerRadius) {
-				nativeView.layer.addAnimationForKey(
-					this._createBasicAnimation(
-						{
-							...args,
-							propertyNameToAnimate: 'cornerRadius',
-							fromValue: nativeView.layer.cornerRadius,
-							toValue: iosBackground.getUniformBorderRadius(animation.target, bounds),
-						},
-						animation,
-					),
-					'cornerRadius',
-				);
-			}
-		}
-
-		// Shadow container layer belongs to the parent view layer, so animate its properties separately
 		if (nativeView.outerShadowContainerLayer) {
-			const shadowClipMask = nativeView.outerShadowContainerLayer.mask;
-
-			// This is for animating view clip path on shadow
-			if (clipPath && shadowClipMask instanceof CAShapeLayer) {
-				shadowClipMask.addAnimationForKey(
-					this._createBasicAnimation(
-						{
-							...args,
-							propertyNameToAnimate: 'path',
-							fromValue: shadowClipMask.path,
-							toValue: clipPath,
-						},
-						animation,
-					),
-					'path',
-				);
-			}
-
 			const outerShadowLayers = nativeView.outerShadowContainerLayer.sublayers;
 			if (outerShadowLayers?.count) {
 				const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(view, bounds);
