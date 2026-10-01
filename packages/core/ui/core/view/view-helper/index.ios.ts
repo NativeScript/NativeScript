@@ -329,6 +329,40 @@ export class IOSHelper {
 		return view;
 	}
 
+	static isHostedInView(view: View): boolean {
+		const container = view.nativeViewProtected?.superview;
+		if (!container) {
+			return false;
+		}
+
+		let parent = view.parent as View;
+		while (parent && !parent.nativeViewProtected) {
+			parent = parent.parent as View;
+		}
+
+		return container === parent?.nativeViewProtected;
+	}
+
+	static extendUnderContainerSafeArea(nativeView: UIView, frame: CGRect): CGRect {
+		const container = nativeView?.superview;
+		if (!container) {
+			return null;
+		}
+
+		// Edges laid out against the container's safe area move out to its bounds; a controller's view insets its own content.
+		const safeArea = container.safeAreaLayoutGuide.layoutFrame;
+		const bounds = container.bounds;
+		const tolerance = 0.5;
+		const left = frame.origin.x <= safeArea.origin.x + tolerance ? bounds.origin.x : frame.origin.x;
+		const top = frame.origin.y <= safeArea.origin.y + tolerance ? bounds.origin.y : frame.origin.y;
+		const frameRight = frame.origin.x + frame.size.width;
+		const frameBottom = frame.origin.y + frame.size.height;
+		const right = frameRight >= safeArea.origin.x + safeArea.size.width - tolerance ? bounds.origin.x + bounds.size.width : frameRight;
+		const bottom = frameBottom >= safeArea.origin.y + safeArea.size.height - tolerance ? bounds.origin.y + bounds.size.height : frameBottom;
+
+		return CGRectMake(left, top, right - left, bottom - top);
+	}
+
 	static invalidateStatusBarAppearance(controller?: UIViewController, reason = ''): void {
 		try {
 			if (!controller) {

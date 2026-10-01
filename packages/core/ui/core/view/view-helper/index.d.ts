@@ -76,6 +76,16 @@ export namespace IOSHelper {
 	 * view, or hides them all for `none`. No-op before iOS 26.
 	 */
 	export function setScrollEdgeEffect(scrollView: any /* UIScrollView */, effect: CoreTypes.ScrollEdgeEffectType): void;
+	/**
+	 * Whether the view's native view is a direct subview of its nearest NativeScript ancestor's
+	 * native view, rather than placed by a UIKit container controller.
+	 */
+	export function isHostedInView(view: View): boolean;
+	/**
+	 * Moves the frame's edges that lie on the container's safe-area edges out to the container's
+	 * bounds, for controller-backed views that inset their own content.
+	 */
+	export function extendUnderContainerSafeArea(nativeView: any /* UIView */, frame: any /* CGRect */): any; /* CGRect */
 	export function invalidateStatusBarAppearance(controller?: any /* UIViewController */, reason?: string): void;
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
