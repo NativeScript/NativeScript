@@ -992,6 +992,12 @@ export abstract class View extends ViewCommon {
 	hasGestureObservers?(): boolean;
 
 	/**
+	 * Windows only. A parent that lays out its children itself can take over a child's percentage
+	 * width or height (`fraction` 0-1, `null` once it is no longer a percentage) by returning `true`.
+	 */
+	_setChildPercentSize?(child: View, horizontal: boolean, fraction: number | null): boolean;
+
+	/**
 	 * Android only to set the touch listener
 	 */
 	setOnTouchListener?(): void;
