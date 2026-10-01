@@ -36,7 +36,7 @@
 		"@nx/eslint-plugin": "22.5.4",
 		"@nx/jest": "22.5.4",
 		"@nx/js": "22.5.4",
-		"@nx/node": "22.5.4",
+		"@nx/node": "22.7.12",
 		"@nx/plugin": "22.5.4",
 		"@nx/vite": "22.5.4",
 		"@nx/vitest": "22.5.4",
