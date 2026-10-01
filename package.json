@@ -39,7 +39,7 @@
 		"@nx/node": "22.5.4",
 		"@nx/plugin": "22.5.4",
 		"@nx/vite": "22.5.4",
-		"@nx/vitest": "22.5.4",
+		"@nx/vitest": "22.7.12",
 		"@nx/web": "22.5.4",
 		"@nx/workspace": "22.5.4",
 		"@prettier/plugin-xml": "^3.4.1",
