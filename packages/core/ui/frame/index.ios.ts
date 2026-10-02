@@ -361,12 +361,15 @@ export class Frame extends FrameBase {
 		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
-	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		//
+	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+		// UIKit lays out the controller's view inside a container controller, but not inside a NativeScript view.
+		if (IOSHelper.isHostedInView(this)) {
+			super._setNativeViewFrame(nativeView, frame);
+		}
 	}
 
-	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
-		//
+	protected applySafeAreaInsets(frame: CGRect): CGRect {
+		return IOSHelper.extendUnderContainerSafeArea(this.nativeViewProtected, frame);
 	}
 
 	// Emits an event whenever the UINavigationController shows a view controller.

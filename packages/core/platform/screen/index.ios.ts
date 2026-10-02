@@ -23,10 +23,15 @@ class MainScreen {
 		return this.screen.scale;
 	}
 	get widthDIPs(): number {
-		return this.screen.bounds.size.width;
+		return this.currentScreen.bounds.size.width;
 	}
 	get heightDIPs(): number {
-		return this.screen.bounds.size.height;
+		return this.currentScreen.bounds.size.height;
+	}
+
+	private get currentScreen(): UIScreen {
+		const window = getWindow() as UIWindow;
+		return window ? window.screen : this.screen;
 	}
 
 	public _updateMetrics(): void {
