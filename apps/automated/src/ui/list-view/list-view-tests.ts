@@ -49,6 +49,7 @@ export class ListViewTest extends UITest<ListView> {
 		// << article-create-listview
 
 		TKUnit.assert(Utils.isUndefined(listView.items), 'Default listView.items should be undefined');
+		TKUnit.assertEqual(listView.iosScrollEdgeEffect, 'automatic', 'Default listView.iosScrollEdgeEffect');
 	}
 
 	public test_set_items_to_array_loads_all_items(done) {
