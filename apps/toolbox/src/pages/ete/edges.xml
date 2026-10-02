@@ -1,0 +1,32 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <!-- The page ignores insets so the probe below is the only view distributing them. -->
+  <GridLayout id="probe" backgroundColor="#166534" androidOverflowEdge="{{ edge }}">
+    <GridLayout backgroundColor="#1d4ed8" rows="auto, auto, *">
+      <StackLayout row="0" padding="12">
+        <Label text="{{ heading }}" color="#ffffff" fontWeight="bold" fontSize="17" textWrap="true" />
+        <Label text="{{ description }}" color="#bfdbfe" fontSize="13" textWrap="true" />
+      </StackLayout>
+
+      <GridLayout row="1" columns="*, *, *" padding="8">
+        <Button col="0" text="&lt; prev" tap="{{ prev }}" color="#ffffff" backgroundColor="#1e40af" />
+        <Button col="1" text="next &gt;" tap="{{ next }}" color="#ffffff" backgroundColor="#1e40af" />
+        <Button col="2" text="back" tap="{{ back }}" color="#ffffff" backgroundColor="#1e40af" />
+      </GridLayout>
+
+      <ScrollView row="2">
+        <StackLayout padding="12">
+          <Label text="probe padding" color="#ffffff" fontWeight="bold" />
+          <Label text="{{ padding }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="getEdgeInsets (l,t,r,b)" color="#ffffff" fontWeight="bold" marginTop="8" />
+          <Label text="{{ edgeInsets }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="getImeInsets (l,t,r,b)" color="#ffffff" fontWeight="bold" marginTop="8" />
+          <Label text="{{ imeInsets }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="window insets" color="#ffffff" fontWeight="bold" marginTop="8" />
+          <Label text="{{ windowInsets }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+          <Label text="{{ hint }}" color="#fde68a" fontSize="13" textWrap="true" marginTop="12" />
+        </StackLayout>
+      </ScrollView>
+
+    </GridLayout>
+  </GridLayout>
+</Page>
