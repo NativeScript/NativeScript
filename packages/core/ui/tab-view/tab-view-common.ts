@@ -198,7 +198,11 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 
 	public onItemsChanged(oldItems: TabViewItemDefinition[], newItems: TabViewItemDefinition[]): void {
 		if (oldItems) {
-			oldItems.forEach((item) => this._removeView(item));
+			oldItems.forEach((item) => {
+				if (!newItems || newItems.indexOf(item) < 0) {
+					this._removeView(item);
+				}
+			});
 		}
 
 		if (newItems) {
@@ -207,14 +211,25 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 					throw new Error(`TabViewItem must have a view.`);
 				}
 
+				// An item kept across the change stays loaded; tearing it down would unload its view.
+				if (item.parent === this) {
+					return;
+				}
+
 				// A view can only have one parent, and _addView throws if it already has one.
-				if (item.parent && item.parent !== this) {
+				if (item.parent) {
 					item.parent._removeView(item);
 				}
 
 				this._addView(item);
 			});
 		}
+	}
+
+	public _isChildPresented(child: ViewBase): boolean {
+		const items = this.items;
+
+		return !items || items[this.selectedIndex] === child;
 	}
 
 	public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {

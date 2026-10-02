@@ -715,6 +715,12 @@ export class TabView extends TabViewBase {
 	[itemsProperty.setNative](value: TabViewItem[]) {
 		this.setViewControllers(value);
 		selectedIndexProperty.coerce(this);
+
+		// Items added to a loaded TabView were loaded before their controllers existed.
+		const selectedItem = value?.[this.selectedIndex];
+		if (selectedItem) {
+			selectedItem.loadView(selectedItem.view);
+		}
 	}
 
 	[tabTextFontSizeProperty.getDefault](): number {
