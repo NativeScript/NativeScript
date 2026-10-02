@@ -89,12 +89,12 @@ export namespace ios {
 		// Initialize clipping mask (usually for clip-path and non-uniform rounded borders)
 		maskLayerIfNeeded(nativeView, background);
 
-		if (background.hasUniformBorder()) {
+		if (drawsCornersNatively(background)) {
 			const borderColor = background.getUniformBorderColor();
 			layer.borderColor = borderColor?.ios?.CGColor;
 			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
 			layer.cornerRadius = getUniformBorderRadius(view, layer.bounds);
-			layer.cornerCurve = background.cornerShape === CoreTypes.CornerShape.squircle ? kCACornerCurveContinuous : kCACornerCurveCircular;
+			layer.cornerCurve = background.cornerShape === CoreTypes.IOSCornerShape.continuous ? kCACornerCurveContinuous : kCACornerCurveCircular;
 		} else {
 			drawNonUniformBorders(nativeView, background);
 			needsLayerAdjustmentOnScroll = true;
@@ -128,7 +128,7 @@ export namespace ios {
 		let needsMask;
 		switch (nativeView.maskType) {
 			case iosViewUtils.LayerMask.BORDER:
-				needsMask = !background.hasUniformBorder() && background.hasBorderRadius();
+				needsMask = !drawsCornersNatively(background) && background.hasBorderRadius();
 				break;
 			case iosViewUtils.LayerMask.CLIP_PATH:
 				needsMask = !!background.clipPath;
@@ -153,7 +153,7 @@ export namespace ios {
 				clearNonUniformColorBorders(nativeView);
 			}
 
-			if (background.hasUniformBorder()) {
+			if (drawsCornersNatively(background)) {
 				clearNonUniformBorders(nativeView);
 			}
 		}
@@ -232,7 +232,7 @@ export namespace ios {
 
 		// Generate more detailed paths if view has border radius
 		if (background.hasBorderRadius()) {
-			if (background.hasUniformBorder()) {
+			if (drawsCornersNatively(background)) {
 				const cornerRadius = layer.cornerRadius;
 				const cappedRadius = getBorderCapRadius(cornerRadius, width / 2, height / 2);
 				const cappedOuterRadii: CappedOuterRadii = {
@@ -333,6 +333,16 @@ export namespace ios {
 		return path;
 	}
 
+	/**
+	 * Whether the layer's own cornerRadius and cornerCurve can draw the corners.
+	 * The CSS squircle has no CALayer curve, so it always goes through a path mask.
+	 * @param background The view's background.
+	 * @returns True when no path mask is needed for the corners.
+	 */
+	export function drawsCornersNatively(background: BackgroundDefinition): boolean {
+		return background.hasUniformBorder() && background.cornerShape !== CoreTypes.CornerShape.squircle;
+	}
+
 	export function getUniformBorderRadius(view: View, bounds: CGRect): number {
 		const background = view.style.backgroundInternal;
 		const { width, height } = bounds.size;
@@ -370,7 +380,7 @@ function maskLayerIfNeeded(nativeView: NativeScriptUIView, background: Backgroun
 		// Since layers can only accept up to a single mask at a time, clip path is given more priority
 		if (background.clipPath) {
 			nativeView.maskType = iosViewUtils.LayerMask.CLIP_PATH;
-		} else if (!background.hasUniformBorder() && background.hasBorderRadius()) {
+		} else if (!ios.drawsCornersNatively(background) && background.hasBorderRadius()) {
 			nativeView.maskType = iosViewUtils.LayerMask.BORDER;
 		} else {
 			nativeView.maskType = null;

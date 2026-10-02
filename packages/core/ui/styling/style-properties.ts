@@ -1053,16 +1053,34 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 });
 borderBottomLeftRadiusProperty.register(Style);
 
-export const cornerShapeProperty = new CssProperty<Style, CoreTypes.CornerShapeType>({
+export const cornerShapeProperty = new CssProperty<Style, CoreTypes.IOSCornerShapeType>({
 	name: 'cornerShape',
 	cssName: 'corner-shape',
 	defaultValue: CoreTypes.CornerShape.round,
-	valueConverter: CoreTypes.CornerShape.parse,
+	// Only CALayer can draw `continuous`; other platforms keep the spec grammar.
+	valueConverter: (value) => (__APPLE__ ? CoreTypes.IOSCornerShape.parse(value) : CoreTypes.CornerShape.parse(value)),
 	valueChanged: (target, oldValue, newValue) => {
 		target.backgroundInternal = target.backgroundInternal.withCornerShape(newValue);
 	},
 });
 cornerShapeProperty.register(Style);
+
+export const iosCornerShapeProperty = new ShorthandProperty<Style, CoreTypes.IOSCornerShapeType>({
+	name: 'iosCornerShape',
+	cssName: '-ios-corner-shape',
+	getter: function (this: Style) {
+		return this.cornerShape;
+	},
+	// Alias of corner-shape: cascades in its place on Apple, dropped elsewhere.
+	converter: function (value) {
+		if (!__APPLE__) {
+			return [];
+		}
+
+		return [[cornerShapeProperty, typeof value === 'string' ? CoreTypes.IOSCornerShape.parse(value) : value]];
+	},
+});
+iosCornerShapeProperty.register(Style);
 
 const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
