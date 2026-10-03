@@ -1,0 +1,47 @@
+// What every framework front end produces, and the back ends consume.
+//
+// A component is a virtual TypeScript class (its state as `$signal(...)`
+// fields, derived values as getters, handlers as methods, and one method per
+// template expression) plus a template tree that names those methods. The
+// TypeScript checker types the class, so the back end translates typed code
+// no matter which framework the source was written in.
+
+export type Attr =
+  | { name: string; value: string }
+  /** A binding: the method that computes the value, called with the loop variables in scope. */
+  | { name: string; method: string };
+
+export interface Event {
+  name: string;
+  /** Called with the loop variables in scope, then the event. */
+  method: string;
+}
+
+export type TNode =
+  | { kind: 'element'; tag: string; attrs: Attr[]; events: Event[]; children: TNode[] }
+  | { kind: 'component'; name: string; props: Attr[]; events: Event[] }
+  | { kind: 'if'; branches: { cond: string | null; body: TNode[] }[] }
+  /** `items` and `key` are methods; `vars` are the item and index names the body sees. */
+  | { kind: 'for'; items: string; key: string | null; item: string; index: string; body: TNode[] };
+
+export interface ComponentIR {
+  name: string;
+  /** Virtual TypeScript file path, next to the source so its imports resolve. */
+  file: string;
+  source: string;
+  props: string[];
+  /** Events the component raises itself (Angular `output()`), as opposed to its root view's. */
+  outputs?: string[];
+  /** A routed component whose template is a page's content (Angular's ActionBar plus a view). */
+  page?: boolean;
+  template: TNode[];
+}
+
+export interface AppIR {
+  root: string;
+  components: ComponentIR[];
+  /** The app's own TypeScript modules (data, stores), translated as they are. */
+  modules: string[];
+  css: string;
+  name: string;
+}

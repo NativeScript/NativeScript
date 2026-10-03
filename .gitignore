@@ -1,0 +1,10 @@
+build/
+compiler/node_modules/
+kit/.build/
+kit/.swiftpm/
+kit/Examples/Recipes/build/
+kit/Examples/Recipes/*.xcodeproj
+kit/Examples/Recipes/compare/
+*/platforms/
+*/hooks/
+*/node_modules/
