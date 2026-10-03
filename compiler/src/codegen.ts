@@ -83,7 +83,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         continue;
       }
       const inner = [...loops, { item: node.item, index: node.index }];
-      const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in ${call(node.key, inner)} }` : `{ _, index in js(index) }`;
+      const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in ${call(node.key, inner)} }` : `{ item, _ in jsKey(item) }`;
       say(depth, `For(${region}, { ${call(node.items, loops)} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
       const made: string[] = [];
       emit(node.body, depth + 1, inner, null, made);

@@ -13,6 +13,8 @@ import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
 import { angularComponent, angularRoutes } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
+import { reactComponent, reactScreens, zustandStore } from './react.ts';
+import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
@@ -33,10 +35,12 @@ const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d
 walk(appDir);
 const entry = join(app, pkg.main ?? 'app/app.ts');
 const deps = { ...pkg.dependencies };
-const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : null;
+const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : null;
 if (!framework) throw new Error('no supported framework in package.json');
 const entryText = readFileSync(entry, 'utf8');
 const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f));
+// Virtual replacements for app modules the release build reads differently (a zustand store).
+const overrides = new Map<string, string>();
 
 // 1. Each component through its framework's front end; 2. the component the app starts with.
 const started = Date.now();
@@ -51,6 +55,44 @@ if (framework === 'vue') {
   const rootFile = rootImport && new RegExp(`import\\s+${rootImport}\\s+from\\s+['"]([^'"]+)['"]`).exec(entryText)?.[1];
   if (!rootFile) throw new Error(`${entry}: no createApp(Component)`);
   root = basename(rootFile, '.vue');
+} else if (framework === 'react') {
+  const tsx = files.filter((f) => f.endsWith('.tsx'));
+  const texts = new Map([...sources, ...tsx].map((f) => [f, readFileSync(f, 'utf8')]));
+  const navigatorFile = tsx.find((f) => /\.Navigator\b/.test(texts.get(f)!));
+  const { screens, initial, container } = navigatorFile ? reactScreens(texts.get(navigatorFile)!) : { screens: [], initial: '', container: null };
+  const fns: { file: string; fn: ts.FunctionDeclaration }[] = [];
+  for (const f of tsx) {
+    if (f === navigatorFile) continue;
+    const sf = ts.createSourceFile(f, texts.get(f)!, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    for (const st of sf.statements) if (ts.isFunctionDeclaration(st) && st.name && /^[A-Z]/.test(st.name.text)) fns.push({ file: f, fn: st });
+  }
+  const names = new Map(fns.map(({ file, fn }) => [fn.name!.text, file]));
+  components = fns.map(({ file, fn }) => reactComponent(file, texts.get(file)!, fn, screens, texts, names));
+  for (const f of sources) { const store = zustandStore(texts.get(f)!); if (store) overrides.set(f, store); }
+  modules = sources;
+  // The navigator is the app's frame, starting at the initial screen.
+  const start = screens.find((s) => s.name === initial)!;
+  const frameName = container ?? 'Navigator';
+  components.push({ name: frameName, file: join(dirname(navigatorFile!), frameName + '.react.ts'), source: `import ${start.component} from './${start.component}.react';\nexport default class ${frameName} {}\n`, props: [], template: [{ kind: 'element', tag: 'Frame', attrs: [], events: [], children: [{ kind: 'component', name: start.component, props: [], events: [] }] }] });
+  root = frameName;
+} else if (framework === 'solid') {
+  const tsx = files.filter((f) => f.endsWith('.tsx'));
+  const texts = new Map([...sources, ...tsx].map((f) => [f, readFileSync(f, 'utf8')]));
+  const routerFile = tsx.find((f) => /<StackRouter\b/.test(texts.get(f)!));
+  const { routes, initial } = routerFile ? solidRoutes(texts.get(routerFile)!) : { routes: [], initial: '' };
+  const fns: { file: string; fn: ts.FunctionDeclaration }[] = [];
+  for (const f of tsx) {
+    if (f === routerFile) continue;
+    const sf = ts.createSourceFile(f, texts.get(f)!, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    for (const st of sf.statements) if (ts.isFunctionDeclaration(st) && st.name && /^[A-Z]/.test(st.name.text)) fns.push({ file: f, fn: st });
+  }
+  const names = new Set(fns.map(({ fn }) => fn.name!.text));
+  components = fns.map(({ file, fn }) => solidComponent(file, fn, routes, names));
+  for (const f of sources) { const store = solidStore(texts.get(f)!); if (store) overrides.set(f, store); }
+  modules = sources;
+  const start = routes.find((r) => r.name === initial)!;
+  components.push({ name: 'StackRouter', file: join(dirname(routerFile!), 'StackRouter.solid.ts'), source: `import ${start.component} from './components/${start.component}.solid';\nexport default class StackRouter {}\n`, props: [], template: [{ kind: 'element', tag: 'Frame', attrs: [], events: [], children: [{ kind: 'component', name: start.component, props: [], events: [] }] }] });
+  root = 'StackRouter';
 } else if (framework === 'svelte') {
   const isStoreFile = (f: string) => /from\s+['"]svelte\/store['"]/.test(readFileSync(f, 'utf8'));
   components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelteComponent(f, readFileSync(f, 'utf8'), (spec) => {
@@ -80,7 +122,7 @@ if (framework === 'vue') {
 }
 
 // 3. Type-check everything as one program, then translate.
-const virtual = new Map(components.map((c) => [c.file, c.source]));
+const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
 const { checker, program } = createProgram(modules, virtual);
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
 const translator = new Translator(checker, infos);
@@ -88,15 +130,17 @@ const translator = new Translator(checker, infos);
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
 const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport NativeScriptKit\n\n`;
-for (const m of modules) {
-  const sf = program.getSourceFile(m)!;
-  writeFileSync(join(out, 'Sources', basename(m, '.ts') + '.swift'), header(m) + translator.module(sf));
-}
+const moduleCode = new Map(modules.map((m) => [m, translator.module(program.getSourceFile(m)!)]));
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
   const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
+}
+// Interfaces become classes once everything that might use them is translated.
+for (const [m, code] of moduleCode) {
+  const text = (translator.interfacesOf(m) + code).trim();
+  if (text) writeFileSync(join(out, 'Sources', basename(m, '.ts') + '.swift'), header(m) + text + '\n');
 }
 const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);

@@ -13,6 +13,9 @@ const SHIMS: Record<string, string> = {
     export declare function $signal<T>(value: T): Sig<T>;
     export interface EventData { eventName: string; object: any; value: any }
     export declare function $navigate(page: () => any): void;
+    export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
+    export declare function $writable<T>(value: T): WritableSignal<T>;
+    export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
   `,
   '@angular/core': `
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void }

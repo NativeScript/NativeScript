@@ -27,6 +27,9 @@ export interface ComponentInfo {
 export class Translator {
   /** The component class being translated: its props read as `self.<prop>.value`. */
   private props = new Set<string>();
+  /** Named types translated code uses: an interface becomes a class only if something does. */
+  readonly used = new Set<string>();
+  private interfaces = new Map<string, { file: string; code: () => string }>();
   /** Angular `computed()` fields, translated as getters: `this.total()` reads `self.total`. */
   private computed = new Set<string>();
   private indent = '';
@@ -81,7 +84,7 @@ export class Translator {
       const params = s.getParameters().map((p) => this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where));
       return `(${params.join(', ')}) -> ${this.type(s.getReturnType(), where)}`;
     }
-    if (name && name !== '__type' && name !== '__object') return name;
+    if (name && name !== '__type' && name !== '__object') { this.used.add(name); return name; }
     // An inline object type in this subset is an event's data (`args: { value: boolean }`).
     return 'EventData';
   }
@@ -105,8 +108,9 @@ export class Translator {
     const out: string[] = [];
     for (const st of sf.statements) {
       if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st)) continue;
-      if (ts.isInterfaceDeclaration(st)) { out.push(this.interfaceClass(st.name.text, st.members)); continue; }
-      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { out.push(this.interfaceClass(st.name.text, st.type.members)); continue; }
+      if (ts.isInterfaceDeclaration(st)) { const m = st.members; this.interfaces.set(st.name.text, { file: sf.fileName, code: () => this.interfaceClass(st.name.text, m) }); continue; }
+      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { const m = st.type.members; this.interfaces.set(st.name.text, { file: sf.fileName, code: () => this.interfaceClass(st.name.text, m) }); continue; }
+      if (ts.isTypeAliasDeclaration(st)) continue;
       if (ts.isFunctionDeclaration(st) && st.name) { out.push(this.func(st, ident(st.name.text))); continue; }
       if (ts.isVariableStatement(st)) {
         const mutable = !(st.declarationList.flags & ts.NodeFlags.Const);
@@ -125,6 +129,24 @@ export class Translator {
       throw this.error(st, 'top-level statement');
     }
     return out.join('\n\n') + '\n';
+  }
+
+  /** The classes for a module's interfaces that translated code used; call after translating everything. */
+  interfacesOf(file: string): string {
+    let out = '';
+    let more = true;
+    const emitted = new Set<string>();
+    // An interface's own fields can use another one.
+    while (more) {
+      more = false;
+      for (const [name, decl] of this.interfaces) {
+        if (decl.file !== file || emitted.has(name) || !this.used.has(name)) continue;
+        out = decl.code() + '\n\n' + out;
+        emitted.add(name);
+        more = true;
+      }
+    }
+    return out;
   }
 
   private interfaceClass(name: string, members: ts.NodeArray<ts.TypeElement>): string {
@@ -179,7 +201,8 @@ export class Translator {
         const t = this.typeOf(m.name);
         if (!m.initializer) {
           lines.push(`    let ${ident(name)}: Signal<${t}>`);
-          propParams.push(`${ident(name)}: ${t}`);
+          // A callback prop is kept in its signal, so it outlives the initializer.
+          propParams.push(`${ident(name)}: ${t.includes('->') && !t.endsWith('?') ? '@escaping ' : ''}${t}`);
           inits.push(`        self.${ident(name)} = Signal(${ident(name)})`);
           continue;
         }
@@ -361,6 +384,7 @@ export class Translator {
     if (ts.isArrayLiteralExpression(e)) return this.array(e);
     if (ts.isObjectLiteralExpression(e)) return this.object(e);
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.closure(e);
+    if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && !(e.arguments?.length)) return `${e.expression.text}()`;
     throw this.error(e, 'expression');
   }
 
@@ -414,11 +438,17 @@ export class Translator {
 
   private call(e: ts.CallExpression): string {
     const callee = e.expression;
+    // Reading a callable signal (Angular, Solid) (`count()`, an input, a computed field).
+    if (!e.arguments.length && ['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(callee))) {
+      if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
+      if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
+      return this.symbolName(callee) === 'Signal' ? this.expr(callee) : `${this.expr(callee)}.value`;
+    }
     if (ts.isIdentifier(callee)) {
       const name = callee.text;
       if (name === 'get' && e.arguments.length === 1 && this.symbolName(e.arguments[0]) === 'Writable') return `${this.expr(e.arguments[0])}.value`;
       if (name === 'navigate' && e.arguments[0] && ts.isObjectLiteralExpression(e.arguments[0])) return this.navigate(e);
-      if (name === '$signal' || name === 'ref' || name === 'signal' || name === 'writable') return `Signal<${this.typeOf(e).replace(/^Signal<|>$/g, '')}>(${this.expr(e.arguments[0])})`;
+      if (name === '$signal' || name === 'ref' || name === 'signal' || name === 'writable' || name === '$writable') return `Signal<${this.typeOf(e).replace(/^Signal<|>$/g, '')}>(${this.expr(e.arguments[0])})`;
       if (name === 'output') return `${this.typeOf(e)}()`;
       if (name === 'inject') {
         const token = (e.arguments[0] as ts.Identifier).text;
@@ -431,11 +461,9 @@ export class Translator {
       if (name === 'Number' || name === 'parseInt') return `(Double(${this.expr(e.arguments[0])}) ?? .nan)`;
       return `${ident(name)}(${this.args(e, this.arity(e)).join(', ')})`;
     }
-    // Reading an Angular signal (`count()`, an input, a computed field).
-    if (!e.arguments.length && ['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(callee))) {
-      if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
-      if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
-      return this.symbolName(callee) === 'Signal' ? this.expr(callee) : `${this.expr(callee)}.value`;
+    // A callback passed as a prop (`onTap: () => void`).
+    if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
+      return `self.${ident(callee.name.text)}.value(${this.args(e, this.arity(e)).join(', ')})`;
     }
     if (ts.isPropertyAccessExpression(callee)) {
       const method = callee.name.text;
@@ -444,6 +472,12 @@ export class Translator {
       if (owner === 'Writable' && method === 'set') return `${this.expr(target)}.value = ${this.coerce(e.arguments[0], this.typeOf(target).replace(/^Signal<(.*)>$/, '$1'))}`;
       if (owner === 'Writable' && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction)})`;
       if (owner === 'WritableSignal' && method === 'set') return `${this.expr(target)}.value = ${this.coerce(e.arguments[0], this.typeOf(target).replace(/^Signal<(.*)>$/, '$1'))}`;
+      if (owner === 'WritableSignal' && method === '$write') {
+        // Solid's setter: a function updates, anything else is the new value.
+        const a = e.arguments[0];
+        if (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) return `${this.expr(target)}.update(${this.closure(a)})`;
+        return `${this.expr(target)}.value = ${this.coerce(a, this.typeOf(target).replace(/^Signal<(.*)>$/, '$1'))}`;
+      }
       if (owner === 'WritableSignal' && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction)})`;
       if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       if (ts.isIdentifier(target) && target.text === 'Math') return this.math(method, e);

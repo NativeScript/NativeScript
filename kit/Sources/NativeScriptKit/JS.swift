@@ -69,3 +69,9 @@ public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") -> S
     guard missing > 0, !fill.isEmpty else { return s }
     return String(String(repeating: fill, count: missing / fill.count + 1).prefix(missing)) + s
 }
+
+/// The key of an unkeyed `for` (Solid's `<For>`): the item itself, by reference for objects.
+public func jsKey(_ item: Any) -> String {
+    if let object = item as AnyObject?, type(of: item) is AnyClass { return "\(ObjectIdentifier(object).hashValue)" }
+    return "\(item)"
+}

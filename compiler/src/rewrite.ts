@@ -6,6 +6,8 @@ export interface Scope {
   names: Map<string, string>;
   /** names whose `.value` is the binding itself (`total.value` → `this.total`). */
   unwrapValue?: Map<string, string>;
+  /** A member path read through another object (`route.params.recipe` → `this.recipe`). */
+  members?: { object: string; replacement: string };
 }
 
 /**
@@ -39,6 +41,10 @@ export function rewrite(code: string, scope: Scope, kind: 'expression' | 'statem
         edits.push({ start: node.getStart(), end: node.getEnd(), text: target });
         return;
       }
+    }
+    if (scope.members && ts.isPropertyAccessExpression(node) && node.expression.getText() === scope.members.object) {
+      edits.push({ start: node.getStart(), end: node.getEnd(), text: `${scope.members.replacement}.${node.name.text}` });
+      return;
     }
     if (ts.isShorthandPropertyAssignment(node)) {
       const replacement = scope.names.get(node.name.text);
