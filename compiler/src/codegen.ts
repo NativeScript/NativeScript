@@ -1,6 +1,9 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
 import { ident, swiftString } from './swift.ts';
 
+/** ListView attributes that `bind` takes rather than `set`. */
+const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
+
 /**
  * A component's template as a Swift `render()`: views are created once,
  * each binding is one effect that sets one property, and each `if`/`for`
@@ -11,9 +14,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   let n = 0;
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
-  type Loop = { item: string; index: string };
+  // A ListView row reads its item and index through the row's signals.
+  type Loop = { item: string; index: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
-    `self.${ident(method)}(${[...loops.flatMap((l) => [ident(l.item), ident(l.index)]), ...extra].join(', ')})`;
+    `self.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
 
   const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
     if ('value' in a) {
@@ -35,9 +39,11 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           say(depth, `let ${v} = Router.shared.outlet()`);
         } else if (node.kind === 'element') {
           say(depth, `let ${v} = ${node.tag}()`);
-          for (const a of node.attrs) attr(depth, v, a, loops);
+          const isList = node.tag === 'ListView';
+          for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) say(depth, `${v}.on(${swiftString(e.name)}) { event in ${call(e.method, loops, ['event'])} }`);
-          emit(node.children, depth, loops, v, null);
+          if (isList) list(node, depth, loops, v);
+          else emit(node.children, depth, loops, v, null);
         } else {
           const info = components.get(node.name);
           if (!info) throw new Error(`${c.name}: <${node.name}> is not a component`);
@@ -65,6 +71,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         collect?.push(v);
         continue;
       }
+      if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
       const region = parent ? `${parent}.addRegion()` : null;
       if (!region) throw new Error(`${c.name}: an if/for at the root of a template`);
       if (node.kind === 'if') {
@@ -90,6 +97,29 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       say(depth + 1, `return [${made.join(', ')}]`);
       say(depth, '}');
     }
+  };
+
+  /** A ListView's items, selector and templates: one `bind`, whose closure renders a template for a row. */
+  const list = (node: Extract<TNode, { kind: 'element' }>, depth: number, loops: Loop[], v: string) => {
+    const items = node.attrs.find((a) => a.name === 'items');
+    if (!items || !('method' in items)) throw new Error(`${c.name}: <ListView> needs bound items`);
+    const selector = node.attrs.find((a) => a.name === 'itemTemplateSelector');
+    const sel = selector && 'method' in selector ? `, selector: { item, index in ${call(selector.method, loops, ['item', 'index'])} }` : '';
+    const templates = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
+    if (!templates.length) { say(depth, `${v}.bind(items: { ${call(items.method, loops)} }${sel})`); return; }
+    const row = `row${n++}`;
+    const fallback = templates.find((t) => t.key === 'default') ?? templates[0];
+    say(depth, `${v}.bind(items: { ${call(items.method, loops)} }, templates: [${templates.map((t) => swiftString(t.key)).join(', ')}]${sel}) { key, ${row} in`);
+    say(depth + 1, 'switch key {');
+    for (const t of [...templates.filter((t) => t !== fallback), fallback]) {
+      say(depth + 1, t === fallback ? 'default:' : `case ${swiftString(t.key)}:`);
+      const made: string[] = [];
+      emit(t.body, depth + 2, [...loops, { item: t.item, index: t.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }], null, made);
+      if (made.length !== 1) throw new Error(`${c.name}: a ListView template needs exactly one root element`);
+      say(depth + 2, `return ${made[0]}`);
+    }
+    say(depth + 1, '}');
+    say(depth, '}');
   };
 
   say(1, 'func render() -> View {');

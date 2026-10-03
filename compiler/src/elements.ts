@@ -2,6 +2,7 @@
 export const ELEMENTS = new Set([
   'Frame', 'Page', 'ActionBar', 'StackLayout', 'GridLayout', 'ScrollView', 'ContentView',
   'Label', 'Button', 'TextField', 'Switch', 'Slider', 'SegmentedBar', 'SegmentedBarItem', 'Image', 'ActivityIndicator',
+  'ListView',
 ]);
 
 /** Two-way bindings (`v-model`, `[(ngModel)]`, `bind:value`): the property, its change event and the value's type. */
