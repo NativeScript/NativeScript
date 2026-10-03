@@ -39,11 +39,11 @@ import { createHash } from 'node:crypto';
 import * as esbuild from 'esbuild';
 import type { ViteDevServer } from 'vite';
 
-import { getCliFlags } from '../../helpers/cli-flags.js';
+import { getCliFlags, resolvePlatform } from '../../helpers/cli-flags.js';
 import { getGlobalDefines } from '../../helpers/global-defines.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
 import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuild-plugin.js';
-import type { Platform } from '../../helpers/platform-types.js';
+import { isPlatform, PLATFORM_SUFFIX_ALT, platformExtensions, platformSuffixes, platformSuffixOf, type Platform } from '../../helpers/platform-types.js';
 import { createUnicodeRegexEsbuildPlugin } from '../shared/vendor/vendor-esbuild-plugins.js';
 import { moduleRegistrationKeys, normalizeCoreSub } from '../../helpers/ns-core-url.js';
 import { buildShapeInstallHeader } from './ns-core-cjs-shape.js';
@@ -148,10 +148,12 @@ export function isExpectedCoreBundleExclusion(canonicalSub: string): boolean {
 const MODULE_FILE_RE = /\.(?:ts|tsx|js|mjs)$/;
 const NON_MODULE_FILE_RE = /\.(?:d\.ts|spec\.(?:ts|js|tsx)|test\.(?:ts|js|tsx))$/;
 
-function platformSuffixOf(baseName: string): 'ios' | 'android' | 'visionos' | null {
-	const m = baseName.match(/\.(ios|android|visionos)$/);
-	return (m?.[1] as any) || null;
+// Unknown platform strings historically resolved as Apple; keep that default.
+function corePlatform(platform: string): Platform {
+	return isPlatform(platform) ? platform : 'ios';
 }
+
+const CROSS_PLATFORM_HELPER_RE = new RegExp(`-for-(${PLATFORM_SUFFIX_ALT})$`);
 
 /**
  * Enumerate every importable core subpath (canonical form, per
@@ -161,7 +163,7 @@ function platformSuffixOf(baseName: string): 'ios' | 'android' | 'visionos' | nu
  * skipped since they can never resolve for this build.
  */
 export function enumerateCoreModuleSubpaths(coreRoot: string, platform: string): string[] {
-	const isApple = platform !== 'android';
+	const ownSuffixes: string[] = platformSuffixes(corePlatform(platform));
 	// canonical sub → has a variant loadable on this platform
 	const loadable = new Map<string, boolean>();
 
@@ -192,7 +194,7 @@ export function enumerateCoreModuleSubpaths(coreRoot: string, platform: string):
 			if (!MODULE_FILE_RE.test(name) || NON_MODULE_FILE_RE.test(name)) continue;
 			const relNoExt = rel.replace(MODULE_FILE_RE, '');
 			const suffix = platformSuffixOf(relNoExt);
-			const platformOk = suffix === null || (isApple ? suffix !== 'android' : suffix === 'android');
+			const platformOk = suffix === null || ownSuffixes.includes(suffix);
 			const canonical = normalizeCoreSub(relNoExt);
 			// '' is the package main — always included, not part of the sub list.
 			if (!canonical) continue;
@@ -203,8 +205,8 @@ export function enumerateCoreModuleSubpaths(coreRoot: string, platform: string):
 			// siblings that only exist with the OTHER platform's suffix, so
 			// force-importing them on this platform can never resolve. They are
 			// only reachable from that platform's `index.<platform>` graph.
-			if (/-for-android$/.test(canonical) && isApple) continue;
-			if (/-for-(?:ios|visionos)$/.test(canonical) && !isApple) continue;
+			const helperFor = canonical.match(CROSS_PLATFORM_HELPER_RE);
+			if (helperFor && !ownSuffixes.includes(helperFor[1])) continue;
 			loadable.set(canonical, loadable.get(canonical) || false || platformOk);
 		}
 	};
@@ -375,10 +377,7 @@ export function saveCoreBundleToDisk(projectRoot: string, platform: string, key:
 // configuration/base.ts so the bundle resolves the same physical files the
 // per-module bridge would (platform variant preferred over the bare one).
 function coreResolveExtensions(platform: string): string[] {
-	if (platform === 'android') {
-		return ['.android.tsx', '.tsx', '.android.jsx', '.jsx', '.android.ts', '.ts', '.android.js', '.js', '.mjs', '.cjs', '.json'];
-	}
-	return ['.ios.tsx', '.visionos.tsx', '.tsx', '.ios.jsx', '.visionos.jsx', '.jsx', '.ios.ts', '.visionos.ts', '.ts', '.ios.js', '.visionos.js', '.js', '.mjs', '.cjs', '.json'];
+	return [...platformExtensions(corePlatform(platform), ['.tsx', '.jsx', '.ts', '.js']), '.mjs', '.cjs', '.json'];
 }
 
 // Node built-ins the device runtime cannot resolve — externalized exactly like
@@ -610,7 +609,7 @@ let sharedService: CoreBundleService | null = null;
 export function getSharedCoreBundleService(server: ViteDevServer): CoreBundleService {
 	if (sharedService) return sharedService;
 	const cliFlags = (getCliFlags() || {}) as any;
-	const platform: string = cliFlags.android ? 'android' : cliFlags.visionos ? 'visionos' : 'ios';
+	const platform: string = resolvePlatform(cliFlags) ?? 'ios';
 	let flavor = '';
 	try {
 		flavor = getProjectFlavor();

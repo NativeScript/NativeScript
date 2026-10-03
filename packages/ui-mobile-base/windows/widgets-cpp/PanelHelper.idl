@@ -1,0 +1,13 @@
+namespace NativeScript.Widgets
+{
+    // A panel child's index in one call. From JS, UIElementCollection.IndexOf returns only the bool (the
+    // runtime drops the out index), so the alternative is a GetAt call per sibling.
+    static runtimeclass PanelHelper
+    {
+        // The child's index in `children`, or -1.
+        static Int32 IndexOf(Microsoft.UI.Xaml.Controls.UIElementCollection children, Microsoft.UI.Xaml.UIElement child);
+
+        // False when `children` doesn't hold the child.
+        static Boolean Remove(Microsoft.UI.Xaml.Controls.UIElementCollection children, Microsoft.UI.Xaml.UIElement child);
+    }
+}

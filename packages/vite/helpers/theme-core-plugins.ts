@@ -1,7 +1,10 @@
 import type { Plugin } from 'vite';
 import path from 'path';
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSync } from 'fs';
+import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'fs';
 import { findPackageInNodeModules } from './module-resolution.js';
+import { PLATFORM_SUFFIX_ALT, platformCssExt } from './platform-types.js';
+
+const PLATFORM_CSS_RE = new RegExp(`^(.*)\\.(?:${PLATFORM_SUFFIX_ALT})\\.css$`);
 
 /**
  * Return theme core generic CSS alias list converting imports like
@@ -14,17 +17,42 @@ export function getThemeCoreGenericAliases(themeCoreRoot: string | undefined, pl
 	const entries = readdirSync(cssDir);
 	const bases = new Set<string>();
 	for (const file of entries) {
-		const m = file.match(/^(.*)\.(android|ios)\.css$/);
+		const m = file.match(PLATFORM_CSS_RE);
 		if (m) bases.add(m[1]);
 	}
-	const platformSuffix = platform === 'android' ? '.android.css' : '.ios.css';
-	return Array.from(bases).map((base) => {
-		const replacement = path.join(cssDir, base + platformSuffix);
-		return {
-			find: new RegExp(`^nativescript-theme-core\/css\/${base}\.css$`),
-			replacement,
-		};
-	});
+	const platformSuffix = platformCssExt(platform);
+	const aliases: any[] = [];
+	const missing: string[] = [];
+	for (const base of bases) {
+		let replacement = path.join(cssDir, base + platformSuffix);
+		if (!existsSync(replacement)) {
+			// theme-core ships only android/ios variants. Elsewhere (Windows) the generic
+			// import would fail the build; resolve it to an empty stylesheet instead of
+			// another platform's theme, whose rules don't fit.
+			if (platform !== 'windows') continue;
+			replacement = emptyStylesheet(themeCoreRoot);
+			missing.push(base + '.css');
+		}
+		aliases.push({ find: new RegExp(`^nativescript-theme-core\/css\/${base}\.css$`), replacement });
+	}
+	if (missing.length && !warnedMissingThemes) {
+		warnedMissingThemes = true;
+		console.warn(`[ns-vite] nativescript-theme-core has no ${platformSuffix} variants; imports of ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ', …' : ''} resolve to an empty stylesheet on ${platform}.`);
+	}
+	return aliases;
+}
+
+let warnedMissingThemes = false;
+
+/** A real (empty) CSS file: `@import` reads files directly, so a virtual module won't do. */
+function emptyStylesheet(themeCoreRoot: string): string {
+	const dir = path.join(path.dirname(themeCoreRoot), '.cache', 'nativescript-vite');
+	const file = path.join(dir, 'empty-theme.css');
+	if (!existsSync(file)) {
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(file, '/* nativescript-theme-core has no variant for this platform */\n');
+	}
+	return file;
 }
 
 /**
@@ -52,9 +80,9 @@ export function createEnsureHoistedThemeLinkPlugin(themeCoreRoot: string | undef
 				const cssDir = path.join(linkPath, 'css');
 				if (existsSync(cssDir)) {
 					const files = readdirSync(cssDir);
-					const platformSuffix = platform === 'android' ? '.android.css' : '.ios.css';
+					const platformSuffix = platformCssExt(platform);
 					for (const f of files) {
-						const m = f.match(/^(.*)\.(android|ios)\.css$/);
+						const m = f.match(PLATFORM_CSS_RE);
 						if (!m) continue;
 						const base = m[1];
 						const generic = path.join(cssDir, base + '.css');
@@ -96,7 +124,7 @@ export function createThemeCoreCssFallbackPlugin(themeCoreRoot: string | undefin
 					return readFileSync(target, 'utf-8');
 				}
 				if (/\.css$/.test(target)) {
-					const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+					const platformExt = platformCssExt(platform);
 					const base = target.replace(/\.css$/, '');
 					const alt = base + platformExt;
 					if (existsSync(alt)) {

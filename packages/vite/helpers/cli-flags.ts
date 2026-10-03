@@ -24,6 +24,7 @@ export function getCliFlags() {
 function pickPlatform(src: Record<string, unknown> | null | undefined): Platform | undefined {
 	if (!src) return undefined;
 	if (src.android) return 'android';
+	if (src.windows) return 'windows';
 	if (src.visionos) return 'visionos';
 	if (src.ios) return 'ios';
 	return undefined;

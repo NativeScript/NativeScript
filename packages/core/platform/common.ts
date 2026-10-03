@@ -6,9 +6,11 @@ export const platformNames = {
 	ios: 'iOS',
 	visionos: 'visionOS',
 	apple: 'apple',
+	windows: 'Windows',
 };
 
 export const isAndroid = !!__ANDROID__;
 export const isIOS = !!__IOS__ || !!__VISIONOS__;
 export const isVisionOS = !!__VISIONOS__;
 export const isApple = !!__APPLE__;
+export const isWindows = typeof __WINDOWS__ !== 'undefined' && !!__WINDOWS__;

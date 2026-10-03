@@ -1,4 +1,4 @@
-export type NsDevPlatform = 'ios' | 'android' | 'visionos';
+export type NsDevPlatform = 'ios' | 'android' | 'visionos' | 'windows';
 
 export type NsHostModuleId = `ns-host://${string}`;
 
@@ -98,7 +98,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 export function isNsDevPlatform(value: unknown): value is NsDevPlatform {
-	return value === 'ios' || value === 'android' || value === 'visionos';
+	return value === 'ios' || value === 'android' || value === 'visionos' || value === 'windows';
 }
 
 export function assertNsDevSessionDescriptor(session: unknown): asserts session is NsDevSessionDescriptor {

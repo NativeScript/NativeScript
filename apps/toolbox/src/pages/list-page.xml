@@ -23,6 +23,9 @@
                                     <Label text="{{ iconText }}" class="icon-label"/>
                                 </StackLayout>
                             </android>
+                            <windows>
+                                <Label text="{{ iconText }}" class="icon-around icon-label"/>
+                            </windows>
                             <StackLayout class="va-middle">
                                 <Label text="{{ name }}" class="component-label"></Label>
                             </StackLayout>
@@ -47,6 +50,9 @@
                                     <Label text="{{ iconText }}" class="icon-label"/>
                                 </StackLayout>
                             </android>
+                            <windows>
+                                <Label text="{{ iconText }}" class="icon-around icon-label"/>
+                            </windows>
                             <StackLayout class="va-middle">
                                 <Label text="{{ name }}" class="component-label"></Label>
                             </StackLayout>

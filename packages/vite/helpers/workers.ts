@@ -5,7 +5,7 @@ import { createTsConfigPathsResolver, getTsConfigData } from './ts-config-paths.
 import { packagePlatformResolverPlugin } from './package-platform-aliases.js';
 import { nativescriptPackageResolver } from './nativescript-package-resolver.js';
 import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
-import { normalizeModuleId } from './normalize-id.js';
+import { normalizeModuleId, stripViteFsPrefix } from './normalize-id.js';
 
 export interface WorkerPluginsOptions {
 	platform: string;
@@ -232,12 +232,10 @@ export function viteWorkerAssetPathToNsMUrl(assetPath: string, projectRoot: stri
 
 	// Absolute-fs: "/@fs/abs/path/..." — try to map into project or workspace roots.
 	if (cleanPath.startsWith('/@fs/')) {
-		const absPath = cleanPath.slice('/@fs'.length); // keep leading '/'
-		const toPosix = (value: string) => value.replace(/\\/g, '/');
-		const stripTrailing = (value: string) => value.replace(/\/+$/, '');
-		const target = toPosix(absPath);
-		const projectPosix = stripTrailing(toPosix(path.resolve(projectRoot)));
-		const workspacePosix = workspaceRoot ? stripTrailing(toPosix(path.resolve(workspaceRoot))) : null;
+		const toComparable = (value: string) => normalizeModuleId(path.resolve(value)).replace(/\/+$/, '');
+		const target = toComparable(stripViteFsPrefix(cleanPath));
+		const projectPosix = toComparable(projectRoot);
+		const workspacePosix = workspaceRoot ? toComparable(workspaceRoot) : null;
 
 		const tryRoot = (root: string | null): string | null => {
 			if (!root) return null;
@@ -333,7 +331,7 @@ export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 
 			// `id` may carry a Vite query suffix (`?vue&type=script`, `?used`, …);
 			// strip it so path matching works against real fs paths.
-			const cleanId = id.split('?', 1)[0];
+			const cleanId = normalizeModuleId(id.split('?', 1)[0]);
 			if (!cleanId || SKIP_TRANSFORM_ID_RE.test(cleanId)) {
 				return null;
 			}
