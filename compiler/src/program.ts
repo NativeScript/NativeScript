@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { foldPlatform, type Platform } from './platform.ts';
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -94,7 +95,7 @@ export interface Program {
 }
 
 /** A program over the app's modules and the components' virtual classes. */
-export function createProgram(roots: string[], virtual: Map<string, string>): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios'): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -104,7 +105,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>): Pr
   const host = ts.createCompilerHost(options);
   host.getSourceFile = (name, version) => {
     const text = files.get(name) ?? (existsSync(name) ? readFileSync(name, 'utf8') : undefined);
-    return text === undefined ? undefined : ts.createSourceFile(name, text, version, true);
+    if (text === undefined) return undefined;
+    const app = !name.startsWith('/__shims__/') && !name.endsWith('.d.ts');
+    return ts.createSourceFile(name, app ? foldPlatform(text, name, platform) : text, version, true);
   };
   host.fileExists = (name) => files.has(name) || existsSync(name);
   host.readFile = (name) => files.get(name) ?? (existsSync(name) ? readFileSync(name, 'utf8') : undefined);
