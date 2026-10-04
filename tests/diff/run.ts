@@ -68,7 +68,8 @@ function translateKotlin(file: string, out: string, pkg: string): void {
   for (const m of modules) writeFileSync(join(out, m.name + '.kt'), header + m.code);
   writeFileSync(join(out, '__Objects.kt'), header + translator.shapesCode() + '\n');
   const inits = modules.filter((m) => m.init).map((m) => `    ${m.init}()\n`).join('');
-  writeFileSync(join(out, '__Main.kt'), `${header}fun main() {\n${inits}    JSEventLoop.runUntilIdle()\n    System.out.flush()\n}\n`);
+  // In a package of its own: a case may declare a `main` of its own.
+  writeFileSync(join(out, '__Main.kt'), `package ${pkg}.entry\n\nimport org.nativescript.kit.*\nimport ${pkg}.*\n\nfun main() {\n${inits}    JSEventLoop.runUntilIdle()\n    System.out.flush()\n}\n`);
 }
 
 /** The app modules a case imports (relative imports, transitively). */
@@ -227,7 +228,7 @@ if (targets.includes('kotlin')) {
     const name = basename(c, '.ts');
     const out = runnable.get(name);
     if (!out) continue;
-    const run = spawnSync('java', ['-Xss16m', '-cp', [out, runtime, toolchain!.stdlib].join(':'), `${pkg(name)}.__MainKt`], { encoding: 'utf8', timeout: 30000 });
+    const run = spawnSync('java', ['-Xss16m', '-cp', [out, runtime, toolchain!.stdlib].join(':'), `${pkg(name)}.entry.__MainKt`], { encoding: 'utf8', timeout: 30000 });
     report(name, 'kotlin', expected.get(c)!, run);
   }
   if (!keep) for (const d of readdirSync(build)) if (d.startsWith('kotlin-classes') || d === 'kotlin') rmSync(join(build, d), { recursive: true, force: true });

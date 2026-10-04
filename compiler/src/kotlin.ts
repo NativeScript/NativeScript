@@ -654,13 +654,13 @@ export class Translator implements AsyncTranslator {
   /** `(r) => r.id` as a Kotlin anonymous function, where `return` means what it does in JavaScript. */
   closure(fn: ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration, slot?: string): string {
     const contextual = this.checker.getContextualType(fn)?.getCallSignatures()[0];
-    const slotRet = slot && topLevelArrow(slot) ? /^\(.*?\) -> (.*)$/.exec(slot)?.[1] : undefined;
+    const slotRet = slot ? functionTypeParts(slot)?.ret : undefined;
     const voidSlot = (!!contextual && !!(contextual.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn)) || slotRet === 'Unit';
     const ret = voidSlot ? 'Unit' : slotRet ?? this.returnTypeOf(fn);
     if (!ts.isMethodDeclaration(fn) && fn.name) throw this.error(fn, 'a named function expression');
     let params = this.params(fn, true);
     // A slot's function type may take more parameters than the literal declares (JavaScript ignores extras).
-    const slotParams = slot ? splitTopLevel(/^\((.*)\) -> /.exec(slot)?.[1] ?? '').filter(Boolean) : [];
+    const slotParams = slot ? functionTypeParts(slot)?.params ?? [] : [];
     for (let k = fn.parameters.length; k < slotParams.length; k++) params += `${params ? ', ' : ''}@Suppress("UNUSED_PARAMETER") __u${k}: ${slotParams[k]}`;
     return `fun(${params})${ret === 'Unit' ? '' : `: ${ret}`} ${this.functionBody(fn, ret, this.indent)}`;
   }
@@ -789,7 +789,8 @@ export class Translator implements AsyncTranslator {
     for (const p of paramProps) {
       const n = (p.name as ts.Identifier).text;
       const t = this.typeOf(p.name);
-      lines.push(`    ${mods(n)}var ${ident(n)}: ${t}`);
+      // A property a subclass may override needs a value of its own before the constructor runs.
+      lines.push(`    ${mods(n)}${open || overridden.has(n) ? this.deferredDeclaration(ident(n), t) : `var ${ident(n)}: ${t}`}`);
       fields.push({ name: n, type: t });
     }
     for (const m of cls.members) {
@@ -1216,7 +1217,7 @@ export class Translator implements AsyncTranslator {
     if ((ts.isArrowFunction(e) || ts.isFunctionExpression(e)) && isFunctionType(target.replace(/^\((.*)\)\?$/, '$1'))) return this.closure(e, target.replace(/^\((.*)\)\?$/, '$1'));
     if (isFunctionType(source) && isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) && / -> Unit$/.test(target.replace(/^\((.*)\)\?$/, '$1')) && !/ -> Unit$/.test(source)) {
       // A function value whose result a void slot ignores.
-      const params = splitTopLevel(/^\((.*)\) -> /.exec(source)![1]).filter(Boolean);
+      const params = functionTypeParts(source)!.params;
       const names = params.map((_, k) => `__a${k}`);
       return `{ ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${this.functionValue(e)}(${names.join(', ')}); Unit }`;
     }
@@ -1404,8 +1405,10 @@ export class Translator implements AsyncTranslator {
     const native = this.native?.property(e);
     if (native) return native;
     const base = this.typeOf(target);
-    const dot = e.questionDotToken ? '?.' : '.';
-    const recv = () => (base.endsWith('?') && !e.questionDotToken ? `${this.expr(target)}!!` : this.expr(target));
+    // Inside an optional chain (`a?.b.c`) an undefined link ends the chain.
+    const inChain = !!(e.flags & ts.NodeFlags.OptionalChain) && base.endsWith('?');
+    const dot = e.questionDotToken || inChain ? '?.' : '.';
+    const recv = () => (base.endsWith('?') && !e.questionDotToken && !inChain ? `${this.expr(target)}!!` : this.expr(target));
     if (name === 'length' && this.isString(target)) {
       return e.questionDotToken ? `${this.expr(target)}?.length?.toDouble()` : `${recv()}.length.toDouble()`;
     }
@@ -1416,7 +1419,7 @@ export class Translator implements AsyncTranslator {
       return t === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, t);
     }
     if (base.replace(/\?$/, '').startsWith('JSRecord<')) {
-      const read = `${this.expr(target)}${base.endsWith('?') ? '?' : ''}[${kotlinString(name)}]`;
+      const read = base.endsWith('?') ? `${this.expr(target)}?.get(${kotlinString(name)})` : `${this.expr(target)}[${kotlinString(name)}]`;
       const t = this.typeOf(e);
       if (isWriteTarget(e) || t.endsWith('?')) return read;
       const z = this.zero(t);
@@ -1452,7 +1455,9 @@ export class Translator implements AsyncTranslator {
       if (isWriteTarget(e)) return `${target}[${this.str(key)}]`;
       const vt = this.typeOf(e);
       const z = this.zero(vt);
-      return vt.endsWith('?') ? `${target}[${this.str(key)}]` : z && z !== 'null' ? `(${target}[${this.str(key)}] ?: ${z})` : `${target}[${this.str(key)}]!!`;
+      const optional = q || (e.flags & ts.NodeFlags.OptionalChain && this.typeOf(e.expression).endsWith('?'));
+      const read = optional ? `${target}?.get(${this.str(key)})` : `${target}[${this.str(key)}]`;
+      return vt.endsWith('?') || optional ? read : z && z !== 'null' ? `(${read} ?: ${z})` : `${read}!!`;
     }
     if (this.typeOf(e.expression) === 'Any?') {
       const code = `jsGet(${target}, ${this.str(key)})`;
@@ -1601,14 +1606,15 @@ export class Translator implements AsyncTranslator {
       if (core) return core;
       if (this.isAny(target)) return `jsCall(jsGet(${this.expr(target)}, ${kotlinString(method)})${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
       const t = this.typeOf(target).replace(/\?$/, '');
-      const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
+      const q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
       if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
         return `jsArrayFilled<${t.replace(/^JSArray<(.*)>$/, '$1')}>(${this.toNumber(target.arguments[0])}, ${this.coerce(e.arguments[0], t.replace(/^JSArray<(.*)>$/, '$1'))})`;
       }
       if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
       if (t === 'JSMatch' && method !== 'toString') {
-        this.subst.set(target, `${this.expr(target)}${q}.values`);
-        try { return this.arrayMethod(method, target, e, ''); } finally { this.subst.delete(target); }
+        const chain = q === '?' || (q === '' && this.typeOf(target).endsWith('?'));
+        this.subst.set(target, `${this.expr(target)}${q === '!!' ? '!!' : chain ? '?' : ''}.values`);
+        try { return this.arrayMethod(method, target, e, chain ? '?' : ''); } finally { this.subst.delete(target); }
       }
       if (t.startsWith('Pair<') || t.startsWith('Triple<')) {
         const el = splitTopLevel(t.replace(/^(Pair|Triple)<(.*)>$/, '$2'));
@@ -1925,7 +1931,7 @@ export class Translator implements AsyncTranslator {
         if (e.arguments.length > 1) throw this.error(e, `${name} with a thisArg`);
         const f = e.arguments[0];
         const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
-        const ret = name === 'forEach' ? 'Unit' : ['map', 'flatMap'].includes(name) ? null : ['findIndex', 'findLastIndex'].includes(name) ? 'Double' : 'Boolean';
+        const ret = name === 'forEach' ? 'Unit' : ['map', 'flatMap'].includes(name) ? null : 'Boolean';
         const slot = ret ? `(${[element, 'Double', `JSArray<${element}>`].slice(0, Math.min(3, arity)).join(', ')}) -> ${ret}` : undefined;
         return `${t}.${name}(${this.fn(f, slot)})`;
       }
@@ -2481,6 +2487,24 @@ function capturedIn(name: ts.Identifier, body: ts.Node, checker: ts.TypeChecker)
   };
   visit(body, false);
   return found;
+}
+
+/** A Kotlin function type's parameter types and result type. */
+export function functionTypeParts(t: string): { params: string[]; ret: string } | null {
+  if (!t.startsWith('(')) return null;
+  let depth = 0;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (c === '(' || c === '<') depth++;
+    else if ((c === ')' || c === '>') && t[i - 1] !== '-') {
+      depth--;
+      if (depth === 0) {
+        if (c !== ')' || t.slice(i + 1, i + 5) !== ' -> ') return null;
+        return { params: splitTopLevel(t.slice(1, i)).filter(Boolean), ret: t.slice(i + 5) };
+      }
+    }
+  }
+  return null;
 }
 
 /** `A, (B, C), D<E, F>` split at its top-level commas. */
