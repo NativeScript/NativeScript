@@ -31,6 +31,8 @@ export type TNode =
       kind: 'element'; tag: string; attrs: Attr[]; events: Event[]; children: TNode[];
       /** A method returning the ref object (`useRef`) the view is stored in, as `ref={…}` does. */
       ref?: string;
+      /** A ListView whose items are sections (`sectioned`), each holding its rows in `items`. */
+      sections?: boolean;
     }
   | { kind: 'component'; name: string; props: Attr[]; events: Event[] }
   | { kind: 'if'; branches: { cond: string | null; body: TNode[] }[] }
@@ -41,7 +43,11 @@ export type TNode =
    * for it. The ListView's `items` attribute is a method; its `itemTemplateSelector` attribute is a method
    * called with the loop variables in scope, then a row's item and index.
    */
-  | { kind: 'template'; key: string; item: string; index: string; body: TNode[] };
+  | {
+      kind: 'template'; key: string; item: string; index: string; body: TNode[];
+      /** A sectioned ListView's sticky header: its item is the section, its index the section's. */
+      header?: boolean;
+    };
 
 export interface ComponentIR {
   name: string;

@@ -24,6 +24,8 @@ export interface RenderOptions {
   rowSignals?: boolean;
   /** Angular with zone.js: every binding is checked on each tick and applied when its value changed. */
   zone?: boolean;
+  /** The element type of a binding method returning a loop's items, which spares Swift inferring it through the loop's closures. */
+  itemType?: (method: string) => string | null;
 }
 
 export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
@@ -258,7 +260,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // A key may be any value (`:key="i"`); rows are kept by its string form.
       // What a template expression throws is reported, as Angular's error handler reports it, and renders nothing.
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in jsKey(${throws(node.key) ? `jsReported { ${call(node.key, inner)} } ?? nil` : call(node.key, inner)}) }` : `{ item, _ in jsKey(item) }`;
-      const items = throws(node.items) ? `jsReportedItems { ${call(node.items, loops)} }` : `Array(${call(node.items, loops)})`;
+      const element = options.itemType?.(node.items);
+      // Untyped items (`Any?`) are iterated as JavaScript iterates them.
+      const read = element === 'Any?' ? `jsReportedItems { try jsItemsOf(${call(node.items, loops).replace(/^try /, '')}) }` : null;
+      const items = (element ? `() -> [${element}] in ` : '') + (read ?? (throws(node.items) ? `jsReportedItems { ${call(node.items, loops)} }` : `Array(${call(node.items, loops)})`));
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
         say(depth, `ForFragment(${host}, { ${items} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
@@ -284,27 +289,42 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     const items = node.attrs.find((a) => a.name === 'items');
     if (!items || !('method' in items)) throw new Error(`${c.name}: <ListView> needs bound items`);
     const selector = node.attrs.find((a) => a.name === 'itemTemplateSelector');
-    const sel = selector && 'method' in selector ? `, selector: { item, index in ${call(selector.method, loops, ['item', 'index'])} }` : '';
-    const templates = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
-    if (!templates.length) { say(depth, `${v}.bind(items: { Array(${call(items.method, loops)}) }${sel})`); return; }
+    // A selector that throws is reported, and the row takes the default template.
+    const sel = selector && 'method' in selector
+      ? `, selector: { item, index in ${throws(selector.method) ? `jsReported { ${call(selector.method, loops, ['item', 'index'])} } ?? "default"` : call(selector.method, loops, ['item', 'index'])} }`
+      : '';
+    const all = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
+    const templates = all.filter((t) => !t.header);
+    const header = all.find((t) => t.header);
+    // A sectioned list's items are its sections; a row's item is one of a section's `items`.
+    const source = node.sections ? `sections: { Array(${call(items.method, loops)}) }, rows: { Array($0.items) }` : `items: { Array(${call(items.method, loops)}) }`;
+    if (!templates.length) { say(depth, `${v}.bind(${source}${sel})`); return; }
     const row = `row${n++}`;
-    const fallback = templates.find((t) => t.key === 'default') ?? templates[0];
-    say(depth, `${v}.bind(items: { Array(${call(items.method, loops)}) }, templates: [${templates.map((t) => swiftString(t.key)).join(', ')}]${sel}) { key, ${row} in`);
-    say(depth + 1, 'switch key {');
-    for (const t of [...templates.filter((t) => t !== fallback), fallback]) {
-      say(depth + 1, t === fallback ? 'default:' : `case ${swiftString(t.key)}:`);
+    /** One template's view for a row: the closure body rendering it. */
+    const body = (t: Extract<TNode, { kind: 'template' }>, at: number) => {
       const wrap = scoped('template', 'View');
-      const d = wrap ? depth + 2 : depth + 1;
-      if (wrap) say(depth + 2, `return ${wrap}`);
+      const d = wrap ? at : at - 1;
+      if (wrap) say(at, `return ${wrap}`);
       if (framework === 'angular' && hasRegion(t.body)) say(d + 1, 'let __view = EffectOrder.current');
       const made: string[] = [];
       template(d + 1, () => emit(t.body, d + 1, [...loops, { item: t.item, index: t.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }], null, made));
       if (made.length !== 1) throw new Error(`${c.name}: a ListView template needs exactly one root element`);
       say(d + 1, `return ${made[0]}`);
-      if (wrap) say(depth + 2, '}');
+      if (wrap) say(at, '}');
+    };
+    const fallback = templates.find((t) => t.key === 'default') ?? templates[0];
+    say(depth, `${v}.bind(${source}, templates: [${templates.map((t) => swiftString(t.key)).join(', ')}]${sel}, render: { key, ${row} in`);
+    say(depth + 1, 'switch key {');
+    for (const t of [...templates.filter((t) => t !== fallback), fallback]) {
+      say(depth + 1, t === fallback ? 'default:' : `case ${swiftString(t.key)}:`);
+      body(t, depth + 2);
     }
     say(depth + 1, '}');
-    say(depth, '}');
+    if (header) {
+      say(depth, `}, header: { ${row} in`);
+      body(header, depth + 1);
+    }
+    say(depth, '})');
   };
 
   const fragment = framework === 'angular' && !c.page && isFragment(c.template);

@@ -142,7 +142,8 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         if (n.name === 'page-router-outlet') { out.push({ kind: 'element', tag: 'Frame', attrs: [{ name: 'router', value: n.attributes.find((a) => a.name === 'name')?.value ?? 'primary' }], events: [], children: [] }); continue; }
         const tag = canonical(n.name) ?? options.elements?.get(n.name);
         if (!tag) throw new Error(`${path}: <${n.name}> is not a @nativescript/core element the release build knows`);
-        out.push({ kind: 'element', tag, attrs, events, children: isList ? listTemplates(n, attrs, loops) : nodes(n.children, loops) });
+        const sections = isList && isSectioned(n);
+        out.push({ kind: 'element', tag, attrs, events, children: isList ? listTemplates(n, attrs, loops) : nodes(n.children, loops), ...(sections ? { sections } : {}) });
         continue;
       }
       if (n instanceof ng.TmplAstIfBlock) {
@@ -205,12 +206,12 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     if (!items || !('method' in items)) throw new Error(`${path}: <ListView> needs [items]`);
     const list = `this.${items.method}(${args(loops)})`;
     // A sectioned ListView's items are sections (`{ title, items }`); a row's item is one of a section's.
-    const sectioned = n.inputs.some((i) => i.name === 'sectioned' && sourceOf(i.value).trim() === 'true') || n.attributes.some((a) => a.name === 'sectioned' && a.value === 'true');
+    const sectioned = isSectioned(n);
     const rows = sectioned ? `${list}[0].items` : list;
     const selector = n.inputs.find((i) => i.name === 'itemTemplateSelector');
     if (selector) {
       const m = `$b${next++}`;
-      const p = [params(loops), `$item = ${list}[0]`, '$index = 0'].filter(Boolean).join(', ');
+      const p = [params(loops), `$item = ${rows}[0]`, '$index = 0'].filter(Boolean).join(', ');
       // Called as core calls it, with (item, index, items): a method of the component that declares fewer takes the ones it declares.
       const name = sourceOf(selector.value).trim();
       const method = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && x.name.getText() === name);
@@ -240,7 +241,49 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       const loop: Loop = { item, index, param: `${item} = ${rows}[0], ${index} = 0`, names };
       out.push({ kind: 'template', key, item, index, body: nodes(t.children, [...loops, loop]) });
     }
+    const header = attrs.findIndex((a) => a.name === 'stickyHeaderTemplate');
+    if (header >= 0) {
+      attrs.splice(header, 1);
+      if (sectioned) out.push(stickyHeader(n, list, loops));
+    }
     return out;
+  };
+
+  const isSectioned = (n: ng.TmplAstElement) =>
+    n.inputs.some((i) => i.name === 'sectioned' && sourceOf(i.value).trim() === 'true') || n.attributes.some((a) => a.name === 'sectioned' && a.value === 'true');
+
+  /**
+   * `[stickyHeaderTemplate]` naming a field that holds NativeScript XML (core parses it with `Builder.parse`
+   * and binds it to the section): the XML as a header template whose `{{ path }}` bindings read the section.
+   */
+  const stickyHeader = (n: ng.TmplAstElement, list: string, loops: Loop[]): TNode => {
+    const input = n.inputs.find((i) => i.name === 'stickyHeaderTemplate');
+    const name = input && sourceOf(input.value).trim().replace(/^this\./, '');
+    const field = name ? cls.members.find((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && m.name.getText() === name) : undefined;
+    const init = field?.initializer;
+    const xml = n.attributes.find((a) => a.name === 'stickyHeaderTemplate')?.value
+      ?? (init && (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init)) ? init.text : undefined);
+    if (xml === undefined) throw new Error(`${path}: a ListView's stickyHeaderTemplate is supported as a string of XML (a field initialized with a literal) in a release build`);
+    const section = `$section${loops.length}`;
+    const read = (e: string) => {
+      if (!/^\s*[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*\s*$/.test(e)) throw new Error(`${path}: the sticky header binding {{${e}}} is not supported in a release build yet (a property path is)`);
+      return `${section}.${e.trim()}`;
+    };
+    const bound = xml.replace(/([\w.-]+)\s*=\s*(['"])([^'"]*\{\{[^'"]*)\2/g, (_m, attr: string, _q: string, value: string) => {
+      const parts = value.split(/\{\{(.*?)\}\}/);
+      const whole = parts.length === 3 && !parts[0] && !parts[2];
+      const code = whole ? read(parts[1]) : '`' + parts.map((p, i) => (i % 2 ? '${' + read(p) + '}' : p.replace(/[`\\$]/g, (x) => '\\' + x))).join('') + '`';
+      return `[${attr}]="${code}"`;
+    });
+    // XML closes any element with `/>`; Angular's parser only void and custom ones.
+    const closed = bound.replace(/<([A-Za-z][\w.-]*)((?:\s+[^<>]*?)?)\s*\/>/g, '<$1$2></$1>');
+    if (bound.includes('{{')) throw new Error(`${path}: a stickyHeaderTemplate binds attributes only in a release build`);
+    const parsed = ng.parseTemplate(closed, path + '.stickyHeader.html', { preserveWhitespaces: false });
+    if (parsed.errors?.length) throw new Error(`${path}: stickyHeaderTemplate: ${parsed.errors[0]}`);
+    const loop: Loop = { item: section, index: `$s${loops.length}`, param: `${section} = ${list}[0], $s${loops.length} = 0` };
+    const body = nodes(parsed.nodes, [...loops, loop]);
+    if (body.length !== 1 || body[0].kind !== 'element') throw new Error(`${path}: a stickyHeaderTemplate needs exactly one root element`);
+    return { kind: 'template', key: '$header', item: section, index: loop.index, body, header: true };
   };
 
   /** `*tabItem="{ title, iconSource, … }"` (TabViewItemDirective): a TabViewItem with those properties around the element. */

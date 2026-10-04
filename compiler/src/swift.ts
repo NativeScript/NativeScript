@@ -588,7 +588,8 @@ export class Translator implements AsyncTranslator {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
         // Components are translated with their templates; other classes are services and models.
-        const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component'));
+        // A component's class is written with its render function, in its own file.
+        const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!st.name && this.components.has(st.name.text));
         if (!component && st.name) out.push(this.classDecl(st));
         continue;
       }
@@ -1226,6 +1227,14 @@ export class Translator implements AsyncTranslator {
     if (throws && cls.name) this.throwingInits.add(cls.name.text);
     lines.push(`    init(${propParams.join(', ')})${throws} {`, ...inits, '    }');
     return lines;
+  }
+
+  /** What a component's method returning an array (a loop's items) holds, as Swift spells it. */
+  memberElementType(cls: ts.ClassDeclaration, name: string): string | null {
+    const m = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && ts.isIdentifier(x.name) && x.name.text === name);
+    if (!m) return null;
+    const t = this.returnTypeOf(m);
+    return t === 'Any?' ? t : /^JSArray<(.*)>\??$/.exec(t)?.[1] ?? null;
   }
 
   /** Whether a component's method or getter throws, so its caller in `render()` reports what it throws. */
@@ -3729,7 +3738,7 @@ export class Translator implements AsyncTranslator {
         const leftType = this.typeOf(e.left);
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
-        const leftValue = leftType === t && ts.isOptionalChain(e.left) && !t.endsWith('?') ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
+        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
           : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil' : v;
         return op === K.BarBarToken
           ? `({ () ${throws}-> ${t} in let ${v} = ${lt}${this.expr(e.left)}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }())`

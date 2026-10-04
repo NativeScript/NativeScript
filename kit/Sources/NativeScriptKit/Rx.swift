@@ -37,6 +37,10 @@ public class RxObservable<T> {
     @discardableResult
     public func subscribe(_ next: @escaping (T) -> Void) -> RxSubscription { producer(next) }
 
+    /// `subscribe(() => …)`: a handler that ignores the value.
+    @discardableResult
+    public func subscribe(_ next: @escaping () -> Void) -> RxSubscription { subscribe { (_: T) in next() } }
+
     public func pipe<A>(_ a: RxOperatorFunction<T, A>) -> RxObservable<A> { a.apply(self) }
 
     public func pipe<A, B>(_ a: RxOperatorFunction<T, A>, _ b: RxOperatorFunction<A, B>) -> RxObservable<B> { b.apply(a.apply(self)) }

@@ -313,7 +313,7 @@ for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
   try {
-    const lines = [`final class ${c.name} {`, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone }), '}'];
+    const lines = [`final class ${c.name} {`, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone, itemType: (m) => translator.memberElementType(cls, m) }), '}'];
     writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
   } catch (e) {
     if (!translator.errors) throw e;
