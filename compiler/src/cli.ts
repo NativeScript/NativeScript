@@ -17,7 +17,8 @@ import { svelteComponent } from './svelte.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
 import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
-import { createProgram } from './program.ts';
+import { createProgram, nodeModules } from './program.ts';
+import { corePatches } from './core-patches.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
@@ -190,10 +191,14 @@ const shapes = translator.shapesCode();
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 const css = kitCss(appStylesheets(app, 'ios', importedStylesheets(entry, appDir)));
-const start = mounted
+const patched = corePatches(app, nodeModules(app));
+if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
+// Set before the module initializers run: they may make views.
+const switches = (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
+const start = switches + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n        Reactivity.scheduled = true\n${inits}`
-  : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`;
+  : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 

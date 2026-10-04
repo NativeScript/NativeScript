@@ -13,11 +13,19 @@ open class CustomLayoutView: View {
 
     func addNativeSubview(_ child: View, at index: Int? = nil) {
         guard let parentView = nativeView, let childView = child.nativeView else { return }
-        if let index, index < parentView.subviews.count {
-            parentView.insertSubview(childView, at: index)
-        } else {
-            parentView.addSubview(childView)
-        }
+        insertNative(childView, into: parentView, at: index)
+    }
+}
+
+/// `_addViewToNativeVisualTree`: at that index of the native subviews, or last.
+/// `insertSubview(_:at:)` counts sublayers that are not views (a background
+/// gradient), as core's `insertSubviewAtIndex` does.
+func insertNative(_ childView: UIView, into parentView: UIView, at index: Int?) {
+    guard let index, index < parentView.subviews.count else { return parentView.addSubview(childView) }
+    if CorePatches.insertBelowSubview {
+        if parentView.subviews[index] !== childView { parentView.insertSubview(childView, belowSubview: parentView.subviews[index]) }
+    } else {
+        parentView.insertSubview(childView, at: index)
     }
 }
 
@@ -83,7 +91,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
             // A native view a plugin moved into another view (a keyboard accessory) stays there.
             guard let parentView = nativeView, let childView = child.nativeView, added || childView.superview === parentView else { continue }
             if index >= parentView.subviews.count || parentView.subviews[index] !== childView {
-                parentView.insertSubview(childView, at: index)
+                insertNative(childView, into: parentView, at: index)
             }
         }
         requestLayout()
@@ -122,12 +130,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
             registerLayoutChild(child)
         }
         if let parentView = nativeView, let childView = child.nativeView {
-            // `_addViewToNativeVisualTree`: below the native view now at that index, or last.
-            if index < parentView.subviews.count, parentView.subviews[index] !== childView {
-                parentView.insertSubview(childView, belowSubview: parentView.subviews[index])
-            } else if childView.superview !== parentView {
-                parentView.addSubview(childView)
-            }
+            insertNative(childView, into: parentView, at: index)
         }
         requestLayout()
     }
@@ -398,9 +401,12 @@ open class ScrollView: ContentView, UIScrollViewDelegate {
 
     private var isScrollEnabled: Bool { toBool(applied["isScrollEnabled"]) ?? true }
 
-    /// `scrollToVerticalOffset`: clamped to the content and its adjusted insets (the app's core patch).
     public func scrollToVerticalOffset(_ value: Double, _ animated: Bool? = nil) {
         guard let scrollView, orientation == "vertical", isScrollEnabled else { return }
+        guard CorePatches.clampedScrollOffsets else {
+            let bounds = scrollView.bounds.size
+            return scrollView.scrollRectToVisible(CGRect(x: 0, y: value, width: bounds.width, height: bounds.height), animated: animated ?? false)
+        }
         let inset = scrollView.adjustedContentInset
         let lower = -Double(inset.top)
         let upper = max(lower, Double(scrollView.contentSize.height + inset.bottom - scrollView.bounds.size.height))
@@ -409,6 +415,10 @@ open class ScrollView: ContentView, UIScrollViewDelegate {
 
     public func scrollToHorizontalOffset(_ value: Double, _ animated: Bool? = nil) {
         guard let scrollView, orientation == "horizontal", isScrollEnabled else { return }
+        guard CorePatches.clampedScrollOffsets else {
+            let bounds = scrollView.bounds.size
+            return scrollView.scrollRectToVisible(CGRect(x: value, y: 0, width: bounds.width, height: bounds.height), animated: animated ?? false)
+        }
         let inset = scrollView.adjustedContentInset
         let lower = -Double(inset.left)
         let upper = max(lower, Double(scrollView.contentSize.width + inset.right - scrollView.bounds.size.width))

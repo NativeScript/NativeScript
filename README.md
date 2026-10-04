@@ -183,6 +183,14 @@ of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
 - **Patches.** `patches/native-release/<package>+<version>.patch` in the app
   applies to the plugin's source, as patch-package's patches apply to its
   JavaScript; ns-octane's input-accessory patch is ported this way.
+- **Core patches.** The NativeScript build runs `@nativescript/core` as the
+  app's patch-package patch leaves it (`patches/@nativescript+core+<version>.patch`),
+  so the native build does too: `compiler/src/core-patches.ts` turns each hunk
+  it recognizes into one of the kit's `CorePatches` switches (ns-octane's:
+  opaque box-shadow colors, insertion below the native view at an index,
+  clamped scroll offsets, gradient stops positioned as CSS positions them),
+  and a hunk that changes iOS behavior in any other way stops the build.
+  Android builds do not read the patch yet.
 - **Reachability** (`compiler/src/reach.ts`): only the modules and members
   the app reaches are translated, with the platform's constants folded, so
   Android branches and `install(true)`'s override of core's gesture
@@ -361,6 +369,7 @@ develops it with live reload as usual.
 | `compiler/src/natives/symbols.ts`, `native-calls.ts` | NativeScript's names for iOS APIs to Swift, from the SDK's symbol graphs; their translation |
 | `compiler/src/platform.ts` | `isIOS`/`isAndroid`/`__IOS__`/`__ANDROID__` folded for the target before type-checking |
 | `compiler/src/plugins/` | Plugins: their source found, checked and patched (`source.ts`), their iOS code as targets and symbol tables (`native.ts`) |
+| `compiler/src/core-patches.ts` | An app's patch of `@nativescript/core` as the kit's `CorePatches` switches |
 | `compiler/src/reach.ts`, `patterns.ts`, `properties.ts` | What of a plugin the app reaches; the patterns by which plugins extend core; properties registered by name |
 | `compiler/src/codegen.ts` | A template as `render()`: views made once, one effect per binding, keyed regions for `if`/`for` |
 | `compiler/src/kotlin.ts`, `kotlin-modules.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |

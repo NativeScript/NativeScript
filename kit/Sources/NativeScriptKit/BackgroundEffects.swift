@@ -45,8 +45,7 @@ extension View {
             shadowLayer.shadowOpacity = Float(shadow.alpha == 0 ? 1 : Double(shadow.alpha) / 255)
             // Half the blur radius imitates CSS's blur.
             shadowLayer.shadowRadius = dip(shadow.blurRadius) * 0.5
-            // The color's alpha is the layer's opacity, as core sets it: the color itself is opaque.
-            shadowLayer.shadowColor = shadow.color?.withAlphaComponent(1).cgColor
+            shadowLayer.shadowColor = (CorePatches.opaqueShadowColor ? shadow.color?.withAlphaComponent(1) : shadow.color)?.cgColor
             shadowLayer.shadowOffset = CGSize(width: dip(shadow.offsetX), height: dip(shadow.offsetY))
             shadowLayer.shadowPath = paths.shadow
             (shadowLayer.mask as? CAShapeLayer)?.path = paths.mask
@@ -205,6 +204,28 @@ struct LinearGradient: Equatable {
         return (color, offset)
     }
 
+    /// `resolveGradientStopOffsets`: a first stop without a position at 0, a last
+    /// at 1, unpositioned runs spread evenly between their neighbours, and a
+    /// position below an earlier one raised to it.
+    func resolvedOffsets() -> [Double] {
+        var offsets = stops.map(\.offset)
+        guard !offsets.isEmpty else { return [] }
+        if offsets[0] == nil { offsets[0] = 0 }
+        if offsets[offsets.count - 1] == nil { offsets[offsets.count - 1] = 1 }
+        var highest = offsets[0]!
+        for i in 1..<offsets.count {
+            if let value = offsets[i] { offsets[i] = max(value, highest); highest = offsets[i]! }
+        }
+        var start = 0
+        for i in 1..<offsets.count {
+            guard let end = offsets[i] else { continue }
+            let from = offsets[start]!
+            for k in (start + 1)..<i { offsets[k] = from + (end - from) * Double(k - start) / Double(i - start) }
+            start = i
+        }
+        return offsets.map { $0! }
+    }
+
     /// utils.ios `drawGradient`: locations only for the stops that give an offset.
     func draw(_ nativeView: UIView, _ layer: CAGradientLayer) {
         layer.bounds = nativeView.bounds
@@ -212,8 +233,12 @@ struct LinearGradient: Equatable {
         layer.allowsEdgeAntialiasing = true
         layer.contentsScale = UIScreen.main.scale
         layer.colors = stops.map(\.color.cgColor)
-        let locations = stops.compactMap { $0.offset.map { NSNumber(value: $0) } }
-        if !locations.isEmpty { layer.locations = locations }
+        if CorePatches.resolvedGradientStops {
+            layer.locations = resolvedOffsets().map { NSNumber(value: $0) }
+        } else {
+            let locations = stops.compactMap { $0.offset.map { NSNumber(value: $0) } }
+            if !locations.isEmpty { layer.locations = locations }
+        }
         let alpha = angle / (.pi * 2)
         layer.startPoint = CGPoint(x: pow(sin(.pi * (alpha + 0.75)), 2), y: pow(sin(.pi * (alpha + 0.5)), 2))
         layer.endPoint = CGPoint(x: pow(sin(.pi * (alpha + 0.25)), 2), y: pow(sin(.pi * alpha), 2))
