@@ -106,10 +106,19 @@ fun jsOr(a: Any?, b: Any?): Any? = if (jsTruthy(a)) a else b
 fun jsUndefinedGlobal(name: String): Nothing = throw JSException(JSReferenceError("$name is not defined"))
 
 /** `new WeakRef(value)`. */
-class JSWeakRef<T>(value: T) {
+class JSWeakRef<T>(value: T) : JSDynamic {
     private val ref = java.lang.ref.WeakReference(value)
     fun get(): T? = ref.get()
     fun deref(): T? = ref.get()
+
+    // Read untyped (`view.nsView?.get()` on a native view): by name, as release builds rename members reflection would find.
+    override fun jsGet(key: String): Any? = when (key) {
+        "get", "deref" -> jsFunction { ref.get() }
+        else -> null
+    }
+    override fun jsSet(key: String, value: Any?) {}
+    override val jsKeys: List<String> get() = emptyList()
+    override val jsClassName: String? get() = "WeakRef"
 }
 
 /** `getClass(value)` from core's utils/types: the class name script sees for a value. */

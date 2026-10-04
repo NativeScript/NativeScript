@@ -1,7 +1,7 @@
 package org.nativescript.kit
 
-/** What JavaScript `throw value` throws: any value, not only errors. */
-class JSException(val value: Any?) : RuntimeException(null, null, false, false) {
+/** What JavaScript `throw value` throws: any value, not only errors. Its JVM stack is recorded only when tracing (`jsTraceErrors`). */
+class JSException(val value: Any?) : RuntimeException(null, null, false, jsTraceErrors) {
     override val message: String get() = "Uncaught " + jsToString(value)
 }
 
