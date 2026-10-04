@@ -118,10 +118,12 @@ open class View: Observable {
 
     var defaultPaddingTop: Double = 0, defaultPaddingRight: Double = 0, defaultPaddingBottom: Double = 0, defaultPaddingLeft: Double = 0
     private var paddingTop: Double?, paddingRight: Double?, paddingBottom: Double?, paddingLeft: Double?
-    var effectivePaddingTop: Double { paddingTop ?? defaultPaddingTop }
-    var effectivePaddingRight: Double { paddingRight ?? defaultPaddingRight }
-    var effectivePaddingBottom: Double { paddingBottom ?? defaultPaddingBottom }
-    var effectivePaddingLeft: Double { paddingLeft ?? defaultPaddingLeft }
+    /// Set while a view measures as though it had no padding (LiquidGlass's `onMeasure`).
+    var paddingSuspended = false
+    public var effectivePaddingTop: Double { paddingSuspended ? 0 : paddingTop ?? defaultPaddingTop }
+    public var effectivePaddingRight: Double { paddingSuspended ? 0 : paddingRight ?? defaultPaddingRight }
+    public var effectivePaddingBottom: Double { paddingSuspended ? 0 : paddingBottom ?? defaultPaddingBottom }
+    public var effectivePaddingLeft: Double { paddingSuspended ? 0 : paddingLeft ?? defaultPaddingLeft }
 
     var row = 0, col = 0, rowSpan = 1, colSpan = 1
 
@@ -551,6 +553,7 @@ open class View: Observable {
         // Read by TouchManager when the view loads.
         case "touchAnimation", "ignoreTouchAnimation", "touchDelay": break
         default:
+            if setAccessibilityProperty(name, value) { return }
             View.nativeSetterHooks[name]?(self, value)
         }
     }

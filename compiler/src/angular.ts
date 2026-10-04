@@ -43,6 +43,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
 
   const members = new Set<string>();
   const props: string[] = [];
+  const optional: string[] = [];
   const outputs: string[] = [];
   for (const m of cls.members) {
     if (!m.name || !ts.isIdentifier(m.name)) continue;
@@ -50,6 +51,8 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     if (ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer)) {
       const callee = m.initializer.expression.getText();
       if (callee === 'input' || callee === 'input.required') props.push(m.name.text);
+      // An input with a default value is one a parent may leave out.
+      if (callee === 'input' && (m.initializer as ts.CallExpression).arguments.length) optional.push(m.name.text);
       if (callee === 'output') outputs.push(m.name.text);
     }
   }
@@ -207,8 +210,11 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     if (selector) {
       const m = `$b${next++}`;
       const p = [params(loops), `$item = ${list}[0]`, '$index = 0'].filter(Boolean).join(', ');
-      // Called as core calls it, with three arguments whatever the function declares.
-      methods.push(`  ${m}(${p}): string { return (${rewrite(clean(sourceOf(selector.value)), local(loops))} as (item: any, index: number, items: any) => string)($item, $index, ${list}); }`);
+      // Called as core calls it, with (item, index, items): a method of the component that declares fewer takes the ones it declares.
+      const name = sourceOf(selector.value).trim();
+      const method = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && x.name.getText() === name);
+      const given = ['$item', '$index', list].slice(0, method ? method.parameters.length : 3);
+      methods.push(`  ${m}(${p}): string { return ${rewrite(clean(sourceOf(selector.value)), local(loops))}(${given.join(', ')}); }`);
       attrs.push({ name: 'itemTemplateSelector', method: m });
     }
     const out: TNode[] = [];
@@ -310,7 +316,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const end = cls.members.end;
   for (const p of pipes) methods.push(`  readonly ${p} = new AsyncPipe();`);
   const source = `import { ${pipes.length ? 'AsyncPipe, ' : ''}type EventData as $EventData } from '@nativescript/release';\n` + text.slice(0, end) + '\n' + methods.join('\n') + '\n' + text.slice(end);
-  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, outputs, template: tree, selector, ...(init ? { init: 'ngOnInit' } : {}) } as AngularComponent;
+  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, optional, outputs, template: tree, selector, ...(init ? { init: 'ngOnInit' } : {}) } as AngularComponent;
 }
 
 /** The `BindingPipe`s in an expression, outermost first (not those inside another pipe). */

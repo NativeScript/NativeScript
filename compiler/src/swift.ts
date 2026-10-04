@@ -261,6 +261,9 @@ export class Translator implements AsyncTranslator {
       case 'EventData': return 'EventData';
       case 'OutputEmitterRef': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': return 'Router';
+      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'NgZone': case 'HttpClient':
+        if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
+        break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
       case 'AnimationPromise': if (isCoreDeclaration(sym?.declarations?.[0])) return 'JSPromise<Void>'; break;
       // Script writes animation definitions as object literals; the kit's Animation reads them by key.
@@ -468,6 +471,8 @@ export class Translator implements AsyncTranslator {
   private shape(t: ts.Type, where?: ts.Node): string {
     const conforming = this.conformingInterface(t);
     if (conforming) { this.used.add(conforming); return conforming; }
+    // Keys that are no names (a lookup table: `{ '\\alpha': 'α', '0': '₀' }`) make a dynamic object.
+    if (t.getProperties().some((p) => !/^[A-Za-z$][\w$]*$|^_[\w$]+$/.test(p.name))) return 'JSObject';
     if (this.shaping.has(t)) throw this.error(where, 'a recursive object type without a name');
     this.shaping.add(t);
     try {
@@ -484,7 +489,9 @@ export class Translator implements AsyncTranslator {
       const props = [...t.getProperties()].sort((a, b) => rank(a.name) - rank(b.name));
       const literal = t.getSymbol()?.declarations?.[0];
       const fields = props.map((p): ShapeField => {
-        let pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
+        const ptype = this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!);
+        // A field of a type parameter (`{ at, data: T }`): shared by every instantiation, it holds any value.
+        let pt = ptype.flags & ts.TypeFlags.TypeParameter ? 'Any?' : this.type(ptype, where);
         const symbolic = wellKnownMember(p.name);
         if (symbolic) return { name: symbolic, type: pt, symbol: true };
         if (pt === 'Void' || pt === 'Never') pt = 'Any?';
@@ -579,6 +586,13 @@ export class Translator implements AsyncTranslator {
           const name = ident(this.topName(d, d.name.text));
           const t = this.typeOf(d.name);
           if (!d.initializer) { out.push(`var ${name}: ${this.deferred(t)}`); continue; }
+          // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
+          const fn = ts.isCallExpression(d.initializer) && this.calleeName(d.initializer) === 'computed' ? d.initializer.arguments[0] : undefined;
+          if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
+            const rt = this.returnTypeOf(fn);
+            out.push(`var ${name}: ${rt} ${this.functionBody(fn, rt, '')}`);
+            continue;
+          }
           const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
           if (maybe) {
             const sym = this.resolve(d.name);
@@ -1113,6 +1127,11 @@ export class Translator implements AsyncTranslator {
           lines.push(`    let _passed: Set<String>`);
           propParams.push(`_passed: Set<String> = []`);
           inits.push(`        self._passed = _passed`);
+          continue;
+        }
+        // An Angular component's field without an initializer is a field like any other: its inputs are `input()`s.
+        if (!m.initializer && this.plainFields && !this.props.has(name)) {
+          lines.push(`    var ${ident(name)}: ${this.deferred(t)}`);
           continue;
         }
         if (!m.initializer) {
@@ -1678,6 +1697,9 @@ export class Translator implements AsyncTranslator {
     } finally { this.indent = saved; }
   }
 
+  /** Component fields without an initializer are state, not props (Angular). */
+  plainFields = false;
+
   /** With `--all-errors`: what each statement could not translate, collected so one run reports them all. */
   errors: string[] | null = null;
 
@@ -1685,7 +1707,7 @@ export class Translator implements AsyncTranslator {
     if (this.errors) {
       try { return this.stmtChecked(s); } catch (e) {
         const at = s.getSourceFile().getLineAndCharacterOfPosition(s.getStart());
-        this.errors.push(e instanceof RangeError ? `${s.getSourceFile().fileName}:${at.line + 1}: ${e.message}` : (e as Error).message);
+        this.errors.push(e instanceof RangeError ? `${s.getSourceFile().fileName}:${at.line + 1}: ${e.message}${process.env.NS_NATIVE_STACKS ? '\n' + [...new Set((e.stack ?? '').split('\n').slice(1, 400).map((l) => l.trim().split(' ')[1]))].slice(0, 30).join(' ') : ''}` : (e as Error).message);
         return '';
       }
     }
@@ -1747,7 +1769,9 @@ export class Translator implements AsyncTranslator {
           return `${i}do {\n${i}    let ${it} = try ${js}\n${i}    defer { ${it}.jsClose() }\n${i}    ${label}while try ${it}.jsAdvance() {\n${bind}\n${i}        do ${body}\n${i}    }\n${i}}`;
         });
       }
-      const seq = this.tryPrefix(s.expression) + this.iterable(s.expression);
+      const iterable = this.iterable(s.expression);
+      // A sequence that starts with a closure would read as the loop's body: parenthesized.
+      const seq = this.tryPrefix(s.expression) + (/^\{/.test(iterable) ? `(${iterable})` : iterable);
       return this.loopBody(() => {
         const label = this.takeLabel();
         if (ts.isIdentifier(decl.name)) return `${i}${label}for ${mutable ? 'var ' : ''}${ident(decl.name.text)} in ${seq} ${this.block(s.statement)}`;
@@ -2194,8 +2218,15 @@ export class Translator implements AsyncTranslator {
     if (e.kind === ts.SyntaxKind.SuperKeyword) return 'super';
     if (ts.isIdentifier(e)) return this.identifier(e);
     if (ts.isTemplateExpression(e)) {
+      const pieces = e.templateSpans.map((span) => this.str(span.expression));
+      // A string literal's interpolation is one line in Swift: a multi-line piece (a closure) joins the literal's parts instead.
+      if (pieces.some((p) => p.includes('\n'))) {
+        const parts = [`"${this.escapeInterpolated(e.head.text)}"`];
+        e.templateSpans.forEach((span, k) => parts.push(`(${pieces[k]})`, `"${this.escapeInterpolated(span.literal.text)}"`));
+        return `[${parts.join(', ')}].joined()`;
+      }
       let out = this.escapeInterpolated(e.head.text);
-      for (const span of e.templateSpans) out += `\\(${this.str(span.expression)})` + this.escapeInterpolated(span.literal.text);
+      e.templateSpans.forEach((span, k) => { out += `\\(${pieces[k]})` + this.escapeInterpolated(span.literal.text); });
       return `"${out}"`;
     }
     if (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e) || ts.isSatisfiesExpression(e)) {
@@ -2288,6 +2319,11 @@ export class Translator implements AsyncTranslator {
     const p = e.parent;
     if (sym && sym.flags & ts.SymbolFlags.Class && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !(ts.isNewExpression(p) && p.expression === e)
         && !(ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && p.right === e) && !ts.isHeritageClause(p.parent ?? p)) {
+      // An Angular component as a value (`dialog.open(Sheet)`): what creating and rendering it gives.
+      const decl = sym.valueDeclaration;
+      if (decl && ts.isClassDeclaration(decl) && (ts.getDecorators(decl) ?? []).some((d) => /^Component\(/.test(d.expression.getText()))) {
+        return `ComponentFactory { ${ident(this.declaredName(e))}().render() }`;
+      }
       return `${ident(this.declaredName(e))}.self`;
     }
     return this.narrowed(e, this.globalAlias(e) ?? ident(this.declaredName(e)));
@@ -2693,7 +2729,9 @@ export class Translator implements AsyncTranslator {
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
-    if (e.questionDotToken && !this.core.isKitMethod(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
+    // `obj.method?.(…)` on a method a declaration file declares: the method is always there, so the call is a plain one.
+    const declaredMethod = ts.isPropertyAccessExpression(callee) && this.resolve(callee.name)?.declarations?.some((d) => (ts.isMethodDeclaration(d) || ts.isMethodSignature(d)) && d.getSourceFile().isDeclarationFile);
+    if (e.questionDotToken && !this.core.isKitMethod(callee) && !declaredMethod) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     const intl = intlConstructor(callee, this.checker);
     if (intl) return `JS${intl}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
@@ -2790,7 +2828,8 @@ export class Translator implements AsyncTranslator {
     while (ts.isParenthesizedExpression(fn)) fn = fn.expression;
     // `(function () { … })()`: the closure, called.
     if (ts.isFunctionExpression(fn) || ts.isArrowFunction(fn)) return `${this.closure(fn)}(${this.args(e).join(', ')})`;
-    if (ts.isParenthesizedExpression(callee)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
+    // A callee the factory would parenthesize again (`(f as F)(…)`) is called through its own translation.
+    if (ts.isParenthesizedExpression(callee) && !ts.isAsExpression(callee.expression) && !ts.isTypeAssertionExpression(callee.expression) && !ts.isSatisfiesExpression(callee.expression)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
   }

@@ -99,7 +99,7 @@ const SHIMS: Record<string, string> = {
   `,
   '@nativescript/angular': `
     import type { Observable } from 'rxjs';
-    export interface NavigationExtras { relativeTo?: any; animated?: boolean; clearHistory?: boolean; transition?: any }
+    export type NavigationExtras = any;
     export declare class RouterExtensions { readonly router: { readonly url: string }; navigate(commands: any[], extras?: NavigationExtras): Promise<boolean>; back(options?: { relativeTo?: any; outlets?: string[] }): void; canGoBack(): boolean }
     export declare const NativeDialogModule: any;
     export declare const NATIVE_DIALOG_DATA: import('@angular/core').InjectionToken<any>;
@@ -113,7 +113,7 @@ const SHIMS: Record<string, string> = {
     export declare function provideNativeScriptHttpClient(...features: any[]): any;
     export declare function provideNativeScriptRouter(routes: any): any;
     export declare function bootstrapApplication(component: any, options?: any): Promise<any>;
-    export interface NativeDialogConfig { nativeOptions?: any; [key: string]: any }
+    export type NativeDialogConfig = any;
     export declare class NativeDialogRef<T = any, R = any> { close(result?: R): void; afterClosed(): Observable<R | undefined> }
     export declare class NativeDialogService { open<T, R = any>(component: abstract new (...args: any[]) => T, config?: NativeDialogConfig): NativeDialogRef<T, R> }
     export { NativeDialogService as NativeDialog };
@@ -189,7 +189,7 @@ export interface Program {
  * Packages whose imports stay on their declarations: core is NativeScriptKit,
  * the frameworks are the front ends, and the rest are typings or tooling.
  */
-const NOT_PLUGINS = /^(@norrix\/client-sdk|@nativescript\/(core|canvas|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
+const NOT_PLUGINS = /^(@nativescript\/(core|canvas|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
 
 
 /**
@@ -197,7 +197,7 @@ const NOT_PLUGINS = /^(@norrix\/client-sdk|@nativescript\/(core|canvas|types|typ
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = []): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = [], replacements: Record<string, string> = {}): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -214,9 +214,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   };
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
-  // The app's declarations reach `@nativescript/types`, which declares both platforms: the build reads its own platform's.
-  const otherTypes = resolve(modules, PLATFORM_TYPES[platform === 'ios' ? 'android' : 'ios'], '..') + '/';
-  files.set(resolve(modules, '@nativescript/types/index.d.ts'), `/// <reference path="${platformTypes}" />\n`);
+  // The app's declarations may reach `@nativescript/types`, which declares both platforms, as the app's own build reads them:
+  // the other platform's types name what code for that platform holds (`signal<android.view.View | null>`).
   const pluginFiles = new Set<string>();
   const extraRoots = new Set<string>();
   const isSource = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && !name.includes('/node_modules/');
@@ -230,7 +229,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   });
   host.getSourceFile = (name, version, onError) => {
     const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
-    if (text === undefined) return name.startsWith(otherTypes) ? ts.createSourceFile(name, '', version) : readLib(name, version, onError);
+    if (text === undefined) return readLib(name, version, onError);
     return ts.createSourceFile(name, isSource(name) ? foldPlatform(text, name, platform) : text, version, true);
   };
   const fileExists = host.fileExists.bind(host);
@@ -259,6 +258,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
           }
         }
       }
+      // A package the app replaces for the native build is the app's module.
+      const replacement = !m.startsWith('.') && !m.startsWith('/') ? replacements[packageOf(m)] : undefined;
+      if (replacement) return { resolvedModule: { resolvedFileName: replacement, extension: ts.Extension.Ts } };
       // A plugin is compiled from its source: an import that reaches its code resolves to the file it was built from.
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly;
       if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !NOT_PLUGINS.test(packageOf(m)) && !typeOnly) {

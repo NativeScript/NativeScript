@@ -7,6 +7,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { mergePlist, readPlist, writePlist, type PlistDict } from './plist.ts';
 import { productLines, type SwiftPackage } from './ios-dependencies.ts';
+import { KIT_PLUGINS } from './core.ts';
 
 /** The literal values of nativescript.config.ts's exported object; anything computed is left out. */
 export function readConfig(app: string): Record<string, unknown> {
@@ -31,6 +32,15 @@ export function readConfig(app: string): Record<string, unknown> {
   return {};
 }
 
+/**
+ * `nativeReleaseOptions.pluginReplacements`: packages the native build replaces with a TypeScript module of
+ * the app's (a stand-in for a plugin whose job has no meaning without the JavaScript runtime), resolved paths.
+ */
+export function pluginReplacements(app: string): Record<string, string> {
+  const options = readConfig(app).nativeReleaseOptions as { pluginReplacements?: Record<string, string> } | undefined;
+  return Object.fromEntries(Object.entries(options?.pluginReplacements ?? {}).map(([name, file]) => [name, resolve(app, file)]));
+}
+
 export function appResourcesDir(app: string): string {
   return resolve(app, (readConfig(app).appResourcesPath as string | undefined) ?? 'App_Resources');
 }
@@ -43,10 +53,13 @@ export function appResourcesDir(app: string): string {
 export function productionPlugins(app: string): { name: string; dir: string }[] {
   const out: { name: string; dir: string }[] = [];
   const seen = new Set<string>();
+  const replaced = pluginReplacements(app);
   const queue: { from: string; deps: Record<string, string> }[] = [{ from: app, deps: JSON.parse(readFileSync(join(app, 'package.json'), 'utf8')).dependencies ?? {} }];
   while (queue.length) {
     const { from, deps } = queue.shift()!;
     for (const name of Object.keys(deps)) {
+      // A plugin the kit implements, or the app replaces, brings none of its native pieces, nor its own dependencies' (canvas's font manager).
+      if (KIT_PLUGINS.includes(name) || replaced[name]) continue;
       const dir = locatePackage(from, name);
       if (!dir || seen.has(dir)) continue;
       seen.add(dir);

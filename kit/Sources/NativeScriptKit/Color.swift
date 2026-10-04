@@ -33,6 +33,9 @@ public struct Color: Equatable {
         }
     }
 
+    /// `android`: the color as Android's signed ARGB integer, on any platform.
+    public var android: Double { Double(Int32(bitPattern: argb)) }
+
     public var a: Int { Int((argb >> 24) & 0xff) }
     public var r: Int { Int((argb >> 16) & 0xff) }
     public var g: Int { Int((argb >> 8) & 0xff) }

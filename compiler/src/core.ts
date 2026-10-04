@@ -23,10 +23,9 @@ export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
 /**
  * Packages the kit implements, typed by their own declarations: core, and plugins whose
  * native release is a kit module (`kit/Sources/NativeScriptKit/Plugins/`) rather than their
- * compiled source: @nativescript/canvas's 2D context on Core Graphics, and @norrix/client-sdk,
- * whose over-the-air JavaScript updates have nothing to update in a native app.
+ * compiled source: @nativescript/canvas's 2D context on Core Graphics.
  */
-export const KIT_PLUGINS = ['@nativescript/canvas', '@norrix/client-sdk'];
+export const KIT_PLUGINS = ['@nativescript/canvas'];
 const KIT_PACKAGES = new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
 
 /** The native class a core class's `ios` is, walking up to the nearest one the table names. */

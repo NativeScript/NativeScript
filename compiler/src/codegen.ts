@@ -178,7 +178,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       }
       if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
       if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
-      const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for');
+      // A component whose views join its parent (no single root) is a region of the body it is in.
+      const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for' || (x.kind === 'component' && !!components.get(x.name)?.fragment));
       const nestedBody = node.kind === 'if' ? node.branches.some((b) => nested(b.body)) : nested(node.body);
       // A framework that inserts top-down puts a branch's views in place as it builds them; a body with regions of its own attaches as a fragment.
       const live = insertion !== 'built' && !nestedBody ? `r${n++}` : null;

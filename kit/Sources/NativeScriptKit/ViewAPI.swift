@@ -23,6 +23,18 @@ extension View {
         return JSObject([("left", p.left), ("top", p.top), ("right", p.right), ("bottom", p.bottom)])
     }
 
+    /// `getActualSize()`: the native frame's size in DIPs, its edges rounded to device pixels as core rounds them; zero when collapsed.
+    public func getActualSize() -> Size {
+        guard let frame = nativeView?.frame, !isCollapsed else { return Size(width: 0, height: 0) }
+        let px = { (v: CGFloat) in (LayoutHelper.toDevicePixels(Double(v))).rounded() }
+        return Size(width: LayoutHelper.toDeviceIndependentPixels(px(frame.maxX) - px(frame.minX)),
+                    height: LayoutHelper.toDeviceIndependentPixels(px(frame.maxY) - px(frame.minY)))
+    }
+
+    /// `focus()`: the native view becomes first responder.
+    @discardableResult
+    public func focus() -> Bool { nativeView?.becomeFirstResponder() ?? false }
+
     /// `page`: the page this view is in.
     public var page: Page? {
         var current: View? = self
@@ -75,4 +87,21 @@ public final class Style: JSDynamic {
 
     public var jsKeys: [String] { [] }
     public var jsClassName: String? { "Style" }
+}
+
+/// `Size` from core: a width and a height in DIPs.
+public final class Size: JSDynamic {
+    public var width: Double
+    public var height: Double
+    public init(width: Double, height: Double) { self.width = width; self.height = height }
+
+    public subscript(jsKey key: String) -> Any? {
+        get { key == "width" ? width : key == "height" ? height : nil }
+        set {
+            if key == "width" { width = jsToNumber(newValue) }
+            if key == "height" { height = jsToNumber(newValue) }
+        }
+    }
+    public var jsKeys: [String] { ["width", "height"] }
+    public var jsClassName: String? { "Object" }
 }

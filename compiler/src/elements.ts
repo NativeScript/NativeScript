@@ -6,7 +6,7 @@ export const ELEMENTS = new Set([
   'FlexboxLayout', 'WrapLayout', 'AbsoluteLayout', 'DockLayout', 'RootLayout',
   'FormattedString', 'Span', 'ActionItem', 'NavigationButton',
   'SearchBar', 'Progress', 'ListPicker', 'DatePicker', 'TimePicker', 'HtmlView', 'WebView', 'Placeholder',
-  'TabView', 'TabViewItem',
+  'TabView', 'TabViewItem', 'LiquidGlass',
 ]);
 
 /** Two-way bindings (`v-model`, `[(ngModel)]`, `bind:value`): the property, its change event and the value's type. */

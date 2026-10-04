@@ -4,6 +4,14 @@ import UIKit
 /// including its MeasureHelper, ported statement for statement: star and
 /// auto lengths are distributed and rounded in the same order.
 open class GridLayout: LayoutBase {
+    /// `GridLayout.setRow(view, value)` and the other attached properties, as statics.
+    public static func setRow(_ view: View, _ value: Double) { view.set("row", value) }
+    public static func setColumn(_ view: View, _ value: Double) { view.set("col", value) }
+    public static func setRowSpan(_ view: View, _ value: Double) { view.set("rowSpan", value) }
+    public static func setColumnSpan(_ view: View, _ value: Double) { view.set("colSpan", value) }
+    public static func getRow(_ view: View) -> Double { Double(view.row) }
+    public static func getColumn(_ view: View) -> Double { Double(view.col) }
+
     open override class var cssType: String { "GridLayout" }
 
     final class ItemSpec {

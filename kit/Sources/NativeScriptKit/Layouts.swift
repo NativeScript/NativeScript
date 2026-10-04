@@ -11,8 +11,11 @@ open class CustomLayoutView: View {
     /// Measuring is the subclass's job; this one must not fall back to sizeThatFits.
     open override func onMeasure(_ widthMeasureSpec: Int, _ heightMeasureSpec: Int) {}
 
+    /// The native view children's native views join: the layout's own, or a content view inside it (an effect view's).
+    open var nativeChildHost: UIView? { nativeView }
+
     func addNativeSubview(_ child: View, at index: Int? = nil) {
-        guard let parentView = nativeView, let childView = child.nativeView else { return }
+        guard let parentView = nativeChildHost, let childView = child.nativeView else { return }
         insertNative(childView, into: parentView, at: index)
     }
 }
@@ -89,7 +92,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
                 registerLayoutChild(child)
             }
             // A native view a plugin moved into another view (a keyboard accessory) stays there.
-            guard let parentView = nativeView, let childView = child.nativeView, added || childView.superview === parentView else { continue }
+            guard let parentView = nativeChildHost, let childView = child.nativeView, added || childView.superview === parentView else { continue }
             if index >= parentView.subviews.count || parentView.subviews[index] !== childView {
                 insertNative(childView, into: parentView, at: index)
             }
@@ -129,7 +132,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
             addView(child)
             registerLayoutChild(child)
         }
-        if let parentView = nativeView, let childView = child.nativeView {
+        if let parentView = nativeChildHost, let childView = child.nativeView {
             insertNative(childView, into: parentView, at: index)
         }
         requestLayout()

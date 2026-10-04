@@ -13,6 +13,26 @@ public final class ImageSource {
         return ImageSource(image)
     }
 
+    /// `fromUrl(url)`: the body of a GET, decoded as an image; rejects when the request fails or the body is no image.
+    public static func fromUrl(_ url: String) -> JSPromise<ImageSource> {
+        let (promise, resolvers) = JSPromise<ImageSource>.pending()
+        guard let target = URL(string: url) else {
+            resolvers.reject(JSError("Invalid URL: \(url)"))
+            return promise
+        }
+        URLSession.shared.dataTask(with: target) { data, _, error in
+            DispatchQueue.main.async {
+                if let data, error == nil, let image = UIImage(data: data) {
+                    resolvers.resolve(ImageSource(image))
+                } else {
+                    resolvers.reject(JSError(error?.localizedDescription ?? "Cannot create image from the response"))
+                }
+                Microtasks.checkpoint()
+            }
+        }.resume()
+        return promise
+    }
+
     /// `fromFontIconCodeSync(source, font, color)`: the glyphs drawn in the font, sized to fit.
     public static func fromFontIconCodeSync(_ source: String, _ font: CoreFont, _ color: Color?) -> ImageSource {
         let uiFont = font.uiFont

@@ -47,6 +47,11 @@ export class NativeAPI {
   /** Modules the program's native declarations come from: where enum types are looked up by their Swift name. */
   private modules = new Set<string>();
 
+  /** The SDK frameworks among them, as Swift imports them. */
+  sdkModules(): string[] {
+    return [...this.modules].filter((m) => /^[A-Z]\w*$/.test(m) && !m.startsWith('NSPlugin_')).sort();
+  }
+
   /** The Swift type for a native TypeScript type (a class, protocol, struct or enum), or null. */
   type(t: ts.Type): string | null {
     const sym = t.aliasSymbol ?? t.getSymbol();
