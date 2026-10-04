@@ -78,7 +78,12 @@ export class AsyncLowering {
     for (const [ix, fn] of hoistedFunctions(list)) { out.push(t.withAsync(ctx, () => t.stmt(fn))); list = list.filter((_, k) => k !== ix); }
     for (let k = 0; k < list.length; k++) {
       const s = list[k];
-      if (!containsAwait(s)) { out.push(t.withAsync(ctx, () => t.stmt(s))); continue; }
+      if (!containsAwait(s)) {
+        out.push(t.withAsync(ctx, () => t.stmt(s)));
+        // Swift reads `return` followed by a line as `return <that line>`: nothing may follow a jump.
+        if (jumps(s)) return out;
+        continue;
+      }
       let inner = ctx;
       const rest = list.slice(k + 1);
       // A simple statement's continuation is the rest of the list itself, in the scope of what it declares.
@@ -95,8 +100,7 @@ export class AsyncLowering {
       out.push(...this.statement(s, inner));
       return out;
     }
-    const last = list.at(-1);
-    if (!last || !(ts.isReturnStatement(last) || ts.isThrowStatement(last))) out.push(t.indent + (ctx.next ?? ctx.ret(null, false)));
+    out.push(t.indent + (ctx.next ?? ctx.ret(null, false)));
     return out;
   }
 
@@ -143,7 +147,7 @@ export class AsyncLowering {
     }
     if (ts.isTryStatement(s)) return this.tryStatement(s, ctx);
     if (ts.isLabeledStatement(s)) throw t.error(s, 'a labeled statement that awaits');
-    if (ts.isSwitchStatement(s)) throw t.error(s, 'a switch that awaits');
+    if (ts.isSwitchStatement(s)) return this.switchStatement(s, ctx);
     throw t.error(s, 'this statement with await');
   }
 
@@ -296,6 +300,40 @@ export class AsyncLowering {
     return out;
   }
 
+  /**
+   * A switch whose cases await: the matching clause is found first, then
+   * each clause runs if execution started at or before it (fallthrough), and
+   * `break` continues after the switch.
+   */
+  private switchStatement(s: ts.SwitchStatement, ctx: AsyncCtx): string[] {
+    const t = this.t;
+    const clauses = s.caseBlock.clauses;
+    for (const c of clauses) if (ts.isCaseClause(c) && containsAwait(c.expression)) throw t.error(c, 'await in a case label');
+    return this.linearize([s.expression], ctx, () => {
+      const i = t.indent;
+      const subject = t.fresh('__switch');
+      const start = t.fresh('__start');
+      const after = ctx.next ?? ctx.ret(null, false);
+      const st = t.typeOf(s.expression);
+      const out = [`${i}let ${subject}: ${st} = ${t.tryPrefix(s.expression)}${t.expr(s.expression)}`, `${i}var ${start} = ${clauses.length}`];
+      const tests = clauses.map((c, k) => (ts.isCaseClause(c) ? `${k === 0 ? '' : 'else '}if ${st === 'Any?' || t.typeOf(c.expression) === 'Any?' ? `jsStrictEquals(${subject}, ${t.coerce(c.expression, 'Any?')})` : `${subject} == ${t.coerce(c.expression, st)}`} { ${start} = ${k} }` : ''));
+      const caseTests = tests.filter(Boolean).map((x, k) => (k === 0 ? x.replace(/^else /, '') : x));
+      if (caseTests.length) out.push(`${i}${caseTests.join(' ')}`);
+      const fallback = clauses.findIndex(ts.isDefaultClause);
+      if (fallback >= 0) out.push(`${i}if ${start} == ${clauses.length} { ${start} = ${fallback} }`);
+      const names = clauses.map(() => t.fresh('__clause'));
+      out.push(`${i}let ${names.at(-1)}_end: () -> Void = { ${after} }`);
+      for (let k = clauses.length - 1; k >= 0; k--) {
+        const next = k + 1 < clauses.length ? `${names[k + 1]}()` : `${names.at(-1)}_end()`;
+        const inner: AsyncCtx = { ...ctx, next, brk: after };
+        const body = t.nested(() => [`${t.indent}if ${start} > ${k} { ${next}; return }`, ...t.withLoweredLoop(() => this.list([...clauses[k].statements], inner))]);
+        out.push(`${i}let ${names[k]}: () -> Void = ${this.closure('()', body, ctx.onError)}`);
+      }
+      out.push(`${i}${names[0]}()`);
+      return out;
+    });
+  }
+
   private tryStatement(s: ts.TryStatement, ctx: AsyncCtx): string[] {
     const t = this.t;
     const i = t.indent;
@@ -334,6 +372,11 @@ export class AsyncLowering {
     else out.push(`${i}do {`, ...body, `${i}}`);
     return out;
   }
+}
+
+/** A statement that never completes normally (a return, throw, break or continue). */
+function jumps(s: ts.Statement): boolean {
+  return ts.isReturnStatement(s) || ts.isThrowStatement(s) || ts.isBreakStatement(s) || ts.isContinueStatement(s);
 }
 
 function conditionallyAwaits(n: ts.Node): boolean {
