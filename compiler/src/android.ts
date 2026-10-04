@@ -1,7 +1,7 @@
 // The Android target: the app's components and modules as Kotlin against
 // NativeScriptKit for Android (native-release/kit-android), in a Gradle
 // project whose resources are the app's own App_Resources/Android.
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
@@ -154,10 +154,13 @@ dependencies {
 `);
   writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
+  // The NativeScript CLI names the app after its folder, letters and digits only, unless App_Resources does.
+  const appStrings = join(b.app, 'App_Resources', 'Android', 'src', 'main', 'res', 'values', 'strings.xml');
+  const label = (existsSync(appStrings) && /<string name="app_name">([^<]*)</.exec(readFileSync(appStrings, 'utf8'))?.[1]) || basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
   writeFileSync(join(b.out, 'src', 'main', 'res', 'values', 'strings.xml'), `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">${b.name}</string>
-    <string name="title_activity_kimera">${b.name}</string>
+    <string name="app_name">${label}</string>
+    <string name="title_activity_kimera">${label}</string>
 </resources>
 `);
   // The activity as App_Resources declares NativeScript's: the launch theme, then AppTheme once created.
