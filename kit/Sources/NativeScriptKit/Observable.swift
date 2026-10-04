@@ -140,6 +140,7 @@ open class Observable: NSObject, JSDynamic {
             }
             jsReport { try entry.callback(event) }
         }
+        Microtasks.taskRan()
     }
 
     /// `get(name)` / `set(name, value)` on a plain Observable: its own properties by name.

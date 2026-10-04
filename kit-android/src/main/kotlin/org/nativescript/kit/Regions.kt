@@ -67,22 +67,28 @@ fun If(region: Region, condition: () -> Boolean, then: () -> List<View>, otherwi
  */
 fun <Item> For(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (Item, Double) -> List<View>) {
     var rows = HashMap<String, Pair<List<View>, Owner>>()
+    var order: List<String>? = null
     Owner.current?.onCleanup { for (row in rows.values) row.second.dispose() }
     Effect {
         val list = items()
         untrack {
             val next = HashMap<String, Pair<List<View>, Owner>>()
             val views = mutableListOf<View>()
+            val keys = mutableListOf<String>()
             for ((index, item) in list.withIndex()) {
                 var k = key(item, index.toDouble())
                 // Duplicate keys still render, as the frameworks do in development.
                 while (next.containsKey(k)) k += "\u0000"
                 val row = rows.remove(k) ?: Owner(null).let { owner -> Pair(owner.run { render(item, index.toDouble()) }, owner) }
                 next[k] = row
+                keys.add(k)
                 views.addAll(row.first)
             }
             for (removed in rows.values) removed.second.dispose()
             rows = next
+            // A check that finds the same rows changes nothing (NgForOf's differ).
+            if (Zone.enabled && keys == order) return@untrack
+            order = keys
             region.set(views)
         }
     }

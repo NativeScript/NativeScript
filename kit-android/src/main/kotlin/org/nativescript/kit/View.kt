@@ -720,6 +720,7 @@ open class View {
         } finally {
             dispatchDepth--
         }
+        Microtasks.taskRan()
         // The outermost handler is a JavaScript task: the promise jobs it queued run before anything else does.
         if (dispatchDepth == 0) Microtasks.checkpoint()
     }

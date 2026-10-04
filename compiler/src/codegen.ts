@@ -1,7 +1,7 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
 import { ident, swiftString } from './swift.ts';
 
-export type Framework = 'vue' | 'angular' | 'svelte' | 'react' | 'solid' | 'octane';
+export type Framework = 'vue' | 'angular' | 'svelte' | 'svelte5' | 'react' | 'solid' | 'octane';
 
 /** ListView attributes that `bind` takes rather than `set`. */
 const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
@@ -16,9 +16,11 @@ export interface RenderOptions {
   slots?: boolean;
   /** A kept row renders the item now at its key (immutable updates, as React and Octane re-render): its item and index are signals. */
   rowSignals?: boolean;
+  /** Angular with zone.js: every binding is checked on each tick and applied when its value changed. */
+  zone?: boolean;
 }
 
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; optional?: string[]; passed?: boolean }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
+export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
   const lines: string[] = [];
   // The order each framework applies bindings in (EffectOrder): Vue, Svelte and
   // React set an element's props after its children's; Solid and Angular apply
@@ -26,19 +28,23 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   // And the order views join the live tree: Angular appends each as it is
   // created and Svelte mounts a block's views top-down once they are all made,
   // so a child joins a parent that is already loaded; the others attach a
-  // finished subtree.
+  // finished subtree. Svelte 5 sets a template's static attributes as it makes
+  // its views and the rest in one effect after its blocks and components, and
+  // updates in effect-tree order: creation order, nested.
   const postOrder = framework === 'vue' || framework === 'svelte' || framework === 'react';
-  const deferBindings = framework === 'solid' || framework === 'angular';
+  const deferBindings = framework === 'solid' || framework === 'angular' || framework === 'svelte5';
   const insertion = framework === 'angular' ? 'created' : framework === 'svelte' ? 'mounted' : 'built';
   type Line = { depth: number; text: string };
-  const templates: { bindings: Line[]; inserts: Line[] }[] = [];
-  /** A template's views and structure, then its deferred inserts and bindings. */
+  const templates: { bindings: Line[]; inserts: Line[]; listeners: Line[] }[] = [];
+  /** A template's views and structure, then its deferred inserts, bindings and (Svelte 5) listeners. */
   const template = (depth: number, body: () => void) => {
-    templates.push({ bindings: [], inserts: [] });
+    templates.push({ bindings: [], inserts: [], listeners: [] });
     body();
     const t = templates.pop()!;
-    for (const d of [...t.inserts, ...t.bindings]) say(d.depth, d.text);
+    for (const d of [...t.inserts, ...t.bindings, ...t.listeners]) say(d.depth, d.text);
   };
+  // Svelte 5 adds a template's event listeners after its template effect has set the properties.
+  const listener = (depth: number, text: string) => (framework === 'svelte5' && templates.length ? templates.at(-1)!.listeners.push({ depth, text }) : say(depth, text));
   /** A closure that renders content in the scope its framework orders it in. */
   const scoped = (kind: 'template' | 'region', result: string) => {
     if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? `EffectOrder.component { () -> ${result} in` : null;
@@ -56,6 +62,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   // What a binding or handler throws is reported, as the frameworks report errors in templates.
   const reported = (method: string, code: string) => (throws(method) ? `jsReport { ${code} }` : code);
 
+  const checked = (m: string, loops: Loop[]) => {
+    if (throws(m)) throw new Error(`${c.name}: a binding that can throw, in an app checked by zone.js, is not supported in a release build yet`);
+    return call(m, loops);
+  };
   // A condition that throws is reported and counts as false; mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
   const cond = (m: string, loops: Loop[]) => options.slots
     ? `jsTruthy(${throws(m) ? `(try? ${call(m, loops).replace(/^try /, '')})` : call(m, loops)})`
@@ -78,6 +88,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${swiftString(a.value)}`);
       else say(depth, `${v}.set(${swiftString(a.name)}, ${swiftString(a.value)})`);
+    } else if (options.zone) {
+      binding(depth, `Check({ ${checked(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = $0` : `${v}.set(${swiftString(a.name)}, $0)`} }`);
     } else if (a.name === 'class') {
       const value = options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops);
       binding(depth, `Effect { ${reported(a.method, `${v}.className = ${value}`)} }`);
@@ -103,7 +115,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             for (const e of node.events) {
               const listen = `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if jsTruthy(${throws(e.when) ? `(try? ${call(e.when, loops).replace(/^try /, '')})` : call(e.when, loops)}) { ${listen} }` : listen;
-              say(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
+              listener(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
             }
           };
           if (isList || !postOrder) props();
@@ -127,13 +139,13 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           say(depth, `let ${c0} = ${node.name}(${args.join(', ')})`);
           for (const p of info.props) {
             const a = given.get(p);
-            if (a && 'method' in a) say(depth, `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
+            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${checked(a.method, loops)} }) { ${c0}.${ident(p)}.value = $0 }` : `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
           }
           say(depth, `let ${v} = ${c0}.render()`);
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${reported(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${reported(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
             else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
@@ -275,16 +287,28 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const d = wrap ? 3 : 2;
   if (wrap) say(2, `return ${wrap}`);
   if (framework === 'angular' && hasRegion(c.template)) say(d, 'let __view = EffectOrder.current');
+  const member = (m: string, args: string[] = []) => `${throws(m) ? 'try ' : ''}self.${ident(m)}(${args.join(', ')})`;
+  if (c.init) say(d, reported(c.init, member(c.init)));
+  // A watcher runs before the bindings of its component, as Vue's pre-flush jobs do.
+  for (const w of c.watchers ?? []) {
+    if (!w.source) continue;
+    const args = ['value', 'old'].slice(0, w.arity);
+    say(d, `Watch(immediate: ${w.immediate}, { ${member(w.source)} }) { value, old in ${reported(w.handler, member(w.handler, args))} }`);
+  }
+  // Svelte's `$effect` runs after the template effects a write invalidates.
+  const userEffects = () => { for (const w of c.watchers ?? []) if (!w.source) say(d, `EffectOrder.user { Effect { ${reported(w.handler, member(w.handler))} } }`); };
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
     say(d, 'let page = Page()');
     template(d, () => emit(c.template, d, [], 'page', null));
+    userEffects();
     say(d, 'return page');
   } else {
     const roots: string[] = [];
     template(d, () => emit(c.template, d, [], null, roots));
     if (roots.length !== 1) throw new Error(`${c.name}: a template needs exactly one root element`);
     // Effects run once the component's views exist, as a renderer runs them after its commit.
+    userEffects();
     for (const e of c.effects ?? []) say(d, `ComponentEffect(layout: ${e.layout}, deps: ${e.deps ? `{ ${call(e.deps, [])}.storage }` : 'nil'}) { ${throws(e.run) ? 'try ' : ''}self.${ident(e.run)}() }`);
     say(d, `return ${roots[0]}`);
   }

@@ -58,6 +58,21 @@ export interface ComponentIR {
   passed?: boolean;
   /** `useEffect`/`useLayoutEffect`: the method that runs it (returning its cleanup) and the one returning its dependencies. */
   effects?: { run: string; deps: string | null; layout: boolean }[];
+  /** The fields that raise `outputs`, where they are not named as the events (Vue's `emits`). */
+  outputFields?: Record<string, string>;
+  /** Vue's `watch` and Svelte's `$effect`, in declaration order. */
+  watchers?: Watcher[];
+  /** A method run once the props are set, before the template (Angular's `ngOnInit`). */
+  init?: string;
+}
+
+export interface Watcher {
+  /** The method returning the watched value (Vue's `watch`), or null for an effect that tracks what it reads (`$effect`). */
+  source: string | null;
+  /** The method run, given the new value and then the old one when it takes them. */
+  handler: string;
+  arity: number;
+  immediate: boolean;
 }
 
 export interface AppIR {
