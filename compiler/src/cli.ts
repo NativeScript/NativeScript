@@ -29,7 +29,7 @@ import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
 import { collectProperties } from './properties.ts';
-import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig } from './app-resources.ts';
+import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
@@ -72,6 +72,8 @@ let modules: string[];
 let root: string;
 let prelude = '';
 let routing: { routes: { path: string; component: string }[]; initial: string } | null = null;
+/** An Angular route tree, written into the entry once the components are translated. */
+let routeTree: RouteNode[] | null = null;
 /** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
 let mounted = false;
 /** The framework as its templates update: Svelte 5 orders updates as Svelte 4 does not. */
@@ -204,8 +206,9 @@ if (framework === 'vue') {
     root = (declaring && /bootstrap:\s*\[\s*(\w+)/.exec(declaring)?.[1]) ?? '';
   }
   if (!root) throw new Error(`${entry}: no bootstrapApplication(Component) or bootstrapModule(AppModule) with a bootstrap component`);
+  routeTree = tree?.routes ?? null;
   prelude = tree
-    ? `        Router.shared.config = ${routeConfig(tree.routes, '        ')}\n`
+    ? ''
     : `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
 }
 
@@ -213,6 +216,13 @@ if (framework === 'vue') {
 const sheets = appStylesheets(app, platform, importedStylesheets(entry, appDir));
 
 // 3. Type-check everything as one program, then translate.
+// `const { X } = await import('./x')` reads an app module the build links statically: the module evaluates at startup.
+for (const c of components) c.source = staticImports(c.source);
+for (const f of modules) {
+  const text = overrides.get(f) ?? (existsSync(f) ? readFileSync(f, 'utf8') : undefined);
+  const rewritten = text === undefined ? undefined : staticImports(text);
+  if (rewritten !== undefined && rewritten !== text) overrides.set(f, rewritten);
+}
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
 const declarations = platform === 'ios' ? [
@@ -220,8 +230,10 @@ const declarations = platform === 'ios' ? [
   // The native typings of plugins whose components compile with the app's.
   ...plugins.all().flatMap((p) => p.typings),
 ] : [];
-const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins, declarations);
-const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
+const replacements = pluginReplacements(app);
+modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
+const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
+const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
 const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
@@ -269,17 +281,33 @@ const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, re
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
+translator.plainFields = framework === 'angular';
 if (args.includes('--all-errors')) translator.errors = [];
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
-const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n`;
-const translated = translateModules(translator, program, [...modules, ...compiledPlugins], resolved);
+const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}${SDK_IMPORTS}\n`;
+// A component's file declares more than the component (interfaces, constants): it is a module as well.
+// The SDK frameworks beyond UIKit the program's code names (CoreSpotlight, SafariServices), imported by every file once all are known.
+const SDK_IMPORTS = '// @sdk-imports\n';
+const translated = translateModules(translator, program, [...modules, ...components.map((c) => c.file), ...compiledPlugins], resolved);
+// Every component's members first: whether a constructor throws is known before any template creates the component.
+const members = new Map<string, string>();
+for (const c of components) {
+  const cls = program.getSourceFile(c.file)!.statements.find(ts.isClassDeclaration)!;
+  try {
+    members.set(c.name, located(translator.componentMembers(cls, c.props).join('\n')));
+  } catch (e) {
+    if (!translator.errors) throw e;
+    translator.errors.push(`${c.name}: ${(e as Error).message}`);
+  }
+  infos.get(c.name)!.initThrows = translator.initThrows(c.name);
+}
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
   try {
-    const lines = [`final class ${c.name} {`, located(translator.componentMembers(cls, c.props).join('\n')), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone }), '}'];
+    const lines = [`final class ${c.name} {`, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone }), '}'];
     writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
   } catch (e) {
     if (!translator.errors) throw e;
@@ -292,7 +320,8 @@ if (translator.errors?.length) {
 }
 addInterfaces(translator, translated);
 // File names differ in more than case: a module `app.tsx` beside a component `App` would overwrite it on a case-insensitive disk.
-const taken = new Set(components.map((c) => c.name.toLowerCase()));
+// A file named main.swift is Swift's top-level code, which the entry's `@main` rules out.
+const taken = new Set([...components.map((c) => c.name.toLowerCase()), 'main']);
 for (const m of translated) {
   if (!m.code.trim()) continue;
   let file = m.name;
@@ -301,7 +330,7 @@ for (const m of translated) {
   writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + located(m.code));
 }
 const shapes = SourceLines.strip(translator.shapesCode());
-if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}\n${shapes}\n`);
+if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}${SDK_IMPORTS}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 const css = kitCss(sheets);
 const patched = corePatches(app, nodeModules(app));
@@ -312,6 +341,13 @@ const start = switches + `        Reactivity.schedule = .${SCHEDULE[framework]}\
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);
+if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
+const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
+for (const f of readdirSync(join(out, 'Sources'))) {
+  const p = join(out, 'Sources', f);
+  const text = readFileSync(p, 'utf8');
+  if (text.includes(SDK_IMPORTS)) writeFileSync(p, text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')));
+}
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
@@ -413,15 +449,15 @@ function kitFilesUnreached(dir: string, appSwift: string): string[] {
 }
 
 /** A route tree as the kit's `RouteConfig`s. */
-function routeConfig(routes: RouteNode[], indent: string): string {
+function routeConfig(routes: RouteNode[], indent: string, throwing: Set<string> = new Set()): string {
   const one = (r: RouteNode): string => {
     const named = [
       r.outlet ? `outlet: ${JSON.stringify(r.outlet)}` : '',
       r.redirectTo !== undefined ? `redirectTo: ${JSON.stringify(r.redirectTo)}` : '',
       r.full ? 'full: true' : '',
-      r.children?.length ? `children: ${routeConfig(r.children, indent + '    ')}` : '',
+      r.children?.length ? `children: ${routeConfig(r.children, indent + '    ', throwing)}` : '',
     ].filter(Boolean);
-    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { ${r.component}().render() }` : ''}`;
+    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { ${throwing.has(r.component) ? 'try! ' : ''}${r.component}().render() }` : ''}`;
   };
   return `[\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent}]`;
 }
@@ -444,6 +480,8 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
       const imported = imports.get(m[2]);
       if (!imported) continue;
       const [name, from] = JSON.parse(imported) as [string, string];
+      // Core's own views are elements already.
+      if (from === '@nativescript/core') continue;
       found.set(m[1], { name, from: from.startsWith('.') && file ? resolve(dirname(file), from) : from });
     }
   };
@@ -488,17 +526,23 @@ function angularLibraries(sources: string[], modulesDir: string, plugins: Plugin
         }
       };
       walk(angular);
-      // The components the app imports and those their `imports` name, transitively.
+      // The components the app imports and those their `imports` name, transitively, with the modules of their own they import.
       const queue = wanted.filter((w) => components.has(w));
       const taken = new Set<string>();
+      const files = [...components.values()];
       while (queue.length) {
         const name = queue.pop()!;
         if (taken.has(name)) continue;
         taken.add(name);
         const file = components.get(name)!;
         out.push(file);
-        const imports = /imports:\s*\[([^\]]*)\]/.exec(readFileSync(file, 'utf8'))?.[1] ?? '';
+        const text = readFileSync(file, 'utf8');
+        const imports = /imports:\s*\[([^\]]*)\]/.exec(text)?.[1] ?? '';
         for (const i of imports.split(',').map((x) => x.trim())) if (components.has(i)) queue.push(i);
+        for (const m of text.matchAll(/from\s*['"](\.[^'"]+)['"]/g)) {
+          const support = [resolve(dirname(file), m[1]) + '.ts', join(resolve(dirname(file), m[1]), 'index.ts')].find(existsSync);
+          if (support && !files.includes(support) && !out.includes(support)) out.push(support);
+        }
       }
     }
   }
@@ -515,4 +559,18 @@ function angularEntryModule(file: string, text: string): string | null {
   let out = text;
   for (const st of [...sf.statements].filter(isBootstrap).reverse()) out = out.slice(0, st.getStart()) + out.slice(st.getStart(), st.getEnd()).replace(/[^\n]/g, ' ') + out.slice(st.getEnd());
   return out;
+}
+
+/** `const { A, B } = await import('./x')` as a destructuring of names imported from './x' (appended: imports hoist), positions kept. */
+function staticImports(text: string): string {
+  let n = 0;
+  const added: string[] = [];
+  const out = text.replace(/\{([\w\s,]+)\}(\s*=\s*)await\s+import\((\s*['"](\.[^'"]+)['"]\s*)\)/g, (whole, names: string, eq: string, arg: string, spec: string) => {
+    const list = names.split(',').map((x) => x.trim()).filter(Boolean);
+    const prefix = `__import${n++}_`;
+    added.push(`import { ${list.map((x) => `${x} as ${prefix}${x}`).join(', ')} } from '${spec}';`);
+    const value = `await Promise.resolve({ ${list.map((x) => `${x}: ${prefix}${x}`).join(', ')} })`;
+    return `{${names}}${eq}${value}`.padEnd(whole.length, ' ');
+  });
+  return added.length ? out + '\n' + added.join('\n') + '\n' : text;
 }

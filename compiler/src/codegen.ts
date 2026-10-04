@@ -26,7 +26,7 @@ export interface RenderOptions {
   zone?: boolean;
 }
 
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
+export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
   const lines: string[] = [];
   // The order each framework applies bindings in (EffectOrder): Vue, Svelte and
   // React set an element's props after its children's; Solid and Angular apply
@@ -76,7 +76,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   // A condition that throws is reported and counts as false; mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
   const cond = (m: string, loops: Loop[]) => options.slots
     ? `jsTruthy(${throws(m) ? `(try? ${call(m, loops).replace(/^try /, '')})` : call(m, loops)})`
-    : throws(m) ? `((try? ${call(m, loops).replace(/^try /, '')}) ?? false)` : call(m, loops);
+    : throws(m) ? `jsTruthy(try? ${call(m, loops).replace(/^try /, '')})` : `jsTruthy(${call(m, loops)})`;
   const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
   /** Puts a view into its container or region at the point its framework inserts it. */
   const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
@@ -144,7 +144,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             return [`${ident(p)}: ${'value' in a ? swiftString(a.value) : `untrack { ${throws(a.method) ? call(a.method, loops).replace(/^try /, 'try! ') : call(a.method, loops)} }`}`];
           });
           if (info.passed) args.push(`_passed: [${node.props.map((a) => swiftString(a.name)).concat(node.events.map((e) => swiftString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')}]`);
-          say(depth, `let ${c0} = ${node.name}(${args.join(', ')})`);
+          // A constructor whose field initializers can throw (as the translator's analysis sees them) stops the app if one does.
+          say(depth, `let ${c0} = ${info.initThrows ? 'try! ' : ''}${node.name}(${args.join(', ')})`);
           if (info.fragment) {
             // A component whose template is not one element: its views join the parent where its host is, as a ProxyViewContainer's do.
             if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
