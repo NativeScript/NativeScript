@@ -84,6 +84,8 @@ open class Page: ContentView {
             addView(bar)
         } else {
             setContent(child)
+            // A view with its own controller (a TabView) is a child controller of the page's.
+            if let childController = child.viewController { controller.addChild(childController) }
         }
     }
 
@@ -270,6 +272,12 @@ open class Frame: View {
     private static var stack: [Frame] = []
     /// The frame that navigation goes to: the most recently created one still shown.
     public static var topmost: Frame? { stack.last }
+
+    /// `_pushInFrameStackRecursive`: a selected tab's frame receives navigation.
+    static func bringToTop(_ frame: Frame) {
+        stack.removeAll { $0 === frame }
+        stack.append(frame)
+    }
 
     /// The frames in a closed modal's tree stop receiving navigation.
     static func forget(_ root: View) {

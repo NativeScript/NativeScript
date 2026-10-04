@@ -6,6 +6,7 @@ export const ELEMENTS = new Set([
   'FlexboxLayout', 'WrapLayout', 'AbsoluteLayout', 'DockLayout', 'RootLayout',
   'FormattedString', 'Span', 'ActionItem', 'NavigationButton',
   'SearchBar', 'Progress', 'ListPicker', 'DatePicker', 'TimePicker', 'HtmlView', 'WebView', 'Placeholder',
+  'TabView', 'TabViewItem',
 ]);
 
 /** Two-way bindings (`v-model`, `[(ngModel)]`, `bind:value`): the property, its change event and the value's type. */
@@ -17,6 +18,7 @@ export const MODELS: Record<string, { prop: string; event: string; type: string 
   SegmentedBar: { prop: 'selectedIndex', event: 'selectedIndexChange', type: 'number' },
   SearchBar: { prop: 'text', event: 'textChange', type: 'string' },
   ListPicker: { prop: 'selectedIndex', event: 'selectedIndexChange', type: 'number' },
+  TabView: { prop: 'selectedIndex', event: 'selectedIndexChange', type: 'number' },
 };
 
 /** Element names as each framework spells them (`stackLayout`, `stacklayout`), to the canonical class name. */

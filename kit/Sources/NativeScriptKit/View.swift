@@ -162,7 +162,7 @@ open class View: NSObject {
     func addView(_ child: View) {
         child.parent = self
         for name in View.inheritedProperties { child.refresh(name) }
-        if isLoaded { child.load() }
+        if isLoaded && shouldLoad(child) { child.load() }
     }
 
     func removeView(_ child: View) {
@@ -182,7 +182,7 @@ open class View: NSObject {
         for name in names where !View.styleProperties.contains(name) { setProperty(name, applied[name]) }
         for name in names where View.styleProperties.contains(name) { setProperty(name, applied[name]) }
         onLoaded()
-        eachChildView { $0.load() }
+        eachChildView { if shouldLoad($0) { $0.load() } }
     }
 
     func unload() {
@@ -194,6 +194,9 @@ open class View: NSObject {
     }
 
     open func onLoaded() {}
+
+    /// `loadView`: whether a loaded parent loads this child now.
+    open func shouldLoad(_ child: View) -> Bool { true }
 
     /// Defers a name's application to the next load or batch end, at its first-set position.
     private func deferApplication(_ name: String) {

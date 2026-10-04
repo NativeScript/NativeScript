@@ -271,7 +271,20 @@ final class LayoutViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        if let owner { IOSHelper.layoutView(self, owner) }
+        guard let owner else { return }
+        // A tab's content keeps at least the safe area of the page around the TabView.
+        if let tabView = owner.parent?.parent as? TabView {
+            var parent = tabView.parent
+            while let candidate = parent, candidate.nativeView == nil { parent = candidate.parent }
+            if let parentView = parent?.nativeView {
+                var top = view.safeAreaInsets.top - additionalSafeAreaInsets.top
+                var bottom = view.safeAreaInsets.bottom - additionalSafeAreaInsets.bottom
+                top = max(parentView.safeAreaInsets.top - top, 0)
+                bottom = max(parentView.safeAreaInsets.bottom - bottom, 0)
+                additionalSafeAreaInsets = top > 0 || bottom > 0 ? UIEdgeInsets(top: top, left: 0, bottom: bottom, right: 0) : .zero
+            }
+        }
+        IOSHelper.layoutView(self, owner)
     }
 
     /// A view shown by its own controller (a modal) loads as it appears.
