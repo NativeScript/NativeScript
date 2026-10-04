@@ -110,12 +110,14 @@ public func If(_ region: Region, _ condition: @escaping () -> Bool, then: @escap
 /// kept by key across changes, so a row that stays keeps its views and state.
 public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> [View]) {
     var rows: [String: (views: [View], owner: Owner)] = [:]
+    var order: [String]?
     Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
     Effect {
         let list = items()
         untrack {
             var next: [String: (views: [View], owner: Owner)] = [:]
             var views: [View] = []
+            var keys: [String] = []
             for (index, item) in list.enumerated() {
                 var k = key(item, Double(index))
                 // Duplicate keys still render, as the frameworks do in development.
@@ -125,10 +127,14 @@ public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @e
                     return (owner.run { render(item, Double(index)) }, owner)
                 }()
                 next[k] = row
+                keys.append(k)
                 views.append(contentsOf: row.views)
             }
             for removed in rows.values { removed.owner.dispose() }
             rows = next
+            // A check that finds the same rows changes nothing (NgForOf's differ).
+            if Zone.enabled && keys == order { return }
+            order = keys
             region.set(views)
         }
     }
@@ -137,12 +143,14 @@ public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @e
 /// `For` whose rows have an `if` or `for` of their own.
 public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> RegionFragment) {
     var rows: [String: (parts: [RegionPart], owner: Owner)] = [:]
+    var order: [String]?
     Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
     Effect {
         let list = items()
         untrack {
             var next: [String: (parts: [RegionPart], owner: Owner)] = [:]
             var parts: [RegionPart] = []
+            var keys: [String] = []
             for (index, item) in list.enumerated() {
                 var k = key(item, Double(index))
                 while next[k] != nil { k += "\u{0}" }
@@ -151,10 +159,13 @@ public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item],
                     return (owner.run { render(item, Double(index)).parts }, owner)
                 }()
                 next[k] = row
+                keys.append(k)
                 parts.append(contentsOf: row.parts)
             }
             for removed in rows.values { removed.owner.dispose() }
             rows = next
+            if Zone.enabled && keys == order { return }
+            order = keys
             region.set(parts: parts)
         }
     }

@@ -1,7 +1,9 @@
 # Native release builds
 
-Develop a NativeScript app the way web developers do, with Vue, Angular,
-Svelte, React, Solid or Octane on `@nativescript/core`, and ship the release as
+Develop a NativeScript app the way web developers do, with Vue (`<script
+setup>` or the Options API), Angular (standalone with signals, or NgModules
+with zone.js), Svelte 4 or 5, React, Solid or Octane on `@nativescript/core`,
+and ship the release as
 native code: no JavaScript runtime in the app, the same views, the same
 layout, the same pixels.
 
@@ -41,6 +43,73 @@ supported list, `tint-color`, `vertical-alignment` and
 them, so its symbol images are not tinted and its rows sit
 differently from the other five apps'. Both native builds style the app with
 that same CSS, the CSS its NativeScript build ships (see CSS below).
+
+The same app in three more styles, each against its own NativeScript Release
+build on the same simulator, with the same taps, then the search field
+focused (both apps still running):
+
+| | Svelte 5 (runes) | Vue (Options API) | Angular (NgModule, zone.js) |
+| --- | --- | --- | --- |
+| App | `recipes-svelte5` | `recipes-vue-options` | `recipes-angular-ngmodule` |
+| Pixels that differ, both screens | 0 | 0 | 0* |
+| Pixels that differ after the same taps | 0 | 0 | 0* |
+| Update order screen (`gallery-<style>`), 4 shots | 0 | 0 | 0 |
+| Android | compiles, Gradle release build | compiles, Gradle release build | compiles, Gradle release build |
+
+\* With the Angular app's Tailwind-filtered CSS, as above. Android pixels
+were not compared (no emulator of this run's own). The figures are in
+`results/styles.json`.
+
+- **Svelte 5** (`compiler/src/svelte5.ts`), parsed by the app's own
+  `svelte/compiler`: `$state` is a ref (deep, `Object.is`, as a `$state`
+  proxy is), `$derived`/`$derived.by` getters, `$props()` destructured with
+  its type, `$effect` an effect that runs after the template effects a
+  write invalidates, snippets rendered in place with their parameters bound
+  to the expressions `{@render}` passes, event attributes (`ontap`), keyed
+  `{#each}`, and a `.svelte.ts` module's `$state`/`$derived` class fields
+  as Svelte compiles them (a ref behind an accessor pair). The integration
+  is `@nativescript-community/svelte-native` 5.0.0-alpha.0, the only one for
+  Svelte 5; it needs the custom-renderer build of Svelte (PR 18042), and
+  only that PR's build `20bd0cf` (5.55.2) still has the `render()` it calls,
+  so the app pins it. Two things the app works around, both upstream: Svelte
+  5's renderer sets `checked` as an HTML boolean attribute (`''`, or removed
+  as `null`), which core's Switch rejects (`booleanConverter` throws) and
+  which stops the page's updates, so the app binds `ios:checked` and
+  `android:checked` (svelte-native's platform prefixes) and the release
+  build stops at a plain `checked={…}`; and `@nativescript/webpack` compiles
+  `.svelte.ts` runes only with a `svelte-loader` rule the app adds.
+- **Vue's Options API** (`vue.ts`): `props` (typed by `PropType<T>`,
+  `String`, `Number`, `Boolean`), `emits` (an array, or validators that type
+  the payload), `data()` as refs that `this.x` reads by value, `computed`
+  getters, `methods`, `watch` (with `immediate`) run before their
+  component's bindings as Vue's pre-flush jobs are, `this.$emit` and
+  `this.$navigateTo`, and `defineComponent({ setup(props, { emit }) { …;
+  return { … } } })`, whose statements are read as `<script setup>`'s.
+- **Angular with NgModules and zone.js** (`angular.ts`): `@Input()` (with or
+  without a default) and `@Output() … = new EventEmitter<T>()` read as
+  `input()` and `output()`, constructor parameter properties as `inject()`,
+  `ngOnInit`, `*ngIf` (with `else` and `as`), `*ngFor` (with `trackBy`,
+  `index`, `even`, `odd`), `<ng-container>`, plain fields and getters, and
+  the `async` pipe; the NgModules themselves only declare. With zone.js
+  (`provideZoneChangeDetection`), every binding is a check (`Check` in
+  `kit/Sources/NativeScriptKit/ChangeDetection.swift`): after each task (an
+  event handler, a timer callback) and the promise jobs it queued, the kit
+  re-reads every live binding in the order `ApplicationRef.tick()` refreshes
+  views and applies those whose value is no longer `Object.is` the last one
+  applied, so state in plain fields, services and mutated arrays shows as
+  Angular shows it; `*ngFor` rows are kept by identity or `trackBy`. Angular
+  22 checks components OnPush unless they say otherwise; a zone app compiles
+  only `ChangeDetectionStrategy.Default` (`Eager`) components so far.
+- **RxJS**: `BehaviorSubject`, `Subject`, `Observable`, `asObservable`,
+  `pipe(map(…))`, `subscribe` and the `async` pipe are the kit's
+  `Rx`-prefixed classes (`Rx.swift`, `Rx.kt`; core has an `Observable` of its own), with RxJS 7's synchronous
+  semantics: a BehaviorSubject replays its value to a new subscriber,
+  `next` reaches the subscribers of the moment in order, `map` counts its
+  index per subscription. RxJS is not compiled from its source: reaching
+  `Subscription.unsubscribe` brings in `createErrorClass` (function
+  constructors with prototypes assigned), and `Symbol.observable` interop,
+  which the translator stops at by design. Any other RxJS import stops the
+  build at type-checking.
 
 The device archive is the unsigned arm64 app as `xcodebuild archive` makes
 it (`tools/sizes.py`, `results/sizes.json`). The generated project builds
@@ -352,6 +421,9 @@ covers it. Each gallery app's Update order screen binds both.
 | React 18 | Post-order: `commitMutationEffects` traverses a host's children before `commitUpdate` on it; `completeWork` appends children before `finalizeInitialChildren`. |
 | Solid 2 | Pre-order within a template, whose one effect applies its props after the template's views, components and control flow exist; across templates by owner depth, then creation (`@solidjs/signals`' heap). |
 | Octane 0.8 | Pre-order over the whole tree (`walkDraft` collects creates and updates). |
+| Svelte 5 | Creation order, nested: a template's static attributes are set as `from_tree` makes its views; its `{#if}`/`{#each}` blocks and child components render next, then one `template_effect` sets its dynamic attributes in template order, then `$.event` adds its listeners. Updates walk the effect tree depth-first (`#traverse_effect_tree`), so a block's and a child component's effects run before the template effect of the component that holds them; `$effect`s run after every template effect. |
+| Vue Options API | As Vue 3.5 above: the same renderer and scheduler; a `watch` is a pre-flush job, before its component's re-render. |
+| Angular 22 with zone.js | As Angular above, re-read on every check: after each task `ApplicationRef.tick()` refreshes every Eager view, applying only bindings whose value changed (`bindingUpdated`). |
 
 The effects re-run when the framework updates (`Reactivity.schedule`, set at
 launch for the app's framework): the writes of a handler cause one update,
@@ -371,6 +443,9 @@ right after the writes and what it read after the framework's `nextTick()`,
 | React 18 | At once: react-nativescript renders a `LegacyRoot` and listens with `view.on`, outside `batchedUpdates`, so each `setState` commits (`scheduleUpdateOnFiber`, `flushSyncCallbacksOnlyInLegacyMode`) | The state of the render that made the handler, until it returns |
 | Solid 2 | In a microtask (`schedule`: `queueMicrotask(flush)`) | The last flushed value, outside a computation (`read`); a memo's too |
 | Octane 0.8 | When the handler returns: the driver runs each listener in a discrete `eventScope`, which flushes as it ends; a write outside an event, in a microtask (`queueScheduledWork`) | The state of the render that made the handler |
+| Svelte 5 | In a microtask (`schedule_effect` queues the root effects' flush with `queue_micro_task`) | The new value; `$derived` is pulled, so fresh |
+| Vue Options API | As Vue 3.5 | As Vue 3.5 |
+| Angular 22 with zone.js | After each task: the zone's `onMicrotaskEmpty` runs `ApplicationRef.tick()` once a handler, timer or promise job and the microtasks it queued are done; the bindings are checks re-read then | The new value |
 
 ## Differential tests
 
@@ -459,7 +534,7 @@ develops it with live reload as usual.
 
 | Path | What it is |
 | --- | --- |
-| `compiler/src/vue.ts`, `angular.ts`, `svelte.ts`, `react.ts`, `solid.ts`, `octane.ts` | Front ends: a component as a virtual class (state as signals, derived values as getters, one method per template expression) and a template tree |
+| `compiler/src/vue.ts`, `angular.ts`, `svelte.ts`, `svelte5.ts`, `react.ts`, `solid.ts`, `octane.ts` | Front ends: a component as a virtual class (state as signals, derived values as getters, one method per template expression) and a template tree |
 | `compiler/src/program.ts` | The app and its virtual classes as one TypeScript program, typed by the ES2022 library, core's declarations and the platform's native typings, with the frameworks' APIs as type shims |
 | `compiler/src/swift.ts` | TypeScript to Swift, typed by the checker, with JavaScript's semantics where Swift's differ |
 | `compiler/src/async.ts`, `throws.ts`, `modules.ts` | Async functions as continuations; which functions throw; module evaluation order |
@@ -474,10 +549,11 @@ develops it with live reload as usual.
 | `compiler/src/core-kotlin.ts`, `native-calls-android.ts`, `natives/classfiles.ts` | `@nativescript/core`'s API through kit-android; direct Android calls, typed from the class files |
 | `compiler/src/css.ts`, `css-worker.ts` | The CSS the app's NativeScript build ships, through its own bundler's pipeline, for both targets |
 | `kit/Sources/NativeScriptKit/` | The views, layout, CSS and navigation ported from `@nativescript/core`; `Signals.swift`, `Regions.swift`, `JS.swift`, `Router.swift`, `CoreAPI.swift` |
+| `kit/Sources/NativeScriptKit/ChangeDetection.swift`, `Rx.swift` | zone.js change detection (`Zone`, `Check`), Vue's `Watch`, Svelte's `$effect` order; the RxJS subset |
 | `kit/Sources/NativeScriptKit/Runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting (Foundation only) |
 | `kit-android/` | NativeScriptKit for Android: core's Android views, styling, CSS engine, gestures, animations and modals in Kotlin on the widgets AAR; `Signals.kt`, `Regions.kt`, `JS.kt`, `Router.kt`, `CoreAPI.kt` |
 | `kit-android/.../runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting in Kotlin |
-| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView, Update order and Batching screens (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` (`gallery.json`) and `tools/gallery-android.py` (`gallery-android.json`) |
+| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue), the ListView, Update order and Batching screens (the other five), or the Update order screen (`gallery-svelte5`, `gallery-vue-options`, `gallery-angular-ngmodule`), each shot compared with its NativeScript Release build by `tools/gallery.py` (`gallery.json`) and `tools/gallery-android.py` (`gallery-android.json`) |
 | `native-calls-vue/` | A Vue app calling UIKit, and on Android the Android SDK, directly; compared by `tools/native_calls.py` and `tools/gallery-android.py` |
 | `tests/diff/` | Differential tests: each case under Node and as a native program |
 | `tests/color-mix/` | The kit's `color-mix()` against core's color parser |

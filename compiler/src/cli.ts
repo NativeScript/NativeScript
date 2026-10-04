@@ -14,13 +14,15 @@ import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
 import { angularComponent, angularRoutes } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
+import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
 import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
 import { createProgram, nodeModules } from './program.ts';
 import { corePatches } from './core-patches.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
-import { render, SCHEDULE } from './codegen.ts';
+import { render, SCHEDULE, type Framework } from './codegen.ts';
+import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
@@ -63,6 +65,10 @@ let prelude = '';
 let routing: { routes: { path: string; component: string }[]; initial: string } | null = null;
 /** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
 let mounted = false;
+/** The framework as its templates update: Svelte 5 orders updates as Svelte 4 does not. */
+let style: Framework = framework;
+/** Angular checked by zone.js: every binding re-read after each task. */
+let zone = false;
 if (framework === 'vue') {
   components = files.filter((f) => f.endsWith('.vue')).map((f) => vueComponent(f, readFileSync(f, 'utf8')));
   modules = sources;
@@ -116,6 +122,20 @@ if (framework === 'vue') {
   mounted = !!app.mounted;
   modules = mounted ? [...sources, ...tsx, entry] : sources.filter((f) => !app.glue.has(f));
   root = app.root;
+} else if (framework === 'svelte' && Number(JSON.parse(readFileSync(join(nodeModules(app), 'svelte', 'package.json'), 'utf8')).version.split('.')[0]) >= 5) {
+  // Svelte 5: parsed by the app's own compiler; `.svelte.ts` modules' runes as Svelte compiles them.
+  const { parse } = createRequire(join(app, 'package.json'))('svelte/compiler');
+  components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelte5Component(f, readFileSync(f, 'utf8'), parse, platform));
+  for (const f of sources) {
+    const module = f.endsWith('.svelte.ts') ? svelteModule(f, readFileSync(f, 'utf8')) : null;
+    if (module) overrides.set(f, module);
+  }
+  modules = sources;
+  style = 'svelte5';
+  const rootImport = /svelteNative(?:NoFrame)?\(\s*(\w+)/.exec(entryText)?.[1];
+  const rootFile = rootImport && new RegExp(`import\\s+${rootImport}\\s+from\\s+['"]([^'"]+)['"]`).exec(entryText)?.[1];
+  if (!rootFile) throw new Error(`${entry}: no svelteNative(Component)`);
+  root = basename(rootFile, '.svelte');
 } else if (framework === 'svelte') {
   const isStoreFile = (f: string) => /from\s+['"]svelte\/store['"]/.test(readFileSync(f, 'utf8'));
   components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelteComponent(f, readFileSync(f, 'utf8'), (spec) => {
@@ -136,12 +156,25 @@ if (framework === 'vue') {
   }
   const routesFile = sources.find((f) => /Routes\b/.test(readFileSync(f, 'utf8')) && /component:/.test(readFileSync(f, 'utf8')));
   const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8')) : { routes: [], initial: '/' };
-  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors)).filter((c): c is NonNullable<typeof c> => !!c);
+  // zone.js change detection, which Angular 22 runs only where the app provides it.
+  zone = [entryText, ...sources.map((f) => readFileSync(f, 'utf8'))].some((t) => /\bprovideZoneChangeDetection\(/.test(t));
+  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone })).filter((c): c is NonNullable<typeof c> => !!c);
   for (const c of components) c.page = routes.some((r) => r.component === c.name);
-  modules = sources.filter((f) => f !== routesFile && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts')));
+  // An NgModule declares; the release build reads what it declares from the components themselves.
+  const ngModules = sources.filter((f) => {
+    const sf = ts.createSourceFile(f, readFileSync(f, 'utf8'), ts.ScriptTarget.Latest, true);
+    return sf.statements.some((st) => ts.isClassDeclaration(st) && ts.getDecorators(st)?.some((d) => /^NgModule\(/.test(d.expression.getText())))
+      && sf.statements.every((st) => ts.isImportDeclaration(st) || (ts.isClassDeclaration(st) && ts.getDecorators(st)?.some((d) => /^NgModule\(/.test(d.expression.getText()))));
+  });
+  modules = sources.filter((f) => f !== routesFile && !ngModules.includes(f) && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts')));
   routing = { routes, initial };
   root = /bootstrapApplication\(\s*(\w+)/.exec(entryText)?.[1] ?? '';
-  if (!root) throw new Error(`${entry}: no bootstrapApplication(Component)`);
+  const appModule = /bootstrapModule\(\s*(\w+)/.exec(entryText)?.[1];
+  if (!root && appModule) {
+    const declaring = ngModules.map((f) => readFileSync(f, 'utf8')).find((t) => new RegExp(`class\\s+${appModule}\\b`).test(t));
+    root = (declaring && /bootstrap:\s*\[\s*(\w+)/.exec(declaring)?.[1]) ?? '';
+  }
+  if (!root) throw new Error(`${entry}: no bootstrapApplication(Component) or bootstrapModule(AppModule) with a bootstrap component`);
   prelude = `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
 }
 
@@ -150,7 +183,7 @@ const virtual = new Map([...components.map((c) => [c.file, c.source] as [string,
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
 const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
 const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins);
-const infos = new Map<string, ComponentInfo & { outputs?: string[]; optional?: string[]; passed?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, optional: c.optional, passed: c.passed }]));
+const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
 const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
@@ -160,12 +193,13 @@ const properties = collectProperties(checker, sourceFiles);
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
 const native = pluginNative(plugins.all(), out);
 const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
+translator.appModule = name;
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
@@ -174,7 +208,7 @@ const translated = translateModules(translator, program, [...modules, ...compile
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
-  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), framework, { slots: mounted, rowSignals: mounted }), '}'];
+  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone }), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
 }
 addInterfaces(translator, translated);
@@ -194,7 +228,7 @@ const css = kitCss(appStylesheets(app, 'ios', importedStylesheets(entry, appDir)
 const patched = corePatches(app, nodeModules(app));
 if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
 // Set before the module initializers run: they may make views.
-const switches = (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
+const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
 const start = switches + `        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n${inits}`

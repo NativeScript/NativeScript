@@ -339,8 +339,14 @@ public final class Effect: Subscriber {
         self.derived = derived
         height = EffectOrder.current.height
         Owner.current?.effects.append(self)
+        Effect.created?(self)
         run()
     }
+
+    /// Called with each effect as it is made: zone.js change detection re-runs them all.
+    static var created: ((Effect) -> Void)?
+
+    var disposed: Bool { body == nil }
 
     fileprivate func track(_ source: Source) { sources[ObjectIdentifier(source)] = source }
 

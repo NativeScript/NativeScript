@@ -124,6 +124,8 @@ export class Translator implements AsyncTranslator {
   /** The view properties the program registers with core's `Property`. */
   readonly properties: Properties | null;
   readonly patterns: Patterns;
+  /** The app's Swift module, which qualifies a module function a class member's name shadows. */
+  appModule = '';
 
   constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties } = {}) {
     this.pluginFiles = new Set(options.pluginFiles ?? []);
@@ -324,6 +326,8 @@ export class Translator implements AsyncTranslator {
     if (this.isEventData(t)) return 'EventData';
     // A generic type the kit declares (`ListItem<Recipe>`) keeps its arguments.
     const shim = sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/');
+    // RxJS's classes are the kit's Rx classes: core has an Observable of its own.
+    if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/rxjs.d.ts') return `Rx${name}${(t as ts.TypeReference).typeArguments?.length ? `<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>` : ''}`;
     if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && Object.hasOwn(KIT_NAMES, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES[name];
     const renamed = sym?.valueDeclaration && this.topNames().get(sym.valueDeclaration);
@@ -1077,6 +1081,7 @@ export class Translator implements AsyncTranslator {
     const lines: string[] = [];
     const inits: string[] = [];
     const propParams: string[] = [];
+    let late = false;
     this.indent = '    ';
     for (const m of cls.members) {
       if (ts.isPropertyDeclaration(m)) {
@@ -1114,7 +1119,11 @@ export class Translator implements AsyncTranslator {
         }
         // A field the class assigns after construction (a Vue `let`) is a Swift `var`.
         const reassigned = !hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) && this.isAssigned(cls, name);
-        lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(name)}: ${t}`);
+        // Swift lets a closure capture self only once every stored property has a value: from the
+        // first initializer whose closure captures `this`, fields start nil.
+        late ||= capturesThis(m.initializer);
+        if (late) lines.push(`    var ${ident(name)}: ${t.endsWith('?') ? t : `${t}!`}`);
+        else lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(name)}: ${t}`);
         this.indent = '        ';
         inits.push(`        self.${ident(name)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
         this.indent = '    ';
@@ -2841,7 +2850,9 @@ export class Translator implements AsyncTranslator {
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body);
     // A function held untyped (one of several function types): called as script calls it.
     if (this.typeOf(callee) === 'Any?') return `jsCall(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
-    return `${this.narrowed(callee, ident(ts.isIdentifier(callee) ? this.declaredName(callee) : name))}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
+    const fn = ident(ts.isIdentifier(callee) ? this.declaredName(callee) : name);
+    const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], fn, ident) ? `${this.appModule}.${fn}` : fn;
+    return `${this.narrowed(callee, qualified)}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
   }
 
   /** `renderNativeScriptApp(host, Component, props)`: the component rendered into the host as Octane's root. */
@@ -3983,4 +3994,25 @@ function refersTo(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeChe
   };
   visit(node);
   return found;
+}
+
+/** Whether an initializer holds a function that reads `this`. */
+function capturesThis(e: ts.Expression): boolean {
+  let found = false;
+  const visit = (n: ts.Node, inFunction: boolean): void => {
+    if (found) return;
+    if (n.kind === ts.SyntaxKind.ThisKeyword && inFunction) { found = true; return; }
+    // A `function` has a `this` of its own.
+    if (ts.isFunctionExpression(n) || ts.isFunctionDeclaration(n) || ts.isClassLike(n)) return;
+    ts.forEachChild(n, (c) => visit(c, inFunction || ts.isArrowFunction(n)));
+  };
+  visit(e, false);
+  return found;
+}
+
+/** Whether a module function `fn` called at `at` is shadowed by a member of the class around it, as a bare name is in Swift and Kotlin. */
+function shadowedByMember(at: ts.Node, decl: ts.Declaration | undefined, fn: string, ident: (name: string) => string): boolean {
+  if (!decl || !ts.isFunctionDeclaration(decl) || !ts.isSourceFile(decl.parent)) return false;
+  const cls = ts.findAncestor(at, ts.isClassLike);
+  return !!cls && cls.members.some((m) => !!m.name && ts.isIdentifier(m.name) && ident(m.name.text) === fn);
 }

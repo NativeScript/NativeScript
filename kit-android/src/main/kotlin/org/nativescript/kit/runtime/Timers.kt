@@ -108,6 +108,7 @@ object JSEventLoop {
             } catch (e: Throwable) {
                 jsReportUncaught(jsCaught(e))
             }
+            Microtasks.taskRan()
             if (timer.repeatInterval != null && timer.active) {
                 timer.duration = timer.repeatInterval
                 insert(timer, start)

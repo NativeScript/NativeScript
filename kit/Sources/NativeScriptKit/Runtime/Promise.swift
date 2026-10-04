@@ -19,6 +19,13 @@ public enum Microtasks {
 
     public static func enqueue(_ job: @escaping () -> Void) { queue.append(job) }
 
+    /// Called when a checkpoint ends after a task (`taskRan`) or a job ran: Angular's zone turning stable.
+    nonisolated(unsafe) public static var onStable: (() -> Void)?
+    nonisolated(unsafe) private static var turned = false
+
+    /// A JavaScript task (an event handler, a timer callback) ran.
+    public static func taskRan() { turned = true }
+
     /// Runs queued jobs FIFO, including jobs they queue, then reports unhandled rejections
     /// (and drains again if reporting queued more). A call made while draining does nothing.
     public static func checkpoint() {
@@ -31,6 +38,7 @@ public enum Microtasks {
                 queue[head] = nil
                 head += 1
                 job()
+                turned = true
                 if head >= 1024 && head * 2 >= queue.count {
                     queue.removeFirst(head)
                     head = 0
@@ -38,7 +46,12 @@ public enum Microtasks {
             }
             queue.removeAll(keepingCapacity: true)
             head = 0
-            guard !pendingRejections.isEmpty else { return }
+            if pendingRejections.isEmpty {
+                guard turned, let onStable else { return }
+                turned = false
+                onStable()
+                continue
+            }
             let pending = pendingRejections
             pendingRejections = []
             for rejection in pending where !rejection.handled {
