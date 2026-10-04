@@ -168,7 +168,10 @@ program, and its iOS code is linked as the plugin ships it. ns-octane (a copy
 of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
 `@nativescript-community/gesturehandler`, `@nstudio/nativescript-menu`,
 `@nativescript/input-accessory`, `@nstudio/nstreamdown` and
-`@nativescript/haptics`) builds this way.
+`@nativescript/haptics`) builds this way: ten screens through the drawer,
+a chat, a streamed reply, a context menu and the settings sheet match its
+NativeScript Release build pixel for pixel, in a 2.2 MB app against 46.7 MB
+(`results/ns-octane.json`).
 
 - **Source.** `compiler/src/plugins/source.ts` finds the commit a published
   version was built from (the `gitHead` npm recorded, else the version's tag,
