@@ -15,7 +15,7 @@ export interface KitType {
   name: string;
   base: string | null;
   members: Map<string, KitMember[]>;
-  /** NativeScript property names the type applies by name (the `case` labels of its setProperty and shorthands). */
+  /** NativeScript property names the type applies by name: the `case` labels of its setProperty, shorthands, and names it reads back (`applied["src"]`). */
   props: Set<string>;
   /** The class of the native view a kit view creates (Android: `createNativeView(): NativeView = VerticalScrollView(…)`), fully qualified. */
   native?: string;
@@ -42,10 +42,15 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
     const body = text.slice(at, text.indexOf('\n}\n', at));
     for (const m of body.matchAll(/^\s*case\s+((?:"\w+"(?:,\s*)?)+):/gm)) for (const n of m[1].matchAll(/"(\w+)"/g)) shorthands.add(n[1]);
   }
+  // A top-level function handling names for the classes that call it (`applyTextInputTrait`).
+  const functionProps = new Map<string, Set<string>>();
+  const calls = new Map<KitType, Set<string>>();
   for (const f of files) {
     const text = readFileSync(join(kitSources, f), 'utf8').replace(/\/\/.*$/gm, '');
     const stack: { type: KitType | null; depth: number }[] = [];
     let depth = 0;
+    let caseContinues = false;
+    let free: Set<string> | null = null;
     for (const line of text.split('\n')) {
       const decl = /^\s*(?:@\w+\s+)*(?:(?:public|open|final|internal)\s+)*(class|struct|enum|extension|protocol)\s+(\w+)(?:<[^>]*>)?(?:\s*:\s*([\w.]+))?/.exec(line);
       const isPublic = /\b(public|open)\b/.test(line) || decl?.[1] === 'extension';
@@ -66,7 +71,18 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
       } else {
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
-        if (enclosing && /^\s*case\s+"/.test(line)) for (const m of line.matchAll(/"(\w+)"/g)) enclosing.props.add(m[1]);
+        const fn = depth === 0 ? /^\s*(?:(?:public|internal|fileprivate|private)\s+)?func\s+(\w+)/.exec(line) : null;
+        if (fn) functionProps.set(fn[1], (free = new Set()));
+        const isCase: boolean = /^\s*case\s+"/.test(line) || (caseContinues && /^\s*"/.test(line));
+        caseContinues = isCase && /,\s*$/.test(line);
+        const names = [...(isCase ? [...line.matchAll(/"(\w+)"/g)].map((m) => m[1]) : []), ...readNames(line)];
+        const into = enclosing?.props ?? (depth > 0 ? free : null);
+        if (into) for (const n of names) into.add(n);
+        if (enclosing) {
+          const called = calls.get(enclosing) ?? new Set();
+          for (const m of line.matchAll(/(?<![\w.])([a-z]\w*)\(/g)) called.add(m[1]);
+          calls.set(enclosing, called);
+        }
         if (owner?.type && depth === owner.depth + 1 && /\b(public|open)\b/.test(line)) {
           const isStatic = /\b(static|class)\s+(func|var|let)\b/.test(line);
           let m: RegExpExecArray | null;
@@ -85,12 +101,19 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
         else if (ch === '}') {
           depth--;
           if (stack.length && stack.at(-1)!.depth === depth) stack.pop();
+          if (depth === 0) free = null;
         }
       }
     }
   }
+  for (const [type, called] of calls) for (const fn of called) for (const n of functionProps.get(fn) ?? []) type.props.add(n);
   for (const n of shorthands) types.get('View')?.props.add(n);
   return types;
+}
+
+/** Property names a kit class reads from its own stored values (`applied["src"]`, `get("dateStyle")`) or tests for (`name == "orientation"`): a value set by name reaches them. */
+export function readNames(line: string): string[] {
+  return [...line.matchAll(/(?<![\w.?])(?:self\.|this\.)?(?:(?:applied|locals)\["(\w+)"\]|get\("(\w+)"\))|\bname\s*==\s*"(\w+)"/g)].map((m) => m[1] ?? m[2] ?? m[3]);
 }
 
 /** The text up to the parenthesis closing the one before `start`, and the text after it. */

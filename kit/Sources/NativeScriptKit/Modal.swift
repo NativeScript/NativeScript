@@ -90,6 +90,10 @@ public enum Modal {
         if let style = ios?[jsKey: "presentationStyle"] as? Double, style != 0, let presentation = UIModalPresentationStyle(rawValue: Int(style)) {
             controller.modalPresentationStyle = presentation
         }
+        if let style = toText(ios?[jsKey: "statusBarStyle"]), !style.isEmpty {
+            controller.modalPresentationCapturesStatusBarAppearance = true
+            view.set("statusBarStyle", style)
+        }
         let cancelable = o?[jsKey: "cancelable"] == nil ? true : jsTruthy(o?[jsKey: "cancelable"])
         if cancelable {
             controller.presentationController?.delegate = DismissDelegate.shared

@@ -9,6 +9,8 @@
 // --all-errors lists every construct the translator cannot handle instead of
 // stopping at the first; with --keep-going the project is written anyway, so
 // Swift's own errors show where the translation is incomplete.
+// --allow-unimplemented-properties (or nativeReleaseOptions.allowUnimplementedProperties)
+// builds an app that sets properties core declares and the kit does not apply, warning for each.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +25,9 @@ import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
-import { KIT_PLUGINS } from './core.ts';
+import { KIT, KIT_PLUGINS } from './core.ts';
+import { kitIndex } from './kit-index.ts';
+import { describe, PropertyGuard } from './unimplemented.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
@@ -34,7 +38,7 @@ import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
 import { collectProperties } from './properties.ts';
-import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements } from './app-resources.ts';
+import { appResourcesDir, readConfig, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
@@ -262,10 +266,27 @@ function keyStore() {
   if (password === undefined || alias === undefined || aliasPassword === undefined) throw new Error('--key-store-path needs --key-store-password, --key-store-alias and --key-store-alias-password');
   return { path, password, alias, aliasPassword };
 }
+// Properties the app sets that core declares and the kit does not apply: an error unless the app opts out.
+const allowUnapplied = args.includes('--allow-unimplemented-properties') || (readConfig(app).nativeReleaseOptions as { allowUnimplementedProperties?: boolean } | undefined)?.allowUnimplementedProperties === true;
+const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
+const unapplied = await (async () => {
+  const kit = platform === 'android'
+    ? await import('./core-kotlin.ts').then((k) => ({ index: k.kotlinKitIndex(k.KIT), sources: k.KIT }))
+    : { index: kitIndex(KIT), sources: KIT };
+  const guard = new PropertyGuard(checker, program, { ...kit, name: kitName, platform });
+  const found = [...guard.templates(components, new Map(components.map((c) => [c.name, c.props])), componentSource), ...guard.stylesheets(sheets)];
+  return found.map((u) => describe(u, kitName));
+})();
+if (unapplied.length && allowUnapplied) for (const u of unapplied) console.warn(`warning: ${u}`);
+// iOS with --all-errors reports them with the translator's.
+else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors'))) {
+  console.error(unapplied.join('\n'));
+  if (!args.includes('--keep-going')) throw new Error(`${unapplied.length} properties core declares that ${kitName} does not apply (--allow-unimplemented-properties or nativeReleaseOptions.allowUnimplementedProperties builds anyway)`);
+}
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
@@ -289,7 +310,8 @@ translator.plainFields = framework === 'angular';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
 const appNative = native.appSwift ? nativeTable(name).classes : {};
 translator.appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
-if (args.includes('--all-errors')) translator.errors = [];
+translator.allowUnapplied = allowUnapplied;
+if (args.includes('--all-errors')) translator.errors = allowUnapplied ? [] : [...unapplied];
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });

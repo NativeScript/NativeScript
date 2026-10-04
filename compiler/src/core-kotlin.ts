@@ -2,13 +2,13 @@ import ts from 'typescript';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isCoreDeclaration } from './core.ts';
-import { kitExtends, kitMember, type KitMember, type KitType } from './kit-index.ts';
+import { isCoreDeclaration, unappliedProperty } from './core.ts';
+import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
 import { KIT_NAMES_ANDROID, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 
 /** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
 const TOP_LEVEL = '';
-const KIT = fileURLToPath(new URL('../../kit-android/src/main/kotlin/org/nativescript/kit', import.meta.url));
+export const KIT = fileURLToPath(new URL('../../kit-android/src/main/kotlin/org/nativescript/kit', import.meta.url));
 const NATIVE_MEMBERS = new Set(['android', 'nativeView', 'nativeViewProtected']);
 /** View methods whose arguments core reads as plain script objects. */
 const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
@@ -64,6 +64,7 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
         if (enclosing && /^\s*"\w+"(\s*,\s*"\w+")*\s*->/.test(line)) for (const m of line.matchAll(/"(\w+)"/g)) enclosing.props.add(m[1]);
+        if (enclosing) for (const n of readNames(line)) enclosing.props.add(n);
         if (owner?.type && depth === owner.depth + 1 && !/\b(private|internal)\b/.test(line) && (!/\bprotected\b/.test(line) || /\b(open|override|abstract)\b/.test(line))) {
           const isStatic = owner.companion || !!(owner.type as KitType & { object?: boolean }).object;
           let m: RegExpExecArray | null;
@@ -277,7 +278,7 @@ export class CoreKotlin implements KotlinCore {
       return native === 'Any?' ? `${recv}.nativeView` : `(${recv}.nativeView as ${native})`;
     }
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
-      if (!this.isViewProperty(owner.name, name)) throw t.error(e, `${owner.name}.${name} (not a property kit-android applies)`);
+      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'kit-android');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
     }
     const m = this.member(owner.name, name, e);
@@ -319,7 +320,7 @@ export class CoreKotlin implements KotlinCore {
     const name = left.name.text;
     const recv = owner.isStatic ? owner.name : this.receiver(left.expression, left);
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
-      if (!this.isViewProperty(owner.name, name)) throw t.error(left, `${owner.name}.${name} (not a property kit-android applies)`);
+      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'kit-android');
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
     const m = this.member(owner.name, name, left);
