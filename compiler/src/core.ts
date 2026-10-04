@@ -178,7 +178,9 @@ export class CoreAPI {
     const t = this.t;
     const name = left.name.text;
     const recv = owner.isStatic ? owner.name : t.expr(left.expression);
-    if (!owner.isStatic && this.isView(owner.name) && (!kitMember(this.index, owner.name, name) || this.isViewProperty(owner.name, name))) {
+    // A member a kit-implemented plugin declares itself (a Canvas's `width`, its surface in pixels) is not the view property of that name.
+    const pluginOwn = (t.resolve(left.name)?.declarations ?? []).some((d) => KIT_PLUGINS.some((p) => d.getSourceFile().fileName.includes(`/node_modules/${p}/`)));
+    if (!owner.isStatic && this.isView(owner.name) && (!kitMember(this.index, owner.name, name) || (this.isViewProperty(owner.name, name) && !pluginOwn))) {
       if (!this.isViewProperty(owner.name, name)) throw t.error(left, `${owner.name}.${name} (not a property NativeScriptKit applies)`);
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }

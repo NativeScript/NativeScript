@@ -361,7 +361,7 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     case let array as JSArrayProtocol:
         if key == "length" { return Double(array.jsLength) }
         if let index = jsArrayIndex(key) { return Int(index) < array.jsLength ? array.jsElement(at: Int(index)) : nil }
-        return nil
+        return jsArrayMethod(array, key)
     case let string as String:
         if key == "length" { return Double(string.utf16.count) }
         if let index = jsArrayIndex(key) {

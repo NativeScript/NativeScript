@@ -847,3 +847,51 @@ func jsMergeSort<T>(_ values: inout [T], _ less: (T, T) throws -> Bool) rethrows
     }
     values = source
 }
+
+/// An array's methods read by name from untyped code (`value.map(fn)` where `value` is `any`): the
+/// common read-only ones, over the elements as JavaScript values; the results are untyped arrays.
+func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
+    let each = { (callback: Any?, body: (Any?, Any?) throws -> Bool) throws in
+        for (i, element) in array.jsAnyElements.enumerated() where try !body(element, try jsCall(callback, element, Double(i), array)) { return }
+    }
+    switch key {
+    case "map":
+        return { _, args in
+            var out: [Any?] = []
+            try each(jsArg(args, 0)) { _, r in out.append(r); return true }
+            return JSArray<Any?>(out)
+        }
+    case "filter":
+        return { _, args in
+            var out: [Any?] = []
+            try each(jsArg(args, 0)) { e, r in if jsTruthy(r) { out.append(e) }; return true }
+            return JSArray<Any?>(out)
+        }
+    case "forEach":
+        return { _, args in try each(jsArg(args, 0)) { _, _ in true }; return nil }
+    case "find":
+        return { _, args in
+            var found: Any? = nil
+            try each(jsArg(args, 0)) { e, r in if jsTruthy(r) { found = e; return false }; return true }
+            return found
+        }
+    case "some", "every":
+        return { _, args in
+            var result = key == "every"
+            try each(jsArg(args, 0)) { _, r in
+                if jsTruthy(r) == (key == "some") { result = key == "some"; return false }
+                return true
+            }
+            return result
+        }
+    case "includes":
+        return { _, args in array.jsAnyElements.contains { jsSameValueZero($0, jsArg(args, 0)) } }
+    case "join":
+        return { _, args in
+            let separator = jsIsNullish(jsArg(args, 0)) ? "," : jsToString(jsArg(args, 0))
+            return array.jsAnyElements.map { jsIsNullish($0) ? "" : jsToString($0) }.joined(separator: separator)
+        }
+    default:
+        return nil
+    }
+}

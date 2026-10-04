@@ -115,7 +115,7 @@ const SHIMS: Record<string, string> = {
     export declare function bootstrapApplication(component: any, options?: any): Promise<any>;
     export type NativeDialogConfig = any;
     export declare class NativeDialogRef<T = any, R = any> { close(result?: R): void; afterClosed(): Observable<R | undefined> }
-    export declare class NativeDialogService { open<T, R = any>(component: abstract new (...args: any[]) => T, config?: NativeDialogConfig): NativeDialogRef<T, R> }
+    export declare class NativeDialogService { open<T = any, R = any>(component: any, config?: NativeDialogConfig): NativeDialogRef<T, R> }
     export { NativeDialogService as NativeDialog };
     export declare const NativeScriptCommonModule: any;
     export declare const NativeScriptModule: any;

@@ -84,6 +84,8 @@ export class Translator implements AsyncTranslator {
   private computed = new Set<string>();
   /** Variables initialized from an element read (`const r = xs[i]`): Swift optionals, unwrapped where they are used. */
   private undefinedVars = new Map<ts.Symbol, string>();
+  /** Optional chain reads whose undefined the context tests rather than converts (`a?.b || x`). */
+  private optionalReads = new Map<ts.Node, boolean>();
 
   /** A binding Swift holds as optional though TypeScript types it present (a native method's nullable parameter): reads unwrap it as undefined would read. */
   bindsOptional(name: ts.Node, type: string): string {
@@ -2697,6 +2699,7 @@ export class Translator implements AsyncTranslator {
         && !(ts.isCallExpression(target) && this.maybeUndefined(target)) && !(ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e)) {
       const code = `(${this.expr(target)} as ${optionalType(tt)})?.${ident(name)}`;
       const rt = this.typeOf(e);
+      if (this.optionalReads.has(e) && !rt.endsWith('?') && rt !== 'Any?') { this.optionalReads.set(e, true); return code; }
       return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt);
     }
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
@@ -3760,14 +3763,21 @@ export class Translator implements AsyncTranslator {
         const lt = this.tryPrefix(e.left) ? 'try ' : '';
         const rt = this.tryPrefix(e.right) ? 'try ' : '';
         const throws = lt || rt ? 'throws ' : '';
-        const leftType = this.typeOf(e.left);
+        // `a?.b || x`: the chain's undefined is falsy here, not the string or number it would convert to elsewhere.
+        let inner = e.left;
+        while (ts.isParenthesizedExpression(inner)) inner = inner.expression;
+        const chain = op === K.BarBarToken && ts.isPropertyAccessExpression(inner) && !!inner.questionDotToken;
+        if (chain) this.optionalReads.set(inner, false);
+        const leftCode = this.expr(e.left);
+        const leftType = this.optionalReads.get(inner) ? optionalType(this.typeOf(e.left)) : this.typeOf(e.left);
+        this.optionalReads.delete(inner);
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
         const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
           : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil' : v;
         return op === K.BarBarToken
-          ? `({ () ${throws}-> ${t} in let ${v} = ${lt}${this.expr(e.left)}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }())`
-          : `({ () ${throws}-> ${t} in let ${v} = ${lt}${this.expr(e.left)}; return jsTruthy(${v}) ? ${rt}${right} : ${leftValue} }())`;
+          ? `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }())`
+          : `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : ${leftValue} }())`;
       }
       case K.InstanceOfKeyword: {
         const name = e.right.getText();

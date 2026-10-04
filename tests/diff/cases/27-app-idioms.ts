@@ -51,3 +51,6 @@ async function stream(text: string) {
   return acc;
 }
 stream('one two  three').then((s) => console.log(JSON.stringify(s)));
+
+const untyped: any = JSON.parse('[1, 2, 3]');
+console.log(untyped.map((n: number) => n * 2).join('-'), untyped.filter((n: number) => n > 1).length, untyped.some((n: number) => n > 2), untyped.every((n: number) => n > 2), untyped.find((n: number) => n === 2), untyped.includes(3));
