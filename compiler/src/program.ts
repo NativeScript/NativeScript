@@ -25,6 +25,7 @@ const SHIMS: Record<string, string> = {
     import type { EventData, Pointer } from '@nativescript/release';
     export type { EventData, Pointer };
     export interface GestureEventData extends EventData {}
+    export interface ItemEventData extends EventData {}
     export interface TapGestureEventData extends GestureEventData {}
     export interface GestureEventDataWithState extends GestureEventData {}
     export interface PinchGestureEventData extends GestureEventDataWithState {}
