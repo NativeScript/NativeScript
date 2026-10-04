@@ -236,8 +236,12 @@ fun fromJavaValue(value: Any?): Any? = when (value) {
     else -> if (value.javaClass.isArray) JSArray((0 until JavaArray.getLength(value)).map { fromJavaValue(JavaArray.get(value, it)) }) else value
 }
 
-/** `object.key` on a Java object script holds untyped: its public field, a method by name, or an expando. */
+/** `object.key` on a Java object script holds untyped: its public field, a method by name, or an expando. A Java array has a length and its elements. */
 fun jsJavaGet(target: Any, key: String): Any? {
+    if (target.javaClass.isArray) {
+        val length = JavaArray.getLength(target)
+        return if (key == "length") length.toDouble() else jsArrayIndex(key)?.let { if (it < length) fromJavaValue(JavaArray.get(target, it.toInt())) else null }
+    }
     javaExpandos[target]?.let { if (it.has(key)) return it[key] }
     val static = target is Class<*>
     val cls = if (static) target as Class<*> else target.javaClass
@@ -249,6 +253,12 @@ fun jsJavaGet(target: Any, key: String): Any? {
 
 /** `object.key = value` on a Java object script holds untyped: its public field, else an expando. */
 fun jsJavaSet(target: Any, key: String, value: Any?) {
+    if (target.javaClass.isArray) {
+        val index = jsArrayIndex(key) ?: return
+        if (index >= JavaArray.getLength(target)) throw JSException(JSRangeError("Index $index out of a Java array of ${JavaArray.getLength(target)}"))
+        JavaArray.set(target, index.toInt(), toJavaValue(value, target.javaClass.componentType!!))
+        return
+    }
     val static = target is Class<*>
     val field = javaField(target, key, static)
     if (field != null && !Modifier.isFinal(field.modifiers)) {

@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ident, numberLiteral, optionalType, type KotlinNative, type Translator } from './kotlin.ts';
 import {
-  ACC_ABSTRACT, ACC_BRIDGE, ACC_FINAL, ACC_INTERFACE, ACC_PRIVATE, ACC_PROTECTED, ACC_PUBLIC, ACC_STATIC, ACC_SYNTHETIC,
+  ACC_ABSTRACT, ACC_BRIDGE, ACC_FINAL, ACC_INTERFACE, ACC_PRIVATE, ACC_PROTECTED, ACC_PUBLIC, ACC_STATIC, ACC_SYNTHETIC, ACC_VARARGS,
   ClassPath, androidJar, javaTypeName, methodTypes, newer, signatureTypes, type JavaClass, type JavaMember,
 } from './natives/classfiles.ts';
 
@@ -42,6 +42,11 @@ const KOTLIN_MAPPED: Record<string, string> = {
   'java/lang/Throwable.getMessage()Ljava/lang/String;': '.message', 'java/lang/Throwable.getCause()Ljava/lang/Throwable;': '.cause',
   'java/lang/Object.getClass()Ljava/lang/Class;': '.javaClass',
 };
+/** Java collection interfaces Kotlin reads as its own: a value Java returns is not assignable to the Java name. */
+const KOTLIN_COLLECTIONS: Record<string, string> = {
+  'java/util/List': 'MutableList', 'java/util/Collection': 'MutableCollection', 'java/util/Set': 'MutableSet', 'java/util/Map': 'MutableMap',
+  'java/util/Map$Entry': 'MutableMap.MutableEntry', 'java/util/Iterator': 'MutableIterator', 'java/lang/Iterable': 'MutableIterable',
+};
 const ANDROID_TYPINGS = /[\\/]@nativescript[\\/]types-android[\\/]|[\\/]node_modules[\\/](?:@[^\\/]+[\\/])?[^\\/]*android[^\\/]*[\\/].*\.d\.ts$/i;
 
 type Kind =
@@ -51,7 +56,10 @@ type Kind =
   | { kind: 'array'; elem: Kind }
   | { kind: 'object'; classes: string[] };
 
-interface Callable { m: JavaMember; params: string[]; ret: string }
+/** A Java method or constructor; `fixed` when a varargs call passes its last parameter's elements one by one after that many arguments. */
+interface Callable { m: JavaMember; params: string[]; ret: string; fixed?: number }
+/** A Java class NativeScript's `Base.extend({ … })` makes, as the Kotlin class `name` declared where `owner` is. */
+interface Extension { call: ts.CallExpression; literal: ts.ObjectLiteralExpression; base: JavaClass; interfaces: JavaClass[]; owner: ts.VariableDeclaration | null; name: string }
 /** Java code and its Java type; `nullable` when it is annotated `@Nullable` and so typed `T?` in Kotlin. */
 interface Raw { code: string; desc: string; optional?: boolean; nullable?: boolean }
 
@@ -116,6 +124,11 @@ export class AndroidNativeAPI implements KotlinNative {
     return internal.replace(/[/$]/g, '.');
   }
 
+  /** A class as Kotlin names its type (static members keep the Java name: `java.util.List.of`). */
+  private kotlinTypeName(internal: string): string {
+    return KOTLIN_COLLECTIONS[internal] ?? this.kotlinName(internal);
+  }
+
   private typeParamCount(c: JavaClass | null): number {
     const sig = c?.signature;
     if (!sig?.startsWith('<')) return 0;
@@ -130,9 +143,9 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   /** A class as a Kotlin type: its dotted name, with type arguments from TypeScript's (or `star`) when it is generic. */
-  private classRef(c: JavaClass, args: readonly ts.Type[] | undefined, star: string, where?: ts.Node): string {
+  private classRef(c: JavaClass, args: readonly ts.Type[] | undefined, star: string, where?: ts.Node, asType = false): string {
     const n = this.typeParamCount(c);
-    const name = this.kotlinName(c.name);
+    const name = asType ? this.kotlinTypeName(c.name) : this.kotlinName(c.name);
     if (!n) return name;
     const bounds = this.typeParamBounds(c);
     // An untyped argument (a plugin's own type parameter) is the parameter's bound, which any argument satisfies.
@@ -186,7 +199,7 @@ export class AndroidNativeAPI implements KotlinNative {
       if (internal === 'java/lang/Object') { out.push(null); continue; }
       const cls = this.classpath.get(internal);
       const params = cls ? this.typeParamCount(cls) : 0;
-      out.push(`${this.kotlinName(internal)}${params ? `<${Array(params).fill('*').join(', ')}>` : ''}`);
+      out.push(`${this.kotlinTypeName(internal)}${params ? `<${Array(params).fill('*').join(', ')}>` : ''}`);
     }
     return out;
   }
@@ -195,14 +208,14 @@ export class AndroidNativeAPI implements KotlinNative {
     if (t.isUnion()) {
       const parts = t.types.filter((u) => !(u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)));
       const common = this.commonClass(parts);
-      return common ? this.kotlinName(common) : null;
+      return common ? this.kotlinTypeName(common) : null;
     }
     const sym = t.aliasSymbol ?? t.getSymbol();
     if (!sym || !this.isNativeSymbol(sym)) return null;
     if (this.isJavaArray(t)) return `JSArray<${this.t.type(this.t.checker.getTypeArguments(t as ts.TypeReference)[0])}>`;
     const c = this.classOf(sym);
     if (!c) return null;
-    return this.classRef(c, (t as ts.TypeReference).typeArguments, '*');
+    return this.classRef(c, (t as ts.TypeReference).typeArguments, '*', undefined, true);
   }
 
   /** `androidNative.Array<T>`, NativeScript's type for a Java array, which translated code holds as a JSArray. */
@@ -277,6 +290,10 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   isClassAlias(d: ts.VariableDeclaration): boolean {
+    return this.nativeAlias(d) || !!this.extensionOf(d);
+  }
+
+  private nativeAlias(d: ts.VariableDeclaration): boolean {
     if (!ts.isIdentifier(d.name)) return false;
     // `let PageLayout: typeof com.nativescript.gesturehandler.PageLayout`, assigned the class before use.
     if (d.type && ts.isTypeQueryNode(d.type)) {
@@ -322,11 +339,18 @@ export class AndroidNativeAPI implements KotlinNative {
   private classSymbol(e: ts.Expression): ts.Symbol | undefined {
     const sym = this.t.resolve(e);
     const decl = sym?.valueDeclaration;
-    return decl && ts.isVariableDeclaration(decl) && this.isClassAlias(decl) ? this.aliasedClass(decl) : sym;
+    return decl && ts.isVariableDeclaration(decl) && this.nativeAlias(decl) ? this.aliasedClass(decl) : sym;
   }
 
   /** What an expression is a Java member of: a class itself (static), or an instance of these classes. */
   private receiver(e: ts.Expression): { cls: JavaClass; isStatic: true } | { classes: string[]; isStatic: false } | null {
+    const self = this.extensionOfThis(e);
+    if (self) return { classes: extensionClasses(self), isStatic: false };
+    const own = this.ownMember(e);
+    if (own) {
+      const classes = own.fn ? null : this.classesOf(this.t.checker.getTypeAtLocation(own.p.name!));
+      return classes ? { classes, isStatic: false } : null;
+    }
     const untyped = this.untypedClass(e);
     if (untyped) return { cls: untyped, isStatic: true };
     const sym = this.classSymbol(e);
@@ -378,6 +402,9 @@ export class AndroidNativeAPI implements KotlinNative {
   // ---- Reads, writes, calls ------------------------------------------------------------------
 
   property(e: ts.PropertyAccessExpression): string | null {
+    const own = this.ownMember(e);
+    if (own) return `${this.t.expr(e.expression)}${own.fn ? '::' : '.'}${ident(e.name.text)}`;
+    if (e.name.text === 'super' && this.extensionOfThis(e.expression)) throw this.t.error(e, 'this.super other than to call a superclass method (`this.super.onDraw(canvas)`)');
     if (this.appMember(e.name)) return null;
     const raw = this.read(e);
     return raw ? this.fromJava(this.unwrap(raw, e), raw.desc, raw.optional) : null;
@@ -401,6 +428,8 @@ export class AndroidNativeAPI implements KotlinNative {
     if (!f) {
       // A method read as a value (`if (layout.addRowsFromJSON)`, probing for it): the method found at run time, as the runtime finds it.
       if (this.methods(r.classes, name, false).length) return { code: `jsJavaGet(${this.t.expr(e.expression)}!!, ${JSON.stringify(name)})`, desc: 'Ljava/lang/Object;' };
+      // A property script sets on an extend class's instance: kept beside the object, as NativeScript keeps it on the JavaScript side.
+      if (this.extensionOfThis(e.expression)) return null;
       throw this.t.error(e, `${javaTypeName(`L${r.classes[0]};`)}.${name} (no Java field of that name)`);
     }
     const target = this.target(e.expression, e);
@@ -418,18 +447,26 @@ export class AndroidNativeAPI implements KotlinNative {
 
   /** The receiver's code, unwrapped when TypeScript has narrowed a nullable one, with the dot that follows it. */
   private target(e: ts.Expression, access: ts.PropertyAccessExpression): string {
+    if (this.extensionOfThis(e)) return this.t.expr(e);
     const code = this.t.expr(e);
-    const nullable = this.t.typeOf(e).endsWith('?');
+    const own = this.ownMember(e);
+    const nullable = (own ? this.t.typeOf(own.p.name!) : this.t.typeOf(e)).endsWith('?');
     if (access.questionDotToken || (access.flags & ts.NodeFlags.OptionalChain && nullable)) return `${code}?`;
     return nullable ? `${code}!!` : code;
   }
 
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
+    const own = this.ownMember(left);
+    if (own) {
+      if (own.fn) throw this.t.error(left, `${left.name.text} (a method of the extend class, assigned)`);
+      return `${this.t.expr(left.expression)}.${ident(left.name.text)} = ${this.t.coerce(value, this.t.typeOf(own.p.name!))}`;
+    }
     if (this.appMember(left.name)) return null;
     const r = this.receiver(left.expression);
     if (!r) return null;
     const name = left.name.text;
     const f = this.field(r.isStatic ? [r.cls.name] : r.classes, name, r.isStatic);
+    if (!f && this.extensionOfThis(left.expression)) return null;
     if (!f) throw this.t.error(left, `${name} (no Java field of that name; call its setter)`);
     if (f.access & ACC_FINAL) throw this.t.error(left, `${name} (a final Java field)`);
     const target = r.isStatic ? this.kotlinName(f.owner) : this.target(left.expression, left);
@@ -437,6 +474,12 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   call(e: ts.CallExpression): string | null {
+    const made = this.arrayCreate(e);
+    if (made) {
+      // Held as the Java array itself (Java methods fill it in place), unless the code declares a JavaScript array.
+      const ctx = this.t.checker.getContextualType(e);
+      return ctx && (this.isJavaArray(ctx) || this.t.checker.isArrayType(ctx)) ? this.fromJava(made.code, made.desc) : made.code;
+    }
     const raw = this.invoke(e);
     return raw ? this.fromJava(this.unwrap(raw, e), raw.desc, raw.optional) : null;
   }
@@ -449,13 +492,20 @@ export class AndroidNativeAPI implements KotlinNative {
       if ((callee.text === 'float' || callee.text === 'long') && this.isNativeSymbol(sym)) return { code: this.t.toNumber(e.arguments[0]), desc: 'D' };
       return null;
     }
-    if (!ts.isPropertyAccessExpression(callee) || this.appMember(callee.name)) return null;
+    if (!ts.isPropertyAccessExpression(callee)) return null;
+    if (this.extension(e)) throw this.t.error(e, `${skipCasts(callee.expression).getText()}.extend(…) other than as a variable's value (\`const Name = ….extend({ … })\`)`);
+    const own = this.ownMember(callee);
+    if (own) return own.fn ? { code: this.ownCall(own.fn, callee.name.text, e), desc: 'Ljava/lang/Object;' } : null;
+    const zuper = ts.isPropertyAccessExpression(callee.expression) && callee.expression.name.text === 'super' ? this.extensionOfThis(callee.expression.expression) : null;
+    if (zuper) return this.superCall(zuper, callee.name.text, e);
+    if (this.appMember(callee.name)) return null;
     const r = this.receiver(callee.expression);
     if (!r) return null;
     const name = callee.name.text;
     const classes = r.isStatic ? [r.cls.name] : r.classes;
     const owner = classes[0];
     const candidates = this.methods(classes, name, r.isStatic);
+    if (!candidates.length && this.extensionOfThis(callee.expression)) return null;
     if (!candidates.length) {
       const other = this.methods(classes, name, !r.isStatic).length;
       throw this.t.error(e, `${javaTypeName(`L${owner};`)}.${name}() (${other ? (r.isStatic ? 'an instance method called on the class' : 'a static method called on an instance') : 'no Java method of that name'})`);
@@ -478,8 +528,18 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   construct(e: ts.NewExpression): string | null {
-    const sym = this.classSymbol(e.expression);
     const args = [...(e.arguments ?? [])];
+    const made = this.extensionNamed(e.expression);
+    if (made) {
+      if (made.base.name === 'java/lang/Object') {
+        if (args.length) throw this.t.error(e, `new ${e.expression.getText()} with arguments (it extends java.lang.Object, whose constructor takes none)`);
+        return `${made.name}()`;
+      }
+      const ctors = this.constructors(made.base);
+      const chosen = this.resolveOverload(ctors, args, e, made.base.name, '<init>');
+      return `${made.name}(${this.argList(args, chosen, ctors)})`;
+    }
+    const sym = this.classSymbol(e.expression);
     const decl = sym?.valueDeclaration;
     if (decl && ts.isClassDeclaration(decl) && !decl.getSourceFile().isDeclarationFile) {
       const native = this.nativeHeritage(decl);
@@ -502,7 +562,10 @@ export class AndroidNativeAPI implements KotlinNative {
   identifier(e: ts.Identifier): string | null {
     // A class alias read as a value (`if (!PageLayout)`): the class.
     const decl = this.t.resolve(e)?.valueDeclaration;
-    if (!decl || !ts.isVariableDeclaration(decl) || !this.isClassAlias(decl)) return null;
+    if (!decl || !ts.isVariableDeclaration(decl)) return null;
+    const made = this.extensionOf(decl);
+    if (made) return `${made.name}::class.java`;
+    if (!this.nativeAlias(decl)) return null;
     const cls = this.classOf(this.aliasedClass(decl), e);
     return cls ? `${this.kotlinName(cls.name)}::class.java` : null;
   }
@@ -520,6 +583,12 @@ export class AndroidNativeAPI implements KotlinNative {
 
   private kind(e: ts.Expression): Kind {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    const self = this.extensionOfThis(e);
+    if (self) return { kind: 'object', classes: extensionClasses(self) };
+    const own = this.ownMember(e);
+    if (own && !own.fn) return this.kindOfType(this.t.checker.getTypeAtLocation(own.p.name!), e);
+    const made = ts.isNewExpression(e) ? this.extensionNamed(e.expression) : null;
+    if (made) return { kind: 'object', classes: extensionClasses(made) };
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return { kind: 'null' };
     const forced = this.forced(e);
     if (forced) return { kind: 'number', forced: forced.desc };
@@ -529,7 +598,7 @@ export class AndroidNativeAPI implements KotlinNative {
     const type = this.t.checker.getTypeAtLocation(e);
     // A Java member read through an untyped package root: the type Java gives it.
     if (type.flags & ts.TypeFlags.Any) {
-      const raw = this.raw(e);
+      const raw = this.raw(e) ?? this.createdArray(e);
       if (raw) return this.kindOfDescriptor(raw.desc);
     }
     return this.kindOfType(type, e);
@@ -608,8 +677,14 @@ export class AndroidNativeAPI implements KotlinNative {
     if (args.some(ts.isSpreadElement)) throw this.t.error(node, `${what} with a spread argument`);
     if (!candidates.length) throw this.t.error(node, `${what} (no accessible Java constructor)`);
     const kinds = args.map((a) => this.kind(a));
-    const scored = candidates.filter((c) => c.params.length === args.length).map((c) => {
-      let total = 0;
+    // A varargs method also takes its last parameter's elements one by one, ranked after every fixed-arity match as Java ranks it.
+    const spread = candidates.flatMap((c): Callable[] => {
+      const fixed = c.params.length - 1;
+      if (!(c.m.access & ACC_VARARGS) || !c.params[fixed]?.startsWith('[') || args.length < fixed) return [];
+      return [{ ...c, params: [...c.params.slice(0, fixed), ...Array(args.length - fixed).fill(c.params[fixed].slice(1))], fixed }];
+    });
+    const scored = [...candidates, ...spread].filter((c) => c.params.length === args.length).map((c) => {
+      let total = c.fixed === undefined ? 0 : 100;
       for (let k = 0; k < args.length; k++) {
         const s = this.score(kinds[k], c.params[k]);
         if (s === null) return null;
@@ -639,12 +714,15 @@ export class AndroidNativeAPI implements KotlinNative {
 
   private argList(args: readonly ts.Expression[], chosen: Callable, candidates: Callable[]): string {
     const overloaded = candidates.filter((c) => c.params.length === chosen.params.length).length > 1;
+    const last = chosen.fixed === undefined && chosen.m.access & ACC_VARARGS ? chosen.params.length - 1 : -1;
     return args.map((a, k) => {
       const desc = chosen.params[k];
-      const code = this.toJava(a, desc, !!chosen.m.nullableParams?.[k]);
+      let code = this.toJava(a, desc, !!chosen.m.nullableParams?.[k]);
       // Kotlin resolves the overload again: a null or untyped argument names the parameter type it means.
       const loose = this.kind(a).kind;
-      if (overloaded && (desc.startsWith('L') || desc.startsWith('[')) && (loose === 'null' || loose === 'any')) return `(${code} as ${this.kotlinType(desc, 'Any?')}?)`;
+      if (overloaded && (desc.startsWith('L') || desc.startsWith('[')) && (loose === 'null' || loose === 'any')) code = `(${code} as ${this.kotlinType(desc, 'Any?')}?)`;
+      // An array where Kotlin declares `vararg`: spread, or Kotlin passes it as one element.
+      if (k === last && code !== 'null') return `*${code.endsWith('?)') ? `${code}!!` : atom(code)}`;
       return code;
     }).join(', ');
   }
@@ -663,6 +741,10 @@ export class AndroidNativeAPI implements KotlinNative {
   private raw(e: ts.Expression): Raw | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     if (this.t.subst.has(e)) return null;
+    if (ts.isCallExpression(e)) {
+      const made = this.arrayCreate(e);
+      if (made) return made;
+    }
     if (ts.isPropertyAccessExpression(e) && !this.appMember(e.name) && !e.questionDotToken && this.receiver(e.expression)) return this.read(e);
     if (ts.isCallExpression(e) && !e.questionDotToken && ts.isPropertyAccessExpression(e.expression) && !this.appMember(e.expression.name) && this.receiver(e.expression.expression)) return this.invoke(e);
     return null;
@@ -686,6 +768,8 @@ export class AndroidNativeAPI implements KotlinNative {
       if (raw.desc === 'Ljava/lang/String;' && desc === 'Ljava/lang/CharSequence;') return raw.code;
       if (raw.desc.startsWith('L') && desc.startsWith('L') && this.classpath.distance(raw.desc.slice(1, -1), desc.slice(1, -1)) !== null) return raw.code;
     }
+    const created = this.createdArray(inner);
+    if (created && (created.desc === desc || desc === 'Ljava/lang/Object;')) return `(${t.expr(inner)} as ${this.kotlinType(created.desc, 'Any?')})`;
     if (NUMERIC.has(desc)) return `${atom(t.toNumber(inner))}${CONVERT[desc]}`;
     if (desc === 'Z') return t.coerce(inner, 'Boolean');
     if (desc === 'C') {
@@ -775,7 +859,7 @@ export class AndroidNativeAPI implements KotlinNative {
         } else { segment += c; i++; }
       }
       if (!args.length) args = Array(this.typeParamCount(this.classpath.get(internal))).fill('*');
-      return args.length ? `${this.kotlinName(internal)}<${args.join(', ')}>` : this.kotlinName(internal);
+      return args.length ? `${this.kotlinTypeName(internal)}<${args.join(', ')}>` : this.kotlinTypeName(internal);
     };
     return one();
   }
@@ -1019,6 +1103,279 @@ ${indent}}`;
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
     return [`class ${ident(name)} : ${supers.join(', ')} {`, ...lines, '}'].join('\n');
   }
+
+  // ---- `Base.extend({ … })` and `Array.create(type, length)` -----------------------------------
+
+  private extensions = new Map<ts.CallExpression, Extension | null>();
+  private extensionOwners = new Map<ts.VariableDeclaration, Extension>();
+  private scanned = new Set<ts.SourceFile>();
+
+  /**
+   * `Base.extend({ … })`, `Base.extend('Name', { … })`, `(Base as any).extend(…)`:
+   * NativeScript's Java subclass of Base (of java.lang.Object implementing
+   * `interfaces`), whose methods are the literal's, its value the class.
+   */
+  private extension(call: ts.CallExpression): Extension | null {
+    if (!this.extensions.has(call)) this.extensions.set(call, this.makeExtension(call));
+    return this.extensions.get(call)!;
+  }
+
+  private makeExtension(call: ts.CallExpression): Extension | null {
+    const callee = call.expression;
+    if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'extend') return null;
+    const args = call.arguments;
+    const literal = args.length === 1 ? args[0] : args.length === 2 && ts.isStringLiteralLike(args[0]) ? args[1] : undefined;
+    if (!literal || !ts.isObjectLiteralExpression(literal)) return null;
+    const recv = skipCasts(callee.expression);
+    if (!ts.isIdentifier(recv) && !ts.isPropertyAccessExpression(recv)) return null;
+    const sym = this.classSymbol(recv);
+    let base = this.untypedClass(recv) ?? (sym && sym.flags & ts.SymbolFlags.Class && this.isNativeSymbol(sym) ? this.classOf(sym, recv) : null);
+    if (!base) {
+      const decl = sym?.valueDeclaration;
+      if (decl && ts.isVariableDeclaration(decl) && this.extensionOf(decl)) throw this.t.error(call, `extending ${recv.getText()}, a class made by extend`);
+      return null;
+    }
+    if (this.methods([base.name], 'extend', true).length) return null;
+    const interfaces: JavaClass[] = [];
+    if (base.access & ACC_INTERFACE) {
+      interfaces.push(base);
+      base = this.classpath.get('java/lang/Object')!;
+    }
+    const listed = literal.properties.find((p) => propertyName(p) === 'interfaces');
+    if (listed) {
+      if (!ts.isPropertyAssignment(listed) || !ts.isArrayLiteralExpression(listed.initializer)) throw this.t.error(listed, 'interfaces other than an array literal of Java interfaces');
+      for (const el of listed.initializer.elements) {
+        const i = this.untypedClass(el) ?? this.classOf(this.classSymbol(el), el);
+        if (!i || !(i.access & ACC_INTERFACE)) throw this.t.error(el, `${el.getText()} (not a Java interface)`);
+        if (!interfaces.includes(i)) interfaces.push(i);
+      }
+    }
+    // The class is declared where the variable holding it is: `const X = Base.extend(…)`, or `let X` assigned it later.
+    let at: ts.Node = call;
+    while (ts.isParenthesizedExpression(at.parent) || ts.isAsExpression(at.parent) || ts.isTypeAssertionExpression(at.parent) || ts.isNonNullExpression(at.parent)) at = at.parent;
+    const p = at.parent;
+    let owner: ts.VariableDeclaration | null = null;
+    if (ts.isVariableDeclaration(p) && p.initializer === at && ts.isIdentifier(p.name)) owner = p;
+    else if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === at && ts.isIdentifier(p.left) && ts.isExpressionStatement(p.parent)) {
+      const d = this.t.resolve(p.left)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name)) owner = d;
+    }
+    const name = !owner ? '' : ts.isSourceFile(owner.parent.parent.parent) ? ident(this.t.topName(owner, owner.name.getText())) : ident(owner.name.getText());
+    return { call, literal, base, interfaces, owner, name };
+  }
+
+  /** The extend class a variable holds. */
+  private extensionOf(d: ts.VariableDeclaration): Extension | null {
+    const sf = d.getSourceFile();
+    if (!this.scanned.has(sf) && !sf.isDeclarationFile) {
+      this.scanned.add(sf);
+      const visit = (n: ts.Node) => {
+        if (ts.isCallExpression(n)) {
+          let x: Extension | null = null;
+          // A class Kotlin cannot make is reported where code uses it, not where a module is scanned.
+          try { x = this.extension(n); } catch { this.extensions.delete(n); }
+          if (x?.owner) {
+            if (this.extensionOwners.has(x.owner)) throw this.t.error(n, `${x.owner.name.getText()} assigned a second class made by extend`);
+            this.extensionOwners.set(x.owner, x);
+          }
+        }
+        ts.forEachChild(n, visit);
+      };
+      visit(sf);
+    }
+    return this.extensionOwners.get(d) ?? null;
+  }
+
+  private extensionNamed(e: ts.Expression): Extension | null {
+    if (!ts.isIdentifier(e)) return null;
+    const d = this.t.resolve(e)?.valueDeclaration;
+    return d && ts.isVariableDeclaration(d) ? this.extensionOf(d) : null;
+  }
+
+  /** The extend class whose instance `this` is: in a method of the literal, or an arrow function inside one. */
+  private extensionOfThis(e: ts.Node): Extension | null {
+    if (e.kind !== ts.SyntaxKind.ThisKeyword) return null;
+    let f: ts.Node | undefined = e.parent;
+    while (f && !(ts.isFunctionLike(f) && !ts.isArrowFunction(f)) && !ts.isClassLike(f)) f = f.parent;
+    if (!f || !ts.isFunctionLike(f)) return null;
+    const member = ts.isMethodDeclaration(f) ? f : ts.isFunctionExpression(f) && ts.isPropertyAssignment(f.parent) ? f.parent : null;
+    if (!member || !ts.isObjectLiteralExpression(member.parent) || !ts.isCallExpression(member.parent.parent)) return null;
+    const x = this.extension(member.parent.parent);
+    return x?.literal === member.parent ? x : null;
+  }
+
+  /** `this.name` where the literal declares `name`: a member of the Kotlin class. */
+  private ownMember(e: ts.Expression): { x: Extension; p: ts.ObjectLiteralElementLike; fn: ts.FunctionLikeDeclaration | null } | null {
+    if (!ts.isPropertyAccessExpression(e)) return null;
+    const x = this.extensionOfThis(e.expression);
+    const name = e.name.text;
+    const p = name === 'interfaces' ? undefined : x?.literal.properties.find((q) => propertyName(q) === name);
+    return p ? { x: x!, p, fn: functionOf(p) } : null;
+  }
+
+  private ownCall(fn: ts.FunctionLikeDeclaration, name: string, e: ts.CallExpression): string {
+    if (fn.parameters.some((p) => p.dotDotDotToken)) throw this.t.error(e, `${name}() (a rest parameter in an extend class)`);
+    const args = e.arguments.slice(0, fn.parameters.length).map((a, k) => this.t.coerce(a, this.t.typeOf(fn.parameters[k].name)));
+    return `${this.t.expr((e.expression as ts.PropertyAccessExpression).expression)}.${ident(name)}(${args.join(', ')})`;
+  }
+
+  /** `this.super.name(…)`: the superclass's method. */
+  private superCall(x: Extension, name: string, e: ts.CallExpression): Raw {
+    const what = `this.super.${name}()`;
+    const candidates = this.methods([x.base.name], name, false);
+    if (!candidates.length) throw this.t.error(e, `${what} (${javaTypeName(`L${x.base.name};`)} has no method of that name)`);
+    const chosen = this.resolveOverload(candidates, [...e.arguments], e, x.base.name, name);
+    if (chosen.m.access & ACC_ABSTRACT) throw this.t.error(e, `${what} (abstract in ${javaTypeName(`L${chosen.m.owner};`)})`);
+    // Inside an object expression the method makes, plain `super` would be that object's.
+    const zuper = this.t.thisAlias ? `super@${x.name}` : 'super';
+    return { code: `${zuper}.${ident(name)}(${this.argList(e.arguments, chosen, candidates)})`, desc: chosen.ret, nullable: chosen.m.nullable };
+  }
+
+  /** A local of a function between the variable's scope and the extend call, which a class declared with the variable cannot see. */
+  private capturedLocal(x: Extension): ts.Identifier | null {
+    const ownerScope = scopeOf(x.owner!);
+    let found: ts.Identifier | null = null;
+    const visit = (n: ts.Node) => {
+      if (found) return;
+      if (ts.isIdentifier(n)) {
+        const d = this.t.resolve(n)?.valueDeclaration;
+        const s = d && d.getSourceFile() === x.call.getSourceFile() ? scopeOf(d) : null;
+        if (s && s !== ownerScope && !ts.isSourceFile(s) && contains(s, x.call) && contains(ownerScope, s) && !contains(x.literal, d!)) found = n;
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(x.literal);
+    return found;
+  }
+
+  /**
+   * The Kotlin class an extend call makes, declared where the variable
+   * holding it is: Base's constructors, the literal's other properties as
+   * fields, its methods overriding Base's or the interfaces' with Java's
+   * signatures (else plain members), and `init()` run once constructed.
+   */
+  extensionClass(d: ts.VariableDeclaration): string | null {
+    const x = this.extensionOf(d);
+    if (!x) return null;
+    const t = this.t;
+    const { base, interfaces, literal } = x;
+    if (base.access & ACC_FINAL) throw t.error(x.call, `extending the final Java class ${javaTypeName(`L${base.name};`)}`);
+    const captured = this.capturedLocal(x);
+    if (captured) throw t.error(captured, `${captured.text} in an extend class assigned to ${d.name.getText()} (a local the class, declared with ${d.name.getText()}, cannot see)`);
+    const plain = base.name === 'java/lang/Object';
+    const supers = [...(plain ? [] : [this.classRef(base, undefined, 'Any?', x.call)]), ...interfaces.map((i) => this.classRef(i, undefined, 'Any?', x.call))];
+    const classes = extensionClasses(x);
+    const outer = t.indent;
+    const inner = outer + '    ';
+    const fields: string[] = [];
+    const ctors: string[] = [];
+    const methods: string[] = [];
+    const provided = new Set<string>();
+    let init = false;
+    const savedAlias = t.thisAlias;
+    t.thisAlias = null;
+    t.indent = inner;
+    try {
+      if (!plain) {
+        const all = this.constructors(base);
+        if (!all.length) throw t.error(x.call, `extending ${javaTypeName(`L${base.name};`)} (no accessible Java constructor)`);
+        for (const c of all) {
+          const ps = c.params.map((desc, k) => `p${k}: ${this.kotlinType(desc, 'Any?')}${c.m.nullableParams?.[k] ? '?' : ''}`);
+          ctors.push(`${inner}constructor(${ps.join(', ')}) : super(${c.params.map((_, k) => `p${k}`).join(', ')})`);
+        }
+      }
+      for (const p of literal.properties) {
+        const name = propertyName(p);
+        if (name === 'interfaces') continue;
+        if (name === undefined || !(ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p) || ts.isMethodDeclaration(p))) throw t.error(p, 'a member of an extend class other than a method or a named value');
+        const fn = functionOf(p);
+        if (!fn) {
+          const type = t.typeOf(p.name);
+          const value = ts.isPropertyAssignment(p) ? p.initializer : (p as ts.ShorthandPropertyAssignment).name;
+          fields.push(`${inner}@JvmField var ${ident(name)}: ${type} = ${t.coerce(value, type)}`);
+          continue;
+        }
+        if (ts.isArrowFunction(fn) && refersToThis(fn.body)) throw t.error(p, `${name} (an arrow function using this; write it as a method)`);
+        provided.add(name);
+        if (name === 'init') {
+          if (fn.parameters.length) throw t.error(p, 'init with parameters in an extend class');
+          init = true;
+        }
+        const target = name === 'init' ? null : this.overrideTarget(fn, classes, name);
+        methods.push(target ? this.overrideMethod(fn, name, target, inner) : inner + t.func(fn as ts.MethodDeclaration, ident(name)));
+      }
+    } finally {
+      t.indent = outer;
+      t.thisAlias = savedAlias;
+    }
+    if (plain) {
+      const objectMethods = new Set((this.classpath.get('java/lang/Object')?.methods ?? []).map((m) => m.name + m.descriptor));
+      const missing = interfaces.flatMap((i) => this.classpath.supertypes(i.name)).flatMap((c) => c.methods.filter((m) => m.access & ACC_ABSTRACT && !(m.access & ACC_STATIC) && !provided.has(m.name) && !objectMethods.has(m.name + m.descriptor)).map((m) => m.name));
+      if (missing.length) throw t.error(literal, `an extend class implementing ${interfaces.map((i) => javaTypeName(`L${i.name};`)).join(', ')} without ${[...new Set(missing)].join(', ')}`);
+    }
+    const body = [...fields, ...ctors, ...(init ? [`${inner}init { init() }`] : []), ...methods];
+    return [`${outer}class ${x.name}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...body, `${outer}}`].join('\n');
+  }
+
+  /** `Array.create(java.lang.String, n)`, `Array.create('int', n)`: a Java array of n default elements. */
+  private arrayCreate(e: ts.CallExpression): Raw | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'create' || !ts.isIdentifier(callee.expression) || callee.expression.text !== 'Array' || e.arguments.length !== 2) return null;
+    const decl = this.t.resolve(callee)?.declarations?.[0];
+    if (!decl || !this.isNativeDeclaration(decl)) return null;
+    const [type, length] = e.arguments;
+    let el: string;
+    if (ts.isStringLiteralLike(type)) {
+      const prim = Object.keys(ARRAY_OF).find((k) => ARRAY_OF[k] === type.text);
+      const cls = prim ? null : this.classpath.get(type.text.replace(/\./g, '/'));
+      if (!prim && !cls) throw this.t.error(type, `Array.create of ${type.text} (no class file of that name on the classpath)`);
+      el = prim ?? `L${cls!.name};`;
+    } else {
+      const cls = this.untypedClass(type) ?? this.classOf(this.classSymbol(type), type);
+      if (!cls) throw this.t.error(type, `Array.create of ${type.getText()} (not a Java class)`);
+      el = `L${cls.name};`;
+    }
+    const n = `${atom(this.t.toNumber(length))}.toInt()`;
+    return { code: ARRAY_OF[el] ? `${KOTLIN_PRIMITIVE[el]}Array(${n})` : `arrayOfNulls<${this.kotlinType(el, 'Any?')}>(${n})`, desc: `[${el}` };
+  }
+
+  /** A `const` holding an `Array.create(…)`: the Java array's type, for choosing an overload. */
+  private createdArray(e: ts.Expression): Raw | null {
+    const d = ts.isIdentifier(e) ? this.t.resolve(e)?.valueDeclaration : undefined;
+    if (!d || !ts.isVariableDeclaration(d) || !(d.parent.flags & ts.NodeFlags.Const) || !d.initializer || !ts.isCallExpression(d.initializer)) return null;
+    return this.arrayCreate(d.initializer);
+  }
+}
+
+function extensionClasses(x: Extension): string[] {
+  return [x.base.name, ...x.interfaces.map((i) => i.name)];
+}
+
+function skipCasts(e: ts.Expression): ts.Expression {
+  while (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isTypeAssertionExpression(e) || ts.isNonNullExpression(e)) e = e.expression;
+  return e;
+}
+
+function propertyName(p: ts.ObjectLiteralElementLike): string | undefined {
+  if (!p.name || ts.isComputedPropertyName(p.name) || ts.isPrivateIdentifier(p.name)) return undefined;
+  return p.name.text;
+}
+
+function functionOf(p: ts.ObjectLiteralElementLike): ts.FunctionLikeDeclaration | null {
+  if (ts.isMethodDeclaration(p)) return p;
+  return ts.isPropertyAssignment(p) && (ts.isArrowFunction(p.initializer) || ts.isFunctionExpression(p.initializer)) ? p.initializer : null;
+}
+
+/** The function or module a declaration's name is visible throughout. */
+function scopeOf(d: ts.Node): ts.Node {
+  let n = d.parent;
+  while (!ts.isSourceFile(n) && !(ts.isFunctionLike(n) && 'body' in n)) n = n.parent;
+  return n;
+}
+
+function contains(outer: ts.Node, n: ts.Node): boolean {
+  for (let p: ts.Node | undefined = n; p; p = p.parent) if (p === outer) return true;
+  return false;
 }
 
 function hasStatic(m: ts.Node): boolean {
