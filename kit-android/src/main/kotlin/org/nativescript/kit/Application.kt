@@ -26,10 +26,13 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         current = this
         setThemeOnLaunch()
         Utils.enableEdgeToEdge(this, 0, 0, LIGHT_SCRIM, DARK_SCRIM)
+        installEventLoop()
         StyleSheet.app = StyleSheet.parse(css)
         val root = root()
         rootView = root
         setContentView(root.nativeView, CommonLayoutParams())
+        Appearance.refresh(root)
+        root.load()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val frame = Frame.topmost
@@ -42,6 +45,32 @@ abstract class NativeScriptActivity : AppCompatActivity() {
                 isEnabled = true
             }
         })
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        rootView?.let { Appearance.refresh(it) }
+        Modal.refreshRootClasses()
+    }
+
+    /**
+     * Timers run from the main looper, and promise jobs run after each batch
+     * of its work: when an event handler returns and whenever the queue idles.
+     */
+    private fun installEventLoop() {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val tick = Runnable {
+            JSEventLoop.processTimers()
+            Microtasks.checkpoint()
+        }
+        JSEventLoop.host = { delay ->
+            handler.removeCallbacks(tick)
+            if (delay != null) handler.postDelayed(tick, Math.ceil(delay).toLong())
+        }
+        android.os.Looper.myQueue().addIdleHandler {
+            Microtasks.checkpoint()
+            true
+        }
     }
 
     private fun setThemeOnLaunch() {

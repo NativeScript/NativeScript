@@ -3,44 +3,21 @@ package org.nativescript.kit
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
-import android.view.GestureDetector
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
-import androidx.core.view.GestureDetectorCompat
 import org.nativescript.widgets.BorderDrawable
 import org.nativescript.widgets.CommonLayoutParams
 import org.nativescript.widgets.ViewHelper
+import java.lang.ref.WeakReference
 import kotlin.math.ceil
 
 typealias NativeView = android.view.View
 
 /** What an event handler receives: `args.eventName`, `args.object`, `args.value`. */
 class EventData(val eventName: String, val `object`: View, val value: Any?)
-
-/** `Background` from styling/background-common: device pixels and ARGB ints. */
-internal data class Background(
-    val color: Int? = null,
-    val borderTopColor: Int? = null,
-    val borderRightColor: Int? = null,
-    val borderBottomColor: Int? = null,
-    val borderLeftColor: Int? = null,
-    val borderTopWidth: Float = 0f,
-    val borderRightWidth: Float = 0f,
-    val borderBottomWidth: Float = 0f,
-    val borderLeftWidth: Float = 0f,
-    val borderTopLeftRadius: Float = 0f,
-    val borderTopRightRadius: Float = 0f,
-    val borderBottomRightRadius: Float = 0f,
-    val borderBottomLeftRadius: Float = 0f,
-) {
-    val hasBorderWidth: Boolean get() = borderTopWidth > 0 || borderRightWidth > 0 || borderBottomWidth > 0 || borderLeftWidth > 0
-    val hasBorderRadius: Boolean get() = borderTopLeftRadius > 0 || borderTopRightRadius > 0 || borderBottomRightRadius > 0 || borderBottomLeftRadius > 0
-    val isEmpty: Boolean get() = color == null && !hasBorderWidth && !hasBorderRadius
-}
 
 /** `AndroidHelper` from view-helper/index.android. */
 internal object AndroidHelper {
@@ -60,9 +37,10 @@ internal object AndroidHelper {
 
 /**
  * `View` from @nativescript/core (view-base, view-common and view/index.android):
- * its properties as NativeScript resolves them (local, then CSS, then
- * inherited) and applied to the native view as core's Android setters do.
- * Measuring and layout are the widgets AAR's, through the layout params set here.
+ * its properties as NativeScript resolves them (keyframe, then local, then
+ * CSS, then inherited), applied to the native view as core's Android setters
+ * do, once the view is loaded. Measuring and layout are the widgets AAR's,
+ * through the layout params set here.
  */
 open class View {
     open val cssType: String get() = "View"
@@ -85,16 +63,48 @@ open class View {
         set(value) {
             field = value
             classes = value.split(' ', '\t', '\n').filter { it.isNotEmpty() }.toSet()
-            if (native == null) setUp() else applyCSS()
+            if (isLoaded) onCssStateChange()
         }
     internal var classes: Set<String> = emptySet()
 
+    /** Classes the application sets on its root view (`ns-root`, `ns-dark`). */
+    var rootClasses: Set<String> = emptySet()
+        set(value) {
+            field = value
+            if (isLoaded) onCssStateChange()
+        }
+    val cssClasses: Set<String> get() = if (rootClasses.isEmpty()) classes else classes + rootClasses
+    val pseudoClasses: MutableSet<String> = linkedSetOf("normal")
+
+    /** The views and keys (attribute names, `:pseudo-class`) this view's match depends on. */
+    internal val cssSubscriptions = mutableListOf<Pair<WeakReference<View>, String>>()
+    /** The views whose match depends on a key of this one. */
+    internal val cssDependents = HashMap<String, MutableList<WeakReference<View>>>()
+    internal var isUpdatingDynamicState = false
+
     private val locals = HashMap<String, Any>()
-    private var cssValues: Map<String, Any?> = emptyMap()
+    /** Values a CSS keyframe animation sets; they win over local ones. */
+    private val keyframeValues = HashMap<String, Any>()
+    private var keyframeAnimations = listOf<KeyframeAnimation>()
+    private var cssValues = HashMap<String, Any>()
+    private var cssOrder = listOf<String>()
+    /** Custom properties (`--name`) the matched rules declare, reset on every match. */
+    internal var scopedCssVariables = HashMap<String, String>()
     internal val applied = HashMap<String, Any>()
 
+    /**
+     * NativeScript stores a view's values until it is loaded, then applies them
+     * once (`applyAllNativeSetters`): view properties, then style properties,
+     * each in the order a value was first set. CSS is matched at load.
+     */
+    var isLoaded = false
+        private set
+    private val pendingNames = mutableListOf<String>()
+    private val pendingSet = HashSet<String>()
+    /** A CSS re-match is one `_batchUpdate`: its values apply in the order they were set. */
+    private var isBatching = false
+
     private val handlers = HashMap<String, MutableList<(EventData) -> Unit>>()
-    private var gestureDetector: GestureDetectorCompat? = null
 
     private var defaultPaddingLeft = 0
     private var defaultPaddingTop = 0
@@ -111,7 +121,6 @@ open class View {
     val effectivePaddingBottom: Int get() = paddingBottom ?: defaultPaddingBottom
 
     internal var background = Background()
-    private var clearBackgroundColor = false
     private var cachedDrawable: Drawable? = null
     private var hasCachedDrawable = false
 
@@ -129,7 +138,6 @@ open class View {
         defaultPaddingRight = view.paddingRight
         defaultPaddingBottom = view.paddingBottom
         initNativeView()
-        applyCSS()
     }
 
     protected open fun createNativeView(): NativeView = NativeView(context)
@@ -146,51 +154,186 @@ open class View {
     internal fun addView(child: View) {
         child.parent = this
         for (name in inheritedProperties) child.refresh(name)
+        if (isLoaded && shouldLoad(child)) child.load()
     }
 
     internal fun removeView(child: View) {
+        child.unload()
         if (child.parent === this) child.parent = null
+    }
+
+    // Loading (view-base onLoaded / onUnloaded)
+
+    fun load() {
+        if (isLoaded) return
+        setUp()
+        matchCSS()
+        isLoaded = true
+        val names = pendingNames.toList()
+        pendingNames.clear()
+        pendingSet.clear()
+        for (name in names) if (name !in styleProperties) setProperty(name, applied[name])
+        for (name in names) if (name in styleProperties) setProperty(name, applied[name])
+        onLoaded()
+        attachGestures()
+        eachChildView { if (shouldLoad(it)) it.load() }
+        emit("loaded", null)
+    }
+
+    fun unload() {
+        if (!isLoaded) return
+        unsubscribeFromDynamicUpdates()
+        stopKeyframeAnimations()
+        isLoaded = false
+        detachGestures()
+        eachChildView { it.unload() }
+        onUnloaded()
+        emit("unloaded", null)
+    }
+
+    protected open fun onLoaded() {}
+    protected open fun onUnloaded() {}
+
+    /** `loadView`: whether a loaded parent loads this child now. */
+    protected open fun shouldLoad(child: View): Boolean = true
+
+    private fun deferApplication(name: String) {
+        if (pendingSet.add(name)) pendingNames.add(name)
     }
 
     // Properties
 
     /** Sets a local property value by its NativeScript name; null unsets it. */
     fun set(name: String, value: Any?) {
-        setUp()
         for ((longhand, v) in expandShorthand(name, value)) {
+            if (!hasStyleAccessor(longhand)) continue
             if (v != null) locals[longhand] = v else locals.remove(longhand)
             refresh(longhand)
         }
     }
 
+    /**
+     * A template sets `view[name]`, which reaches a style property only through
+     * an accessor NativeScript defines on the view's class; without one the
+     * value lands on the JavaScript object and styles nothing.
+     */
+    private fun hasStyleAccessor(name: String): Boolean = when (name) {
+        "backgroundInternal", "clipPath", "cornerShape", "fontInternal", "fontScaleInternal", "iconFontFamily", "paddingInternal", "placeholderColor", "zIndex" -> false
+        "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "textDecoration" -> this is TextBase || this is Span || this is FormattedString
+        "letterSpacing", "lineHeight", "maxLines", "textAlignment", "textOverflow", "textShadow", "textStroke", "whiteSpace" -> this is TextBase
+        "paddingTop", "paddingRight", "paddingBottom", "paddingLeft" -> this is TextBase || this is LayoutBase
+        "alignContent", "alignItems", "flexDirection", "flexWrap", "justifyContent", "rowGap", "columnGap" -> this is FlexboxLayout
+        "tintColor" -> this is Image
+        "selectedBackgroundColor", "selectedTextColor" -> this is SegmentedBar
+        "accessibilityStep" -> this is Slider
+        else -> true
+    }
+
+    /**
+     * `CssState.updateDynamicState`: keyframe animations stop, the matched values
+     * are set (`setPropertyValues`: removed ones unset first, in their old order,
+     * then the matched ones in cascade order), and the matched animations play.
+     */
+    private fun matchCSS() {
+        stopKeyframeAnimations()
+        val match = StyleSheet.app.match(this)
+        // Plain values and variables first, then values with var() or calc()
+        // (once the variables are known), then shorthands that held them.
+        scopedCssVariables = HashMap()
+        val next = mutableListOf<Pair<String, Any>>()
+        val expressions = mutableListOf<Pair<String, String>>()
+        val pending = mutableListOf<Pair<String, PendingShorthand>>()
+        for ((name, value) in match.values) {
+            when {
+                value is PendingShorthand -> pending.add(Pair(name, value))
+                isCssExpression(value) -> expressions.add(Pair(name, value as String))
+                name.startsWith("--") -> scopedCssVariables[name] = toText(value) ?: ""
+                else -> next.add(Pair(name, value))
+            }
+        }
+        for ((name, text) in expressions) {
+            val value = evaluateCssExpressions(text)
+            if (name.startsWith("--")) scopedCssVariables[name] = value ?: "unset"
+            else if (value != null) next.add(Pair(name, value))
+        }
+        val resolved = HashMap<String, List<Pair<String, Any?>>>()
+        for ((name, shorthand) in pending) {
+            val key = shorthand.shorthand + shorthand.value
+            val longhands = resolved.getOrPut(key) { evaluateCssExpressions(shorthand.value)?.let { expandShorthand(shorthand.shorthand, it) } ?: emptyList() }
+            longhands.firstOrNull { it.first == name }?.second?.let { next.add(Pair(name, it)) }
+        }
+        val nextNames = next.map { it.first }.toSet()
+        val removed = cssOrder.filter { it !in nextNames }
+        cssValues = HashMap(next.toMap())
+        cssOrder = next.map { it.first }.distinct()
+        for (name in removed) refresh(name)
+        for (name in cssOrder) refresh(name)
+        keyframeAnimations = match.animations
+        for (animation in keyframeAnimations) animation.play(this)
+        subscribe(match.changes)
+    }
+
+    private fun stopKeyframeAnimations() {
+        if (keyframeAnimations.isEmpty()) return
+        for (animation in keyframeAnimations) if (animation.isPlaying) animation.cancel()
+        keyframeAnimations = emptyList()
+        for (name in listOf("rotate", "rotateX", "rotateY", "scaleX", "scaleY", "translateX", "translateY", "backgroundColor", "opacity")) setKeyframe(name, null)
+    }
+
     internal fun applyCSS() {
-        val next = StyleSheet.app.values(this)
-        val names = LinkedHashSet(next.keys).apply { addAll(cssValues.keys) }
-        cssValues = next
-        for (name in names) refresh(name)
+        isBatching = true
+        try {
+            matchCSS()
+        } finally {
+            isBatching = false
+        }
+        val names = pendingNames.toList()
+        pendingNames.clear()
+        pendingSet.clear()
+        for (name in names) setProperty(name, applied[name])
+    }
+
+    internal fun setKeyframe(name: String, value: Any?) {
+        if (value != null) keyframeValues[name] = value else keyframeValues.remove(name)
+        refresh(name)
     }
 
     internal fun refresh(name: String) {
-        setUp()
-        var value: Any? = locals[name] ?: cssValues[name]
+        var value: Any? = keyframeValues[name] ?: locals[name] ?: cssValues[name]
         if (value == null && name in inheritedProperties) value = parent?.applied?.get(name)
         val had = applied.containsKey(name)
         if (!had && value == null) return
-        if (had && value == applied[name]) return
+        if (had && sameValue(value, applied[name])) return
         if (value == null) applied.remove(name) else applied[name] = value
-        setProperty(name, value)
+        propertyValueChanged(name, value)
+        if (isLoaded && !isBatching) setProperty(name, value) else deferApplication(name)
+        notifyCSSDependents(name)
         if (name in inheritedProperties) eachChildView { it.refresh(name) }
     }
 
     /**
-     * A value the native control reports (user input): stored without being
+     * The value a native control reports (user input): stored without being
      * written back, then announced as `<name>Change`, core's `nativeValueChange`.
      */
     internal fun nativeValueChange(name: String, value: Any) {
-        if (value == applied[name]) return
+        if (sameValue(value, applied[name])) return
         locals[name] = value
         applied[name] = value
+        propertyValueChanged(name, value)
         emit(name + "Change", value)
+        notifyCSSDependents(name)
+    }
+
+    /**
+     * A property's `valueChanged`: runs when the value changes, loaded or not,
+     * unlike `setProperty` (the native setter), which waits for load.
+     */
+    protected open fun propertyValueChanged(name: String, value: Any?) {
+        when (name) {
+            "isEnabled" -> if (toBool(value) ?: true) removeVisualState("disabled") else addVisualState("disabled")
+            "id" -> onCssStateChange()
+            "checked" -> if (this is Switch) { if (toBool(value) ?: false) addVisualState("checked") else removeVisualState("checked") }
+        }
     }
 
     /** Applies an effective value; subclasses handle their own names and pass the rest up. */
@@ -200,8 +343,8 @@ open class View {
             "height" -> setPercentLength(value, -1, ViewHelper::setHeight, ViewHelper::setHeightPercent)
             "maxWidth" -> setPercentLength(value, -1, ViewHelper::setMaxWidth, ViewHelper::setMaxWidthPercent)
             "maxHeight" -> setPercentLength(value, -1, ViewHelper::setMaxHeight, ViewHelper::setMaxHeightPercent)
-            "minWidth" -> setPercentLength(value, 0, ViewHelper::setMinWidth, null)
-            "minHeight" -> setPercentLength(value, 0, ViewHelper::setMinHeight, null)
+            "minWidth" -> setMinLength(value, true)
+            "minHeight" -> setMinLength(value, false)
             "marginTop" -> setPercentLength(value, 0, ViewHelper::setMarginTop, ViewHelper::setMarginTopPercent)
             "marginRight" -> setPercentLength(value, 0, ViewHelper::setMarginRight, ViewHelper::setMarginRightPercent)
             "marginBottom" -> setPercentLength(value, 0, ViewHelper::setMarginBottom, ViewHelper::setMarginBottomPercent)
@@ -223,10 +366,13 @@ open class View {
             }
             "backgroundColor" -> {
                 val color = toColor(value)?.argb
-                if (color == null && background.color != null) clearBackgroundColor = true
+                if (color == null && background.color != null) background = background.copy(clearColor = true)
                 background = background.copy(color = color)
                 backgroundChanged()
             }
+            "backgroundImage" -> { background = background.copy(image = toText(value)?.let { LinearGradient.parse(it) }); backgroundChanged() }
+            "boxShadow" -> { background = background.copy(boxShadows = toText(value)?.let { BoxShadow.parseList(it) } ?: emptyList()); backgroundChanged() }
+            "clipPath" -> { background = background.copy(clipPath = toText(value)?.takeIf { it.isNotBlank() && it != "none" }); backgroundChanged() }
             "borderTopWidth" -> { background = background.copy(borderTopWidth = borderPx(value)); backgroundChanged() }
             "borderRightWidth" -> { background = background.copy(borderRightWidth = borderPx(value)); backgroundChanged() }
             "borderBottomWidth" -> { background = background.copy(borderBottomWidth = borderPx(value)); backgroundChanged() }
@@ -255,11 +401,38 @@ open class View {
             "col", "column" -> updateCommonLayoutParams { it.column = maxOf(0, toInt(value) ?: 0) }
             "rowSpan" -> updateCommonLayoutParams { it.rowSpan = maxOf(1, toInt(value) ?: 1) }
             "colSpan", "columnSpan" -> updateCommonLayoutParams { it.columnSpan = maxOf(1, toInt(value) ?: 1) }
+            "left" -> updateCommonLayoutParams { it.left = Length.parse(value, Length.zero).toDevicePixels(0.0).toInt() }
+            "top" -> updateCommonLayoutParams { it.top = Length.parse(value, Length.zero).toDevicePixels(0.0).toInt() }
+            "dock" -> updateCommonLayoutParams {
+                it.dock = when (toText(value)?.trim()) {
+                    "left" -> org.nativescript.widgets.Dock.left
+                    "top" -> org.nativescript.widgets.Dock.top
+                    "right" -> org.nativescript.widgets.Dock.right
+                    "bottom" -> org.nativescript.widgets.Dock.bottom
+                    else -> org.nativescript.widgets.Dock.left
+                }
+            }
             "order" -> updateFlexLayoutParams { it.order = toInt(value) ?: 1 }
             "flexGrow" -> updateFlexLayoutParams { it.flexGrow = toDouble(value)?.toFloat() ?: 0f }
             "flexShrink" -> updateFlexLayoutParams { it.flexShrink = toDouble(value)?.toFloat() ?: 1f }
             "flexWrapBefore" -> updateFlexLayoutParams { it.wrapBefore = toBool(value) ?: false }
             "alignSelf" -> updateFlexLayoutParams { it.alignSelf = FlexboxLayout.alignSelf(value) }
+            "rotate" -> ViewHelper.setRotate(nativeView, (toDouble(value) ?: 0.0).toFloat())
+            "rotateX" -> ViewHelper.setRotateX(nativeView, (toDouble(value) ?: 0.0).toFloat())
+            "rotateY" -> ViewHelper.setRotateY(nativeView, (toDouble(value) ?: 0.0).toFloat())
+            "perspective" -> ViewHelper.setPerspective(nativeView, ((toDouble(value) ?: 1000.0) * Layout.density).toFloat())
+            "scaleX" -> ViewHelper.setScaleX(nativeView, (toDouble(value) ?: 1.0).toFloat())
+            "scaleY" -> ViewHelper.setScaleY(nativeView, (toDouble(value) ?: 1.0).toFloat())
+            "translateX" -> ViewHelper.setTranslateX(nativeView, Layout.toDevicePixels(toDouble(value) ?: 0.0).toFloat())
+            "translateY" -> ViewHelper.setTranslateY(nativeView, Layout.toDevicePixels(toDouble(value) ?: 0.0).toFloat())
+            "originX" -> org.nativescript.widgets.OriginPoint.setX(nativeView, (toDouble(value) ?: 0.5).toFloat())
+            "originY" -> org.nativescript.widgets.OriginPoint.setY(nativeView, (toDouble(value) ?: 0.5).toFloat())
+            "zIndex" -> ViewHelper.setZIndex(nativeView, (toDouble(value) ?: 0.0).toFloat())
+            "direction" -> nativeView.layoutDirection = when (toText(value)?.trim()) {
+                "ltr" -> NativeView.LAYOUT_DIRECTION_LTR
+                "rtl" -> NativeView.LAYOUT_DIRECTION_RTL
+                else -> NativeView.LAYOUT_DIRECTION_LOCALE
+            }
         }
     }
 
@@ -277,6 +450,21 @@ open class View {
             is Length.Percent -> setPercent?.invoke(nativeView, length.value.toFloat())
             else -> setPixels(nativeView, length.toDevicePixels().toInt())
         }
+    }
+
+    /** `minWidthProperty.setNative`: a flexbox child's minimum lives in its flex layout params. */
+    private fun setMinLength(value: Any?, width: Boolean) {
+        val px = Length.parse(value, Length.zero).toDevicePixels(0.0).toInt()
+        val parent = parent
+        if (parent is FlexboxLayout) {
+            val lp = nativeView.layoutParams as? org.nativescript.widgets.FlexboxLayout.LayoutParams
+            if (lp != null) {
+                if (width) lp.minWidth = px else lp.minHeight = px
+                nativeView.layoutParams = lp
+            }
+            return
+        }
+        if (width) ViewHelper.setMinWidth(nativeView, px) else ViewHelper.setMinHeight(nativeView, px)
     }
 
     private fun updateCommonLayoutParams(update: (CommonLayoutParams) -> Unit) {
@@ -303,10 +491,13 @@ open class View {
         val lp = view.layoutParams ?: CommonLayoutParams()
         if (lp !is FrameLayout.LayoutParams) return
         val vertical = lp.gravity and Gravity.VERTICAL_GRAVITY_MASK
+        val rtl = toText(applied["direction"])?.trim() == "rtl"
         when (value) {
-            "start", "left" -> lp.gravity = Gravity.LEFT or vertical
+            "start" -> lp.gravity = (if (rtl) Gravity.RIGHT else Gravity.LEFT) or vertical
+            "left" -> lp.gravity = Gravity.LEFT or vertical
             "center" -> lp.gravity = Gravity.CENTER_HORIZONTAL or vertical
-            "end", "right" -> lp.gravity = Gravity.RIGHT or vertical
+            "right" -> lp.gravity = Gravity.RIGHT or vertical
+            "end" -> lp.gravity = (if (rtl) Gravity.LEFT else Gravity.RIGHT) or vertical
             "stretch" -> lp.gravity = Gravity.FILL_HORIZONTAL or vertical
         }
         view.layoutParams = lp
@@ -327,6 +518,8 @@ open class View {
         view.layoutParams = lp
     }
 
+    internal fun setPropertyNow(name: String) = setProperty(name, applied[name])
+
     /** `paddingInternalProperty.setNative`, which only layouts and text views implement. */
     protected open fun applyPadding() {}
 
@@ -346,8 +539,10 @@ open class View {
             cachedDrawable = drawable
             hasCachedDrawable = true
         }
+        if (hadBoxShadow && bg.boxShadows.isEmpty() && drawable is org.nativescript.widgets.BoxShadowDrawable) view.background = cachedDrawable
         val color = bg.color
-        if (!bg.hasBorderWidth && !bg.hasBorderRadius && color != null) {
+        val onlyColor = !bg.hasBorderWidth && !bg.hasBorderRadius && bg.boxShadows.isEmpty() && bg.clipPath == null && bg.image == null && color != null
+        if (onlyColor) {
             var target = drawable
             if (isBorderDrawable) {
                 target = cachedDrawable?.let { AndroidHelper.getCopyOrDrawable(it, view.resources) }
@@ -355,13 +550,13 @@ open class View {
             }
             if (needsNativeDrawableFill && target != null) {
                 target.mutate()
-                AndroidHelper.setDrawableColor(color, target)
+                AndroidHelper.setDrawableColor(color!!, target)
                 target.invalidateSelf()
             } else {
-                view.setBackgroundColor(color)
+                view.setBackgroundColor(color!!)
             }
         } else {
-            if (clearBackgroundColor) {
+            if (bg.clearColor) {
                 if (drawable != null) {
                     drawable.mutate()
                     AndroidHelper.clearDrawableColor(drawable)
@@ -380,74 +575,156 @@ open class View {
                 view.background = borderDrawable
             }
         }
+        if (bg.boxShadows.isNotEmpty()) drawBoxShadows(bg.boxShadows)
+        hadBoxShadow = bg.boxShadows.isNotEmpty()
         val left = ceil((effectiveBorderLeftWidth + effectivePaddingLeft).toDouble()).toInt()
         val top = ceil((effectiveBorderTopWidth + effectivePaddingTop).toDouble()).toInt()
         val right = ceil((effectiveBorderRightWidth + effectivePaddingRight).toDouble()).toInt()
         val bottom = ceil((effectiveBorderBottomWidth + effectivePaddingBottom).toDouble()).toInt()
         if (isPaddingRelative) view.setPaddingRelative(left, top, right, bottom) else view.setPadding(left, top, right, bottom)
-        clearBackgroundColor = false
+        background = background.copy(clearColor = false)
+    }
+
+    private var hadBoxShadow = false
+
+    /** `_drawBoxShadow`: the widgets' shadow drawable, six ints per shadow in device pixels. */
+    private fun drawBoxShadows(shadows: List<BoxShadow>) {
+        val values = IntArray(shadows.size * 6)
+        for ((i, s) in shadows.withIndex()) {
+            values[i * 6] = s.color
+            values[i * 6 + 1] = s.spreadRadius
+            values[i * 6 + 2] = s.blurRadius
+            values[i * 6 + 3] = s.offsetX
+            values[i * 6 + 4] = s.offsetY
+            values[i * 6 + 5] = if (s.inset) 1 else 0
+        }
+        org.nativescript.widgets.Utils.drawBoxShadow(nativeView, values)
     }
 
     private fun refreshBorderDrawable(drawable: BorderDrawable) {
         val bg = background
         val black = -16777216
+        val gradient = bg.image?.toNative()
         drawable.refresh(
             bg.borderTopColor ?: black, bg.borderRightColor ?: black, bg.borderBottomColor ?: black, bg.borderLeftColor ?: black,
             bg.borderTopWidth, bg.borderRightWidth, bg.borderBottomWidth, bg.borderLeftWidth,
             bg.borderTopLeftRadius, bg.borderTopRightRadius, bg.borderBottomRightRadius, bg.borderBottomLeftRadius,
-            null, bg.color ?: 0, null, null, null, nativeView.context, null, null, null, null, null,
+            bg.clipPath, bg.color ?: 0, null, null, gradient, nativeView.context, null, null, null, null, null,
         )
     }
 
     // Events
 
-    /** Subscribes to an event: `tap`, or a property change such as `textChange`. */
+    private val gestureObservers = java.util.TreeMap<Double, MutableList<GesturesObserver>>()
+    private var touchListenerIsSet = false
+
+    /** Events a view class declares itself (Button's `tap`): they are not gestures. */
+    protected open val ownEvents: Set<String> get() = emptySet()
+
+    /** Subscribes to an event: a gesture (`tap`, `pan`), or a property change such as `textChange`. */
     fun on(event: String, handler: (EventData) -> Unit) {
-        setUp()
+        val type = gestureType(event)
+        if (type != null && event !in ownEvents) {
+            val observer = GesturesObserver(this, type) { payload ->
+                handler(EventData(event, this, payload))
+                Microtasks.checkpoint()
+            }
+            gestureObservers.getOrPut(type) { mutableListOf() }.add(observer)
+            if (isLoaded) {
+                observer.attach()
+                setOnTouchListener()
+            }
+            return
+        }
         handlers.getOrPut(event) { mutableListOf() }.add(handler)
-        if (event == "tap") observeTap()
+        if (isLoaded) eventSubscribed(event)
     }
 
-    /**
-     * A tap is a gesture observer: a GestureDetector fed from a touch listener,
-     * which then lets the native view handle the touch, as core's TouchListener does.
-     */
-    protected open fun observeTap() {
-        if (gestureDetector != null) return
-        gestureDetector = GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDown(e: MotionEvent): Boolean = true
-            override fun onSingleTapUp(e: MotionEvent): Boolean {
-                emit("tap", null)
-                return true
-            }
-        })
+    /** A subscription to one of the view's own events, once it is loaded; controls with native listeners override. */
+    protected open fun eventSubscribed(event: String) {}
+
+    internal fun hasGestureObservers(type: Double): Boolean = gestureObservers[type]?.isNotEmpty() == true
+
+    internal fun hasHandlers(event: String): Boolean = handlers[event]?.isNotEmpty() == true
+
+    /** `setOnTouchListener`: touches reach this view's observers, then each ancestor's. */
+    private fun setOnTouchListener() {
+        if (touchListenerIsSet || gestureObservers.isEmpty()) return
         val view = nativeView
         view.setOnTouchListener { v, event ->
             handleGestureTouch(event)
             v.onTouchEvent(event)
         }
+        touchListenerIsSet = true
         view.isClickable = toBool(applied["isUserInteractionEnabled"]) ?: true
     }
 
-    /** Ancestors' gesture observers see the touches of their descendants. */
-    private fun handleGestureTouch(event: MotionEvent) {
-        gestureDetector?.onTouchEvent(event)
+    internal fun handleGestureTouch(event: android.view.MotionEvent) {
+        for (observers in gestureObservers.values.toList()) for (observer in observers.toList()) observer.onTouchEvent(event)
         parent?.handleGestureTouch(event)
+    }
+
+    private fun attachGestures() {
+        for (observers in gestureObservers.values) for (observer in observers) observer.attach()
+        setOnTouchListener()
+        for (event in handlers.keys) eventSubscribed(event)
+    }
+
+    private fun detachGestures() {
+        for (observers in gestureObservers.values) for (observer in observers) observer.detach()
     }
 
     internal fun emit(event: String, value: Any?) {
         val list = handlers[event] ?: return
         val data = EventData(event, this, value)
         for (handler in list.toList()) handler(data)
+        // A handler is a JavaScript task: the promise jobs it queued run before anything else does.
+        Microtasks.checkpoint()
     }
+
+    /** `PseudoClassHandler`: a view starts tracking a native state once a selector depends on it. */
+    internal open fun observePseudoClass(name: String, on: Boolean) {}
 
     override fun toString(): String = "$cssType(${System.identityHashCode(this)})"
 
     companion object {
         internal val inheritedProperties = setOf(
             "color", "fontFamily", "fontSize", "fontStyle", "fontWeight", "textAlignment", "textTransform",
-            "whiteSpace", "letterSpacing", "lineHeight", "tintColor", "direction", "selectedBackgroundColor",
-            "selectedTextColor",
+            "whiteSpace", "letterSpacing", "lineHeight", "textShadow", "textStroke", "tintColor", "direction",
+            "selectedBackgroundColor", "selectedTextColor",
         )
+
+        /** The names NativeScript registers as style (CSS) properties; every other name is a view property. */
+        internal val styleProperties = setOf(
+            "accessibilityLanguage", "accessibilityLiveRegion", "accessibilityRole", "accessibilityState", "accessibilityStep", "accessible",
+            "alignContent", "alignItems", "alignSelf", "androidContentInsetLeft", "androidContentInsetRight", "androidDynamicElevationOffset",
+            "androidElevation", "androidSelectedTabHighlightColor", "androidStatusBarBackground", "backgroundColor", "backgroundImage",
+            "backgroundInternal", "backgroundPosition", "backgroundRepeat", "backgroundSize", "borderBottomColor", "borderBottomLeftRadius",
+            "borderBottomRightRadius", "borderBottomWidth", "borderLeftColor", "borderLeftWidth", "borderRightColor", "borderRightWidth",
+            "borderTopColor", "borderTopLeftRadius", "borderTopRightRadius", "borderTopWidth", "boxShadow", "clipPath", "color", "columnGap",
+            "cornerShape", "direction", "flexDirection", "flexGrow", "flexShrink", "flexWrap", "flexWrapBefore", "fontFamily", "fontInternal",
+            "fontScaleInternal", "fontSize", "fontStyle", "fontVariationSettings", "fontWeight", "height", "horizontalAlignment", "iconFontFamily",
+            "iosAccessibilityAdjustsFontSize", "iosAccessibilityMaxFontScale", "iosAccessibilityMinFontScale", "justifyContent", "letterSpacing",
+            "lineHeight", "marginBottom", "marginLeft", "marginRight", "marginTop", "maxHeight", "maxLines", "maxWidth", "minHeight", "minWidth",
+            "opacity", "order", "paddingBottom", "paddingInternal", "paddingLeft", "paddingRight", "paddingTop", "perspective", "placeholderColor",
+            "rotate", "rotateX", "rotateY", "rowGap", "scaleX", "scaleY", "selectedBackgroundColor", "selectedTabTextColor", "selectedTextColor",
+            "separatorColor", "statusBarStyle", "tabBackgroundColor", "tabTextColor", "tabTextFontSize", "textAlignment", "textDecoration",
+            "textOverflow", "textShadow", "textStroke", "textTransform", "tintColor", "translateX", "translateY", "verticalAlignment",
+            "visibility", "whiteSpace", "width", "zIndex", "textWrap",
+        )
+
+        /** `getNodePreviousDirectSibling`: siblings exist only in a layout. */
+        fun previousSibling(view: View): View? {
+            val parent = view.parent as? LayoutBase ?: return null
+            val index = parent.subViews.indexOfFirst { it === view }
+            return if (index > 0) parent.subViews[index - 1] else null
+        }
+
+        /** `eachNodePreviousGeneralSibling`: nearest first. */
+        fun previousSiblings(view: View): List<View> {
+            val parent = view.parent as? LayoutBase ?: return emptyList()
+            val index = parent.subViews.indexOfFirst { it === view }
+            return if (index < 0) emptyList() else parent.subViews.subList(0, index).asReversed()
+        }
     }
 }

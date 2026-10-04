@@ -18,11 +18,11 @@ export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
 }
 
 /** The native class a core class's `ios` is, walking up to the nearest one the table names. */
-export function nativeViewOf(checker: ts.TypeChecker, type: ts.Type): string | null {
+export function nativeViewOf(checker: ts.TypeChecker, type: ts.Type, table: Record<string, string> = NATIVE_VIEWS): string | null {
   const visit = (t: ts.Type): string | null => {
     const sym = t.getSymbol();
     if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
-    if (NATIVE_VIEWS[sym.name]) return NATIVE_VIEWS[sym.name];
+    if (table[sym.name]) return table[sym.name];
     for (const b of (t.isClassOrInterface() ? checker.getBaseTypes(t) : [])) {
       const found = visit(b);
       if (found) return found;

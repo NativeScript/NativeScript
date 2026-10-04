@@ -41,7 +41,7 @@ export function addInterfaces(translator: Translator, modules: TranslatedModule[
 }
 
 /** Post-order over imports, starting from each file in `files`. */
-function evaluationOrder(program: ts.Program, files: string[]): string[] {
+export function evaluationOrder(program: ts.Program, files: string[]): string[] {
   const wanted = new Set(files);
   const seen = new Set<string>();
   const order: string[] = [];

@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
 import { nativeViewOf } from './core.ts';
+import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -146,7 +147,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')];
   let program = ts.createProgram(rootNames, options, host);
   // `view.ios` is `any` in core's declarations: typed as the view's native class, everything read from it is typed too.
-  const casts = nativeViewCasts(program, isApp);
+  const casts = nativeViewCasts(program, isApp, platform);
   if (casts.size) {
     for (const [name, text] of casts) files.set(name, text);
     program = ts.createProgram(rootNames, options, host, program);
@@ -160,17 +161,19 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   return { program, checker: program.getTypeChecker(), files: ordered };
 }
 
-/** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`. */
-function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean): Map<string, string> {
+/** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`, or `x.android` as its Android class. */
+function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean, platform: Platform): Map<string, string> {
+  const members = platform === 'android' ? ['android', 'nativeView', 'nativeViewProtected'] : ['ios', 'nativeView', 'nativeViewProtected'];
+  const table = platform === 'android' ? NATIVE_VIEWS_ANDROID : undefined;
   const checker = program.getTypeChecker();
   const out = new Map<string, string>();
   for (const sf of program.getSourceFiles()) {
     if (!isApp(sf.fileName)) continue;
     const edits: { at: number; text: string }[] = [];
     const visit = (n: ts.Node) => {
-      if (ts.isPropertyAccessExpression(n) && ['ios', 'nativeView', 'nativeViewProtected'].includes(n.name.text) && !ts.isAsExpression(n.parent)
+      if (ts.isPropertyAccessExpression(n) && members.includes(n.name.text) && !ts.isAsExpression(n.parent)
         && checker.getTypeAtLocation(n).flags & ts.TypeFlags.Any) {
-        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression));
+        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression), table);
         if (native) edits.push({ at: n.getStart(), text: '(' }, { at: n.getEnd(), text: ` as ${native})` });
       }
       ts.forEachChild(n, visit);

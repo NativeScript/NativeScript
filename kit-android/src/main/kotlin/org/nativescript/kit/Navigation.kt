@@ -24,7 +24,6 @@ open class Page : ContentView() {
     internal var actionBar: ActionBar? = null
         private set
     internal var owner: Owner? = null
-    private var isLoaded = false
 
     val frame: Frame? get() = parent as? Frame
 
@@ -60,11 +59,9 @@ open class Page : ContentView() {
     }
 
     /** `onLoaded`: a page without an action bar gets the default one, showing the app's name. */
-    internal fun loaded() {
-        if (!isLoaded) {
-            isLoaded = true
-            if (actionBar == null) addChild(ActionBar())
-        }
+    override fun onLoaded() {
+        super.onLoaded()
+        if (actionBar == null) addChild(ActionBar())
         actionBar?.update()
     }
 
@@ -82,13 +79,13 @@ open class ActionBar : View() {
 
     private val toolbar: Toolbar get() = nativeView as Toolbar
     private val page: Page? get() = parent as? Page
-    private var isLoaded = false
+    private var updated = false
 
     override fun createNativeView(): NativeView = Toolbar(context)
 
     override fun setProperty(name: String, value: Any?) {
         when (name) {
-            "title" -> if (isLoaded) updateTitle()
+            "title" -> if (updated) updateTitle()
             "color" -> {
                 val color = toColor(value)
                 toolbar.setTitleTextColor(color?.argb ?: defaultTitleTextColor())
@@ -98,7 +95,7 @@ open class ActionBar : View() {
     }
 
     internal fun update() {
-        isLoaded = true
+        updated = true
         val toolbar = toolbar
         if (page?.frame == null) {
             toolbar.visibility = NativeView.GONE
@@ -153,10 +150,9 @@ class PageFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): NativeView? {
         val page = page ?: return null
         val frame = frame ?: return null
-        frame.attach(page)
         val view = page.nativeView
         (view.parent as? ViewGroup)?.removeView(view)
-        page.loaded()
+        frame.attach(page)
         return view
     }
 }
@@ -208,7 +204,7 @@ open class Frame : View() {
     }
 
     internal fun attach(page: Page) {
-        if (page.parent == null) addView(page)
+        if (page.parent == null) addView(page) else if (isLoaded) page.load()
     }
 
     /** Pushes the page `create` returns. Effects created while building it end when it is popped. */
@@ -249,7 +245,10 @@ open class Frame : View() {
             allowTransitionOverlap(fragment)
             allowTransitionOverlap(leaving.fragment)
         }
-        if (leaving != null) backstack.add(leaving)
+        if (leaving != null) {
+            backstack.add(leaving)
+            leaving.page.unload()
+        }
         current = entry
         val manager = NativeScriptActivity.current.supportFragmentManager
         manager.beginTransaction().replace(nativeView.id, fragment, entry.tag).commitAllowingStateLoss()
@@ -276,6 +275,15 @@ open class Frame : View() {
 
         /** The frame navigation goes to: the most recently created one. */
         val topmost: Frame? get() = stack.lastOrNull()
+
+        /** Frames inside a closed modal are no longer navigation targets. */
+        internal fun forget(root: View) {
+            stack.removeAll { frame ->
+                var v: View? = frame
+                while (v != null && v !== root) v = v.parent
+                v === root
+            }
+        }
 
         private fun pageFor(view: View): Page {
             if (view is Page) return view

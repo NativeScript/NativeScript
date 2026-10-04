@@ -31,6 +31,9 @@ abstract class LayoutBase : ContainerView(), RegionHost {
     private val entries = mutableListOf<Entry>()
     private var children = listOf<View>()
 
+    /** The children in order, regions' runs included. */
+    val subViews: List<View> get() = children
+
     private val group: ViewGroup get() = nativeView as ViewGroup
 
     override fun addChild(child: View) {
@@ -135,8 +138,8 @@ open class GridLayout : LayoutBase() {
             return text.split(Regex("[\\s,]+")).map { it.trim() }.filter { it.isNotEmpty() }.map { item ->
                 when {
                     item == "auto" -> ItemSpec(1, GridUnitType.auto)
-                    item.contains('*') -> ItemSpec(jsParseInt(item.replace("*", "").ifEmpty { "1" }) ?: 1, GridUnitType.star)
-                    jsParseInt(item) != null -> ItemSpec((jsParseInt(item)!! * Layout.density).toInt(), GridUnitType.pixel)
+                    item.contains('*') -> ItemSpec(parseIntOrNull(item.replace("*", "").ifEmpty { "1" }) ?: 1, GridUnitType.star)
+                    parseIntOrNull(item) != null -> ItemSpec((parseIntOrNull(item)!! * Layout.density).toInt(), GridUnitType.pixel)
                     else -> throw IllegalArgumentException("Cannot parse item spec from string: $item")
                 }
             }
@@ -243,7 +246,7 @@ open class ScrollView : ContentView() {
 }
 
 /** JavaScript `parseInt(s, 10)`: the leading integer, or null for NaN. */
-internal fun jsParseInt(text: String): Int? {
+internal fun parseIntOrNull(text: String): Int? {
     val s = text.trim()
     var i = 0
     if (i < s.length && (s[i] == '-' || s[i] == '+')) i++

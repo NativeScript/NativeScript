@@ -88,9 +88,10 @@ fun <T> untrack(body: () -> T): T {
 
 /**
  * A value that notifies the effects that read it. A write of an equal value
- * (`==`: structural for lists and strings, identity for objects) is ignored.
+ * (`equals`, by default `==`: Object.is for numbers and strings, identity for
+ * the runtime's objects) is ignored.
  */
-class Signal<T>(private var stored: T) : Source {
+class Signal<T>(private var stored: T, private val equals: ((T, T) -> Boolean)? = null) : Source {
     private val subscribers = LinkedHashSet<Subscriber>()
 
     var value: T
@@ -102,7 +103,7 @@ class Signal<T>(private var stored: T) : Source {
             return stored
         }
         set(newValue) {
-            if (stored == newValue) return
+            if (equals?.invoke(stored, newValue) ?: (stored == newValue)) return
             stored = newValue
             for (target in subscribers.toList()) target.invalidate()
             if (batchDepth == 0) flush()
