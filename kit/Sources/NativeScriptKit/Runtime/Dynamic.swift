@@ -56,3 +56,16 @@ public func jsIn(_ key: String, _ object: Any?) -> Bool {
     default: return false
     }
 }
+
+/// A tagged template's strings array; translated code makes one per call site.
+public func jsTemplateObject(_ cooked: [String], raw: [String]) -> JSArray<String> {
+    let strings = JSArray(cooked)
+    jsTemplateRaws[ObjectIdentifier(strings)] = JSArray(raw)
+    return strings
+}
+
+/// `strings.raw`.
+public func jsTemplateRaw(_ strings: JSArray<String>) -> JSArray<String> {
+    jsTemplateRaws[ObjectIdentifier(strings)] ?? strings
+}
+nonisolated(unsafe) private var jsTemplateRaws: [ObjectIdentifier: JSArray<String>] = [:]

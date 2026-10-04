@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { isStringRaw } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
@@ -93,6 +94,7 @@ export class Throws {
     const c = this.checker;
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && this.untyped(n.initializer)) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
+    if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.
       if (this.untyped(n.expression)) return true;
@@ -145,6 +147,14 @@ export class Throws {
     if ((decl as Fn).body) return this.fn(decl);
     // A signature without a body (an interface method, a function-typed member) is a function type.
     return !ts.isConstructorDeclaration(decl) && !ts.isClassLike(decl);
+  }
+
+  /** A tag is called as a function: through a function value it throws, else as its declaration does. */
+  private tagThrows(e: ts.TaggedTemplateExpression): boolean {
+    const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+    if (!decl || ts.isJSDocSignature(decl) || decl.getSourceFile().isDeclarationFile) return !!decl && !decl.getSourceFile().isDeclarationFile;
+    if ((decl as Fn).body && !ts.isArrowFunction(decl) && !ts.isFunctionExpression(decl)) return this.fn(decl);
+    return true;
   }
 
   private implicitConstructorThrows(call: ts.NewExpression): boolean {

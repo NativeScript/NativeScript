@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
+import { isStringRaw, neverDefined, templateParts } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -81,6 +82,8 @@ export class Translator implements AsyncTranslator {
   private computed = new Set<string>();
   /** Variables initialized from an element read (`const r = xs[i]`): Swift optionals, unwrapped where they are used. */
   private undefinedVars = new Map<ts.Symbol, string>();
+  /** A tagged template's strings, one constant per call site, as JavaScript caches them. */
+  private templateObjects: string[] = [];
   /** Accessors for module-level variables a class member of the same name hides from Swift (`__global_fruits`). */
   private globalAliases = new Map<string, string>();
   /** App classes another app class extends: they stay open. */
@@ -97,6 +100,8 @@ export class Translator implements AsyncTranslator {
   /** Enclosing statements that own a plain `break` / `continue` inside a lowered async region. */
   private plainBreak = 0;
   private plainContinue = 0;
+  /** What a plain `break` leaves, innermost last: a loop or Swift switch (null), or a switch lowered to a labeled block. */
+  private breakTargets: (string | null)[] = [];
   private returnType = 'Void';
   /** A Promise executor's `resolve` parameter → its JSResolvers, so resolving with a promise adopts it. */
   private resolvers = new Map<ts.Symbol, { name: string; type: string }>();
@@ -175,12 +180,13 @@ export class Translator implements AsyncTranslator {
 
   /** Translates a function's body: no async region or loop of the enclosing function reaches into it. */
   private inFunction<T>(returnType: string, body: () => T): T {
-    const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType] as const;
+    const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets] as const;
     this.asyncCtx = null;
     this.plainBreak = 0;
     this.plainContinue = 0;
     this.returnType = returnType;
-    try { return body(); } finally { [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType] = saved; }
+    this.breakTargets = [];
+    try { return body(); } finally { [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets] = saved; }
   }
 
   // ---- Types -----------------------------------------------------------------------------
@@ -260,6 +266,7 @@ export class Translator implements AsyncTranslator {
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
       case 'WeakRef': return `JSWeakRef<${arg(0)}>`;
+      case 'TemplateStringsArray': return 'JSArray<String>';
       case 'Reference':
         if (sym?.declarations?.[0] && /[\\/]interop\.d\.ts$/.test(sym.declarations[0].getSourceFile().fileName)) return 'InteropReference';
         break;
@@ -605,7 +612,7 @@ export class Translator implements AsyncTranslator {
 
   /** Classes for object types without a name. */
   shapesCode(): string {
-    return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values()].join('\n\n');
+    return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values(), ...this.templateObjects].join('\n\n');
   }
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
@@ -1506,7 +1513,8 @@ export class Translator implements AsyncTranslator {
       const isBreak = ts.isBreakStatement(s);
       if (s.label) return `${i}${isBreak ? 'break' : 'continue'} ${ident(s.label.text)}`;
       if (a && (isBreak ? a.brk && !this.plainBreak : a.cont && !this.plainContinue)) return `${i}${isBreak ? a.brk : a.cont}\n${i}return`;
-      return i + (isBreak ? 'break' : 'continue');
+      const target = isBreak ? this.breakTargets.at(-1) : null;
+      return i + (isBreak ? (target ? `break ${target}` : 'break') : 'continue');
     }
     if (ts.isBlock(s)) return `${i}do ${this.block(s)}`;
     if (ts.isEmptyStatement(s)) return '';
@@ -1515,6 +1523,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isTryStatement(s)) return this.tryStatement(s);
     if (ts.isLabeledStatement(s)) {
       if (this.asyncCtx) throw this.error(s, 'a labeled statement in an async function');
+      // A labeled block, `if` or `switch` is a labeled `do` that `break label` leaves.
+      if (!ts.isIterationStatement(s.statement, false)) return `${i}${ident(s.label.text)}: do {\n${this.nested(() => this.stmt(s.statement))}\n${i}}`;
       this.label = ident(s.label.text);
       return this.stmt(s.statement);
     }
@@ -1536,7 +1546,8 @@ export class Translator implements AsyncTranslator {
   private loopBody(body: () => string): string {
     this.plainBreak++;
     this.plainContinue++;
-    try { return body(); } finally { this.plainBreak--; this.plainContinue--; }
+    this.breakTargets.push(null);
+    try { return body(); } finally { this.plainBreak--; this.plainContinue--; this.breakTargets.pop(); }
   }
 
   declarationList(list: ts.VariableDeclarationList, lowered: boolean): string {
@@ -1662,10 +1673,13 @@ export class Translator implements AsyncTranslator {
     const i = this.indent;
     const subject = this.fresh('__switch');
     const subjectType = this.typeOf(s.expression);
-    const lines = [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
     const clauses = s.caseBlock.clauses;
+    const fallback = clauses.findIndex(ts.isDefaultClause);
+    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType);
+    const lines = [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
     let labels: ts.Expression[] = [];
     this.plainBreak++;
+    this.breakTargets.push(null);
     try {
       clauses.forEach((c, k) => {
         if (ts.isCaseClause(c)) labels.push(c.expression);
@@ -1690,8 +1704,39 @@ export class Translator implements AsyncTranslator {
         lines.push(...(code.length ? code : [`${i}    break`]));
         if (!ends && k < clauses.length - 1) lines.push(`${i}    fallthrough`);
       });
-    } finally { this.plainBreak--; }
+    } finally { this.plainBreak--; this.breakTargets.pop(); }
     if (!clauses.some(ts.isDefaultClause)) lines.push(`${i}default:`, `${i}    break`);
+    lines.push(`${i}}`);
+    return lines.join('\n');
+  }
+
+  /**
+   * A switch whose default clause precedes cases, which Swift's switch cannot
+   * say: the clause execution starts at is found first, then each clause runs
+   * if it is at or after it (fallthrough), and `break` leaves the labeled block.
+   */
+  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string): string {
+    const i = this.indent;
+    const label = this.fresh('__switchBlock');
+    const start = this.fresh('__start');
+    const clauses = s.caseBlock.clauses;
+    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
+    const tests = clauses.flatMap((c, k) => {
+      if (!ts.isCaseClause(c)) return [];
+      const l = c.expression;
+      const test = subjectType === 'Any?' || this.typeOf(l) === 'Any?' ? `jsStrictEquals(${subject}, ${this.coerce(l, 'Any?')})` : `${subject} == ${this.coerce(l, subjectType)}`;
+      return [`if ${this.tryPrefix(l)}${test} { ${start} = ${k} }`];
+    });
+    lines.push(`${i}    ${tests.join(' else ')}`);
+    this.plainBreak++;
+    this.breakTargets.push(label);
+    try {
+      clauses.forEach((c, k) => {
+        if (!c.statements.length) return;
+        const code = this.nested(() => this.nested(() => this.statements([...c.statements])));
+        lines.push(`${i}    if ${start} <= ${k} {`, ...code, `${i}    }`);
+      });
+    } finally { this.plainBreak--; this.breakTargets.pop(); }
     lines.push(`${i}}`);
     return lines.join('\n');
   }
@@ -1864,6 +1909,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isArrayLiteralExpression(e)) return this.array(e);
     if (ts.isObjectLiteralExpression(e)) return this.object(e);
+    if (ts.isTaggedTemplateExpression(e)) return this.taggedTemplate(e);
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.closure(e);
     if (ts.isTypeOfExpression(e)) return this.typeofExpr(e);
     if (ts.isAwaitExpression(e)) throw this.error(e, 'await outside a statement of an async function');
@@ -1882,6 +1928,25 @@ export class Translator implements AsyncTranslator {
       return `jsRegExpLiteral(${swiftString(text.slice(1, end))}, ${swiftString(text.slice(end + 1))})`;
     }
     throw this.error(e, 'expression');
+  }
+
+  /** ``tag`a${x}b` ``: the tag called with the site's strings (cooked, and raw as `strings.raw`), then the values. */
+  private taggedTemplate(e: ts.TaggedTemplateExpression): string {
+    const { cooked, raw, values } = templateParts(e.template);
+    if (isStringRaw(e.tag, this.checker)) return `(${raw.map((r, k) => swiftString(r) + (k < values.length ? ` + ${this.str(values[k])}` : '')).join(' + ')})`;
+    const site = `__template${this.templateObjects.length}`;
+    this.templateObjects.push(`let ${site} = jsTemplateObject([${cooked.map(swiftString).join(', ')}], raw: [${raw.map(swiftString).join(', ')}])`);
+    const params = this.checker.getResolvedSignature(e)?.getParameters() ?? [];
+    const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken);
+    const restType = () => this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name);
+    const args = [site];
+    for (let k = 0; k < values.length; k++) {
+      if (restAt >= 0 && k + 1 >= restAt) { args.push(this.packed(values.slice(k), restType())); break; }
+      const p = params[k + 1];
+      args.push(p ? this.coerce(values[k], this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.expr(values[k]));
+    }
+    if (restAt > values.length) args.push(`${restType()}()`);
+    return `${this.expr(e.tag)}(${args.join(', ')})`;
   }
 
   /** Whether a `null` here lands in an optional typed slot rather than an untyped one. */
@@ -2043,6 +2108,7 @@ export class Translator implements AsyncTranslator {
     const name = e.name.text;
     const target = e.expression;
     if (target.kind === ts.SyntaxKind.ThisKeyword && this.props.has(name)) return `self.${ident(name)}.value`;
+    if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
@@ -2904,6 +2970,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private typeofExpr(e: ts.TypeOfExpression): string {
+    if (neverDefined(e.expression, this.checker)) return '"undefined"';
     const newer = this.native.introducedAfterDeployment(e.expression);
     if (newer) return `(jsOSAtLeast(${newer}) ? "function" : "undefined")`;
     const t = this.typeOf(e.expression);

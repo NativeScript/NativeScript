@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
+import { isStringRaw, neverDefined, templateParts } from './lang.ts';
 
 /**
  * TypeScript to Kotlin, typed by the checker, with JavaScript's semantics
@@ -115,6 +116,10 @@ export class Translator implements AsyncTranslator {
   private computed = new Set<string>();
   /** Variables initialized from an element read (`const r = xs[i]`): nullable, unwrapped where they are used. */
   private undefinedVars = new Map<ts.Symbol, string>();
+  /** A tagged template's strings, one constant per call site, as JavaScript caches them. */
+  private templateObjects: string[] = [];
+  /** Labels of labeled blocks in scope: `break label` returns from the block's lambda. */
+  private blockLabels = new Set<string>();
   /** Accessors for module-level variables a class member of the same name hides (`__global_fruits`). */
   private globalAliases = new Map<string, string>();
   /** App classes another app class extends: they stay open. */
@@ -261,6 +266,7 @@ export class Translator implements AsyncTranslator {
       case 'RegExp': return 'JSRegExp';
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
+      case 'TemplateStringsArray': return 'JSArray<String>';
       case 'IterableIterator': case 'MapIterator': case 'SetIterator': case 'ArrayIterator': case 'Iterator': case 'IteratorObject': return `JSIterator<${arg(0)}>`;
       case 'WeakMap': case 'WeakSet': case 'Symbol':
         throw this.error(where, `the ${name} type`);
@@ -509,7 +515,7 @@ export class Translator implements AsyncTranslator {
   }
 
   shapesCode(): string {
-    return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values()].join('\n\n');
+    return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values(), ...this.templateObjects].join('\n\n');
   }
 
   /** A plain JavaScript object of a known shape: a class with named fields, readable as a dynamic object. */
@@ -989,6 +995,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isBreakStatement(s) || ts.isContinueStatement(s)) {
       const isBreak = ts.isBreakStatement(s);
+      if (s.label && isBreak && this.blockLabels.has(s.label.text)) return `${i}return@${s.label.text}`;
       if (s.label) return `${i}${isBreak ? 'break' : 'continue'}@${s.label.text}`;
       if (a && (isBreak ? a.brk && !this.plainBreak : a.cont && !this.plainContinue)) return `${i}${isBreak ? a.brk : a.cont}\n${i}return`;
       const top = this.jumps.at(-1);
@@ -1006,6 +1013,12 @@ export class Translator implements AsyncTranslator {
     if (ts.isTryStatement(s)) return this.tryStatement(s);
     if (ts.isLabeledStatement(s)) {
       if (this.asyncCtx) throw this.error(s, 'a labeled statement in an async function');
+      if (!ts.isIterationStatement(s.statement, false)) {
+        // A labeled block, `if` or `switch` is a labeled lambda that `break label` returns from.
+        const label = s.label.text;
+        this.blockLabels.add(label);
+        try { return `${i}run ${label}@ {\n${this.nested(() => this.stmt(s.statement))}\n${i}}`; } finally { this.blockLabels.delete(label); }
+      }
       this.label = s.label.text;
       return this.stmt(s.statement);
     }
@@ -1316,6 +1329,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isArrayLiteralExpression(e)) return this.array(e);
     if (ts.isObjectLiteralExpression(e)) return this.object(e);
+    if (ts.isTaggedTemplateExpression(e)) return this.taggedTemplate(e);
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.closure(e);
     if (ts.isTypeOfExpression(e)) return this.typeofExpr(e);
     if (ts.isAwaitExpression(e)) throw this.error(e, 'await outside a statement of an async function');
@@ -1333,6 +1347,25 @@ export class Translator implements AsyncTranslator {
       return `jsRegExpLiteral(${kotlinString(text.slice(1, end))}, ${kotlinString(text.slice(end + 1))})`;
     }
     throw this.error(e, 'expression');
+  }
+
+  /** ``tag`a${x}b` ``: the tag called with the site's strings (cooked, and raw as `strings.raw`), then the values. */
+  private taggedTemplate(e: ts.TaggedTemplateExpression): string {
+    const { cooked, raw, values } = templateParts(e.template);
+    if (isStringRaw(e.tag, this.checker)) return `(${raw.map((r, k) => kotlinString(r) + (k < values.length ? ` + ${this.str(values[k])}` : '')).join(' + ')})`;
+    const site = `__template${this.templateObjects.length}`;
+    this.templateObjects.push(`val ${site} = jsTemplateObject(listOf(${cooked.map(kotlinString).join(', ')}), listOf(${raw.map(kotlinString).join(', ')}))`);
+    const params = this.checker.getResolvedSignature(e)?.getParameters() ?? [];
+    const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken);
+    const restType = () => this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name);
+    const args = [site];
+    for (let k = 0; k < values.length; k++) {
+      if (restAt >= 0 && k + 1 >= restAt) { args.push(this.packed(values.slice(k), restType())); break; }
+      const p = params[k + 1];
+      args.push(p ? this.coerce(values[k], this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.expr(values[k]));
+    }
+    if (restAt > values.length) args.push(`${restType()}()`);
+    return `${this.expr(e.tag)}(${args.join(', ')})`;
   }
 
   private optionalContext(e: ts.Expression): boolean {
@@ -1413,6 +1446,7 @@ export class Translator implements AsyncTranslator {
     const name = e.name.text;
     const target = e.expression;
     if (target.kind === ts.SyntaxKind.ThisKeyword && this.props.has(name)) return `this.${ident(name)}.value`;
+    if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
@@ -2170,6 +2204,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private typeofExpr(e: ts.TypeOfExpression): string {
+    if (neverDefined(e.expression, this.checker)) return '"undefined"';
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return '"undefined"';
