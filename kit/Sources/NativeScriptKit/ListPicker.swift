@@ -3,6 +3,7 @@ import UIKit
 /// `ListPicker` from list-picker/index.ios: one UIPickerView component whose
 /// rows are the items as strings, drawn in the picker's tint color.
 open class ListPicker: View, UIPickerViewDataSource, UIPickerViewDelegate {
+    open override class var announcedProperties: Set<String> { ["selectedIndex"] }
     open override class var cssType: String { "ListPicker" }
 
     private var picker: UIPickerView? { nativeView as? UIPickerView }

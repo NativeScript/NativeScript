@@ -26,6 +26,8 @@ const SHIMS: Record<string, string> = {
     export declare function $navigate(page: () => any): void;
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
     export declare function $writable<T>(value: T): WritableSignal<T>;
+    /** Component state its handlers read as of the last commit: React's and Octane's \`useState\`, Solid's signals. */
+    export declare function $state<T>(signal: WritableSignal<T>): WritableSignal<T>;
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
   `,
   '@angular/core': `
@@ -51,6 +53,9 @@ const SHIMS: Record<string, string> = {
     export declare const NativeScriptCommonModule: any;
     export declare const PageRouterOutlet: any;
   `,
+  'svelte': `
+    export declare function tick(): Promise<void>;
+  `,
   'svelte/store': `
     import type { Sig } from '@nativescript/release';
     export interface Writable<T> extends Sig<T> { set(value: T): void; update(fn: (value: T) => T): void }
@@ -66,6 +71,7 @@ const SHIMS: Record<string, string> = {
     export type Ref<T> = VueRef<T>;
     export declare function ref<T>(value: T): VueRef<T>;
     export declare function computed<T>(fn: () => T): { readonly value: T };
+    export declare function nextTick(): Promise<void>;
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
     export interface ModalOptions { props?: Record<string, any>; fullscreen?: boolean; animated?: boolean; cancelable?: boolean; closeCallback?: (result?: any) => void }
     export declare function $showModal(component: any, options?: ModalOptions): { then(fn: (result?: any) => void): void };

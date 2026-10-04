@@ -88,7 +88,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
       if (ts.isArrayBindingPattern(d.name) && ts.isCallExpression(init) && /(^|\.)useState$/.test(init.expression.getText())) {
         const [value, setter] = d.name.elements.map((e) => (ts.isBindingElement(e) ? (e.name as ts.Identifier).text : ''));
         scope.names.set(value, `this.${value}()`);
-        if (setter) scope.names.set(setter, `this.${value}.set`);
+        if (setter) scope.names.set(setter, `this.${value}.$write`);
         continue;
       }
       if (ts.isObjectBindingPattern(d.name) && routeName && init.getText() === `${routeName}.params`) continue; // the params are props already
@@ -120,7 +120,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
       if (ts.isArrayBindingPattern(d.name)) {
         const value = ((d.name.elements[0] as ts.BindingElement).name as ts.Identifier).text;
         const arg = (init as ts.CallExpression).arguments[0];
-        fields.push(`  ${value} = $writable(${arg ? rewrite(arg.getText(), routeScope(scope)) : 'undefined'});`);
+        fields.push(`  ${value} = $state($writable(${arg ? rewrite(arg.getText(), routeScope(scope)) : 'undefined'}));`);
         continue;
       }
       if (!ts.isIdentifier(d.name)) continue;
@@ -304,7 +304,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
     const title: Attr = 'value' in screen.title ? { name: 'title', value: screen.title.value } : { name: 'title', method: expr(screen.title.code, []) };
     template = [{ kind: 'element', tag: 'ActionBar', attrs: [title], events: [], children: [] }, ...template];
   }
-  const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
+  const source = [`import { $writable, $state, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
   return { name, file: `${dirname(path)}/${name}.react.ts`, source, props, template, page: !!screen };
 }
 

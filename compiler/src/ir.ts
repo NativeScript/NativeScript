@@ -56,6 +56,8 @@ export interface ComponentIR {
   optional?: string[];
   /** Whether the component takes the names of the props its parent gave (`$passed`), for a spread of its rest props. */
   passed?: boolean;
+  /** Svelte's `$:` declarations: the state `name`, which `method` recomputes before the bindings update. */
+  derived?: { name: string; method: string }[];
   /** `useEffect`/`useLayoutEffect`: the method that runs it (returning its cleanup) and the one returning its dependencies. */
   effects?: { run: string; deps: string | null; layout: boolean }[];
 }

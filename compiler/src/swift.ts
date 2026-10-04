@@ -2801,6 +2801,8 @@ export class Translator implements AsyncTranslator {
       const kind = name === 'ref' || name === '$ref' ? 'vue' : name === '$signal' || name === 'writable' ? 'svelte' : 'identity';
       return this.newSignal(t, arg(0) ? this.coerce(arg(0), t) : 'nil', kind);
     }
+    if (name === '$state' && lib) return `stateSignal(${this.expr(arg(0))})`;
+    if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
     if (name === 'inject' && lib) {
       const token = (arg(0) as ts.Identifier).text;

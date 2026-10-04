@@ -4,7 +4,7 @@ import Foundation
 // signals and Svelte runes share: a read inside an effect subscribes it, a
 // write re-runs exactly the effects that read the value. Compiled templates
 // bind each native property through one effect, so nothing is diffed.
-// Main thread only, synchronous, like the frameworks it stands in for.
+// Main thread only; effects re-run on the app's framework's schedule (`Reactivity`).
 
 /// A scope that owns effects and cleanups: a component instance, a branch of
 /// an `if`, a row of a `for`. Disposing it disposes everything created in it.
@@ -55,14 +55,64 @@ protocol Source: AnyObject {
 
 private var currentEffect: Effect?
 private var batchDepth = 0
+private var eventDepth = 0
 private var queue: [Effect] = []
+/// Derived values whose sources changed: they settle before the bindings re-run.
+private var derivedQueue: [Effect] = []
+private var flushing = false
 private var flushScheduled = false
+/// What `nextTick()` returned while an update was scheduled, settled after it.
+private var flushedPromise: JSResolvers<Void>?
+/// Angular, in the microtask checkpoint after an update: updates are scheduled in a microtask.
+private var afterUpdate = false
+/// Signals whose readers outside an owner see the value they had before the writes.
+private var holding: [Holding] = []
 
-/// How writes reach the effects that read them.
+protocol Holding: AnyObject {
+    func release()
+}
+
+/// When the effects a write invalidates re-run: the app's framework's update schedule.
 public enum Reactivity {
-    /// Effects re-run in a microtask after the writes, as a renderer that batches
-    /// updates (Octane's root) re-renders; otherwise at once.
-    public static var scheduled = false
+    public enum Schedule {
+        /// At once: React's legacy root commits each `setState` synchronously.
+        case now
+        /// In a microtask queued by the first write: Vue's `queueFlush`, Svelte's
+        /// `schedule_update`, Solid's `schedule`.
+        case microtask
+        /// In a zero-delay timer, Angular's zoneless `scheduleCallbackWithRafRace`
+        /// (its `setTimeout` comes before NativeScript's next-frame `requestAnimationFrame`);
+        /// in a microtask during the checkpoint that follows an update (`switchToMicrotaskScheduler`).
+        case task
+        /// When the event being handled returns, otherwise in a microtask: Octane's discrete event scope.
+        case event
+    }
+
+    public static var schedule = Schedule.now
+
+    /// Vue's `nextTick()`: settles once the scheduled update has run, or now.
+    public static func nextTick() -> JSPromise<Void> {
+        guard flushScheduled else { return .resolve() }
+        if flushedPromise == nil { flushedPromise = JSPromise<Void>.pending().1 }
+        return flushedPromise!.promise
+    }
+
+    /// Svelte's `tick()`: schedules an update and returns a settled promise, whose reactions follow it.
+    public static func tick() -> JSPromise<Void> {
+        scheduleFlush()
+        return .resolve()
+    }
+
+    /// An event handler of a template. Angular's listener marks its view dirty, so an update
+    /// follows every event; Octane updates when the handler returns; React and Octane handlers
+    /// read the state of the render that made them (`stateSignal`) until they return.
+    public static func event(_ handler: () -> Void) {
+        if schedule == .task { scheduleFlush() }
+        eventDepth += 1
+        handler()
+        eventDepth -= 1
+        if eventDepth == 0 && schedule != .task { flush() }
+    }
 }
 
 /// Groups writes so each affected effect runs once, after the last write.
@@ -70,25 +120,54 @@ public func batch(_ body: () -> Void) {
     batchDepth += 1
     body()
     batchDepth -= 1
-    if batchDepth == 0 { flushOrSchedule() }
+    if batchDepth == 0 { flush() }
 }
 
-private func flushOrSchedule() {
-    guard Reactivity.scheduled else { return flush() }
-    guard !flushScheduled else { return }
-    flushScheduled = true
-    Microtasks.enqueue {
-        flushScheduled = false
-        flush()
+private func scheduleFlush() {
+    if flushScheduled || flushing { return }
+    switch Reactivity.schedule {
+    case .now: flush()
+    case .event where eventDepth > 0: break
+    case .task where !afterUpdate:
+        flushScheduled = true
+        jsSetTimeout(scheduledFlush, 0)
+    default:
+        flushScheduled = true
+        Microtasks.enqueue(scheduledFlush)
+    }
+}
+
+private func scheduledFlush() {
+    flushScheduled = false
+    flush()
+    if Reactivity.schedule == .task && !afterUpdate {
+        afterUpdate = true
+        Microtasks.enqueue { afterUpdate = false }
+    }
+    if let flushed = flushedPromise {
+        flushedPromise = nil
+        flushed.resolve()
     }
 }
 
 private func flush() {
-    while !queue.isEmpty {
+    if flushing { return }
+    flushing = true
+    if eventDepth == 0 && !holding.isEmpty {
+        for signal in holding { signal.release() }
+        holding = []
+    }
+    while !queue.isEmpty || !derivedQueue.isEmpty {
+        while !derivedQueue.isEmpty {
+            let derived = derivedQueue.sorted { EffectOrder.precedes($0.key, $1.key) }
+            derivedQueue = []
+            for effect in derived { effect.runIfStale() }
+        }
         let pending = queue.sorted { EffectOrder.precedes($0.key, $1.key) }
         queue = []
         for effect in pending { effect.runIfStale() }
     }
+    flushing = false
 }
 
 /// The order a framework commits its bindings in, as a key per effect: the
@@ -123,14 +202,14 @@ public enum EffectOrder {
     public static var current = Scope(prefix: [])
     private static var components = 0
     private static var solidCount = 0
-    /// Derived values (`Memo`) settle before any binding reads them.
-    private static var memos = 0
+    /// Derived values settle in the order they were declared.
+    private static var derived = 0
 
     static func key() -> [Int] { current.next(0) }
 
-    static func memoKey() -> [Int] {
-        memos += 1
-        return [Int.min, memos]
+    static func derivedKey() -> [Int] {
+        derived += 1
+        return [derived]
     }
 
     static func precedes(_ a: [Int], _ b: [Int]) -> Bool { a.lexicographicallyPrecedes(b) }
@@ -178,10 +257,13 @@ public func untrack<T>(_ body: () -> T) -> T {
 }
 
 /// A value that notifies the effects that read it.
-public final class Signal<T>: Source {
+public final class Signal<T>: Source, Holding {
     private var stored: T
     private var subscribers: [ObjectIdentifier: Subscriber] = [:]
     private let same: (T, T) -> Bool
+    /// Framework state (`stateSignal`): read outside an owner, the value before the writes not yet committed.
+    fileprivate var holds = false
+    private var held: T?
 
     public init(_ value: T) {
         stored = value
@@ -205,21 +287,35 @@ public final class Signal<T>: Source {
                 subscribers[ObjectIdentifier(effect)] = effect
                 effect.track(self)
             }
+            if let held, Owner.current == nil { return held }
             return stored
         }
         set {
             if same(stored, newValue) { return }
+            if holds && held == nil {
+                held = stored
+                holding.append(self)
+            }
             stored = newValue
             let targets = Array(subscribers.values)
             for target in targets { target.invalidate() }
-            if batchDepth == 0 { flushOrSchedule() }
+            if batchDepth == 0 && !flushing && !(queue.isEmpty && derivedQueue.isEmpty && holding.isEmpty) { scheduleFlush() }
         }
     }
+
+    func release() { held = nil }
 
     /// `signal.update { $0 + 1 }`, as Angular writes it.
     public func update(_ transform: (T) -> T) { value = transform(stored) }
 
     func unsubscribe(_ subscriber: Subscriber) { subscribers[ObjectIdentifier(subscriber)] = nil }
+}
+
+/// React's `useState`, Octane's and Solid's signals: the handlers of a render read the state it
+/// rendered (Solid's untracked reads see the last flush) until the writes commit.
+public func stateSignal<T>(_ signal: Signal<T>) -> Signal<T> {
+    signal.holds = true
+    return signal
 }
 
 /// Runs `body` now and again whenever a signal it read changes.
@@ -230,15 +326,17 @@ public final class Effect: Subscriber {
     private var owner: Owner?
     let key: [Int]
     private let height: Int?
+    private let derived: Bool
 
     @discardableResult
     public convenience init(_ body: @escaping () -> Void) {
         self.init(key: EffectOrder.key(), body)
     }
 
-    init(key: [Int], _ body: @escaping () -> Void) {
+    init(key: [Int], derived: Bool = false, _ body: @escaping () -> Void) {
         self.body = body
         self.key = key
+        self.derived = derived
         height = EffectOrder.current.height
         Owner.current?.effects.append(self)
         run()
@@ -249,7 +347,7 @@ public final class Effect: Subscriber {
     func invalidate() {
         guard body != nil, !stale else { return }
         stale = true
-        queue.append(self)
+        if derived { derivedQueue.append(self) } else { queue.append(self) }
     }
 
     fileprivate func runIfStale() {
@@ -281,18 +379,11 @@ public final class Effect: Subscriber {
     }
 }
 
-/// A derived value cached until a signal it read changes (Vue `computed`,
-/// Angular `computed`, Solid `createMemo`, Svelte `$derived`).
-public final class Memo<T> {
-    private let signal: Signal<T?>
-    private var effect: Effect?
-
-    public init(_ compute: @escaping () -> T) {
-        signal = Signal<T?>(nil)
-        effect = Effect(key: EffectOrder.memoKey()) { [signal] in signal.value = compute() }
-    }
-
-    public var value: T { signal.value! }
+/// A derived value as Svelte's `$:` keeps it: `body` stores it when its sources change, in the
+/// update after the writes and before any binding re-runs; read before that, it is the old value.
+@discardableResult
+public func derive(_ body: @escaping () -> Void) -> Effect {
+    Effect(key: EffectOrder.derivedKey(), derived: true, body)
 }
 
 /// A top-level owner for an app or a navigation entry.

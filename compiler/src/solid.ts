@@ -94,7 +94,7 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
         const value = ((d.name.elements[0] as ts.BindingElement).name as ts.Identifier).text;
         const call = init as ts.CallExpression;
         const typeArgs = call.typeArguments ? `<${call.typeArguments.map((t) => t.getText()).join(', ')}>` : '';
-        fields.push(`  ${value} = $writable${typeArgs}(${call.arguments[0] ? rewrite(call.arguments[0].getText(), full) : 'undefined'});`);
+        fields.push(`  ${value} = $state($writable${typeArgs}(${call.arguments[0] ? rewrite(call.arguments[0].getText(), full) : 'undefined'}));`);
         continue;
       }
       const id = (d.name as ts.Identifier).text;
@@ -226,7 +226,7 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
     list.flatMap((c) => (ts.isJsxText(c) ? [] : ts.isJsxExpression(c) ? (c.expression ? jsx(c.expression, loops) : []) : jsx(c as ts.Expression, loops)));
 
   const template = jsx(ret.expression!, []);
-  const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
+  const source = [`import { $writable, $state, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
   return { name, file: `${dirname(path)}/${name}.solid.ts`, source, props, template, page: !!route };
 }
 
@@ -267,7 +267,7 @@ export function solidStore(text: string): string | null {
   if (!/createSignal/.test(text)) return null;
   const sf = ts.createSourceFile('store.ts', text, ts.ScriptTarget.Latest, true);
   const setters = new Map<string, string>();
-  let out = `import { $writable } from '@nativescript/release';\n`;
+  let out = `import { $writable, $state } from '@nativescript/release';\n`;
   for (const st of sf.statements) {
     if (ts.isImportDeclaration(st) && (st.moduleSpecifier as ts.StringLiteral).text === 'solid-js') continue;
     if (ts.isVariableStatement(st)) {
@@ -276,7 +276,7 @@ export function solidStore(text: string): string | null {
         const [value, setter] = d.name.elements.map((e) => (ts.isBindingElement(e) ? (e.name as ts.Identifier).text : ''));
         if (setter) setters.set(setter, value);
         const call = d.initializer;
-        out += `export const ${value} = $writable${call.typeArguments ? `<${call.typeArguments.map((t) => t.getText()).join(', ')}>` : ''}(${call.arguments[0]?.getText() ?? 'undefined'});\n`;
+        out += `export const ${value} = $state($writable${call.typeArguments ? `<${call.typeArguments.map((t) => t.getText()).join(', ')}>` : ''}(${call.arguments[0]?.getText() ?? 'undefined'}));\n`;
         continue;
       }
     }

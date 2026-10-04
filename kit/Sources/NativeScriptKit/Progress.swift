@@ -2,6 +2,7 @@ import UIKit
 
 /// `Progress` from progress/index.ios: `value` of `maxValue` as a UIProgressView's progress.
 open class Progress: View {
+    open override class var announcedProperties: Set<String> { ["value"] }
     open override class var cssType: String { "Progress" }
 
     private var progressView: UIProgressView? { nativeView as? UIProgressView }

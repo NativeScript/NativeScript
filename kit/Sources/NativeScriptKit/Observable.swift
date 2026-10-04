@@ -122,6 +122,8 @@ open class Observable: NSObject, JSDynamic {
 
     public func hasListeners(_ eventName: String) -> Bool { observers[eventName] != nil }
 
+    var hasAnyListeners: Bool { !observers.isEmpty }
+
     public func _emit(_ eventName: String) { fire(EventData(eventName: eventName, object: self, value: nil)) }
 
     /// The listeners of an event, as `_getEventList` returns them (an array of entries).

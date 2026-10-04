@@ -7,6 +7,7 @@ import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import { render } from './codegen-kotlin.ts';
+import { SCHEDULE, type Framework } from './codegen.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
@@ -74,6 +75,7 @@ class MainActivity : NativeScriptActivity() {
     override val css: String get() = appCSS
 
     override fun root(): View {
+        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}
 ${inits}${routes}        return ${b.root}().render()
     }
 }

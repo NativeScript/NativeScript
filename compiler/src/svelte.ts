@@ -32,6 +32,7 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
   const scope: Scope = { names: new Map() };
   const arity = new Map<string, number>();
   const later: (() => void)[] = [];
+  const derived: { name: string; method: string }[] = [];
 
   for (const st of sf.statements) {
     if (ts.isImportDeclaration(st)) {
@@ -81,10 +82,14 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
       continue;
     }
     if (ts.isLabeledStatement(st) && st.label.text === '$' && ts.isExpressionStatement(st.statement) && ts.isBinaryExpression(st.statement.expression)) {
+      // `$: id = expr` is state that `$$.update()` recomputes in the update after its sources
+      // change; `render()` gives it its first value.
       const assign = st.statement.expression;
       const id = (assign.left as ts.Identifier).text;
-      scope.names.set(id, `this.${id}`);
-      later.push(() => fields.push(`  get ${id}() { return ${rewrite(assign.right.getText(), withStores(scope, stores))}; }`));
+      scope.names.set(id, `this.${id}.value!`);
+      const method = `$d${derived.length}`;
+      derived.push({ name: id, method });
+      later.push(() => fields.push(`  ${id} = $signal<ReturnType<${name}['${method}']> | undefined>(undefined);`, `  ${method}() { return ${rewrite(assign.right.getText(), withStores(scope, stores))}; }`));
       continue;
     }
     throw new Error(`${path}: unsupported top-level statement in <script>: ${st.getText().slice(0, 60)}`);
@@ -231,7 +236,7 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
     '}',
     '',
   ].join('\n');
-  return { name, file: path + '.ts', source, props, template };
+  return { name, file: path + '.ts', source, props, template, derived };
 }
 
 /** `$favoriteIds` reads the store `favoriteIds`. */
