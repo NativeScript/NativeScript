@@ -622,6 +622,8 @@ export class NativeAPI {
     return !!this.enumInfo(swift);
   }
 
+  isOptionSetType(swift: string): boolean { return this.isOptionSet(swift); }
+
   private isOptionSet(swift: string): boolean {
     return this.enumInfo(swift)?.options ?? false;
   }

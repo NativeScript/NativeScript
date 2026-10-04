@@ -637,7 +637,7 @@ export class Translator {
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${ident(f.name)}`),
+      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${this.untypedEnum(ident(f.name), f.type)}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
       `            default: return ${override ? 'super[jsKey: key]' : 'nil'}`,
       '            }',
@@ -673,7 +673,8 @@ export class Translator {
     const m = /^JSArray<(.*)>$/.exec(type);
     if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
     const r = /^JSRecord<(.*)>\??$/.exec(type);
-    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r) { ${this.fromAny('$0', r[1])} } }(${code})` : `jsRecordOf(${code}) { ${this.fromAny('$0', r[1])} }`;
+    // A record's values are read as its type says where they have it (a gesture's extraData holds arrays beside its numbers).
+    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r) { ${this.fromAnyCode('$0', r[1], true)} } }(${code})` : `jsRecordOf(${code}) { ${this.fromAnyCode('$0', r[1], true)} }`;
     const parts = /^\((.*)\)$/.exec(type) && splitTopLevel(type.slice(1, -1));
     if (parts && parts.length > 1 && !type.includes('->')) {
       // A tuple type reads an untyped array's elements.
@@ -750,6 +751,14 @@ export class Translator {
   }
 
   // ---- Functions -----------------------------------------------------------------------------
+
+  /** A native enum's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is not a native enum. */
+  private untypedEnum(code: string, type: string): string {
+    const base = type.replace(/\?$/, '');
+    if (!this.native.isEnumType(base) || this.native.isOptionSetType(base)) return code;
+    if (!code) return 'enum';
+    return type.endsWith('?') ? `${code}.map { Double($0.rawValue) }` : `Double(${code}.rawValue)`;
+  }
 
   /** A parameter's Swift type as `params` declares it (an unwrapped optional written as optional, as a function type has it). */
   private paramType(p: ts.ParameterDeclaration): string {
@@ -1758,6 +1767,7 @@ export class Translator {
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
     }
+    if (target === 'Any?' && this.untypedEnum('', source)) return this.untypedEnum(this.expr(e), source);
     if (target === 'Any?') {
       const maybe = this.maybeUndefined(e);
       if (maybe) return `(${maybe} as Any?)`;
@@ -3090,6 +3100,8 @@ export class Translator {
     const contextual = this.checker.getContextualType(e);
     // `{ … } as unknown as T`: an object script reads and extends untyped.
     if (contextual && contextual.flags & ts.TypeFlags.Unknown) return this.dynamicObject(e);
+    // An object held untyped that code fills in by key (`node = {}; node[key] = …`): extensible, as every script object is.
+    if (contextual && contextual.flags & ts.TypeFlags.Any && (!e.properties.length || this.pluginFiles.has(e.getSourceFile().fileName))) return this.dynamicObject(e);
     const type = contextual && !(contextual.flags & ts.TypeFlags.Any) ? contextual : this.checker.getTypeAtLocation(e);
     const struct = this.native.structLiteral(e, this.checker.getNonNullableType(type));
     if (struct) return struct;
