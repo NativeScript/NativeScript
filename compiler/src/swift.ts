@@ -87,6 +87,8 @@ export class Translator implements AsyncTranslator {
   private undefinedVars = new Map<ts.Symbol, string>();
   /** Optional chain reads whose undefined the context tests rather than converts (`a?.b || x`). */
   private optionalReads = new Map<ts.Node, boolean>();
+  /** The names of the type parameters the translated code declares. */
+  private genericNames = new Set<string>();
 
   /** A binding Swift holds as optional though TypeScript types it present (a native method's nullable parameter): reads unwrap it as undefined would read. */
   bindsOptional(name: ts.Node, type: string): string {
@@ -688,7 +690,7 @@ export class Translator implements AsyncTranslator {
     for (const m of methods) lines.push(`    ${signature(m)}`);
     lines.push('}', '');
     const literal = this.objectClass(`${name}Object`, [...fields, ...methods.map((m) => ({ name: `_${m.name}`, type: fnType(m) }))], null)
-      .replace(/^final class (\w+): JSDynamic \{/, `final class $1: ${name} {`)
+      .replace(/^final class (\w+): JSDynamic(, JSObjectConvertible)? \{/, `final class $1: ${name}$2 {`)
       .replace(/\n}$/, '\n' + methods.map((m) => `    ${signature(m)} { try _${m.name}(${m.params.map((p) => p.name).join(', ')}) }`).join('\n') + '\n}');
     return lines.join('\n') + literal;
   }
@@ -720,7 +722,7 @@ export class Translator implements AsyncTranslator {
     if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
     const fields = allFields.filter((f) => !f.symbol);
     const symbolic = allFields.filter((f) => f.symbol);
-    const lines = [`final class ${name}: ${['JSDynamic', ...this.shapeProtocols(allFields).map((x) => x.conformance)].join(', ')} {`];
+    const lines = [`final class ${name}: ${['JSDynamic', ...this.shapeProtocols(allFields).map((x) => x.conformance), ...(symbolic.length ? [] : ['JSObjectConvertible'])].join(', ')} {`];
     for (const f of fields) lines.push(`    var ${ident(f.name)}: ${f.type}`);
     for (const f of symbolic) lines.push(`    var ${f.name}: ${f.type}`);
     for (const x of this.shapeProtocols(allFields)) lines.push(...x.lines);
@@ -868,6 +870,8 @@ export class Translator implements AsyncTranslator {
     if (fn) return type.endsWith('?') || type.endsWith(')?') ? `{ (__f: Any?) -> ${type} in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', fn)} }(${code})` : this.unboxFunction(code, fn);
     // A Core Foundation class casts unconditionally: `as?` to one is not a test Swift allows.
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) return type.endsWith('?') ? `(${code}).map { $0 as! ${base} }` : `(${code} as! ${base})`;
+    // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
+    if (this.genericNames.has(base)) return type.endsWith('?') ? `jsCast(${code}, to: ${base}.self)` : `jsCast(${code}, to: ${base}.self)!`;
     return type.endsWith('?') ? `(${code} as? ${base})` : `(${code} as! ${type})`;
   }
 
@@ -1015,6 +1019,7 @@ export class Translator implements AsyncTranslator {
   private generics(fn: ts.SignatureDeclaration | ts.ClassLikeDeclaration): string {
     if (this.pluginFiles.has(fn.getSourceFile().fileName)) return '';
     const kept = (fn.typeParameters ?? []).filter((p) => !erasedTypeParameter(p));
+    for (const p of kept) this.genericNames.add(p.name.text);
     return kept.length ? `<${kept.map((p) => p.name.text).join(', ')}>` : '';
   }
 

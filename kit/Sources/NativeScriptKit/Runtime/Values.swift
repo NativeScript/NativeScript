@@ -62,7 +62,15 @@ public func jsCast<T>(_ value: Any?, to type: T.Type = T.self) -> T? {
     guard let value = jsFlat(value) else {
         return (T.self as? JSOptionalProtocol.Type)?.jsNone as? T
     }
-    return value as? T
+    if let same = value as? T { return same }
+    // An untyped object where a typed one is expected (a generic `T` an interface stands for): read into it.
+    if let convertible = T.self as? JSObjectConvertible.Type { return convertible.init(jsObject: value) as? T }
+    return nil
+}
+
+/// A class for an object shape that reads an untyped object (`JSON.parse` output) into itself.
+public protocol JSObjectConvertible: AnyObject {
+    init(jsObject: Any?)
 }
 
 func jsIsUndefined<T>(_ value: T) -> Bool {

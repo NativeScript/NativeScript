@@ -68,3 +68,4 @@ interface Cached { at: number; data: unknown }
 function load(raw: string): Cached | null { return raw ? (JSON.parse(raw) as Cached) : null; }
 const refs = (load('{"at":1,"data":[{"id":"a","date":"2025"}]}')?.data as Entry[]) ?? [];
 console.log(refs.length, refs[0]?.id, (load('')?.data as Entry[]) ?? 'none');
+
