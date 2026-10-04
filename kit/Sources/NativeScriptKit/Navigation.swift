@@ -133,13 +133,21 @@ open class ActionBar: View {
     open override class var cssType: String { "ActionBar" }
 
     var title: String?
+    let barItems = ActionBarItems()
     private var page: Page? { parent as? Page }
 
     private var navigationBar: UINavigationBar? {
         page?.frame?.controller.navigationBar
     }
 
-    var isEmpty: Bool { (title ?? "").isEmpty }
+    var isEmpty: Bool { (title ?? "").isEmpty && barItems.navigationButton == nil && barItems.items.isEmpty }
+
+    open override func addChild(_ child: View) { addBarChild(child) }
+
+    open override func eachChildView(_ body: (View) -> Void) {
+        if let button = barItems.navigationButton { body(button) }
+        for item in barItems.items { body(item) }
+    }
 
     open override func setProperty(_ name: String, _ value: Any?) {
         switch name {
@@ -175,13 +183,14 @@ open class ActionBar: View {
         navigationItem.title = title
         navigationItem.titleView = nil
         if let index = navController.viewControllers.firstIndex(of: controller), index > 0 {
-            navController.viewControllers[index - 1].navigationItem.backBarButtonItem = nil
+            navController.viewControllers[index - 1].navigationItem.backBarButtonItem = backBarButtonItem()
         }
+        let image = backIndicatorImage
         let appearance = navigationBar.standardAppearance
-        appearance.setBackIndicatorImage(nil, transitionMaskImage: nil)
+        appearance.setBackIndicatorImage(image, transitionMaskImage: image)
         updateAppearance(navigationBar, appearance)
-        navigationItem.setLeftBarButtonItems([], animated: false)
-        navigationItem.setRightBarButtonItems([], animated: false)
+        updateBackButtonVisibility(navigationItem)
+        populateMenuItems(navigationItem)
         setColor(navigationBar, toColor(applied["color"]))
         setBackgroundColor(navigationBar, toColor(applied["backgroundColor"]))
         let imageAppearance = navigationBar.standardAppearance
