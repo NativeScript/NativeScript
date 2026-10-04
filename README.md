@@ -30,17 +30,17 @@ Release build, on one iPhone 17 Pro simulator, below the status bar.
 
 | | Vue | Angular | Svelte | React | Solid | Octane |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pixels that differ, both screens | 0 | icons only* | 0 | 0 | 0 | 0 |
-| Pixels that differ after the same taps | 0 | icons only* | 0 | 0 | 0 | 0 |
+| Pixels that differ, both screens | 0 | 0* | 0 | 0 | 0 | 0 |
+| Pixels that differ after the same taps | 0 | 0* | 0 | 0 | 0 | 0 |
 | Device archive, NativeScript → native | 44.8 → 0.5 MB | 45.6 → 0.5 MB | 44.8 → 0.5 MB | 44.9 → 0.5 MB | 44.6 → 0.5 MB | 44.6 → 0.5 MB |
 
-\* NativeScript Angular does not apply the CSS `tint-color` to the
-symbol images; NativeScript Vue, Svelte, React, Solid and Octane do, and so
-does the native build. The cause is the Angular app's build, not Angular:
-it depends on `@nativescript/tailwind`, whose PostCSS pass (autoloaded by
-`@nativescript/webpack`) drops declarations outside its supported list,
-`tint-color`, `vertical-alignment` and `horizontal-alignment` among them.
-The Android build applies the same pass (`compiler/src/tailwind.ts`).
+\* The Angular app depends on `@nativescript/tailwind`, whose PostCSS pass
+(autoloaded by `@nativescript/webpack`) drops declarations outside its
+supported list, `tint-color`, `vertical-alignment` and
+`horizontal-alignment` among them: its NativeScript build ships CSS without
+them, so its symbol images are not tinted and its rows sit
+differently from the other five apps'. Both native builds style the app with
+that same filtered CSS (`compiler/src/tailwind.ts`).
 
 The Octane app needs two fixes on the NativeScript side, both described in
 `results/upstream-octane.md`. Its driver cannot host `<segmentedbaritem>`, so
@@ -58,6 +58,13 @@ uses `@nativescript/core`'s
 awaits, JSON round trips) whose log is a Vue ref pushed to in place. Against
 its NativeScript Release build: 0 pixels differ at launch and after each of
 two runs of the tasks (`tools/native_calls.py`).
+
+The gallery apps, against their NativeScript Release builds on the same
+simulator: gallery-vue's 35 screens (layouts, ListView, TextView, gestures,
+transforms, animations, spans, pickers, CSS selectors and variables,
+borders, backgrounds, modals, TabView) are 0 pixels apart in all 139 shots;
+the ListView screen of the other five is 0 pixels apart in all of its shots
+(`tools/gallery.py`).
 
 Launch, footprint and CPU are in `results/launch.json` (five interleaved
 cold launches per app; `tools/launch.py`). The native builds reach their
