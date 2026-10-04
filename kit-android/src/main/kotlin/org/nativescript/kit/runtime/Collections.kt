@@ -262,8 +262,8 @@ class JSSet<T>() : Iterable<T>, JSReactiveConvertible {
  * An object used as a dictionary (`Record<string, V>`, `{ [key: string]: V }`): JavaScript's
  * key order (integer-like keys ascending, then insertion order) and reference semantics.
  */
-class JSRecord<V>() : JSDynamic, JSReactiveConvertible {
-    val obj = JSObject()
+class JSRecord<V>(val obj: JSObject) : JSDynamic, JSReactiveConvertible {
+    constructor() : this(JSObject())
 
     constructor(entries: List<Pair<String, V>>) : this() {
         for ((k, v) in entries) obj[k] = v
@@ -292,3 +292,18 @@ class JSRecord<V>() : JSDynamic, JSReactiveConvertible {
 
     override fun toString(): String = jsInspect(this)
 }
+
+/**
+ * An untyped value read as a dictionary (`Record<string, V>`): a plain object is
+ * shared, so writes through either show in both; another object's own keys are copied.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <V> jsRecordOrNull(value: Any?): JSRecord<V>? = when (value) {
+    null, JSNull -> null
+    is JSRecord<*> -> value as JSRecord<V>
+    is JSObject -> JSRecord(value)
+    is JSDynamic -> JSRecord<V>().also { r -> for (k in value.jsKeys) r.obj[k] = value.jsGet(k) }
+    else -> throw JSException(JSTypeError("${jsTypeof(value)} is not an object"))
+}
+
+fun <V> jsRecord(value: Any?): JSRecord<V> = jsRecordOrNull(value) ?: throw JSException(JSTypeError("Cannot convert undefined or null to object"))

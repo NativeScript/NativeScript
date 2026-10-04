@@ -599,6 +599,13 @@ export class Translator implements AsyncTranslator {
           if (this.patterns.requiredCore(d) || this.native?.isClassAlias(d)) continue;
           const name = ident(this.topName(d, d.name.text));
           const t = this.typeOf(d.name);
+          // A plugin's unset object variable (`let vibrator: Vibrator`, tested before it is assigned): nullable, unwrapped where it is read.
+          if (!d.initializer && this.pluginFiles.has(sf.fileName) && !t.endsWith('?') && this.isObjectType(t) && !isFunctionType(t)) {
+            const sym = this.checker.getSymbolAtLocation(d.name);
+            if (sym) this.nullableDecls.add(sym);
+            out.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
+            continue;
+          }
           if (!d.initializer) { out.push(moduleProperty(this.deferredDeclaration(name, t))); continue; }
           const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
           if (maybe) {
@@ -704,8 +711,9 @@ export class Translator implements AsyncTranslator {
     lines.push('    }');
     const optional = fields.filter((f) => f.type.endsWith('?'));
     lines.push(`    override val jsKeys: List<String>`);
-    lines.push(`        get() = (jsOrder ?: listOf(${fields.map((f) => kotlinString(f.name)).join(', ')})).filter { key -> ${optional.length ? `when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> ${ident(f.name)} != null`).join('; ')}; else -> true }` : 'true'} }`);
-    lines.push(...this.dynamicMembers(fields, className, false, 'jsExtra?.jsGet(key)', 'jsExtra?.jsSet(key, value)').slice(1));
+    lines.push(`        get() = (jsOrder ?: listOf(${fields.map((f) => kotlinString(f.name)).join(', ')})).let { order -> order + (jsExtra?.jsKeys ?: listOf()).filter { it !in order } }.filter { key -> ${optional.length ? `when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> ${ident(f.name)} != null`).join('; ')}; else -> true }` : 'true'} }`);
+    // Keys set beyond the type's (`Object.assign(shape, more)`) are kept with the extra ones.
+    lines.push(...this.dynamicMembers(fields, className, false, 'jsExtra?.jsGet(key)', '(jsExtra ?: JSObject().also { jsExtra = it }).jsSet(key, value)').slice(1));
     lines.push('}');
     return lines.join('\n');
   }
@@ -752,6 +760,8 @@ export class Translator implements AsyncTranslator {
       const read = `jsArrayFrom(${code}) { ${this.fromAny('it', m[1])} }`;
       return m[2] ? `(if (jsIsNullish(${code})) null else ${read})` : read;
     }
+    const record = /^JSRecord<(.*)>(\??)$/.exec(type);
+    if (record) return `${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${code})`;
     const pair = /^(Pair|Triple)<(.*)>$/.exec(type);
     if (pair) {
       const parts = splitTopLevel(pair[2]);
@@ -1432,6 +1442,9 @@ export class Translator implements AsyncTranslator {
     if (from === optionalType(to)) return `${code}!!`;
     const numeric = /^(Int|Long|Float|Short|Byte)\??$/.exec(from);
     if (numeric && to.startsWith('Double')) return from.endsWith('?') ? `${code}?.toDouble()` : `${code}.toDouble()`;
+    // One object shape where another is declared (a wider shape an override returns): not a subclass, read by its keys.
+    const shape = to.replace(/\?$/, '');
+    if (from.replace(/\?$/, '') !== shape && (this.interfaces.has(shape) || [...this.shapes.values()].some((s) => s.name === shape))) return this.fromAny(code, to);
     if (this.isObjectType(from) && this.isObjectType(to) && from.replace(/\?$/, '') !== to.replace(/\?$/, '')) return `(${code} as ${to})`;
     return code;
   }
@@ -1728,6 +1741,12 @@ export class Translator implements AsyncTranslator {
         const sym = this.checker.getSymbolAtLocation(d.name);
         if (sym) this.nullableDecls.add(sym);
         return `${i}var ${name}: ${optionalType(t)} = null`;
+      }
+      // A plugin's copy of a value declared nullable (`const side = this.mShowingSide`): nullable as well.
+      if (d.initializer && !lowered && this.pluginFiles.has(d.getSourceFile().fileName) && !t.endsWith('?') && t !== 'Any' && this.declaredTypeOf(d.initializer)?.endsWith('?')) {
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        if (sym) this.nullableDecls.add(sym);
+        return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${this.coerce(d.initializer, optionalType(t))}`;
       }
       // A plugin's object variable that code assigns again (`parent = parent.parent` until there is none): nullable as well.
       if (d.initializer && !constant && !lowered && this.pluginFiles.has(d.getSourceFile().fileName) && !t.endsWith('?') && this.isObjectType(t) && !isFunctionType(t)) {
@@ -2213,7 +2232,7 @@ export class Translator implements AsyncTranslator {
     if (this.isAny(target)) {
       const t = this.typeOf(e);
       const code = `${e.questionDotToken || inChain ? 'jsGetOptional' : 'jsGet'}(${this.expr(target)}, ${kotlinString(name)})`;
-      return t === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, t);
+      return t === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, isCompared(e) ? optionalType(t) : t);
     }
     if (base.replace(/\?$/, '').startsWith('JSRecord<')) {
       const read = base.endsWith('?') ? `${this.expr(target)}?.get(${kotlinString(name)})` : `${this.expr(target)}[${kotlinString(name)}]`;
@@ -2259,7 +2278,7 @@ export class Translator implements AsyncTranslator {
     if (this.typeOf(e.expression) === 'Any?') {
       const code = `jsGet(${target}, ${this.str(key)})`;
       const rt = this.typeOf(e);
-      return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, rt);
+      return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, isCompared(e) ? optionalType(rt) : rt);
     }
     if (ts.isStringLiteral(key)) return `${target}${q}.${ident(key.text)}`;
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
@@ -3465,6 +3484,14 @@ export function splitTopLevel(text: string): string[] {
 }
 
 /** A Kotlin parameter's type without its default value (`= null`). */
+/** An operand of `==`, `===`, `!=` or `!==`: a dynamic read there may be undefined whatever its declared type. */
+function isCompared(e: ts.Expression): boolean {
+  let n: ts.Node = e;
+  while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
+  const p = n.parent;
+  return ts.isBinaryExpression(p) && [ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(p.operatorToken.kind);
+}
+
 function withoutDefault(text: string): string {
   let depth = 0;
   for (let i = 0; i < text.length; i++) {

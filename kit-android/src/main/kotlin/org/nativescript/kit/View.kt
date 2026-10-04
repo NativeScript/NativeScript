@@ -174,6 +174,7 @@ open class View : Observable() {
         if (native == null || reusable || !isSetUp) return
         eachChildView { it.tearDownUI() }
         lifecycleHooksRan = false
+        removeOnLayoutChangeListener()
         disposeNativeView()
         if (!lifecycleHooksRan) runLifecycleHooks(true)
         isSetUp = false
@@ -769,11 +770,16 @@ open class View : Observable() {
         }
         super.addEventListener(eventName, callback, thisArg, once, key)
         if (isLoaded) eventSubscribed(eventName)
+        if (isLoaded && eventName.contains(layoutChangedEvent)) setOnLayoutChangeListener()
     }
 
     override fun removeEventListener(eventName: String, callback: ((EventData) -> Unit)?, thisArg: Any?, key: Any?) {
         val type = gestureType(eventName)
-        if (type == null || eventName in ownEvents) return super.removeEventListener(eventName, callback, thisArg, key)
+        if (type == null || eventName in ownEvents) {
+            super.removeEventListener(eventName, callback, thisArg, key)
+            if (eventName.contains(layoutChangedEvent) && !hasListeners(layoutChangedEvent)) removeOnLayoutChangeListener()
+            return
+        }
         val identity = key ?: callback
         if (identity == null) {
             gestureObservers.remove(type)?.forEach { it.detach() }
@@ -811,8 +817,27 @@ open class View : Observable() {
         parent?.handleGestureTouch(event)
     }
 
+    private var layoutChangeListener: android.view.View.OnLayoutChangeListener? = null
+
+    /** `setOnLayoutChangeListener`: `layoutChanged` when the native view's bounds change. */
+    private fun setOnLayoutChangeListener() {
+        if (layoutChangeListener != null) return
+        val listener = android.view.View.OnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) jsReport { notify(JSObject("eventName" to layoutChangedEvent, "object" to this)) }
+        }
+        layoutChangeListener = listener
+        nativeView.addOnLayoutChangeListener(listener)
+    }
+
+    private fun removeOnLayoutChangeListener() {
+        val listener = layoutChangeListener ?: return
+        layoutChangeListener = null
+        if (isNativeViewCreated) nativeView.removeOnLayoutChangeListener(listener)
+    }
+
     private fun attachGestures() {
         for (observers in gestureObservers.values) for (observer in observers) observer.attach()
+        if (hasListeners(layoutChangedEvent)) setOnLayoutChangeListener()
         setOnTouchListener()
         for (event in observedEvents.toList()) eventSubscribed(event)
     }
