@@ -2,6 +2,7 @@ import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
+import { nativeViewOf } from './core.ts';
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -131,7 +132,14 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       return ts.resolveModuleName(m, containing, options, host);
     });
 
-  const program = ts.createProgram([...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')], options, host);
+  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')];
+  let program = ts.createProgram(rootNames, options, host);
+  // `view.ios` is `any` in core's declarations: typed as the view's native class, everything read from it is typed too.
+  const casts = nativeViewCasts(program, isApp);
+  if (casts.size) {
+    for (const [name, text] of casts) files.set(name, text);
+    program = ts.createProgram(rootNames, options, host, program);
+  }
   const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, 12), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
@@ -139,4 +147,28 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   }
   const ordered = [...roots, ...virtual.keys()].map((f) => program.getSourceFile(f)!).filter(Boolean);
   return { program, checker: program.getTypeChecker(), files: ordered };
+}
+
+/** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`. */
+function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean): Map<string, string> {
+  const checker = program.getTypeChecker();
+  const out = new Map<string, string>();
+  for (const sf of program.getSourceFiles()) {
+    if (!isApp(sf.fileName)) continue;
+    const edits: { at: number; text: string }[] = [];
+    const visit = (n: ts.Node) => {
+      if (ts.isPropertyAccessExpression(n) && ['ios', 'nativeView', 'nativeViewProtected'].includes(n.name.text) && !ts.isAsExpression(n.parent)
+        && checker.getTypeAtLocation(n).flags & ts.TypeFlags.Any) {
+        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression));
+        if (native) edits.push({ at: n.getStart(), text: '(' }, { at: n.getEnd(), text: ` as ${native})` });
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+    if (!edits.length) continue;
+    let text = sf.text;
+    for (const e of edits.sort((a, b) => b.at - a.at)) text = text.slice(0, e.at) + e.text + text.slice(e.at);
+    out.set(sf.fileName, text);
+  }
+  return out;
 }

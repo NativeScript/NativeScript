@@ -221,7 +221,7 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
 
   const method = (id: string, f: ts.ArrowFunction | ts.FunctionExpression | ts.FunctionDeclaration) => {
     const b = ts.isBlock(f.body!) ? f.body.getText() : `{ return ${f.body!.getText()}; }`;
-    return `  ${id}(${f.parameters.map((p) => p.getText()).join(', ')})${f.type ? `: ${f.type.getText()}` : ''} ${rewrite(b, full(scope), 'statements')}`;
+    return `  ${(ts.getModifiers(f as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${id}(${f.parameters.map((p) => p.getText()).join(', ')})${f.type ? `: ${f.type.getText()}` : ''} ${rewrite(b, full(scope), 'statements')}`;
   };
   const getter = (id: string, f: ts.ArrowFunction | ts.FunctionExpression) =>
     `  get ${id}() ${ts.isBlock(f.body) ? rewrite(f.body.getText(), full(scope), 'statements') : `{ return ${rewrite(f.body.getText(), full(scope))}; }`}`;
@@ -286,7 +286,7 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       const t = e.getText();
       code = `${rewrite(t, local(loops)).slice(1, -1)}(${arity.get(t) === 0 ? '' : '$event'});`;
     }
-    methods.push(`  ${m}(${[params(loops), '$event: EventData'].filter(Boolean).join(', ')}) { ${code} }`);
+    methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${code} }`);
     return m;
   };
 
@@ -406,7 +406,7 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
     if (kept.length) imports.push(`import ${clause.isTypeOnly ? 'type ' : ''}{ ${kept.map((e) => e.getText()).join(', ')} } from '${from}';`);
     if (clause.name && !components.has(clause.name.text) && used(clause.name.text)) imports.push(`import ${clause.name.text} from '${from}';`);
   }
-  const source = [`import { $writable, $navigateTo, type EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
+  const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
   return { name, file, source, props, template, page };
 }
 

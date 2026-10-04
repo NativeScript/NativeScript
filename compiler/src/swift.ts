@@ -52,8 +52,6 @@ export class Translator {
   private interfaces = new Map<string, { file: string; code: () => string }>();
   private shapes = new Map<string, { name: string; fields: { name: string; type: string }[] }>();
   private shaping = new Set<ts.Type>();
-  /** Interfaces read from untyped values (`JSON.parse(s) as Recipe`): they get `init(jsObject:)`. */
-  private decoded = new Set<string>();
   /** Angular `computed()` fields, translated as getters: `this.total()` reads `self.total`. */
   private computed = new Set<string>();
   /** App classes another app class extends: they stay open. */
@@ -366,15 +364,12 @@ export class Translator {
     lines.push(`    init(${[...fields.map((f) => `${ident(f.name)}: ${isFunctionType(f.type) ? '@escaping ' : ''}${f.type}${f.type.endsWith('?') ? ' = nil' : ''}`), 'jsOrder: [String]? = nil'].join(', ')}) {`);
     for (const f of fields) lines.push(`        self.${ident(f.name)} = ${ident(f.name)}`);
     lines.push('        self.jsOrder = jsOrder', '    }');
-    const decoded = this.decoded.has(name);
-    if (decoded) {
-      // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
-      lines.push('    private var jsExtra: JSDynamic?');
-      lines.push('    convenience init(jsObject: Any?) {');
-      lines.push(`        self.init(${[...fields.map((f) => `${ident(f.name)}: ${this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, f.type)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys'].join(', ')})`);
-      lines.push('        jsExtra = jsObject as? JSDynamic', '    }');
-    }
-    const members = this.dynamicMembers(fields, className, false).map((l) => (decoded ? l.replace('default: return nil', 'default: return jsExtra?[jsKey: key] ?? nil').replace('default: break', 'default: jsExtra?[jsKey: key] = newValue') : l));
+    // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
+    lines.push('    private var jsExtra: JSDynamic?');
+    lines.push('    convenience init(jsObject: Any?) {');
+    lines.push(`        self.init(${[...fields.map((f) => `${ident(f.name)}: ${this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, f.type)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys'].join(', ')})`);
+    lines.push('        jsExtra = jsObject as? JSDynamic', '    }');
+    const members = this.dynamicMembers(fields, className, false).map((l) => l.replace('default: return nil', 'default: return jsExtra?[jsKey: key] ?? nil').replace('default: break', 'default: jsExtra?[jsKey: key] = newValue'));
     const optional = fields.filter((f) => f.type.endsWith('?'));
     members[0] = `    var jsKeys: [String] {\n        let keys = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${ident(f.name)} != nil`).join('; ')}; default: return true }` : 'true'} }\n    }`;
     lines.push(...members);
@@ -420,9 +415,13 @@ export class Translator {
     if ((code === 'nil' || code === 'jsNull') && type.endsWith('?')) return 'nil';
     const m = /^JSArray<(.*)>$/.exec(type);
     if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
+    const parts = /^\((.*)\)$/.exec(type) && splitTopLevel(type.slice(1, -1));
+    if (parts && parts.length > 1 && !type.includes('->')) {
+      // A tuple type reads an untyped array's elements.
+      return `{ (__a: Any?) -> ${type} in (${parts.map((t, k) => this.fromAny(`jsField(__a, "${k}")`, t)).join(', ')}) }(${code})`;
+    }
     const base = type.replace(/\?$/, '');
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
-      this.decoded.add(base);
       this.used.add(base);
       return type.endsWith('?') ? `jsIsNullish(${code}) ? nil : ${base}(jsObject: ${code})` : `${base}(jsObject: ${code})`;
     }
@@ -496,7 +495,12 @@ export class Translator {
       try {
         let lines: string[];
         if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>$/, '$1'));
-        else if (fn.body && ts.isBlock(fn.body)) lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
+        else if (fn.body && ts.isBlock(fn.body)) {
+          lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
+          // The checker proved every path returns (an exhaustive switch); Swift cannot see that.
+          const last = fn.body.statements.at(-1);
+          if (!['Void', 'Never'].includes(ret) && !ret.endsWith('?') && last && ts.isSwitchStatement(last)) lines.push(`${this.indent}fatalError("unreachable: every case returns")`);
+        }
         else {
           const e = fn.body as ts.Expression;
           lines = [...this.paramPrelude(fn), ret === 'Void' ? this.indent + this.tryPrefix(e) + this.exprStatement(e) : `${this.indent}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`];
@@ -514,7 +518,10 @@ export class Translator {
 
   /** `(r) => r.id` as a Swift closure with explicit types. */
   closure(fn: ts.ArrowFunction | ts.FunctionExpression): string {
-    const ret = this.returnTypeOf(fn);
+    // A callback whose slot returns void returns nothing, whatever its expression body evaluates to.
+    const slot = this.checker.getContextualType(fn)?.getCallSignatures()[0];
+    const voidSlot = !!slot && !!(slot.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn);
+    const ret = voidSlot ? 'Void' : this.returnTypeOf(fn);
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? 'throws ' : '';
     if (fn.name) throw this.error(fn, 'a named function expression');
     return `{ (${this.params(fn, true)}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
@@ -1207,6 +1214,7 @@ export class Translator {
       return this.symbolName(callee) === 'Signal' ? this.expr(callee) : `${this.expr(callee)}.value`;
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
+    if (e.questionDotToken) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     // A callback passed as a prop (`onTap: () => void`).
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
@@ -1917,4 +1925,18 @@ function capturedIn(name: ts.Identifier, body: ts.Node, checker: ts.TypeChecker)
   };
   visit(body, false);
   return found;
+}
+
+/** `A, (B, C), D<E, F>` split at its top-level commas. */
+function splitTopLevel(text: string): string[] {
+  const out: string[] = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if ('([<'.includes(ch)) depth++;
+    else if (')]>'.includes(ch) && text[i - 1] !== '-') depth--;
+    else if (ch === ',' && depth === 0) { out.push(text.slice(start, i).trim()); start = i + 1; }
+  }
+  out.push(text.slice(start).trim());
+  return out;
 }

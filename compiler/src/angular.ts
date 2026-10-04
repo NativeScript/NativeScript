@@ -62,7 +62,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   };
   const handler = (code: string, loops: Loop[]) => {
     const m = `$e${next++}`;
-    methods.push(`  ${m}(${[params(loops), '$event: EventData'].filter(Boolean).join(', ')}) { ${rewrite(clean(code), local(loops), 'statements')}; }`);
+    methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${rewrite(clean(code), local(loops), 'statements')}; }`);
     return m;
   };
 
@@ -108,7 +108,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
 
   // The component's source, with the template's methods added to its class and the event type imported.
   const end = cls.members.end;
-  const source = `import { type EventData } from '@nativescript/release';\n` + text.slice(0, end) + '\n' + methods.join('\n') + '\n' + text.slice(end);
+  const source = `import { type EventData as $EventData } from '@nativescript/release';\n` + text.slice(0, end) + '\n' + methods.join('\n') + '\n' + text.slice(end);
   return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, outputs, template: tree, selector } as AngularComponent;
 }
 

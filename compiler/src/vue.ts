@@ -51,7 +51,7 @@ export function vueComponent(path: string, text: string): ComponentIR {
       later.push(() => {
         const params = st.parameters.map((p) => p.getText()).join(', ');
         const ret = st.type ? `: ${st.type.getText()}` : '';
-        fields.push(`  ${fn}(${params})${ret} ${rewrite(st.body!.getText(), inScript, 'statements')}`);
+        fields.push(`  ${(ts.getModifiers(st as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${fn}(${params})${ret} ${rewrite(st.body!.getText(), inScript, 'statements')}`);
       });
       continue;
     }
@@ -118,7 +118,7 @@ export function vueComponent(path: string, text: string): ComponentIR {
   const handler = (code: string, loops: Loop[]) => {
     const scope = withLoops(inTemplate, loops);
     const m = `$e${next++}`;
-    const p = [params(loops), '$event: EventData'].filter(Boolean).join(', ');
+    const p = [params(loops), '$event: $EventData'].filter(Boolean).join(', ');
     // A method path (`onPlan`, `store.save`) is called with the event; anything else is a statement.
     const isPath = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/.test(code.trim());
     const takesEvent = arity.get(code.trim()) !== 0;
@@ -185,7 +185,7 @@ export function vueComponent(path: string, text: string): ComponentIR {
 
   const template = nodes(descriptor.template?.ast?.children ?? [], []);
   const source = [
-    `import { $ref, type EventData } from '@nativescript/release';`,
+    `import { $ref, type EventData as $EventData } from '@nativescript/release';`,
     ...imports,
     ``,
     `export default class ${name} {`,

@@ -55,7 +55,8 @@ export class CoreAPI {
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];
       if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable))) {
-        if (sym.flags & ts.SymbolFlags.Class || sym.flags & ts.SymbolFlags.ValueModule) return { name: sym.name, isStatic: true };
+        if (sym.flags & ts.SymbolFlags.ValueModule) return { name: e.text, isStatic: true };
+        if (sym.flags & ts.SymbolFlags.Class) return { name: sym.name, isStatic: true };
         // A constant core exports (`Device`): the kit has a type of that name with static members.
         if (this.index.has(sym.name)) return { name: sym.name, isStatic: true };
       }
