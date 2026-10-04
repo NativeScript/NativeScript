@@ -133,9 +133,45 @@ file, line and construct.
   (`JSArray`, `JSMap`, `JSSet`, `JSRecord`, classes) with JavaScript's
   iteration order; `any` is `Any?` read through `jsGet`/`jsSet`; `===`,
   `==`, `typeof`, truthiness, `+`, `%` and the bitwise operators are
-  JavaScript's. `JSON`, `RegExp` (over NSRegularExpression), `Date`,
+  JavaScript's (`**`, ToInt32 on doubles, the comma operator, `typeof` on a
+  name only declared). `JSON`, `RegExp` (over NSRegularExpression), `Date`,
   `Math`, string methods in UTF-16 units and `console.log`'s formatting are in
-  `kit/Sources/NativeScriptKit/Runtime/`.
+  `kit/Sources/NativeScriptKit/Runtime/`. Reading a member of undefined or
+  null throws a TypeError a `catch` takes, where the types let the read
+  through (`items[i].name` past the end, `x!.name`, an untyped value). Labeled
+  blocks, a `default` clause before cases, tagged templates and `String.raw`,
+  and `BigInt` (`JSBigInt`) are JavaScript's.
+- **Objects.** Getters and setters in object literals (`this` is the object),
+  computed keys, `Object.defineProperty` with property attributes,
+  `getOwnPropertyNames`/`getOwnPropertyDescriptor`, `freeze`/`seal`/
+  `preventExtensions` (writes to a frozen object throw in strict code),
+  `fromEntries`, `is`. An object literal held untyped is a `JSObject`, which
+  takes any key; its methods see it as `this`.
+- **Symbols and weak collections.** `Symbol()` is `JSSymbol`, unique, with
+  its `description`, `Symbol.for`/`keyFor`, as a property key (left out of
+  `Object.keys` and JSON, printed after the other keys) and a member name.
+  `Symbol.iterator`, `asyncIterator`, `toPrimitive` (the hint each conversion
+  passes) and `toStringTag` work on classes. `WeakMap`, `WeakSet` and `WeakRef`
+  hold their keys weakly, by identity.
+- **Iteration.** Generators and async generators compile to continuations
+  as async functions do (`compiler/src/async.ts`): the body suspends at each
+  `yield`, `next(v)`, `return(v)` and `throw(e)` resume it through its catch
+  and finally blocks, `yield*` delegates, and async generators queue requests
+  and settle them tick for tick as ECMA-262 says. `for…of`, spread and
+  destructuring step a generator or a class's `[Symbol.iterator]` through the
+  iterator protocol, closing it when a loop leaves early; `for await` takes
+  async iterables and sync ones whose values it awaits
+  (`kit/Sources/NativeScriptKit/Runtime/Iterators.swift`).
+- **Locale formatting.** `toLocaleString`, `toLocaleDateString`,
+  `toLocaleTimeString`, `Intl.NumberFormat` and `Intl.DateTimeFormat`
+  (`Runtime/Intl.swift`, `Intl.kt`): for en-US, from CLDR's en data as ICU
+  applies it, so every platform prints what Node prints (rounding half away
+  from zero on the shortest decimal, grouping, percent, currency, compact,
+  scientific, sign display; date and time styles, component options, 12- and
+  24-hour clocks, time zones and their names). Another locale goes to the
+  platform's ICU: Foundation's `NumberFormatter`/`DateFormatter` on iOS,
+  `java.text` on Android (ICU-backed there), with the same options; its
+  output is the platform's CLDR version's, which can differ from Node's.
 - **Exceptions.** `throw` throws a `JSException` carrying the value; a
   function is Swift `throws` only if it throws or calls something that does
   (worked out across the call graph, `compiler/src/throws.ts`). What escapes
@@ -341,9 +377,12 @@ right after the writes and what it read after the framework's `nextTick()`,
 `node tests/diff/run.ts` runs every case in `tests/diff/cases/` under Node,
 translated to Swift as a macOS program linking the kit's runtime, and
 translated to Kotlin on the JVM with kit-android's runtime, and compares
-their output byte for byte (17 of 17 match for each): values and formatting, arrays, classes, closures,
+their output byte for byte (26 of 26 match for each): values and formatting, arrays, classes, closures,
 errors, promise ordering, async control flow, collections, JSON, modules,
-types, regular expressions and dates, interfaces, idioms.
+types, regular expressions and dates, interfaces, idioms, operators and
+statements at their edges, symbols and weak collections, the object model,
+generators and iterators, async iteration, TypeErrors from undefined reads,
+locale formatting (two cases), BigInt.
 
 ## Android
 
@@ -451,10 +490,14 @@ develops it with live reload as usual.
   attribute and pseudo-class selectors, `@media`, `@keyframes`, `var()`,
   `calc()`), the TypeScript above, the core APIs the kit has, and iOS APIs
   available on iOS 17. Anything else stops the build with the file, line and
-  construct. Not yet: generators, `Symbol`, `WeakMap`, getters on object
-  literals, `toLocale*String`, and constructors in classes that extend
-  Objective-C classes (NativeScript creates those with `new()`), and
-  `nextTick(fn)` with a callback. React and Octane handlers read the state
+  construct. Not yet: constructors in classes that extend Objective-C
+  classes (NativeScript creates those with `new()`), `nextTick(fn)` with a
+  callback, `FinalizationRegistry`, other `Intl` constructors, and members
+  named by a symbol other than a program's own and the four well-known ones.
+  `Math.pow` with a fractional exponent can be an ulp off on Android, whose
+  `pow` is not correctly rounded; integer exponents are exact. A BigInt
+  added to a number through `any` is NaN rather than a TypeError, and an
+  error `return()` throws while a loop closes its iterator is dropped. React and Octane handlers read the state
   of their render until they return; after an `await` their closures still
   hold it, where the native build reads the committed state.
 - **Where Swift differs, by design.** Closures have no identity; JSON
