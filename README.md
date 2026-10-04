@@ -34,7 +34,7 @@ Release build, on one iPhone 17 Pro simulator, below the status bar.
 | --- | --- | --- | --- | --- | --- | --- |
 | Pixels that differ, both screens | 0 | 0* | 0 | 0 | 0 | 0 |
 | Pixels that differ after the same taps | 0 | 0* | 0 | 0 | 0 | 0 |
-| Device archive, NativeScript → native | 44.8 → 1.1 MB | 45.6 → 1.1 MB | 44.8 → 1.1 MB | 44.9 → 1.1 MB | 44.6 → 1.1 MB | 44.6 → 1.1 MB |
+| Device archive, NativeScript → native | 44.8 → 1.3 MB | 45.6 → 1.3 MB | 44.8 → 1.3 MB | 44.9 → 1.3 MB | 44.6 → 1.3 MB | 44.6 → 1.3 MB |
 
 \* The Angular app depends on `@nativescript/tailwind`, whose PostCSS pass
 (autoloaded by `@nativescript/webpack`) drops declarations outside its
@@ -112,7 +112,8 @@ were not compared (no emulator of this run's own). The figures are in
   build at type-checking.
 
 The device archive is the unsigned arm64 app as `xcodebuild archive` makes
-it (`tools/sizes.py`, `results/sizes.json`). The generated project builds
+it (`tools/sizes.py`, `results/sizes.json`), with the app's `App_Resources`
+(the asset catalog with its icons and launch images is 112 kB of it). The generated project builds
 NativeScriptKit as a static library target with the app's settings: `-Osize`,
 full LTO, and virtual function and witness method elimination over symbols
 internalized at the link, which let the linker drop the kit code and vtable
@@ -277,8 +278,9 @@ of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
 `@nativescript/input-accessory`, `@nstudio/nstreamdown` and
 `@nativescript/haptics`) builds this way: ten screens through the drawer,
 a chat, a streamed reply, a context menu and the settings sheet match its
-NativeScript Release build pixel for pixel, in a 1.9 MB app against 46.7 MB
-(`results/ns-octane.json`).
+NativeScript Release build pixel for pixel, in a 2.5 MB app against 46.7 MB, its
+three Font Awesome fonts 0.4 MB of it (`results/ns-octane.json`,
+`results/sizes.json`).
 
 - **Source.** `compiler/src/plugins/source.ts` finds the commit a published
   version was built from (the `gitHead` npm recorded, else the version's tag,

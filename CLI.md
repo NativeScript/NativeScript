@@ -68,17 +68,20 @@ The test app was a copy of `recipes-vue` with the package installed from
 
 - `ns run ios --release --native` on simulator 0283B87E: compiled, built,
   installed and launched; the Recipes home screen matches the
-  NativeScript build. The installed bundle has three files (Info.plist,
-  executable, PkgInfo), 3.8 MB on the simulator.
+  NativeScript build. The installed bundle is the executable, Info.plist,
+  the asset catalog with the app icon, the launch storyboard and PkgInfo:
+  4.4 MB on the simulator (as the current compiler builds it).
 - `ns build ios --release --native --for-device`: an unsigned archive and
-  an unsigned `.ipa` (436 kB; the app in the archive is 1.2 MB). With
+  an unsigned `.ipa` (562 kB; the app in the archive is 1.3 MB, as the
+  current compiler's `--build --device` makes them). With
   `--provision <profile>` the archive succeeds and the export reaches
   signing; the machine had no valid profile for a matching certificate, so
   it stopped at "No signing certificate … / profile expired".
 - `ns run android --release --native` with a keytool keystore on an
   emulator (Pixel 6a, API 35): installed, launched, Recipes home screen.
-  APK 800 kB, signed with the given key (apksigner). `--aab`: 1.3 MB
-  bundle, signed with the same key.
+  APK 0.9 MB (915 kB as the current compiler builds it), signed with the
+  given key (apksigner). `--aab`: 1.6 MB bundle, signed with the same key
+  (jarsigner).
 - `ns run ios` without `--native`: the platform is added, webpack runs,
   Xcode builds the debug app (90 MB with the runtime), it installs and
   syncs as before.
