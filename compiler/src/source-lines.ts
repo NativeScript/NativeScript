@@ -111,16 +111,18 @@ const tokens = (line: string): string[] => {
 };
 
 /**
- * A template binding's expression as the developer wrote it: the virtual
- * method's body without the front end's `this.`, `.value` and parentheses;
- * for a two-way binding's handler, the bound path.
+ * A template binding's expression as the developer may have written it: the
+ * virtual method's body without the front end's `this.`, `.value` and
+ * parentheses, with and without the calls that read a signal; for a two-way
+ * binding's handler, the bound path.
  */
-const bindingExpression = (line: string): string | null => {
+const bindingExpressions = (line: string): string[] => {
   const m = /^\s*\$[a-z]\d+\(.*?\)\s*(?::[^{]+)?\{\s*(?:return\s+)?(.*?);?\s*\}\s*$/.exec(line);
-  if (!m) return null;
+  if (!m) return [];
   let expr = m[1].replace(/\bthis\./g, '').replace(/\.value\b/g, '').replace(/\s+/g, ' ').trim();
   while (/^\(.*\)$/.test(expr) && balanced(expr.slice(1, -1))) expr = expr.slice(1, -1).trim();
-  return /^([\w$.]+) = \$event\b/.exec(expr)?.[1] ?? expr;
+  expr = /^([\w$.]+)(?: = |\.set\()\$event\b/.exec(expr)?.[1] ?? expr;
+  return [...new Set([expr, expr.replace(/([\w$])\(\)/g, '$1')])];
 };
 const balanced = (s: string) => {
   let depth = 0;
@@ -144,9 +146,9 @@ export function alignLines(virtual: string[], original: string[]): (number | nul
   let previous = 0;
   const nearest = (candidates: number[]) => candidates.reduce((a, b) => (Math.abs(b - previous) < Math.abs(a - previous) ? b : a));
   return virtual.map((line) => {
-    const expr = bindingExpression(line);
-    if (expr) {
-      const quoted = [`"${expr}"`, `{{ ${expr} }}`, `{{${expr}}}`, `{${expr}}`, `'${expr}'`];
+    const exprs = bindingExpressions(line);
+    if (exprs.length) {
+      const quoted = exprs.flatMap((expr) => [`"${expr}"`, `{{ ${expr} }}`, `{{${expr}}}`, `{${expr}}`, `'${expr}'`]);
       const hits = squashed.map((l, j) => (quoted.some((q) => l.includes(q)) ? j : -1)).filter((j) => j >= 0);
       if (hits.length) return (previous = nearest(hits));
     }

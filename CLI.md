@@ -100,20 +100,21 @@ The test app was a copy of `recipes-vue` with the package installed from
 
 ## App_Resources
 
+The compiler's generated projects carry them as the CLI carries them into
+`platforms/` (`compiler/src/app-resources.ts`; README, The generated
+projects), so the CLI has nothing to add.
+
 | Resource | Native build |
 | --- | --- |
-| Android `res/` (launcher icons, launch screen theme, styles, colors) | carried: the Gradle project uses `App_Resources/Android/src/main/res` as a resource directory |
-| Android `AndroidManifest.xml` (permissions, activities, meta-data, queries) | **gap**: the compiler writes its own manifest |
-| Android `app.gradle` (versionCode, versionName, minSdk, dependencies) | **gap**: versionCode 1 and versionName 1.0.0 are fixed, which a store upload rejects after the first |
-| iOS `Assets.xcassets` (app icon) | **gap**: the app has no icon on the home screen |
-| iOS `LaunchScreen.storyboard` | **gap**: a generated blank launch screen |
-| iOS `Info.plist` keys (usage descriptions, display name, orientations, URL schemes, version) | **gap**: `GENERATE_INFOPLIST_FILE` with a few fixed keys; the display name is the project name |
-| iOS entitlements, `build.xcconfig` | **gap** |
-
-All of these belong in the compiler's generated project (`project.yml`:
-the asset catalog and storyboard as resources, `INFOPLIST_FILE` pointing at
-a merged plist, `CODE_SIGN_ENTITLEMENTS`; the Gradle project: manifest merge
-and `app.gradle` values), not in the CLI.
+| Android `res/` (launcher icons, launch screen theme, splash, styles, colors) | a resource directory of the Gradle project; `java/` and `assets/` are source directories |
+| Android `AndroidManifest.xml` (permissions, activities, meta-data, queries) | the app's manifest, `__PACKAGE__` substituted, the runtime's activity as `MainActivity`, its application class and error activity left out; plugins' manifests merged by Gradle |
+| Android `app.gradle`, `before-plugins.gradle` (versionCode, versionName, SDK levels, dependencies) | applied as the runtime's `build.gradle` applies them |
+| iOS `Assets.xcassets` (app icon, launch images), `LaunchScreen.storyboard`, `PrivacyInfo.xcprivacy`, other files and folders | resources of the app target |
+| iOS `Info.plist` (usage descriptions, display name, orientations, URL schemes, version and build number) | merged as the CLI merges it: plugins', then the app's, then `CFBundleIdentifier` |
+| iOS `app.entitlements` | plugins' and the app's, merged; `CODE_SIGN_ENTITLEMENTS` unless `build.xcconfig` sets it |
+| iOS `build.xcconfig` | the app's, then plugins' (merged as the CLI merges them), as the app target's configuration file; a deployment target below the kit's iOS 17 is raised to it |
+| Fonts in `<app>/fonts` | in the bundle (iOS) or assets at `app/fonts` (Android), registered or loaded as core does |
+| `App_Resources/iOS/src` (native source the app's TypeScript calls) | **gap**: not part of the native build (ns-octane's `OctaneLogo.swift` and Metal shader, which its TypeScript never calls, are left out) |
 
 ## Still needed for production
 
