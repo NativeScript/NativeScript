@@ -274,6 +274,23 @@ open class Button: TextBase {
     /// Button taps come from touchUpInside, not a gesture recognizer.
     open override func observeTap() {}
 
+    private var highlightObservation: NSKeyValueObservation?
+    private var observedVisualStates = 0
+
+    /// `_updateButtonStateChangeHandler`: the control's highlight becomes the `highlighted` visual state.
+    @objc open override func observePseudoClass(_ name: String, _ on: Bool) {
+        guard ["normal", "highlighted", "pressed", "active"].contains(name) else { return }
+        observedVisualStates += on ? 1 : -1
+        if on, highlightObservation == nil, let button {
+            highlightObservation = button.observe(\.isHighlighted, options: [.new]) { [weak self] control, _ in
+                if control.isHighlighted { self?.addVisualState("highlighted") } else { self?.removeVisualState("highlighted") }
+            }
+        } else if !on, observedVisualStates == 0 {
+            highlightObservation = nil
+            removeVisualState("highlighted")
+        }
+    }
+
     @objc private func tapped() { emit("tap", nil) }
 
     open override func paddingChanged() { updateContentEdgeInsets() }

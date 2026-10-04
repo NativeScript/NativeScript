@@ -29,10 +29,21 @@ open class View: NSObject {
     public var className: String = "" {
         didSet {
             classes = Set(className.split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init))
-            if isLoaded { applyCSS() }
+            if isLoaded { onCssStateChange() }
         }
     }
     var classes: Set<String> = []
+    /// Classes the application sets on its root view (`ns-root`, `ns-dark`).
+    var rootClasses: Set<String> = [] {
+        didSet { if isLoaded { onCssStateChange() } }
+    }
+    var cssClasses: Set<String> { rootClasses.isEmpty ? classes : classes.union(rootClasses) }
+    var pseudoClasses: Set<String> = ["normal"]
+    /// The views and keys (attribute names, `:pseudo-class`) this view's match depends on.
+    var cssSubscriptions: [(node: Weak<View>, key: String)] = []
+    /// The views whose match depends on a key of this one, with a count per key.
+    var cssDependents: [String: [Weak<View>]] = [:]
+    var isUpdatingDynamicState = false
 
     // A property's value: the local one (template attribute or binding) wins
     // over CSS, which wins over the parent's for inherited properties.
@@ -173,6 +184,7 @@ open class View: NSObject {
 
     func unload() {
         guard isLoaded else { return }
+        unsubscribeFromDynamicUpdates()
         stopKeyframeAnimations()
         isLoaded = false
         eachChildView { $0.unload() }
@@ -222,14 +234,16 @@ open class View: NSObject {
     /// then the matched ones in cascade order), and the matched animations play.
     private func matchCSS() {
         stopKeyframeAnimations()
-        let next = StyleSheet.app.values(for: self)
+        let match = StyleSheet.app.match(self)
+        let next = match.values
         let removed = cssOrder.filter { name in !next.contains { $0.name == name } }
         cssValues = Dictionary(next.map { ($0.name, $0.value) }, uniquingKeysWith: { $1 })
         cssOrder = next.map(\.name)
         for name in removed { refresh(name) }
         for name in cssOrder { refresh(name) }
-        keyframeAnimations = StyleSheet.app.keyframeAnimations(for: self)
+        keyframeAnimations = match.animations
         for animation in keyframeAnimations { animation.play(self) }
+        subscribe(match.changes)
     }
 
     private func stopKeyframeAnimations() {
@@ -263,7 +277,9 @@ open class View: NSObject {
         if !had && value == nil { return }
         if had && sameValue(value, applied[name]) { return }
         applied[name] = value
+        propertyValueChanged(name, value)
         if isLoaded && !isBatching { setProperty(name, value) } else { deferApplication(name) }
+        notifyCSSDependents(name)
         if View.inheritedProperties.contains(name) { eachChildView { $0.refresh(name) } }
     }
 
@@ -273,7 +289,24 @@ open class View: NSObject {
         if sameValue(value, applied[name]) { return }
         locals[name] = value
         applied[name] = value
+        propertyValueChanged(name, value)
         emit(name + "Change", value)
+        notifyCSSDependents(name)
+    }
+
+    /// A property's `valueChanged`: runs when the value changes, loaded or not,
+    /// unlike `setProperty` (the native setter), which waits for load.
+    open func propertyValueChanged(_ name: String, _ value: Any?) {
+        switch name {
+        case "isEnabled":
+            if toBool(value) ?? true { removeVisualState("disabled") } else { addVisualState("disabled") }
+        case "id":
+            onCssStateChange()
+        case "checked" where self is Switch:
+            if toBool(value) ?? false { addVisualState("checked") } else { removeVisualState("checked") }
+        default:
+            break
+        }
     }
 
     /// Applies an effective value; subclasses handle their own names and pass the rest up.
