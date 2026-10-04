@@ -12,6 +12,9 @@ const SHIMS: Record<string, string> = {
   '@nativescript/release': `
     export interface Sig<T> { value: T }
     export declare function $signal<T>(value: T): Sig<T>;
+    /** Vue's ref: deeply reactive, so arrays and objects it holds notify on mutation. */
+    export interface VueRef<T> { value: T }
+    export declare function $ref<T>(value: T): VueRef<T>;
     export interface EventData { eventName: string; object: any; value: any }
     export declare function $navigate(page: () => any): void;
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
@@ -52,40 +55,31 @@ const SHIMS: Record<string, string> = {
     export declare function svelteNativeNoFrame(component: any, props: any): void;
   `,
   'nativescript-vue': `
-    import type { Sig } from '@nativescript/release';
-    export type Ref<T> = Sig<T>;
-    export declare function ref<T>(value: T): Sig<T>;
+    import type { VueRef } from '@nativescript/release';
+    export type Ref<T> = VueRef<T>;
+    export declare function ref<T>(value: T): VueRef<T>;
     export declare function computed<T>(fn: () => T): { readonly value: T };
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
     export declare function createApp(component: any): { start(): void };
   `,
 };
 
-const LIB = `
-  interface Array<T> { length: number; [n: number]: T;
-    filter(f: (v: T, i: number) => unknown): T[]; map<U>(f: (v: T, i: number) => U): U[];
-    find(f: (v: T, i: number) => unknown): T | undefined; findIndex(f: (v: T, i: number) => unknown): number;
-    some(f: (v: T, i: number) => unknown): boolean; every(f: (v: T, i: number) => unknown): boolean;
-    includes(v: T): boolean; indexOf(v: T): number; join(sep?: string): string; slice(a?: number, b?: number): T[];
-    concat(...items: (T | T[])[]): T[]; push(...items: T[]): number; pop(): T | undefined; reverse(): T[];
-    reduce<U>(f: (acc: U, v: T, i: number) => U, init: U): U; forEach(f: (v: T, i: number) => void): void;
-    sort(f?: (a: T, b: T) => number): T[]; }
-  interface String { length: number; toLowerCase(): string; toUpperCase(): string; includes(s: string): boolean;
-    startsWith(s: string): boolean; endsWith(s: string): boolean; trim(): string; split(sep: string): string[];
-    indexOf(s: string): number; slice(a?: number, b?: number): string; substring(a: number, b?: number): string;
-    replace(a: string, b: string): string; charAt(i: number): string; padStart(n: number, s?: string): string; repeat(n: number): string; }
-  interface Number { toFixed(digits?: number): string; } interface Boolean {} interface Function {} interface Object {}
-  interface RegExp {} interface IArguments {} interface CallableFunction {} interface NewableFunction {}
-  interface ReadonlyArray<T> { length: number; [n: number]: T }
-  interface TemplateStringsArray extends ReadonlyArray<string> {}
-  interface Math { round(x: number): number; floor(x: number): number; ceil(x: number): number; abs(x: number): number;
-    min(...v: number[]): number; max(...v: number[]): number; sqrt(x: number): number; pow(a: number, b: number): number; random(): number; PI: number; }
-  declare var Math: Math;
-  declare function String(v: any): string; declare function Number(v: any): number; declare function parseInt(s: string): number;
-  declare var console: { log(...v: any[]): void };
-  type Record<K extends keyof any, T> = { [P in K]: T };
-  type Partial<T> = { [P in keyof T]?: T[P] };
+/** Globals NativeScript provides that neither the ES library nor core's declarations type. */
+const GLOBALS = `
+  declare var console: { log(...data: any[]): void; info(...data: any[]): void; warn(...data: any[]): void; error(...data: any[]): void; debug(...data: any[]): void };
+  declare function queueMicrotask(callback: () => void): void;
 `;
+
+/** The platform's native API typings, as an app's `references.d.ts` includes them. */
+const PLATFORM_TYPES: Record<Platform, string> = { ios: '@nativescript/types-ios/index.d.ts', android: '@nativescript/types-android/index.d.ts' };
+
+/** The nearest `node_modules` above `from` that has @nativescript/core. */
+export function nodeModules(from: string): string {
+  for (let dir = from; ; dir = dirname(dir)) {
+    if (existsSync(resolve(dir, 'node_modules/@nativescript/core/package.json'))) return resolve(dir, 'node_modules');
+    if (dirname(dir) === dir) throw new Error(`${from}: no node_modules with @nativescript/core above it`);
+  }
+}
 
 export interface Program {
   program: ts.Program;
@@ -94,36 +88,51 @@ export interface Program {
   files: ts.SourceFile[];
 }
 
-/** A program over the app's modules and the components' virtual classes. */
+/**
+ * A program over the app's modules and the components' virtual classes,
+ * typed by the real ES2022 library, @nativescript/core's own declarations
+ * and the platform's native API typings.
+ */
 export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios'): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
-  files.set('/__shims__/lib.d.ts', LIB);
+  files.set('/__shims__/globals.d.ts', GLOBALS);
+  const modules = nodeModules(dirname([...roots, ...virtual.keys()][0]));
+  const platformTypes = resolve(modules, PLATFORM_TYPES[platform]);
+  if (!existsSync(platformTypes)) throw new Error(`${platformTypes} is missing: install ${PLATFORM_TYPES[platform].split('/index')[0]}`);
 
-  const options: ts.CompilerOptions = { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, strict: true, noLib: true, types: [], skipLibCheck: true, experimentalDecorators: true };
-  const host = ts.createCompilerHost(options);
-  host.getSourceFile = (name, version) => {
-    const text = files.get(name) ?? (existsSync(name) ? readFileSync(name, 'utf8') : undefined);
-    if (text === undefined) return undefined;
-    const app = !name.startsWith('/__shims__/') && !name.endsWith('.d.ts');
-    return ts.createSourceFile(name, app ? foldPlatform(text, name, platform) : text, version, true);
+  const options: ts.CompilerOptions = {
+    target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
+    strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true,
   };
-  host.fileExists = (name) => files.has(name) || existsSync(name);
-  host.readFile = (name) => files.get(name) ?? (existsSync(name) ? readFileSync(name, 'utf8') : undefined);
+  const host = ts.createCompilerHost(options);
+  const readLib = host.getSourceFile.bind(host);
+  const isApp = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && !name.includes('/node_modules/');
+  host.getSourceFile = (name, version, onError) => {
+    const text = files.get(name) ?? (isApp(name) && existsSync(name) ? readFileSync(name, 'utf8') : undefined);
+    if (text === undefined) return readLib(name, version, onError);
+    return ts.createSourceFile(name, isApp(name) ? foldPlatform(text, name, platform) : text, version, true);
+  };
+  const fileExists = host.fileExists.bind(host);
+  host.fileExists = (name) => files.has(name) || fileExists(name);
+  const readFile = host.readFile.bind(host);
+  host.readFile = (name) => files.get(name) ?? readFile(name);
   host.resolveModuleNameLiterals = (literals, containing) =>
     literals.map((lit) => {
       const m = lit.text;
       if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
-      const base = resolve(dirname(containing), m);
-      for (const candidate of [base + '.ts', base + '.ts' + '', base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
-        if (candidate && (files.has(candidate) || existsSync(candidate))) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
+      if (m.startsWith('.')) {
+        const base = resolve(dirname(containing), m);
+        for (const candidate of [base + '.ts', base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
+          if (candidate && (files.has(candidate) || existsSync(candidate))) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
+        }
       }
-      return { resolvedModule: undefined };
+      return ts.resolveModuleName(m, containing, options, host);
     });
 
-  const program = ts.createProgram([...roots, ...virtual.keys(), '/__shims__/lib.d.ts'], options, host);
-  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error);
+  const program = ts.createProgram([...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')], options, host);
+  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, 12), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
