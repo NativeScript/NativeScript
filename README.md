@@ -34,7 +34,7 @@ Release build, on one iPhone 17 Pro simulator, below the status bar.
 | --- | --- | --- | --- | --- | --- | --- |
 | Pixels that differ, both screens | 0 | 0* | 0 | 0 | 0 | 0 |
 | Pixels that differ after the same taps | 0 | 0* | 0 | 0 | 0 | 0 |
-| Device archive, NativeScript → native | 44.8 → 1.1 MB | 45.6 → 1.1 MB | 44.8 → 1.1 MB | 44.9 → 1.1 MB | 44.6 → 1.1 MB | 44.6 → 1.1 MB |
+| Device archive, NativeScript → native | 44.8 → 1.3 MB | 45.6 → 1.3 MB | 44.8 → 1.3 MB | 44.9 → 1.3 MB | 44.6 → 1.3 MB | 44.6 → 1.3 MB |
 
 \* The Angular app depends on `@nativescript/tailwind`, whose PostCSS pass
 (autoloaded by `@nativescript/webpack`) drops declarations outside its
@@ -112,7 +112,8 @@ were not compared (no emulator of this run's own). The figures are in
   build at type-checking.
 
 The device archive is the unsigned arm64 app as `xcodebuild archive` makes
-it (`tools/sizes.py`, `results/sizes.json`). The generated project builds
+it (`tools/sizes.py`, `results/sizes.json`), with the app's `App_Resources`
+(the asset catalog with its icons and launch images is 112 kB of it). The generated project builds
 NativeScriptKit as a static library target with the app's settings: `-Osize`,
 full LTO, and virtual function and witness method elimination over symbols
 internalized at the link, which let the linker drop the kit code and vtable
@@ -313,8 +314,9 @@ of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
 `@nativescript/input-accessory`, `@nstudio/nstreamdown` and
 `@nativescript/haptics`) builds this way: ten screens through the drawer,
 a chat, a streamed reply, a context menu and the settings sheet match its
-NativeScript Release build pixel for pixel, in a 1.9 MB app against 46.7 MB
-(`results/ns-octane.json`).
+NativeScript Release build pixel for pixel, in a 2.5 MB app against 46.7 MB, its
+three Font Awesome fonts 0.4 MB of it (`results/ns-octane.json`,
+`results/sizes.json`).
 
 - **Source.** `compiler/src/plugins/source.ts` finds the commit a published
   version was built from (the `gitHead` npm recorded, else the version's tag,
@@ -512,6 +514,68 @@ the FlexboxLayout `react-nativescript-navigation` puts around each screen's
 content. NativeScript Android loads `sys://` images as file paths, so they
 show nothing in either build.
 
+## The generated projects
+
+The Xcode project (xcodegen's `project.yml`) and the Gradle project carry the
+app's `App_Resources` and settings as the NativeScript CLI carries them into
+`platforms/ios` and `platforms/android` (`compiler/src/app-resources.ts`).
+
+- **iOS.** `Info.plist` is merged by the CLI's rules (`plist.ts`): each
+  production plugin's `platforms/ios/Info.plist`, then the app's, then
+  `CFBundleIdentifier` from the build setting; Xcode adds its build keys as it
+  does for the NativeScript build, and the version and build number are the
+  app's `Info.plist`'s. `app.entitlements` (the plugins', then the app's) is
+  `CODE_SIGN_ENTITLEMENTS` unless `build.xcconfig` sets it. `build.xcconfig`,
+  the app's first and each plugin's after it (a key already set wins unless
+  it inherits), is the app target's configuration file. The rest of
+  `App_Resources/iOS` (`Assets.xcassets` with the app icon and launch images,
+  `LaunchScreen.storyboard`, `PrivacyInfo.xcprivacy`, `.lproj`s and folders)
+  are resources of the app, and the app folder's `fonts` are copied into the
+  bundle and registered before the first font is resolved, as core registers
+  them. Against the NativeScript builds' `Info.plist` (`plutil -p`),
+  ns-octane's and the Recipes apps' differ only in the bundle id the
+  comparisons give the native build and, for the Recipes apps, in
+  `MinimumOSVersion`: their `build.xcconfig` asks for iOS 16, the kit needs
+  17, and the build says so as it raises it.
+- **Android.** `App_Resources/Android/src/main/AndroidManifest.xml` is the
+  app's manifest, with the CLI's `__PACKAGE__` substitution, the runtime's
+  `NativeScriptActivity` as the app's `MainActivity`, and the runtime's
+  application class and error activity left out; the production plugins'
+  manifests go through Gradle's manifest merger with it.
+  `before-plugins.gradle` and `app.gradle` are applied as the runtime's
+  `build.gradle` applies them, so `versionCode`, `versionName`, the SDK levels
+  and the rest of `defaultConfig` are the app's. `res/`, `java/` and `assets/`
+  are source directories, and the app folder's `fonts` are assets at
+  `app/fonts`, where the kit loads a font family from as core does. Against
+  the NativeScript APK (`apkanalyzer manifest print`, `aapt2 dump badging`),
+  recipes-vue's manifest differs in the package, the runtime's application
+  class, error activity and native libraries, and `READ_PHONE_STATE`, which
+  the manifest merger implies for the resource library the CLI builds from
+  core's `platforms/android` without a target SDK.
+- **Source lines.** Every translated statement carries the line it was
+  written on. In Swift it is a `#sourceLocation(file:line:)` directive, so
+  crash reports, `fatalError`, Instruments and Xcode's debugger show the
+  `.ts`, `.vue`, `.tsx` or `.svelte` file and line. Kotlin has no such
+  directive: the build writes `source-lines.json` beside the Gradle project,
+  and `node compiler/src/retrace.ts <project> <trace>` maps a stack trace with
+  it, after R8's retrace has undone the release build's renaming with its
+  `mapping.txt`. A component's virtual class is matched to its source file
+  (`compiler/src/source-lines.ts`): script code by the identifiers and
+  literals it shares with the line it came from, a template binding by its
+  expression. Errors that JavaScript code can catch (on Android, a member of
+  `undefined` read) are reported with their JVM frames as `error.stack`.
+  `--no-source-lines` leaves the lines out.
+- **Device builds.** `--build --device` archives for any iOS device
+  (`xcodebuild archive`, the size settings below) and writes the `.ipa`:
+  unsigned without signing arguments, or signed manually with
+  `--provision <profile>` (a `.mobileprovision`, or the UUID or name of an
+  installed one; the export method follows the profile). Nothing is signed
+  automatically or registered on an account, and `--team-id` alone is
+  refused. On Android, `--build` writes the release APK and, with `--aab` or
+  `--device`, the bundle, signed with `--key-store-path`,
+  `--key-store-password`, `--key-store-alias` and `--key-store-alias-password`
+  when they are given and with the debug key otherwise.
+
 ## Run it
 
 ```sh
@@ -525,6 +589,13 @@ node ../tests/diff/run.ts                                           # the differ
 node src/cli.ts ../recipes-vue --platform android --out ../build/android-vue --build    # Kotlin, then Gradle
 python3 tools/compare-android.py emulator-5554 org.nativescript.recipes.vue/com.tns.NativeScriptActivity \
   org.nativescript.recipesvue.native/org.nativescript.recipesvue.MainActivity <out dir>
+adb logcat -d -s System.err AndroidRuntime | node src/retrace.ts ../build/android-vue    # a stack trace in source lines
+```
+
+```sh
+node src/cli.ts ../recipes-vue --out ../build/RecipesVue --build --device [--provision <profile>]    # archive and .ipa
+node src/cli.ts ../recipes-vue --platform android --out ../build/android-vue --build --aab \
+  --key-store-path release.keystore --key-store-password … --key-store-alias … --key-store-alias-password …
 ```
 
 Each `recipes-*` folder is an ordinary NativeScript project: `ns run ios`
@@ -547,6 +618,8 @@ develops it with live reload as usual.
 | `compiler/src/codegen.ts` | A template as `render()`: views made once, one effect per binding, keyed regions for `if`/`for` |
 | `compiler/src/kotlin.ts`, `kotlin-modules.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |
 | `compiler/src/core-kotlin.ts`, `native-calls-android.ts`, `natives/classfiles.ts` | `@nativescript/core`'s API through kit-android; direct Android calls, typed from the class files |
+| `compiler/src/app-resources.ts`, `plist.ts`, `ios-signing.ts` | `App_Resources` and project settings in the generated projects (Info.plist, entitlements, xcconfig, resources, fonts; the manifest, `app.gradle`); device archives and their signing |
+| `compiler/src/source-lines.ts`, `retrace.ts` | Each statement's source line: Swift `#sourceLocation`, Kotlin's line table and the retrace tool |
 | `compiler/src/css.ts`, `css-worker.ts` | The CSS the app's NativeScript build ships, through its own bundler's pipeline, for both targets |
 | `kit/Sources/NativeScriptKit/` | The views, layout, CSS and navigation ported from `@nativescript/core`; `Signals.swift`, `Regions.swift`, `JS.swift`, `Router.swift`, `CoreAPI.swift` |
 | `kit/Sources/NativeScriptKit/ChangeDetection.swift`, `Rx.swift` | zone.js change detection (`Zone`, `Check`), Vue's `Watch`, Svelte's `$effect` order; the RxJS subset |
@@ -584,8 +657,7 @@ develops it with live reload as usual.
   deltas vary from run to run in the NativeScript build itself.
 - **Plugins** compile from their source (see Plugins above). Not yet:
   CocoaPods and Gradle dependencies, `.framework`s and static libraries
-  (an `.xcframework` is fine), resource bundles, Info.plist merges and
-  entitlements, plugin hooks, and changes to core's prototypes other than
+  (an `.xcframework` is fine), resource bundles, plugin hooks, and changes to core's prototypes other than
   the recognized patterns. Plugins are compiled for iOS only: an Android
   build of an app that imports one stops at that import.
 - **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box

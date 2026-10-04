@@ -84,9 +84,16 @@ open class JSAggregateError(var errors: JSArray<Any?>, message: String = "", cau
 fun jsCaught(error: Throwable): Any? = when (error) {
     is JSException -> error.value
     is StackOverflowError -> JSRangeError("Maximum call stack size exceeded")
-    is NullPointerException -> JSTypeError(error.message ?: "Cannot read properties of undefined")
-    is ClassCastException -> JSTypeError(error.message ?: "")
-    else -> JSError(error.message ?: error.toString())
+    is NullPointerException -> JSTypeError(error.message ?: "Cannot read properties of undefined").withFrames(error)
+    is ClassCastException -> JSTypeError(error.message ?: "").withFrames(error)
+    else -> JSError(error.message ?: error.toString()).withFrames(error)
+}
+
+/** `error.stack` in V8's format over the JVM frames that threw, as many as V8 keeps; `retrace.ts` maps them to the app's source. */
+private fun <E : JSError> E.withFrames(error: Throwable): E {
+    val frames = error.stackTrace.take(10)
+    if (frames.isNotEmpty()) stack = jsErrorString + frames.joinToString("") { "\n    at ${it.className}.${it.methodName} (${it.fileName ?: "Unknown Source"}:${it.lineNumber})" }
+    return this
 }
 
 /** `throw value`. */

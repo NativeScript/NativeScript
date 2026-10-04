@@ -82,6 +82,7 @@ struct Font: Equatable {
     }
 
     func uiFont(default defaultFont: UIFont?) -> UIFont {
+        _ = AppFonts.registered
         let pointSize = size.map { CGFloat($0) } ?? defaultFont?.pointSize ?? UIFont.labelFontSize
         var traits: UIFontDescriptor.SymbolicTraits = []
         if isBold { traits.insert(.traitBold) }

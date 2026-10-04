@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { createProgram } from '../../compiler/src/program.ts';
 import { Translator } from '../../compiler/src/swift.ts';
 import { Translator as KotlinTranslator } from '../../compiler/src/kotlin.ts';
+import { SourceLines } from '../../compiler/src/source-lines.ts';
 import { addInterfaces, translateModules } from '../../compiler/src/modules.ts';
 import { addKotlinInterfaces, translateKotlinModules } from '../../compiler/src/kotlin-modules.ts';
 import ts from '../../compiler/node_modules/typescript/lib/typescript.js';
@@ -46,12 +47,14 @@ function buildRuntime() {
 function translate(file: string, out: string): void {
   const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir);
   const translator = new Translator(checker, new Map(), files);
+  // With source lines, as an app is built: the directives must compile wherever a statement can be.
+  const lines = translator.lines = new SourceLines(new Map());
   const modules = translateModules(translator, program, [file, ...importsOf(program, file)]);
   addInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   const header = 'import Foundation\nimport NativeScriptKit\n\n';
-  for (const m of modules) writeFileSync(join(out, m.name + '.swift'), header + m.code);
+  for (const m of modules) writeFileSync(join(out, m.name + '.swift'), header + lines.swift(m.code));
   writeFileSync(join(out, '__Objects.swift'), header + translator.shapesCode() + '\n');
   const inits = modules.filter((m) => m.init).map((m) => `${m.init}()\n`).join('');
   writeFileSync(join(out, 'main.swift'), `${header}${inits}JSEventLoop.runUntilIdle()\n`);
@@ -61,12 +64,13 @@ function translate(file: string, out: string): void {
 function translateKotlin(file: string, out: string, pkg: string): void {
   const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir);
   const translator = new KotlinTranslator(checker, new Map(), files);
+  const lines = translator.lines = new SourceLines(new Map());
   const modules = translateKotlinModules(translator, program, [file, ...importsOf(program, file)]);
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   const header = `@file:Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE", "NAME_SHADOWING", "UNREACHABLE_CODE", "UNUSED_PARAMETER", "REDUNDANT_CALL_OF_CONVERSION_METHOD")\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
-  for (const m of modules) writeFileSync(join(out, m.name + '.kt'), header + m.code);
+  for (const m of modules) writeFileSync(join(out, m.name + '.kt'), header + lines.kotlin(m.code).code);
   writeFileSync(join(out, '__Objects.kt'), header + translator.shapesCode() + '\n');
   const inits = modules.filter((m) => m.init).map((m) => `    ${m.init}()\n`).join('');
   // In a package of its own: a case may declare a `main` of its own.

@@ -41,6 +41,7 @@ public final class CoreFont {
 
     var uiFont: UIFont {
         let size = CGFloat(fontSize)
+        _ = AppFonts.registered
         if let family = fontFamily, let font = UIFont(name: family, size: size) { return font }
         let weights: [String: UIFont.Weight] = ["100": .ultraLight, "200": .thin, "300": .light, "400": .regular, "normal": .regular,
                                                  "500": .medium, "600": .semibold, "700": .bold, "bold": .bold, "800": .heavy, "900": .black]

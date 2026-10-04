@@ -1,3 +1,4 @@
+import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
@@ -131,6 +132,8 @@ export class Translator implements AsyncTranslator {
   /** Expressions already evaluated into a Kotlin name (awaited values, operands read before an await). */
   readonly subst = new Map<ts.Node, string>();
   asyncCtx: AsyncCtx | null = null;
+  /** Marks each statement with its source line (`#sourceLocation` in Swift, a line table for Kotlin). */
+  lines: SourceLines | null = null;
   private plainBreak = 0;
   private plainContinue = 0;
   private returnType = 'Unit';
@@ -445,8 +448,10 @@ export class Translator implements AsyncTranslator {
     this.props = new Set();
     const out: string[] = [];
     const init: string[] = [];
-    const later = (code: () => string) => { this.indent = '    '; try { init.push(code()); } finally { this.indent = ''; } };
+    let current: ts.Statement | null = null;
+    const later = (code: () => string) => { this.indent = '    '; try { init.push((current && this.lines ? this.lines.mark(current) : '') + code()); } finally { this.indent = ''; } };
     for (const st of sf.statements) {
+      current = st;
       if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st) || ts.isExportAssignment(st)) continue;
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, sf.fileName, st.members, st); continue; }
@@ -1125,6 +1130,11 @@ export class Translator implements AsyncTranslator {
   }
 
   stmt(s: ts.Statement): string {
+    const code = this.statementCode(s);
+    return code && this.lines ? this.lines.mark(s) + code : code;
+  }
+
+  private statementCode(s: ts.Statement): string {
     const i = this.indent;
     const a = this.asyncCtx;
     if (ts.isExpressionStatement(s)) return i + this.exprStatement(s.expression);
