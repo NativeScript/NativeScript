@@ -58,6 +58,46 @@ public enum Modal {
         parentController.present(controller, animated: animated)
     }
 
+    /// `showModal(view, options)` from script: presented by the controller nearest `parent`, as `_showNativeModalView` does.
+    static func present(_ view: View, from parent: View, options: Any?) {
+        let o = jsFlat(options) as? JSDynamic
+        let ios = jsFlat(o?[jsKey: "ios"]) as? JSDynamic
+        guard let parentController = viewControllerOwner(of: parent)?.viewController,
+              parentController.presentedViewController == nil, parentController.view.window != nil else { return }
+        let controller: UIViewController
+        if let own = view.viewController {
+            controller = own
+        } else {
+            let layoutController = LayoutViewController(owner: view)
+            if let nativeView = view.nativeView { layoutController.view.addSubview(nativeView) }
+            view.viewController = layoutController
+            controller = layoutController
+        }
+        var classes = Appearance.rootClasses(modal: true)
+        classes.subtract(classes.filter { $0.hasPrefix("a11y-") })
+        view.rootClasses = classes
+        let callback = jsFlat(o?[jsKey: "closeCallback"])
+        let record = Record(view: view, parent: parent, owner: Owner(parent: nil), animated: o.map { $0[jsKey: "animated"] == nil ? true : jsTruthy($0[jsKey: "animated"]) } ?? true,
+                            closeCallback: callback == nil ? nil : { result in jsReport { _ = try jsCall(callback, result) } })
+        stack.append(record)
+        controller.modalPresentationStyle = jsTruthy(o?[jsKey: "fullscreen"]) ? .fullScreen : .formSheet
+        if let width = ios?[jsKey: "width"] as? Double, let height = ios?[jsKey: "height"] as? Double, width > 0, height > 0 {
+            controller.preferredContentSize = CGSize(width: width, height: height)
+        }
+        if let style = ios?[jsKey: "presentationStyle"] as? Double, style != 0, let presentation = UIModalPresentationStyle(rawValue: Int(style)) {
+            controller.modalPresentationStyle = presentation
+        }
+        let cancelable = o?[jsKey: "cancelable"] == nil ? true : jsTruthy(o?[jsKey: "cancelable"])
+        if cancelable {
+            controller.presentationController?.delegate = DismissDelegate.shared
+        } else {
+            controller.isModalInPresentation = true
+        }
+        view.set("horizontalAlignment", "stretch")
+        view.set("verticalAlignment", "stretch")
+        parentController.present(controller, animated: record.animated)
+    }
+
     /// `closeModal(result)` on the topmost modal: dismissed, then its close callback runs.
     public static func close(_ result: Any? = nil) {
         guard let record = stack.last, !record.closing else { return }
@@ -98,4 +138,16 @@ public enum Modal {
             Modal.dismissedByUser(presentationController.presentedViewController)
         }
     }
+}
+
+extension View {
+    /// `showModal(view, options)`.
+    @discardableResult
+    public func showModal(_ view: View, _ options: Any?) -> View {
+        Modal.present(view, from: self, options: options)
+        return view
+    }
+
+    /// `closeModal(result)`: the modal this view is in closes.
+    public func closeModal(_ result: Any? = nil) { Modal.close(result) }
 }

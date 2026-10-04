@@ -20,6 +20,12 @@ public final class ItemEventPayload: EventPayload {
 }
 
 extension EventData {
+    /// `ScrollEventData`: the scroll view's offsets when it scrolled.
+    public var scrollX: Double { (object as? ScrollView)?.horizontalOffset ?? 0 }
+    public var scrollY: Double { (object as? ScrollView)?.verticalOffset ?? (value as? Double ?? 0) }
+    /// `SystemAppearanceChangedEventData.newValue` and other values a notifier names.
+    public var newValue: Any? { self[jsKey: "newValue"] }
+
     public var index: Double { (value as? ItemEventPayload)?.index ?? 0 }
     public var item: Any? { (value as? ItemEventPayload)?.item }
     public var view: View? { (value as? ItemEventPayload)?.view ?? (value as? GestureEventPayload)?.view }

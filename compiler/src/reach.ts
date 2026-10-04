@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { runtimeRelative } from './plugins/resolve.ts';
+import { recognizePatterns } from './patterns.ts';
 
 /**
  * What a closed-world build compiles of the plugins: the declarations the
@@ -129,6 +130,7 @@ export function reachability(program: ts.Program, resolved: (containing: string,
   };
 
   // ---- Reachability.
+  const patterns = recognizePatterns(checker, program.getSourceFiles().filter((sf) => !sf.isDeclarationFile && (isPlugin(sf) || appFiles.includes(sf.fileName))));
   const declarations = new Set<ts.Node>();
   const modules = new Set<string>();
   const dead = new Set<ts.Node>();
@@ -214,6 +216,11 @@ export function reachability(program: ts.Program, resolved: (containing: string,
       if (c !== undefined) { dead.add(c ? n.whenFalse : n.whenTrue); walk(c ? n.whenTrue : n.whenFalse); return; }
     }
     if (ts.isTypeNode(n) && !ts.isExpressionWithTypeArguments(n)) return;
+    // Decorators are applied at compile time: the patterns the translator recognizes, not code that runs.
+    if (ts.isDecorator(n)) return;
+    // A mixin application installs its classes; the copying function itself does not run.
+    if (ts.isCallExpression(n) && patterns.isMixinCall(n)) { n.arguments.slice(1).forEach(walk); return; }
+    if (ts.isVariableDeclaration(n) && patterns.requiredCore(n)) return;
     if (ts.isInterfaceDeclaration(n) || ts.isTypeAliasDeclaration(n)) return;
     if (ts.isImportDeclaration(n)) return;
     if (ts.isIdentifier(n) && !isDeclarationName(n)) {

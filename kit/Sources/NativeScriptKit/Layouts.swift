@@ -272,7 +272,13 @@ open class StackLayout: LayoutBase {
 open class ContentView: CustomLayoutView {
     open override class var cssType: String { "ContentView" }
 
-    private(set) var content: View?
+    private var contentView: View?
+
+    /// `content`: the one child.
+    public var content: View? {
+        get { contentView }
+        set { setContent(newValue) }
+    }
 
     var layoutView: View? { content }
 
@@ -281,11 +287,11 @@ open class ContentView: CustomLayoutView {
     }
 
     func setContent(_ value: View?) {
-        if let old = content {
+        if let old = contentView {
             removeView(old)
             old.nativeView?.removeFromSuperview()
         }
-        content = value
+        contentView = value
         if let value {
             addView(value)
             addNativeSubview(value)
@@ -368,6 +374,38 @@ open class ScrollView: ContentView, UIScrollViewDelegate {
 
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         emit("scroll", Double(orientation == "horizontal" ? scrollView.contentOffset.x : scrollView.contentOffset.y))
+    }
+
+    public var horizontalOffset: Double { Double(scrollView?.contentOffset.x ?? 0) }
+    public var verticalOffset: Double { Double(scrollView?.contentOffset.y ?? 0) }
+
+    public var scrollableWidth: Double {
+        guard let scrollView, orientation == "horizontal" else { return 0 }
+        return max(0, Double(scrollView.contentSize.width - scrollView.bounds.size.width))
+    }
+
+    public var scrollableHeight: Double {
+        guard let scrollView, orientation == "vertical" else { return 0 }
+        return max(0, Double(scrollView.contentSize.height - scrollView.bounds.size.height))
+    }
+
+    private var isScrollEnabled: Bool { toBool(applied["isScrollEnabled"]) ?? true }
+
+    /// `scrollToVerticalOffset`: clamped to the content and its adjusted insets (the app's core patch).
+    public func scrollToVerticalOffset(_ value: Double, _ animated: Bool? = nil) {
+        guard let scrollView, orientation == "vertical", isScrollEnabled else { return }
+        let inset = scrollView.adjustedContentInset
+        let lower = -Double(inset.top)
+        let upper = max(lower, Double(scrollView.contentSize.height + inset.bottom - scrollView.bounds.size.height))
+        scrollView.setContentOffset(CGPoint(x: scrollView.contentOffset.x, y: min(max(value, lower), upper)), animated: animated ?? false)
+    }
+
+    public func scrollToHorizontalOffset(_ value: Double, _ animated: Bool? = nil) {
+        guard let scrollView, orientation == "horizontal", isScrollEnabled else { return }
+        let inset = scrollView.adjustedContentInset
+        let lower = -Double(inset.left)
+        let upper = max(lower, Double(scrollView.contentSize.width + inset.right - scrollView.bounds.size.width))
+        scrollView.setContentOffset(CGPoint(x: min(max(value, lower), upper), y: scrollView.contentOffset.y), animated: animated ?? false)
     }
 
     open override func onMeasure(_ widthMeasureSpec: Int, _ heightMeasureSpec: Int) {

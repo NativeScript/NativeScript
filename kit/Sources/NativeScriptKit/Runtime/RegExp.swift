@@ -101,6 +101,9 @@ public final class JSMatch {
         groups = nil
     }
 
+    /// `match(re) || []`: no matches.
+    public convenience init() { self.init(all: [], input: "") }
+
     /// A group's text; a group that did not take part reads as "" (JavaScript has undefined there).
     public subscript(_ i: Int) -> String { i < values.count ? values[i] ?? "" : "" }
     public var length: Double { values.length }

@@ -515,3 +515,11 @@ extension JSArrayProtocol {
         return out
     }
 }
+
+/// `f?.(args)` on an untyped value: undefined when `f` is undefined or null.
+@discardableResult
+public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any? {
+    if jsIsNullish(function) { return nil }
+    if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
+    throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
+}

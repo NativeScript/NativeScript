@@ -73,15 +73,15 @@ open class Observable: NSObject, JSDynamic {
 
     public override init() { super.init() }
 
-    public func on(_ eventNames: String, _ callback: @escaping (EventData) throws -> Void, _ thisArg: Any? = nil, key: String? = nil) {
+    open func on(_ eventNames: String, _ callback: @escaping (EventData) throws -> Void, _ thisArg: Any? = nil, key: String? = nil) {
         addEventListener(eventNames, callback, thisArg, key: key)
     }
 
-    public func once(_ eventNames: String, _ callback: @escaping (EventData) throws -> Void, _ thisArg: Any? = nil, key: String? = nil) {
+    open func once(_ eventNames: String, _ callback: @escaping (EventData) throws -> Void, _ thisArg: Any? = nil, key: String? = nil) {
         addEventListener(eventNames, callback, thisArg, once: true, key: key)
     }
 
-    public func off(_ eventNames: String, _ callback: ((EventData) throws -> Void)? = nil, _ thisArg: Any? = nil, key: String? = nil) {
+    open func off(_ eventNames: String, _ callback: ((EventData) throws -> Void)? = nil, _ thisArg: Any? = nil, key: String? = nil) {
         removeEventListener(eventNames, callback, thisArg, key: key)
     }
 

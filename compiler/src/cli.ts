@@ -24,6 +24,8 @@ import { addInterfaces, translateModules } from './modules.ts';
 import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
+import { reachability } from './reach.ts';
+import { collectProperties } from './properties.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -35,6 +37,7 @@ const appDir = join(app, dirname(pkg.main ?? 'app/app.ts'));
 const name = opt('--name', basename(app).replace(/(^|[-_])(\w)/g, (_: string, __: string, c: string) => c.toUpperCase()))!;
 const out = resolve(opt('--out', join(app, 'platforms', 'native'))!);
 const say = (m: string) => console.log(`[ns-native] ${m}`);
+const platform = opt('--platform') === 'android' ? 'android' : 'ios';
 
 const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
@@ -55,6 +58,8 @@ let modules: string[];
 let root: string;
 let prelude = '';
 let routing: { routes: { path: string; component: string }[]; initial: string } | null = null;
+/** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
+let mounted = false;
 if (framework === 'vue') {
   components = files.filter((f) => f.endsWith('.vue')).map((f) => vueComponent(f, readFileSync(f, 'utf8')));
   modules = sources;
@@ -102,10 +107,11 @@ if (framework === 'vue') {
   root = 'StackRouter';
 } else if (framework === 'octane') {
   const tsx = files.filter((f) => f.endsWith('.tsx'));
-  const app = octaneApp(entry, new Map([entry, ...sources, ...tsx].map((f) => [f, readFileSync(f, 'utf8')])));
+  const app = octaneApp(entry, new Map([entry, ...sources, ...tsx].map((f) => [f, readFileSync(f, 'utf8')])), platform);
   components = app.components;
   for (const [f, store] of app.overrides) overrides.set(f, store);
-  modules = sources.filter((f) => !app.glue.has(f));
+  mounted = !!app.mounted;
+  modules = mounted ? [...sources, ...tsx, entry] : sources.filter((f) => !app.glue.has(f));
   root = app.root;
 } else if (framework === 'svelte') {
   const isStoreFile = (f: string) => /from\s+['"]svelte\/store['"]/.test(readFileSync(f, 'utf8'));
@@ -138,11 +144,20 @@ if (framework === 'vue') {
 
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-const platform = opt('--platform') === 'android' ? 'android' : 'ios';
+if (process.env.NS_NATIVE_DUMP) {
+  mkdirSync(process.env.NS_NATIVE_DUMP, { recursive: true });
+  for (const [f, text] of virtual) writeFileSync(join(process.env.NS_NATIVE_DUMP, basename(f)), text);
+}
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
 const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
-const { checker, program, files: sourceFiles } = createProgram(modules, virtual, platform, undefined, plugins);
-const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
+const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins);
+const infos = new Map<string, ComponentInfo & { outputs?: string[]; optional?: string[]; passed?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, optional: c.optional, passed: c.passed }]));
+// A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
+const appFiles = [...modules, ...components.map((c) => c.file)];
+const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
+const compiledPlugins = pluginFiles.filter((f) => reach.modules.has(f) && program.getSourceFile(f)!.statements.some((st) => reach.keeps(st) && !ts.isImportDeclaration(st) && !ts.isExportDeclaration(st)));
+plugins.verify(compiledPlugins);
+const properties = collectProperties(checker, sourceFiles);
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
@@ -151,26 +166,38 @@ if (platform === 'android') {
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
 const native = pluginNative(plugins.all(), out);
-const translator = new Translator(checker, infos, sourceFiles);
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
 const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n`;
-const translated = translateModules(translator, program, modules);
+const translated = translateModules(translator, program, [...modules, ...compiledPlugins]);
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
-  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m)), '}'];
+  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), { slots: mounted, rowSignals: mounted }), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
 }
 addInterfaces(translator, translated);
-for (const m of translated) if (m.code.trim()) writeFileSync(join(out, 'Sources', m.name + '.swift'), header(m.file) + m.code);
+// File names differ in more than case: a module `app.tsx` beside a component `App` would overwrite it on a case-insensitive disk.
+const taken = new Set(components.map((c) => c.name.toLowerCase()));
+for (const m of translated) {
+  if (!m.code.trim()) continue;
+  let file = m.name;
+  while (taken.has(file.toLowerCase())) file += '_module';
+  taken.add(file.toLowerCase());
+  writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + m.code);
+}
 const shapes = translator.shapesCode();
-if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n\n${shapes}\n`);
+if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 const sourceCSS = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
 const css = usesNativeScriptTailwind(app) ? nativescriptTailwind(sourceCSS) : sourceCSS;
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
+const start = mounted
+  // The entry's own statements run the app (`Application.run`), after every module it imports.
+  ? `        NativeScriptApplication.css = appCSS\n        Reactivity.scheduled = true\n${inits}`
+  : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`;
+writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project.

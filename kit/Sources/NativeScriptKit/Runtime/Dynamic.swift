@@ -41,6 +41,13 @@ public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
     for key in dynamic.jsKeys { target[key] = dynamic[jsKey: key] }
 }
 
+/// `Symbol(description)`: a property key no other code spells.
+public func jsSymbol(_ description: String) -> String {
+    jsSymbolCount += 1
+    return "@@\(description)#\(jsSymbolCount)"
+}
+nonisolated(unsafe) private var jsSymbolCount = 0
+
 /// `key in object`, for any dynamic value.
 public func jsIn(_ key: String, _ object: Any?) -> Bool {
     switch jsFlat(object) {

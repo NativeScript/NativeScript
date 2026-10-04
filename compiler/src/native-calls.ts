@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import type { Translator } from './swift.ts';
+import { CF_CLASSES, type Translator } from './swift.ts';
 import {
   lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
@@ -132,16 +132,34 @@ export class NativeAPI {
     if (!m) throw this.t.error(e, `${r.name}.${e.name.text} (no Swift counterpart in ${r.module})`);
     this.checkAvailable(m, e, `${r.name}.${e.name.text}`);
     if (e.questionDotToken && !r.isStatic && m.kind === 'property') {
-      const chained = `${this.optionalChainTarget(e.expression)}?.${m.swift}`;
+      // A receiver the chain unwrapped (`a?.layer!`) continues the chain instead; past a member Swift has as non-optional, the chain goes on with `.`.
+      const inner = e.expression;
+      const r2 = ts.isPropertyAccessExpression(inner) && ts.isOptionalChain(inner) ? this.receiver(inner.expression) : null;
+      const innerMember = r2 && ts.isPropertyAccessExpression(inner) ? lookupMember(r2.module, r2.name, inner.name.text, r2.isStatic) : null;
+      const dot = innerMember && innerMember.kind === 'property' && !optional(innerMember.type) ? '.' : '?.';
+      const chained = `${this.optionalChainTarget(e.expression).replace(/!$/, '')}${dot}${m.swift}`;
       const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
       return coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?' ? chained : `${chained}!`;
     }
-    const target = r.isStatic ? lookupClass(r.module, r.name)!.swift : this.t.expr(e.expression);
+    const target = r.isStatic ? lookupClass(r.module, r.name)!.swift : this.unwrapped(e.expression);
     if (m.kind === 'property') return this.fromSwift(`${target}.${m.swift}`, m.type, e);
     // A no-argument method read as a property in the d.ts (`UIColor.redColor` is a class property there).
     if (m.kind === 'method' && !m.params.length) return this.fromSwift(`${target}.${m.swift}()`, m.returns, e);
     if (m.kind === 'init' && !m.params.length) return this.fromSwift(`${target}()`, m.returns, e);
     throw this.t.error(e, `${r.name}.${e.name.text} read as a value`);
+  }
+
+  /**
+   * A native receiver read without `?.` that TypeScript types as possibly
+   * null (an app checked without strictNullChecks): JavaScript would throw on
+   * null, so Swift unwraps. The cast makes the unwrap valid whether or not
+   * Swift has the value as optional.
+   */
+  private unwrapped(x: ts.Expression): string {
+    const code = this.t.expr(x);
+    const t = this.t.typeOf(x);
+    if (!t.endsWith('?') || t === 'Any?' || t.includes('->')) return code;
+    return `(${code} as ${t})!`;
   }
 
   /** The target of `target?.member`: the native value as Swift has it, optional or not. */
@@ -163,8 +181,8 @@ export class NativeAPI {
     const st = this.t.typeOf(target).replace(/\?$/, '');
     const isArray = /^\[[^:]*\]$/.test(st), isDict = /^\[.*:.*\]$/.test(st);
     if (!isArray && !isDict) return null;
-    const recv = this.t.expr(target);
-    const result = (code: string) => (this.t.typeOf(target) === 'Any?' ? code : code);
+    const recv = this.unwrapped(target);
+    const result = (code: string) => code;
     if (isArray) {
       if (args === null && name === 'count') return `Double(${recv}.count)`;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
@@ -273,11 +291,13 @@ export class NativeAPI {
     }
     this.checkAvailable(m, e, `${r.name}.${name}()`);
     // An Objective-C method Swift imports as a property.
-    if (m.kind === 'property') return this.fromSwift(`${r.isStatic ? lookupClass(r.module, r.name)!.swift : this.t.expr(callee.expression)}.${m.swift}`, m.type, e);
+    const chained = ts.isPropertyAccessExpression(callee) && !!callee.questionDotToken;
+    const recv = r.isStatic ? '' : chained ? `${this.t.expr(callee.expression)}${this.t.typeOf(callee.expression).endsWith('?') ? '?' : ''}` : this.unwrapped(callee.expression);
+    if (m.kind === 'property') return this.fromSwift(`${r.isStatic ? lookupClass(r.module, r.name)!.swift : recv}.${m.swift}`, m.type, e);
     const args = [...e.arguments];
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
     const list = this.argList(args, m.labels, m.params);
-    const target = r.isStatic ? cls!.swift : this.t.expr(callee.expression);
+    const target = r.isStatic ? cls!.swift : recv;
     const code = m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`;
     return this.fromSwift(code, m.returns, e);
   }
@@ -349,6 +369,9 @@ export class NativeAPI {
     const b = base(target);
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.block(e, target);
     const source = t.typeOf(e);
+    // An out-parameter: the cell's storage of the pointee's type, written back.
+    const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
+    if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
     if (b === 'Selector' && ts.isStringLiteralLike(e)) return `Selector((${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))}))`;
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
@@ -359,9 +382,31 @@ export class NativeAPI {
       const raw = this.rawTypeOf(b);
       return `${b}(rawValue: ${raw}(${t.expr(e)}))${this.isOptionSet(b) ? '' : '!'}`;
     }
+    // An untyped value where Swift takes a native object (or one conforming to a protocol: `any UIInteraction`).
+    const cls = b.replace(/^any /, '');
+    if (source === 'Any?' && /^[A-Z]\w*$/.test(cls) && !this.isEnumType(cls) && !this.isStructType(cls) && !NUMBERS.has(cls) && cls !== 'String' && cls !== 'Bool') {
+      if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
+      return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `(jsFlat(${t.expr(e)}) as! ${b})`;
+    }
     if (source.startsWith('JSArray<') && b.startsWith('[')) return b === '[Any]' ? `${t.expr(e)}.storage.map { $0 as Any }` : `${t.expr(e)}.storage`;
     // An array typed loosely in TypeScript where Swift takes typed elements (`[UIBarButtonItemGroup]`).
     if (source === '[Any]' && b.startsWith('[') && b !== '[Any]') return `(${t.expr(e)} as! ${b})`;
+    // An untyped object where Swift takes a dictionary: its keys and values as the runtime marshals them.
+    if (source === 'Any?' && /^\[\w+\s*:\s*Any\]$/.test(b)) return `jsToNativeDictionary(${t.expr(e)})`;
+    // A possibly missing option set where Swift takes one: none of the options.
+    if (!optional(target) && source.endsWith('?') && this.isOptionSet(b)) return `(${t.expr(e)} ?? [])`;
+    // A possibly missing string where Swift takes one: Objective-C would receive nil, which reads as empty.
+    if (b === 'String' && !optional(target) && source === 'String?') return `(${t.expr(e)} ?? "")`;
+    // A string where Swift has a string-backed type (`UIMenu.Identifier`).
+    const nativeConstant = ts.isIdentifier(e) && !!this.symbolModule(this.t.resolve(e));
+    if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !nativeConstant) {
+      return source.endsWith('?') ? `{ (__s: String?) -> ${b}? in __s.map { ${b}(rawValue: $0) } }(${t.expr(e)})` : `${b}(rawValue: ${t.expr(e)})`;
+    }
+    // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
+    if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
+    if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
+    // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
+    if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
     return t.expr(e);
   }
 
@@ -375,6 +420,8 @@ export class NativeAPI {
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
     if (this.isEnumType(b) && tsType === 'Double') return `Double(${code}.rawValue)`;
+    // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
+    if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;
     if (swiftType.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
     return code;
@@ -401,6 +448,9 @@ export class NativeAPI {
   private blockParam(code: string, swiftType: SwiftType, tsType: string): string {
     const b = base(swiftType);
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : `Double(${code})`;
+    // A Foundation value type the TypeScript declarations name by its class (`Notification` as `NSNotification`).
+    const ts0 = tsType.replace(/\?$/, '');
+    if (ts0 === `NS${b}`) return `(${code}${optional(swiftType) && !tsType.endsWith('?') ? '!' : ''} as ${ts0}${tsType.endsWith('?') ? '?' : ''})`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
     return code;
   }
@@ -531,6 +581,12 @@ export class NativeAPI {
   /** A TypeScript result as the Swift method returns it. */
   private toSwiftValue(code: string, tsType: string, swiftType: SwiftType): string {
     const b = base(swiftType);
+    // An untyped result marshals as the runtime converts a JavaScript value: a BOOL by truthiness, a number by ToNumber.
+    if (tsType === 'Any?' && swiftType !== 'Any?' && swiftType !== 'Any') {
+      if (b === 'Bool' || b === 'ObjCBool') return `jsTruthy(${code})`;
+      if (NUMBERS.has(b)) return b === 'Double' ? `jsToNumber(${code})` : `${b}(jsToNumber(${code}))`;
+      return optional(swiftType) ? `(jsToNative(${code}) as? ${b})` : `(jsToNative(${code}) as! ${b})`;
+    }
     if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return `${b}(${code})`;
     if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
     return code;
@@ -548,6 +604,18 @@ export class NativeAPI {
   /** The modules the program's native declarations come from, and those their types live in (`UIRectEdge` is UIUtilities'). */
   private searchModules(): string[] {
     return [...new Set([...this.modules, ...(this.modules.has('UIKit') ? ['UIUtilities'] : [])])];
+  }
+
+  /** A JavaScript number where Swift has a native enum or option set: the value of that raw value. */
+  enumFromNumber(code: string, swiftType: string): string {
+    const b = swiftType.replace(/[?!]$/, '');
+    return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
+  }
+
+  /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
+  private isStringConstants(swift: string): boolean {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
+    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants' && x.raw === 'String'));
   }
 
   isEnumType(swift: string): boolean {
@@ -594,9 +662,11 @@ export type { NativeMethod, NativeProperty };
 
 /** A block parameter's Swift type (`((A, B) -> R)?`, `@escaping (A) -> Void`) as parameter and result types. */
 function blockType(type: SwiftType): { text: string; params: string[]; result: string } | null {
-  let t = type.trim().replace(/^@escaping\s*/, '');
+  // Attributes (`@escaping`, `@Sendable`, `@MainActor`) do not change how a closure is written.
+  const bare = (x: string) => x.trim().replace(/^(?:@\w+\s*)+/, '');
+  let t = bare(type);
   if (t.endsWith('?') || t.endsWith('!')) t = t.slice(0, -1);
-  while (t.startsWith('(') && matching(t, 0) === t.length - 1) t = t.slice(1, -1).trim().replace(/^@escaping\s*/, '');
+  while (t.startsWith('(') && matching(t, 0) === t.length - 1) t = bare(t.slice(1, -1));
   if (!t.startsWith('(')) return null;
   const close = matching(t, 0);
   const rest = /^\s*(?:throws\s*)?->\s*(.+)$/.exec(t.slice(close + 1));

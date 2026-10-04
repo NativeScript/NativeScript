@@ -127,7 +127,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
 
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
-    strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true,
+    strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true, jsx: ts.JsxEmit.Preserve,
   };
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
@@ -157,11 +157,12 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       if (m.startsWith('.')) {
         const base = resolve(dirname(containing), m);
-        for (const candidate of [base + '.ts', base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
+        // A platform's own file first, as NativeScript's bundler resolves `./x` to `x.ios.ts`.
+        for (const candidate of [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) {
             // A plugin's own modules are compiled with it.
             if (pluginFiles.has(containing)) pluginFiles.add(candidate);
-            return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
+            return { resolvedModule: { resolvedFileName: candidate, extension: candidate.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
           }
         }
       }
@@ -220,6 +221,8 @@ function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean):
     const edits: { at: number; text: string }[] = [];
     const visit = (n: ts.Node) => {
       if (ts.isPropertyAccessExpression(n) && ['ios', 'nativeView', 'nativeViewProtected'].includes(n.name.text) && !ts.isAsExpression(n.parent)
+        // An optional chain stays as written: a cast around it would stop TypeScript narrowing its root.
+        && !n.questionDotToken
         && checker.getTypeAtLocation(n).flags & ts.TypeFlags.Any) {
         const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression));
         if (native) edits.push({ at: n.getStart(), text: '(' }, { at: n.getEnd(), text: ` as ${native})` });

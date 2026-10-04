@@ -44,23 +44,47 @@ open class Span: View {
 
 /// `FormattedString` from text-base/formatted-string: the spans of a text
 /// view's `formattedText`. Any change to a span rebuilds the text view's attributed text.
-open class FormattedString: View {
+open class FormattedString: View, RegionHost {
     open override class var cssType: String { "" }
 
     private(set) var spans: [Span] = []
     /// A span's handlers are attached after it joins the tree, so its first values notify nothing.
     private var isAddingSpan = false
+    /// Spans in template order: static ones and the runs `if`/`for` regions own.
+    private var entries: [RegionPart] = []
 
     open override func createNativeView() -> UIView? { nil }
 
     open override func addChild(_ child: View) {
-        if let span = child as? Span { addSpan(span) }
+        if let span = child as? Span {
+            entries.append(.view(span))
+            addSpan(span)
+        }
     }
 
     func addSpan(_ span: Span) {
         spans.append(span)
         isAddingSpan = true
         addView(span)
+        isAddingSpan = false
+        contentsChanged()
+    }
+
+    public func addRegion() -> Region {
+        let region = Region(host: self)
+        entries.append(.region(region))
+        return region
+    }
+
+    /// A region's spans changed: spans that left are removed, new ones join, and the text rebuilds once.
+    public func regionChanged(_ region: Region) {
+        let next = entries.flatMap(\.views).compactMap { $0 as? Span }
+        let kept = Set(next.map(ObjectIdentifier.init))
+        for span in spans where !kept.contains(ObjectIdentifier(span)) { removeView(span) }
+        let existing = Set(spans.map(ObjectIdentifier.init))
+        spans = next
+        isAddingSpan = true
+        for span in next where !existing.contains(ObjectIdentifier(span)) { addView(span) }
         isAddingSpan = false
         contentsChanged()
     }

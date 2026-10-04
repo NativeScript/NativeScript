@@ -56,13 +56,31 @@ protocol Source: AnyObject {
 private var currentEffect: Effect?
 private var batchDepth = 0
 private var queue: [Effect] = []
+private var flushScheduled = false
+
+/// How writes reach the effects that read them.
+public enum Reactivity {
+    /// Effects re-run in a microtask after the writes, as a renderer that batches
+    /// updates (Octane's root) re-renders; otherwise at once.
+    public static var scheduled = false
+}
 
 /// Groups writes so each affected effect runs once, after the last write.
 public func batch(_ body: () -> Void) {
     batchDepth += 1
     body()
     batchDepth -= 1
-    if batchDepth == 0 { flush() }
+    if batchDepth == 0 { flushOrSchedule() }
+}
+
+private func flushOrSchedule() {
+    guard Reactivity.scheduled else { return flush() }
+    guard !flushScheduled else { return }
+    flushScheduled = true
+    Microtasks.enqueue {
+        flushScheduled = false
+        flush()
+    }
 }
 
 private func flush() {
@@ -116,7 +134,7 @@ public final class Signal<T>: Source {
             stored = newValue
             let targets = Array(subscribers.values)
             for target in targets { target.invalidate() }
-            if batchDepth == 0 { flush() }
+            if batchDepth == 0 { flushOrSchedule() }
         }
     }
 

@@ -24,10 +24,10 @@ public enum Utils {
     }
 
     public enum layout {
-        public static let EXACTLY = Double(LayoutHelper.exactly)
-        public static let AT_MOST = Double(LayoutHelper.atMost)
-        public static let UNSPECIFIED = Double(LayoutHelper.unspecified)
-        public static let MODE_MASK = Double(LayoutHelper.modeMask)
+        public static let EXACTLY: Double = Double(LayoutHelper.exactly)
+        public static let AT_MOST: Double = Double(LayoutHelper.atMost)
+        public static let UNSPECIFIED: Double = Double(LayoutHelper.unspecified)
+        public static let MODE_MASK: Double = Double(LayoutHelper.modeMask)
 
         public static func toDevicePixels(_ value: Double) -> Double { LayoutHelper.toDevicePixels(value) }
         public static func toDeviceIndependentPixels(_ value: Double) -> Double { LayoutHelper.toDeviceIndependentPixels(value) }

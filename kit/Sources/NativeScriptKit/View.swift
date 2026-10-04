@@ -135,8 +135,19 @@ open class View: Observable {
     }
 
     open func createNativeView() -> UIView? { nil }
-    open func initNativeView() {}
-    open func disposeNativeView() {}
+    /// Runs what plugins hooked into every view's native setup, where a subclass's `super` call reaches it.
+    open func initNativeView() { runLifecycleHooks(dispose: false) }
+    open func disposeNativeView() { runLifecycleHooks(dispose: true) }
+
+    private var lifecycleHooksRan = false
+
+    private func runLifecycleHooks(dispose: Bool) {
+        lifecycleHooksRan = true
+        for hook in View.lifecycleHooks { (dispose ? hook.disposeNativeView : hook.initNativeView)?(self) }
+    }
+
+    /// Native setters plugins add for properties they register on a core class (a mixin's `[prop.setNative]`).
+    public static var nativeSetterHooks: [String: (View, Any?) -> Void] = [:]
 
     /// `_setupUI`: a view is set up once it joins a set-up parent, or when it loads as a root.
     public private(set) var isSetUp: Bool = false
@@ -146,8 +157,9 @@ open class View: Observable {
     func setupUI() {
         guard !isSetUp else { return }
         isSetUp = true
+        lifecycleHooksRan = false
         initNativeView()
-        View.lifecycleHooks.forEach { $0.initNativeView?(self) }
+        if !lifecycleHooksRan { runLifecycleHooks(dispose: false) }
         eachChildView { $0.setupUI() }
     }
 
@@ -155,8 +167,9 @@ open class View: Observable {
     func tearDownUI() {
         guard isSetUp, !reusable else { return }
         eachChildView { $0.tearDownUI() }
+        lifecycleHooksRan = false
         disposeNativeView()
-        View.lifecycleHooks.forEach { $0.disposeNativeView?(self) }
+        if !lifecycleHooksRan { runLifecycleHooks(dispose: true) }
         isSetUp = false
     }
 
@@ -249,7 +262,33 @@ open class View: Observable {
 
     /// `view[name]` from dynamic code: a property by its name, as core's accessors are.
     open override subscript(jsKey key: String) -> Any? {
-        get { get(key) }
+        get {
+            switch key {
+            case "ios", "nativeView", "nativeViewProtected": return nativeView
+            case "parent": return parent
+            case "page": return page
+            case "isLoaded": return isLoaded
+            case "style": return style
+            case "once", "on", "off":
+                return { [weak self] (args: [Any?]) throws -> Any? in
+                    guard let self, let names = jsArg(args, 0) as? String else { return nil }
+                    let fn = jsArg(args, 1)
+                    let callback: (EventData) throws -> Void = { event in _ = try jsCall(fn, event) }
+                    switch key {
+                    case "once": self.once(names, callback, jsArg(args, 2))
+                    case "on": self.on(names, callback, jsArg(args, 2))
+                    default: self.off(names, nil, jsArg(args, 2))
+                    }
+                    return nil
+                } as JSFunction
+            case "notify": return { [weak self] (args: [Any?]) throws -> Any? in self?.notify(jsArg(args, 0)); return nil } as JSFunction
+            case "requestLayout": return { [weak self] (_: [Any?]) throws -> Any? in self?.requestLayout(); return nil } as JSFunction
+            case "getSafeAreaInsets": return { [weak self] (_: [Any?]) throws -> Any? in self?.getSafeAreaInsets() } as JSFunction
+            case "getMeasuredWidth": return { [weak self] (_: [Any?]) throws -> Any? in self?.getMeasuredWidth() } as JSFunction
+            case "getMeasuredHeight": return { [weak self] (_: [Any?]) throws -> Any? in self?.getMeasuredHeight() } as JSFunction
+            default: return get(key)
+            }
+        }
         set { set(key, newValue) }
     }
 
@@ -504,7 +543,7 @@ open class View: Observable {
         // Read by TouchManager when the view loads.
         case "touchAnimation", "ignoreTouchAnimation", "touchDelay": break
         default:
-            break
+            View.nativeSetterHooks[name]?(self, value)
         }
     }
 
@@ -513,9 +552,9 @@ open class View: Observable {
     /// Border widths changed: text views move them into native insets.
     open func borderWidthChanged() {}
 
-    var iosOverflowSafeArea: Bool { toBool(applied["iosOverflowSafeArea"]) ?? type(of: self).overflowsSafeArea }
-    var iosOverflowSafeAreaEnabled: Bool { toBool(applied["iosOverflowSafeAreaEnabled"]) ?? true }
-    var iosIgnoreSafeArea: Bool { toBool(applied["iosIgnoreSafeArea"]) ?? false }
+    public var iosOverflowSafeArea: Bool { toBool(applied["iosOverflowSafeArea"]) ?? type(of: self).overflowsSafeArea }
+    public var iosOverflowSafeAreaEnabled: Bool { toBool(applied["iosOverflowSafeAreaEnabled"]) ?? true }
+    public var iosIgnoreSafeArea: Bool { toBool(applied["iosIgnoreSafeArea"]) ?? false }
 
     // MARK: Events
 

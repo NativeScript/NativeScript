@@ -1,9 +1,10 @@
 import ts from 'typescript';
-import { dirname, join, relative } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical, MODELS } from './elements.ts';
 import { rowTemplates } from './listview.ts';
+import { foldPlatform, type Platform } from './platform.ts';
 
 /** An app function that mounts a component as a page's Octane root: where it takes the component, its props and the title. */
 interface PageFunction { component: number; props: number; title: number; push: boolean }
@@ -14,17 +15,32 @@ const eventName = (prop: string) => EVENT_ALIASES[prop] ?? prop[2].toLowerCase()
 
 /** Views whose JSX text children are their `text`, as the driver folds `#text` nodes. */
 const TEXT_HOSTS = new Set(['Label', 'Button', 'TextField']);
-const HOOKS = new Set(['useState', 'useMemo', 'useCallback', 'useSyncExternalStore']);
+const HOOKS = new Set(['useState', 'useMemo', 'useCallback', 'useSyncExternalStore', 'useRef']);
+const EFFECTS = new Set(['useEffect', 'useLayoutEffect']);
 /** The page title, a prop every page component takes; `$` keeps it clear of the app's own props. */
 const TITLE = '$title';
 
 export interface OctaneApp {
   components: ComponentIR[];
-  /** Virtual replacements for app modules (an external store). */
+  /** Virtual replacements for app modules (an external store, a component file's other declarations). */
   overrides: Map<string, string>;
   /** The app's page and navigation helpers: core and renderer calls, read here rather than translated. */
   glue: Set<string>;
   root: string;
+  /**
+   * The app mounts its roots itself (`renderNativeScriptApp(page, App)` in its
+   * entry): the entry and each component file's other declarations are modules.
+   */
+  mounted?: boolean;
+}
+
+interface ComponentOptions {
+  /** Tags the app registers (`registerElement('drawer', Drawer)`) → the class. */
+  elements?: Map<string, string>;
+  /** The app's own hooks (`function useDarkMode()`), read like a derived value: they read stores only. */
+  hooks?: Set<string>;
+  /** How many parameters the app's top-level functions take, for a handler given as a function value. */
+  arity?: Map<string, number>;
 }
 
 /**
@@ -33,9 +49,14 @@ export interface OctaneApp {
  * `renderNativeScriptApp` on a core `Frame`, and stores read through
  * `useSyncExternalStore`.
  */
-export function octaneApp(entry: string, files: Map<string, string>): OctaneApp {
+export function octaneApp(entry: string, files: Map<string, string>, platform: Platform = 'ios'): OctaneApp {
   const parse = (f: string, text = files.get(f)!) => ts.createSourceFile(f, text, ts.ScriptTarget.Latest, true, f.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   const { fns: pageFns, glue } = pageFunctions(files, parse);
+  if (!pageFns.size && /\brenderNativeScriptApp\b/.test(files.get(entry) ?? '')) {
+    // Component files are read as the target's build sees them, the other platform's branches gone.
+    const folded = new Map([...files].map(([f, text]) => [f, f.endsWith('.tsx') ? foldPlatform(text, f, platform) : text]));
+    return mountedApp(entry, folded);
+  }
   const callTo = (n: ts.Node, push: boolean) => ts.isCallExpression(n) && ts.isIdentifier(n.expression) && pageFns.get(n.expression.text)?.push === push ? pageFns.get(n.expression.text)! : null;
 
   // The first page: `frame.navigate({ create: () => createPage(Home, {}, 'Recipes') })` in the entry.
@@ -157,43 +178,61 @@ function pageFunctions(files: Map<string, string>, parse: (f: string) => ts.Sour
  * making `useState` a signal, `useMemo` and every other body const a derived
  * value, and `useSyncExternalStore` a getter over the store's signals.
  */
-function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean, components: Map<string, string>): ComponentIR {
+function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean, components: Map<string, string>, options: ComponentOptions = {}): ComponentIR {
   const name = fn.name!.text;
   const sf = fn.getSourceFile();
   const file = `${dirname(path)}/${name}.octane.ts`;
   const scope: Scope = { names: new Map() };
   const fields: string[] = [];
   const props: string[] = [];
-  const arity = new Map<string, number>();
+  const arity = new Map<string, number>(options.arity ?? []);
 
-  // Props: `{ recipe, onTap }: { recipe: Recipe; onTap: () => void }`, or `props: { ... }` read as `props.recipe`.
+  // Props: `{ recipe, onTap }: { recipe: Recipe; onTap: () => void }`, or `props: { ... }` read as `props.recipe`;
+  // the type may be an interface or an intersection of them, a prop may have a default, the rest may be gathered.
   const param = fn.parameters[0];
   let propsName = '';
+  const optional: string[] = [];
+  let rest: { name: string; keys: string[] } | null = null;
   if (param) {
-    if (!param.type || !ts.isTypeLiteralNode(param.type)) throw at(param, 'props not typed as an inline object type');
+    if (!param.type) throw at(param, 'untyped props');
+    const members = propMembers(param.type, sf);
     if (ts.isIdentifier(param.name)) propsName = param.name.text;
-    else if (ts.isObjectBindingPattern(param.name) && param.name.elements.some((e) => e.propertyName || e.initializer || e.dotDotDotToken)) throw at(param, 'renamed, defaulted or rest props');
-    for (const m of param.type.members) {
-      if (!ts.isPropertySignature(m) || !m.type) continue;
-      const p = (m.name as ts.Identifier).text;
-      props.push(p);
-      fields.push(`  ${p}!: ${m.type.getText()};`);
-      if (!propsName) scope.names.set(p, `this.${p}`);
-      if (ts.isFunctionTypeNode(m.type)) arity.set(p, m.type.parameters.length);
+    const bound = new Map<string, ts.BindingElement>();
+    if (ts.isObjectBindingPattern(param.name)) {
+      for (const e of param.name.elements) {
+        if (e.dotDotDotToken) continue;
+        if (e.propertyName) throw at(e, 'a renamed prop');
+        bound.set((e.name as ts.Identifier).text, e);
+      }
+      const gathered = param.name.elements.find((e) => e.dotDotDotToken);
+      if (gathered) rest = { name: (gathered.name as ts.Identifier).text, keys: members.map((m) => m.name).filter((n) => !bound.has(n) && n !== 'key') };
     }
+    for (const m of members) {
+      if (m.name === 'key') continue;
+      props.push(m.name);
+      if (m.optional) optional.push(m.name);
+      fields.push(`  ${m.name}${m.optional ? '?' : '!'}: ${m.type};`);
+      const def = bound.get(m.name)?.initializer;
+      if (!propsName) scope.names.set(m.name, def ? `(this.${m.name} ?? ${def.getText()})` : `this.${m.name}`);
+      if (m.arity !== undefined) arity.set(m.name, m.arity);
+    }
+    if (rest) fields.push('  $passed!: Set<string>;');
   }
   if (page) {
     props.push(TITLE);
     fields.push(`  ${TITLE}!: string;`);
   }
-  const full = (s: Scope): Scope => ({ names: s.names, members: propsName ? { object: propsName, replacement: 'this' } : undefined });
+  const restName = rest?.name;
+  const full = (s: Scope): Scope => ({ names: s.names, members: propsName ? { object: propsName, replacement: 'this' } : restName ? { object: restName, replacement: 'this' } : undefined });
 
   const body = fn.body!.statements;
   const ret = body.find(ts.isReturnStatement);
   if (!ret?.expression) throw fail(fn, `${name} returns no JSX`);
   const hook = (e: ts.Expression) => (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && /^use[A-Z]/.test(e.expression.text) ? e.expression.text : null);
+  const effectCall = (st: ts.Statement) => (ts.isExpressionStatement(st) && ts.isCallExpression(st.expression) && ts.isIdentifier(st.expression.expression) && EFFECTS.has(st.expression.expression.text) ? st.expression : null);
   for (const st of body) {
     if (st === ret) continue;
+    if (effectCall(st)) continue;
     if (ts.isFunctionDeclaration(st) && st.name) {
       arity.set(st.name.text, st.parameters.length);
       scope.names.set(st.name.text, `this.${st.name.text}`);
@@ -203,7 +242,12 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
     for (const d of st.declarationList.declarations) {
       const init = d.initializer!;
       const h = hook(init);
-      if (h && !HOOKS.has(h)) throw at(init, h);
+      if (h && !HOOKS.has(h) && !options.hooks?.has(h)) throw at(init, h);
+      if (ts.isObjectBindingPattern(d.name) && !h) {
+        // `const { top, bottom } = safeAreaInsets()`: each a derived value read from the object.
+        for (const e of d.name.elements) scope.names.set((e.name as ts.Identifier).text, `this.${(e.name as ts.Identifier).text}`);
+        continue;
+      }
       if (ts.isArrayBindingPattern(d.name)) {
         if (h !== 'useState') throw at(d, 'array destructuring');
         const [value, setter] = d.name.elements.map((e) => (ts.isBindingElement(e) ? e.name.getText() : ''));
@@ -226,13 +270,43 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
   };
   const getter = (id: string, f: ts.ArrowFunction | ts.FunctionExpression) =>
     `  get ${id}() ${ts.isBlock(f.body) ? rewrite(f.body.getText(), full(scope), 'statements') : `{ return ${rewrite(f.body.getText(), full(scope))}; }`}`;
+  const effects: NonNullable<ComponentIR['effects']> = [];
+  let effectCount = 0;
   for (const st of body) {
     if (st === ret) continue;
+    const effect = effectCall(st);
+    if (effect) {
+      // `useEffect(fn, deps)`: fn's body as a method returning its cleanup, deps as a method returning the list.
+      const [fx, deps] = effect.arguments;
+      if (!fx || !(ts.isArrowFunction(fx) || ts.isFunctionExpression(fx))) throw at(effect, `${effect.expression.getText()} without a function literal`);
+      const run = `$effect${effectCount}`;
+      const depsName = deps ? `$deps${effectCount}` : null;
+      effectCount++;
+      fields.push(method(run, fx));
+      if (deps) fields.push(`  ${depsName}(): any[] { return ${rewrite(deps.getText(), full(scope))}; }`);
+      effects.push({ run, deps: depsName, layout: (effect.expression as ts.Identifier).text === 'useLayoutEffect' });
+      continue;
+    }
     if (ts.isFunctionDeclaration(st)) { fields.push(method(st.name!.text, st)); continue; }
     for (const d of (st as ts.VariableStatement).declarationList.declarations) {
       const init = d.initializer!;
       const h = hook(init);
       const args = h ? (init as ts.CallExpression).arguments : ts.factory.createNodeArray<ts.Expression>();
+      if (ts.isObjectBindingPattern(d.name) && !h) {
+        const tmp = `$object${effectCount++}`;
+        fields.push(`  get ${tmp}() { return ${rewrite(init.getText(), full(scope))}; }`);
+        for (const e of d.name.elements) fields.push(`  get ${(e.name as ts.Identifier).text}() { return this.${tmp}.${((e.propertyName ?? e.name) as ts.Identifier).text}; }`);
+        continue;
+      }
+      if (h === 'useRef') {
+        // A ref is an object that lives as long as the component: a field.
+        const id = (d.name as ts.Identifier).text;
+        const call = init as ts.CallExpression;
+        const typeArg = call.typeArguments?.[0]?.getText();
+        const value = args[0] ? rewrite(args[0].getText(), full(scope)) : 'undefined';
+        fields.push(typeArg ? `  ${id}: { current: ${typeArg} } = { current: ${value} };` : `  ${id} = { current: ${value} };`);
+        continue;
+      }
       if (h === 'useState') {
         const value = ((d.name as ts.ArrayBindingPattern).elements[0] as ts.BindingElement).name.getText();
         const call = init as ts.CallExpression;
@@ -241,6 +315,15 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
         continue;
       }
       const id = (d.name as ts.Identifier).text;
+      if (h === 'useSyncExternalStore' && options.elements) {
+        // Read through the store's subscription, which re-renders what read it when it notifies.
+        fields.push(`  get ${id}() { return useSyncExternalStore(${args.map((a) => rewrite(a.getText(), full(scope))).join(', ')}); }`);
+        continue;
+      }
+      if (h && options.hooks?.has(h)) {
+        fields.push(`  get ${id}() { return ${rewrite(init.getText(), full(scope))}; }`);
+        continue;
+      }
       if (h === 'useSyncExternalStore') {
         // The store's state is signals: reading the snapshot is the subscription.
         const snapshot = args[1];
@@ -259,7 +342,9 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
   // The template.
   const methods: string[] = [];
   let next = 0;
-  type Loop = { item: string; index: string; param: string };
+  /** A loop's item and index, and the consts its row declares before returning its views (`const key = …`). */
+  type Loop = { item: string; index: string; param: string; prelude?: string };
+  const prelude = (loops: Loop[]) => loops.map((l) => l.prelude ?? '').join('');
   const params = (loops: Loop[]) => loops.map((l) => l.param).join(', ');
   const loopArgs = (loops: Loop[]) => loops.flatMap((l) => [l.item, l.index]).join(', ');
   const local = (loops: Loop[], extra: Record<string, string> = {}): Scope => {
@@ -268,13 +353,17 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
     for (const [k, v] of Object.entries(extra)) names.set(k, v);
     return full({ names });
   };
-  const expr = (code: string, loops: Loop[]) => {
+  /** Components whose prop types a binding names (`Streamdown['config']`). */
+  const propTypes = new Set<string>();
+  const expr = (code: string, loops: Loop[], returns?: string) => {
     const m = `$b${next++}`;
-    methods.push(`  ${m}(${params(loops)}) { return ${rewrite(code, local(loops))}; }`);
+    const pre = prelude(loops);
+    const r = returns ? `: ${returns}` : '';
+    methods.push(pre ? `  ${m}(${params(loops)})${r} ${rewrite(`{ ${pre} return (${code}); }`, local(loops), 'statements')}` : `  ${m}(${params(loops)})${r} { return ${rewrite(code, local(loops))}; }`);
     return m;
   };
   /** A handler; on a two-way element's change event, `e.object.<its property>` is the event's value. */
-  const handler = (e: ts.Expression, loops: Loop[], model?: { prop: string; type: string }) => {
+  const handler = (e: ts.Expression, loops: Loop[], model?: { prop: string; type: string }, guard?: string) => {
     const m = `$e${next++}`;
     let code: string;
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
@@ -287,6 +376,9 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       const t = e.getText();
       code = `${rewrite(t, local(loops)).slice(1, -1)}(${arity.get(t) === 0 ? '' : '$event'});`;
     }
+    const pre = prelude(loops);
+    if (guard) code = `if (${rewrite(guard, local(loops))}) { ${code} }`;
+    if (pre) code = rewrite(`{ ${pre} ${code} }`, local(loops), 'statements').slice(1, -1);
     methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${code} }`);
     return m;
   };
@@ -295,21 +387,48 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
     const open = ts.isJsxElement(n) ? n.openingElement : n;
     const tag = open.tagName.getText();
     const isComponent = /^[A-Z]/.test(tag);
-    const el = isComponent ? null : canonical(tag);
+    const el = isComponent ? null : canonical(tag) ?? options.elements?.get(tag) ?? null;
     if (isComponent && !components.has(tag)) throw fail(open, `<${tag}> is not a component of the app`);
     if (!isComponent && !el) throw fail(open, `<${tag}> is not a @nativescript/core element the release build knows`);
     const model = el ? MODELS[el] : undefined;
     const attrs: Attr[] = [];
     const events: Event[] = [];
     let renderItem: ts.Expression | null = null;
+    let ref: string | undefined;
     for (const a of open.attributes.properties) {
-      if (!ts.isJsxAttribute(a)) throw at(a, 'a spread attribute');
+      if (ts.isJsxSpreadAttribute(a)) {
+        // `{...rest}`: each prop the component gathered, set only when its parent gave it.
+        if (!rest || a.expression.getText() !== rest.name || isComponent) throw at(a, 'a spread attribute');
+        for (const key of rest.keys) {
+          if (/^on[A-Z]/.test(key)) {
+            const m = `$e${next++}`;
+            methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { this.${key}?.($event); }`);
+            events.push({ name: eventName(key), method: m, ifPassed: key });
+          } else attrs.push({ name: key === 'className' ? 'class' : key, method: expr(`this.${key}`, loops), ifPassed: key });
+        }
+        continue;
+      }
       const attr = a.name.getText();
       if (attr === 'key') continue;
-      if (attr === 'ref') throw at(a, 'ref');
+      if (attr === 'ref') {
+        const init = a.initializer;
+        if (!init || !ts.isJsxExpression(init) || !init.expression) throw at(a, 'a ref without an object');
+        ref = expr(init.expression.getText(), loops);
+        continue;
+      }
       const init = a.initializer;
       if (el === 'ListView' && attr === 'renderItem' && init && ts.isJsxExpression(init) && init.expression) { renderItem = init.expression; continue; }
       if (el === 'ListView' && (attr === 'itemTemplateSelector' || attr === 'itemTemplates' || attr === 'itemTemplate')) throw at(a, `${attr} on a listview`);
+      if (!isComponent && /^on[A-Z]/.test(attr) && init && ts.isJsxExpression(init) && init.expression && ts.isConditionalExpression(skipParens(init.expression))) {
+        const c = skipParens(init.expression) as ts.ConditionalExpression;
+        const none = (x: ts.Expression) => x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined');
+        if (none(c.whenFalse) || none(c.whenTrue)) {
+          const fn = none(c.whenFalse) ? c.whenTrue : c.whenFalse;
+          const when = expr(none(c.whenFalse) ? c.condition.getText() : `!(${c.condition.getText()})`, loops);
+          events.push({ name: eventName(attr), method: handler(fn, loops, undefined, none(c.whenFalse) ? c.condition.getText() : `!(${c.condition.getText()})`), when });
+          continue;
+        }
+      }
       if (!isComponent && /^on[A-Z]/.test(attr) && init && ts.isJsxExpression(init) && init.expression) {
         const ev = eventName(attr);
         events.push({ name: ev, method: handler(init.expression, loops, model?.event === ev ? model : undefined) });
@@ -318,7 +437,11 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       const name = attr === 'className' ? 'class' : attr;
       if (!init) attrs.push({ name, value: 'true' });
       else if (ts.isStringLiteral(init)) attrs.push({ name, value: init.text });
-      else if (ts.isJsxExpression(init) && init.expression) attrs.push({ name, method: expr(init.expression.getText(), loops) });
+      else if (ts.isJsxExpression(init) && init.expression) {
+        // A value given to a component's prop has the prop's type (an object literal is not a shape of its own, a function takes the prop's parameters).
+        if (isComponent) propTypes.add(tag);
+        attrs.push({ name, method: expr(init.expression.getText(), loops, isComponent ? `${tag}['${attr}']` : undefined) });
+      }
     }
     const kids = ts.isJsxElement(n) ? n.children : ts.factory.createNodeArray<ts.JsxChild>();
     if (isComponent) {
@@ -330,12 +453,14 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       if (!renderItem) throw fail(open, 'a listview needs renderItem in a release build');
       return { kind: 'element', tag: el, attrs, events, children: rows(renderItem, attrs, loops) };
     }
-    if (TEXT_HOSTS.has(el!)) {
+    // A text view whose child is a formatted string (or a component rendering one) hosts it as `formattedText`.
+    const hostsElement = kids.some((k) => ts.isJsxElement(k) || ts.isJsxSelfClosingElement(k));
+    if (TEXT_HOSTS.has(el!) && !hostsElement) {
       const text = textOf(kids, loops);
       if (text) attrs.push(text);
-      return { kind: 'element', tag: el!, attrs, events, children: [] };
+      return { kind: 'element', tag: el!, attrs, events, children: [], ref };
     }
-    return { kind: 'element', tag: el!, attrs, events, children: children(kids, loops) };
+    return { kind: 'element', tag: el!, attrs, events, children: children(kids, loops), ref };
   };
 
   /**
@@ -397,6 +522,16 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       const index = cb.parameters[1] ? cb.parameters[1].name.getText() : `$i${loops.length}`;
       const items = expr(e.expression.expression.getText(), loops);
       const inner = [...loops, { item, index, param: `${item} = this.${items}(${loopArgs(loops)})[0], ${index} = 0` }];
+      if (ts.isBlock(cb.body)) {
+        const stmts = [...cb.body.statements];
+        const leading = stmts.filter((x, k) => ts.isVariableStatement(x) && stmts.slice(0, k).every(ts.isVariableStatement));
+        const withConsts: Loop[] = [...loops, { ...inner[inner.length - 1], prelude: leading.map((x) => x.getText()).join(' ') }];
+        let keyNode: ts.JsxAttribute | undefined;
+        walk(cb.body, (n) => { if (!keyNode && ts.isJsxAttribute(n) && n.name.getText() === 'key') keyNode = n; });
+        const k = keyNode?.initializer;
+        const key = k && ts.isJsxExpression(k) && k.expression ? expr(k.expression.getText(), withConsts) : k && ts.isStringLiteral(k) ? expr(k.getText(), withConsts) : null;
+        return [{ kind: 'for', items, key, item, index, body: block(stmts.slice(leading.length), withConsts) }];
+      }
       let row = cb.body as ts.Expression;
       while (ts.isParenthesizedExpression(row)) row = row.expression;
       const open = ts.isJsxElement(row) ? row.openingElement : ts.isJsxSelfClosingElement(row) ? row : null;
@@ -406,6 +541,40 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       return [{ kind: 'for', items, key, item, index, body: jsx(row, inner) }];
     }
     throw at(e, `{${e.getText().slice(0, 50)}} in JSX`);
+  };
+  /** A row's statements after its consts: what it returns, through `if` and `switch`. */
+  const block = (stmts: ts.Statement[], loops: Loop[]): TNode[] => {
+    const withPrelude = (text: string): Loop[] => {
+      const last = loops[loops.length - 1];
+      return [...loops.slice(0, -1), { ...last, prelude: `${last.prelude ?? ''} ${text}` }];
+    };
+    for (let k = 0; k < stmts.length; k++) {
+      const st = stmts[k];
+      if (ts.isVariableStatement(st)) return block(stmts.slice(k + 1), withPrelude(st.getText()));
+      if (ts.isBlock(st)) return block([...st.statements, ...stmts.slice(k + 1)], loops);
+      if (ts.isReturnStatement(st)) return st.expression ? jsx(st.expression, loops) : [];
+      if (ts.isIfStatement(st)) {
+        const then = block(ts.isBlock(st.thenStatement) ? [...st.thenStatement.statements] : [st.thenStatement], loops);
+        const otherwise = st.elseStatement ? block(ts.isBlock(st.elseStatement) ? [...st.elseStatement.statements] : [st.elseStatement], loops) : block(stmts.slice(k + 1), loops);
+        return [{ kind: 'if', branches: [{ cond: expr(st.expression.getText(), loops), body: then }, { cond: null, body: otherwise }] }];
+      }
+      if (ts.isSwitchStatement(st)) {
+        const subject = st.expression.getText();
+        const branches: { cond: string | null; body: TNode[] }[] = [];
+        let labels: string[] = [];
+        for (const c of st.caseBlock.clauses) {
+          if (ts.isCaseClause(c)) labels.push(c.expression.getText());
+          if (!c.statements.length) continue;
+          const body = block([...c.statements], loops);
+          branches.push({ cond: ts.isDefaultClause(c) ? null : expr(labels.map((l) => `(${subject}) === ${l}`).join(' || '), loops), body });
+          labels = [];
+        }
+        if (!branches.some((b) => b.cond === null)) branches.push({ cond: null, body: block(stmts.slice(k + 1), loops) });
+        return [{ kind: 'if', branches }];
+      }
+      throw at(st, 'a statement in a row');
+    }
+    return [];
   };
   const children = (list: ts.NodeArray<ts.JsxChild>, loops: Loop[]): TNode[] =>
     list.flatMap((c) => {
@@ -425,6 +594,7 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
   const members = [...fields, ...methods].join('\n');
   const used = (id: string) => new RegExp(`(^|[^\\w$])${id.replace(/\$/g, '\\$')}(?![\\w$])`).test(members);
   const imports: string[] = [];
+  if (options.elements && used('useSyncExternalStore')) imports.push(`import { useSyncExternalStore } from 'octane';`);
   for (const i of sf.statements.filter(ts.isImportDeclaration)) {
     const from = (i.moduleSpecifier as ts.StringLiteral).text;
     if (from === 'octane' || from.startsWith('octane/') || from.startsWith('@nativescript-community/octane')) continue;
@@ -437,8 +607,105 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
     if (kept.length) imports.push(`import ${clause.isTypeOnly ? 'type ' : ''}{ ${kept.map((e) => e.getText()).join(', ')} } from '${from}';`);
     if (clause.name && !components.has(clause.name.text) && used(clause.name.text)) imports.push(`import ${clause.name.text} from '${from}';`);
   }
+  // The file's own declarations other than components, from the file as a module.
+  const fileLocals = sf.statements.flatMap((st) => {
+    if ((ts.isFunctionDeclaration(st) || ts.isClassDeclaration(st) || ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st) || ts.isEnumDeclaration(st)) && st.name && !components.has(st.name.text)) return [st.name.text];
+    if (ts.isVariableStatement(st)) return st.declarationList.declarations.flatMap((d) => (ts.isIdentifier(d.name) ? [d.name.text] : []));
+    return [];
+  }).filter(used);
+  for (const tag of propTypes) if (!imports.some((i) => i.startsWith(`import ${tag} from`))) imports.push(`import type ${tag} from '${moduleFrom(file, components.get(tag)!, tag)}';`);
+  if (fileLocals.length && options.elements) imports.push(`import { ${fileLocals.join(', ')} } from './${basename(path).replace(/\.tsx?$/, '')}';`);
   const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
-  return { name, file, source, props, template, page };
+  return { name, file, source, props, template, page, optional, passed: !!rest, effects };
+}
+
+/** A component's props: the members of its parameter's type, an inline type, an interface or type of its file, or an intersection of them. */
+function propMembers(type: ts.TypeNode, sf: ts.SourceFile): { name: string; type: string; optional: boolean; arity?: number }[] {
+  if (ts.isParenthesizedTypeNode(type)) return propMembers(type.type, sf);
+  if (ts.isIntersectionTypeNode(type)) return type.types.flatMap((t) => propMembers(t, sf));
+  const fromMembers = (members: ts.NodeArray<ts.TypeElement>) => members.filter((m): m is ts.PropertySignature => ts.isPropertySignature(m) && !!m.type).map((m) => ({
+    name: m.name.getText(), type: m.type!.getText(), optional: !!m.questionToken, arity: ts.isFunctionTypeNode(m.type!) ? m.type!.parameters.length : undefined,
+  }));
+  if (ts.isTypeLiteralNode(type)) return fromMembers(type.members);
+  if (ts.isTypeReferenceNode(type) && ts.isIdentifier(type.typeName)) {
+    const name = type.typeName.text;
+    for (const st of sf.statements) {
+      if (ts.isInterfaceDeclaration(st) && st.name.text === name) return fromMembers(st.members);
+      if (ts.isTypeAliasDeclaration(st) && st.name.text === name) return propMembers(st.type, sf);
+    }
+  }
+  throw at(type, 'props typed other than by an object type of the component\'s file');
+}
+
+/**
+ * An app that mounts Octane roots itself: function components over core's
+ * lowercase tags and the tags it registers, its entry and the rest of each
+ * component file translated as modules.
+ */
+function mountedApp(entry: string, files: Map<string, string>): OctaneApp {
+  const parse = (f: string, text = files.get(f)!) => ts.createSourceFile(f, text, ts.ScriptTarget.Latest, true, f.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const elements = new Map<string, string>();
+  for (const [f] of files) {
+    walk(parse(f), (n) => {
+      if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'registerElement' && n.arguments.length === 2 && ts.isStringLiteralLike(n.arguments[0]) && ts.isIdentifier(n.arguments[1])) {
+        elements.set(n.arguments[0].text.toLowerCase(), n.arguments[1].text);
+      }
+    });
+  }
+  const returnsJsx = (fn: ts.FunctionDeclaration) => {
+    let found = false;
+    walk(fn.body!, (n) => { if (ts.isReturnStatement(n) && n.expression && /^\(?\s*</.test(n.expression.getText())) found = true; });
+    return found;
+  };
+  const fns: { file: string; fn: ts.FunctionDeclaration }[] = [];
+  for (const [f] of files) {
+    if (!f.endsWith('.tsx')) continue;
+    for (const st of parse(f).statements) if (ts.isFunctionDeclaration(st) && st.name && st.body && /^[A-Z]/.test(st.name.text) && returnsJsx(st)) fns.push({ file: f, fn: st });
+  }
+  const names = new Map(fns.map(({ file, fn }) => [fn.name!.text, file]));
+  // The app's own hooks: functions named `use…` reading stores (useSyncExternalStore) and nothing stateful.
+  const hooks = new Set<string>();
+  for (const [f] of files) {
+    for (const st of parse(f).statements) {
+      if (!ts.isFunctionDeclaration(st) || !st.name || !/^use[A-Z]/.test(st.name.text) || !st.body) continue;
+      let pure = true;
+      walk(st.body, (n) => { if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && /^use[A-Z]/.test(n.expression.text) && n.expression.text !== 'useSyncExternalStore') pure = false; });
+      if (!pure) throw fail(st, `${st.name.text} uses state of its own`);
+      hooks.add(st.name.text);
+    }
+  }
+  const arity = new Map<string, number>();
+  for (const [f] of files) {
+    for (const st of parse(f).statements) {
+      if (ts.isFunctionDeclaration(st) && st.name) arity.set(st.name.text, st.parameters.length);
+      if (ts.isVariableStatement(st)) for (const d of st.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.initializer && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer))) arity.set(d.name.text, d.initializer.parameters.length);
+      }
+    }
+  }
+  const components = fns.map(({ file, fn }) => octaneComponent(file, fn, false, names, { elements, hooks, arity }));
+  // Each component file as a module: its components declared (the release build renders them), every declaration exported for the components' classes.
+  const overrides = new Map<string, string>();
+  for (const [f, text] of files) {
+    if (!f.endsWith('.tsx')) continue;
+    const sf = parse(f);
+    const edits: { start: number; end: number; text: string }[] = [];
+    for (const st of sf.statements) {
+      if (ts.isFunctionDeclaration(st) && st.name && names.get(st.name.text) === f) {
+        const p = st.parameters[0];
+        edits.push({ start: st.getStart(), end: st.getEnd(), text: `export declare function ${st.name.text}(${p?.type ? `props: ${p.type.getText()}` : ''}): any;` });
+        continue;
+      }
+      const exported = ts.canHaveModifiers(st) && ts.getModifiers(st)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+      if (!exported && (ts.isFunctionDeclaration(st) || ts.isVariableStatement(st) || ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st) || ts.isClassDeclaration(st) || ts.isEnumDeclaration(st))) {
+        edits.push({ start: st.getStart(), end: st.getStart(), text: 'export ' });
+      }
+    }
+    let out = text;
+    for (const e of edits.sort((a, b) => b.start - a.start)) out = out.slice(0, e.start) + e.text + out.slice(e.end);
+    overrides.set(f, out);
+  }
+  return { components, overrides, glue: new Set(), root: '', mounted: true };
 }
 
 /**
@@ -556,4 +823,9 @@ function fail(n: ts.Node, message: string): Error {
   const sf = n.getSourceFile();
   const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
   return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${message}`);
+}
+
+function skipParens(e: ts.Expression): ts.Expression {
+  while (ts.isParenthesizedExpression(e)) e = e.expression;
+  return e;
 }

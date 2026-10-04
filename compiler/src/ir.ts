@@ -6,19 +6,30 @@
 // TypeScript checker types the class, so the back end translates typed code
 // no matter which framework the source was written in.
 
-export type Attr =
+export type Attr = (
   | { name: string; value: string }
   /** A binding: the method that computes the value, called with the loop variables in scope. */
-  | { name: string; method: string };
+  | { name: string; method: string }
+) & {
+  /** A prop of the component's own that a spread passes on only when the parent gave it (`{...rest}`). */
+  ifPassed?: string;
+};
 
 export interface Event {
   name: string;
   /** Called with the loop variables in scope, then the event. */
   method: string;
+  ifPassed?: string;
+  /** A method deciding, when the view is made, whether to listen at all (`onX={cond ? fn : undefined}`). */
+  when?: string;
 }
 
 export type TNode =
-  | { kind: 'element'; tag: string; attrs: Attr[]; events: Event[]; children: TNode[] }
+  | {
+      kind: 'element'; tag: string; attrs: Attr[]; events: Event[]; children: TNode[];
+      /** A method returning the ref object (`useRef`) the view is stored in, as `ref={…}` does. */
+      ref?: string;
+    }
   | { kind: 'component'; name: string; props: Attr[]; events: Event[] }
   | { kind: 'if'; branches: { cond: string | null; body: TNode[] }[] }
   /** `items` and `key` are methods; `vars` are the item and index names the body sees. */
@@ -41,6 +52,12 @@ export interface ComponentIR {
   /** A routed component whose template is a page's content (Angular's ActionBar plus a view). */
   page?: boolean;
   template: TNode[];
+  /** Props a parent may leave out. */
+  optional?: string[];
+  /** Whether the component takes the names of the props its parent gave (`$passed`), for a spread of its rest props. */
+  passed?: boolean;
+  /** `useEffect`/`useLayoutEffect`: the method that runs it (returning its cleanup) and the one returning its dependencies. */
+  effects?: { run: string; deps: string | null; layout: boolean }[];
 }
 
 export interface AppIR {

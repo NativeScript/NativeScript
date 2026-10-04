@@ -78,7 +78,11 @@ export class Throws {
       ts.forEachChild(n, visit);
     };
     if (fn.body) visit(fn.body);
-    for (const p of fn.parameters) if (p.initializer) visit(p.initializer);
+    for (const p of fn.parameters) {
+      if (p.initializer) visit(p.initializer);
+      // Destructuring an untyped argument reads its members, which throws on undefined and null.
+      if (ts.isObjectBindingPattern(p.name) && this.untyped(p.name)) found = true;
+    }
     if (ts.isConstructorDeclaration(fn)) {
       for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m)) visit(m.initializer);
     }
@@ -87,6 +91,7 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && this.untyped(n.initializer)) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.

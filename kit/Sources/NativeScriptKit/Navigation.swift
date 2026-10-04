@@ -78,6 +78,14 @@ open class Page: ContentView {
         return controller.view
     }
 
+    open override func setProperty(_ name: String, _ value: Any?) {
+        switch name {
+        // A page shown without a frame has no navigation bar to hide.
+        case "actionBarHidden": break
+        default: super.setProperty(name, value)
+        }
+    }
+
     open override func addChild(_ child: View) {
         if let bar = child as? ActionBar {
             actionBar = bar

@@ -29,6 +29,15 @@ export interface KitType {
 export function kitIndex(kitSources: string): Map<string, KitType> {
   const types = new Map<string, KitType>();
   const files = (readdirSync(kitSources, { recursive: true }) as string[]).filter((f) => f.endsWith('.swift'));
+  // Shorthands (`borderRadius`, `margin`) any view takes, expanded by a top-level function.
+  const shorthands = new Set<string>();
+  for (const f of files) {
+    const text = readFileSync(join(kitSources, f), 'utf8');
+    const at = text.indexOf('\nfunc expandShorthand(');
+    if (at < 0) continue;
+    const body = text.slice(at, text.indexOf('\n}\n', at));
+    for (const m of body.matchAll(/^\s*case\s+((?:"\w+"(?:,\s*)?)+):/gm)) for (const n of m[1].matchAll(/"(\w+)"/g)) shorthands.add(n[1]);
+  }
   for (const f of files) {
     const text = readFileSync(join(kitSources, f), 'utf8').replace(/\/\/.*$/gm, '');
     const stack: { type: KitType | null; depth: number }[] = [];
@@ -57,8 +66,13 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
           const isStatic = /\b(static|class)\s+(func|var|let)\b/.test(line);
           let m: RegExpExecArray | null;
           if ((m = /\b(?:var|let)\s+(\w+)\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim() });
-          else if ((m = /\bfunc\s+`?(\w+)`?\s*(?:<[^>]*>)?\(([^)]*)\)\s*(?:throws\s*)?(?:->\s*([^{]+))?/.exec(line))) add(owner.type, m[1], { kind: 'func', static: isStatic, type: (m[3] ?? 'Void').trim(), params: m[2] });
-          else if ((m = /\binit(\??)\s*\(([^)]*)\)/.exec(line))) add(owner.type, 'init', { kind: 'init', static: true, type: m[1] ? `${owner.type.name}?` : owner.type.name, params: m[2] });
+          // An untyped stored property takes its literal's type.
+          else if ((m = /\b(?:var|let)\s+(\w+)\s*=\s*(true|false|"[^"]*"|-?\d+(\.\d+)?)\s*$/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: /^(true|false)$/.test(m[2]) ? 'Bool' : m[2].startsWith('"') ? 'String' : m[3] ? 'Double' : 'Int' });
+          else if ((m = /\bfunc\s+`?(\w+)`?\s*(?:<[^>]*>)?\(/.exec(line))) {
+            const [params, rest] = parenthesized(line, m.index + m[0].length);
+            const ret = /^\s*(?:throws\s*)?(?:->\s*([^{]+))?/.exec(rest)![1];
+            add(owner.type, m[1], { kind: 'func', static: isStatic, type: (ret ?? 'Void').trim(), params });
+          } else if ((m = /\binit(\??)\s*\(/.exec(line))) add(owner.type, 'init', { kind: 'init', static: true, type: m[1] ? `${owner.type.name}?` : owner.type.name, params: parenthesized(line, m.index + m[0].length)[0] });
         }
       }
       for (const ch of line) {
@@ -70,7 +84,18 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
       }
     }
   }
+  for (const n of shorthands) types.get('View')?.props.add(n);
   return types;
+}
+
+/** The text up to the parenthesis closing the one before `start`, and the text after it. */
+function parenthesized(line: string, start: number): [string, string] {
+  let depth = 1;
+  for (let i = start; i < line.length; i++) {
+    if (line[i] === '(') depth++;
+    else if (line[i] === ')' && --depth === 0) return [line.slice(start, i), line.slice(i + 1)];
+  }
+  return [line.slice(start), ''];
 }
 
 function add(type: KitType, name: string, member: KitMember) {
