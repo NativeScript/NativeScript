@@ -29,24 +29,71 @@ open class View: NSObject {
     public var className: String = "" {
         didSet {
             classes = Set(className.split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init))
-            applyCSS()
+            if isLoaded { onCssStateChange() }
         }
     }
     var classes: Set<String> = []
+    /// Classes the application sets on its root view (`ns-root`, `ns-dark`).
+    var rootClasses: Set<String> = [] {
+        didSet { if isLoaded { onCssStateChange() } }
+    }
+    var cssClasses: Set<String> { rootClasses.isEmpty ? classes : classes.union(rootClasses) }
+    var pseudoClasses: Set<String> = ["normal"]
+    /// The views and keys (attribute names, `:pseudo-class`) this view's match depends on.
+    var cssSubscriptions: [(node: Weak<View>, key: String)] = []
+    /// The views whose match depends on a key of this one, with a count per key.
+    var cssDependents: [String: [Weak<View>]] = [:]
+    var isUpdatingDynamicState = false
 
     // A property's value: the local one (template attribute or binding) wins
     // over CSS, which wins over the parent's for inherited properties.
     private var locals: [String: Any] = [:]
+    /// Values a CSS keyframe animation sets (`style['keyframe:<name>']`); they win over local ones.
+    private var keyframeValues: [String: Any] = [:]
+    private var keyframeAnimations: [KeyframeAnimation] = []
     private var cssValues: [String: Any] = [:]
+    private var cssOrder: [String] = []
+    /// Custom properties (`--name`) the matched rules declare, reset on every match.
+    var scopedCssVariables: [String: String] = [:]
     var applied: [String: Any] = [:]
 
     static let inheritedProperties: Set<String> = [
         "color", "fontFamily", "fontSize", "fontStyle", "fontWeight", "textAlignment", "textTransform",
-        "whiteSpace", "letterSpacing", "lineHeight", "tintColor", "iosOverflowSafeAreaEnabled", "iosIgnoreSafeArea",
+        "whiteSpace", "letterSpacing", "lineHeight", "textShadow", "textStroke", "tintColor", "iosOverflowSafeAreaEnabled", "iosIgnoreSafeArea",
     ]
 
+    /// The names NativeScript registers as style (CSS) properties; every other name is a view property.
+    static let styleProperties: Set<String> = [
+        "accessibilityLanguage", "accessibilityLiveRegion", "accessibilityRole", "accessibilityState", "accessibilityStep", "accessible",
+        "alignContent", "alignItems", "alignSelf", "androidContentInsetLeft", "androidContentInsetRight", "androidDynamicElevationOffset",
+        "androidElevation", "androidSelectedTabHighlightColor", "androidStatusBarBackground", "backgroundColor", "backgroundImage",
+        "backgroundInternal", "backgroundPosition", "backgroundRepeat", "backgroundSize", "borderBottomColor", "borderBottomLeftRadius",
+        "borderBottomRightRadius", "borderBottomWidth", "borderLeftColor", "borderLeftWidth", "borderRightColor", "borderRightWidth",
+        "borderTopColor", "borderTopLeftRadius", "borderTopRightRadius", "borderTopWidth", "boxShadow", "clipPath", "color", "columnGap",
+        "cornerShape", "direction", "flexDirection", "flexGrow", "flexShrink", "flexWrap", "flexWrapBefore", "fontFamily", "fontInternal",
+        "fontScaleInternal", "fontSize", "fontStyle", "fontVariationSettings", "fontWeight", "height", "horizontalAlignment", "iconFontFamily",
+        "iosAccessibilityAdjustsFontSize", "iosAccessibilityMaxFontScale", "iosAccessibilityMinFontScale", "justifyContent", "letterSpacing",
+        "lineHeight", "marginBottom", "marginLeft", "marginRight", "marginTop", "maxHeight", "maxLines", "maxWidth", "minHeight", "minWidth",
+        "opacity", "order", "paddingBottom", "paddingInternal", "paddingLeft", "paddingRight", "paddingTop", "perspective", "placeholderColor",
+        "rotate", "rotateX", "rotateY", "rowGap", "scaleX", "scaleY", "selectedBackgroundColor", "selectedTabTextColor", "selectedTextColor",
+        "separatorColor", "statusBarStyle", "tabBackgroundColor", "tabTextColor", "tabTextFontSize", "textAlignment", "textDecoration",
+        "textOverflow", "textShadow", "textStroke", "textTransform", "tintColor", "translateX", "translateY", "verticalAlignment",
+        "visibility", "whiteSpace", "width", "zIndex",
+        // `textWrap` sets the `whiteSpace` style property.
+        "textWrap",
+    ]
+
+    /// NativeScript stores a view's values until it is loaded, then applies them
+    /// once (`applyAllNativeSetters`): view properties, then style properties,
+    /// each in the order a value was first set. CSS is matched at load.
+    public private(set) var isLoaded = false
+    private var pendingNames: [String] = []
+    private var pendingSet: Set<String> = []
+    /// A CSS re-match is one `_batchUpdate`: its values apply in the order they were set.
+    private var isBatching = false
+
     private var handlers: [String: [(EventData) -> Void]] = [:]
-    private var tapRecognizer: UITapGestureRecognizer?
+    var gestureObservers: [GesturesObserver] = []
 
     // MARK: Layout state (ui/core/view/index.ios)
 
@@ -62,6 +109,10 @@ open class View: NSObject {
     private var oldLeft: Double?, oldTop: Double?, oldRight: Double?, oldBottom: Double?
     private var cachedFrame: CGRect?
     private var isLaidOut = false
+    var isTransformed = false
+    /// An animation's start sets model values while its presentation layer animates.
+    var presentationLayerSuspensions = 0
+    var isPresentationLayerUpdateSuspended: Bool { presentationLayerSuspensions > 0 || !isLoaded || isBatching }
 
     var styleWidth = Length.auto, styleHeight = Length.auto
     var styleMaxWidth = Length.auto, styleMaxHeight = Length.auto
@@ -86,6 +137,7 @@ open class View: NSObject {
     var row = 0, col = 0, rowSpan = 1, colSpan = 1
 
     var background = Background()
+    let backgroundLayers = BackgroundLayers()
     enum BackgroundState { case unset, invalid, drawn }
     private(set) var nativeBackgroundState = BackgroundState.unset
     private var defaultBackgroundColor: UIColor?
@@ -95,7 +147,6 @@ open class View: NSObject {
         nativeView = createNativeView()
         defaultBackgroundColor = nativeView?.backgroundColor
         initNativeView()
-        applyCSS()
     }
 
     open func createNativeView() -> UIView? { nil }
@@ -111,38 +162,163 @@ open class View: NSObject {
     func addView(_ child: View) {
         child.parent = self
         for name in View.inheritedProperties { child.refresh(name) }
-        child.loadIfParentLoaded()
+        if isLoaded && shouldLoad(child) { child.load() }
     }
 
     func removeView(_ child: View) {
+        child.unload()
         if child.parent === self { child.parent = nil }
+    }
+
+    // MARK: Loading (view-base onLoaded / onUnloaded)
+
+    func load() {
+        guard !isLoaded else { return }
+        matchCSS()
+        isLoaded = true
+        let names = pendingNames
+        pendingNames = []
+        pendingSet = []
+        for name in names where !View.styleProperties.contains(name) { setProperty(name, applied[name]) }
+        for name in names where View.styleProperties.contains(name) { setProperty(name, applied[name]) }
+        onLoaded()
+        eachChildView { if shouldLoad($0) { $0.load() } }
+        emit("loaded", nil)
+    }
+
+    func unload() {
+        guard isLoaded else { return }
+        unsubscribeFromDynamicUpdates()
+        stopKeyframeAnimations()
+        isLoaded = false
+        eachChildView { $0.unload() }
+        emit("unloaded", nil)
+    }
+
+    open func onLoaded() {}
+
+    /// `loadView`: whether a loaded parent loads this child now.
+    open func shouldLoad(_ child: View) -> Bool { true }
+
+    /// Defers a name's application to the next load or batch end, at its first-set position.
+    private func deferApplication(_ name: String) {
+        if pendingSet.insert(name).inserted { pendingNames.append(name) }
     }
 
     // MARK: Properties
 
     /// Sets a local property value by its NativeScript name; nil unsets it.
     public func set(_ name: String, _ value: Any?) {
-        for (longhand, v) in expandShorthand(name, value) {
+        for (longhand, v) in expandShorthand(name, value) where hasStyleAccessor(longhand) {
             if let v { locals[longhand] = v } else { locals.removeValue(forKey: longhand) }
             refresh(longhand)
         }
     }
 
+    /// A template sets `view[name]`, which reaches a style property only through
+    /// an accessor NativeScript defines on the view's class; without one the
+    /// value lands on the JavaScript object and styles nothing.
+    private func hasStyleAccessor(_ name: String) -> Bool {
+        switch name {
+        case "backgroundInternal", "clipPath", "cornerShape", "fontInternal", "fontScaleInternal", "iconFontFamily",
+             "paddingInternal", "placeholderColor", "zIndex":
+            return false
+        case "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "textDecoration":
+            return self is TextBase || self is Span || self is FormattedString
+        case "letterSpacing", "lineHeight", "maxLines", "textAlignment", "textOverflow", "textShadow", "textStroke", "whiteSpace":
+            return self is TextBase
+        case "paddingTop", "paddingRight", "paddingBottom", "paddingLeft":
+            return self is TextBase || self is LayoutBase
+        case "alignContent", "alignItems", "flexDirection", "flexWrap", "justifyContent", "rowGap", "columnGap":
+            return self is FlexboxLayout
+        case "tintColor": return self is Image
+        case "selectedBackgroundColor", "selectedTextColor": return self is SegmentedBar
+        case "accessibilityStep": return self is Slider
+        default: return true
+        }
+    }
+
+    /// `CssState.updateDynamicState`: keyframe animations stop, the matched values
+    /// are set (`setPropertyValues`: removed ones unset first, in their old order,
+    /// then the matched ones in cascade order), and the matched animations play.
+    private func matchCSS() {
+        stopKeyframeAnimations()
+        let match = StyleSheet.app.match(self)
+        // Plain values and variables first, then values with var() or calc()
+        // (once the variables are known), then shorthands that held them.
+        scopedCssVariables = [:]
+        var next: [(name: String, value: Any)] = []
+        var expressions: [(name: String, value: String)] = []
+        var pending: [(name: String, value: PendingShorthand)] = []
+        for (name, value) in match.values {
+            if let shorthand = value as? PendingShorthand {
+                pending.append((name, shorthand))
+            } else if isCssExpression(value), let text = value as? String {
+                expressions.append((name, text))
+            } else if name.hasPrefix("--") {
+                scopedCssVariables[name] = toText(value)
+            } else {
+                next.append((name, value))
+            }
+        }
+        for (name, text) in expressions {
+            let value = evaluateCssExpressions(text)
+            if name.hasPrefix("--") {
+                scopedCssVariables[name] = value ?? "unset"
+            } else if let value {
+                next.append((name, value))
+            }
+        }
+        var resolved: [String: [(String, Any?)]] = [:]
+        for (name, shorthand) in pending {
+            let longhands = resolved[shorthand.shorthand + shorthand.value] ?? evaluateCssExpressions(shorthand.value).map { expandShorthand(shorthand.shorthand, $0) } ?? []
+            resolved[shorthand.shorthand + shorthand.value] = longhands
+            if let value = longhands.first(where: { $0.0 == name })?.1 { next.append((name, value)) }
+        }
+        let removed = cssOrder.filter { name in !next.contains { $0.name == name } }
+        cssValues = Dictionary(next.map { ($0.name, $0.value) }, uniquingKeysWith: { $1 })
+        cssOrder = next.map(\.name)
+        for name in removed { refresh(name) }
+        for name in cssOrder { refresh(name) }
+        keyframeAnimations = match.animations
+        for animation in keyframeAnimations { animation.play(self) }
+        subscribe(match.changes)
+    }
+
+    private func stopKeyframeAnimations() {
+        guard !keyframeAnimations.isEmpty else { return }
+        for animation in keyframeAnimations where animation.isPlaying { animation.cancel() }
+        keyframeAnimations = []
+        for name in ["rotate", "rotateX", "rotateY", "scaleX", "scaleY", "translateX", "translateY", "backgroundColor", "opacity"] {
+            setKeyframe(name, nil)
+        }
+    }
+
     func applyCSS() {
-        let next = StyleSheet.app.values(for: self)
-        let names = Set(next.keys).union(cssValues.keys)
-        cssValues = next
-        for name in names { refresh(name) }
+        isBatching = true
+        matchCSS()
+        isBatching = false
+        let names = pendingNames
+        pendingNames = []
+        pendingSet = []
+        for name in names { setProperty(name, applied[name]) }
+    }
+
+    func setKeyframe(_ name: String, _ value: Any?) {
+        if let value { keyframeValues[name] = value } else { keyframeValues.removeValue(forKey: name) }
+        refresh(name)
     }
 
     func refresh(_ name: String) {
-        var value: Any? = locals[name] ?? cssValues[name]
+        var value: Any? = keyframeValues[name] ?? locals[name] ?? cssValues[name]
         if value == nil, View.inheritedProperties.contains(name) { value = parent?.applied[name] }
         let had = applied[name] != nil
         if !had && value == nil { return }
         if had && sameValue(value, applied[name]) { return }
         applied[name] = value
-        setProperty(name, value)
+        propertyValueChanged(name, value)
+        if isLoaded && !isBatching { setProperty(name, value) } else { deferApplication(name) }
+        notifyCSSDependents(name)
         if View.inheritedProperties.contains(name) { eachChildView { $0.refresh(name) } }
     }
 
@@ -152,7 +328,24 @@ open class View: NSObject {
         if sameValue(value, applied[name]) { return }
         locals[name] = value
         applied[name] = value
+        propertyValueChanged(name, value)
         emit(name + "Change", value)
+        notifyCSSDependents(name)
+    }
+
+    /// A property's `valueChanged`: runs when the value changes, loaded or not,
+    /// unlike `setProperty` (the native setter), which waits for load.
+    open func propertyValueChanged(_ name: String, _ value: Any?) {
+        switch name {
+        case "isEnabled":
+            if toBool(value) ?? true { removeVisualState("disabled") } else { addVisualState("disabled") }
+        case "id":
+            onCssStateChange()
+        case "checked" where self is Switch:
+            if toBool(value) ?? false { addVisualState("checked") } else { removeVisualState("checked") }
+        default:
+            break
+        }
     }
 
     /// Applies an effective value; subclasses handle their own names and pass the rest up.
@@ -187,6 +380,15 @@ open class View: NSObject {
             requestLayout()
         case "backgroundColor":
             background.color = toColor(value)
+            backgroundInternalChanged()
+        case "backgroundImage":
+            background.image = toText(value).flatMap(LinearGradient.init(css:))
+            backgroundInternalChanged()
+        case "boxShadow":
+            background.boxShadows = toText(value).map(BoxShadow.parseList) ?? []
+            backgroundInternalChanged()
+        case "clipPath":
+            background.clipPath = toText(value).flatMap(ClipPath.init(css:))
             backgroundInternalChanged()
         case "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth":
             let px = Length(value, default: .zero).toDevicePixels(auto: 0)
@@ -233,6 +435,12 @@ open class View: NSObject {
         case "col", "column": col = max(0, Int(toDouble(value) ?? 0)); (parent as? GridLayout)?.invalidate()
         case "rowSpan": rowSpan = max(1, Int(toDouble(value) ?? 1)); (parent as? GridLayout)?.invalidate()
         case "colSpan", "columnSpan": colSpan = max(1, Int(toDouble(value) ?? 1)); (parent as? GridLayout)?.invalidate()
+        case "order", "flexGrow", "flexShrink", "alignSelf", "flexWrapBefore": (parent as? FlexboxLayout)?.requestLayout()
+        case "left", "top": (parent as? AbsoluteLayout)?.requestLayout()
+        case "dock": (parent as? DockLayout)?.requestLayout()
+        case "translateX", "translateY", "scaleX", "scaleY", "rotate", "rotateX", "rotateY", "perspective": updateNativeTransform()
+        case "originX", "originY": updateOriginPoint()
+        case "zIndex": nativeView?.layer.zPosition = CGFloat(toDouble(value) ?? 0)
         default:
             break
         }
@@ -249,23 +457,14 @@ open class View: NSObject {
 
     // MARK: Events
 
-    /// Subscribes to an event: `tap`, or a property change such as `textChange`.
+    /// Subscribes to an event: a gesture (`tap`, `pan`), or a property change such as `textChange`.
     public func on(_ event: String, _ handler: @escaping (EventData) -> Void) {
         handlers[event, default: []].append(handler)
-        if event == "tap" { observeTap() }
+        if event == "tap" { observeTap() } else { observeGesture(event) }
     }
 
-    /// A tap is a UITapGestureRecognizer on the native view, as NativeScript's gesture observer adds.
-    open func observeTap() {
-        guard tapRecognizer == nil, let nativeView else { return }
-        let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        nativeView.addGestureRecognizer(recognizer)
-        tapRecognizer = recognizer
-    }
-
-    @objc private func handleTap(_ recognizer: UITapGestureRecognizer) {
-        if recognizer.state == .ended { emit("tap", nil) }
-    }
+    /// A tap is the tap gesture; controls with a tap event of their own override.
+    open func observeTap() { observeGesture("tap") }
 
     func emit(_ event: String, _ value: Any?) {
         guard let list = handlers[event] else { return }
@@ -390,10 +589,19 @@ open class View: NSObject {
         }
     }
 
+    func takeCachedFrame() -> CGRect? {
+        defer { cachedFrame = nil }
+        return cachedFrame
+    }
+
     open func modifyNativeViewFrame(_ nativeView: UIView, _ frame: CGRect) {
+        // A frame is only valid under the identity transform.
+        let transform = isTransformed ? nativeView.layer.transform : nil
+        if isTransformed { nativeView.layer.transform = CATransform3DIdentity }
         nativeView.frame = frame
         let adjustedFrame = applySafeAreaInsets(frame)
         if let adjustedFrame { nativeView.frame = adjustedFrame }
+        if let transform { nativeView.layer.transform = transform }
         let boundsSize = (adjustedFrame ?? frame).size
         nativeView.bounds = CGRect(origin: nativeView.bounds.origin, size: boundsSize)
         nativeView.layoutIfNeeded()
@@ -465,10 +673,13 @@ open class View: NSObject {
 
     private func updateBackground(sizeChanged: Bool, needsLayout: Bool) {
         if sizeChanged {
-            let dependsOnSize = !background.hasUniformBorder || background.hasBorderRadius
+            let dependsOnSize = background.image != nil || background.clipPath != nil || !background.hasUniformBorder
+                || background.hasBorderRadius || !background.boxShadows.isEmpty
             if nativeBackgroundState == .invalid || (nativeBackgroundState == .drawn && dependsOnSize) { redrawNativeBackground() }
         } else if nativeBackgroundState == .invalid {
             redrawNativeBackground()
+        } else if needsLayout {
+            layoutOuterShadows()
         }
     }
 
@@ -486,22 +697,6 @@ open class View: NSObject {
         CATransaction.setDisableActions(false)
         CATransaction.commit()
         nativeBackgroundState = .drawn
-    }
-
-    /// `ios.createBackgroundUIColor`: borders and radius go on the layer, the color to `apply`.
-    func createBackgroundUIColor(_ apply: (UIColor?) -> Void) {
-        guard let nativeView else { return }
-        let layer = nativeView.layer
-        layer.backgroundColor = nil
-        let bg = background
-        // Non-uniform borders are drawn by NativeScript with shape layers; this kit draws the top edge's values uniformly.
-        layer.borderColor = bg.borderTopColor?.cgColor
-        layer.borderWidth = CGFloat(LayoutHelper.toDeviceIndependentPixels(bg.borderTopWidth))
-        let bounds = layer.bounds.size
-        let radius = CGFloat(LayoutHelper.toDeviceIndependentPixels(bg.borderTopLeftRadius))
-        layer.cornerRadius = min(min(bounds.width / 2, bounds.height / 2), radius)
-        layer.cornerCurve = .circular
-        apply(bg.color)
     }
 
     open func setNativeClipToBounds() {

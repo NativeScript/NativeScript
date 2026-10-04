@@ -101,6 +101,12 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         }
     }
 
+    /// `a[i]` as JavaScript reads it: nil (undefined) unless `i` is an integer index in range.
+    public func element(_ i: Double) -> Element? {
+        guard let k = Int(exactly: i), k >= 0, k < count else { return nil }
+        return self[k]
+    }
+
     public subscript(i: Int) -> Element {
         get {
             guard i >= 0 && i < storage.count else { outOfRange(i) }

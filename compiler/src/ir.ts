@@ -22,7 +22,13 @@ export type TNode =
   | { kind: 'component'; name: string; props: Attr[]; events: Event[] }
   | { kind: 'if'; branches: { cond: string | null; body: TNode[] }[] }
   /** `items` and `key` are methods; `vars` are the item and index names the body sees. */
-  | { kind: 'for'; items: string; key: string | null; item: string; index: string; body: TNode[] };
+  | { kind: 'for'; items: string; key: string | null; item: string; index: string; body: TNode[] }
+  /**
+   * A ListView item template, a child of its ListView element; `key` is what `itemTemplateSelector` returns
+   * for it. The ListView's `items` attribute is a method; its `itemTemplateSelector` attribute is a method
+   * called with the loop variables in scope, then a row's item and index.
+   */
+  | { kind: 'template'; key: string; item: string; index: string; body: TNode[] };
 
 export interface ComponentIR {
   name: string;

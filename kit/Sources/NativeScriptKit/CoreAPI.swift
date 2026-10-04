@@ -4,26 +4,9 @@ import UIKit
 // translated code reads and writes by name: what an app imports from
 // '@nativescript/core' that is not an element in its templates.
 
-private var loadedKey: UInt8 = 0
-
 extension View {
     /// A property's current value by its NativeScript name (`label.text`).
     public func get(_ name: String) -> Any? { applied[name] }
-
-    public var isViewLoaded: Bool { objc_getAssociatedObject(self, &loadedKey) != nil }
-
-    /// `onLoaded`: children first, then this view's `loaded` event, as ViewBase does.
-    public func callLoaded() {
-        guard !isViewLoaded else { return }
-        objc_setAssociatedObject(self, &loadedKey, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        eachChildView { $0.callLoaded() }
-        emit("loaded", nil)
-    }
-
-    /// A child added to a loaded parent loads with it.
-    func loadIfParentLoaded() {
-        if parent?.isViewLoaded == true { callLoaded() }
-    }
 }
 
 /// `ApplicationSettings` from application-settings/index.ios: NSUserDefaults.

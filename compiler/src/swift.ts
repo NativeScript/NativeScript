@@ -55,6 +55,10 @@ export class Translator {
   private shaping = new Set<ts.Type>();
   /** Angular `computed()` fields, translated as getters: `this.total()` reads `self.total`. */
   private computed = new Set<string>();
+  /** Variables initialized from an element read (`const r = xs[i]`): Swift optionals, unwrapped where they are used. */
+  private undefinedVars = new Map<ts.Symbol, string>();
+  /** Accessors for module-level variables a class member of the same name hides from Swift (`__global_fruits`). */
+  private globalAliases = new Map<string, string>();
   /** App classes another app class extends: they stay open. */
   private extended = new Set<string>();
   /** Interfaces an app class implements: Swift protocols, with a class for their object literals. */
@@ -203,6 +207,10 @@ export class Translator {
       });
       return `(${params.join(', ')}) throws -> ${this.type(s.getReturnType(), where)}`;
     }
+    if (this.isEventData(t)) return 'EventData';
+    // A generic type the kit declares (`ListItem<Recipe>`) keeps its arguments.
+    const shim = sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/');
+    if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && name !== '__type' && name !== '__object') {
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
       return name;
@@ -211,6 +219,16 @@ export class Translator {
     // An inline object type naming only an event's fields is the event's data (`args: { value: boolean }`).
     if (props.length && props.every((p) => ['eventName', 'object', 'value'].includes(p))) return 'EventData';
     return this.shape(t, where);
+  }
+
+  /** A framework's event type (`ListViewItemTapEvent`) is an `EventData` with typed members. */
+  private isEventData(t: ts.Type): boolean {
+    const target = (t as ts.TypeReference).target ?? t;
+    if (!(target.flags & ts.TypeFlags.Object) || !target.isClassOrInterface()) return false;
+    // Core declares some event types as classes of their own (`TouchGestureEventData`): an event names itself.
+    const declared = target.getSymbol()?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
+    if (declared && target.getProperty('eventName') && target.getProperty('object')) return true;
+    return this.checker.getBaseTypes(target).some((b) => b.getSymbol()?.getName() === 'EventData' || this.isEventData(b));
   }
 
   typeOf(n: ts.Node): string {
@@ -222,6 +240,8 @@ export class Translator {
     const sym = this.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(e) ? e.name : e);
     const decl = sym?.valueDeclaration;
     if (!sym || !decl) return null;
+    const maybe = this.undefinedVars.get(sym);
+    if (maybe) return maybe;
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl))) return null;
     return this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
   }
@@ -317,6 +337,14 @@ export class Translator {
           const name = ident(d.name.text);
           const t = this.typeOf(d.name);
           if (!d.initializer) { out.push(`var ${name}: ${this.deferred(t)}`); continue; }
+          const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
+          if (maybe) {
+            const sym = this.resolve(d.name);
+            if (sym) this.undefinedVars.set(sym, optionalType(t));
+            out.push(`var ${name}: ${optionalType(t)} = nil`);
+            later(() => `    ${name} = ${maybe}`);
+            continue;
+          }
           if (this.pure(d.initializer)) { out.push(`${constant ? 'let' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`); continue; }
           out.push(`var ${name}: ${this.deferred(t)}`);
           later(() => `    ${name} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
@@ -393,7 +421,7 @@ export class Translator {
 
   /** Classes for object types without a name. */
   shapesCode(): string {
-    return [...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)).join('\n\n');
+    return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values()].join('\n\n');
   }
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
@@ -907,6 +935,12 @@ export class Translator {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
       if (!d.initializer) return `${i}var ${name}: ${lowered || t.endsWith('?') ? this.deferred(t) : t}`;
+      const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
+      if (maybe) {
+        const sym = this.resolve(d.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(t));
+        return `${i}${constant ? 'let' : 'var'} ${name}: ${optionalType(t)} = ${this.tryPrefix(d.initializer)}${maybe}`;
+      }
       return `${i}${constant ? 'let' : 'var'} ${name}: ${t} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}`;
     }
     const tmp = this.fresh('__d');
@@ -1073,7 +1107,13 @@ export class Translator {
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
     const source = this.typeOf(e);
+    if (target.endsWith('?') && target !== 'Any?' && !source.endsWith('?')) {
+      const maybe = this.maybeUndefined(e);
+      if (maybe) return maybe;
+    }
     if (target === 'Any?') {
+      const maybe = this.maybeUndefined(e);
+      if (maybe) return `(${maybe} as Any?)`;
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
       return this.expr(e);
     }
@@ -1086,6 +1126,8 @@ export class Translator {
 
   /** A condition: Swift needs a Bool where JavaScript tests truthiness. */
   cond(e: ts.Expression): string {
+    const maybe = this.maybeUndefined(e);
+    if (maybe) return `jsTruthy(${maybe} as Any?)`;
     return this.isBool(e) ? this.expr(e) : `jsTruthy(${this.expr(e)})`;
   }
 
@@ -1167,12 +1209,38 @@ export class Translator {
     if (name === 'Infinity') return 'Double.infinity';
     const native = this.native.identifier(e);
     if (native) return native;
-    return this.narrowed(e, ident(name));
+    return this.narrowed(e, this.globalAlias(e) ?? ident(name));
+  }
+
+  /**
+   * A module-level variable read inside a class with a member of the same name
+   * (`readonly fruits = fruits`): Swift would resolve the name to the member,
+   * so the read goes through a global alias of the variable.
+   */
+  private globalAlias(e: ts.Identifier): string | null {
+    const decl = this.resolve(e)?.valueDeclaration;
+    if (!decl || !ts.isVariableDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return null;
+    const statement = decl.parent.parent;
+    if (!ts.isVariableStatement(statement) || !ts.isSourceFile(statement.parent)) return null;
+    const cls = ts.findAncestor(e, ts.isClassLike);
+    if (!cls || !cls.members.some((m) => m.name && !ts.isComputedPropertyName(m.name) && m.name.getText() === e.text)) return null;
+    const alias = `__global_${e.text}`;
+    if (!this.globalAliases.has(alias)) {
+      const t = this.typeOf(decl.name);
+      const constant = (decl.parent.flags & ts.NodeFlags.Const) !== 0;
+      this.globalAliases.set(alias, `var ${alias}: ${t} {${constant ? ` ${ident(e.text)} ` : ` get { ${ident(e.text)} } set { ${ident(e.text)} = newValue } `}}`);
+    }
+    return alias;
   }
 
   /** A read the checker has narrowed (`if (x) x.length`, `if (e instanceof Error) e.message`): Swift needs the unwrap or cast. */
   private narrowed(e: ts.Expression, code: string): string {
     if (isWriteTarget(e)) return code;
+    const sym = ts.isIdentifier(e) ? this.resolve(e) : undefined;
+    if (sym && this.undefinedVars.has(sym)) {
+      const actual = this.typeOf(e);
+      return actual.endsWith('?') ? code : this.undefinedAs(code, actual);
+    }
     const declared = this.declaredTypeOf(e);
     if (!declared) return code;
     const actual = this.typeOf(e);
@@ -1198,6 +1266,8 @@ export class Translator {
 
   /** A value as JavaScript converts it to a string (`String(x)`, `${x}`, `'' + x`). */
   str(e: ts.Expression): string {
+    const maybe = this.maybeUndefined(e);
+    if (maybe) return `jsToString(${maybe} as Any?)`;
     const t = this.typeOf(e);
     if (t === 'String') return this.expr(e);
     if (t === 'Double' || t === 'Bool') return `js(${this.expr(e)})`;
@@ -1213,6 +1283,14 @@ export class Translator {
       if (constant) return constant;
       throw this.error(e, `${target.text}.${name}`);
     }
+    // A member of an enum a library declares (core's GestureStateTypes.began): its value.
+    const enumMember = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+    const constant = enumMember && ts.isEnumMember(enumMember) ? this.checker.getConstantValue(enumMember) : undefined;
+    if (constant !== undefined && enumMember!.getSourceFile().isDeclarationFile && !this.native.module(enumMember)) {
+      return typeof constant === 'string' ? swiftString(constant) : `Double(${constant})`;
+    }
+    const maybeChain = e.questionDotToken ? this.maybeUndefined(e) : null;
+    if (maybeChain) return this.undefinedAs(maybeChain, this.typeOf(e));
     const core = this.core.property(e);
     if (core) return core;
     const native = this.native.property(e);
@@ -1236,9 +1314,9 @@ export class Translator {
       return z && z !== 'nil' ? `(${read} ?? ${z})` : `${read}!`;
     }
     // An event's data: the value's type is the one the handler declared.
-    if (base === 'EventData' && name === 'value') {
+    if (base === 'EventData' && (name === 'value' || name === 'item')) {
       const t = this.typeOf(e);
-      return t === 'Any?' ? `${this.expr(target)}.value` : this.fromAny(`${this.expr(target)}.value`, t);
+      return t === 'Any?' ? `${this.expr(target)}.${name}` : this.fromAny(`${this.expr(target)}.${name}`, t);
     }
     return this.narrowed(e, `${this.expr(target)}${base.endsWith('?') && !e.questionDotToken ? '!' : ''}${dot}${ident(name)}`);
   }
@@ -1249,7 +1327,10 @@ export class Translator {
     const t = this.typeOf(e.expression).replace(/\?$/, '');
     const q = e.questionDotToken ? '?' : '';
     if (t === 'String') return `jsCharAt(${target}, ${this.expr(key)})`;
-    if (t.startsWith('JSArray<')) return `${target}${q}[Int(${this.expr(key)})]`;
+    if (t.startsWith('JSArray<')) {
+      if (isWriteTarget(e)) return `${target}${q}[Int(${this.expr(key)})]`;
+      return this.undefinedAs(this.maybeUndefined(e)!, this.typeOf(e));
+    }
     if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
     if (t.startsWith('(') && ts.isNumericLiteral(key)) return `${target}.${key.text}`;
     if (t.startsWith('JSRecord<')) {
@@ -1266,6 +1347,37 @@ export class Translator {
     }
     if (ts.isStringLiteral(key)) return `${target}${q}.${ident(key.text)}`;
     throw this.error(e, 'indexing this type');
+  }
+
+  /**
+   * An expression that may be undefined though TypeScript types it as its element
+   * (`xs[i]` past the end, or a variable holding one), as a Swift optional; null otherwise.
+   */
+  private maybeUndefined(e: ts.Expression): string | null {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
+      const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') ? '?' : '';
+      const code = `${this.expr(e.expression)}${q}.element(${this.toNumber(e.argumentExpression)})`;
+      return this.typeOf(e).endsWith('?') || q ? `(${code} ?? nil)` : code;
+    }
+    if (ts.isIdentifier(e)) {
+      const sym = this.resolve(e);
+      if (sym && this.undefinedVars.has(sym)) return ident(e.text);
+    }
+    if (ts.isPropertyAccessExpression(e) && e.questionDotToken && !this.typeOf(e.expression).endsWith('?')) {
+      const target = this.maybeUndefined(e.expression);
+      if (target) return `${target}?.${ident(e.name.text)}`;
+    }
+    return null;
+  }
+
+  /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
+  private undefinedAs(code: string, type: string): string {
+    if (type.endsWith('?')) return code.endsWith('?? nil)') ? code : `(${code} ?? nil)`;
+    if (type === 'Double') return `(${code} ?? .nan)`;
+    if (type === 'String') return `(${code} ?? "undefined")`;
+    if (type === 'Bool') return `(${code} ?? false)`;
+    return `${code}!`;
   }
 
   args(e: ts.CallExpression | ts.NewExpression, count?: number): string[] {
@@ -1357,6 +1469,10 @@ export class Translator {
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
       return `self.${ident(callee.name.text)}.value(${this.args(e, this.arity(e)).join(', ')})`;
     }
+    if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'then' && ts.isCallExpression(callee.expression)
+        && ts.isIdentifier(callee.expression.expression) && callee.expression.expression.text === '$showModal') {
+      return this.showModal(callee.expression, e.arguments[0]);
+    }
     if (ts.isPropertyAccessExpression(callee)) {
       const method = callee.name.text;
       const target = callee.expression;
@@ -1446,6 +1562,8 @@ export class Translator {
       return `${token}.shared`;
     }
     if (name === '$navigateTo' && lib) return this.navigate(e);
+    if (name === '$showModal' && lib) return this.showModal(e);
+    if (name === '$closeModal' && lib) return `Modal.close(${arg(0) ? this.coerce(arg(0), 'Any?') : ''})`;
     if (lib) {
       switch (name) {
         case 'String': return arg(0) ? this.str(arg(0)) : '""';
@@ -1604,6 +1722,47 @@ export class Translator {
     if (method === 'allSettled') return `JSPromise<Any?>.allSettled(JSArray<Any?>([${list.elements.map((x) => this.expr(x)).join(', ')}]))${toTuple('JSObject')}`;
     if (!same) return `JSPromise<Any?>.${method}(JSArray<Any?>([${list.elements.map((x) => this.expr(x)).join(', ')}]))`;
     return `JSPromise<${values[0]}>.${method}(JSArray<JSPromise<${values[0]}>>([${list.elements.map(promise).join(', ')}]))`;
+
+  }
+
+  /** `$showModal(Component, { props, fullscreen, animated, cancelable, closeCallback })`; a `.then(fn)` is the close callback. */
+  private showModal(e: ts.CallExpression, then?: ts.Expression): string {
+    const component = (e.arguments[0] as ts.Identifier).text;
+    const info = this.components.get(component);
+    if (!info) throw this.error(e, `a modal of ${component}: not a component`);
+    const options = e.arguments[1];
+    const given = new Map<string, string>();
+    const settings: string[] = [];
+    let callback = then;
+    if (options && ts.isObjectLiteralExpression(options)) {
+      for (const p of options.properties) {
+        if (!ts.isPropertyAssignment(p)) continue;
+        const key = (p.name as ts.Identifier).text;
+        if (key === 'props' && ts.isObjectLiteralExpression(p.initializer)) {
+          for (const q of p.initializer.properties) {
+            if (ts.isShorthandPropertyAssignment(q)) given.set(q.name.text, ident(q.name.text));
+            else if (ts.isPropertyAssignment(q)) given.set((q.name as ts.Identifier).text, this.expr(q.initializer));
+          }
+        } else if (key === 'fullscreen' || key === 'animated' || key === 'cancelable') {
+          settings.push(`${key}: ${this.expr(p.initializer)}`);
+        } else if (key === 'closeCallback') {
+          callback = p.initializer;
+        }
+      }
+    }
+    if (callback) {
+      if (!ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback)) throw this.error(callback, 'a modal close callback that is not a function literal');
+      const closure = this.closure(callback);
+      const first = callback.parameters[0];
+      const t = first ? this.typeOf(first.name) : '';
+      // A modal closed without a result (swiped away) passes undefined, which reads as "undefined" or NaN.
+      const undefinedValue: Record<string, string> = { String: '"undefined"', Double: '.nan', Bool: 'false' };
+      const cast = t in undefinedValue ? `((value as? ${t}) ?? ${undefinedValue[t]})` : `(value as! ${t})`;
+      const call = !first ? `{ _ in (${closure})() }` : t === 'Any' ? closure : t.endsWith('?') ? `{ value in (${closure})(value as? ${t.slice(0, -1)}) }` : `{ value in (${closure})${cast} }`;
+      settings.push(`closeCallback: ${call}`);
+    }
+    const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
+    return `Modal.show(${settings.join(', ')}) { ${component}(${args}).render() }`;
   }
 
   private math(name: string, e: ts.CallExpression): string {
@@ -1843,13 +2002,18 @@ export class Translator {
     if (base === 'Void') return '"undefined"';
     const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
     if (t === 'Any?' || !known) return `jsTypeof(${this.expr(e.expression)})`;
+    const maybe = this.maybeUndefined(e.expression);
+    if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
     return t.endsWith('?') ? `(${this.expr(e.expression)} == nil ? "undefined" : ${swiftString(known)})` : swiftString(known);
   }
 
   private prefix(e: ts.PrefixUnaryExpression): string {
     const K = ts.SyntaxKind;
     switch (e.operator) {
-      case K.ExclamationToken: return this.isBool(e.operand) ? `!${this.expr(e.operand)}` : `!jsTruthy(${this.expr(e.operand)})`;
+      case K.ExclamationToken: {
+        const operand = this.isBool(e.operand) && !this.maybeUndefined(e.operand) ? this.expr(e.operand) : this.cond(e.operand);
+        return operand.startsWith('!') ? `!(${operand})` : `!${operand}`;
+      }
       case K.MinusToken: return ts.isNumericLiteral(e.operand) ? `-${this.expr(e.operand)}` : `-${this.toNumber(e.operand)}`;
       case K.PlusToken: return this.toNumber(e.operand);
       case K.TildeToken: return `jsBitNot(${this.toNumber(e.operand)})`;
@@ -1916,6 +2080,9 @@ export class Translator {
       }
       case K.QuestionQuestionToken: {
         const t = this.typeOf(e);
+        const maybe = this.maybeUndefined(e.left);
+        if (maybe && t === 'Any?') return `jsNullishCoalesce(${maybe} as Any?, ${this.coerce(e.right, 'Any?')})`;
+        if (maybe) return `(${maybe} ?? ${this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) return `jsNullishCoalesce(${l()}, ${this.coerce(e.right, 'Any?')})`;
         return `(${l()} ?? ${this.coerce(e.right, t)})`;
       }
@@ -1956,6 +2123,8 @@ export class Translator {
     const lt = this.typeOf(a);
     const rt = this.typeOf(b);
     // Comparing a typed optional with null or undefined.
+    const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
+    if (maybe) return `${maybe} ${negate ? '!=' : '=='} nil`;
     if (isNullish(b) && lt !== 'Any?') return `${this.expr(a)} ${negate ? '!=' : '=='} nil`;
     if (isNullish(a) && rt !== 'Any?') return `${this.expr(b)} ${negate ? '!=' : '=='} nil`;
     if (lt === 'Any?' || rt === 'Any?' || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, ''))) {

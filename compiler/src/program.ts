@@ -16,7 +16,10 @@ const SHIMS: Record<string, string> = {
     /** Vue's ref: deeply reactive, so arrays and objects it holds notify on mutation. */
     export interface VueRef<T> { value: T }
     export declare function $ref<T>(value: T): VueRef<T>;
-    export interface EventData { eventName: string; object: any; value: any }
+    import type { ItemEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, Pointer as CorePointer } from '@nativescript/core';
+    /** A template handler's \$event: whichever of core's event types the handler declares. */
+    export type EventData = ItemEventData & PanGestureEventData & PinchGestureEventData & RotationGestureEventData & SwipeGestureEventData & TouchGestureEventData & { value: any; item: any };
+    export type Pointer = CorePointer;
     export declare function $navigate(page: () => any): void;
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
     export declare function $writable<T>(value: T): WritableSignal<T>;
@@ -61,7 +64,13 @@ const SHIMS: Record<string, string> = {
     export declare function ref<T>(value: T): VueRef<T>;
     export declare function computed<T>(fn: () => T): { readonly value: T };
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
+    export interface ModalOptions { props?: Record<string, any>; fullscreen?: boolean; animated?: boolean; cancelable?: boolean; closeCallback?: (result?: any) => void }
+    export declare function $showModal(component: any, options?: ModalOptions): { then(fn: (result?: any) => void): void };
+    export declare function $closeModal(result?: any): void;
     export declare function createApp(component: any): { start(): void };
+    export interface ListItem<T = any> { item: T; index: number; even: boolean; odd: boolean }
+    import type { ItemEventData } from '@nativescript/core';
+    export interface ListViewItemTapEvent<T = any> extends ItemEventData { item: T; value: any }
   `,
 };
 
@@ -129,7 +138,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
           if (candidate && (files.has(candidate) || existsSync(candidate))) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
         }
       }
-      return ts.resolveModuleName(m, containing, options, host);
+      // The shims import core's types from the app's node_modules.
+      const from = containing.startsWith('/__shims__/') ? resolve(modules, '..', 'index.ts') : containing;
+      return ts.resolveModuleName(m, from, options, host);
     });
 
   const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')];

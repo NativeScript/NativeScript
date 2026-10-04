@@ -11,6 +11,9 @@ open class TextBase: View {
 
     var whiteSpace = "initial"
     var maxLines = 0
+    let formattedState = FormattedTextState()
+
+    var formattedText: FormattedString? { applied["formattedText"] as? FormattedString }
 
     open override func initNativeView() {
         // `text` defaults to "": setting it to "" is not a change.
@@ -39,11 +42,43 @@ open class TextBase: View {
 
     var text: String { toText(applied["text"]) ?? "" }
 
+    override func load() {
+        formattedState.isSetUp = true
+        super.load()
+    }
+
+    /// A FormattedString child is the `formattedText`; a Span child joins it, creating it first.
+    open override func addChild(_ child: View) {
+        if let formatted = child as? FormattedString {
+            set("formattedText", formatted)
+        } else if let span = child as? Span {
+            if let formattedText {
+                formattedText.addSpan(span)
+            } else {
+                let formatted = FormattedString()
+                formatted.addSpan(span)
+                set("formattedText", formatted)
+            }
+        }
+    }
+
+    open override func eachChildView(_ body: (View) -> Void) {
+        if let formattedText { body(formattedText) }
+    }
+
+    open override func propertyValueChanged(_ name: String, _ value: Any?) {
+        super.propertyValueChanged(name, value)
+        if name == "formattedText" { formattedTextChanged(to: value as? FormattedString) }
+    }
+
     open override func setProperty(_ name: String, _ value: Any?) {
         switch name {
         case "text":
+            if value != nil && formattedText != nil { return }
             setNativeText(reset: value == nil)
             requestLayoutOnTextChanged()
+        case "formattedText":
+            formattedTextSetNative(value as? FormattedString)
         case "color":
             setColor(toColor(value))
         case "fontSize":
@@ -70,6 +105,14 @@ open class TextBase: View {
             maxLines = Int(toDouble(value) ?? 0)
             adjustLineBreak()
             requestLayout()
+        case "textDecoration", "textTransform":
+            setNativeText(reset: false)
+        case "letterSpacing", "lineHeight", "textStroke":
+            setNativeText(reset: false)
+            requestLayout()
+        case "textShadow":
+            setShadow(value)
+            requestLayout()
         default:
             super.setProperty(name, value)
         }
@@ -84,7 +127,9 @@ open class TextBase: View {
 
     /// `fontInternalProperty.setNative`: the default font when nothing is styled.
     private func fontChanged() {
-        if font.isDefault {
+        if formattedText != nil && !font.isDefault {
+            requestLayout()
+        } else if font.isDefault {
             nativeFont = defaultFont
         } else {
             nativeFont = font.uiFont(default: nativeFont)
@@ -94,25 +139,56 @@ open class TextBase: View {
 
     func requestLayoutOnTextChanged() { requestLayout() }
 
-    /// `_setNativeText` with `nativeScriptSetTextDecorationAndTransform`: plain text, no attributes.
+    /// `_setNativeText`: the transformed text with its decoration, letter spacing and line height, then the stroke.
     func setNativeText(reset: Bool) {
-        UIView.performWithoutAnimation {
-            let value = reset ? nil : text
-            switch textView {
-            case let button as UIButton:
-                button.setAttributedTitle(nil, for: .normal)
-                button.setTitle(value, for: .normal)
-            case let label as UILabel:
-                label.attributedText = nil
-                label.text = value
-            case let field as UITextField:
-                field.attributedText = nil
-                field.text = value
-            default:
-                break
-            }
-            if !reset && applied["color"] == nil { setColor(.label) }
+        if !reset, let formattedText {
+            UIView.performWithoutAnimation { setFormattedNativeText(formattedText) }
+            return
         }
+        UIView.performWithoutAnimation {
+            if reset {
+                switch textView {
+                case let button as UIButton:
+                    button.setAttributedTitle(nil, for: .normal)
+                    button.setTitle(nil, for: .normal)
+                case let label as UILabel:
+                    label.attributedText = nil
+                    label.text = nil
+                case let field as UITextField:
+                    field.attributedText = nil
+                    field.text = nil
+                default:
+                    break
+                }
+                return
+            }
+            textView?.nativeScriptSetTextDecorationAndTransform(
+                transformedText(text, toText(applied["textTransform"])), toText(applied["textDecoration"]) ?? "",
+                toDouble(applied["letterSpacing"]) ?? 0, toDouble(applied["lineHeight"]) ?? 0)
+            if applied["color"] == nil { setColor(.label) }
+            if let stroke = toText(applied["textStroke"]).flatMap(CSSShadow.shorthand) {
+                let width = stroke.values.first?.toDevicePixels(auto: 0) ?? 0
+                textView?.nativeScriptSetFormattedTextStroke(width, Color(stroke.color)?.ios)
+            }
+        }
+    }
+
+    /// `_setShadow`: the shadow's own alpha is its opacity.
+    func setShadow(_ value: Any?) {
+        guard let layer = textView?.layer else { return }
+        guard let shadow = toText(value).flatMap(CSSShadow.init(css:)) else {
+            layer.shadowOpacity = 0
+            layer.shadowRadius = 0
+            layer.shadowColor = UIColor.clear.cgColor
+            layer.shadowOffset = .zero
+            return
+        }
+        layer.shadowOpacity = Float(shadow.colorAlpha.map { $0 == 0 ? 1 : $0 / 255 } ?? 1)
+        layer.shadowColor = shadow.color?.cgColor
+        layer.shadowRadius = CGFloat(LayoutHelper.toDeviceIndependentPixels(shadow.blurRadius.toDevicePixels(auto: 0)))
+        layer.shadowOffset = CGSize(width: LayoutHelper.toDeviceIndependentPixels(shadow.offsetX.toDevicePixels(auto: 0)),
+                                    height: LayoutHelper.toDeviceIndependentPixels(shadow.offsetY.toDevicePixels(auto: 0)))
+        layer.masksToBounds = false
     }
 
     func setColor(_ color: UIColor?) {
@@ -274,6 +350,23 @@ open class Button: TextBase {
     /// Button taps come from touchUpInside, not a gesture recognizer.
     open override func observeTap() {}
 
+    private var highlightObservation: NSKeyValueObservation?
+    private var observedVisualStates = 0
+
+    /// `_updateButtonStateChangeHandler`: the control's highlight becomes the `highlighted` visual state.
+    @objc open override func observePseudoClass(_ name: String, _ on: Bool) {
+        guard ["normal", "highlighted", "pressed", "active"].contains(name) else { return }
+        observedVisualStates += on ? 1 : -1
+        if on, highlightObservation == nil, let button {
+            highlightObservation = button.observe(\.isHighlighted, options: [.new]) { [weak self] control, _ in
+                if control.isHighlighted { self?.addVisualState("highlighted") } else { self?.removeVisualState("highlighted") }
+            }
+        } else if !on, observedVisualStates == 0 {
+            highlightObservation = nil
+            removeVisualState("highlighted")
+        }
+    }
+
     @objc private func tapped() { emit("tap", nil) }
 
     open override func paddingChanged() { updateContentEdgeInsets() }
@@ -413,6 +506,18 @@ open class TextField: TextBase, UITextFieldDelegate {
         }
         if case .auto = styleWidth { requestLayout() }
         return true
+    }
+
+    public func textFieldDidBeginEditing(_ textField: UITextField) {
+        emit("focus", nil)
+        focusVisualState(true)
+    }
+
+    public func textFieldDidEndEditing(_ textField: UITextField) {
+        if toText(applied["updateTextTrigger"]) == "focusLost" { nativeValueChange("text", textField.text ?? "") }
+        textField.resignFirstResponder()
+        emit("blur", nil)
+        focusVisualState(false)
     }
 
     public func textFieldShouldClear(_ textField: UITextField) -> Bool {

@@ -65,6 +65,8 @@ export class CoreAPI {
     const type = c.getNonNullableType(c.getTypeAtLocation(e));
     const sym = type.getSymbol();
     if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
+    // Core's event data types are the kit's one EventData, whose members the translator reads directly.
+    if (this.t.type(type, e) === 'EventData') return null;
     return { name: sym.name, isStatic: false };
   }
 

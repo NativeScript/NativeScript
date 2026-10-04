@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
+import { rowTemplates } from './listview.ts';
 
 export interface SolidRoute { name: string; component: string }
 
@@ -127,9 +128,11 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
     for (const [k, v] of Object.entries(extra)) names.set(k, v);
     return { names, members: full.members };
   };
+  // A keyed `<For>` passes its index as an accessor: `i()` reads the loop's index.
+  const indexReads = (code: string, loops: Loop[]) => loops.reduce((c, l) => c.replace(new RegExp(`(?<![\\w$.])${l.index.replace(/\$/g, '\\$')}\\(\\)`, 'g'), l.index), code);
   const expr = (code: string, loops: Loop[]) => {
     const m = `$b${next++}`;
-    methods.push(`  ${m}(${params(loops)}) { return ${setters(rewrite(code, local(loops)))}; }`);
+    methods.push(`  ${m}(${params(loops)}) { return ${setters(rewrite(indexReads(code, loops), local(loops)))}; }`);
     return m;
   };
   const handler = (e: ts.Expression, loops: Loop[]) => {
@@ -138,7 +141,8 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
       const p = e.parameters[0] ? (e.parameters[0].name as ts.Identifier).text : null;
       const extra = p ? { [p]: '$event' } : {};
-      code = ts.isBlock(e.body) ? rewrite(e.body.getText(), local(loops, extra), 'statements') : `${rewrite(e.body.getText(), local(loops, extra)).slice(1, -1)};`;
+      const body = indexReads(e.body.getText(), loops);
+      code = ts.isBlock(e.body) ? rewrite(body, local(loops, extra), 'statements') : `${rewrite(body, local(loops, extra)).slice(1, -1)};`;
     } else {
       const t = e.getText();
       code = `${rewrite(t, local(loops)).slice(1, -1)}(${arity.get(t) === 0 ? '' : '$event'});`;
@@ -156,13 +160,8 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
       return [{ kind: 'if', branches: [{ cond: expr(when.getText(), loops), body: ts.isJsxElement(n) ? children(n.children, loops) : [] }] }];
     }
     if (tag === 'For') {
-      const each = (attr('each') as ts.JsxExpression).expression!;
-      const cb = (n as ts.JsxElement).children.find(ts.isJsxExpression)!.expression as ts.ArrowFunction;
-      const item = (cb.parameters[0].name as ts.Identifier).text;
-      const index = cb.parameters[1] ? (cb.parameters[1].name as ts.Identifier).text : `$i${loops.length}`;
-      const items = expr(each.getText(), loops);
-      const inner = [...loops, { item, index, param: `${item} = this.${items}(${args(loops)})[0], ${index} = 0` }];
-      return [{ kind: 'for', items, key: null, item, index, body: jsx(cb.body as ts.Expression, inner) }];
+      const { items, item, index, body } = each(n, loops);
+      return [{ kind: 'for', items, key: null, item, index, body }];
     }
     const attrs: Attr[] = [];
     const events: Event[] = [];
@@ -182,12 +181,45 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
     }
     const el = canonical(tag);
     if (!el) throw new Error(`${path}: <${tag}> is not a @nativescript/core element the release build knows`);
+    if (el === 'ListView') return [{ kind: 'element', tag: el, attrs, events, children: listRows(n, attrs, loops) }];
     return [{ kind: 'element', tag: el, attrs, events, children: ts.isJsxElement(n) ? children(n.children, loops) : [] }];
+  };
+  /** `<For each={…}>{(item, i) => …}</For>`: the items method, the row's names and its body. */
+  const each = (n: ts.JsxElement | ts.JsxSelfClosingElement, loops: Loop[]) => {
+    const open = ts.isJsxElement(n) ? n.openingElement : n;
+    const init = open.attributes.properties.find((a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && a.name.getText() === 'each')?.initializer;
+    const cb = ts.isJsxElement(n) ? n.children.find(ts.isJsxExpression)?.expression : undefined;
+    if (!init || !ts.isJsxExpression(init) || !init.expression || !cb || !ts.isArrowFunction(cb)) throw new Error(`${path}: <For> needs each={…} and a function child`);
+    const item = (cb.parameters[0].name as ts.Identifier).text;
+    const index = cb.parameters[1] ? (cb.parameters[1].name as ts.Identifier).text : `$i${loops.length}`;
+    const items = expr(init.expression.getText(), loops);
+    const inner = [...loops, { item, index, param: `${item} = this.${items}(${args(loops)})[0], ${index} = 0` }];
+    return { items, item, index, inner, body: jsx(cb.body as ts.Expression, inner) };
+  };
+  /**
+   * A dominative `<listview>`'s rows: its views are its items, each shown in a cell of its own, so the
+   * one `<For>` that makes them is the list's items and its body the item template. A row that is a
+   * conditional becomes a template per branch.
+   */
+  const listRows = (n: ts.JsxElement | ts.JsxSelfClosingElement, attrs: Attr[], loops: Loop[]): TNode[] => {
+    const kids = ts.isJsxElement(n) ? n.children.filter((c) => !(ts.isJsxText(c) && c.containsOnlyTriviaWhiteSpaces)) : [];
+    const only = kids.length === 1 && ts.isJsxElement(kids[0]) && kids[0].openingElement.tagName.getText() === 'For' ? kids[0] : null;
+    if (!only || attrs.some((a) => a.name === 'items' || a.name === 'itemTemplateSelector')) throw new Error(`${path}: a <listview>'s rows are one <For each={…}> child in a release build`);
+    const row = each(only, loops);
+    attrs.push({ name: 'items', method: row.items });
+    const { templates, selector } = rowTemplates(row.body, row.item, row.index);
+    if (selector) {
+      const m = `$b${next++}`;
+      methods.push(`  ${m}(${params(row.inner)}): string { return ${selector((c) => `this.${c}(${args(row.inner)})`)}; }`);
+      attrs.push({ name: 'itemTemplateSelector', method: m });
+    }
+    return templates;
   };
   const jsx = (e: ts.Expression, loops: Loop[]): TNode[] => {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     if (ts.isJsxElement(e) || ts.isJsxSelfClosingElement(e)) return element(e, loops);
     if (ts.isJsxFragment(e)) return children(e.children, loops);
+    if (ts.isConditionalExpression(e)) return [{ kind: 'if', branches: [{ cond: expr(e.condition.getText(), loops), body: jsx(e.whenTrue, loops) }, { cond: null, body: jsx(e.whenFalse, loops) }] }];
     throw new Error(`${path}: {${e.getText().slice(0, 50)}} in JSX is not supported in a release build yet`);
   };
   const children = (list: ts.NodeArray<ts.JsxChild>, loops: Loop[]): TNode[] =>

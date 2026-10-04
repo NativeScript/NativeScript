@@ -5,6 +5,8 @@ import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { ELEMENTS, MODELS } from './elements.ts';
 
+const VUE_KEPT = new Set(['$navigateTo', '$navigateBack', '$showModal', '$closeModal', 'ListItem', 'ListViewItemTapEvent']);
+
 /**
  * A NativeScript-Vue single-file component (`<script setup lang="ts">` and a
  * template of @nativescript/core elements) as a virtual class and a template.
@@ -39,7 +41,9 @@ export function vueComponent(path: string, text: string): ComponentIR {
         imports.push(st.getText());
       } else {
         const navigation = st.importClause?.namedBindings;
-        if (navigation && ts.isNamedImports(navigation) && navigation.elements.some((e) => e.name.text === '$navigateTo')) imports.push(`import { $navigateTo } from 'nativescript-vue';`);
+        // Vue's own API is read by the front end; navigation, modals and types reach the class.
+        const kept = navigation && ts.isNamedImports(navigation) ? navigation.elements.filter((e) => VUE_KEPT.has(e.name.text)).map((e) => e.getText()) : [];
+        if (kept.length) imports.push(`import { ${kept.join(', ')} } from 'nativescript-vue';`);
       }
       continue;
     }
@@ -180,10 +184,52 @@ export function vueComponent(path: string, text: string): ComponentIR {
     }
     if (components.has(c.tag)) return { kind: 'component', name: c.tag, props: attrs, events };
     if (!ELEMENTS.has(c.tag)) throw new Error(`${path}: <${c.tag}> is not a @nativescript/core element the release build knows`);
+    if (c.tag === 'ListView') return { kind: 'element', tag: c.tag, attrs, events, children: listTemplates(c, attrs, loops) };
     return { kind: 'element', tag: c.tag, attrs, events, children: nodes(c.children, loops) };
   };
 
+  /**
+   * `<ListView :items>` with `<template #name="{ item, index }">` slots, as nativescript-vue renders them.
+   * Its `itemTemplateSelector` is called with the row's `{ item, index, even, odd }` and returns a slot name.
+   */
+  const listTemplates = (c: any, attrs: Attr[], loops: Loop[]): TNode[] => {
+    const items = attrs.find((a) => a.name === 'items');
+    if (!items || !('method' in items)) throw new Error(`${path}: <ListView> needs :items`);
+    const row = `${items.method}(${args(loops).join(', ')})[0]`;
+    const at = attrs.findIndex((a) => a.name === 'itemTemplateSelector');
+    if (at >= 0) {
+      const selector = c.props.find((p: any) => p.type === 7 && p.name === 'bind' && p.arg?.content === 'itemTemplateSelector');
+      const m = `$b${next++}`;
+      const p = [params(loops), `$item = this.${row}`, '$index = 0'].filter(Boolean).join(', ');
+      members.push(`  ${m}(${p}): string { return ${rewrite(selector.exp.content, withLoops(inTemplate, loops))}({ item: $item, index: $index, even: $index % 2 === 0, odd: $index % 2 !== 0 }); }`);
+      attrs[at] = { name: 'itemTemplateSelector', method: m };
+    }
+    const out: TNode[] = [];
+    for (const t of c.children) {
+      if (t.type !== 1) continue;
+      const slot = t.props.find((p: any) => p.type === 7 && p.name === 'slot');
+      if (t.tag !== 'template' || !slot) throw new Error(`${path}: a ListView's children are <template #name="{ item }"> slots`);
+      const vars = new Map<string, string>();
+      for (const part of (slot.exp?.content ?? '').replace(/^\s*\{|\}\s*$/g, '').split(',')) {
+        const [k, alias] = part.split(':').map((x: string) => x.trim());
+        if (k) vars.set(k, alias || k);
+      }
+      for (const k of vars.keys()) if (k !== 'item' && k !== 'index') throw new Error(`${path}: a ListView slot's "${k}" is not supported in a release build yet`);
+      const item = vars.get('item') ?? `$item${loops.length}`;
+      const index = vars.get('index') ?? `$i${loops.length}`;
+      const loop: Loop = { item, index, param: `${item} = this.${row}, ${index} = 0` };
+      out.push({ kind: 'template', key: slot.arg?.content ?? 'default', item, index, body: nodes(t.children, [...loops, loop]) });
+    }
+    return out;
+  };
+
   const template = nodes(descriptor.template?.ast?.children ?? [], []);
+  // nativescript-vue's global properties, which templates use without importing.
+  for (const global of ['$closeModal', '$showModal']) {
+    if (descriptor.template?.content.includes(global) && !imports.some((i) => i.includes(global))) {
+      imports.push(`import { ${global} } from 'nativescript-vue';`);
+    }
+  }
   const source = [
     `import { $ref, type EventData as $EventData } from '@nativescript/release';`,
     ...imports,

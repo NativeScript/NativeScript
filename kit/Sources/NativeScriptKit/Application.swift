@@ -40,8 +40,16 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene, let makeRoot = NativeScriptApplication.makeRoot else { return }
         let window = UIWindow(windowScene: windowScene)
         window.backgroundColor = .systemBackground
+        Appearance.window = window
         let root = makeRoot()
+        root.rootClasses = Appearance.rootClasses()
+        Modal.root = root
+        root.load()
         window.rootViewController = NativeScriptApplication.rootController(for: root)
+        window.registerForTraitChanges([UITraitUserInterfaceStyle.self, UITraitLayoutDirection.self,
+                                        UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self]) { [weak root] (_: UIWindow, _: UITraitCollection) in
+            if let root { Appearance.refresh(root) }
+        }
         window.makeKeyAndVisible()
         self.window = window
         self.root = root

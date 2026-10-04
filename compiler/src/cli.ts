@@ -2,6 +2,7 @@
 // ns-native: a NativeScript app written with a web framework, compiled to a
 // native app with no JavaScript runtime.
 //   node compiler/src/cli.ts <app folder> --out <dir> [--name RecipesVue] [--build] [--device]
+//   node compiler/src/cli.ts <app folder> --platform android --out <dir> [--build] [--widgets <aar>]
 // The app folder is a NativeScript project (package.json, app/). Its
 // components and modules are type-checked together and translated to Swift
 // against NativeScriptKit; --build generates the Xcode project and builds it.
@@ -20,6 +21,7 @@ import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
+import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -50,6 +52,7 @@ let components: ComponentIR[];
 let modules: string[];
 let root: string;
 let prelude = '';
+let routing: { routes: { path: string; component: string }[]; initial: string } | null = null;
 if (framework === 'vue') {
   components = files.filter((f) => f.endsWith('.vue')).map((f) => vueComponent(f, readFileSync(f, 'utf8')));
   modules = sources;
@@ -125,6 +128,7 @@ if (framework === 'vue') {
   components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors)).filter((c): c is NonNullable<typeof c> => !!c);
   for (const c of components) c.page = routes.some((r) => r.component === c.name);
   modules = sources.filter((f) => f !== routesFile && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts')));
+  routing = { routes, initial };
   root = /bootstrapApplication\(\s*(\w+)/.exec(entryText)?.[1] ?? '';
   if (!root) throw new Error(`${entry}: no bootstrapApplication(Component)`);
   prelude = `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
@@ -132,8 +136,15 @@ if (framework === 'vue') {
 
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-const { checker, program, files: sourceFiles } = createProgram(modules, virtual);
+const platform = opt('--platform') === 'android' ? 'android' : 'ios';
+const { checker, program, files: sourceFiles } = createProgram(modules, virtual, platform);
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
+if (platform === 'android') {
+  const { writeAndroid } = await import('./android.ts');
+  const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
+  process.exit(0);
+}
 const translator = new Translator(checker, infos, sourceFiles);
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
@@ -151,7 +162,8 @@ for (const m of translated) if (m.code.trim()) writeFileSync(join(out, 'Sources'
 const shapes = translator.shapesCode();
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
-const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
+const sourceCSS = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
+const css = usesNativeScriptTailwind(app) ? nativescriptTailwind(sourceCSS) : sourceCSS;
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 

@@ -1,84 +1,194 @@
 import Foundation
 
-/// The app's stylesheet: rules of type, class and compound selectors
-/// (`Page`, `.row`, `Label.title`, `*`), ordered by specificity and then
-/// source order, as NativeScript's style scope orders them.
+/// The app's stylesheet as NativeScript's style scope uses it: rulesets of
+/// selectors (styling/css-selector), `@media` rules matched at query time,
+/// and `@keyframes` by name.
 struct StyleSheet {
-    struct Selector {
-        var type: String?
-        var classes: [String]
-        var specificity: Int
-
-        func matches(_ view: View) -> Bool {
-            if let type, type != "*", type.lowercased() != view.cssType.lowercased() { return false }
-            return classes.allSatisfy(view.classes.contains)
-        }
+    struct Rule {
+        /// Each selector of the ruleset, with its position in source order.
+        var selectors: [(selector: CSSSelector, pos: Int)]
+        var declarations: [(name: String, value: String)]
+        var animations: [KeyframeAnimationInfo]?
+        /// Every enclosing `@media` query must match.
+        var media: [String]
     }
 
-    struct Rule {
-        var selectors: [Selector]
-        var declarations: [(name: String, value: String)]
-        var order: Int
+    /// What a view's match yields: values in cascade order, animations, and
+    /// the attributes and pseudo-classes it depends on.
+    struct Match {
+        var values: [(name: String, value: Any)] = []
+        var animations: [KeyframeAnimation] = []
+        var changes = CSSChanges()
     }
 
     static var app = StyleSheet(rules: [])
 
     var rules: [Rule]
+    /// `@keyframes` by name; a later block of the same name replaces an earlier one.
+    var keyframes: [String: [KeyframeRule]] = [:]
+    private(set) var hasSiblingCombinators = false
 
     init(rules: [Rule]) { self.rules = rules }
 
     init(parsing css: String) {
         var rules: [Rule] = []
-        let text = css.replacingOccurrences(of: #"/\*[\s\S]*?\*/"#, with: "", options: .regularExpression)
-        var rest = Substring(text)
-        while let open = rest.firstIndex(of: "{") {
-            let prelude = rest[..<open].trimmingCharacters(in: .whitespacesAndNewlines)
-            guard let close = rest[open...].firstIndex(of: "}") else { break }
-            let body = rest[rest.index(after: open)..<close]
-            rest = rest[rest.index(after: close)...]
-            // At-rules (@media, @keyframes) are outside the subset this kit implements.
-            if prelude.hasPrefix("@") { continue }
-            let selectors = prelude.split(separator: ",").compactMap { StyleSheet.parseSelector(String($0)) }
-            guard !selectors.isEmpty else { continue }
-            let declarations = body.split(separator: ";").compactMap { declaration -> (String, String)? in
-                guard let colon = declaration.firstIndex(of: ":") else { return nil }
-                let name = declaration[..<colon].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-                let value = declaration[declaration.index(after: colon)...].trimmingCharacters(in: .whitespacesAndNewlines)
-                return name.isEmpty || value.isEmpty ? nil : (name, value)
-            }
-            rules.append(Rule(selectors: selectors, declarations: declarations, order: rules.count))
-        }
-        self.rules = rules
-    }
-
-    /// A compound selector; descendant and child combinators are not supported
-    /// and their rules never match.
-    private static func parseSelector(_ text: String) -> Selector? {
-        let s = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !s.isEmpty, !s.contains(where: { $0 == " " || $0 == ">" || $0 == "+" || $0 == "~" || $0 == "[" || $0 == ":" }) else { return nil }
-        var parts = s.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
-        let type = parts.removeFirst()
-        let classes = parts.filter { !$0.isEmpty }
-        return Selector(type: type.isEmpty ? nil : type, classes: classes, specificity: (type.isEmpty || type == "*" ? 0 : 1) + classes.count * 100)
-    }
-
-    /// The declarations that apply to `view`, later winning, as view property names.
-    func values(for view: View) -> [String: Any] {
-        var matched: [(specificity: Int, order: Int, declarations: [(name: String, value: String)])] = []
-        for rule in rules {
-            let best = rule.selectors.filter { $0.matches(view) }.map(\.specificity).max()
-            if let best { matched.append((best, rule.order, rule.declarations)) }
-        }
-        matched.sort { $0.specificity != $1.specificity ? $0.specificity < $1.specificity : $0.order < $1.order }
-        var result: [String: Any] = [:]
-        for rule in matched {
-            for declaration in rule.declarations {
-                for (name, value) in expandShorthand(propertyName(css: declaration.name), declaration.value) {
-                    result[name] = value
+        var keyframes: [String: [KeyframeRule]] = [:]
+        var position = 0
+        func parse(_ text: Substring, _ media: [String]) {
+            for (prelude, body) in StyleSheet.blocks(text) {
+                if prelude.hasPrefix("@keyframes") || prelude.hasPrefix("@-webkit-keyframes") {
+                    let name = prelude.split(separator: " ", maxSplits: 1).dropFirst().first.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
+                    keyframes[name] = StyleSheet.blocks(body).map { selector, declarations in
+                        KeyframeRule(values: selector.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) },
+                                     declarations: StyleSheet.declarations(declarations))
+                    }
+                    continue
                 }
+                if prelude.hasPrefix("@media") {
+                    parse(body, media + [prelude.dropFirst("@media".count).trimmingCharacters(in: .whitespaces)])
+                    continue
+                }
+                if prelude.hasPrefix("@") { continue }
+                var selectors: [(CSSSelector, Int)] = []
+                for text in StyleSheet.splitSelectors(prelude) {
+                    let selector = SelectorParser.parse(text)
+                    guard selector.isValid else { continue }
+                    selectors.append((selector, position))
+                    position += 1
+                }
+                let declarations = StyleSheet.declarations(body)
+                rules.append(Rule(selectors: selectors, declarations: declarations,
+                                  animations: KeyframeAnimationInfo.fromDeclarations(declarations), media: media))
+            }
+        }
+        let text = css.replacingOccurrences(of: #"/\*[\s\S]*?\*/"#, with: "", options: .regularExpression)
+        parse(Substring(text), [])
+        self.rules = rules
+        self.keyframes = keyframes
+        hasSiblingCombinators = rules.contains { $0.selectors.contains { $0.selector.hasAdjacentCombinator || $0.selector.hasSiblingCombinator } }
+    }
+
+    /// The top-level `prelude { body }` blocks of `text`, braces matched; statements such as `@import x;` are skipped.
+    private static func blocks(_ text: Substring) -> [(String, Substring)] {
+        var result: [(String, Substring)] = []
+        var rest = text
+        while let open = rest.firstIndex(of: "{") {
+            if let semicolon = rest[..<open].lastIndex(of: ";") { rest = rest[rest.index(after: semicolon)...]; continue }
+            let prelude = rest[..<open].trimmingCharacters(in: .whitespacesAndNewlines)
+            var depth = 0
+            var close: Substring.Index?
+            for index in rest[open...].indices {
+                if rest[index] == "{" { depth += 1 } else if rest[index] == "}" {
+                    depth -= 1
+                    if depth == 0 { close = index; break }
+                }
+            }
+            guard let close else { break }
+            result.append((prelude, rest[rest.index(after: open)..<close]))
+            rest = rest[rest.index(after: close)...]
+        }
+        return result
+    }
+
+    /// A prelude's selectors: commas inside parentheses (`:is(a, b)`) do not split.
+    private static func splitSelectors(_ prelude: String) -> [String] {
+        var parts: [String] = []
+        var current = ""
+        var depth = 0
+        for c in prelude {
+            if c == "(" { depth += 1 } else if c == ")" { depth -= 1 }
+            if c == "," && depth == 0 {
+                parts.append(current.trimmingCharacters(in: .whitespacesAndNewlines))
+                current = ""
+            } else {
+                current.append(c)
+            }
+        }
+        parts.append(current.trimmingCharacters(in: .whitespacesAndNewlines))
+        return parts.filter { !$0.isEmpty }
+    }
+
+    /// Declarations with names lowercased, except custom properties, and `!important` dropped.
+    private static func declarations(_ body: Substring) -> [(name: String, value: String)] {
+        body.split(separator: ";").compactMap { declaration -> (String, String)? in
+            guard let colon = declaration.firstIndex(of: ":") else { return nil }
+            var name = declaration[..<colon].trimmingCharacters(in: .whitespacesAndNewlines)
+            if !name.hasPrefix("--") { name = name.lowercased() }
+            var value = declaration[declaration.index(after: colon)...].trimmingCharacters(in: .whitespacesAndNewlines)
+            if let important = value.range(of: #"\s*!important$"#, options: .regularExpression) { value.removeSubrange(important) }
+            return name.isEmpty || value.isEmpty ? nil : (name, value)
+        }
+    }
+
+    /// `matchSelectorCandidates` and `CssState.setPropertyValues`: matching
+    /// selectors sorted by specificity, then source order; each applies its
+    /// ruleset's declarations, a name keeping the position where it first appeared.
+    func match(_ view: View) -> Match {
+        var result = Match()
+        var matched: [(specificity: Int, pos: Int, rule: Int)] = []
+        var mediaResults: [String: Bool] = [:]
+        for (index, rule) in rules.enumerated() {
+            let mediaMatches = rule.media.allSatisfy { query in
+                if let known = mediaResults[query] { return known }
+                let matches = MediaQuery.matches(query)
+                mediaResults[query] = matches
+                return matches
+            }
+            if !mediaMatches { continue }
+            for (selector, pos) in rule.selectors {
+                if selector.dynamic { StyleSheet.track(selector, view, &result.changes) }
+                if selector.match(view) { matched.append((selector.specificity, pos, index)) }
+            }
+        }
+        matched.sort { $0.specificity != $1.specificity ? $0.specificity < $1.specificity : $0.pos < $1.pos }
+        var position: [String: Int] = [:]
+        for entry in matched {
+            let rule = rules[entry.rule]
+            for declaration in rule.declarations {
+                let name = declaration.name.hasPrefix("--") ? declaration.name : propertyName(css: declaration.name)
+                var longhands = expandShorthand(name, declaration.value)
+                if isCssExpression(declaration.value), let names = StyleSheet.shorthandLonghands(name) {
+                    longhands = names.map { ($0, PendingShorthand(shorthand: name, value: declaration.value)) }
+                }
+                for (longhand, value) in longhands {
+                    guard let value else { continue }
+                    if let index = position[longhand] {
+                        result.values[index].value = value
+                    } else {
+                        position[longhand] = result.values.count
+                        result.values.append((longhand, value))
+                    }
+                }
+            }
+            for info in rule.animations ?? [] {
+                if let animation = KeyframeAnimation(info, keyframes[info.name].map(KeyframeInfo.parse)) { result.animations.append(animation) }
             }
         }
         return result
+    }
+
+    /// The longhands a shorthand sets, or nil for a property that is not one.
+    static func shorthandLonghands(_ name: String) -> [String]? {
+        let names = expandShorthand(name, "0").map(\.0)
+        return names == [name] ? nil : names
+    }
+
+    /// The dependencies of a dynamic selector: a simple one on the view itself
+    /// (when its static part may match); a complex one on the view, its
+    /// ancestors and, with sibling combinators, their earlier siblings.
+    private static func track(_ selector: CSSSelector, _ view: View, _ changes: inout CSSChanges) {
+        guard let complex = selector as? ComplexSelector else {
+            if selector.mayMatch(view) { selector.trackChanges(view, &changes) }
+            return
+        }
+        var node: View? = view
+        while let current = node {
+            complex.trackChanges(current, &changes)
+            if complex.hasAdjacentCombinator || complex.hasSiblingCombinator {
+                for sibling in View.previousSiblings(current) { complex.trackChanges(sibling, &changes) }
+            }
+            node = current.parent
+        }
     }
 }
 
@@ -138,6 +248,19 @@ func expandShorthand(_ name: String, _ value: Any?) -> [(String, Any?)] {
         default: return []
         }
         return zip(corners, values).map { ($0, $1) }
+    case "transform": return expandTransform(value)
+    case "background":
+        // A gradient is the image; any other part is the color.
+        guard let text = value as? String else { return [("backgroundColor", value)] }
+        if let start = text.range(of: "linear-gradient("), let end = text[start.upperBound...].lastIndex(of: ")") {
+            let gradient = String(text[start.lowerBound...end])
+            let rest = (text[..<start.lowerBound] + text[text.index(after: end)...]).trimmingCharacters(in: .whitespaces)
+            return [("backgroundColor", rest.isEmpty ? nil : rest), ("backgroundImage", gradient)]
+        }
+        return [("backgroundColor", text), ("backgroundImage", nil)]
+    case "flex": return expandFlex(value)
+    case "flexFlow": return expandFlexFlow(value)
+    case "gap": return expandGap(value)
     default:
         return [(name, value)]
     }

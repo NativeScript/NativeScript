@@ -22,6 +22,7 @@ final class PageViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let owner else { return }
+        if navigationController == nil, !owner.isLoaded, owner.parent == nil { owner.load() }
         if let frame = (navigationController as? FrameNavigationController)?.owner {
             if owner.parent == nil { frame.addView(owner) }
             frame.updateActionBar(owner)
@@ -65,7 +66,7 @@ open class Page: ContentView {
     private(set) var controller: PageViewController!
     private(set) var actionBar: ActionBar?
     var owner: Owner?
-    private var isLoaded = false
+    private var didStyleNavigationBar = false
 
     weak var frame: Frame? { parent as? Frame }
 
@@ -83,6 +84,8 @@ open class Page: ContentView {
             addView(bar)
         } else {
             setContent(child)
+            // A view with its own controller (a TabView) is a child controller of the page's.
+            if let childController = child.viewController { controller.addChild(childController) }
         }
     }
 
@@ -92,11 +95,10 @@ open class Page: ContentView {
     }
 
     func willAppear() {
-        if !isLoaded {
-            isLoaded = true
+        if !didStyleNavigationBar {
+            didStyleNavigationBar = true
             actionBar?.applyNavigationBarStyle()
         }
-        callLoaded()
         actionBar?.update()
     }
 
@@ -134,13 +136,21 @@ open class ActionBar: View {
     open override class var cssType: String { "ActionBar" }
 
     var title: String?
+    let barItems = ActionBarItems()
     private var page: Page? { parent as? Page }
 
     private var navigationBar: UINavigationBar? {
         page?.frame?.controller.navigationBar
     }
 
-    var isEmpty: Bool { (title ?? "").isEmpty }
+    var isEmpty: Bool { (title ?? "").isEmpty && barItems.navigationButton == nil && barItems.items.isEmpty }
+
+    open override func addChild(_ child: View) { addBarChild(child) }
+
+    open override func eachChildView(_ body: (View) -> Void) {
+        if let button = barItems.navigationButton { body(button) }
+        for item in barItems.items { body(item) }
+    }
 
     open override func setProperty(_ name: String, _ value: Any?) {
         switch name {
@@ -176,13 +186,14 @@ open class ActionBar: View {
         navigationItem.title = title
         navigationItem.titleView = nil
         if let index = navController.viewControllers.firstIndex(of: controller), index > 0 {
-            navController.viewControllers[index - 1].navigationItem.backBarButtonItem = nil
+            navController.viewControllers[index - 1].navigationItem.backBarButtonItem = backBarButtonItem()
         }
+        let image = backIndicatorImage
         let appearance = navigationBar.standardAppearance
-        appearance.setBackIndicatorImage(nil, transitionMaskImage: nil)
+        appearance.setBackIndicatorImage(image, transitionMaskImage: image)
         updateAppearance(navigationBar, appearance)
-        navigationItem.setLeftBarButtonItems([], animated: false)
-        navigationItem.setRightBarButtonItems([], animated: false)
+        updateBackButtonVisibility(navigationItem)
+        populateMenuItems(navigationItem)
         setColor(navigationBar, toColor(applied["color"]))
         setBackgroundColor(navigationBar, toColor(applied["backgroundColor"]))
         let imageAppearance = navigationBar.standardAppearance
@@ -230,13 +241,28 @@ open class ActionBar: View {
 /// `UINavigationControllerImpl` from frame/index.ios.
 final class FrameNavigationController: UINavigationController {
     weak var owner: Frame?
+    private let transitions = NavigationTransitions()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        delegate = transitions
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if let owner, !owner.isLoaded, owner.parent == nil { owner.load() }
         owner?.loaded()
     }
 
     override var childForStatusBarStyle: UIViewController? { topViewController }
+}
+
+/// `UINavigationControllerDelegateImpl` from frame/index.ios: default navigations use UIKit's own animation.
+/// Answering these keeps iOS 26's swipe back from starting anywhere in the page, as in core.
+private final class NavigationTransitions: NSObject, UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? { nil }
+
+    func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? { nil }
 }
 
 /// `Frame` from frame/index.ios: a navigation stack of pages.
@@ -247,12 +273,31 @@ open class Frame: View {
     /// The frame that navigation goes to: the most recently created one still shown.
     public static var topmost: Frame? { stack.last }
 
+    /// `_pushInFrameStackRecursive`: a selected tab's frame receives navigation.
+    static func bringToTop(_ frame: Frame) {
+        stack.removeAll { $0 === frame }
+        stack.append(frame)
+    }
+
+    /// The frames in a closed modal's tree stop receiving navigation.
+    static func forget(_ root: View) {
+        func contains(_ view: View) -> Bool {
+            var current: View? = view
+            while let candidate = current {
+                if candidate === root { return true }
+                current = candidate.parent
+            }
+            return false
+        }
+        stack.removeAll(where: contains)
+    }
+
     let controller = FrameNavigationController()
     private var initialPage: Page?
     private(set) var currentPage: Page?
     /// The backstack and the current page, as the navigation controller shows them.
     private var pages: [Page] = []
-    private var isLoaded = false
+    private var didShowInitialPage = false
     private var showNavigationBar: Bool?
 
     public override init() {
@@ -280,8 +325,8 @@ open class Frame: View {
     }
 
     func loaded() {
-        guard !isLoaded else { return }
-        isLoaded = true
+        guard !didShowInitialPage else { return }
+        didShowInitialPage = true
         if let page = initialPage { navigateCore(page, animated: false) }
     }
 

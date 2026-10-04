@@ -3,6 +3,7 @@ import { dirname, relative } from 'node:path';
 import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
+import { rowTemplates } from './listview.ts';
 
 /** A screen of the app's stack navigator. */
 export interface Screen {
@@ -28,9 +29,15 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
   const arity = new Map<string, number>();
   // Components are imported as their virtual classes; React's own modules have no part in a release build.
   const imports: string[] = [];
+  // react-nativescript's `<ListView>`, under the name the file imports it as.
+  let listTag = '';
   for (const i of sf.statements.filter(ts.isImportDeclaration)) {
     if (/^['"](react|react-nativescript-navigation|@react-navigation\/core)['"]$/.test(i.moduleSpecifier.getText())) continue;
     const named = i.importClause?.namedBindings;
+    if ((i.moduleSpecifier as ts.StringLiteral).text === 'react-nativescript' && named && ts.isNamedImports(named)) {
+      const list = named.elements.find((e) => (e.propertyName ?? e.name).text === 'ListView');
+      if (list && named.elements.length === 1) { listTag = list.name.text; continue; }
+    }
     const names = named && ts.isNamedImports(named) ? named.elements.map((e) => e.name.text) : [];
     const own = names.filter((n) => components.has(n));
     for (const n of own) imports.push(`import ${n} from './${n}.react';`);
@@ -165,6 +172,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
   const element = (n: ts.JsxElement | ts.JsxSelfClosingElement, loops: Loop[]): TNode => {
     const open = ts.isJsxElement(n) ? n.openingElement : n;
     const tag = open.tagName.getText();
+    if (listTag && tag === listTag) return list(open, loops);
     const attrs: Attr[] = [];
     const events: Event[] = [];
     const isComponent = /^[A-Z]/.test(tag);
@@ -186,6 +194,77 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
     const element = canonical(tag);
     if (!element) throw new Error(`${path}: <${tag}> is not a @nativescript/core element the release build knows`);
     return { kind: 'element', tag: element, attrs, events, children: ts.isJsxElement(n) ? children(n.children, loops) : [] };
+  };
+
+  /**
+   * react-nativescript's `<ListView items cellFactory>`, or `cellFactories` (a `new Map` of key →
+   * `{ placeholderItem, cellFactory }`) chosen by `itemTemplateSelector(item, index, items)`. A cell
+   * factory is called with the item only.
+   */
+  const list = (open: ts.JsxOpeningLikeElement, loops: Loop[]): TNode => {
+    const attrs: Attr[] = [];
+    const events: Event[] = [];
+    const factories: { key: string; fn: ts.Expression }[] = [];
+    let single: ts.Expression | null = null;
+    let selector: ts.Expression | null = null;
+    for (const a of open.attributes.properties) {
+      if (!ts.isJsxAttribute(a)) throw new Error(`${path}: spread attributes are not supported in a release build yet`);
+      const attr = a.name.getText();
+      const init = a.initializer;
+      const e = init && ts.isJsxExpression(init) ? init.expression : undefined;
+      if (attr === 'key') continue;
+      if (attr === 'cellFactory' && e) { single = e; continue; }
+      if (attr === 'itemTemplateSelector' && e) { selector = e; continue; }
+      if (attr === 'cellFactories' && e) { factories.push(...cellFactories(e)); continue; }
+      if (/^on[A-Z]/.test(attr) && e) { events.push({ name: attr[2].toLowerCase() + attr.slice(3), method: handler(e, loops) }); continue; }
+      if (!init) attrs.push({ name: attr, value: 'true' });
+      else if (ts.isStringLiteral(init)) attrs.push({ name: attr, value: init.text });
+      else if (e) attrs.push({ name: attr, method: expr(e.getText(), loops) });
+    }
+    const items = attrs.find((a) => a.name === 'items');
+    if (!items || !('method' in items)) throw new Error(`${path}: <${listTag}> needs items={…}`);
+    const rows = `this.${items.method}(${args(loops)})`;
+    const row = (fn: ts.Expression) => {
+      while (ts.isParenthesizedExpression(fn)) fn = fn.expression;
+      if (!(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) || fn.parameters.length > 1) throw new Error(`${path}: a cell factory is a function of the item`);
+      if (ts.isBlock(fn.body)) throw new Error(`${path}: a cell factory with a block body is not supported in a release build yet`);
+      const item = fn.parameters[0] ? (fn.parameters[0].name as ts.Identifier).text : `$item${loops.length}`;
+      const index = `$i${loops.length}`;
+      const inner = [...loops, { item, index, param: `${item} = ${rows}[0], ${index} = 0` }];
+      return { item, index, inner, body: jsx(fn.body, inner) };
+    };
+    const selectorMethod = (inner: Loop[], code: string) => {
+      const m = `$b${next++}`;
+      methods.push(`  ${m}(${params(inner)}): string { return ${code}; }`);
+      attrs.push({ name: 'itemTemplateSelector', method: m });
+    };
+    let children: TNode[];
+    if (selector && factories.length) {
+      selectorMethod([...loops, { item: '$item', index: '$index', param: `$item = ${rows}[0], $index = 0` }], `${rewrite(selector.getText(), local(loops))}($item, $index, ${rows})`);
+      children = factories.map(({ key, fn }): TNode => {
+        const r = row(fn);
+        return { kind: 'template', key, item: r.item, index: r.index, body: r.body };
+      });
+    } else {
+      // Without a selector, or without factories to select from, every row is `cellFactory`'s.
+      if (!single) throw new Error(`${path}: <${listTag}> needs a cellFactory`);
+      const r = row(single);
+      const { templates, selector: choose } = rowTemplates(r.body, r.item, r.index);
+      if (choose) selectorMethod(r.inner, choose((m) => `this.${m}(${args(r.inner)})`));
+      children = templates;
+    }
+    return { kind: 'element', tag: 'ListView', attrs, events, children };
+  };
+  /** `new Map([['header', { placeholderItem, cellFactory: (item) => <…/> }], …])`. */
+  const cellFactories = (e: ts.Expression): { key: string; fn: ts.Expression }[] => {
+    const entries = ts.isNewExpression(e) && e.expression.getText() === 'Map' ? e.arguments?.[0] : undefined;
+    if (!entries || !ts.isArrayLiteralExpression(entries)) throw new Error(`${path}: cellFactories={…} needs an inline new Map([...]) in a release build`);
+    return entries.elements.map((entry) => {
+      const [k, v] = ts.isArrayLiteralExpression(entry) ? entry.elements : [];
+      const fn = v && ts.isObjectLiteralExpression(v) ? v.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'cellFactory')?.initializer : undefined;
+      if (!k || !ts.isStringLiteral(k) || !fn) throw new Error(`${path}: a cellFactories entry is ['key', { placeholderItem, cellFactory }]`);
+      return { key: k.text, fn };
+    });
   };
 
   const jsx = (e: ts.Expression, loops: Loop[]): TNode[] => {

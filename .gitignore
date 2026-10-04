@@ -9,3 +9,6 @@ kit/Examples/Recipes/compare/
 */hooks/
 */node_modules/
 */node_modules
+kit-android/build/
+kit-android/.gradle/
+kit-android/.kotlin/

@@ -39,10 +39,13 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
       if (decl && line.includes('{')) {
         const name = decl[2];
         let type = types.get(name) ?? null;
+        const base = decl[1] === 'class' && decl[3] && !/Protocol$|Convertible$|Equatable|Hashable/.test(decl[3]) ? decl[3] : null;
         if (!type && isPublic) {
-          type = { name, base: decl[1] === 'class' && decl[3] && !/Protocol$|Convertible$|Equatable|Hashable/.test(decl[3]) ? decl[3] : null, members: new Map(), props: new Set() };
+          type = { name, base, members: new Map(), props: new Set() };
           types.set(name, type);
         }
+        // An extension can come before its class in file order: the class declaration names the base.
+        if (type && base) type.base = base;
         stack.push({ type: isPublic ? type : null, depth });
       } else {
         const owner = stack.at(-1);
