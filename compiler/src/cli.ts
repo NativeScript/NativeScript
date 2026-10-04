@@ -138,7 +138,7 @@ const translator = new Translator(checker, infos, sourceFiles);
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
-const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport NativeScriptKit\n\n`;
+const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n\n`;
 const translated = translateModules(translator, program, modules);
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;

@@ -87,7 +87,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         continue;
       }
       const inner = [...loops, { item: node.item, index: node.index }];
-      const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in ${call(node.key, inner)} }` : `{ item, _ in jsKey(item) }`;
+      // A key may be any value (`:key="i"`); rows are kept by its string form.
+      const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in jsKey(${call(node.key, inner)}) }` : `{ item, _ in jsKey(item) }`;
       if (throws(node.items) || (node.key && throws(node.key))) throw new Error(`${c.name}: a for in the template can throw`);
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       say(depth, `For(${region}, { Array(${call(node.items, loops)}) }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);

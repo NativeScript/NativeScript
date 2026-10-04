@@ -2,6 +2,7 @@ import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
 import { AsyncLowering, type AsyncCtx } from './async.ts';
 import { CoreAPI } from './core.ts';
+import { NativeAPI } from './native-calls.ts';
 
 /**
  * TypeScript to Swift, typed by the checker, with JavaScript's semantics
@@ -74,6 +75,7 @@ export class Translator {
   readonly throwsInfo: Throws;
   private lowering: AsyncLowering;
   private core: CoreAPI;
+  readonly native: NativeAPI;
 
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;
@@ -81,9 +83,10 @@ export class Translator {
   constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[]) {
     this.checker = checker;
     this.components = components;
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } });
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
+    this.native = new NativeAPI(this);
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } });
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -137,6 +140,10 @@ export class Translator {
   type(t: ts.Type, where?: ts.Node): string {
     const c = this.checker;
     const F = ts.TypeFlags;
+    if (t.flags & F.EnumLike) {
+      const native = this.native.type(t);
+      if (native) return native;
+    }
     if (t.flags & (F.Any | F.Unknown)) return 'Any?';
     if (t.flags & F.Never) return 'Never';
     if (t.flags & (F.Void | F.Undefined)) return 'Void';
@@ -180,6 +187,8 @@ export class Translator {
         throw this.error(where, `the ${name} type`);
     }
     if (name && ERRORS[name] && sym?.declarations?.some((d) => d.getSourceFile().isDeclarationFile)) return ERRORS[name];
+    const native = this.native.type(t);
+    if (native) return native;
     const index = t.getStringIndexType() ?? t.getNumberIndexType();
     if (index && !t.getProperties().length) return `JSRecord<${this.type(index, where)}>`;
     const calls = t.getCallSignatures();
@@ -555,9 +564,17 @@ export class Translator {
 
   /** A callback for an API that does not take throwing closures (a timer): what it throws is reported. */
   private callback(e: ts.Expression): string {
-    const code = ts.isArrowFunction(e) || ts.isFunctionExpression(e) ? this.closure(e) : this.expr(e);
-    const throws = ts.isArrowFunction(e) || ts.isFunctionExpression(e) ? this.throwsInfo.fn(e) : true;
-    return throws ? `{ jsReport(${code}) }` : code;
+    if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
+      const code = this.closure(e);
+      return this.throwsInfo.fn(e) ? `{ jsReport(${code}) }` : code;
+    }
+    // A Promise executor's resolve passed as the callback (`setTimeout(resolve, ms)`) resolves with undefined.
+    const resolvers = ts.isIdentifier(e) ? this.resolvers.get(this.resolve(e)!) : undefined;
+    if (resolvers) return resolvers.type === 'Void' ? `{ ${resolvers.name}.resolve() }` : `{ ${resolvers.name}.resolve(${this.zero(resolvers.type) ?? 'nil'}) }`;
+    // A function value is called with nothing, as the timer calls it: each parameter undefined.
+    const sig = this.checker.getTypeAtLocation(e).getCallSignatures()[0];
+    const pads = (sig?.getParameters() ?? []).map((p) => (this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e) === 'Void' ? '()' : 'nil'));
+    return `{ jsReport { try ${this.expr(e)}(${pads.join(', ')}) } }`;
   }
 
   // ---- Classes -------------------------------------------------------------------------------
@@ -710,7 +727,7 @@ export class Translator {
         return out;
       });
       this.indent = '    ';
-      lines.push(`    ${sameAsBase || (isError && /^_ \w+: String\??$/.test(this.params(ctor, false))) ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
+      lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
     } else if (fieldInits.length) {
       if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)}) {`, `        super.init(${baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase ? 'override ' : ''}init() {`, ...(appBase ? ['        super.init()'] : []), ...fieldInits, '    }');
@@ -1144,6 +1161,8 @@ export class Translator {
     if (name === 'undefined') return 'nil';
     if (name === 'NaN') return 'Double.nan';
     if (name === 'Infinity') return 'Double.infinity';
+    const native = this.native.identifier(e);
+    if (native) return native;
     return this.narrowed(e, ident(name));
   }
 
@@ -1192,6 +1211,8 @@ export class Translator {
     }
     const core = this.core.property(e);
     if (core) return core;
+    const native = this.native.property(e);
+    if (native) return native;
     const dot = e.questionDotToken ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
       return this.typeOf(target).endsWith('?') ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}.utf16.count)`;
@@ -1347,7 +1368,7 @@ export class Translator {
       }
       if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
-      const core = this.core.call(e);
+      const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
       if (this.isAny(target)) return `jsCall(jsGet(${this.expr(target)}, ${swiftString(method)})${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
       const t = this.typeOf(target).replace(/\?$/, '');
@@ -1400,6 +1421,8 @@ export class Translator {
   }
 
   private globalCall(callee: ts.Identifier, e: ts.CallExpression): string {
+    const native = this.native.call(e);
+    if (native) return native;
     const name = callee.text;
     const arg = (k: number) => e.arguments[k];
     const decl = this.resolve(callee)?.declarations?.[0];
@@ -1478,6 +1501,7 @@ export class Translator {
     const t = this.typeOf(e);
     if (t === 'Double') return this.expr(e);
     if (t === 'JSDate') return `${this.expr(e)}.valueOf()`;
+    if (this.native.isEnumType(t)) return `Double(${this.expr(e)}.rawValue)`;
     if (t === 'String') return `jsNumberFromString(${this.expr(e)})`;
     if (t === 'Bool') return `(${this.expr(e)} ? 1 : 0)`;
     return `jsToNumber(${this.expr(e)})`;
@@ -1798,7 +1822,7 @@ export class Translator {
     }
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
     if (name === 'Array') throw this.error(e, `new ${name}`);
-    const core = this.core.construct(e);
+    const core = this.core.construct(e) ?? this.native.construct(e);
     if (core) return core;
     if (ts.isIdentifier(callee)) {
       const decl = this.checker.getTypeAtLocation(callee).getSymbol()?.valueDeclaration;
@@ -1852,7 +1876,10 @@ export class Translator {
       case K.EqualsToken: {
         if (ts.isPropertyAccessExpression(e.left) && this.symbolName(e.left.expression) === 'VueRef' && e.left.name.text === 'value') return `${target()} = ${this.signalWrite(e.left.expression, e.right, this.typeOf(e.left))}`;
         if (ts.isArrayLiteralExpression(e.left)) throw this.error(e, 'a destructuring assignment');
-        if (ts.isPropertyAccessExpression(e.left)) { const core = this.core.assign(e.left, e.right); if (core) return core; }
+        if (ts.isPropertyAccessExpression(e.left)) {
+          const special = this.core.assign(e.left, e.right) ?? this.native.assign(e.left, e.right);
+          if (special) return special;
+        }
         if (ts.isPropertyAccessExpression(e.left) && this.isAny(e.left.expression)) return `jsSet(${this.expr(e.left.expression)}, ${swiftString(e.left.name.text)}, ${this.coerce(e.right, 'Any?')})`;
         if (ts.isElementAccessExpression(e.left) && this.isAny(e.left.expression)) return `jsSet(${this.expr(e.left.expression)}, ${this.str(e.left.argumentExpression)}, ${this.coerce(e.right, 'Any?')})`;
         return `${target()} = ${this.coerce(e.right, this.declaredTypeOf(e.left) ?? this.typeOf(e.left))}`;
@@ -1964,6 +1991,8 @@ export class Translator {
   private object(e: ts.ObjectLiteralExpression): string {
     const contextual = this.checker.getContextualType(e);
     const type = contextual && !(contextual.flags & ts.TypeFlags.Any) ? contextual : this.checker.getTypeAtLocation(e);
+    const struct = this.native.structLiteral(e, this.checker.getNonNullableType(type));
+    if (struct) return struct;
     const name = this.type(this.checker.getNonNullableType(type), e).replace(/\?$/, '');
     if (name.startsWith('JSRecord<')) {
       const v = name.replace(/^JSRecord<(.*)>$/, '$1');

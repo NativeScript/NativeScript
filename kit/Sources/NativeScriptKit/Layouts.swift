@@ -31,7 +31,13 @@ open class LayoutBase: CustomLayoutView, RegionHost {
 
     private var entries: [Entry] = []
     private(set) var subViews: [View] = []
-    var clipToBounds = false
+    /// `clipToBoundsProperty`: true by default, applied when the native view is made.
+    var clipToBounds = true
+
+    open override func initNativeView() {
+        super.initNativeView()
+        setNativeClipToBounds()
+    }
 
     open override func addChild(_ child: View) {
         entries.append(.view(child))
@@ -90,7 +96,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
 
     open override func setProperty(_ name: String, _ value: Any?) {
         if name == "clipToBounds" {
-            clipToBounds = toBool(value) ?? false
+            clipToBounds = toBool(value) ?? true
             setNativeClipToBounds()
         } else {
             super.setProperty(name, value)
