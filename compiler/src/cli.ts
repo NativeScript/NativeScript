@@ -227,11 +227,17 @@ say(`${components.length} components and ${modules.length} modules from ${framew
 
 // 4. The Xcode project. The kit is a static library target rather than its
 // Swift package because package targets get none of the project's settings.
-// The hermetic seal lets the link drop the kit's code, vtable entries and
-// conformances the app never reaches; it needs every Swift module in the link
-// compiled with it and with full LTO.
-// A plugin's Swift module goes without it: sealed, its UIView subclass loses the
-// Objective-C class data UIKit reads (`+[NSBundle bundleForClass:]` aborts).
+// Two parts of Swift's hermetic seal: link-time internalizing and virtual
+// function elimination let the link drop the kit's code and vtable entries the
+// app never reaches; every Swift module in the link must be compiled with
+// them, with full LTO. Not the whole seal (`-experimental-hermetic-seal-at-link`):
+// its conditional runtime records keep a Swift class's __objc_classlist entry
+// only while its `$s…CN` alias is referenced, which the optimizer rewrites to
+// the metadata it aliases, so used UIView subclasses drop out of the list and
+// the Objective-C runtime aborts on their metaclass ("no class for metaclass",
+// from +[NSBundle bundleForClass:] when one becomes first responder); and its
+// witness method elimination leaves ns-octane's tapped buttons at another scale.
+const SWIFT_WHOLE_PROGRAM = ['-enable-llvm-vfe', '-internalize-at-link'].map((f) => `-Xfrontend ${f}`).join(' ');
 const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!;
 const pluginLines = xcodegenLines(native, out);
 const resources = iosProjectResources({ app, appDir, out, name, say });
@@ -248,7 +254,8 @@ settings:
     Release:
       SWIFT_OPTIMIZATION_LEVEL: -Osize
       SWIFT_LTO: YES
-${native.swift.length ? '' : '      OTHER_SWIFT_FLAGS: -experimental-hermetic-seal-at-link\n'}      DEAD_CODE_STRIPPING: YES
+      OTHER_SWIFT_FLAGS: ${SWIFT_WHOLE_PROGRAM}
+      DEAD_CODE_STRIPPING: YES
 ${pluginLines.packages ? `packages:\n${pluginLines.packages}` : ''}targets:
   NativeScriptKit:
     type: library.static
