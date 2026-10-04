@@ -168,6 +168,7 @@ open class View {
     fun load() {
         if (isLoaded) return
         setUp()
+        TouchManager.viewLoading(this)
         matchCSS()
         isLoaded = true
         val names = pendingNames.toList()
@@ -306,6 +307,7 @@ open class View {
         val had = applied.containsKey(name)
         if (!had && (value == null || sameValue(value, defaultValue(name)))) return
         if (had && sameValue(value, applied[name])) return
+        if (affectsLayout(name)) native?.requestLayout()
         if (value == null) applied.remove(name) else applied[name] = value
         propertyValueChanged(name, value)
         if (isLoaded && !isBatching) setProperty(name, value) else deferApplication(name)
@@ -331,7 +333,16 @@ open class View {
         applied[name] = value
         propertyValueChanged(name, value)
         emit(name + "Change", value)
+        if (affectsLayout(name)) native?.requestLayout()
         notifyCSSDependents(name)
+    }
+
+    /** A property core declares with `affectsLayout` on Android: a change requests a layout pass. */
+    private fun affectsLayout(name: String): Boolean = when (name) {
+        "text" -> this is TextBase
+        "html" -> this is HtmlView
+        "orientation" -> this is ScrollView
+        else -> false
     }
 
     /**
@@ -655,6 +666,13 @@ open class View {
         }
         handlers.getOrPut(event) { mutableListOf() }.add(handler)
         if (isLoaded) eventSubscribed(event)
+    }
+
+    /** `off(event)` without a callback: every handler of the event goes. */
+    fun off(event: String) {
+        val type = gestureType(event)
+        if (type != null && event !in ownEvents) gestureObservers.remove(type)?.forEach { it.detach() }
+        else handlers.remove(event)
     }
 
     /** A subscription to one of the view's own events, once it is loaded; controls with native listeners override. */

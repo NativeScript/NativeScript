@@ -4,10 +4,14 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isCoreDeclaration } from './core.ts';
 import { kitExtends, kitMember, type KitMember, type KitType } from './kit-index.ts';
-import type { KotlinCore, Translator } from './kotlin.ts';
+import { kotlinString, numberLiteral, type KotlinCore, type Translator } from './kotlin.ts';
 
+/** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
+const TOP_LEVEL = '';
 const KIT = fileURLToPath(new URL('../../kit-android/src/main/kotlin/org/nativescript/kit', import.meta.url));
 const NATIVE_MEMBERS = new Set(['android', 'nativeView', 'nativeViewProtected']);
+/** View methods whose arguments core reads as plain script objects. */
+const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
 
 /**
  * What kit-android offers translated code, read from its Kotlin sources: each
@@ -46,6 +50,12 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
           const receiver = types.get(ext[2]) ?? { name: ext[2], base: null, members: new Map(), props: new Set() };
           types.set(ext[2], receiver);
           add(receiver, ext[4], { kind: ext[1] === 'fun' ? 'func' : 'var', static: !!ext[3], type: ext[7].trim().replace(/\s+get\(\).*$/, '') || 'Unit', params: ext[6] });
+        }
+        const fn = depth === 0 && !ext ? /^(?:inline\s+)?fun\s+(?:<[^>]*>\s*)?(\w+)\s*\(([^)]*)\)\s*(?::\s*([^={]+))?/.exec(line) : null;
+        if (fn) {
+          const global = types.get(TOP_LEVEL) ?? { name: TOP_LEVEL, base: null, members: new Map(), props: new Set() };
+          types.set(TOP_LEVEL, global);
+          add(global, fn[1], { kind: 'func', static: true, type: (fn[3] ?? 'Unit').trim(), params: fn[2] });
         }
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
@@ -144,6 +154,8 @@ export class CoreKotlin implements KotlinCore {
   }
 
   property(e: ts.PropertyAccessExpression): string | null {
+    const constant = this.constant(e);
+    if (constant !== null) return constant;
     const owner = this.owner(e.expression);
     if (!owner) return null;
     const t = this.t;
@@ -159,6 +171,16 @@ export class CoreKotlin implements KotlinCore {
     }
     const m = this.member(owner.name, name, e);
     return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e));
+  }
+
+  /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
+  private constant(e: ts.PropertyAccessExpression): string | null {
+    const decl = this.t.resolve(e.name)?.declarations?.[0];
+    if (!decl || !isCoreDeclaration(decl) || !ts.isVariableDeclaration(decl) || !(ts.getCombinedNodeFlags(decl) & ts.NodeFlags.Const)) return null;
+    const type = this.t.checker.getTypeAtLocation(decl);
+    if (type.isStringLiteral()) return kotlinString(type.value);
+    if (type.isNumberLiteral()) return numberLiteral(String(type.value));
+    return null;
   }
 
   lvalue(e: ts.PropertyAccessExpression): string | null {
@@ -179,18 +201,27 @@ export class CoreKotlin implements KotlinCore {
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
     const m = this.member(owner.name, name, left);
+    // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
+    if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
   }
 
   call(e: ts.CallExpression): string | null {
+    if (ts.isIdentifier(e.expression)) return this.topLevelCall(e, e.expression);
     if (!ts.isPropertyAccessExpression(e.expression)) return null;
+    // A factory in a core namespace is the kit class it builds.
+    if (e.expression.getText() === 'CoreTypes.AnimationCurve.cubicBezier' && isCoreDeclaration(this.t.resolve(e.expression.name)?.declarations?.[0])) {
+      return `CubicBezierAnimationCurve(${e.arguments.map((a) => this.t.coerce(a, 'Double')).join(', ')})`;
+    }
     const owner = this.owner(e.expression.expression);
     if (!owner) return null;
     const t = this.t;
     const name = e.expression.name.text;
     const m = this.member(owner.name, name, e.expression);
     const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression);
-    return this.fromKit(`${recv}.${name}(${t.args(e).join(', ')})`, m.type, t.typeOf(e));
+    if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
+    const args = SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e);
+    return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e), keepsNullable(e));
   }
 
   construct(e: ts.NewExpression): string | null {
@@ -204,17 +235,62 @@ export class CoreKotlin implements KotlinCore {
       if (args.length === 1) return `Color(${t.toNumber(args[0])}.toLong().toInt())`;
       return `Color.argb(${args.slice(0, 4).map((a) => t.toNumber(a)).join(', ')})`;
     }
+    if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
     return `${sym.name}(${t.args(e).join(', ')})`;
   }
 
-  /** A kit value as the TypeScript type reads it: kit Ints and Floats are Doubles. */
-  private fromKit(code: string, kitType: string, tsType: string): string {
+  /** A function core exports (`getRootLayout()`) that the kit declares at top level. */
+  private topLevelCall(e: ts.CallExpression, callee: ts.Identifier): string | null {
+    if (!isCoreDeclaration(this.t.resolve(callee)?.declarations?.[0])) return null;
+    const m = kitMember(this.index, TOP_LEVEL, callee.text);
+    if (!m) return null;
+    return this.fromKit(`${callee.text}(${this.t.args(e).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
+  }
+
+  /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
+  private navigate(recv: string, e: ts.CallExpression): string {
+    const entry = e.arguments[0];
+    if (!entry || !ts.isObjectLiteralExpression(entry)) throw this.t.error(e, 'frame.navigate with anything but a { create } entry');
+    for (const p of entry.properties) if (p.name?.getText() !== 'create') throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
+    const create = entry.properties[0];
+    if (!create || !ts.isPropertyAssignment(create)) throw this.t.error(entry, 'a navigation entry without create');
+    return `${recv}.navigate { (${this.t.expr(create.initializer)})() }`;
+  }
+
+  /**
+   * An argument core reads as a plain script object (an animation definition):
+   * literals become JavaScript objects and arrays, whatever their declared type.
+   */
+  private scriptValue(e: ts.Expression): string {
+    if (ts.isObjectLiteralExpression(e)) {
+      const entries = e.properties.map((p) => {
+        if (ts.isPropertyAssignment(p)) return `${kotlinString(p.name.getText().replace(/^['"]|['"]$/g, ''))} to ${this.scriptValue(p.initializer)}`;
+        if (ts.isShorthandPropertyAssignment(p)) return `${kotlinString(p.name.text)} to ${this.t.coerce(p.name, 'Any?')}`;
+        throw this.t.error(p, 'this member in an animation definition');
+      });
+      return `JSObject(${entries.join(', ')})`;
+    }
+    if (ts.isArrayLiteralExpression(e)) return `JSArray<Any?>(listOf(${e.elements.map((x) => this.scriptValue(x)).join(', ')}))`;
+    if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
+      // A function core calls back (`closeCallback`) takes script values.
+      const names = e.parameters.map((_, i) => `__a${i}`);
+      const args = e.parameters.map((p, i) => this.t.fromAnyCode(names[i], this.t.typeOf(p)));
+      return `{ ${names.map((n) => `${n}: Any?`).join(', ')} -> (${this.t.expr(e)})(${args.join(', ')}); null }`;
+    }
+    return this.t.coerce(e, 'Any?');
+  }
+
+  /**
+   * A kit value as the TypeScript type reads it: kit Ints and Floats are Doubles.
+   * An object only tested or dropped stays nullable: core declares some results non-null that are not.
+   */
+  private fromKit(code: string, kitType: string, tsType: string, keepNull = false): string {
     const k = kitType.trim();
     const numeric = /^(Int|Long|Float|Short|Byte)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}?.toDouble()` : `${code}.toDouble()`;
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0.0' : tsType === 'Boolean' ? 'false' : null;
-      return zero ? `(${code} ?: ${zero})` : `${code}!!`;
+      return zero ? `(${code} ?: ${zero})` : keepNull ? code : `${code}!!`;
     }
     return code;
   }
@@ -224,4 +300,13 @@ export class CoreKotlin implements KotlinCore {
     const conversions: Record<string, string> = { Int: 'toInt', Long: 'toLong', Float: 'toFloat', Short: 'toShort', Byte: 'toByte' };
     return conversions[k] ? `(${code}).${conversions[k]}()` : code;
   }
+}
+
+/** Whether `e`'s value is only tested (a condition, the operand of `!`) or dropped. */
+function keepsNullable(e: ts.Expression): boolean {
+  let n: ts.Node = e;
+  while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
+  const p = n.parent;
+  return ts.isExpressionStatement(p) || (ts.isConditionalExpression(p) && p.condition === n) || (ts.isIfStatement(p) && p.expression === n)
+    || (ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken);
 }

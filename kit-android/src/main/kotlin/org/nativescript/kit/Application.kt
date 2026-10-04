@@ -35,7 +35,7 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         root.load()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val frame = Frame.topmost
+                val frame = Frame.topmost()
                 if (frame != null && frame.canGoBack) {
                     frame.goBack()
                     return

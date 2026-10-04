@@ -254,6 +254,7 @@ export class Translator implements AsyncTranslator {
       case 'OutputEmitterRef': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': return 'Router';
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
+      case 'AnimationPromise': return 'JSPromise<Unit>';
       case 'Map': case 'ReadonlyMap': return `JSMap<${arg(0)}, ${arg(1)}>`;
       case 'Set': case 'ReadonlySet': return `JSSet<${arg(0)}>`;
       case 'Date': return 'JSDate';
@@ -686,6 +687,19 @@ export class Translator implements AsyncTranslator {
 
   // ---- Classes -------------------------------------------------------------------------------
 
+  /** Whether a member of `cls` assigns `this.name`. */
+  private isAssigned(cls: ts.ClassDeclaration, name: string): boolean {
+    let found = false;
+    const visit = (n: ts.Node): void => {
+      if (found) return;
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+          && ts.isPropertyAccessExpression(n.left) && n.left.expression.kind === ts.SyntaxKind.ThisKeyword && n.left.name.text === name) found = true;
+      else ts.forEachChild(n, visit);
+    };
+    for (const m of cls.members) if (!ts.isPropertyDeclaration(m) || m.initializer) ts.forEachChild(m, visit);
+    return found;
+  }
+
   /** A component's members; the caller adds `render()`. Returns the constructor parameters and the lines inside the class. */
   componentMembers(cls: ts.ClassDeclaration, props: string[]): { params: string[]; lines: string[] } {
     this.props = new Set(props);
@@ -717,7 +731,9 @@ export class Translator implements AsyncTranslator {
           continue;
         }
         this.indent = '        ';
-        lines.push(`    val ${ident(name)}: ${t} = ${this.coerce(m.initializer, t)}`);
+        // A field the class assigns after construction (a Vue `let`) is a Kotlin `var`.
+        const reassigned = !hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) && this.isAssigned(cls, name);
+        lines.push(`    ${reassigned ? 'var' : 'val'} ${ident(name)}: ${t} = ${this.coerce(m.initializer, t)}`);
         this.indent = '    ';
         continue;
       }
@@ -1589,7 +1605,7 @@ export class Translator implements AsyncTranslator {
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
     if (e.questionDotToken) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
-    if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
+    if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
       return `this.${ident(callee.name.text)}.value(${this.args(e, this.arity(e)).join(', ')})`;
     }
@@ -1735,7 +1751,7 @@ export class Translator implements AsyncTranslator {
       }
     }
     const args = info.props.map((p) => `${ident(p)} = ${given.get(p) ?? 'null'}`).join(', ');
-    return `Frame.topmost?.navigate { ${component}(${args}).render() }`;
+    return `Frame.topmost()?.navigate { ${component}(${args}).render() }`;
   }
 
   toNumber(e: ts.Expression): string {
@@ -2077,6 +2093,7 @@ export class Translator implements AsyncTranslator {
         return `${t}.${adopt ? 'thenAdopt' : 'then'}<${result}>(${pass}, ${this.rejectionHandler(f, adopt ? `JSPromise<${result}>` : result)})`;
       }
       case 'finally': return this.returnsPromise(f) ? `${t}.finallyAdopt(${this.fn(f)})` : `${t}.finally(${this.fn(f, '() -> Unit')})`;
+      case 'cancel': return `${t}.cancel()`;
     }
     throw this.error(e, `Promise.${name}`);
   }

@@ -128,24 +128,39 @@ class StyleSheet(val rules: List<Rule>, val keyframes: Map<String, List<Keyframe
             return result
         }
 
-        /** A prelude's selectors: commas inside parentheses (`:is(a, b)`) do not split. */
-        private fun splitSelectors(prelude: String): List<String> {
+        /** A prelude's selectors: commas inside parentheses (`:is(a, b)`) or quotes do not split. */
+        private fun splitSelectors(prelude: String): List<String> =
+            topLevel(prelude, ',').map { it.trim() }.filter { it.isNotEmpty() }
+
+        /** `text` split at each `separator` outside parentheses and quotes. */
+        private fun topLevel(text: String, separator: Char): List<String> {
             val parts = mutableListOf<String>()
-            val current = StringBuilder()
+            var start = 0
             var depth = 0
-            for (c in prelude) {
-                if (c == '(') depth++ else if (c == ')') depth--
-                if (c == ',' && depth == 0) {
-                    parts.add(current.toString().trim())
-                    current.clear()
-                } else current.append(c)
+            var quote: Char? = null
+            var index = 0
+            while (index < text.length) {
+                val c = text[index]
+                if (quote != null) {
+                    if (c == '\\') index++ else if (c == quote) quote = null
+                } else if (c == '"' || c == '\'') {
+                    quote = c
+                } else if (c == '(') {
+                    depth++
+                } else if (c == ')') {
+                    depth--
+                } else if (c == separator && depth == 0) {
+                    parts.add(text.substring(start, index))
+                    start = index + 1
+                }
+                index++
             }
-            parts.add(current.toString().trim())
-            return parts.filter { it.isNotEmpty() }
+            parts.add(text.substring(minOf(start, text.length)))
+            return parts
         }
 
         /** Declarations with names lowercased, except custom properties, and `!important` dropped. */
-        fun declarations(body: String): List<Pair<String, String>> = body.split(";").mapNotNull { declaration ->
+        fun declarations(body: String): List<Pair<String, String>> = topLevel(body, ';').mapNotNull { declaration ->
             val colon = declaration.indexOf(':')
             if (colon < 0) return@mapNotNull null
             var name = declaration.substring(0, colon).trim()

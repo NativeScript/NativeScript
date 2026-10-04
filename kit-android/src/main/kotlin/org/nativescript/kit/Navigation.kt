@@ -410,8 +410,8 @@ open class Frame : View() {
         private val stack = mutableListOf<Frame>()
         private var fragmentId = 0
 
-        /** The frame navigation goes to: the most recently created one. */
-        val topmost: Frame? get() = stack.lastOrNull()
+        /** `Frame.topmost()`: the frame navigation goes to, the most recently created one. */
+        fun topmost(): Frame? = stack.lastOrNull()
 
         /** Frames inside a closed modal are no longer navigation targets. */
         internal fun forget(root: View) {

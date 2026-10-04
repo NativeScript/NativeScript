@@ -75,6 +75,8 @@ class AnimationDefinition(var target: View? = null) {
         it.width = width; it.height = height; it.duration = duration; it.delay = delay; it.iterations = iterations; it.curve = curve
         it.fromKeyframe = fromKeyframe
     }
+
+    companion object
 }
 
 /**
@@ -98,6 +100,10 @@ class Animation(definitions: List<AnimationDefinition>, private val playSequenti
     var isPlaying = false
         private set
 
+    /** `new Animation(definitions, playSequentially)` from script: each definition a script object. */
+    constructor(definitions: JSArray<*>, playSequentially: Boolean? = null) :
+        this(definitions.storage.mapNotNull { AnimationDefinition.fromScript(it) }, playSequentially ?: false)
+
     init {
         for (d in definitions) {
             val target = d.target ?: continue
@@ -116,6 +122,7 @@ class Animation(definitions: List<AnimationDefinition>, private val playSequenti
         if (resetOnFinish != null) this.resetOnFinish = resetOnFinish
         if (isPlaying) return JSPromise.reject("Animation is already playing.")
         val (promise, r) = JSPromise.pending<Unit>()
+        promise.canceler = { cancel() }
         resolvers = r
         isPlaying = true
         if (animatorSet == null) {
@@ -277,12 +284,6 @@ class Animation(definitions: List<AnimationDefinition>, private val playSequenti
     }
 
     private fun repeatCount(iterations: Double): Int = if (iterations.isInfinite()) ValueAnimator.INFINITE else (iterations - 1).toInt()
-}
-
-/** `view.animate(options)`. */
-fun View.animate(definition: AnimationDefinition): JSPromise<Unit> {
-    definition.target = this
-    return Animation(listOf(definition)).play()
 }
 
 /** `setNative` with the property's current value, as an animation's reset does. */

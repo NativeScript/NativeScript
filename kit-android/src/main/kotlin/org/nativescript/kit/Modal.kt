@@ -93,6 +93,22 @@ object Modal {
     private const val ID = "_domId"
 }
 
+/** `view.showModal(modalView, options)` from script; options are a script object. */
+fun View.showModal(modal: Any?, options: Any? = null): View? {
+    val view = modal as? View ?: return null
+    val callback = jsField(options, "closeCallback")
+    Modal.show(
+        fullscreen = jsTruthy(jsField(options, "fullscreen")),
+        animated = jsField(options, "animated")?.let { jsTruthy(it) } ?: true,
+        cancelable = jsField(options, "cancelable")?.let { jsTruthy(it) } ?: true,
+        closeCallback = callback?.let { function -> { result: Any? -> jsCall(function, result); Unit } },
+    ) { view }
+    return view
+}
+
+/** `view.closeModal(result)`: closes the topmost modal. */
+fun View.closeModal(result: Any? = null) = Modal.close(result)
+
 /** `DialogFragmentImpl`: the modal's view as the dialog's content. */
 class ModalFragment : DialogFragment() {
     private val record: Modal.Record? get() = arguments?.getInt("_domId")?.let { Modal.records[it] }

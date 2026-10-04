@@ -58,7 +58,29 @@ abstract class LayoutBase : ContainerView(), RegionHost {
         return region
     }
 
-    override fun regionChanged(region: Region) {
+    override fun regionChanged(region: Region) = rebuildChildren()
+
+    /** `insertChild(child, atIndex)` from script: before the child now at that index. */
+    fun insertChild(child: View, atIndex: Double) {
+        val index = maxOf(0, atIndex.toInt())
+        if (index >= children.size) return addChild(child)
+        val before = children[index]
+        val position = entries.indexOfFirst { (it is Entry.Child && it.view === before) || (it is Entry.Run && it.region.views.any { v -> v === before }) }
+        entries.add(if (position < 0) entries.size else position, Entry.Child(child))
+        rebuildChildren()
+    }
+
+    /** `removeChild(child)` from script. */
+    open fun removeChild(child: View) {
+        entries.removeAll { it is Entry.Child && it.view === child }
+        rebuildChildren()
+    }
+
+    fun getChildIndex(child: View): Double = children.indexOfFirst { it === child }.toDouble()
+
+    fun getChildrenCount(): Double = children.size.toDouble()
+
+    private fun rebuildChildren() {
         val next = entries.flatMap {
             when (it) {
                 is Entry.Child -> listOf(it.view)
@@ -164,9 +186,21 @@ open class GridLayout : LayoutBase() {
 open class RootLayout : GridLayout() {
     override val cssType: String get() = "RootLayout"
 
+    internal val rootState = RootLayoutState()
+
+    override fun initNativeView() {
+        super.initNativeView()
+        registerRootLayout(this)
+    }
+
     override fun childAddedToNativeView(child: View) {
         super.childAddedToNativeView(child)
         if (!child.hasAnyGestureObservers()) child.nativeView.setOnTouchListener { _, _ -> true }
+    }
+
+    override fun removeChild(child: View) {
+        if (child.hasAnyGestureObservers()) child.nativeView.setOnTouchListener(null)
+        super.removeChild(child)
     }
 }
 
@@ -261,21 +295,29 @@ open class FlexboxLayout : LayoutBase() {
 
 /** `ContentView`: one child, its content. */
 open class ContentView : ContainerView() {
-    var content: View? = null
-        private set
+    private var contentView: View? = null
+
+    /** `view.content` from script; a page given content through it adopts it as through its template. */
+    var content: View?
+        get() = contentView
+        @JvmName("assignContent") set(value) {
+            if (value != null) addChild(value) else contentView?.let { removeContent(it); contentView = null }
+        }
 
     override fun addChild(child: View) {
         setContent(child)
     }
 
     protected open fun setContent(child: View) {
-        content?.let {
-            removeView(it)
-            (nativeView as ViewGroup).removeView(it.nativeView)
-        }
-        content = child
+        contentView?.let { removeContent(it) }
+        contentView = child
         addView(child)
         addContentToNativeView(child)
+    }
+
+    private fun removeContent(child: View) {
+        removeView(child)
+        (nativeView as ViewGroup).removeView(child.nativeView)
     }
 
     protected open fun addContentToNativeView(child: View) {

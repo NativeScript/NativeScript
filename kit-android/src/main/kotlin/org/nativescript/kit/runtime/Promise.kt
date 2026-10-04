@@ -82,6 +82,10 @@ class JSPromise<T> internal constructor() : JSThenable {
     private val reactions = ArrayList<Pair<(T) -> Unit, (Any?) -> Unit>>()
     private var isHandled = false
     private var rejection: JSRejection? = null
+    /** What `cancel()` does on a promise a library made cancelable (core's `AnimationPromise`). */
+    var canceler: (() -> Unit)? = null
+
+    fun cancel() { canceler?.invoke() }
 
     /** `new Promise((resolve, reject) => …)` whose executor gets the resolving functions. A thrown error rejects the promise. */
     constructor(executor: (JSResolvers<T>) -> Unit) : this() {

@@ -54,11 +54,11 @@ class Router {
     fun navigate(commands: List<Any?>, extras: Any? = null) {
         val path = commands.joinToString("/") { jsToString(it) }
         if (resolveRoute(path) == null) return
-        Frame.topmost?.navigate { resolve(path)!! }
+        Frame.topmost()?.navigate { resolve(path)!! }
     }
 
     fun back() {
-        Frame.topmost?.goBack()
+        Frame.topmost()?.goBack()
     }
 
     internal fun resolve(path: String): View? {
