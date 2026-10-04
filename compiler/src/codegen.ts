@@ -14,16 +14,23 @@ const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
 export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane'): string[] {
   const lines: string[] = [];
   // The order each framework applies bindings in (EffectOrder): Vue, Svelte and
-  // React set an element's props after its children's; Solid applies a
-  // template's bindings together, in tree order, after the template's
-  // components and control flow are built.
+  // React set an element's props after its children's; Solid and Angular apply
+  // a template's bindings together, in tree order, after its views are built.
+  // And the order views join the live tree: Angular appends each as it is
+  // created and Svelte mounts a block's views top-down once they are all made,
+  // so a child joins a parent that is already loaded; the others attach a
+  // finished subtree.
   const postOrder = framework === 'vue' || framework === 'svelte' || framework === 'react';
-  const deferred: { depth: number; text: string }[][] = [];
-  /** A template's views and structure, then (Solid) its bindings, then its result. */
+  const deferBindings = framework === 'solid' || framework === 'angular';
+  const insertion = framework === 'angular' ? 'created' : framework === 'svelte' ? 'mounted' : 'built';
+  type Line = { depth: number; text: string };
+  const templates: { bindings: Line[]; inserts: Line[] }[] = [];
+  /** A template's views and structure, then its deferred inserts and bindings. */
   const template = (depth: number, body: () => void) => {
-    if (framework === 'solid') deferred.push([]);
+    templates.push({ bindings: [], inserts: [] });
     body();
-    if (framework === 'solid') for (const d of deferred.pop()!) say(d.depth, d.text);
+    const t = templates.pop()!;
+    for (const d of [...t.inserts, ...t.bindings]) say(d.depth, d.text);
   };
   /** A closure that renders content in the scope its framework orders it in. */
   const scoped = (kind: 'template' | 'region', result: string) => {
@@ -42,7 +49,14 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   // What a binding or handler throws is reported, as the frameworks report errors in templates.
   const reported = (method: string, code: string) => (throws(method) ? `jsReport { ${code} }` : code);
 
-  const binding = (depth: number, text: string) => (deferred.length ? deferred.at(-1)!.push({ depth, text }) : say(depth, text));
+  const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
+  /** Puts a view into its container or region at the point its framework inserts it. */
+  const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
+    const text = parent ? `${parent}.addChild(${v})` : region ? `${region}.attach(${v})` : null;
+    if (!text) return;
+    if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
+    if ((insertion === 'created') === (at === 'created')) say(depth, text);
+  };
   const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${swiftString(a.value)}`);
@@ -55,12 +69,13 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   };
 
   /** Emits the nodes into the container `parent`; returns the views made at this level when `collect` is set. */
-  const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null) => {
+  const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
     for (const node of nodes) {
       if (node.kind === 'element' || node.kind === 'component') {
         const v = `v${n++}`;
         if (node.kind === 'element' && node.tag === 'Frame' && node.attrs.some((a) => a.name === 'router')) {
           say(depth, `let ${v} = Router.shared.outlet()`);
+          attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
           say(depth, `let ${v} = ${node.tag}()`);
           const isList = node.tag === 'ListView';
@@ -69,6 +84,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             for (const e of node.events) say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           };
           if (isList || !postOrder) props();
+          attach(depth, v, parent, region, 'created');
           if (isList) list(node, depth, loops, v);
           else emit(node.children, depth, loops, v, null);
           if (!isList && postOrder) props();
@@ -95,18 +111,25 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${reported(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
             else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           }
+          attach(depth, v, parent, region, 'created');
         }
-        if (parent) say(depth, `${parent}.addChild(${v})`);
+        attach(depth, v, parent, region, 'built');
         collect?.push(v);
         continue;
       }
       if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
-      const region = parent ? `${parent}.addRegion()` : null;
-      if (!region) throw new Error(`${c.name}: an if/for at the root of a template`);
+      if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
+      // A framework that inserts top-down puts a branch's views in place as it builds them.
+      const live = insertion !== 'built' ? `r${n++}` : null;
+      if (live && insertion === 'mounted' && templates.length) {
+        say(depth, `let ${live} = Region(host: nil)`);
+        templates.at(-1)!.inserts.push({ depth, text: `${parent}.addRegion(${live})` });
+      } else if (live) say(depth, `let ${live} = ${parent}.addRegion()`);
+      const host = live ?? `${parent}.addRegion()`;
       if (node.kind === 'if') {
         if (node.branches.some((b) => b.cond && throws(b.cond))) throw new Error(`${c.name}: an if condition in the template can throw`);
         const which = node.branches.map((b, i) => (b.cond ? `${call(b.cond, loops)} ? ${i} : ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
-        say(depth, `Choose(${region}, { ${which} }) { branch in`);
+        say(depth, `Choose(${host}, { ${which} }) { branch in`);
         const wrap = scoped('region', '[View]');
         const d = wrap ? depth + 1 : depth;
         if (wrap) say(depth + 1, wrap);
@@ -115,7 +138,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         node.branches.forEach((b, i) => {
           say(d + 1, `case ${i}:`);
           const made: string[] = [];
-          template(d + 2, () => emit(b.body, d + 2, loops, null, made));
+          template(d + 2, () => emit(b.body, d + 2, loops, null, made, live));
           say(d + 2, `return [${made.join(', ')}]`);
         });
         say(d + 1, 'default: return []');
@@ -129,13 +152,13 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in jsKey(${call(node.key, inner)}) }` : `{ item, _ in jsKey(item) }`;
       if (throws(node.items) || (node.key && throws(node.key))) throw new Error(`${c.name}: a for in the template can throw`);
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
-      say(depth, `For(${region}, { Array(${call(node.items, loops)}) }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
+      say(depth, `For(${host}, { Array(${call(node.items, loops)}) }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
       const wrap = scoped('region', '[View]');
       const d = wrap ? depth + 1 : depth;
       if (wrap) say(depth + 1, wrap);
       if (framework === 'angular' && hasRegion(node.body)) say(d + 1, 'let __view = EffectOrder.current');
       const made: string[] = [];
-      template(d + 1, () => emit(node.body, d + 1, inner, null, made));
+      template(d + 1, () => emit(node.body, d + 1, inner, null, made, live));
       say(d + 1, `return [${made.join(', ')}]`);
       if (wrap) say(depth + 1, '}');
       say(depth, '}');

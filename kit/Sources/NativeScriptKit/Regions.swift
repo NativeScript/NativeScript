@@ -9,8 +9,21 @@ public final class Region {
 
     public init(host: RegionHost?) { self.host = host }
 
+    /// Set by `Choose` while it renders a branch: the branch's first `attach` replaces the old views.
+    var replacing = false
+
     public func set(_ views: [View]) {
+        replacing = false
         self.views = views
+        host?.regionChanged(self)
+    }
+
+    /// Puts a view of the content being rendered in place now, for frameworks
+    /// that insert views top-down; the render's result settles their order.
+    public func attach(_ view: View) {
+        if replacing { views = [] }
+        replacing = false
+        views.append(view)
         host?.regionChanged(self)
     }
 }
@@ -34,6 +47,7 @@ public func Choose(_ region: Region, _ which: @escaping () -> Int, render: @esca
             branch?.dispose()
             let owner = Owner(parent: nil)
             branch = owner
+            region.replacing = true
             region.set(owner.run { render(value) })
         }
     }

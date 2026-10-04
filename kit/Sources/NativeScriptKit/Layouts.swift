@@ -45,8 +45,15 @@ open class LayoutBase: CustomLayoutView, RegionHost {
 
     /// A run of children owned by an `if` or `for`, at this point in template order.
     public func addRegion() -> Region {
-        let region = Region(host: self)
+        addRegion(Region(host: nil))
+    }
+
+    /// A region made before its container mounts it (Svelte's blocks), with what it already holds.
+    @discardableResult
+    public func addRegion(_ region: Region) -> Region {
+        region.host = self
         entries.append(.region(region))
+        if !region.views.isEmpty { rebuildChildren() }
         return region
     }
 
