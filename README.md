@@ -82,6 +82,29 @@ settled first screen inside iOS's launch animation; the NativeScript builds
 take 44–53 MB of footprint against 17 MB, and about twice the CPU to get
 there (four times for Svelte).
 
+### On a device
+
+Recipes (Vue) and ns-octane on an iPhone 16 Pro (iOS 26.6.2), both builds
+signed for development and installed, five interleaved cold launches each
+(`tools/device.py`, `results/device-ios.json`; medians):
+
+| | Recipes NS → native | ns-octane NS → native |
+| --- | --- | --- |
+| First frame, from SpringBoard's bootstrap | 227 → 129 ms | 241 → 156 ms |
+| Settled screen | 732 → 742 ms | 740 → 731 ms |
+| Footprint after launch | 45.1 → 15.6 MB | 61.7 → 18.2 MB |
+| CPU, launch to 7 s | 0.50 → 0.41 s | 0.53 → 0.44 s |
+| `.ipa` | 14.0 → 0.45 MB | 14.4 → 0.96 MB |
+| Installed | 45.9 → 1.1 MB | 46.9 → 2.2 MB |
+| Pixels that differ, launch screen | 0 | 0 |
+
+Both builds' screens are settled when iOS's 0.7 s launch zoom ends, so the
+settled times are the zoom's. The first frame and the times come from
+SpringBoard's log on the device's clock, footprint and CPU from sysmontap
+over DVT, sizes from the phone's installation service. Screens behind a tap
+need `--taps-by-hand`: nothing outside an app can tap a phone without an
+XCUITest runner, an app ID of its own.
+
 ## What compiles
 
 The app is type-checked as one program against the real ES2022 library,
@@ -386,7 +409,7 @@ develops it with live reload as usual.
 | `native-calls-vue/` | A Vue app calling UIKit, and on Android the Android SDK, directly; compared by `tools/native_calls.py` and `tools/gallery-android.py` |
 | `tests/diff/` | Differential tests: each case under Node and as a native program |
 | `tests/color-mix/` | The kit's `color-mix()` against core's color parser |
-| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
+| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, `device.py` (a physical iPhone), and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
 
 ## Limits
 
