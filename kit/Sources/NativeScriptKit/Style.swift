@@ -144,6 +144,12 @@ func toColor(_ value: Any?) -> UIColor? {
     }
 }
 
+/// An items property's value: a Swift array or the JSArray translated code passes.
+func toArray(_ value: Any?) -> [Any]? {
+    if let a = value as? JSArrayProtocol { return a.jsAnyElements.map { $0 ?? jsNull } }
+    return value as? [Any]
+}
+
 func toText(_ value: Any?) -> String? {
     switch value {
     case nil: return nil
