@@ -85,9 +85,87 @@ private func flushOrSchedule() {
 
 private func flush() {
     while !queue.isEmpty {
-        let pending = queue
+        let pending = queue.sorted { EffectOrder.precedes($0.key, $1.key) }
         queue = []
         for effect in pending { effect.runIfStale() }
+    }
+}
+
+/// The order a framework commits its bindings in, as a key per effect: the
+/// effects a write invalidates re-run in key order (lexicographic). An effect
+/// takes the next key of the scope it is created in; while it runs, effects it
+/// creates (a branch, a row) are keyed under its own key. Compiled templates
+/// create their binding effects in their framework's order and open scopes where
+/// its order is not the template's: Vue and Svelte update each component after
+/// the one that created it, Angular a view's embedded views and then its child
+/// components after the view's own bindings, Solid a deeper template after
+/// every shallower one.
+public enum EffectOrder {
+    public final class Scope {
+        let prefix: [Int]
+        /// Next key for: the scope's own effects, embedded views, child views.
+        var counters = [0, 0, 0]
+        /// Solid: templates under this many control-flow regions, keyed by the one global count.
+        let height: Int?
+
+        init(prefix: [Int], height: Int? = nil) {
+            self.prefix = prefix
+            self.height = height
+        }
+
+        func next(_ phase: Int) -> [Int] {
+            if let height { solidCount += 1; return [height, solidCount] }
+            defer { counters[phase] += 1 }
+            return prefix + [phase, counters[phase]]
+        }
+    }
+
+    public static var current = Scope(prefix: [])
+    private static var components = 0
+    private static var solidCount = 0
+    /// Derived values (`Memo`) settle before any binding reads them.
+    private static var memos = 0
+
+    static func key() -> [Int] { current.next(0) }
+
+    static func memoKey() -> [Int] {
+        memos += 1
+        return [Int.min, memos]
+    }
+
+    static func precedes(_ a: [Int], _ b: [Int]) -> Bool { a.lexicographicallyPrecedes(b) }
+
+    static func run<T>(_ scope: Scope, _ body: () -> T) -> T {
+        let previous = current
+        current = scope
+        defer { current = previous }
+        return body()
+    }
+
+    /// Vue's and Svelte's component: ordered after every component created before it.
+    public static func component<T>(_ body: () -> T) -> T {
+        components += 1
+        return run(Scope(prefix: [components]), body)
+    }
+
+    /// Angular's component view: after its parent view's bindings and embedded views.
+    public static func view<T>(_ body: () -> T) -> T {
+        run(Scope(prefix: current.next(2)), body)
+    }
+
+    /// Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings.
+    public static func embedded<T>(in view: Scope, _ body: () -> T) -> T {
+        run(Scope(prefix: view.next(1)), body)
+    }
+
+    /// Solid's control-flow content: one level deeper than the template that holds it.
+    public static func deeper<T>(_ body: () -> T) -> T {
+        run(Scope(prefix: [], height: (current.height ?? 0) + 1), body)
+    }
+
+    /// Solid's root template.
+    public static func solid<T>(_ body: () -> T) -> T {
+        current.height != nil ? body() : run(Scope(prefix: [], height: 0), body)
     }
 }
 
@@ -150,10 +228,18 @@ public final class Effect: Subscriber {
     private var sources: [ObjectIdentifier: Source] = [:]
     private var stale = false
     private var owner: Owner?
+    let key: [Int]
+    private let height: Int?
 
     @discardableResult
-    public init(_ body: @escaping () -> Void) {
+    public convenience init(_ body: @escaping () -> Void) {
+        self.init(key: EffectOrder.key(), body)
+    }
+
+    init(key: [Int], _ body: @escaping () -> Void) {
         self.body = body
+        self.key = key
+        height = EffectOrder.current.height
         Owner.current?.effects.append(self)
         run()
     }
@@ -182,7 +268,7 @@ public final class Effect: Subscriber {
         owner = Owner(parent: nil)
         let previous = currentEffect
         currentEffect = self
-        owner?.run(body)
+        EffectOrder.run(EffectOrder.Scope(prefix: key, height: height)) { owner?.run(body) }
         currentEffect = previous
     }
 
@@ -203,7 +289,7 @@ public final class Memo<T> {
 
     public init(_ compute: @escaping () -> T) {
         signal = Signal<T?>(nil)
-        effect = Effect { [signal] in signal.value = compute() }
+        effect = Effect(key: EffectOrder.memoKey()) { [signal] in signal.value = compute() }
     }
 
     public var value: T { signal.value! }

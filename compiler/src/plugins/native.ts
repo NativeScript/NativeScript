@@ -8,9 +8,11 @@ import { iosTarget, nativeTable, registerDeclarationModule } from '../natives/sy
 import type { PluginSource } from './source.ts';
 
 /**
- * The iOS code plugins ship in `platforms/ios`, linked as it is: a local Swift
- * package, `Plugins/` in the generated project, with one target per plugin
- * source set, its files copied unchanged:
+ * The iOS code plugins ship in `platforms/ios`, linked as it is, its files
+ * copied unchanged into `Plugins/` in the generated project: Swift as a static
+ * library target of the project (built with its settings, as the link's
+ * hermetic seal needs every Swift module to be), the rest as targets of a
+ * local Swift package. One target per plugin source set:
  * - Objective-C and C: the module its `module.modulemap` declares, else `NSPlugin_<package>`;
  * - Swift: `NSPlugin_<package>`, the package's name without `@` and with every
  *   other character that is not a letter or digit as `_`
@@ -23,8 +25,10 @@ import type { PluginSource } from './source.ts';
 export interface PluginNative {
   /** The modules the app's Swift imports. */
   modules: string[];
-  /** The local package (absolute), its name and its library products; null when no plugin ships iOS code. */
+  /** The local package (absolute), its name and its library products; null when no plugin ships code for it. */
   package: { dir: string; name: string; products: string[] } | null;
+  /** Swift modules built as the project's own static library targets: their names and source directories (absolute). */
+  swift: { name: string; dir: string }[];
 }
 
 interface Target {
@@ -50,7 +54,7 @@ export function pluginNative(sources: PluginSource[], outDir: string): PluginNat
   const perPackage = [...sources].sort((a, b) => a.name.localeCompare(b.name)).map((source) => ({ source, targets: targetsOf(source, errors) }));
   if (errors.length) throw new Error(`plugins' iOS code that cannot be built yet:\n  ${errors.join('\n  ')}`);
   const all = perPackage.flatMap((p) => p.targets);
-  if (!all.length) return { modules: [], package: null };
+  if (!all.length) return { modules: [], package: null, swift: [] };
 
   const seen = new Map<string, string>();
   for (const { source, targets } of perPackage) for (const t of targets) {
@@ -67,7 +71,8 @@ export function pluginNative(sources: PluginSource[], outDir: string): PluginNat
       cpSync(f, join(to, relative(t.from, f)));
     }
   }
-  writeFileSync(join(root, 'Package.swift'), manifest(all));
+  const packaged = all.filter((t) => t.kind !== 'swift');
+  if (packaged.length) writeFileSync(join(root, 'Package.swift'), manifest(packaged));
 
   for (const { source, targets } of perPackage) {
     const tables = targets.map((t) => {
@@ -87,16 +92,23 @@ export function pluginNative(sources: PluginSource[], outDir: string): PluginNat
       if (best !== undefined && score(best) > 0) registerDeclarationModule(dts, targets[best].module);
     }
   }
-  return { modules: all.map((t) => t.module), package: { dir: root, name: PACKAGE, products: all.map((t) => t.name) } };
+  return {
+    modules: all.map((t) => t.module),
+    package: packaged.length ? { dir: root, name: PACKAGE, products: packaged.map((t) => t.name) } : null,
+    swift: all.filter((t) => t.kind === 'swift').map((t) => ({ name: t.name, dir: join(root, t.path) })),
+  };
 }
 
-/** The package in xcodegen's project.yml: an entry under `packages:`, and the app target's `dependencies:` on its products. */
-export function xcodegenLines(native: PluginNative, projectDir: string): { packages: string; dependencies: string } {
+/** The plugins in xcodegen's project.yml: the package under `packages:`, the Swift modules' targets, and the app target's `dependencies:` on both. */
+export function xcodegenLines(native: PluginNative, projectDir: string): { packages: string; targets: string; dependencies: string } {
   const p = native.package;
-  if (!p) return { packages: '', dependencies: '' };
   return {
-    packages: `  ${p.name}:\n    path: ${relative(projectDir, p.dir)}\n`,
-    dependencies: p.products.map((product) => `      - package: ${p.name}\n        product: ${product}\n`).join(''),
+    packages: p ? `  ${p.name}:\n    path: ${relative(projectDir, p.dir)}\n` : '',
+    targets: native.swift.map((t) => `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n    settings:\n      base:\n        SWIFT_VERSION: "5"\n`).join(''),
+    dependencies: [
+      ...(p?.products ?? []).map((product) => `      - package: ${p!.name}\n        product: ${product}\n`),
+      ...native.swift.map((t) => `      - target: ${t.name}\n`),
+    ].join(''),
   };
 }
 

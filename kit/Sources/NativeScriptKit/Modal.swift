@@ -25,9 +25,9 @@ public enum Modal {
     static weak var root: View?
 
     /// `showModal(view, options)`. Effects created while building the view end when it closes.
-    public static func show(fullscreen: Bool = false, animated: Bool = true, cancelable: Bool = true,
+    public static func show(fullscreen: Bool = false, animated: Bool = true, cancelable: Bool = true, from parent: View? = nil,
                             closeCallback: ((Any) -> Void)? = nil, _ create: () -> View) {
-        guard let target = stack.last?.view ?? root,
+        guard let target = parent ?? stack.last?.view ?? root,
               let parentController = viewControllerOwner(of: target)?.viewController else { return }
         // A controller presents one modal at a time, and only from the window.
         guard parentController.presentedViewController == nil, parentController.view.window != nil else { return }
@@ -141,9 +141,10 @@ public enum Modal {
 }
 
 extension View {
-    /// `showModal(view, options)`.
+    /// `view.showModal(modalView, options)` from script: presented from this view.
     @discardableResult
-    public func showModal(_ view: View, _ options: Any?) -> View {
+    public func showModal(_ modal: Any?, _ options: Any? = nil) -> View! {
+        guard let view = jsFlat(modal) as? View else { return nil }
         Modal.present(view, from: self, options: options)
         return view
     }

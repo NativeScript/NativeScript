@@ -12,13 +12,27 @@ public final class Region: RegionHost {
 
     public var views: [View] { parts.flatMap(\.views) }
 
+    /// Set by `Choose` while it renders a branch: the branch's first `attach` replaces the old views.
+    var replacing = false
+
     public func set(_ views: [View]) {
+        replacing = false
         parts = views.map { .view($0) }
         host?.regionChanged(self)
     }
 
     func set(parts: [RegionPart]) {
+        replacing = false
         self.parts = parts
+        host?.regionChanged(self)
+    }
+
+    /// Puts a view of the content being rendered in place now, for frameworks
+    /// that insert views top-down; the render's result settles their order.
+    public func attach(_ view: View) {
+        if replacing { parts = [] }
+        replacing = false
+        parts.append(.view(view))
         host?.regionChanged(self)
     }
 
@@ -82,6 +96,7 @@ private func ChooseParts(_ region: Region, _ which: @escaping () -> Int, render:
             branch?.dispose()
             let owner = Owner(parent: nil)
             branch = owner
+            region.replacing = true
             region.set(parts: owner.run { render(value) })
         }
     }
@@ -115,6 +130,32 @@ public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @e
             for removed in rows.values { removed.owner.dispose() }
             rows = next
             region.set(views)
+        }
+    }
+}
+
+/// `For` whose rows have an `if` or `for` of their own.
+public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> RegionFragment) {
+    var rows: [String: (parts: [RegionPart], owner: Owner)] = [:]
+    Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
+    Effect {
+        let list = items()
+        untrack {
+            var next: [String: (parts: [RegionPart], owner: Owner)] = [:]
+            var parts: [RegionPart] = []
+            for (index, item) in list.enumerated() {
+                var k = key(item, Double(index))
+                while next[k] != nil { k += "\u{0}" }
+                let row = rows.removeValue(forKey: k) ?? {
+                    let owner = Owner(parent: nil)
+                    return (owner.run { render(item, Double(index)).parts }, owner)
+                }()
+                next[k] = row
+                parts.append(contentsOf: row.parts)
+            }
+            for removed in rows.values { removed.owner.dispose() }
+            rows = next
+            region.set(parts: parts)
         }
     }
 }

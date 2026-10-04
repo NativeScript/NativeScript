@@ -323,4 +323,10 @@ open class DockLayout: LayoutBase {
 /// template. Its `open`/`close` overlay API is not ported.
 open class RootLayout: GridLayout {
     open override class var cssType: String { "RootLayout" }
+    let rootState = RootLayoutState()
+
+    open override func initNativeView() {
+        super.initNativeView()
+        registerRootLayout(self)
+    }
 }

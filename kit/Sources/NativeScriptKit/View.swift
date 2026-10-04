@@ -563,6 +563,9 @@ open class View: Observable {
         if eventName == "tap" { observeTap() } else { observeGesture(eventName) }
     }
 
+    /// `view.on(event, () => …)` from script: a handler that takes no arguments.
+    public func on(_ event: String, _ handler: @escaping () -> Void) { on(event) { (_: EventData) in handler() } }
+
     /// A tap is the tap gesture; controls with a tap event of their own override.
     open func observeTap() { observeGesture("tap") }
 

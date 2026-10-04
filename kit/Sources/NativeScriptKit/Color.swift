@@ -19,6 +19,9 @@ public struct Color: Equatable {
             argb = Color.pack(a, rgb.r, rgb.g, rgb.b)
         } else if let known = knownColors[lowered] {
             argb = known
+        } else if lowered.contains("color-mix(") {
+            // An expression csstools does not parse is -1 in core: opaque white.
+            argb = ColorMix.argb(lowered) ?? 0xffff_ffff
         } else if lowered.hasPrefix("#"), [4, 5, 7, 9].contains(lowered.count) {
             var hex = String(lowered.dropFirst())
             if hex.count == 3 || hex.count == 4 { hex = hex.map { "\($0)\($0)" }.joined() }

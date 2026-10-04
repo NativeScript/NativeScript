@@ -21,8 +21,7 @@ import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
-import { cssFromReleaseBundle } from './release-css.ts';
-import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
+import { appStylesheets, importedStylesheets, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
@@ -161,7 +160,7 @@ plugins.verify(compiledPlugins);
 const properties = collectProperties(checker, sourceFiles);
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
-  const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
+  const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
   await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
   process.exit(0);
 }
@@ -176,7 +175,7 @@ const translated = translateModules(translator, program, [...modules, ...compile
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
-  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), { slots: mounted, rowSignals: mounted }), '}'];
+  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), framework, { slots: mounted, rowSignals: mounted }), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
 }
 addInterfaces(translator, translated);
@@ -192,10 +191,7 @@ for (const m of translated) {
 const shapes = translator.shapesCode();
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
-const sourceCSS = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
-// `--css-bundle <bundle.mjs>`: the stylesheet the app's NativeScript release build compiled, in place of the app's CSS sources.
-const cssBundle = opt('--css-bundle');
-const css = cssBundle ? cssFromReleaseBundle(resolve(cssBundle)) : usesNativeScriptTailwind(app) ? nativescriptTailwind(sourceCSS) : sourceCSS;
+const css = kitCss(appStylesheets(app, 'ios', importedStylesheets(entry, appDir)));
 const start = mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n        Reactivity.scheduled = true\n${inits}`
@@ -203,7 +199,13 @@ const start = mounted
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
-// 4. The Xcode project.
+// 4. The Xcode project. The kit is a static library target rather than its
+// Swift package because package targets get none of the project's settings.
+// The hermetic seal lets the link drop the kit's code, vtable entries and
+// conformances the app never reaches; it needs every Swift module in the link
+// compiled with it and with full LTO.
+// A plugin's Swift module goes without it: sealed, its UIView subclass loses the
+// Objective-C class data UIKit reads (`+[NSBundle bundleForClass:]` aborts).
 const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!;
 const pluginLines = xcodegenLines(native, out);
 writeFileSync(join(out, 'project.yml'), `name: ${name}
@@ -211,16 +213,26 @@ options:
   bundleIdPrefix: org.nativescript
   deploymentTarget:
     iOS: "17.0"
-packages:
+settings:
+  configs:
+    Release:
+      SWIFT_OPTIMIZATION_LEVEL: -Osize
+      SWIFT_LTO: YES
+${native.swift.length ? '' : '      OTHER_SWIFT_FLAGS: -experimental-hermetic-seal-at-link\n'}      DEAD_CODE_STRIPPING: YES
+${pluginLines.packages ? `packages:\n${pluginLines.packages}` : ''}targets:
   NativeScriptKit:
-    path: ${relative(out, kit)}
-${pluginLines.packages}targets:
-  ${name}:
+    type: library.static
+    platform: iOS
+    sources: [${relative(out, join(kit, 'Sources', 'NativeScriptKit'))}]
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
+${pluginLines.targets}  ${name}:
     type: application
     platform: iOS
     sources: [Sources]
     dependencies:
-      - package: NativeScriptKit
+      - target: NativeScriptKit
 ${pluginLines.dependencies}    settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ${bundle}

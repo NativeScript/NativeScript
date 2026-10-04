@@ -45,14 +45,21 @@ open class LayoutBase: CustomLayoutView, RegionHost {
 
     /// A run of children owned by an `if` or `for`, at this point in template order.
     public func addRegion() -> Region {
-        let region = Region(host: self)
+        addRegion(Region(host: nil))
+    }
+
+    /// A region made before its container mounts it (Svelte's blocks), with what it already holds.
+    @discardableResult
+    public func addRegion(_ region: Region) -> Region {
+        region.host = self
         entries.append(.region(region))
+        if !region.views.isEmpty { rebuildChildren() }
         return region
     }
 
-    public func regionChanged(_ region: Region) { syncChildren() }
+    public func regionChanged(_ region: Region) { rebuildChildren() }
 
-    private func syncChildren() {
+    private func rebuildChildren() {
         let next = entries.flatMap { entry -> [View] in
             switch entry {
             case .view(let view): return [view]
@@ -274,10 +281,10 @@ open class ContentView: CustomLayoutView {
 
     private var contentView: View?
 
-    /// `content`: the one child.
+    /// `view.content` from script; a page given content through it adopts it as through its template.
     public var content: View? {
         get { contentView }
-        set { setContent(newValue) }
+        set { if let newValue { addChild(newValue) } else { setContent(nil) } }
     }
 
     var layoutView: View? { content }

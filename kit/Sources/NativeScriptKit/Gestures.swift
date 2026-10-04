@@ -114,7 +114,7 @@ final class GesturesObserver: NSObject {
     private weak var target: View?
     let type: Double
     let eventName: String
-    private var recognizers: [UIGestureRecognizer] = []
+    private(set) var recognizers: [UIGestureRecognizer] = []
 
     init(target: View, type: Double, eventName: String) {
         self.target = target
@@ -264,4 +264,11 @@ private final class TouchGestureRecognizer: UIGestureRecognizer {
         observer?.touched(TouchAction.cancel, touches, event)
         view?.touchesCancelled(touches, with: event)
     }
+}
+
+/// `GestureEvents` from gestures-types.
+public enum GestureEvents {
+    public static let gestureAttached: String = "gestureAttached"
+    public static let touchDown: String = "touchDown"
+    public static let touchUp: String = "touchUp"
 }
