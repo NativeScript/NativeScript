@@ -18,7 +18,7 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.TextView as NativeTextView
 import org.nativescript.widgets.StyleableTextView
 import org.nativescript.widgets.ViewHelper
 
@@ -33,7 +33,7 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
         get() = when (weight) {
             "normal" -> 400
             "bold" -> 700
-            else -> jsParseInt(weight) ?: 400
+            else -> parseIntOrNull(weight) ?: 400
         }
 
     fun typeface(): Typeface {
@@ -87,7 +87,9 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
 
 /** `TextBase` from text-base/index.android. */
 abstract class TextBase : View() {
-    protected val textView: TextView get() = nativeView as TextView
+    override fun defaultValue(name: String): Any? = if (name == "text") "" else null
+
+    protected val textView: NativeTextView get() = nativeView as NativeTextView
 
     private var defaultTypeface: Typeface? = null
     private var defaultTextSize = 0f
@@ -95,6 +97,77 @@ abstract class TextBase : View() {
     private var defaultLineSpacingExtra = 0f
     private var defaultLetterSpacing = 0f
     private var defaultGravity = 0
+    private var defaultShadowRadius = 0f
+    private var defaultShadowDx = 0f
+    private var defaultShadowDy = 0f
+    private var defaultShadowColor = 0
+    private var defaultMovementMethod: android.text.method.MovementMethod? = null
+    private var defaultTransformationMethod: android.text.method.TransformationMethod? = null
+    private var tappable = false
+    /** The paint flags before a decoration first replaced them (anti-aliasing among them), which unsetting restores. */
+    private var defaultPaintFlags: Int? = null
+
+    /** The `formattedText` child, whose spans are the text when it is set. */
+    internal var formattedString: FormattedString? = null
+        private set
+
+    /** `_addChildFromBuilder`: spans given directly go into a formatted string made for them. */
+    override fun addChild(child: View) {
+        if (child is Span) {
+            (formattedString ?: FormattedString().also { addChild(it) }).addChild(child)
+            return
+        }
+        val formatted = child as? FormattedString ?: return
+        formattedString?.let { removeView(it) }
+        formattedString = formatted
+        addView(formatted)
+        formattedTextChanged()
+    }
+
+    override fun eachChildView(body: (View) -> Unit) {
+        formattedString?.let(body)
+    }
+
+    /** `_onFormattedTextContentsChanged`: the spannable text is rebuilt. */
+    internal fun formattedTextChanged() {
+        if (isLoaded) setFormattedNative()
+    }
+
+    /** `formattedTextProperty.setNative`. */
+    private fun setFormattedNative() {
+        val formatted = formattedString ?: return
+        val tv = textView
+        if (toBool(applied["secure"]) == true) return
+        val ssb = createSpannableStringBuilder(formatted, toDouble(applied["fontSize"]))
+        tv.text = ssb
+        setTappableState(formatted.spans.any { it.tappable })
+        nativeValueChange("text", formatted.toString())
+        if (ssb != null && tv is android.widget.Button && tv.transformationMethod !is FormattedTransformation) {
+            tv.transformationMethod = FormattedTransformation(this)
+        }
+    }
+
+    private fun setTappableState(value: Boolean) {
+        if (tappable == value) return
+        tappable = value
+        val tv = textView
+        if (value) {
+            tv.setSingleLine(false)
+            tv.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+            tv.highlightColor = 0
+        } else tv.movementMethod = defaultMovementMethod
+    }
+
+    /** `TextTransformationImpl`: the formatted text, or the text as `text-transform` shows it. */
+    private class FormattedTransformation(private val owner: TextBase) : android.text.method.TransformationMethod {
+        override fun getTransformation(source: CharSequence?, view: android.view.View?): CharSequence? {
+            val formatted = owner.formattedString
+            if (formatted != null) return createSpannableStringBuilder(formatted, toDouble(owner.applied["fontSize"]))
+            return transformedText(toText(owner.applied["text"]) ?: "", toText(owner.applied["textTransform"]))
+        }
+
+        override fun onFocusChanged(view: android.view.View?, sourceText: CharSequence?, focused: Boolean, direction: Int, previouslyFocusedRect: android.graphics.Rect?) {}
+    }
 
     override fun initNativeView() {
         super.initNativeView()
@@ -105,6 +178,17 @@ abstract class TextBase : View() {
         defaultTextColors = tv.textColors
         defaultLineSpacingExtra = tv.lineSpacingExtra
         defaultLetterSpacing = ViewHelper.getLetterspacing(tv)
+        defaultShadowRadius = tv.shadowRadius
+        defaultShadowDx = tv.shadowDx
+        defaultShadowDy = tv.shadowDy
+        defaultShadowColor = tv.shadowColor
+        defaultMovementMethod = tv.movementMethod
+        defaultTransformationMethod = tv.transformationMethod
+    }
+
+    override fun onLoaded() {
+        super.onLoaded()
+        if (formattedString != null) setFormattedNative()
     }
 
     /** The alignment an unset `text-align` means for this view. */
@@ -113,23 +197,56 @@ abstract class TextBase : View() {
     override fun setProperty(name: String, value: Any?) {
         val tv = textView
         when (name) {
-            "text", "textTransform" -> setNativeText()
-            "color" -> {
+            "text" -> if (formattedString == null) {
+                setTappableState(false)
+                setNativeText()
+            }
+            "textTransform" -> {
+                val transform = toText(value)?.trim()
+                if (transform == null || transform == "initial") tv.transformationMethod = defaultTransformationMethod
+                else if (toBool(applied["secure"]) != true) tv.transformationMethod = FormattedTransformation(this)
+                if (formattedString != null) setFormattedNative() else setNativeText()
+            }
+            "textStroke" -> if (formattedString == null) setNativeText()
+            "color" -> if (formattedString == null) {
                 val color = toColor(value)
                 if (color != null) tv.setTextColor(color.argb) else defaultTextColors?.let { tv.setTextColor(it) }
+                if (applied["textStroke"] != null) setNativeText()
             }
             "fontSize" -> {
                 val size = toDouble(value)
-                if (size != null) tv.textSize = size.toFloat() else tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, defaultTextSize)
+                if (formattedString == null) {
+                    if (size != null) tv.textSize = size.toFloat() else tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, defaultTextSize)
+                }
                 fontChanged()
+                if (formattedString != null) setFormattedNative()
             }
             "fontFamily", "fontStyle", "fontWeight" -> fontChanged()
             "textAlignment" -> setTextAlignment((value as? String)?.trim() ?: initialTextAlignment)
-            "textDecoration" -> tv.paintFlags = when ((value as? String)?.trim()) {
-                "underline" -> Paint.UNDERLINE_TEXT_FLAG
-                "line-through" -> Paint.STRIKE_THRU_TEXT_FLAG
-                "underline line-through" -> Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG
-                else -> 0
+            "textDecoration" -> {
+                val default = defaultPaintFlags ?: tv.paintFlags.also { defaultPaintFlags = it }
+                tv.paintFlags = when ((value as? String)?.trim()) {
+                    "underline" -> Paint.UNDERLINE_TEXT_FLAG
+                    "line-through" -> Paint.STRIKE_THRU_TEXT_FLAG
+                    "underline line-through" -> Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG
+                    null -> default
+                    else -> 0
+                }
+            }
+            "textShadow" -> {
+                val shadow = toText(value)?.let { CSSShadow.parse(it) }
+                if (shadow == null) tv.setShadowLayer(defaultShadowRadius, defaultShadowDx, defaultShadowDy, defaultShadowColor)
+                else tv.setShadowLayer(
+                    shadow.blurRadius.toDevicePixels(java.lang.Float.MIN_VALUE.toDouble()).toFloat(),
+                    shadow.offsetX.toDevicePixels(0.0).toFloat(), shadow.offsetY.toDevicePixels(0.0).toFloat(),
+                    shadow.color?.argb ?: 0,
+                )
+            }
+            "direction" -> {
+                if (effectiveWhiteSpace == "nowrap" || (toInt(applied["maxLines"]) ?: 0) > 0) {
+                    tv.ellipsize = if (toText(value)?.trim() == "rtl") TextUtils.TruncateAt.START else TextUtils.TruncateAt.END
+                }
+                super.setProperty(name, value)
             }
             "whiteSpace", "textOverflow" -> adjustLineBreak()
             "letterSpacing" -> ViewHelper.setLetterspacing(tv, toDouble(value)?.toFloat() ?: defaultLetterSpacing)
@@ -151,6 +268,7 @@ abstract class TextBase : View() {
     }
 
     private fun fontChanged() {
+        if (formattedString != null) return
         val font = Font.of(applied)
         textView.typeface = if (font.isDefault) defaultTypeface else font.typeface()
     }
@@ -163,7 +281,11 @@ abstract class TextBase : View() {
             tv.text = null
             return
         }
-        if (tv is StyleableTextView) tv.setTextStroke(0, 0, 0)
+        if (tv is StyleableTextView) {
+            val stroke = toText(applied["textStroke"])?.let { CSSShadow.parse(it) }
+            if (stroke != null) tv.setTextStroke(stroke.offsetX.toDevicePixels(0.0).toInt(), stroke.color?.argb ?: 0, toColor(applied["color"])?.argb ?: 0)
+            else tv.setTextStroke(0, 0, 0)
+        }
         tv.text = transformedText(text, toText(applied["textTransform"]))
     }
 
@@ -264,26 +386,23 @@ open class Button : TextBase() {
         button.setOnClickListener { emit("tap", null) }
     }
 
-    override fun observeTap() {}
+    override val ownEvents: Set<String> get() = setOf("tap")
 }
 
-/** `TextField` from text-field and editable-text-base (index.android). */
-open class TextField : TextBase() {
-    override val cssType: String get() = "TextField"
-
+/** `EditableTextBase` from editable-text-base/index.android: an EditText reporting its text, focus and return key. */
+abstract class EditableTextBase : TextBase() {
     private var changeFromCode = false
-    private val editText: EditText get() = nativeView as EditText
+    protected val editText: EditText get() = nativeView as EditText
 
     override fun createNativeView(): NativeView = EditText(context)
+
+    /** `_configureEditText`: the input type and lines a TextField or TextView starts with. */
+    protected abstract fun configureEditText(edit: EditText)
 
     override fun initNativeView() {
         super.initNativeView()
         val edit = editText
-        edit.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or
-            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
-        edit.setLines(1)
-        edit.maxLines = 1
-        edit.setHorizontallyScrolling(true)
+        configureEditText(edit)
         edit.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -329,7 +448,14 @@ open class TextField : TextBase() {
                 val color = toColor(value)
                 if (color != null) edit.setHintTextColor(color.argb)
             }
-            "secure", "keyboardType" -> setInputType(inputTypeFor(toBool(applied["secure"]) == true, toText(applied["keyboardType"])))
+            "secure", "keyboardType" -> if (this is TextField) setInputType(inputTypeFor(toBool(applied["secure"]) == true, toText(applied["keyboardType"])))
+            "editable" -> {
+                val editable = toBool(value) ?: true
+                edit.isFocusable = editable
+                edit.isFocusableInTouchMode = editable
+                edit.isLongClickable = editable
+                edit.isClickable = editable
+            }
             "returnKeyType" -> edit.imeOptions = when (toText(value)?.trim()) {
                 "done" -> EditorInfo.IME_ACTION_DONE
                 "go" -> EditorInfo.IME_ACTION_GO
@@ -389,5 +515,29 @@ open class TextField : TextBase() {
                 imm.hideSoftInputFromWindow(focused.windowToken, 0)
             }
         }, 10)
+    }
+}
+
+/** `TextField` from text-field/index.android: one line, scrolling horizontally. */
+open class TextField : EditableTextBase() {
+    override val cssType: String get() = "TextField"
+
+    override fun configureEditText(edit: EditText) {
+        edit.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or
+            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        edit.setLines(1)
+        edit.maxLines = 1
+        edit.setHorizontallyScrolling(true)
+    }
+}
+
+/** `TextView` from text-view/index.android: multi-line text, top-aligned. */
+open class TextView : EditableTextBase() {
+    override val cssType: String get() = "TextView"
+
+    override fun configureEditText(edit: EditText) {
+        edit.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
+            InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        edit.gravity = Gravity.TOP or Gravity.START
     }
 }

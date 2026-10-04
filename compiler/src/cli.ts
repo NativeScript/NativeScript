@@ -47,7 +47,9 @@ const deps = { ...pkg.dependencies };
 const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane' : null;
 if (!framework) throw new Error('no supported framework in package.json');
 const entryText = readFileSync(entry, 'utf8');
-const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f));
+// `x.ios.ts` and `x.android.ts` are one module, `./x`, for their platform.
+const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;
+const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f));
 // Virtual replacements for app modules the release build reads differently (a zustand store).
 const overrides = new Map<string, string>();
 
@@ -157,7 +159,7 @@ const properties = collectProperties(checker, sourceFiles);
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

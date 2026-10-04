@@ -1,12 +1,15 @@
 // The Android target: the app's components and modules as Kotlin against
 // NativeScriptKit for Android (native-release/kit-android), in a Gradle
 // project whose resources are the app's own App_Resources/Android.
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import { render } from './codegen-kotlin.ts';
+import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
+import { CoreKotlin } from './core-kotlin.ts';
+import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
 
 export interface AndroidBuild {
   app: string;
@@ -17,6 +20,8 @@ export interface AndroidBuild {
   modules: string[];
   program: ts.Program;
   checker: ts.TypeChecker;
+  /** The app's files and the components' virtual files, in translation order. */
+  files: readonly ts.SourceFile[];
   infos: Map<string, { name: string; props: string[]; outputs?: string[] }>;
   css: string;
   root: string;
@@ -39,21 +44,24 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   rmSync(join(b.out, 'src'), { recursive: true, force: true });
   mkdirSync(sources, { recursive: true });
 
-  const translator = new Translator(b.checker, b.infos);
-  const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING")\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
-  const moduleCode = new Map(b.modules.map((m) => [m, translator.module(b.program.getSourceFile(m)!)]));
+  const translator = new Translator(b.checker, b.infos, b.files);
+  translator.core = new CoreKotlin(translator);
+  translator.native = new AndroidNativeAPI(translator, androidClassPath(b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app)));
+  const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
+  const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
+  const modules = translateKotlinModules(translator, b.program, b.modules);
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     const { params, lines } = translator.componentMembers(cls, c.props);
-    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos, b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}), '}'];
+    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos, { framework: b.framework, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
     writeFileSync(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
   }
-  // Interfaces become classes once everything that might use them is translated.
-  for (const [m, code] of moduleCode) {
-    const text = (translator.interfacesOf(m) + code).trim();
-    if (text) writeFileSync(join(sources, basename(m, '.ts').replace(/[^\w]/g, '_') + '.kt'), header(m) + text + '\n');
-  }
+  addKotlinInterfaces(translator, modules);
+  for (const m of modules) if (m.code.trim()) writeFileSync(join(sources, m.name + '.kt'), header(m.file) + m.code);
+  const shapes = translator.shapesCode();
+  if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
+  const inits = modules.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
   const routes = b.routes
     ? `        Router.shared.routes = listOf(${b.routes.routes.map((r) => `Route(${kotlinString(r.path)}) { ${r.component}().render() }`).join(', ')})\n        Router.shared.initial = ${kotlinString(b.routes.initial)}\n`
     : '';
@@ -66,7 +74,7 @@ class MainActivity : NativeScriptActivity() {
     override val css: String get() = appCSS
 
     override fun root(): View {
-${routes}        return ${b.root}().render()
+${inits}${routes}        return ${b.root}().render()
     }
 }
 
@@ -146,10 +154,13 @@ dependencies {
 `);
   writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
+  // The NativeScript CLI names the app after its folder, letters and digits only, unless App_Resources does.
+  const appStrings = join(b.app, 'App_Resources', 'Android', 'src', 'main', 'res', 'values', 'strings.xml');
+  const label = (existsSync(appStrings) && /<string name="app_name">([^<]*)</.exec(readFileSync(appStrings, 'utf8'))?.[1]) || basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
   writeFileSync(join(b.out, 'src', 'main', 'res', 'values', 'strings.xml'), `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">${b.name}</string>
-    <string name="title_activity_kimera">${b.name}</string>
+    <string name="app_name">${label}</string>
+    <string name="title_activity_kimera">${label}</string>
 </resources>
 `);
   // The activity as App_Resources declares NativeScript's: the launch theme, then AppTheme once created.

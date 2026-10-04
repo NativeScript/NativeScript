@@ -1,8 +1,8 @@
 import ts from 'typescript';
-import type { Translator } from './swift.ts';
 
 /**
- * Async functions as Swift over `JSPromise`, without Swift concurrency. The
+ * Async functions as continuations over spec-exact promises, for either
+ * target (`AsyncSyntax` spells the few constructs the lowering writes). The
  * body runs synchronously up to its first `await`; everything after an
  * await is a continuation closure that the awaited promise's reaction job
  * calls, so each await takes the ticks ECMAScript's Await() takes. A loop
@@ -12,17 +12,78 @@ import type { Translator } from './swift.ts';
 export interface AsyncCtx {
   /** The function's `JSAsync` capability. */
   cap: string;
-  /** The promise's value type (Swift). */
+  /** The promise's value type, in the target language. */
   result: string;
   /** Run when the current statement list completes; null completes the function. */
   next: string | null;
-  /** A `(Any?) -> Void` that takes what the current region throws. */
+  /** A function value taking what the current region throws. */
   onError: string;
   /** A statement completing the function with an already translated value (null: none). */
   ret: (value: string | null, isPromise: boolean) => string;
   /** Statements for `break`/`continue` of the innermost lowered loop. */
   brk?: string;
   cont?: string;
+}
+
+/** The target language's spelling of what the lowering writes. */
+export interface AsyncSyntax {
+  readonly voidType: string;
+  /** A function type: `(A) -> Void`. */
+  fnType(params: string[], ret: string): string;
+  /** `let name: type = value` (no type: inferred). */
+  constant(name: string, type: string | null, value: string): string;
+  /** A closure whose body's errors go to `onError`; `return` leaves it. */
+  closure(params: [string, string][], body: string[], onError: string, indent: string): string;
+  /** A closure of one statement, optionally taking one parameter. */
+  inline(statement: string, param?: [string, string]): string;
+  ifOpen(cond: string): string;
+  readonly elseOpen: string;
+  /** `if cond { statements }` on one line. */
+  ifLine(cond: string, statements: string): string;
+  /** A nested scope: `do {` / `run {`. */
+  readonly scopeOpen: string;
+  /** Statements running `body`, errors going to `onError`. */
+  tryBlock(body: string[], onError: string, indent: string): string[];
+  /** `x!`: a value known not to be undefined. */
+  unwrap(code: string): string;
+  /** `var name` holding the iterator over a sequence, and the statements taking its next item or else running `otherwise`. */
+  makeIterator(name: string, seq: string): string;
+  nextItem(item: string, iterator: string, otherwise: string, indent: string): string[];
+  awaitCall(operand: string, isPromise: boolean, continuation: string, onError: string): string;
+  asyncStart(cap: string, result: string): string;
+  asyncBody(cap: string): [string, string];
+  asyncReturn(cap: string, value: string | null, isPromise: boolean, result: string): string;
+  asyncError(cap: string): string;
+  loopRun(iteration: string): string;
+}
+
+/** What the lowering needs from a translator. */
+export interface AsyncTranslator {
+  indent: string;
+  readonly subst: Map<ts.Node, string>;
+  readonly checker: ts.TypeChecker;
+  readonly syntax: AsyncSyntax;
+  fresh(prefix: string): string;
+  nested<T>(body: () => T): T;
+  withAsync<T>(ctx: AsyncCtx, body: () => T): T;
+  withLoweredLoop<T>(body: () => T): T;
+  paramPrelude(fn: ts.SignatureDeclaration): string[];
+  typeOf(n: ts.Node): string;
+  tryPrefix(e: ts.Node): string;
+  coerce(e: ts.Expression, target: string): string;
+  expr(e: ts.Expression): string;
+  exprStatement(e: ts.Expression): string;
+  cond(e: ts.Expression): string;
+  stmt(s: ts.Statement): string;
+  declarationList(list: ts.VariableDeclarationList, lowered: boolean): string;
+  declaration(d: ts.VariableDeclaration, constant: boolean, lowered: boolean): string;
+  bindTo(name: ts.BindingName, value: string, type: string, mutable: boolean | 'assign'): string;
+  iterable(e: ts.Expression): string;
+  elementTypeOf(e: ts.Expression): string;
+  /** `var name: type` for a value assigned later. */
+  deferredDeclaration(name: string, type: string): string;
+  isPromiseType(type: string): boolean;
+  error(n: ts.Node | undefined, what: string): Error;
 }
 
 export function containsAwait(n: ts.Node): boolean {
@@ -38,36 +99,42 @@ export function containsAwait(n: ts.Node): boolean {
 }
 
 export class AsyncLowering {
-  private t: Translator;
+  private t: AsyncTranslator;
 
-  constructor(t: Translator) {
+  constructor(t: AsyncTranslator) {
     this.t = t;
   }
 
-  /** The Swift body (inside the braces) of an async function returning `JSPromise<result>`. */
+  private get s(): AsyncSyntax { return this.t.syntax; }
+
+  private thunk(): string { return this.s.fnType([], this.s.voidType); }
+
+  /** The body (inside the braces) of an async function returning a promise of `result`. */
   body(fn: ts.FunctionLikeDeclaration, result: string): string[] {
     const t = this.t;
+    const s = this.s;
     const cap = t.fresh('__async');
     const i = t.indent;
     const ctx: AsyncCtx = {
-      cap, result, next: null, onError: `${cap}.throwValue`,
-      ret: (v, isPromise) => (v === null ? `${cap}.returnValue(${result === 'Void' ? '()' : 'nil'})` : `${cap}.${isPromise ? 'returnPromise' : 'returnValue'}(${v})`),
+      cap, result, next: null, onError: s.asyncError(cap),
+      ret: (v, isPromise) => s.asyncReturn(cap, v, isPromise, result),
     };
-    const out = [`${i}let ${cap} = JSAsync<${result}>()`];
+    const out = [`${i}${s.asyncStart(cap, result)}`];
     const inner = t.nested(() => {
       const prelude = t.paramPrelude(fn);
       if (fn.body && ts.isBlock(fn.body)) return [...prelude, ...this.list([...fn.body.statements], ctx)];
       const e = fn.body as ts.Expression;
       return [...prelude, ...this.linearize([e], ctx, () => [t.indent + this.retStatement(ctx, e)])];
     });
-    out.push(`${i}${cap}.body {`, ...inner, `${i}}`, `${i}return ${cap}.promise`);
+    const [open, close] = s.asyncBody(cap);
+    out.push(`${i}${open}`, ...inner, `${i}${close}`, `${i}return ${cap}.promise`);
     return out;
   }
 
   private retStatement(ctx: AsyncCtx, e: ts.Expression | undefined): string {
     const t = this.t;
     if (!e) return ctx.ret(null, false);
-    const isPromise = t.typeOf(e).startsWith('JSPromise<');
+    const isPromise = t.isPromiseType(t.typeOf(e));
     return t.tryPrefix(e) + ctx.ret(isPromise ? t.expr(e) : t.coerce(e, ctx.result), isPromise);
   }
 
@@ -80,7 +147,7 @@ export class AsyncLowering {
       const s = list[k];
       if (!containsAwait(s)) {
         out.push(t.withAsync(ctx, () => t.stmt(s)));
-        // Swift reads `return` followed by a line as `return <that line>`: nothing may follow a jump.
+        // A line after `return` would read as its operand: nothing may follow a jump.
         if (jumps(s)) return out;
         continue;
       }
@@ -94,7 +161,7 @@ export class AsyncLowering {
       if (rest.length) {
         const name = t.fresh('__next');
         const body = t.nested(() => this.list(rest, ctx));
-        out.push(`${t.indent}let ${name}: () -> Void = ${this.closure('()', body, ctx.onError)}`);
+        out.push(`${t.indent}${this.s.constant(name, this.thunk(), this.closure([], body, ctx.onError))}`);
         inner = { ...ctx, next: `${name}()` };
       }
       out.push(...this.statement(s, inner));
@@ -104,20 +171,17 @@ export class AsyncLowering {
     return out;
   }
 
-  /** `{ params -> Void in body }`, errors in the body going to `onError`. */
-  closure(params: string, body: string[], onError: string): string {
-    const t = this.t;
-    const i = t.indent;
-    if (!body.some((l) => /\btry\b|\bthrow\b/.test(l))) return `{ ${params} -> Void in\n${body.join('\n')}\n${i}}`;
-    const deeper = body.map((l) => '    ' + l);
-    return `{ ${params} -> Void in\n${i}    do {\n${deeper.join('\n')}\n${i}    } catch {\n${i}        ${onError}(jsCaught(error))\n${i}    }\n${i}}`;
+  /** A closure, errors in the body going to `onError`. */
+  closure(params: [string, string][], body: string[], onError: string): string {
+    return this.s.closure(params, body, onError, this.t.indent);
   }
 
   private statement(s: ts.Statement, ctx: AsyncCtx, then?: () => string[]): string[] {
     const t = this.t;
+    const x = this.s;
     const i = t.indent;
     const next = then ?? (() => [t.indent + (ctx.next ?? ctx.ret(null, false))]);
-    if (ts.isBlock(s)) return [`${i}do {`, ...t.nested(() => this.list([...s.statements], ctx)), `${i}}`];
+    if (ts.isBlock(s)) return [`${i}${x.scopeOpen}`, ...t.nested(() => this.list([...s.statements], ctx)), `${i}}`];
     if (ts.isExpressionStatement(s)) return this.linearize([s.expression], ctx, () => [i + t.tryPrefix(s.expression) + t.exprStatement(s.expression), ...next()]);
     if (ts.isReturnStatement(s)) return this.linearize(s.expression ? [s.expression] : [], ctx, () => [i + this.retStatement(ctx, s.expression)]);
     if (ts.isThrowStatement(s)) return this.linearize([s.expression], ctx, () => [i + t.withAsync(ctx, () => t.stmt(s)).trim()]);
@@ -125,7 +189,7 @@ export class AsyncLowering {
     if (ts.isIfStatement(s)) {
       return this.linearize([s.expression], ctx, () => {
         const branch = (b: ts.Statement) => t.nested(() => this.list(ts.isBlock(b) ? [...b.statements] : [b], ctx));
-        return [`${i}if ${t.tryPrefix(s.expression)}${t.cond(s.expression)} {`, ...branch(s.thenStatement), `${i}} else {`, ...(s.elseStatement ? branch(s.elseStatement) : t.nested(() => [t.indent + (ctx.next ?? ctx.ret(null, false))])), `${i}}`];
+        return [`${i}${x.ifOpen(t.tryPrefix(s.expression) + t.cond(s.expression))}`, ...branch(s.thenStatement), `${i}${x.elseOpen}`, ...(s.elseStatement ? branch(s.elseStatement) : t.nested(() => [t.indent + (ctx.next ?? ctx.ret(null, false))])), `${i}}`];
       });
     }
     if (ts.isWhileStatement(s)) return this.loop(ctx, { cond: s.expression, body: s.statement });
@@ -143,7 +207,7 @@ export class AsyncLowering {
     if (ts.isForOfStatement(s)) {
       if (s.awaitModifier) throw t.error(s, 'for await');
       const it = t.fresh('__it');
-      return this.linearize([s.expression], ctx, () => [`${i}var ${it} = ${t.tryPrefix(s.expression)}${t.iterable(s.expression)}.makeIterator()`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
+      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression)}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
     }
     if (ts.isTryStatement(s)) return this.tryStatement(s, ctx);
     if (ts.isLabeledStatement(s)) throw t.error(s, 'a labeled statement that awaits');
@@ -188,18 +252,18 @@ export class AsyncLowering {
       const lines: string[] = [];
       for (const h of this.evaluatedBefore(a, exprs)) {
         const name = t.fresh('__v');
-        lines.push(`${i}let ${name}: ${t.typeOf(h)} = ${t.tryPrefix(h)}${t.expr(h)}`);
+        lines.push(`${i}${this.s.constant(name, t.typeOf(h), `${t.tryPrefix(h)}${t.expr(h)}`)}`);
         t.subst.set(h, name);
       }
       if (!ts.isAwaitExpression(a)) return [...lines, ...this.conditional(a, ctx, () => step(k + 1))];
       const operand = a.expression;
-      const isPromise = t.typeOf(operand).startsWith('JSPromise<');
+      const isPromise = t.isPromiseType(t.typeOf(operand));
       const code = `${t.tryPrefix(operand)}${t.expr(operand)}`;
       const v = t.fresh('__t');
       const type = t.typeOf(a);
       t.subst.set(a, v);
       const body = t.nested(() => step(k + 1));
-      lines.push(`${i}jsAwait(${isPromise ? code : `value: ${code}`}, ${this.closure(`(${v}: ${type})`, body, ctx.onError)}, ${ctx.onError})`);
+      lines.push(`${i}${this.s.awaitCall(code, isPromise, this.closure([[v, type]], body, ctx.onError), ctx.onError)}`);
       return lines;
     };
     return step(0);
@@ -208,25 +272,26 @@ export class AsyncLowering {
   /** `c ? await a : b`, `x && await y`: the operator as an if, both ways joining the rest of the work with the value. */
   private conditional(e: ts.Expression, ctx: AsyncCtx, rest: () => string[]): string[] {
     const t = this.t;
+    const x = this.s;
     const i = t.indent;
     const type = t.typeOf(e);
     const value = t.fresh('__c');
     const join = t.fresh('__join');
-    const lines = [`${i}var ${value}: ${t.deferredType(type)}`];
+    const lines = [`${i}${t.deferredDeclaration(value, type)}`];
     t.subst.set(e, value);
-    lines.push(`${i}let ${join}: () -> Void = ${this.closure('()', t.nested(rest), ctx.onError)}`);
-    const branch = (x: ts.Expression) => t.nested(() => this.linearize([x], ctx, () => [`${t.indent}${value} = ${t.tryPrefix(x)}${t.coerce(x, type)}`, `${t.indent}${join}()`]));
+    lines.push(`${i}${x.constant(join, this.thunk(), this.closure([], t.nested(rest), ctx.onError))}`);
+    const branch = (y: ts.Expression) => t.nested(() => this.linearize([y], ctx, () => [`${t.indent}${value} = ${t.tryPrefix(y)}${t.coerce(y, type)}`, `${t.indent}${join}()`]));
     if (ts.isConditionalExpression(e)) {
-      lines.push(`${i}if ${t.tryPrefix(e.condition)}${t.cond(e.condition)} {`, ...branch(e.whenTrue), `${i}} else {`, ...branch(e.whenFalse), `${i}}`);
+      lines.push(`${i}${x.ifOpen(t.tryPrefix(e.condition) + t.cond(e.condition))}`, ...branch(e.whenTrue), `${i}${x.elseOpen}`, ...branch(e.whenFalse), `${i}}`);
       return lines;
     }
     const b = e as ts.BinaryExpression;
     const left = t.fresh('__l');
-    lines.push(`${i}let ${left}: ${t.typeOf(b.left)} = ${t.tryPrefix(b.left)}${t.expr(b.left)}`);
+    lines.push(`${i}${x.constant(left, t.typeOf(b.left), `${t.tryPrefix(b.left)}${t.expr(b.left)}`)}`);
     const K = ts.SyntaxKind;
     const test = b.operatorToken.kind === K.QuestionQuestionToken ? `jsIsNullish(${left})` : b.operatorToken.kind === K.AmpersandAmpersandToken ? `jsTruthy(${left})` : `!jsTruthy(${left})`;
-    const keep = t.typeOf(b.left) === type || type === 'Any?' ? left : `${left}!`;
-    lines.push(`${i}if ${test} {`, ...branch(b.right), `${i}} else {`, `${i}    ${value} = ${keep}`, `${i}    ${join}()`, `${i}}`);
+    const keep = t.typeOf(b.left) === type || type === 'Any?' ? left : x.unwrap(left);
+    lines.push(`${i}${x.ifOpen(test)}`, ...branch(b.right), `${i}${x.elseOpen}`, `${i}    ${value} = ${keep}`, `${i}    ${join}()`, `${i}}`);
     return lines;
   }
 
@@ -265,11 +330,12 @@ export class AsyncLowering {
 
   private loop(ctx: AsyncCtx, o: { cond?: ts.Expression; body: ts.Statement; step?: ts.Expression; condAfter?: boolean; iterator?: string; binding?: ts.VariableDeclarationList; of?: ts.Expression }): string[] {
     const t = this.t;
+    const x = this.s;
     const i = t.indent;
     const brk = t.fresh('__break');
     const cont = t.fresh('__continue');
     const first = t.fresh('__first');
-    const out = [`${i}let ${brk}: () -> Void = ${this.closure('()', t.nested(() => [t.indent + (ctx.next ?? ctx.ret(null, false))]), ctx.onError)}`];
+    const out = [`${i}${x.constant(brk, this.thunk(), this.closure([], t.nested(() => [t.indent + (ctx.next ?? ctx.ret(null, false))]), ctx.onError))}`];
     if (o.condAfter) out.push(`${i}var ${first} = true`);
     const iteration = t.nested(() => {
       const j = t.indent;
@@ -279,24 +345,24 @@ export class AsyncLowering {
       if (o.iterator) {
         const decl = o.binding!.declarations[0];
         const item = t.fresh('__item');
-        lines.push(`${j}guard let ${item} = ${o.iterator}.next() else { ${brk}(); return }`);
+        lines.push(...x.nextItem(item, o.iterator, `${brk}(); return`, j));
         lines.push(t.withAsync(inner, () => t.bindTo(decl.name, item, t.elementTypeOf(o.of!), !(o.binding!.flags & ts.NodeFlags.Const))));
         lines.push(...t.withLoweredLoop(() => this.list(ts.isBlock(o.body) ? [...o.body.statements] : [o.body], inner)));
         return lines;
       }
       const check = (rest: () => string[]) => (o.cond
-        ? this.linearize([o.cond], ctx, () => [`${t.indent}if !(${t.tryPrefix(o.cond!)}${t.cond(o.cond!)}) { ${brk}(); return }`, ...rest()])
+        ? this.linearize([o.cond], ctx, () => [`${t.indent}${x.ifLine(`!(${t.tryPrefix(o.cond!)}${t.cond(o.cond!)})`, `${brk}(); return`)}`, ...rest()])
         : rest());
       const body = () => t.withLoweredLoop(() => this.list(ts.isBlock(o.body) ? [...o.body.statements] : [o.body], inner));
       if (o.condAfter) {
         if (containsAwait(o.cond!)) throw t.error(o.cond!, 'await in a do-while condition');
-        lines.push(`${j}if !${first} && !(${t.tryPrefix(o.cond!)}${t.cond(o.cond!)}) { ${brk}(); return }`, `${j}${first} = false`);
+        lines.push(`${j}${x.ifLine(`!${first} && !(${t.tryPrefix(o.cond!)}${t.cond(o.cond!)})`, `${brk}(); return`)}`, `${j}${first} = false`);
         lines.push(...body());
         return lines;
       }
       return check(body);
     });
-    out.push(`${i}JSAsyncLoop().run ${this.closure(`(${cont}: @escaping () -> Void)`, iteration, ctx.onError)}`);
+    out.push(`${i}${x.loopRun(this.closure([[cont, this.thunk()]], iteration, ctx.onError))}`);
     return out;
   }
 
@@ -307,6 +373,7 @@ export class AsyncLowering {
    */
   private switchStatement(s: ts.SwitchStatement, ctx: AsyncCtx): string[] {
     const t = this.t;
+    const x = this.s;
     const clauses = s.caseBlock.clauses;
     for (const c of clauses) if (ts.isCaseClause(c) && containsAwait(c.expression)) throw t.error(c, 'await in a case label');
     return this.linearize([s.expression], ctx, () => {
@@ -315,19 +382,19 @@ export class AsyncLowering {
       const start = t.fresh('__start');
       const after = ctx.next ?? ctx.ret(null, false);
       const st = t.typeOf(s.expression);
-      const out = [`${i}let ${subject}: ${st} = ${t.tryPrefix(s.expression)}${t.expr(s.expression)}`, `${i}var ${start} = ${clauses.length}`];
-      const tests = clauses.map((c, k) => (ts.isCaseClause(c) ? `${k === 0 ? '' : 'else '}if ${st === 'Any?' || t.typeOf(c.expression) === 'Any?' ? `jsStrictEquals(${subject}, ${t.coerce(c.expression, 'Any?')})` : `${subject} == ${t.coerce(c.expression, st)}`} { ${start} = ${k} }` : ''));
-      const caseTests = tests.filter(Boolean).map((x, k) => (k === 0 ? x.replace(/^else /, '') : x));
+      const out = [`${i}${x.constant(subject, st, `${t.tryPrefix(s.expression)}${t.expr(s.expression)}`)}`, `${i}var ${start} = ${clauses.length}`];
+      const tests = clauses.map((c, k) => (ts.isCaseClause(c) ? `${k === 0 ? '' : 'else '}${x.ifLine(st === 'Any?' || t.typeOf(c.expression) === 'Any?' ? `jsStrictEquals(${subject}, ${t.coerce(c.expression, 'Any?')})` : `${subject} == ${t.coerce(c.expression, st)}`, `${start} = ${k}`)}` : ''));
+      const caseTests = tests.filter(Boolean).map((y, k) => (k === 0 ? y.replace(/^else /, '') : y));
       if (caseTests.length) out.push(`${i}${caseTests.join(' ')}`);
       const fallback = clauses.findIndex(ts.isDefaultClause);
-      if (fallback >= 0) out.push(`${i}if ${start} == ${clauses.length} { ${start} = ${fallback} }`);
+      if (fallback >= 0) out.push(`${i}${x.ifLine(`${start} == ${clauses.length}`, `${start} = ${fallback}`)}`);
       const names = clauses.map(() => t.fresh('__clause'));
-      out.push(`${i}let ${names.at(-1)}_end: () -> Void = { ${after} }`);
+      out.push(`${i}${x.constant(`${names.at(-1)}_end`, this.thunk(), x.inline(after))}`);
       for (let k = clauses.length - 1; k >= 0; k--) {
         const next = k + 1 < clauses.length ? `${names[k + 1]}()` : `${names.at(-1)}_end()`;
         const inner: AsyncCtx = { ...ctx, next, brk: after };
-        const body = t.nested(() => [`${t.indent}if ${start} > ${k} { ${next}; return }`, ...t.withLoweredLoop(() => this.list([...clauses[k].statements], inner))]);
-        out.push(`${i}let ${names[k]}: () -> Void = ${this.closure('()', body, ctx.onError)}`);
+        const body = t.nested(() => [`${t.indent}${x.ifLine(`${start} > ${k}`, `${next}; return`)}`, ...t.withLoweredLoop(() => this.list([...clauses[k].statements], inner))]);
+        out.push(`${i}${x.constant(names[k], this.thunk(), this.closure([], body, ctx.onError))}`);
       }
       out.push(`${i}${names[0]}()`);
       return out;
@@ -336,21 +403,23 @@ export class AsyncLowering {
 
   private tryStatement(s: ts.TryStatement, ctx: AsyncCtx): string[] {
     const t = this.t;
+    const x = this.s;
     const i = t.indent;
     const out: string[] = [];
+    const thunk = this.thunk();
     let region = ctx;
     if (s.finallyBlock) {
       const fin = t.fresh('__finally');
       const resume = t.fresh('__resume');
       const body = t.nested(() => this.list([...s.finallyBlock!.statements], { ...ctx, next: `${resume}()` }));
-      out.push(`${i}let ${fin}: (@escaping () -> Void) -> Void = ${this.closure(`(${resume}: @escaping () -> Void)`, body, ctx.onError)}`);
-      const through = (stmt: string) => `${fin}({ ${stmt} })`;
+      out.push(`${i}${x.constant(fin, x.fnType([thunk], x.voidType), this.closure([[resume, thunk]], body, ctx.onError))}`);
+      const through = (stmt: string) => `${fin}(${x.inline(stmt)})`;
       const err = t.fresh('__error');
-      out.push(`${i}let ${err}: (Any?) -> Void = { (e: Any?) -> Void in ${fin}({ ${ctx.onError}(e) }) }`);
+      out.push(`${i}${x.constant(err, x.fnType(['Any?'], x.voidType), x.inline(`${fin}(${x.inline(`${ctx.onError}(e)`)})`, ['e', 'Any?']))}`);
       region = {
         ...ctx, onError: err,
         next: through(ctx.next ?? ctx.ret(null, false)),
-        ret: (v, p) => (v === null ? through(ctx.ret(null, false)) : `do { let __value = ${v}; ${through(ctx.ret('__value', p))} }`),
+        ret: (v, p) => (v === null ? through(ctx.ret(null, false)) : `${x.scopeOpen} ${x.constant('__value', null, v)}; ${through(ctx.ret('__value', p))} }`),
         brk: ctx.brk && through(ctx.brk), cont: ctx.cont && through(ctx.cont),
       };
     }
@@ -364,12 +433,11 @@ export class AsyncLowering {
         if (binding) lines.push(t.withAsync(region, () => t.bindTo(binding.name, caught, 'Any?', true)));
         return [...lines, ...this.list([...s.catchClause!.block.statements], region)];
       });
-      out.push(`${i}let ${name}: (Any?) -> Void = ${this.closure(`(${caught}: Any?)`, body, region.onError)}`);
+      out.push(`${i}${x.constant(name, x.fnType(['Any?'], x.voidType), this.closure([[caught, 'Any?']], body, region.onError))}`);
       tryCtx = { ...region, onError: name };
     }
     const body = t.nested(() => this.list([...s.tryBlock.statements], tryCtx));
-    if (body.some((l) => /\btry\b|\bthrow\b/.test(l))) out.push(`${i}do {`, ...body.map((l) => '    ' + l), `${i}} catch {`, `${i}    ${tryCtx.onError}(jsCaught(error))`, `${i}}`);
-    else out.push(`${i}do {`, ...body, `${i}}`);
+    out.push(...x.tryBlock(body, tryCtx.onError, i));
     return out;
   }
 }

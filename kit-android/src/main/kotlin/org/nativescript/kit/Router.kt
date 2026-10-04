@@ -49,14 +49,16 @@ class Router {
         return frame
     }
 
+    fun navigate(commands: JSArray<*>, extras: Any? = null) = navigate(commands.elements, extras)
+
     fun navigate(commands: List<Any?>, extras: Any? = null) {
-        val path = commands.joinToString("/") { if (it is Double) js(it) else it.toString() }
+        val path = commands.joinToString("/") { jsToString(it) }
         if (resolveRoute(path) == null) return
-        Frame.topmost?.navigate { resolve(path)!! }
+        Frame.topmost()?.navigate { resolve(path)!! }
     }
 
     fun back() {
-        Frame.topmost?.goBack()
+        Frame.topmost()?.goBack()
     }
 
     internal fun resolve(path: String): View? {

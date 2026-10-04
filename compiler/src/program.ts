@@ -5,6 +5,7 @@ import { foldPlatform, type Platform } from './platform.ts';
 import { nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
+import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -80,6 +81,7 @@ const SHIMS: Record<string, string> = {
 const GLOBALS = `
   declare var console: { log(...data: any[]): void; info(...data: any[]): void; warn(...data: any[]): void; error(...data: any[]): void; debug(...data: any[]): void };
   declare function queueMicrotask(callback: () => void): void;
+  declare var global: typeof globalThis;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */
@@ -171,6 +173,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !NOT_PLUGINS.test(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
+          if (platform === 'android') throw new Error(`${containing}: imports the plugin ${packageOf(m)}; plugins are compiled for iOS only so far`);
           plugins.get(js.packageDir);
           const source = plugins.sourceOf(js.file);
           if (source) {
@@ -195,7 +198,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     program = ts.createProgram(rootNames, options, host, program);
   }
   // `view.ios` is `any` in core's declarations: typed as the view's native class, everything read from it is typed too.
-  const casts = nativeViewCasts(program, isSource);
+  const casts = nativeViewCasts(program, isSource, platform);
   if (casts.size) {
     for (const [name, text] of casts) files.set(name, text);
     program = ts.createProgram(rootNames, options, host, program);
@@ -212,19 +215,21 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`) };
 }
 
-/** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`. */
-function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean): Map<string, string> {
+/** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`, or `x.android` as its Android class. */
+function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean, platform: Platform): Map<string, string> {
+  const members = platform === 'android' ? ['android', 'nativeView', 'nativeViewProtected'] : ['ios', 'nativeView', 'nativeViewProtected'];
+  const table = platform === 'android' ? NATIVE_VIEWS_ANDROID : undefined;
   const checker = program.getTypeChecker();
   const out = new Map<string, string>();
   for (const sf of program.getSourceFiles()) {
     if (!isApp(sf.fileName)) continue;
     const edits: { at: number; text: string }[] = [];
     const visit = (n: ts.Node) => {
-      if (ts.isPropertyAccessExpression(n) && ['ios', 'nativeView', 'nativeViewProtected'].includes(n.name.text) && !ts.isAsExpression(n.parent)
+      if (ts.isPropertyAccessExpression(n) && members.includes(n.name.text) && !ts.isAsExpression(n.parent)
         // An optional chain stays as written: a cast around it would stop TypeScript narrowing its root.
         && !n.questionDotToken
         && checker.getTypeAtLocation(n).flags & ts.TypeFlags.Any) {
-        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression));
+        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression), table);
         if (native) edits.push({ at: n.getStart(), text: '(' }, { at: n.getEnd(), text: ` as ${native})` });
       }
       ts.forEachChild(n, visit);

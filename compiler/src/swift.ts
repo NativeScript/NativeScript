@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { AsyncLowering, type AsyncCtx } from './async.ts';
+import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { Properties } from './properties.ts';
@@ -68,7 +68,8 @@ export interface ComponentInfo {
 const ERRORS: Record<string, string> = { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' };
 const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef']);
 
-export class Translator {
+export class Translator implements AsyncTranslator {
+  readonly syntax = SWIFT_SYNTAX;
   /** The component class being translated: its props read as `self.<prop>.value`. */
   props = new Set<string>();
   /** Named types translated code uses: an interface becomes a class only if something does. */
@@ -469,6 +470,8 @@ export class Translator {
   }
   /** A declaration's type and initial value when its real value is assigned later. */
   deferredType(t: string): string { return this.deferred(t); }
+  deferredDeclaration(name: string, t: string): string { return `var ${name}: ${this.deferred(t)}`; }
+  isPromiseType(t: string): boolean { return t.startsWith('JSPromise<'); }
   private deferred(t: string): string {
     const z = this.zero(t);
     return z ? `${t} = ${z}` : isFunctionType(t) ? `(${t})!` : `${t}!`;
@@ -3210,6 +3213,36 @@ export class Translator {
     return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is not supported in a release build yet: ${n.getText().slice(0, 80)}`);
   }
 }
+
+/** Swift's spelling of what the async lowering writes. */
+const SWIFT_SYNTAX: AsyncSyntax = {
+  voidType: 'Void',
+  fnType: (params, ret) => `(${params.map((p) => (p === '() -> Void' ? `@escaping ${p}` : p)).join(', ')}) -> ${ret}`,
+  constant: (name, type, value) => `let ${name}${type ? `: ${type}` : ''} = ${value}`,
+  closure: (params, body, onError, i) => {
+    const list = `(${params.map(([n, t]) => `${n}: ${t === '() -> Void' ? '@escaping ' : ''}${t}`).join(', ')})`;
+    if (!body.some((l) => /\btry\b|\bthrow\b/.test(l))) return `{ ${list} -> Void in\n${body.join('\n')}\n${i}}`;
+    const deeper = body.map((l) => '    ' + l);
+    return `{ ${list} -> Void in\n${i}    do {\n${deeper.join('\n')}\n${i}    } catch {\n${i}        ${onError}(jsCaught(error))\n${i}    }\n${i}}`;
+  },
+  inline: (statement, param) => (param ? `{ (${param[0]}: ${param[1]}) -> Void in ${statement} }` : `{ ${statement} }`),
+  ifOpen: (cond) => `if ${cond} {`,
+  elseOpen: '} else {',
+  ifLine: (cond, statements) => `if ${cond} { ${statements} }`,
+  scopeOpen: 'do {',
+  tryBlock: (body, onError, i) => (body.some((l) => /\btry\b|\bthrow\b/.test(l))
+    ? [`${i}do {`, ...body.map((l) => '    ' + l), `${i}} catch {`, `${i}    ${onError}(jsCaught(error))`, `${i}}`]
+    : [`${i}do {`, ...body, `${i}}`]),
+  unwrap: (code) => `${code}!`,
+  makeIterator: (name, seq) => `var ${name} = ${seq}.makeIterator()`,
+  nextItem: (item, iterator, otherwise, i) => [`${i}guard let ${item} = ${iterator}.next() else { ${otherwise} }`],
+  awaitCall: (operand, isPromise, continuation, onError) => `jsAwait(${isPromise ? operand : `value: ${operand}`}, ${continuation}, ${onError})`,
+  asyncStart: (cap, result) => `let ${cap} = JSAsync<${result}>()`,
+  asyncBody: (cap) => [`${cap}.body {`, '}'],
+  asyncReturn: (cap, value, isPromise, result) => (value === null ? `${cap}.returnValue(${result === 'Void' ? '()' : 'nil'})` : `${cap}.${isPromise ? 'returnPromise' : 'returnValue'}(${value})`),
+  asyncError: (cap) => `${cap}.throwValue`,
+  loopRun: (iteration) => `JSAsyncLoop().run ${iteration}`,
+};
 
 const LIB_CONSTANTS: Record<string, string> = {
   'Math.PI': 'Double.pi', 'Math.E': 'M_E', 'Math.LN2': 'M_LN2', 'Math.LN10': 'M_LN10', 'Math.LOG2E': 'M_LOG2E', 'Math.LOG10E': 'M_LOG10E', 'Math.SQRT2': '2.0.squareRoot()', 'Math.SQRT1_2': '0.5.squareRoot()',

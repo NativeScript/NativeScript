@@ -193,6 +193,9 @@ export function vueComponent(path: string, text: string): ComponentIR {
       }
     }
     if (components.has(c.tag)) return { kind: 'component', name: c.tag, props: attrs, events };
+    // Vue's mountElement sets `value` after the other props (a maximum before the value it bounds).
+    const value = attrs.findIndex((a) => a.name === 'value');
+    if (value >= 0) attrs.push(...attrs.splice(value, 1));
     if (!ELEMENTS.has(c.tag)) throw new Error(`${path}: <${c.tag}> is not a @nativescript/core element the release build knows`);
     if (c.tag === 'ListView') return { kind: 'element', tag: c.tag, attrs, events, children: listTemplates(c, attrs, loops) };
     return { kind: 'element', tag: c.tag, attrs, events, children: nodes(c.children, loops) };

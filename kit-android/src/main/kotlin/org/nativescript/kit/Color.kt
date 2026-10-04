@@ -27,6 +27,8 @@ class Color(val argb: Int) {
                 return Color(pack(c.alpha, r, g, b))
             }
             KNOWN[lowered]?.let { return Color(it.toInt()) }
+            // An expression csstools does not parse is -1 in core: opaque white.
+            if (lowered.contains("color-mix(")) return Color(ColorMix.argb(lowered) ?: -1)
             if (lowered.startsWith("#") && lowered.length in setOf(4, 5, 7, 9)) {
                 var hex = lowered.substring(1)
                 if (hex.length == 3 || hex.length == 4) hex = hex.map { "$it$it" }.joinToString("")

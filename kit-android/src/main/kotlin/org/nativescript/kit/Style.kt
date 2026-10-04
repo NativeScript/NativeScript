@@ -8,6 +8,8 @@ object Layout {
 
     fun toDevicePixels(value: Double): Double = value * density
 
+    fun toDeviceIndependentPixels(value: Double): Double = value / density
+
     /** `layout.round`: halves up, and a nonzero value never rounds to 0. */
     fun round(value: Double): Double {
         val res = floor(value + 0.5)
@@ -93,3 +95,21 @@ fun toText(value: Any?): String? = when (value) {
 
 /** `parseInt` for integer properties templates set as text (`col="1"`). */
 fun toInt(value: Any?): Int? = toDouble(value)?.toInt()
+
+/** An items property's value: the JSArray translated code passes, or a list. */
+fun toList(value: Any?): List<Any?>? = when (value) {
+    is JSArray<*> -> value.elements
+    is List<*> -> value
+    else -> null
+}
+
+/** Values compare as NativeScript's property system sees them change. */
+fun sameValue(a: Any?, b: Any?): Boolean = when {
+    a == null || b == null -> a == null && b == null
+    a is Double && b is Double -> a == b
+    a is String && b is String -> a == b
+    a is Boolean && b is Boolean -> a == b
+    a is Color && b is Color -> a.argb == b.argb
+    a is JSDate && b is JSDate -> a.getTime() == b.getTime()
+    else -> a::class == b::class && a.toString() == b.toString()
+}

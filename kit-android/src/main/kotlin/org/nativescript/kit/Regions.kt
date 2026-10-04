@@ -5,12 +5,27 @@ package org.nativescript.kit
  * The container keeps static children and regions in template order and
  * rebuilds its child list when a region changes (`RegionHost`).
  */
-class Region(internal val host: RegionHost?) {
+class Region(internal var host: RegionHost?) {
     var views: List<View> = emptyList()
         private set
 
+    /** Set by `Choose` while it renders a branch: the branch's first `attach` replaces the old views. */
+    internal var replacing = false
+
     fun set(views: List<View>) {
+        replacing = false
         this.views = views
+        host?.regionChanged(this)
+    }
+
+    /**
+     * Puts a view of the content being rendered in place now, for frameworks
+     * that insert views top-down; the render's result settles their order.
+     */
+    fun attach(view: View) {
+        if (replacing) views = emptyList()
+        replacing = false
+        views = views + view
         host?.regionChanged(this)
     }
 }
@@ -36,6 +51,7 @@ fun Choose(region: Region, which: () -> Int, render: (Int) -> List<View>) {
             branch?.dispose()
             val owner = Owner(null)
             branch = owner
+            region.replacing = true
             region.set(owner.run { render(value) })
         }
     }

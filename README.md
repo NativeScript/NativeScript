@@ -149,6 +149,17 @@ file, line and construct.
   framework's d.ts the table maps: for UIKit 722 of 727 classes, 99.1% of
   instance members, 92.5% of class members, 368 of 371 initializers; what
   is left is mostly API Swift does not import (variadic methods, NSZone).
+- **Direct Android calls.** `new android.content.Intent(android.content.Intent.ACTION_SEND)`,
+  `paint.setStrokeWidth(4)`, `android.view.View.VISIBLE`: typed by
+  `@nativescript/types-android`, with signatures read from the class files
+  (android.jar, core's widgets AAR, androidx AARs; `compiler/src/natives/classfiles.ts`).
+  Overloads resolve by argument types, numbers convert to the int, float or
+  long Java takes and back, JS arrays to Java arrays, interfaces implement
+  from object literals (`new android.view.View.OnClickListener({ onClick… })`),
+  and `@NativeClass()` classes extending Java classes override with Java's
+  signatures (`compiler/src/native-calls-android.ts`). `Utils.android`,
+  `Utils.layout` and `Application.android` are in kit-android's `CoreAPI.kt`,
+  and `x.android.ts`/`x.ios.ts` resolve as `./x` for their platform.
 
 ## Plugins
 
@@ -260,31 +271,59 @@ covers it. Each gallery app's Update order screen binds both.
 
 ## Differential tests
 
-`node tests/diff/run.ts` runs every case in `tests/diff/cases/` under Node and,
-translated to Swift, as a macOS program linking the kit's runtime, and
-compares their output: values and formatting, arrays, classes, closures,
+`node tests/diff/run.ts` runs every case in `tests/diff/cases/` under Node,
+translated to Swift as a macOS program linking the kit's runtime, and
+translated to Kotlin on the JVM with kit-android's runtime, and compares
+their output byte for byte (17 of 17 match for each): values and formatting, arrays, classes, closures,
 errors, promise ordering, async control flow, collections, JSON, modules,
 types, regular expressions and dates, interfaces, idioms.
 
 ## Android
 
 `--platform android` writes Kotlin from the same type-checked program and a
-Gradle project that links `kit-android`: the same signals and regions, and
-`@nativescript/core`'s Android view layer (properties, CSS, backgrounds,
-fonts, Frame with fragments, ActionBar as a Toolbar) ported to Kotlin over
-core's own `org.nativescript.widgets` AAR, so layout is core's Java code.
-Every comparison is against that framework's own NativeScript Android
-Release build, on a Pixel 9 emulator (API 36), below the status bar.
+Gradle project that links `kit-android`: the same signals and regions, a
+Kotlin runtime with JavaScript's semantics (`kit-android/.../runtime/`, the
+counterpart of the Swift one: arrays, maps and sets, promises and microtasks
+on the main looper, async functions through the same continuation lowering,
+JSON, RegExp with its own engine, Date, console formatting as V8 and Node do
+them), and `@nativescript/core`'s Android view layer ported to Kotlin over
+core's own `org.nativescript.widgets` AAR, so layout is core's Java code:
+properties applied at load in core's order, the CSS engine (selectors,
+`@media`, `var()`, `calc()`, `@keyframes`, root classes with live light/dark),
+borders, gradients, box shadows, clip paths and `color-mix()`, every
+layout, ListView, TextView, gestures with core's event data, animations,
+modals, TabView, the pickers and the other controls gallery-vue shows, core's
+imperative API (`view.animate()`, `Animation`, TouchManager, RootLayout's
+`open`/`close`, `Frame.navigate` and `showModal` from script), and each
+framework's update order (`EffectOrder` in `Signals.kt`, the same keys
+`codegen-kotlin.ts` emits as `codegen.ts`). Every comparison is
+against that framework's own NativeScript Android Release build, on a
+Pixel 9 emulator (API 36), below the status bar.
 
 | | Vue | Angular | Svelte | React | Solid | Octane |
 | --- | --- | --- | --- | --- | --- | --- |
 | Pixels that differ, both screens | 0 | 0 | 0 | 0 | 0 | 0 |
 | Pixels that differ after the same taps | 0 | 0 | 0 | 0 | 0 | 0 |
-| Release APK, NativeScript → native | 104.1 → 0.8 MB | 104.3 → 0.8 MB | 104.1 → 0.8 MB | 104.1 → 0.8 MB | 104.0 → 0.8 MB | 104.0 → 0.8 MB |
+| Release APK, NativeScript → native | 104.1 → 0.9 MB | 104.3 → 0.9 MB | 104.1 → 0.9 MB | 104.1 → 0.9 MB | 104.0 → 0.9 MB | 104.0 → 0.9 MB |
 
 The NativeScript APKs carry `libNativeScript.so` (V8) for four ABIs,
 100 MB of the 104; the native APKs have no native libraries
 (`results/sizes-android.json`, `results/pixels-android.json`).
+
+The gallery apps, against their NativeScript Release builds on the same
+emulator (`tools/gallery-android.py`, `gallery-android.json` in each app):
+gallery-vue's 40 screens in 171 shots, 169 of them 0 pixels apart; the
+other two are the pan shots (see Limits). The ListView and Update order
+screens of the other five are 0 pixels apart in all of their shots.
+
+`native-calls-vue` on Android calls the platform from TypeScript: a
+`GradientDrawable` and elevation on the card, a tinted system drawable, a
+`View` subclass written in TypeScript whose `onDraw` strokes a `Path`, a
+badge drawn on a `Canvas`, the title's size and typeface, and a share sheet
+from `Intent.createChooser`. Against its NativeScript Release build: 0
+pixels differ at launch, after two runs of the tasks, with the chooser open
+and after closing it; with the chooser open, the system's share targets
+can differ by a few icon pixels from one opening to the next.
 
 Two framework behaviors the Android build reproduces: the Angular app's CSS
 is the filtered CSS its build ships (see above), and React screens sit in
@@ -324,16 +363,18 @@ develops it with live reload as usual.
 | `compiler/src/plugins/` | Plugins: their source found, checked and patched (`source.ts`), their iOS code as targets and symbol tables (`native.ts`) |
 | `compiler/src/reach.ts`, `patterns.ts`, `properties.ts` | What of a plugin the app reaches; the patterns by which plugins extend core; properties registered by name |
 | `compiler/src/codegen.ts` | A template as `render()`: views made once, one effect per binding, keyed regions for `if`/`for` |
-| `compiler/src/kotlin.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |
+| `compiler/src/kotlin.ts`, `kotlin-modules.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |
+| `compiler/src/core-kotlin.ts`, `native-calls-android.ts`, `natives/classfiles.ts` | `@nativescript/core`'s API through kit-android; direct Android calls, typed from the class files |
 | `compiler/src/css.ts`, `css-worker.ts` | The CSS the app's NativeScript build ships, through its own bundler's pipeline, for both targets |
 | `kit/Sources/NativeScriptKit/` | The views, layout, CSS and navigation ported from `@nativescript/core`; `Signals.swift`, `Regions.swift`, `JS.swift`, `Router.swift`, `CoreAPI.swift` |
 | `kit/Sources/NativeScriptKit/Runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting (Foundation only) |
-| `kit-android/` | NativeScriptKit for Android: core's Android views and styling in Kotlin on the widgets AAR; `Signals.kt`, `Regions.kt`, `JS.kt`, `Router.kt` |
-| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView screen (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` |
-| `native-calls-vue/` | A Vue app calling UIKit directly, compared by `tools/native_calls.py` |
+| `kit-android/` | NativeScriptKit for Android: core's Android views, styling, CSS engine, gestures, animations and modals in Kotlin on the widgets AAR; `Signals.kt`, `Regions.kt`, `JS.kt`, `Router.kt`, `CoreAPI.kt` |
+| `kit-android/.../runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting in Kotlin |
+| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView screen (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` (`gallery.json`) and `tools/gallery-android.py` (`gallery-android.json`) |
+| `native-calls-vue/` | A Vue app calling UIKit, and on Android the Android SDK, directly; compared by `tools/native_calls.py` and `tools/gallery-android.py` |
 | `tests/diff/` | Differential tests: each case under Node and as a native program |
 | `tests/color-mix/` | The kit's `color-mix()` against core's color parser |
-| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `sizes-android.py` |
+| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
 
 ## Limits
 
@@ -349,16 +390,16 @@ develops it with live reload as usual.
   on the framework's microtask or tick.
 - **Where Swift differs, by design.** Closures have no identity; JSON
   cannot hold lone surrogates.
-- **Android:** the TypeScript the Kotlin translator knows is the Recipes
-  subset; direct `android.*` calls, ListView, TextView, the layouts other
-  than FlexboxLayout, gestures other than tap, animations, modals, TabView,
-  the other elements gallery-vue shows, and the CSS engine's selectors,
-  variables, borders and backgrounds are iOS only so far.
+- **Android:** `Base.extend({…})`, Java varargs and `Array.create` are not
+  translated; a Java array a method fills in is a copy. Core's pan starts
+  from a recycled MotionEvent, whatever event it holds by then, so a pan's
+  deltas vary from run to run in the NativeScript build itself.
 - **Plugins** compile from their source (see Plugins above). Not yet:
   CocoaPods and Gradle dependencies, `.framework`s and static libraries
   (an `.xcframework` is fine), resource bundles, Info.plist merges and
   entitlements, plugin hooks, and changes to core's prototypes other than
-  the recognized patterns. Android does not compile plugins yet.
+  the recognized patterns. Plugins are compiled for iOS only: an Android
+  build of an app that imports one stops at that import.
 - **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box
   shadows, Span `verticalAlignment`, `font://` icons, and DatePicker dates given
   as Date values.
