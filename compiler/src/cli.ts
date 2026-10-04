@@ -126,9 +126,10 @@ if (framework === 'vue') {
 
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-const { checker, program } = createProgram(modules, virtual);
+const platform = opt('--platform') === 'android' ? 'android' : 'ios';
+const { checker, program } = createProgram(modules, virtual, platform);
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
-if (opt('--platform') === 'android') {
+if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
   await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });

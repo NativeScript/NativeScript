@@ -7,6 +7,7 @@ import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import { render } from './codegen-kotlin.ts';
+import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
 
 export interface AndroidBuild {
   app: string;
@@ -26,6 +27,9 @@ export interface AndroidBuild {
   build: boolean;
 }
 
+/** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
+const REACT_SCREEN_CONTENT = { flexGrow: '1', flexDirection: 'column', width: '100%', height: '100%' };
+
 const kit = resolve(dirname(new URL(import.meta.url).pathname), '../../kit-android');
 const say = (m: string) => console.log(`[ns-native] ${m}`);
 
@@ -43,7 +47,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     const { params, lines } = translator.componentMembers(cls, c.props);
-    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos), '}'];
+    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos, b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}), '}'];
     writeFileSync(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
   }
   // Interfaces become classes once everything that might use them is translated.
@@ -67,7 +71,7 @@ ${routes}        return ${b.root}().render()
     }
 }
 
-val appCSS = ${kotlinString(b.css)}
+val appCSS = ${kotlinString(usesNativeScriptTailwind(b.app) ? nativescriptTailwind(b.css) : b.css)}
 `);
   say(`${b.components.length} components and ${b.modules.length} modules from ${b.framework} compiled to Kotlin in ${Date.now() - started} ms → ${relative(process.cwd(), sources)}`);
 

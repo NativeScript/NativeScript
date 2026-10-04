@@ -255,6 +255,11 @@ open class View {
             "col", "column" -> updateCommonLayoutParams { it.column = maxOf(0, toInt(value) ?: 0) }
             "rowSpan" -> updateCommonLayoutParams { it.rowSpan = maxOf(1, toInt(value) ?: 1) }
             "colSpan", "columnSpan" -> updateCommonLayoutParams { it.columnSpan = maxOf(1, toInt(value) ?: 1) }
+            "order" -> updateFlexLayoutParams { it.order = toInt(value) ?: 1 }
+            "flexGrow" -> updateFlexLayoutParams { it.flexGrow = toDouble(value)?.toFloat() ?: 0f }
+            "flexShrink" -> updateFlexLayoutParams { it.flexShrink = toDouble(value)?.toFloat() ?: 1f }
+            "flexWrapBefore" -> updateFlexLayoutParams { it.wrapBefore = toBool(value) ?: false }
+            "alignSelf" -> updateFlexLayoutParams { it.alignSelf = FlexboxLayout.alignSelf(value) }
         }
     }
 
@@ -278,6 +283,16 @@ open class View {
         val view = nativeView
         val lp = view.layoutParams ?: CommonLayoutParams()
         if (lp is CommonLayoutParams) {
+            update(lp)
+            view.layoutParams = lp
+        }
+    }
+
+    /** Flex item properties only reach a view whose params are already a flexbox's, as in core. */
+    private fun updateFlexLayoutParams(update: (org.nativescript.widgets.FlexboxLayout.LayoutParams) -> Unit) {
+        val view = nativeView
+        val lp = view.layoutParams ?: org.nativescript.widgets.FlexboxLayout.LayoutParams()
+        if (lp is org.nativescript.widgets.FlexboxLayout.LayoutParams) {
             update(lp)
             view.layoutParams = lp
         }

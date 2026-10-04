@@ -415,6 +415,10 @@ export class Translator {
       const t = this.typeOf(e);
       return t === 'Any?' ? `${this.expr(target)}.value` : `(${this.expr(target)}.value as ${t})`;
     }
+    // A method used as a value is a bound reference in Kotlin.
+    const symbol = this.checker.getSymbolAtLocation(e.name);
+    const called = ts.isCallExpression(e.parent) && e.parent.expression === e;
+    if (symbol && symbol.flags & ts.SymbolFlags.Method && !called) return `${this.expr(target)}::${ident(name)}`;
     return `${this.expr(target)}${dot}${ident(name)}`;
   }
 

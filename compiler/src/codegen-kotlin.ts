@@ -6,7 +6,15 @@ import { ident, kotlinString } from './kotlin.ts';
  * each binding is one effect that sets one property, and each `if`/`for`
  * owns a region of its container. Nothing is diffed at run time.
  */
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>): string[] {
+export interface RenderOptions {
+  /**
+   * Properties of a layout the navigator puts around a routed page's content
+   * (react-nativescript-navigation's flexbox), or none.
+   */
+  screenContent?: Record<string, string>;
+}
+
+export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>, options: RenderOptions = {}): string[] {
   const lines: string[] = [];
   let n = 0;
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
@@ -97,7 +105,16 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
     say(2, 'val page = Page()');
-    emit(c.template, 2, [], 'page', null);
+    if (options.screenContent) {
+      const isBar = (n: TNode) => n.kind === 'element' && n.tag === 'ActionBar';
+      emit(c.template.filter(isBar), 2, [], 'page', null);
+      say(2, 'val content = FlexboxLayout()');
+      for (const [name, value] of Object.entries(options.screenContent)) say(2, `content.set(${kotlinString(name)}, ${kotlinString(value)})`);
+      emit(c.template.filter((n) => !isBar(n)), 2, [], 'content', null);
+      say(2, 'page.addChild(content)');
+    } else {
+      emit(c.template, 2, [], 'page', null);
+    }
     say(2, 'return page');
   } else {
     const roots: string[] = [];
