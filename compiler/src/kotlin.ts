@@ -126,7 +126,8 @@ export class Translator {
         const mutable = !(st.declarationList.flags & ts.NodeFlags.Const);
         for (const d of st.declarationList.declarations) {
           const name = (d.name as ts.Identifier).text;
-          out.push(`${mutable || this.mutatedLater(d, sf) ? 'var' : 'val'} ${ident(name)}: ${this.typeOf(d.name)} = ${this.expr(d.initializer!)}`);
+          // A field, not a getter: `val state` would otherwise clash with a function `getState()` on the JVM.
+          out.push(`@JvmField ${mutable || this.mutatedLater(d, sf) ? 'var' : 'val'} ${ident(name)}: ${this.typeOf(d.name)} = ${this.expr(d.initializer!)}`);
         }
         continue;
       }
