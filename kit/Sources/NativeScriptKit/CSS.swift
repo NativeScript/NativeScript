@@ -62,19 +62,27 @@ struct StyleSheet {
         return Selector(type: type.isEmpty ? nil : type, classes: classes, specificity: (type.isEmpty || type == "*" ? 0 : 1) + classes.count * 100)
     }
 
-    /// The declarations that apply to `view`, later winning, as view property names.
-    func values(for view: View) -> [String: Any] {
+    /// The declarations that apply to `view` as view property names, later
+    /// values winning; each name keeps the position where it first appeared.
+    func values(for view: View) -> [(name: String, value: Any)] {
         var matched: [(specificity: Int, order: Int, declarations: [(name: String, value: String)])] = []
         for rule in rules {
             let best = rule.selectors.filter { $0.matches(view) }.map(\.specificity).max()
             if let best { matched.append((best, rule.order, rule.declarations)) }
         }
         matched.sort { $0.specificity != $1.specificity ? $0.specificity < $1.specificity : $0.order < $1.order }
-        var result: [String: Any] = [:]
+        var result: [(name: String, value: Any)] = []
+        var position: [String: Int] = [:]
         for rule in matched {
             for declaration in rule.declarations {
                 for (name, value) in expandShorthand(propertyName(css: declaration.name), declaration.value) {
-                    result[name] = value
+                    guard let value else { continue }
+                    if let index = position[name] {
+                        result[index].value = value
+                    } else {
+                        position[name] = result.count
+                        result.append((name, value))
+                    }
                 }
             }
         }

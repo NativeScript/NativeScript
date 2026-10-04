@@ -65,7 +65,7 @@ open class Page: ContentView {
     private(set) var controller: PageViewController!
     private(set) var actionBar: ActionBar?
     var owner: Owner?
-    private var isLoaded = false
+    private var didStyleNavigationBar = false
 
     weak var frame: Frame? { parent as? Frame }
 
@@ -92,8 +92,8 @@ open class Page: ContentView {
     }
 
     func willAppear() {
-        if !isLoaded {
-            isLoaded = true
+        if !didStyleNavigationBar {
+            didStyleNavigationBar = true
             actionBar?.applyNavigationBarStyle()
         }
         actionBar?.update()
@@ -251,7 +251,7 @@ open class Frame: View {
     private(set) var currentPage: Page?
     /// The backstack and the current page, as the navigation controller shows them.
     private var pages: [Page] = []
-    private var isLoaded = false
+    private var didShowInitialPage = false
     private var showNavigationBar: Bool?
 
     public override init() {
@@ -279,8 +279,8 @@ open class Frame: View {
     }
 
     func loaded() {
-        guard !isLoaded else { return }
-        isLoaded = true
+        guard !didShowInitialPage else { return }
+        didShowInitialPage = true
         if let page = initialPage { navigateCore(page, animated: false) }
     }
 

@@ -29,7 +29,7 @@ open class View: NSObject {
     public var className: String = "" {
         didSet {
             classes = Set(className.split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init))
-            applyCSS()
+            if isLoaded { applyCSS() }
         }
     }
     var classes: Set<String> = []
@@ -38,12 +38,43 @@ open class View: NSObject {
     // over CSS, which wins over the parent's for inherited properties.
     private var locals: [String: Any] = [:]
     private var cssValues: [String: Any] = [:]
+    private var cssOrder: [String] = []
     var applied: [String: Any] = [:]
 
     static let inheritedProperties: Set<String> = [
         "color", "fontFamily", "fontSize", "fontStyle", "fontWeight", "textAlignment", "textTransform",
         "whiteSpace", "letterSpacing", "lineHeight", "tintColor", "iosOverflowSafeAreaEnabled", "iosIgnoreSafeArea",
     ]
+
+    /// The names NativeScript registers as style (CSS) properties; every other name is a view property.
+    static let styleProperties: Set<String> = [
+        "accessibilityLanguage", "accessibilityLiveRegion", "accessibilityRole", "accessibilityState", "accessibilityStep", "accessible",
+        "alignContent", "alignItems", "alignSelf", "androidContentInsetLeft", "androidContentInsetRight", "androidDynamicElevationOffset",
+        "androidElevation", "androidSelectedTabHighlightColor", "androidStatusBarBackground", "backgroundColor", "backgroundImage",
+        "backgroundInternal", "backgroundPosition", "backgroundRepeat", "backgroundSize", "borderBottomColor", "borderBottomLeftRadius",
+        "borderBottomRightRadius", "borderBottomWidth", "borderLeftColor", "borderLeftWidth", "borderRightColor", "borderRightWidth",
+        "borderTopColor", "borderTopLeftRadius", "borderTopRightRadius", "borderTopWidth", "boxShadow", "clipPath", "color", "columnGap",
+        "cornerShape", "direction", "flexDirection", "flexGrow", "flexShrink", "flexWrap", "flexWrapBefore", "fontFamily", "fontInternal",
+        "fontScaleInternal", "fontSize", "fontStyle", "fontVariationSettings", "fontWeight", "height", "horizontalAlignment", "iconFontFamily",
+        "iosAccessibilityAdjustsFontSize", "iosAccessibilityMaxFontScale", "iosAccessibilityMinFontScale", "justifyContent", "letterSpacing",
+        "lineHeight", "marginBottom", "marginLeft", "marginRight", "marginTop", "maxHeight", "maxLines", "maxWidth", "minHeight", "minWidth",
+        "opacity", "order", "paddingBottom", "paddingInternal", "paddingLeft", "paddingRight", "paddingTop", "perspective", "placeholderColor",
+        "rotate", "rotateX", "rotateY", "rowGap", "scaleX", "scaleY", "selectedBackgroundColor", "selectedTabTextColor", "selectedTextColor",
+        "separatorColor", "statusBarStyle", "tabBackgroundColor", "tabTextColor", "tabTextFontSize", "textAlignment", "textDecoration",
+        "textOverflow", "textShadow", "textStroke", "textTransform", "tintColor", "translateX", "translateY", "verticalAlignment",
+        "visibility", "whiteSpace", "width", "zIndex",
+        // `textWrap` sets the `whiteSpace` style property.
+        "textWrap",
+    ]
+
+    /// NativeScript stores a view's values until it is loaded, then applies them
+    /// once (`applyAllNativeSetters`): view properties, then style properties,
+    /// each in the order a value was first set. CSS is matched at load.
+    public private(set) var isLoaded = false
+    private var pendingNames: [String] = []
+    private var pendingSet: Set<String> = []
+    /// A CSS re-match is one `_batchUpdate`: its values apply in the order they were set.
+    private var isBatching = false
 
     private var handlers: [String: [(EventData) -> Void]] = [:]
     private var tapRecognizer: UITapGestureRecognizer?
@@ -95,7 +126,6 @@ open class View: NSObject {
         nativeView = createNativeView()
         defaultBackgroundColor = nativeView?.backgroundColor
         initNativeView()
-        applyCSS()
     }
 
     open func createNativeView() -> UIView? { nil }
@@ -111,10 +141,40 @@ open class View: NSObject {
     func addView(_ child: View) {
         child.parent = self
         for name in View.inheritedProperties { child.refresh(name) }
+        if isLoaded { child.load() }
     }
 
     func removeView(_ child: View) {
+        child.unload()
         if child.parent === self { child.parent = nil }
+    }
+
+    // MARK: Loading (view-base onLoaded / onUnloaded)
+
+    func load() {
+        guard !isLoaded else { return }
+        matchCSS()
+        isLoaded = true
+        let names = pendingNames
+        pendingNames = []
+        pendingSet = []
+        for name in names where !View.styleProperties.contains(name) { setProperty(name, applied[name]) }
+        for name in names where View.styleProperties.contains(name) { setProperty(name, applied[name]) }
+        onLoaded()
+        eachChildView { $0.load() }
+    }
+
+    func unload() {
+        guard isLoaded else { return }
+        isLoaded = false
+        eachChildView { $0.unload() }
+    }
+
+    open func onLoaded() {}
+
+    /// Defers a name's application to the next load or batch end, at its first-set position.
+    private func deferApplication(_ name: String) {
+        if pendingSet.insert(name).inserted { pendingNames.append(name) }
     }
 
     // MARK: Properties
@@ -127,11 +187,25 @@ open class View: NSObject {
         }
     }
 
-    func applyCSS() {
+    /// `CssState.setPropertyValues`: removed values are unset first, in their old
+    /// order, then the matched ones are set in cascade order.
+    private func matchCSS() {
         let next = StyleSheet.app.values(for: self)
-        let names = Set(next.keys).union(cssValues.keys)
-        cssValues = next
-        for name in names { refresh(name) }
+        let removed = cssOrder.filter { name in !next.contains { $0.name == name } }
+        cssValues = Dictionary(next.map { ($0.name, $0.value) }, uniquingKeysWith: { $1 })
+        cssOrder = next.map(\.name)
+        for name in removed { refresh(name) }
+        for name in cssOrder { refresh(name) }
+    }
+
+    func applyCSS() {
+        isBatching = true
+        matchCSS()
+        isBatching = false
+        let names = pendingNames
+        pendingNames = []
+        pendingSet = []
+        for name in names { setProperty(name, applied[name]) }
     }
 
     func refresh(_ name: String) {
@@ -141,7 +215,7 @@ open class View: NSObject {
         if !had && value == nil { return }
         if had && sameValue(value, applied[name]) { return }
         applied[name] = value
-        setProperty(name, value)
+        if isLoaded && !isBatching { setProperty(name, value) } else { deferApplication(name) }
         if View.inheritedProperties.contains(name) { eachChildView { $0.refresh(name) } }
     }
 

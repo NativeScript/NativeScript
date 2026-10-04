@@ -40,6 +40,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         window.backgroundColor = .systemBackground
         let root = makeRoot()
+        root.load()
         window.rootViewController = NativeScriptApplication.rootController(for: root)
         window.makeKeyAndVisible()
         self.window = window
