@@ -21,7 +21,7 @@ import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
-import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
+import { appStylesheets, importedStylesheets, kitCss } from './css.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -141,7 +141,7 @@ const { checker, program, files: sourceFiles } = createProgram(modules, virtual,
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
-  const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
+  const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
   await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
   process.exit(0);
 }
@@ -162,8 +162,7 @@ for (const m of translated) if (m.code.trim()) writeFileSync(join(out, 'Sources'
 const shapes = translator.shapesCode();
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
-const sourceCSS = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
-const css = usesNativeScriptTailwind(app) ? nativescriptTailwind(sourceCSS) : sourceCSS;
+const css = kitCss(appStylesheets(app, 'ios', importedStylesheets(entry, appDir)));
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
