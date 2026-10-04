@@ -250,6 +250,38 @@ public func jsLocaleCompare(_ a: String, _ b: String) -> Double {
 
 // MARK: Math and Number
 
+public func jsMathMax(values: [Double]) -> Double {
+    var out = -Double.infinity
+    for v in values {
+        if v.isNaN { return .nan }
+        if v > out || (v == 0 && out == 0 && out.sign == .minus) { out = v }
+    }
+    return out
+}
+
+public func jsMathMin(values: [Double]) -> Double {
+    var out = Double.infinity
+    for v in values {
+        if v.isNaN { return .nan }
+        if v < out || (v == 0 && out == 0 && v.sign == .minus) { out = v }
+    }
+    return out
+}
+
+extension JSArray {
+    /// `a.push(...items)`.
+    @discardableResult public func push(contentsOf items: JSArray<Element>) -> Double {
+        for item in items.storage { _ = push(item) }
+        return length
+    }
+
+    /// `a.unshift(...items)`.
+    @discardableResult public func unshift(contentsOf items: JSArray<Element>) -> Double {
+        for item in items.storage.reversed() { _ = unshift(item) }
+        return length
+    }
+}
+
 public func jsSign(_ x: Double) -> Double { x.isNaN ? .nan : x > 0 ? 1 : x < 0 ? -1 : x }
 public func jsFround(_ x: Double) -> Double { Double(Float(x)) }
 public func jsHypot(_ values: Double...) -> Double {

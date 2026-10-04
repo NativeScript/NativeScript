@@ -474,10 +474,7 @@ export class Translator {
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
     return fn.parameters.map((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
-      if (p.dotDotDotToken) {
-        const el = this.typeOf(p.name).replace(/^JSArray<(.*)>$/, '$1');
-        return `${closure ? '' : '_ '}${name}: ${el}...`;
-      }
+      if (p.dotDotDotToken) return `${closure ? '' : '_ '}${name}: ${this.typeOf(p.name)}`;
       let t = this.typeOf(p.name);
       let given = '';
       if (p.questionToken || (p.initializer && !this.templateParams)) {
@@ -499,7 +496,6 @@ export class Translator {
     const lines: string[] = [];
     fn.parameters.forEach((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
-      if (p.dotDotDotToken) { lines.push(`${i}let ${name} = JSArray(${name})`); return; }
       if (p.initializer && !this.templateParams && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || !this.isConstant(p.initializer))) {
         lines.push(`${i}let ${name}: ${this.typeOf(p.name)} = ${name} ?? ${this.coerce(p.initializer, this.typeOf(p.name))}`);
       }
@@ -655,6 +651,8 @@ export class Translator {
     const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).map((i) => i.expression.getText());
     for (const i of implemented) this.used.add(i);
     const conformances = [...(base ? [base] : []), ...implemented];
+    // A class's own toString is what JavaScript's string conversion calls.
+    if (cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls)) conformances.push('JSStringConvertible');
     const lines = [`${this.extended.has(name) ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${conformances.length ? conformances.join(', ') : 'JSDynamic'} {`];
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
@@ -758,6 +756,13 @@ export class Translator {
     return lines.join('\n');
   }
 
+  private inheritsToString(cls: ts.ClassLikeDeclaration): boolean {
+    const h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+    if (!d || !ts.isClassLike(d)) return !!h && !!ERRORS[h.expression.getText()];
+    return d.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString') || this.inheritsToString(d);
+  }
+
   private constructorOf(cls: ts.ClassLikeDeclaration): ts.ConstructorDeclaration | undefined {
     for (let b: ts.ClassLikeDeclaration | undefined = cls; b; ) {
       const ctor = b.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
@@ -817,23 +822,24 @@ export class Translator {
       const mutable = !(list.flags & ts.NodeFlags.Const);
       const seq = this.tryPrefix(s.expression) + this.iterable(s.expression);
       return this.loopBody(() => {
-        if (ts.isIdentifier(decl.name)) return `${i}for ${mutable ? 'var ' : ''}${ident(decl.name.text)} in ${seq} ${this.block(s.statement)}`;
+        const label = this.takeLabel();
+        if (ts.isIdentifier(decl.name)) return `${i}${label}for ${mutable ? 'var ' : ''}${ident(decl.name.text)} in ${seq} ${this.block(s.statement)}`;
         const item = this.fresh('__item');
         const body = this.block(s.statement);
-        return `${i}for ${item} in ${seq} {\n${this.nested(() => this.bindTo(decl.name, item, '', mutable))}\n${body.slice(2)}`;
+        return `${i}${label}for ${item} in ${seq} {\n${this.nested(() => this.bindTo(decl.name, item, '', mutable))}\n${body.slice(2)}`;
       });
     }
     if (ts.isForInStatement(s)) {
       const list = s.initializer as ts.VariableDeclarationList;
       const name = ident((list.declarations[0].name as ts.Identifier).text);
-      return this.loopBody(() => `${i}for ${name} in jsKeysOf(${this.expr(s.expression)}) ${this.block(s.statement)}`);
+      return this.loopBody(() => `${i}${this.takeLabel()}for ${name} in jsKeysOf(${this.expr(s.expression)}) ${this.block(s.statement)}`);
     }
     if (ts.isForStatement(s)) return this.forStatement(s);
-    if (ts.isWhileStatement(s)) return this.loopBody(() => `${i}while ${this.tryPrefix(s.expression)}${this.cond(s.expression)} ${this.block(s.statement)}`);
-    if (ts.isDoStatement(s)) return this.loopBody(() => `${i}repeat ${this.block(s.statement)} while ${this.tryPrefix(s.expression)}${this.cond(s.expression)}`);
+    if (ts.isWhileStatement(s)) return this.loopBody(() => `${i}${this.takeLabel()}while ${this.tryPrefix(s.expression)}${this.cond(s.expression)} ${this.block(s.statement)}`);
+    if (ts.isDoStatement(s)) return this.loopBody(() => `${i}${this.takeLabel()}repeat ${this.block(s.statement)} while ${this.tryPrefix(s.expression)}${this.cond(s.expression)}`);
     if (ts.isBreakStatement(s) || ts.isContinueStatement(s)) {
-      if (s.label) throw this.error(s, 'a labeled jump');
       const isBreak = ts.isBreakStatement(s);
+      if (s.label) return `${i}${isBreak ? 'break' : 'continue'} ${ident(s.label.text)}`;
       if (a && (isBreak ? a.brk && !this.plainBreak : a.cont && !this.plainContinue)) return `${i}${isBreak ? a.brk : a.cont}\n${i}return`;
       return i + (isBreak ? 'break' : 'continue');
     }
@@ -842,11 +848,24 @@ export class Translator {
     if (ts.isSwitchStatement(s)) return this.switchStatement(s);
     if (ts.isThrowStatement(s)) return `${i}throw ${this.tryPrefix(s.expression)}JSException(value: ${this.coerce(s.expression, 'Any?')})`;
     if (ts.isTryStatement(s)) return this.tryStatement(s);
+    if (ts.isLabeledStatement(s)) {
+      if (this.asyncCtx) throw this.error(s, 'a labeled statement in an async function');
+      this.label = ident(s.label.text);
+      return this.stmt(s.statement);
+    }
     if (ts.isClassDeclaration(s) || ts.isInterfaceDeclaration(s) || ts.isTypeAliasDeclaration(s)) {
       if (ts.isClassDeclaration(s)) throw this.error(s, 'a class declared inside a function');
       return '';
     }
     throw this.error(s, 'statement');
+  }
+
+  /** The label of the loop being translated (`outer:`), placed on the Swift loop that implements it. */
+  private label: string | null = null;
+  private takeLabel(): string {
+    const l = this.label;
+    this.label = null;
+    return l ? `${l}: ` : '';
   }
 
   private loopBody(body: () => string): string {
@@ -930,27 +949,29 @@ export class Translator {
     const step = s.incrementor ? this.tryPrefix(s.incrementor) + this.exprStatement(s.incrementor) : '';
     // `let` loop variables a closure in the body captures are a fresh binding per iteration, as in JavaScript.
     const captured = list && !(list.flags & ts.NodeFlags.Const) && list.declarations.some((d) => ts.isIdentifier(d.name) && capturedIn(d.name, s.statement, this.checker));
-    const hasContinue = containsJump(s.statement, ts.SyntaxKind.ContinueStatement);
+    const labelName = ts.isLabeledStatement(s.parent) ? s.parent.label.text : null;
+    const hasContinue = containsJump(s.statement, ts.SyntaxKind.ContinueStatement) || (!!labelName && continuesTo(s.statement, labelName));
+    const label = this.takeLabel();
     return this.loopBody(() => {
       if (captured) {
         const names = list!.declarations.map((d) => ident((d.name as ts.Identifier).text));
         const first = this.fresh('__first');
         const outer = names.map((n) => `__outer_${n}`);
         const lines = [`${i}do {`, ...init.split('\n').map((l) => '    ' + l)];
-        lines.push(...names.map((n, k) => `${i}    var ${outer[k]} = ${n}`), `${i}    var ${first} = true`, `${i}    while true {`);
+        lines.push(...names.map((n, k) => `${i}    var ${outer[k]} = ${n}`), `${i}    var ${first} = true`, `${i}    ${label}while true {`);
         lines.push(...names.map((n, k) => `${i}        var ${n} = ${outer[k]}`));
         lines.push(`${i}        defer { ${names.map((n, k) => `${outer[k]} = ${n}`).join('; ')} }`);
         const body = this.nested(() => this.nested(() => this.block(s.statement)));
         lines.push(`${i}        if !${first} { ${step} }`, `${i}        ${first} = false`, `${i}        if !(${cond}) { break }`, `${i}        do ${body}`, `${i}    }`, `${i}}`);
         return lines.join('\n');
       }
-      if (!step) return `${init ? init + '\n' : ''}${i}while ${cond} ${this.block(s.statement)}`;
+      if (!step) return `${init ? init + '\n' : ''}${i}${label}while ${cond} ${this.block(s.statement)}`;
       if (hasContinue) {
         const first = this.fresh('__first');
-        return `${init ? init + '\n' : ''}${i}var ${first} = true\n${i}while true {\n${i}    if !${first} { ${step} }\n${i}    ${first} = false\n${i}    if !(${cond}) { break }\n${i}    do ${this.nested(() => this.block(s.statement))}\n${i}}`;
+        return `${init ? init + '\n' : ''}${i}var ${first} = true\n${i}${label}while true {\n${i}    if !${first} { ${step} }\n${i}    ${first} = false\n${i}    if !(${cond}) { break }\n${i}    do ${this.nested(() => this.block(s.statement))}\n${i}}`;
       }
       const body = this.block(s.statement).replace(/\n\s*}$/, '');
-      return `${init ? init + '\n' : ''}${i}while ${cond} ${body}\n${i}    ${step}\n${i}}`;
+      return `${init ? init + '\n' : ''}${i}${label}while ${cond} ${body}\n${i}    ${step}\n${i}}`;
     });
   }
 
@@ -1005,6 +1026,13 @@ export class Translator {
   }
 
   exprStatement(e: ts.Expression): string {
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isArrayLiteralExpression(e.left)) {
+      // `[a, b] = [b, a]`: the right side is evaluated before any target is written.
+      const tmp = this.fresh('__swap');
+      const tuple = this.checker.isTupleType(this.checker.getTypeAtLocation(e.right));
+      const assigns = e.left.elements.map((target, k) => (ts.isOmittedExpression(target) ? '' : `${this.lvalue(target)} = ${tuple ? `${tmp}.${k}` : `${tmp}[${k}]`}`)).filter(Boolean);
+      return `do { let ${tmp} = ${this.expr(e.right)}; ${assigns.join('; ')} }`;
+    }
     if (ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) {
       if (e.operator === ts.SyntaxKind.PlusPlusToken) return `${this.lvalue(e.operand)} += 1`;
       if (e.operator === ts.SyntaxKind.MinusMinusToken) return `${this.lvalue(e.operand)} -= 1`;
@@ -1221,17 +1249,27 @@ export class Translator {
     const sig = this.checker.getResolvedSignature(e);
     const params = sig?.getParameters() ?? [];
     const out: string[] = [];
-    list.forEach((a, k) => {
+    const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
+    const appDeclared = !!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile;
+    for (let k = 0; k < list.length; k++) {
+      const a = list[k];
+      if (restAt >= 0 && k >= restAt && appDeclared) {
+        // An app function's rest parameter is one array: the arguments packed, spreads included.
+        const rest = this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name);
+        out.push(this.packed(list.slice(k), rest));
+        break;
+      }
       if (ts.isSpreadElement(a)) throw this.error(a, 'a spread argument');
       const p = params[Math.min(k, params.length - 1)];
       const decl = p?.valueDeclaration;
       if (!p || (decl && ts.isParameter(decl) && decl.dotDotDotToken)) {
         const pt = decl && ts.isParameter(decl) ? this.typeOf(decl.name).replace(/^JSArray<(.*)>$/, '$1') : 'Any?';
         out.push(this.coerce(a, pt));
-        return;
+        continue;
       }
       out.push(this.coerce(a, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)));
-    });
+    }
+    if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name)}()`);
     // A function value takes every parameter: the ones JavaScript leaves out are undefined.
     const decl = sig?.getDeclaration();
     if (count === undefined && decl && !ts.isJSDocSignature(decl) && !('body' in decl) && (ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl))) {
@@ -1241,6 +1279,21 @@ export class Translator {
       }
     }
     return out;
+  }
+
+  /** Arguments (spreads included) as one `JSArray` of `arrayType`. */
+  private packed(items: readonly ts.Expression[], arrayType: string): string {
+    const el = arrayType.replace(/^JSArray<(.*)>$/, '$1');
+    const parts: string[] = [];
+    let run: string[] = [];
+    for (const x of items) {
+      if (ts.isSpreadElement(x)) {
+        if (run.length) { parts.push(`[${run.join(', ')}]`); run = []; }
+        parts.push(`Array(${this.iterable(x.expression)})`);
+      } else run.push(this.coerce(x, el));
+    }
+    if (run.length) parts.push(`[${run.join(', ')}]`);
+    return `${arrayType}(${parts.join(' + ') || '[]'})`;
   }
 
   /** How many parameters the called function declares (JavaScript ignores extra arguments). */
@@ -1299,6 +1352,10 @@ export class Translator {
       if (this.isAny(target)) return `jsCall(jsGet(${this.expr(target)}, ${swiftString(method)})${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') ? '!' : '';
+      if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
+        // `new Array(n).fill(v)`: n copies of v.
+        return `${t}(Array(repeating: ${this.coerce(e.arguments[0], t.replace(/^JSArray<(.*)>$/, '$1'))}, count: Int(${this.expr(target.arguments[0])})))`;
+      }
       if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
       if (t === 'JSMatch' && method !== 'toString') {
         this.subst.set(target, `${this.expr(target)}${q}.values`);
@@ -1457,6 +1514,16 @@ export class Translator {
       case 'Array':
         if (method === 'isArray') return `JSArray<Any?>.isArray(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'from' && e.arguments.length === 1) return `${T()}.from(${this.iterable(arg(0))})`;
+        if (method === 'from' && e.arguments.length === 2 && ts.isObjectLiteralExpression(arg(0))) {
+          const length = (arg(0) as ts.ObjectLiteralExpression).properties.find((p) => p.name?.getText() === 'length');
+          const fn = arg(1);
+          if (!length || !ts.isPropertyAssignment(length) || !(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) throw this.error(e, 'Array.from of this object');
+          const el = T().replace(/^JSArray<(.*)>$/, '$1');
+          const index = fn.parameters[1] ? ident((fn.parameters[1].name as ts.Identifier).text) : '_';
+          const value = fn.parameters[0] && ts.isIdentifier(fn.parameters[0].name) && fn.parameters[0].name.text !== '_' ? `let ${ident(fn.parameters[0].name.text)}: Any? = nil; ` : '';
+          const body = ts.isBlock(fn.body) ? this.functionBody(fn, el, this.indent).slice(1, -1) : ` return ${this.coerce(fn.body, el)} `;
+          return `${T()}.from(length: ${this.expr(length.initializer)}) { (${index}: Double) ${this.throwsInfo.fn(fn) ? 'throws ' : ''}-> ${el} in ${value}${body}}`;
+        }
         if (method === 'from' && e.arguments.length === 2) return `${T()}.from(${this.iterable(arg(0))}).map(${this.expr(arg(1))})`;
         if (method === 'of') return `${T()}([${a().join(', ')}])`;
         break;
@@ -1512,6 +1579,7 @@ export class Translator {
   }
 
   private math(name: string, e: ts.CallExpression): string {
+    if ((name === 'max' || name === 'min') && e.arguments.some(ts.isSpreadElement)) return `jsMath${name === 'max' ? 'Max' : 'Min'}(values: ${this.packed(e.arguments, 'JSArray<Double>')}.storage)`;
     const a = e.arguments.map((x) => this.coerce(x, 'Double'));
     const one: Record<string, string> = {
       floor: 'Foundation.floor', ceil: 'Foundation.ceil', abs: 'Swift.abs', sqrt: 'Foundation.sqrt', cbrt: 'Foundation.cbrt', trunc: 'Foundation.trunc',
@@ -1541,10 +1609,13 @@ export class Translator {
     const a = () => this.args(e);
     const el = this.typeOf(target).replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1');
     switch (name) {
-      case 'push': case 'unshift': return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, el)).join(', ')})`;
+      case 'push': case 'unshift':
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}(contentsOf: ${this.packed(e.arguments, `JSArray<${el}>`)})`;
+        return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, el)).join(', ')})`;
       case 'pop': case 'shift': case 'reverse': case 'toString': case 'keys': case 'entries': case 'values': case 'flat': return `${t}.${name}()`;
       case 'splice': return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
-      case 'slice': case 'indexOf': case 'lastIndexOf': case 'includes': case 'fill': case 'at': return `${t}.${name}(${a().join(', ')})`;
+      case 'fill': return `${t}.fill(${a().join(', ')})`;
+      case 'slice': case 'indexOf': case 'lastIndexOf': case 'includes': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       case 'concat': return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `[${this.coerce(x, el)}]`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap':
@@ -2009,6 +2080,18 @@ function refersToThis(e: ts.Node): boolean {
     if (!found && !ts.isFunctionDeclaration(n)) ts.forEachChild(n, visit);
   };
   visit(e);
+  return found;
+}
+
+/** Whether a `continue label` inside `n` targets the loop labeled `label`. */
+function continuesTo(n: ts.Node, label: string): boolean {
+  let found = false;
+  const visit = (c: ts.Node) => {
+    if (found || ts.isFunctionLike(c)) return;
+    if (ts.isContinueStatement(c) && c.label?.text === label) { found = true; return; }
+    ts.forEachChild(c, visit);
+  };
+  visit(n);
   return found;
 }
 
