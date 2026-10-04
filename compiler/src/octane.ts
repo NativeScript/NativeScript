@@ -3,6 +3,7 @@ import { dirname, join, relative } from 'node:path';
 import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical, MODELS } from './elements.ts';
+import { rowTemplates } from './listview.ts';
 
 /** An app function that mounts a component as a page's Octane root: where it takes the component, its props and the title. */
 interface PageFunction { component: number; props: number; title: number; push: boolean }
@@ -300,12 +301,15 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
     const model = el ? MODELS[el] : undefined;
     const attrs: Attr[] = [];
     const events: Event[] = [];
+    let renderItem: ts.Expression | null = null;
     for (const a of open.attributes.properties) {
       if (!ts.isJsxAttribute(a)) throw at(a, 'a spread attribute');
       const attr = a.name.getText();
       if (attr === 'key') continue;
       if (attr === 'ref') throw at(a, 'ref');
       const init = a.initializer;
+      if (el === 'ListView' && attr === 'renderItem' && init && ts.isJsxExpression(init) && init.expression) { renderItem = init.expression; continue; }
+      if (el === 'ListView' && (attr === 'itemTemplateSelector' || attr === 'itemTemplates' || attr === 'itemTemplate')) throw at(a, `${attr} on a listview`);
       if (!isComponent && /^on[A-Z]/.test(attr) && init && ts.isJsxExpression(init) && init.expression) {
         const ev = eventName(attr);
         events.push({ name: ev, method: handler(init.expression, loops, model?.event === ev ? model : undefined) });
@@ -321,12 +325,39 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       if (kids.some((c) => !ts.isJsxText(c) || !c.containsOnlyTriviaWhiteSpaces)) throw at(n, 'children of a component');
       return { kind: 'component', name: tag, props: attrs, events };
     }
+    if (el === 'ListView') {
+      if (kids.some((c) => !ts.isJsxText(c) || !c.containsOnlyTriviaWhiteSpaces)) throw at(n, 'children of a listview');
+      if (!renderItem) throw fail(open, 'a listview needs renderItem in a release build');
+      return { kind: 'element', tag: el, attrs, events, children: rows(renderItem, attrs, loops) };
+    }
     if (TEXT_HOSTS.has(el!)) {
       const text = textOf(kids, loops);
       if (text) attrs.push(text);
       return { kind: 'element', tag: el!, attrs, events, children: [] };
     }
     return { kind: 'element', tag: el!, attrs, events, children: children(kids, loops) };
+  };
+
+  /**
+   * A listview's `renderItem(item, index)`, which the driver renders into a cell of its own; a row that is a
+   * conditional becomes a template per branch.
+   */
+  const rows = (fn: ts.Expression, attrs: Attr[], loops: Loop[]): TNode[] => {
+    while (ts.isParenthesizedExpression(fn)) fn = fn.expression;
+    if (!ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) throw at(fn, 'renderItem other than an inline function');
+    if (ts.isBlock(fn.body)) throw at(fn, 'renderItem with a block body');
+    const items = attrs.find((a) => a.name === 'items');
+    if (!items || !('method' in items)) throw at(fn, 'a listview without bound items');
+    const item = fn.parameters[0] ? fn.parameters[0].name.getText() : `$item${loops.length}`;
+    const index = fn.parameters[1] ? fn.parameters[1].name.getText() : `$i${loops.length}`;
+    const inner = [...loops, { item, index, param: `${item} = this.${items.method}(${loopArgs(loops)})[0], ${index} = 0` }];
+    const { templates, selector } = rowTemplates(jsx(fn.body, inner), item, index);
+    if (selector) {
+      const m = `$b${next++}`;
+      methods.push(`  ${m}(${params(inner)}): string { return ${selector((c) => `this.${c}(${loopArgs(inner)})`)}; }`);
+      attrs.push({ name: 'itemTemplateSelector', method: m });
+    }
+    return templates;
   };
 
   /** Text children as the driver folds them into `text`: JSX's whitespace rules, then each expression printed. */

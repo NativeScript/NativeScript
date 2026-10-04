@@ -26,6 +26,8 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
   const fields: string[] = [];
   const props: string[] = [];
   const components = new Set<string>();
+  // svelte-native's `<Template>`, under the name the component imports it as.
+  let templateTag = '';
   const stores = new Set<string>();
   const scope: Scope = { names: new Map() };
   const arity = new Map<string, number>();
@@ -41,6 +43,11 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
         continue;
       }
       if (from === '@nativescript-community/svelte-native') { imports.push(st.getText()); continue; }
+      if (from === '@nativescript-community/svelte-native/components') {
+        const named = st.importClause?.namedBindings;
+        if (named && ts.isNamedImports(named)) for (const e of named.elements) if ((e.propertyName ?? e.name).text === 'Template') templateTag = e.name.text;
+        continue;
+      }
       imports.push(st.getText());
       // A module that exports stores: `$name` in this component reads one.
       const named = st.importClause?.namedBindings;
@@ -133,7 +140,9 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
       if (n.type === 'Element' || n.type === 'InlineComponent') {
         const attrs: Attr[] = [];
         const events: Event[] = [];
+        const isList = n.type === 'Element' && canonical(n.name) === 'ListView';
         for (const a of n.attributes) {
+          if (isList && a.type === 'Attribute' && a.name === 'itemTemplateSelector') continue;
           if (a.type === 'Attribute') attrs.push(value(a, loops));
           else if (a.type === 'EventHandler') { if (a.expression) events.push({ name: a.name, method: handler(a, loops) }); }
           else throw new Error(`${path}: ${a.type} ${a.name} is not supported in a release build yet`);
@@ -145,7 +154,7 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
         }
         const tag = canonical(n.name);
         if (!tag) throw new Error(`${path}: <${n.name}> is not a @nativescript/core element the release build knows`);
-        out.push({ kind: 'element', tag, attrs, events, children: nodes(n.children, loops) });
+        out.push({ kind: 'element', tag, attrs, events, children: isList ? listTemplates(n, attrs, loops) : nodes(n.children, loops) });
         continue;
       }
       if (n.type === 'IfBlock') {
@@ -175,6 +184,41 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
     }
     return out;
   };
+  /**
+   * `<listView items>` with `<Template let:item key="…">` children, as svelte-native renders them: a template
+   * sees its item only, the unkeyed one is the default, and `itemTemplateSelector` is core's `(item, index, items)`.
+   */
+  const listTemplates = (n: any, attrs: Attr[], loops: Loop[]): TNode[] => {
+    const items = attrs.find((a) => a.name === 'items');
+    if (!items || !('method' in items)) throw new Error(`${path}: <listView> needs items={…}`);
+    const list = `this.${items.method}(${args(loops)})`;
+    const selector = n.attributes.find((a: any) => a.type === 'Attribute' && a.name === 'itemTemplateSelector');
+    if (selector) {
+      const v = selector.value;
+      if (v === true || v.length !== 1 || v[0].type !== 'MustacheTag') throw new Error(`${path}: itemTemplateSelector={…} needs a function`);
+      const m = `$b${next++}`;
+      const p = [params(loops), `$item = ${list}[0]`, '$index = 0'].filter(Boolean).join(', ');
+      methods.push(`  ${m}(${p}): string { return ${rewrite(src(v[0].expression), local(loops))}($item, $index, ${list}); }`);
+      attrs.push({ name: 'itemTemplateSelector', method: m });
+    }
+    const out: TNode[] = [];
+    for (const t of n.children) {
+      if (t.type === 'Text' || t.type === 'Comment') continue;
+      if (t.type !== 'InlineComponent' || !templateTag || t.name !== templateTag) throw new Error(`${path}: a listView's children are <Template let:item> item templates`);
+      let key = 'default';
+      let item = `$item${loops.length}`;
+      for (const a of t.attributes) {
+        if (a.type === 'Let' && a.name === 'item') item = a.expression ? src(a.expression) : 'item';
+        else if (a.type === 'Attribute' && a.name === 'key' && a.value !== true && a.value.length === 1 && a.value[0].type === 'Text') key = a.value[0].data;
+        else throw new Error(`${path}: <${templateTag} ${a.type === 'Let' ? 'let:' : ''}${a.name}> is not supported in a release build yet`);
+      }
+      const index = `$i${loops.length}`;
+      const loop: Loop = { item, index, param: `${item} = ${list}[0], ${index} = 0` };
+      out.push({ kind: 'template', key, item, index, body: nodes(t.children, [...loops, loop]) });
+    }
+    return out;
+  };
+
   const template = nodes(ast.html.children, []);
 
   const source = [
