@@ -1,6 +1,7 @@
-// Device builds: an archive, and an .ipa exported from it. Signing is manual
-// only, from a provisioning profile already on the machine; nothing here asks
-// Xcode to create or register anything on a developer account.
+// Device builds: an archive, and an .ipa exported from it. Signed manually
+// from a provisioning profile already on the machine (--provision), or
+// automatically for a team (--team-id), which lets Xcode create profiles and
+// register the app's id on that team as the NativeScript CLI does.
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -40,33 +41,41 @@ export function signingSettings(profile: Profile): Record<string, string> {
   };
 }
 
+/** The app target's settings for automatic signing on the team. */
+export function automaticSigningSettings(team: string): Record<string, string> {
+  return { CODE_SIGN_STYLE: 'Automatic', DEVELOPMENT_TEAM: team };
+}
+
+export type ExportMethod = Profile['method'];
+
 /**
  * `xcodebuild archive` for any iOS device, then the .ipa: exported with the
  * profile when there is one, else the archived app zipped as an unsigned .ipa.
  * Returns the archive and the .ipa.
  */
-export function archive(o: { out: string; name: string; bundle: string; profile: Profile | null; say: (m: string) => void }): { archive: string; ipa: string } {
+export function archive(o: { out: string; name: string; bundle: string; profile: Profile | null; team?: { id: string; method: ExportMethod }; say: (m: string) => void }): { archive: string; ipa: string } {
   const archivePath = join(o.out, `${o.name}.xcarchive`);
   const exportPath = join(o.out, 'ipa');
   rmSync(archivePath, { recursive: true, force: true });
   rmSync(exportPath, { recursive: true, force: true });
   execFileSync('xcodebuild', ['archive', '-project', `${o.name}.xcodeproj`, '-scheme', o.name, '-configuration', 'Release', '-destination', 'generic/platform=iOS',
-    '-derivedDataPath', 'build', '-archivePath', archivePath, '-quiet'], { cwd: o.out, stdio: 'inherit' });
+    '-derivedDataPath', 'build', '-archivePath', archivePath, '-quiet', ...(o.team ? ['-allowProvisioningUpdates'] : [])], { cwd: o.out, stdio: 'inherit' });
   mkdirSync(exportPath, { recursive: true });
-  if (o.profile) {
+  if (o.profile || o.team) {
     const options = join(o.out, 'ExportOptions.plist');
-    writeFileSync(options, writePlist({
+    writeFileSync(options, writePlist(o.profile ? {
       method: o.profile.method,
       signingStyle: 'manual',
       teamID: o.profile.team,
       provisioningProfiles: { [o.bundle]: o.profile.uuid },
-    }));
-    execFileSync('xcodebuild', ['-exportArchive', '-archivePath', archivePath, '-exportPath', exportPath, '-exportOptionsPlist', options, '-quiet'], { cwd: o.out, stdio: 'inherit' });
+    } : { method: o.team!.method, signingStyle: 'automatic', teamID: o.team!.id }));
+    execFileSync('xcodebuild', ['-exportArchive', '-archivePath', archivePath, '-exportPath', exportPath, '-exportOptionsPlist', options, '-quiet',
+      ...(o.team ? ['-allowProvisioningUpdates'] : [])], { cwd: o.out, stdio: 'inherit' });
     const ipa = readdirSync(exportPath).find((f) => f.endsWith('.ipa'));
     if (!ipa) throw new Error(`xcodebuild -exportArchive wrote no .ipa to ${exportPath}`);
     return { archive: archivePath, ipa: join(exportPath, ipa) };
   }
-  o.say('no --provision: the archive and the .ipa are unsigned; sign them for a device or the App Store');
+  o.say('no --provision or --team-id: the archive and the .ipa are unsigned; sign them for a device or the App Store');
   const apps = join(archivePath, 'Products', 'Applications');
   const app = readdirSync(apps).find((f) => f.endsWith('.app'))!;
   const payload = join(exportPath, 'Payload');

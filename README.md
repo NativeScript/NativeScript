@@ -508,9 +508,10 @@ app's `App_Resources` and settings as the NativeScript CLI carries them into
   (`xcodebuild archive`, the size settings below) and writes the `.ipa`:
   unsigned without signing arguments, or signed manually with
   `--provision <profile>` (a `.mobileprovision`, or the UUID or name of an
-  installed one; the export method follows the profile). Nothing is signed
-  automatically or registered on an account, and `--team-id` alone is
-  refused. On Android, `--build` writes the release APK and, with `--aab` or
+  installed one; the export method follows the profile), or signed
+  automatically for a team with `--team-id <team>`, which lets Xcode create
+  profiles and register the app id on that team, as `ns build --for-device`
+  does (`--export-method`, `debugging` by default). On Android, `--build` writes the release APK and, with `--aab` or
   `--device`, the bundle, signed with `--key-store-path`,
   `--key-store-password`, `--key-store-alias` and `--key-store-alias-password`
   when they are given and with the debug key otherwise.

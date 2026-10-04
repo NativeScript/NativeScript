@@ -131,9 +131,9 @@ projects), so the CLI has nothing to add.
 - **xcodegen** is a required tool for iOS (the CLI says how to install it).
   Writing the `.xcodeproj` directly, or a Swift package with an app target,
   would remove it.
-- **Device signing** was proven up to the export step only. `--team-id`
-  (automatic signing) was not run, because it registers the app id on the
-  developer account. Both paths need a run against a real team.
+- **Device signing:** `--team-id` (automatic signing) produces a signed
+  archive and `.ipa` with a real team; `--provision` (manual) still needs a
+  run with a manually managed profile.
 - **`ns publish ios`** builds with `buildForAppStore`; the native build
   archives and exports with the CLI's distribution export options, but
   it has not been run. `ns publish android` has no native counterpart to
