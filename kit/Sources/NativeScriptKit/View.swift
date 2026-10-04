@@ -683,11 +683,19 @@ open class View: Observable {
         if oldFrame != frame {
             cachedFrame = frame
             modifyNativeViewFrame(nativeView, frame)
+            raiseLayoutChangedEvent()
             isLaidOut = true
         } else if !isLaidOut {
             cachedFrame = frame
+            // Rects could be equal on the first layout and an event should be raised.
+            raiseLayoutChangedEvent()
             isLaidOut = true
         }
+    }
+
+    /// `_raiseLayoutChangedEvent`.
+    func raiseLayoutChangedEvent() {
+        if hasListeners("layoutChanged") { notify(JSObject([("eventName", "layoutChanged"), ("object", self)])) }
     }
 
     func takeCachedFrame() -> CGRect? {

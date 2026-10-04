@@ -115,3 +115,31 @@ public func octaneClassName(_ value: Any?) -> String { value == nil ? "" : jsToS
 /// A list a template maps over; `{list?.map(…)}` with no list renders no rows.
 public func octaneItems<S: Sequence>(_ items: S) -> [S.Element] { Array(items) }
 public func octaneItems<S: Sequence>(_ items: S?) -> [S.Element] { items.map(Array.init) ?? [] }
+
+/// A template's value for a view property as script code holds it: a function
+/// becomes a script function (`translationFunction={fn}` on a plugin's view,
+/// which calls it untyped); anything else is itself.
+public func octaneValue(_ value: Any?) -> Any? { value }
+public func octaneValue<R>(_ f: @escaping () throws -> R) -> Any? {
+    { (_: [Any?]) throws -> Any? in scriptResult(try f()) } as JSFunction
+}
+public func octaneValue<A, R>(_ f: @escaping (A) throws -> R) -> Any? {
+    { (a: [Any?]) throws -> Any? in scriptResult(try f(jsArg(a, 0) as! A)) } as JSFunction
+}
+public func octaneValue<A, B, R>(_ f: @escaping (A, B) throws -> R) -> Any? {
+    { (a: [Any?]) throws -> Any? in scriptResult(try f(jsArg(a, 0) as! A, jsArg(a, 1) as! B)) } as JSFunction
+}
+public func octaneValue<A, B, C, R>(_ f: @escaping (A, B, C) throws -> R) -> Any? {
+    { (a: [Any?]) throws -> Any? in scriptResult(try f(jsArg(a, 0) as! A, jsArg(a, 1) as! B, jsArg(a, 2) as! C)) } as JSFunction
+}
+public func octaneValue<A, B, C, D, R>(_ f: @escaping (A, B, C, D) throws -> R) -> Any? {
+    { (a: [Any?]) throws -> Any? in scriptResult(try f(jsArg(a, 0) as! A, jsArg(a, 1) as! B, jsArg(a, 2) as! C, jsArg(a, 3) as! D)) } as JSFunction
+}
+public func octaneValue<A, B, C, D, E, R>(_ f: @escaping (A, B, C, D, E) throws -> R) -> Any? {
+    { (a: [Any?]) throws -> Any? in scriptResult(try f(jsArg(a, 0) as! A, jsArg(a, 1) as! B, jsArg(a, 2) as! C, jsArg(a, 3) as! D, jsArg(a, 4) as! E)) } as JSFunction
+}
+public func octaneValue<A, B, C, D, E, F, R>(_ f: @escaping (A, B, C, D, E, F) throws -> R) -> Any? {
+    { (a: [Any?]) throws -> Any? in scriptResult(try f(jsArg(a, 0) as! A, jsArg(a, 1) as! B, jsArg(a, 2) as! C, jsArg(a, 3) as! D, jsArg(a, 4) as! E, jsArg(a, 5) as! F)) } as JSFunction
+}
+
+private func scriptResult<R>(_ r: R) -> Any? { R.self == Void.self ? nil : r }

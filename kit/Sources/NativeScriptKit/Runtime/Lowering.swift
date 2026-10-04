@@ -321,3 +321,10 @@ public func jsIsSafeInteger(_ x: Double) -> Bool { jsIsInteger(x) && abs(x) <= 9
 
 /// `n.toString(radix)`.
 public func jsNumberToString(_ x: Double, radix: Double) -> String { jsNumberToRadixString(x, radix) }
+
+/// An untyped value read as a dictionary-typed object: a record already, or a record of an object's keys.
+public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSRecord<T> {
+    if let record = jsFlat(value) as? JSRecord<T> { return record }
+    guard let object = jsFlat(value) as? JSDynamic else { return JSRecord<T>() }
+    return JSRecord(object.jsKeys.map { ($0, element(object[jsKey: $0])) })
+}

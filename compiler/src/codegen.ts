@@ -82,7 +82,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const value = options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops);
       binding(depth, `Effect { ${reported(a.method, `${v}.className = ${value}`)} }`);
     } else {
-      binding(depth, `Effect { ${reported(a.method, `${v}.set(${swiftString(a.name)}, ${call(a.method, loops)})`)} }`);
+      binding(depth, `Effect { ${reported(a.method, `${v}.set(${swiftString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)})`)} }`);
     }
   };
 

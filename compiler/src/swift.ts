@@ -672,6 +672,8 @@ export class Translator {
     }
     const m = /^JSArray<(.*)>$/.exec(type);
     if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
+    const r = /^JSRecord<(.*)>\??$/.exec(type);
+    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r) { ${this.fromAny('$0', r[1])} } }(${code})` : `jsRecordOf(${code}) { ${this.fromAny('$0', r[1])} }`;
     const parts = /^\((.*)\)$/.exec(type) && splitTopLevel(type.slice(1, -1));
     if (parts && parts.length > 1 && !type.includes('->')) {
       // A tuple type reads an untyped array's elements.
@@ -684,7 +686,7 @@ export class Translator {
       this.used.add(base);
       return type.endsWith('?') ? `jsIsNullish(${code}) ? nil : ${base}(jsObject: ${code})` : `${base}(jsObject: ${code})`;
     }
-    const fn = functionParts(base);
+    const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
     if (fn) return type.endsWith('?') || type.endsWith(')?') ? `{ (__f: Any?) -> ${type} in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', fn)} }(${code})` : this.unboxFunction(code, fn);
     // A Core Foundation class casts unconditionally: `as?` to one is not a test Swift allows.
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) return type.endsWith('?') ? `(${code}).map { $0 as! ${base} }` : `(${code} as! ${base})`;
@@ -3028,13 +3030,18 @@ export class Translator {
     if (maybe) return `${maybe} ${negate ? '!=' : '=='} nil`;
     // A member of an untyped object compared with null or undefined: the value as read, before any conversion to the declared type.
     const untypedRead = (x: ts.Expression) => (ts.isElementAccessExpression(x) || ts.isPropertyAccessExpression(x)) && this.isAny(x.expression) && this.typeOf(x) !== 'Any?';
-    if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
-      const [x, n] = isNullish(b) ? [a, b] : [b, a];
+    const raw = (x: ts.Expression) => {
+      if (!untypedRead(x)) return this.coerce(x, 'Any?');
       const target = (x as ts.PropertyAccessExpression | ts.ElementAccessExpression).expression;
       const key = ts.isElementAccessExpression(x) ? this.str(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
-      const read = `jsGet(${this.expr(target)}, ${key})`;
-      return `${negate ? '!' : ''}${strict ? `jsStrictEquals(${read}, ${this.coerce(n, 'Any?')})` : `jsIsNullish(${read})`}`;
+      return `jsGet(${this.expr(target)}, ${key})`;
+    };
+    if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
+      const [x, n] = isNullish(b) ? [a, b] : [b, a];
+      return `${negate ? '!' : ''}${strict ? `jsStrictEquals(${raw(x)}, ${this.coerce(n, 'Any?')})` : `jsIsNullish(${raw(x)})`}`;
     }
+    // A member of an untyped object compared with a value: the comparison JavaScript makes, which a missing member fails.
+    if (untypedRead(a) || untypedRead(b)) return `${negate ? '!' : ''}${strict ? 'jsStrictEquals' : 'jsLooseEquals'}(${raw(a)}, ${raw(b)})`;
     if (isNullish(b) && lt !== 'Any?') return `${this.expr(a)} ${negate ? '!=' : '=='} nil`;
     if (isNullish(a) && rt !== 'Any?') return `${this.expr(b)} ${negate ? '!=' : '=='} nil`;
     if (lt === 'Any?' || rt === 'Any?' || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, ''))) {
@@ -3074,6 +3081,8 @@ export class Translator {
 
   private object(e: ts.ObjectLiteralExpression): string {
     const contextual = this.checker.getContextualType(e);
+    // `{ … } as unknown as T`: an object script reads and extends untyped.
+    if (contextual && contextual.flags & ts.TypeFlags.Unknown) return this.dynamicObject(e);
     const type = contextual && !(contextual.flags & ts.TypeFlags.Any) ? contextual : this.checker.getTypeAtLocation(e);
     const struct = this.native.structLiteral(e, this.checker.getNonNullableType(type));
     if (struct) return struct;
@@ -3149,7 +3158,7 @@ export class Translator {
     const simple = e.properties.every((p) => (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name)) || ts.isShorthandPropertyAssignment(p));
     if (simple) {
       const entries = e.properties.map((p) => {
-        if (ts.isPropertyAssignment(p)) return `(${swiftString(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${this.coerce(p.initializer, 'Any?')})`;
+        if (ts.isPropertyAssignment(p)) return `(${swiftString(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${ts.isObjectLiteralExpression(p.initializer) ? this.dynamicObject(p.initializer) : this.coerce(p.initializer, 'Any?')})`;
         const sh = p as ts.ShorthandPropertyAssignment;
         return `(${swiftString(sh.name.text)}, ${this.coerce(sh.name, 'Any?')} as Any?)`;
       });
