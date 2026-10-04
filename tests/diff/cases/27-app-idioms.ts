@@ -57,3 +57,8 @@ console.log(untyped.map((n: number) => n * 2).join('-'), untyped.filter((n: numb
 
 // Character classes holding `[` or `&&`, which ICU would read as nested sets.
 console.log('a [b](c) [d] x'.replace(/(^|[^!\]])\[([^\]]+)\](?![([:])/g, '$1<$2>'), /[a&&b]/.test('&'), /[^]/.test('\n'));
+
+interface Info { a: boolean; b?: string; c?: boolean }
+const info: Info = { a: false, c: false, b: 'x' };
+const copy: Info = { ...info };
+console.log(JSON.stringify(copy), JSON.stringify({ ...info, a: true }));

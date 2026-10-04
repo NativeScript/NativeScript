@@ -267,20 +267,24 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // Untyped items (`Any?`) are iterated as JavaScript iterates them.
       const read = element === 'Any?' ? `jsReportedItems { try jsItemsOf(${call(node.items, loops).replace(/^try /, '')}) }` : null;
       const items = (element ? `() -> [${element}] in ` : '') + (read ?? (throws(node.items) ? `jsReportedItems { ${call(node.items, loops)} }` : `Array(${call(node.items, loops)})`));
+      // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
+      const row = framework === 'angular' ? `row${n++}` : null;
+      const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
+      const opening = (kind: string) => row ? `${kind === 'For' ? 'ForEach' : 'ForEachFragment'}(${host}, { ${items} }, key: ${key}) { ${row} in` : `${kind}(${host}, { ${items} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
-        say(depth, `ForFragment(${host}, { ${items} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
-        fragment(node.body, depth + 1, inner);
+        say(depth, opening('ForFragment'));
+        fragment(node.body, depth + 1, rowLoops);
         say(depth, '}');
         continue;
       }
-      say(depth, `For(${host}, { ${items} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
+      say(depth, opening('For'));
       const wrap = scoped('region', '[View]');
       const d = wrap ? depth + 1 : depth;
       if (wrap) say(depth + 1, wrap);
       if (framework === 'angular' && hasRegion(node.body)) say(d + 1, 'let __view = EffectOrder.current');
       const made: string[] = [];
-      template(d + 1, () => emit(node.body, d + 1, inner, null, made, live));
+      template(d + 1, () => emit(node.body, d + 1, rowLoops, null, made, live));
       say(d + 1, `return [${made.join(', ')}]`);
       if (wrap) say(depth + 1, '}');
       say(depth, '}');

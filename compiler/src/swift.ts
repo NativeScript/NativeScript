@@ -3988,7 +3988,12 @@ export class Translator implements AsyncTranslator {
     }
     const inOrder = jsKeyOrder(written);
     const declared = order.map((f) => f.name).filter((n) => inOrder.includes(n));
-    const reorder = inOrder.join() !== declared.join() ? `, jsOrder: [${inOrder.map(swiftString).join(', ')}]` : '';
+    // A spread of a typed object copies its keys in the order that object holds them, known when it runs.
+    const spreads = e.properties.filter(ts.isSpreadAssignment).filter((p) => !this.isAny(p.expression) && this.pure(p.expression));
+    const parts = e.properties.map((p) => ts.isSpreadAssignment(p) ? `((${this.expr(p.expression)}) as? JSDynamic)?.jsKeys ?? []` : `[${p.name ? swiftString(literalKey(p.name, this.checker) ?? p.name.getText()) : ''}]`);
+    const reorder = spreads.length
+      ? `, jsOrder: jsLiteralKeyOrder([${parts.join(', ')}], fields: [${order.map((f) => swiftString(f.name)).join(', ')}])`
+      : inOrder.join() !== declared.join() ? `, jsOrder: [${inOrder.map(swiftString).join(', ')}]` : '';
     const args = order.flatMap((f) => {
       const a = (f as ShapeField).accessor;
       if (a) return [...(a.get ? [`__get_${f.name}: ${given.get(`__get_${f.name}`)}`] : []), ...(a.set ? [`__set_${f.name}: ${given.get(`__set_${f.name}`)}`] : [])];

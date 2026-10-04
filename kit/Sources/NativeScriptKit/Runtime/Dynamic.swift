@@ -259,3 +259,12 @@ public func jsTemplateRaw(_ strings: JSArray<String>) -> JSArray<String> {
     jsTemplateRaws[ObjectIdentifier(strings)] ?? strings
 }
 nonisolated(unsafe) private var jsTemplateRaws: [ObjectIdentifier: JSArray<String>] = [:]
+
+/// The key order of an object literal with spreads (`{ ...a, b: 1 }`): each spread source's keys as it holds
+/// them, then the literal's own, a key keeping its first position; integer keys first; only the `fields` it has.
+public func jsLiteralKeyOrder(_ parts: [[String]], fields: [String]) -> [String] {
+    var seen = Set<String>(), keys: [String] = []
+    for key in parts.joined() where fields.contains(key) && seen.insert(key).inserted { keys.append(key) }
+    let index = { (k: String) -> Bool in k.count <= 10 && (k == "0" || (k.first != "0" && k.allSatisfy(\.isNumber))) && (UInt64(k) ?? .max) < 4294967295 }
+    return keys.filter(index).sorted { UInt64($0)! < UInt64($1)! } + keys.filter { !index($0) }
+}
