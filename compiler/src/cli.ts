@@ -2,6 +2,7 @@
 // ns-native: a NativeScript app written with a web framework, compiled to a
 // native app with no JavaScript runtime.
 //   node compiler/src/cli.ts <app folder> --out <dir> [--name RecipesVue] [--build] [--device]
+//   node compiler/src/cli.ts <app folder> --platform android --out <dir> [--build] [--widgets <aar>]
 // The app folder is a NativeScript project (package.json, app/). Its
 // components and modules are type-checked together and translated to Swift
 // against NativeScriptKit; --build generates the Xcode project and builds it.
@@ -48,6 +49,7 @@ let components: ComponentIR[];
 let modules: string[];
 let root: string;
 let prelude = '';
+let routing: { routes: { path: string; component: string }[]; initial: string } | null = null;
 if (framework === 'vue') {
   components = files.filter((f) => f.endsWith('.vue')).map((f) => vueComponent(f, readFileSync(f, 'utf8')));
   modules = sources;
@@ -116,6 +118,7 @@ if (framework === 'vue') {
   components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors)).filter((c): c is NonNullable<typeof c> => !!c);
   for (const c of components) c.page = routes.some((r) => r.component === c.name);
   modules = sources.filter((f) => f !== routesFile && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts')));
+  routing = { routes, initial };
   root = /bootstrapApplication\(\s*(\w+)/.exec(entryText)?.[1] ?? '';
   if (!root) throw new Error(`${entry}: no bootstrapApplication(Component)`);
   prelude = `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
@@ -125,6 +128,12 @@ if (framework === 'vue') {
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
 const { checker, program } = createProgram(modules, virtual);
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
+if (opt('--platform') === 'android') {
+  const { writeAndroid } = await import('./android.ts');
+  const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
+  process.exit(0);
+}
 const translator = new Translator(checker, infos);
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
