@@ -42,6 +42,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         Appearance.window = window
         let root = makeRoot()
         root.rootClasses = Appearance.rootClasses()
+        Modal.root = root
         root.load()
         window.rootViewController = NativeScriptApplication.rootController(for: root)
         window.registerForTraitChanges([UITraitUserInterfaceStyle.self, UITraitLayoutDirection.self,

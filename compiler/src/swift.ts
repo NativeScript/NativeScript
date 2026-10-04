@@ -468,6 +468,8 @@ export class Translator {
         return `${token}.shared`;
       }
       if (name === '$navigateTo') return this.navigate(e);
+      if (name === '$showModal') return this.showModal(e);
+      if (name === '$closeModal') return `Modal.close(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       if (name === 'String') return this.str(e.arguments[0]);
       if (name === 'Number' || name === 'parseInt') return `(Double(${this.expr(e.arguments[0])}) ?? .nan)`;
       return `${ident(name)}(${this.args(e, this.arity(e)).join(', ')})`;
@@ -475,6 +477,10 @@ export class Translator {
     // A callback passed as a prop (`onTap: () => void`).
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
       return `self.${ident(callee.name.text)}.value(${this.args(e, this.arity(e)).join(', ')})`;
+    }
+    if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'then' && ts.isCallExpression(callee.expression)
+        && ts.isIdentifier(callee.expression.expression) && callee.expression.expression.text === '$showModal') {
+      return this.showModal(callee.expression, e.arguments[0]);
     }
     if (ts.isPropertyAccessExpression(callee)) {
       const method = callee.name.text;
@@ -528,6 +534,46 @@ export class Translator {
     }
     const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
     return `Frame.topmost?.navigate { ${component}(${args}).render() }`;
+  }
+
+  /** `$showModal(Component, { props, fullscreen, animated, cancelable, closeCallback })`; a `.then(fn)` is the close callback. */
+  private showModal(e: ts.CallExpression, then?: ts.Expression): string {
+    const component = (e.arguments[0] as ts.Identifier).text;
+    const info = this.components.get(component);
+    if (!info) throw this.error(e, `a modal of ${component}: not a component`);
+    const options = e.arguments[1];
+    const given = new Map<string, string>();
+    const settings: string[] = [];
+    let callback = then;
+    if (options && ts.isObjectLiteralExpression(options)) {
+      for (const p of options.properties) {
+        if (!ts.isPropertyAssignment(p)) continue;
+        const key = (p.name as ts.Identifier).text;
+        if (key === 'props' && ts.isObjectLiteralExpression(p.initializer)) {
+          for (const q of p.initializer.properties) {
+            if (ts.isShorthandPropertyAssignment(q)) given.set(q.name.text, ident(q.name.text));
+            else if (ts.isPropertyAssignment(q)) given.set((q.name as ts.Identifier).text, this.expr(q.initializer));
+          }
+        } else if (key === 'fullscreen' || key === 'animated' || key === 'cancelable') {
+          settings.push(`${key}: ${this.expr(p.initializer)}`);
+        } else if (key === 'closeCallback') {
+          callback = p.initializer;
+        }
+      }
+    }
+    if (callback) {
+      if (!ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback)) throw this.error(callback, 'a modal close callback that is not a function literal');
+      const closure = this.closure(callback);
+      const first = callback.parameters[0];
+      const t = first ? this.typeOf(first.name) : '';
+      // A modal closed without a result (swiped away) passes undefined, which reads as "undefined" or NaN.
+      const undefinedValue: Record<string, string> = { String: '"undefined"', Double: '.nan', Bool: 'false' };
+      const cast = t in undefinedValue ? `((value as? ${t}) ?? ${undefinedValue[t]})` : `(value as! ${t})`;
+      const call = !first ? `{ _ in (${closure})() }` : t === 'Any' ? closure : t.endsWith('?') ? `{ value in (${closure})(value as? ${t.slice(0, -1)}) }` : `{ value in (${closure})${cast} }`;
+      settings.push(`closeCallback: ${call}`);
+    }
+    const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
+    return `Modal.show(${settings.join(', ')}) { ${component}(${args}).render() }`;
   }
 
   private math(name: string, e: ts.CallExpression): string {

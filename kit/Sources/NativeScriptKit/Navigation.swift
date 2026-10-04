@@ -22,6 +22,7 @@ final class PageViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let owner else { return }
+        if navigationController == nil, !owner.isLoaded, owner.parent == nil { owner.load() }
         if let frame = (navigationController as? FrameNavigationController)?.owner {
             if owner.parent == nil { frame.addView(owner) }
             frame.updateActionBar(owner)
@@ -238,6 +239,7 @@ final class FrameNavigationController: UINavigationController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if let owner, !owner.isLoaded, owner.parent == nil { owner.load() }
         owner?.loaded()
     }
 
@@ -259,6 +261,19 @@ open class Frame: View {
     private static var stack: [Frame] = []
     /// The frame that navigation goes to: the most recently created one still shown.
     public static var topmost: Frame? { stack.last }
+
+    /// The frames in a closed modal's tree stop receiving navigation.
+    static func forget(_ root: View) {
+        func contains(_ view: View) -> Bool {
+            var current: View? = view
+            while let candidate = current {
+                if candidate === root { return true }
+                current = candidate.parent
+            }
+            return false
+        }
+        stack.removeAll(where: contains)
+    }
 
     let controller = FrameNavigationController()
     private var initialPage: Page?

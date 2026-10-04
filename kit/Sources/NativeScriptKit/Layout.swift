@@ -273,4 +273,15 @@ final class LayoutViewController: UIViewController {
         super.viewDidLayoutSubviews()
         if let owner { IOSHelper.layoutView(self, owner) }
     }
+
+    /// A view shown by its own controller (a modal) loads as it appears.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let owner, !owner.isLoaded, owner.parent == nil { owner.load() }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if let owner, owner.isLoaded, owner.parent == nil { owner.unload() }
+    }
 }

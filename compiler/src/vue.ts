@@ -224,6 +224,12 @@ export function vueComponent(path: string, text: string): ComponentIR {
   };
 
   const template = nodes(descriptor.template?.ast?.children ?? [], []);
+  // nativescript-vue's global properties, which templates use without importing.
+  for (const global of ['$closeModal', '$showModal']) {
+    if (descriptor.template?.content.includes(global) && !imports.some((i) => i.includes(global))) {
+      imports.push(`import { ${global} } from 'nativescript-vue';`);
+    }
+  }
   const source = [
     `import { $signal, type EventData } from '@nativescript/release';`,
     ...imports,
