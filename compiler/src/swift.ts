@@ -60,6 +60,7 @@ export const CF_CLASSES = new Set(['CGPath', 'CGMutablePath', 'CGColor', 'CGImag
 
 /** An optional value type: `T?`, `(…)?`, but not a function returning an optional. */
 const isOptional = (t: string) => t.endsWith('?') && !hasTopLevelArrow(t);
+const isFunctionLiteral = (e: ts.Expression): boolean => (ts.isParenthesizedExpression(e) ? isFunctionLiteral(e.expression) : ts.isArrowFunction(e) || ts.isFunctionExpression(e));
 
 const isFunctionType = (t: string) => hasTopLevelArrow(t) && !t.startsWith('[') && !/^\w+</.test(t);
 
@@ -424,6 +425,11 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n))) return 'Any?';
+    // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
+    if (ts.isConditionalExpression(n) && [n.whenTrue, n.whenFalse].every(isFunctionLiteral)) {
+      const context = this.checker.getContextualType(n);
+      if (context?.getCallSignatures().length) return this.type(context, n);
+    }
     return this.type(this.checker.getTypeAtLocation(n), n);
   }
 
@@ -901,7 +907,7 @@ export class Translator implements AsyncTranslator {
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, f.result, g.result)}`;
       const wrap = `{ (__h: @escaping ${f.text}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
-      return from.endsWith('?') ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
+      return isOptional(from) ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
     }
     if (to === optionalType(from)) return code;
     if (from === optionalType(to)) return `${code}!`;
@@ -1045,9 +1051,9 @@ export class Translator implements AsyncTranslator {
         else if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>$/, '$1'));
         else if (fn.body && ts.isBlock(fn.body)) {
           lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
-          // The checker proved every path returns (an exhaustive switch); Swift cannot see that.
+          // The checker proved every path returns (an exhaustive switch), or one that falls off the end returns undefined; Swift cannot see either.
           const last = fn.body.statements.at(-1);
-          if (!['Void', 'Never'].includes(ret) && !ret.endsWith('?') && last && ts.isSwitchStatement(last)) lines.push(`${this.indent}fatalError("unreachable: every case returns")`);
+          if (!['Void', 'Never'].includes(ret) && last && ts.isSwitchStatement(last)) lines.push(ret.endsWith('?') ? `${this.indent}return nil` : `${this.indent}fatalError("unreachable: every case returns")`);
         }
         else {
           const e = fn.body as ts.Expression;
@@ -1128,10 +1134,11 @@ export class Translator implements AsyncTranslator {
   /** Whether a member of `cls` assigns `this.name`. */
   private isAssigned(cls: ts.ClassDeclaration, name: string): boolean {
     let found = false;
+    const isThisName = (e: ts.Expression) => ts.isPropertyAccessExpression(e) && e.expression.kind === ts.SyntaxKind.ThisKeyword && e.name.text === name;
     const visit = (n: ts.Node): void => {
       if (found) return;
-      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment
-          && ts.isPropertyAccessExpression(n.left) && n.left.expression.kind === ts.SyntaxKind.ThisKeyword && n.left.name.text === name) found = true;
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && isThisName(n.left)) found = true;
+      else if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) && isThisName(n.operand)) found = true;
       else ts.forEachChild(n, visit);
     };
     for (const m of cls.members) if (!ts.isPropertyDeclaration(m) || m.initializer) ts.forEachChild(m, visit);
@@ -1333,6 +1340,12 @@ export class Translator implements AsyncTranslator {
         if (nullInit && !t.endsWith('?') && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)} = nil`); continue; }
         if (!m.initializer && !t.endsWith('?') && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`); continue; }
         lines.push(`    static var ${ident(n)}: ${t}${m.initializer ? ` = ${this.coerce(m.initializer, t)}` : t.endsWith('?') ? '' : ` = ${this.zero(t) ?? 'nil'}`}`);
+        continue;
+      }
+      // A view class narrowing its native view's type (`nativeViewProtected: CHIBasePageControl`) reads the kit's `nativeView`.
+      if (isView && !m.initializer && (n === 'nativeViewProtected' || n === 'ios')) {
+        const native = t.replace(/[?!]$/, '');
+        lines.push(`    var ${ident(n)}: ${native}! { nativeView as? ${native} }`);
         continue;
       }
       const nativeProperty = this.nativePropertyOf(m);
@@ -2316,7 +2329,10 @@ export class Translator implements AsyncTranslator {
       return `(${this.cond(e.left)} ${e.operatorToken.getText()} ${this.cond(e.right)})`;
     }
     if (this.isBool(e)) return this.expr(e);
-    return `jsTruthy(${this.expr(e)})`;
+    const code = this.expr(e);
+    // An object read with an unwrap (`this.page!`) tests whether it is there.
+    if (/[\w)\]]!$/.test(code) && this.isObjectRef(e)) return `jsTruthy(${code.slice(0, -1)} as Any?)`;
+    return `jsTruthy(${code})`;
   }
 
   // ---- Expressions -----------------------------------------------------------------------------

@@ -9,7 +9,10 @@ export const SCHEDULE: Record<Framework, 'now' | 'microtask' | 'task' | 'event'>
 /** Frameworks that do something around each template handler (`Reactivity.event`). */
 export const EVENT_SCOPED = new Set<string>(['angular', 'react', 'octane']);
 
-/** ListView attributes that `bind` takes rather than `set`. */
+/** Views whose children are item templates, rendered through one `bind`: core's ListView and the kit's Pager. */
+const TEMPLATE_HOSTS = new Set(['ListView', 'Pager']);
+
+/** Item-template host attributes that `bind` takes rather than `set`. */
 const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
 
 /**
@@ -63,7 +66,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   let n = 0;
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
-  // A ListView row reads its item and index through the row's signals.
+  // An item template's row reads its item and index through the row's signals.
   type Loop = { item: string; index: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
     `${throws(method) ? 'try ' : ''}self.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
@@ -119,7 +122,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         } else if (node.kind === 'element') {
           say(depth, `let ${v} = ${node.tag}()`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
-          const isList = node.tag === 'ListView';
+          const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
@@ -179,7 +182,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         collect?.push(v);
         continue;
       }
-      if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
+      if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView or Pager`);
       if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
       // A component whose views join its parent (no single root) is a region of the body it is in.
       const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for' || (x.kind === 'component' && !!components.get(x.name)?.fragment));
@@ -284,10 +287,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     }
   };
 
-  /** A ListView's items, selector and templates: one `bind`, whose closure renders a template for a row. */
+  /** An item-template host's items, selector and templates: one `bind`, whose closure renders a template for a row. */
   const list = (node: Extract<TNode, { kind: 'element' }>, depth: number, loops: Loop[], v: string) => {
     const items = node.attrs.find((a) => a.name === 'items');
-    if (!items || !('method' in items)) throw new Error(`${c.name}: <ListView> needs bound items`);
+    if (!items || !('method' in items)) throw new Error(`${c.name}: <${node.tag}> needs bound items`);
     const selector = node.attrs.find((a) => a.name === 'itemTemplateSelector');
     // A selector that throws is reported, and the row takes the default template.
     const sel = selector && 'method' in selector
@@ -308,7 +311,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       if (framework === 'angular' && hasRegion(t.body)) say(d + 1, 'let __view = EffectOrder.current');
       const made: string[] = [];
       template(d + 1, () => emit(t.body, d + 1, [...loops, { item: t.item, index: t.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }], null, made));
-      if (made.length !== 1) throw new Error(`${c.name}: a ListView template needs exactly one root element`);
+      if (made.length !== 1) throw new Error(`${c.name}: a ${node.tag} template needs exactly one root element`);
       say(d + 1, `return ${made[0]}`);
       if (wrap) say(at, '}');
     };
@@ -374,7 +377,7 @@ export function isFragment(nodes: TNode[]): boolean {
   return nodes.length !== 1 || nodes[0].kind !== 'element' && nodes[0].kind !== 'component';
 }
 
-/** Whether a template holds an `if` or `for` of its own (not inside a ListView row). */
+/** Whether a template holds an `if` or `for` of its own (not inside an item template). */
 function hasRegion(nodes: TNode[]): boolean {
-  return nodes.some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && n.tag !== 'ListView' && hasRegion(n.children)));
+  return nodes.some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && !TEMPLATE_HOSTS.has(n.tag) && hasRegion(n.children)));
 }
