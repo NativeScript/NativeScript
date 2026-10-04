@@ -645,6 +645,8 @@ open class View {
 
     internal fun hasGestureObservers(type: Double): Boolean = gestureObservers[type]?.isNotEmpty() == true
 
+    internal fun hasAnyGestureObservers(): Boolean = gestureObservers.isNotEmpty()
+
     internal fun hasHandlers(event: String): Boolean = handlers[event]?.isNotEmpty() == true
 
     /** `setOnTouchListener`: touches reach this view's observers, then each ancestor's. */

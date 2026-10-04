@@ -82,6 +82,11 @@ abstract class LayoutBase : ContainerView(), RegionHost {
         children.forEach(body)
     }
 
+    override fun setProperty(name: String, value: Any?) {
+        if (name == "isPassThroughParentEnabled") (nativeView as NativeLayoutBase).passThroughParent = toBool(value) ?: false
+        else super.setProperty(name, value)
+    }
+
     override fun applyPadding() {
         nativeView.setPadding(
             effectivePaddingLeft + effectiveBorderLeftWidth,
@@ -144,6 +149,53 @@ open class GridLayout : LayoutBase() {
                 }
             }
         }
+    }
+}
+
+/** `RootLayout` from root-layout/index.android: a grid whose children without gestures of their own take the touches over them. */
+open class RootLayout : GridLayout() {
+    override val cssType: String get() = "RootLayout"
+
+    override fun childAddedToNativeView(child: View) {
+        super.childAddedToNativeView(child)
+        if (!child.hasAnyGestureObservers()) child.nativeView.setOnTouchListener { _, _ -> true }
+    }
+}
+
+/** `WrapLayout` from wrap-layout/index.android. */
+open class WrapLayout : LayoutBase() {
+    override val cssType: String get() = "WrapLayout"
+
+    override fun createNativeView(): NativeView = org.nativescript.widgets.WrapLayout(context)
+
+    private val wrap: org.nativescript.widgets.WrapLayout get() = nativeView as org.nativescript.widgets.WrapLayout
+
+    override fun setProperty(name: String, value: Any?) {
+        when (name) {
+            "orientation" -> wrap.orientation = if (toText(value)?.trim() == "vertical") Orientation.vertical else Orientation.horizontal
+            "itemWidth" -> wrap.itemWidth = Length.parse(value, Length.Auto).toDevicePixels(-1.0).toInt()
+            "itemHeight" -> wrap.itemHeight = Length.parse(value, Length.Auto).toDevicePixels(-1.0).toInt()
+            else -> super.setProperty(name, value)
+        }
+    }
+}
+
+/** `AbsoluteLayout` from absolute-layout/index.android: children placed by their `left` and `top`. */
+open class AbsoluteLayout : LayoutBase() {
+    override val cssType: String get() = "AbsoluteLayout"
+
+    override fun createNativeView(): NativeView = org.nativescript.widgets.AbsoluteLayout(context)
+}
+
+/** `DockLayout` from dock-layout/index.android: children docked by their `dock`. */
+open class DockLayout : LayoutBase() {
+    override val cssType: String get() = "DockLayout"
+
+    override fun createNativeView(): NativeView = org.nativescript.widgets.DockLayout(context)
+
+    override fun setProperty(name: String, value: Any?) {
+        if (name == "stretchLastChild") (nativeView as org.nativescript.widgets.DockLayout).stretchLastChild = toBool(value) ?: true
+        else super.setProperty(name, value)
     }
 }
 

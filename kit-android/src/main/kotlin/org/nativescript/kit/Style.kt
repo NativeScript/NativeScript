@@ -8,6 +8,8 @@ object Layout {
 
     fun toDevicePixels(value: Double): Double = value * density
 
+    fun toDeviceIndependentPixels(value: Double): Double = value / density
+
     /** `layout.round`: halves up, and a nonzero value never rounds to 0. */
     fun round(value: Double): Double {
         val res = floor(value + 0.5)

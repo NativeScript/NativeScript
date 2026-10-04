@@ -10,7 +10,7 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TabHost
 import android.widget.TabWidget
-import android.widget.TextView
+import android.widget.TextView as NativeTextView
 import androidx.core.graphics.BlendModeCompat
 import org.nativescript.widgets.image.Worker
 
@@ -135,7 +135,7 @@ open class Slider : View() {
 open class SegmentedBarItem : View() {
     override val cssType: String get() = "SegmentedBarItem"
 
-    internal var titleView: TextView? = null
+    internal var titleView: NativeTextView? = null
         set(value) {
             field = value
             update()
@@ -237,7 +237,7 @@ open class SegmentedBar : View() {
     }
 
     private fun createTabContent(): NativeView {
-        val tv = TextView(context)
+        val tv = NativeTextView(context)
         tv.visibility = NativeView.GONE
         tv.maxLines = 1
         tv.ellipsize = TextUtils.TruncateAt.END

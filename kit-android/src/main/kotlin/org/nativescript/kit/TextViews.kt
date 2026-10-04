@@ -18,7 +18,7 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.TextView as NativeTextView
 import org.nativescript.widgets.StyleableTextView
 import org.nativescript.widgets.ViewHelper
 
@@ -87,7 +87,7 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
 
 /** `TextBase` from text-base/index.android. */
 abstract class TextBase : View() {
-    protected val textView: TextView get() = nativeView as TextView
+    protected val textView: NativeTextView get() = nativeView as NativeTextView
 
     private var defaultTypeface: Typeface? = null
     private var defaultTextSize = 0f
@@ -376,23 +376,20 @@ open class Button : TextBase() {
     override val ownEvents: Set<String> get() = setOf("tap")
 }
 
-/** `TextField` from text-field and editable-text-base (index.android). */
-open class TextField : TextBase() {
-    override val cssType: String get() = "TextField"
-
+/** `EditableTextBase` from editable-text-base/index.android: an EditText reporting its text, focus and return key. */
+abstract class EditableTextBase : TextBase() {
     private var changeFromCode = false
-    private val editText: EditText get() = nativeView as EditText
+    protected val editText: EditText get() = nativeView as EditText
 
     override fun createNativeView(): NativeView = EditText(context)
+
+    /** `_configureEditText`: the input type and lines a TextField or TextView starts with. */
+    protected abstract fun configureEditText(edit: EditText)
 
     override fun initNativeView() {
         super.initNativeView()
         val edit = editText
-        edit.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or
-            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
-        edit.setLines(1)
-        edit.maxLines = 1
-        edit.setHorizontallyScrolling(true)
+        configureEditText(edit)
         edit.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -438,7 +435,14 @@ open class TextField : TextBase() {
                 val color = toColor(value)
                 if (color != null) edit.setHintTextColor(color.argb)
             }
-            "secure", "keyboardType" -> setInputType(inputTypeFor(toBool(applied["secure"]) == true, toText(applied["keyboardType"])))
+            "secure", "keyboardType" -> if (this is TextField) setInputType(inputTypeFor(toBool(applied["secure"]) == true, toText(applied["keyboardType"])))
+            "editable" -> {
+                val editable = toBool(value) ?: true
+                edit.isFocusable = editable
+                edit.isFocusableInTouchMode = editable
+                edit.isLongClickable = editable
+                edit.isClickable = editable
+            }
             "returnKeyType" -> edit.imeOptions = when (toText(value)?.trim()) {
                 "done" -> EditorInfo.IME_ACTION_DONE
                 "go" -> EditorInfo.IME_ACTION_GO
@@ -498,5 +502,29 @@ open class TextField : TextBase() {
                 imm.hideSoftInputFromWindow(focused.windowToken, 0)
             }
         }, 10)
+    }
+}
+
+/** `TextField` from text-field/index.android: one line, scrolling horizontally. */
+open class TextField : EditableTextBase() {
+    override val cssType: String get() = "TextField"
+
+    override fun configureEditText(edit: EditText) {
+        edit.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or
+            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        edit.setLines(1)
+        edit.maxLines = 1
+        edit.setHorizontallyScrolling(true)
+    }
+}
+
+/** `TextView` from text-view/index.android: multi-line text, top-aligned. */
+open class TextView : EditableTextBase() {
+    override val cssType: String get() = "TextView"
+
+    override fun configureEditText(edit: EditText) {
+        edit.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
+            InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        edit.gravity = Gravity.TOP or Gravity.START
     }
 }
