@@ -10,7 +10,6 @@ import { render } from './codegen-kotlin.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
-import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
 
 export interface AndroidBuild {
   app: string;
@@ -79,7 +78,7 @@ ${inits}${routes}        return ${b.root}().render()
     }
 }
 
-val appCSS = ${kotlinString(usesNativeScriptTailwind(b.app) ? nativescriptTailwind(b.css) : b.css)}
+val appCSS = ${kotlinString(b.css)}
 `);
   say(`${b.components.length} components and ${b.modules.length} modules from ${b.framework} compiled to Kotlin in ${Date.now() - started} ms → ${relative(process.cwd(), sources)}`);
 

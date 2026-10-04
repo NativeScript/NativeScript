@@ -32,7 +32,7 @@ Release build, on one iPhone 17 Pro simulator, below the status bar.
 | --- | --- | --- | --- | --- | --- | --- |
 | Pixels that differ, both screens | 0 | 0* | 0 | 0 | 0 | 0 |
 | Pixels that differ after the same taps | 0 | 0* | 0 | 0 | 0 | 0 |
-| Device archive, NativeScript → native | 44.8 → 0.5 MB | 45.6 → 0.5 MB | 44.8 → 0.5 MB | 44.9 → 0.5 MB | 44.6 → 0.5 MB | 44.6 → 0.5 MB |
+| Device archive, NativeScript → native | 44.8 → 1.0 MB | 45.6 → 1.0 MB | 44.8 → 1.0 MB | 44.9 → 1.0 MB | 44.6 → 1.0 MB | 44.6 → 1.0 MB |
 
 \* The Angular app depends on `@nativescript/tailwind`, whose PostCSS pass
 (autoloaded by `@nativescript/webpack`) drops declarations outside its
@@ -40,7 +40,14 @@ supported list, `tint-color`, `vertical-alignment` and
 `horizontal-alignment` among them: its NativeScript build ships CSS without
 them, so its symbol images are not tinted and its rows sit
 differently from the other five apps'. Both native builds style the app with
-that same filtered CSS (`compiler/src/tailwind.ts`).
+that same CSS, the CSS its NativeScript build ships (see CSS below).
+
+The device archive is the unsigned arm64 app as `xcodebuild archive` makes
+it (`tools/sizes.py`, `results/sizes.json`). The generated project builds
+NativeScriptKit as a static library target with the app's settings: `-Osize`,
+full LTO and Swift's hermetic seal, which lets the linker drop the kit code,
+vtable entries and conformances an app never reaches; as a Swift package
+built with Xcode's default Release settings it made 1.6 MB archives.
 
 The Octane app needs two fixes on the NativeScript side, both described in
 `results/upstream-octane.md`. Its driver cannot host `<segmentedbaritem>`, so
@@ -60,10 +67,13 @@ its NativeScript Release build: 0 pixels differ at launch and after each of
 two runs of the tasks (`tools/native_calls.py`).
 
 The gallery apps, against their NativeScript Release builds on the same
-simulator: gallery-vue's 35 screens (layouts, ListView, TextView, gestures,
+simulator: gallery-vue's 40 screens (layouts, ListView, TextView, gestures,
 transforms, animations, spans, pickers, CSS selectors and variables,
-borders, backgrounds, modals, TabView) are 0 pixels apart in all 139 shots;
-the ListView screen of the other five is 0 pixels apart in all of its shots
+borders, backgrounds, modals, TabView, Tailwind v4, the update order, and
+core's imperative API: `view.animate()`, `Animation`, TouchManager,
+RootLayout's `open`/`close`, `Frame.navigate` and `showModal` from script)
+are 0 pixels apart in all 182 shots; the ListView and Update order screens
+of the other five are 0 pixels apart in all of their shots
 (`tools/gallery.py`).
 
 Launch, footprint and CPU are in `results/launch.json` (five interleaved
@@ -113,7 +123,17 @@ file, line and construct.
   name (`label.text = …`), `view.ios`/`nativeView` is typed as the view's
   native class (`UILabel`, `UIImageView`…), `loaded` fires as in core, and
   `ApplicationSettings`, `Device`, `Screen` and `Color` are in
-  `kit/Sources/NativeScriptKit/CoreAPI.swift`.
+  `kit/Sources/NativeScriptKit/CoreAPI.swift`. Core's imperative UI API
+  works from script as core runs it: `view.animate()`, `createAnimation()`
+  and `new Animation(definitions, sequential).play()`/`cancel()` (definitions
+  read as script objects, the promise settled as core's iOS animations
+  settle it: fulfilled when the property animations finish, rejected with
+  `Animation is already playing.`, never settled once cancelled),
+  `TouchManager.enableGlobalTapAnimations`/`animations` and a view's
+  `touchAnimation`/`ignoreTouchAnimation`, RootLayout's
+  `open`/`close`/`closeAll`/`topmost` with its shade cover and
+  `getRootLayout()`, `Frame.topmost().navigate({ create })`, and
+  `view.showModal(view, options)`/`closeModal(result)`.
 - **Direct iOS calls.** `UIImage.systemImageNamed('star')`,
   `view.layer.cornerRadius = 8`, `UIViewContentMode.Center`,
   `CGSizeMake(0, 4)`: each NativeScript name resolves to its Swift spelling
@@ -140,6 +160,57 @@ file, line and construct.
   signatures (`compiler/src/native-calls-android.ts`). `Utils.android`,
   `Utils.layout` and `Application.android` are in kit-android's `CoreAPI.kt`,
   and `x.android.ts`/`x.ios.ts` resolve as `./x` for their platform.
+
+## CSS
+
+The CSS a native build compiles in is the CSS the app's NativeScript build
+ships. `compiler/src/css-worker.ts` runs in a process of its own, started as
+the NativeScript CLI starts the bundler (the project as cwd, the CLI's env
+flags and `NATIVESCRIPT_BUNDLER_ENV`), and puts each stylesheet through the
+app's own pipeline: for a webpack app, the app's `webpack.config.js` is
+resolved and the stylesheet's loaders, matched by webpack's rule compiler,
+run through `css2json-loader` (`postcss-loader` with the app's PostCSS
+options and config, `@nativescript/tailwind` when it autoloads); for a vite
+app, its vite config is resolved for a production build and app.css takes
+`@nativescript/vite`'s steps (the platform `@import` rewrite, Vite's
+`preprocessCSS`, rework-css's parse). The result is the rework-css AST core
+reads, in the order core adds the sheets (app.css, then stylesheets modules
+import); the kit gets the rulesets, `@media` and `@keyframes` core keeps
+from it (`compiler/src/css.ts`).
+
+`node tools/css_exact.ts <app> <NativeScript .app>` compares that AST with
+every stylesheet AST in the NativeScript build's bundle, as data and as CSS
+text with whitespace normalized. For the six Recipes apps, the six gallery
+apps, native-calls-vue and ns-octane (Tailwind v4 over `@nativescript/vite`)
+the compiler's CSS is identical to the bundle's.
+
+Tailwind v4 output works as NativeScript runs it: theme variables on
+`.ns-root, .ns-modal`, `calc(var(--spacing) * n)`, `*` variables set to
+`initial`, `color-mix()` evaluated as core's `@csstools/css-color-parser`
+does (`kit/Sources/NativeScriptKit/ColorMix.swift`; `node
+tests/color-mix/run.ts` checks 3,000 random expressions against it), and
+`.ns-dark` overrides. gallery-vue's Tailwind screen takes its utilities from
+`app/tailwind.css` through the chain `@nativescript/tailwind` autoloads
+(`postcss.config.js`), so app.css keeps the `@media` rules other screens
+test.
+
+## Binding order
+
+Each binding is an effect, and the effects a write invalidates re-run in the
+order the app's framework commits its bindings (`EffectOrder` in
+`kit/Sources/NativeScriptKit/Signals.swift`, emitted by
+`compiler/src/codegen.ts`). The order shows when one value drives both a
+label's class and a span's color: the label's color, set after the span's,
+covers it. Each gallery app's Update order screen binds both.
+
+| Framework | Order, from its source |
+| --- | --- |
+| Vue 3.5 | Post-order: `patchElement` patches a block's dynamic children before the element's props, and a block's dynamic children are collected post-order (`normalizeChildren` renders the slot before `createBaseVNode` pushes the parent); `mountElement` mounts children, then props, then inserts. Components re-render after the component that created them (`queueJob` sorted by uid), a child with changed props inline. Flushed on a microtask. |
+| Angular 22 | Pre-order: a template's update block runs in slot order (`ɵɵclassMap`, `ɵɵproperty` after `ɵɵadvance`); `refreshView` then refreshes embedded views (`@if`, `@for`) and child components after the view's own bindings. Elements are appended as they are created (`elementLikeStartShared`), before any binding. Zoneless, a tick after a write. |
+| Svelte 4 | Post-order: the compiler's `ElementWrapper` renders children before `add_attributes`, so `p()` sets descendants first; child components update after their parent (`flush` walks `dirty_components`). `m()` inserts a block top-down after `c()` made it. Flushed on a microtask. |
+| React 18 | Post-order: `commitMutationEffects` traverses a host's children before `commitUpdate` on it; `completeWork` appends children before `finalizeInitialChildren`. Each `setState` commits synchronously in react-nativescript's legacy root. |
+| Solid 2 | Pre-order within a template, whose one effect applies its props after the template's views, components and control flow exist; across templates by owner depth, then creation (`@solidjs/signals`' heap). Flushed on a microtask. |
+| Octane 0.8 | Pre-order over the whole tree (`walkDraft` collects creates and updates), synchronously at the end of an event. |
 
 ## Differential tests
 
@@ -230,7 +301,7 @@ develops it with live reload as usual.
 | `compiler/src/codegen.ts` | A template as `render()`: views made once, one effect per binding, keyed regions for `if`/`for` |
 | `compiler/src/kotlin.ts`, `kotlin-modules.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |
 | `compiler/src/core-kotlin.ts`, `native-calls-android.ts`, `natives/classfiles.ts` | `@nativescript/core`'s API through kit-android; direct Android calls, typed from the class files |
-| `compiler/src/tailwind.ts` | The CSS a `@nativescript/tailwind` app ships: its PostCSS pass's filter, for both targets |
+| `compiler/src/css.ts`, `css-worker.ts` | The CSS the app's NativeScript build ships, through its own bundler's pipeline, for both targets |
 | `kit/Sources/NativeScriptKit/` | The views, layout, CSS and navigation ported from `@nativescript/core`; `Signals.swift`, `Regions.swift`, `JS.swift`, `Router.swift`, `CoreAPI.swift` |
 | `kit/Sources/NativeScriptKit/Runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting (Foundation only) |
 | `kit-android/` | NativeScriptKit for Android: core's Android views, styling, CSS engine, gestures, animations and modals in Kotlin on the widgets AAR; `Signals.kt`, `Regions.kt`, `JS.kt`, `Router.kt`, `CoreAPI.kt` |
@@ -238,7 +309,8 @@ develops it with live reload as usual.
 | `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView screen (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` (`gallery.json`) and `tools/gallery-android.py` (`gallery-android.json`) |
 | `native-calls-vue/` | A Vue app calling UIKit, and on Android the Android SDK, directly; compared by `tools/native_calls.py` and `tools/gallery-android.py` |
 | `tests/diff/` | Differential tests: each case under Node and as a native program |
-| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
+| `tests/color-mix/` | The kit's `color-mix()` against core's color parser |
+| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
 
 ## Limits
 
@@ -248,10 +320,10 @@ develops it with live reload as usual.
   `calc()`), the TypeScript above, the core APIs the kit has, and iOS APIs
   available on iOS 17. Anything else stops the build with the file, line and
   construct. Not yet: generators, `Symbol`, `WeakMap`, getters on object
-  literals, `toLocale*String`, constructors in classes that extend
-  Objective-C classes (NativeScript creates those with `new()`), and core's
-  imperative API from script: `view.animate()`, `Animation`, TouchManager
-  and RootLayout's `open`/`close`. CSS animations and transforms work.
+  literals, `toLocale*String`, and constructors in classes that extend
+  Objective-C classes (NativeScript creates those with `new()`). Bindings
+  re-run in each framework's order but as each write happens, not batched
+  on the framework's microtask or tick.
 - **Where Swift differs, by design.** Closures have no identity; JSON
   cannot hold lone surrogates.
 - **Android:** core's imperative API from script (`view.animate()`,

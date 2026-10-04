@@ -60,7 +60,17 @@ export function vueComponent(path: string, text: string): ComponentIR {
       continue;
     }
     if (ts.isVariableStatement(st)) {
+      const mutable = !!(st.declarationList.flags & ts.NodeFlags.Let);
       for (const d of st.declarationList.declarations) {
+        if (mutable && ts.isIdentifier(d.name) && !(d.initializer && ts.isCallExpression(d.initializer) && ts.isIdentifier(d.initializer.expression) && ['ref', 'computed', 'defineProps'].includes(d.initializer.expression.text))) {
+          // A plain `let`: per-instance state no template reads reactively.
+          const id = d.name.text;
+          const init = d.initializer;
+          inScript.names.set(id, `this.${id}`);
+          inTemplate.names.set(id, `this.${id}`);
+          later.push(() => fields.push(`  ${id}${d.type ? `: ${d.type.getText()}` : ''} = ${init ? rewrite(init.getText(), inScript) : 'undefined'};`));
+          continue;
+        }
         if (!ts.isIdentifier(d.name) || !d.initializer) continue;
         const id = d.name.text;
         const init = d.initializer;

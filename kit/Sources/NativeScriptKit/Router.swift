@@ -48,7 +48,7 @@ public final class Router {
     public func navigate(_ commands: [Any], _ extras: Any? = nil) {
         let path = commands.map { "\($0)" }.joined(separator: "/")
         guard resolveRoute(path) != nil else { return }
-        Frame.topmost?.navigate { self.resolve(path)! }
+        Frame.topmost()?.navigate { self.resolve(path)! }
     }
 
     /// `navigate(['/recipe', id])` as translated code passes it.

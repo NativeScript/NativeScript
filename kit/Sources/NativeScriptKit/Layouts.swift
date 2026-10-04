@@ -45,12 +45,45 @@ open class LayoutBase: CustomLayoutView, RegionHost {
 
     /// A run of children owned by an `if` or `for`, at this point in template order.
     public func addRegion() -> Region {
-        let region = Region(host: self)
+        addRegion(Region(host: nil))
+    }
+
+    /// A region made before its container mounts it (Svelte's blocks), with what it already holds.
+    @discardableResult
+    public func addRegion(_ region: Region) -> Region {
+        region.host = self
         entries.append(.region(region))
+        if !region.views.isEmpty { rebuildChildren() }
         return region
     }
 
-    public func regionChanged(_ region: Region) {
+    public func regionChanged(_ region: Region) { rebuildChildren() }
+
+    /// `insertChild(child, atIndex)` from script: before the child now at that index.
+    public func insertChild(_ child: View, _ atIndex: Double) {
+        let index = Int(atIndex)
+        guard index < subViews.count else { return addChild(child) }
+        let before = subViews[index]
+        let position = entries.firstIndex { entry in
+            switch entry {
+            case .view(let view): return view === before
+            case .region(let region): return region.views.contains { $0 === before }
+            }
+        } ?? entries.count
+        entries.insert(.view(child), at: position)
+        rebuildChildren()
+    }
+
+    /// `removeChild(child)` from script.
+    public func removeChild(_ child: View) {
+        entries.removeAll { if case .view(let view) = $0 { return view === child } else { return false } }
+        rebuildChildren()
+    }
+
+    public func getChildIndex(_ child: View) -> Double { Double(subViews.firstIndex { $0 === child } ?? -1) }
+    public func getChildrenCount() -> Double { Double(subViews.count) }
+
+    private func rebuildChildren() {
         let next = entries.flatMap { entry -> [View] in
             switch entry {
             case .view(let view): return [view]
@@ -208,7 +241,13 @@ open class StackLayout: LayoutBase {
 open class ContentView: CustomLayoutView {
     open override class var cssType: String { "ContentView" }
 
-    private(set) var content: View?
+    private var contentView: View?
+
+    /// `view.content` from script; a page given content through it adopts it as through its template.
+    public var content: View? {
+        get { contentView }
+        set { if let newValue { addChild(newValue) } else { setContent(nil) } }
+    }
 
     var layoutView: View? { content }
 
@@ -217,11 +256,11 @@ open class ContentView: CustomLayoutView {
     }
 
     func setContent(_ value: View?) {
-        if let old = content {
+        if let old = contentView {
             removeView(old)
             old.nativeView?.removeFromSuperview()
         }
-        content = value
+        contentView = value
         if let value {
             addView(value)
             addNativeSubview(value)

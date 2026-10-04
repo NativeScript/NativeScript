@@ -115,8 +115,12 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
     private var reactions: [(fulfilled: (T) -> Void, rejected: (Any?) -> Void)] = []
     private var isHandled = false
     private var rejection: JSRejection?
+    /// What `cancel()` does on a promise a library made cancelable (core's `AnimationPromise`).
+    public var canceler: (() -> Void)?
 
     init() {}
+
+    public func cancel() { canceler?() }
 
     /// `new Promise((resolve, reject) => …)`. A thrown error rejects the promise.
     public init(_ executor: (_ resolve: @escaping (T) -> Void, _ reject: @escaping (Any?) -> Void) throws -> Void) {

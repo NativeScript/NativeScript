@@ -164,7 +164,7 @@ public final class Animation {
     }
 
     /// `play`; an animation already playing is not restarted.
-    public func play(_ completion: (() -> Void)? = nil) {
+    func start(_ completion: (() -> Void)? = nil) {
         guard !isPlaying, !propertyAnimations.isEmpty else { return }
         isPlaying = true
         self.completion = completion
@@ -492,7 +492,7 @@ extension View {
         var definition = AnimationDefinition(target: self)
         configure(&definition)
         let animation = Animation([definition])
-        animation.play(completion)
+        animation.start(completion)
         return animation
     }
 }
@@ -793,7 +793,7 @@ final class KeyframeAnimation {
                 animation = Animation([definition])
                 nativeAnimations.append(animation)
             }
-            animation.play { [weak self, weak view] in
+            animation.start { [weak self, weak view] in
                 guard let view else { return }
                 self?.animate(view, index + 1, iterations)
             }
