@@ -135,3 +135,7 @@ public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -
     guard let value else { throw JSException(JSTypeError("Cannot read properties of \(null ? "null" : "undefined") (reading '\(key)')")) }
     return value
 }
+
+/// A truthy operand whose Swift type may still be optional (`a?.b` where TypeScript types `a` as present).
+@inline(__always) public func jsPresent<T>(_ value: T) -> T { value }
+@inline(__always) public func jsPresent<T>(_ value: T?) -> T { value! }

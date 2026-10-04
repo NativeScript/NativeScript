@@ -234,6 +234,7 @@ public func jsIteratorOf(_ value: Any?) throws -> JSIterator<Any?> {
         var i = 0
         return JSIterator { i < elements.jsLength ? { defer { i += 1 }; return Optional(elements.jsElement(at: i)) }() : nil }
     case let s as String: return JSIteratorAdapter(jsIterator(s))
+    case let match as JSMatch: return try jsIteratorOf(match.values)
     case let set as JSSetProtocol:
         var values = set.jsAnyValues.makeIterator()
         return JSIterator<Any?> { values.next() }

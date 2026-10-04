@@ -296,6 +296,11 @@ export class CoreAPI {
     const k = kitType.trim();
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}.map { Double($0) }` : `Double(${code})`;
+    // A member the kit types as a base class (`EventData.object` is an Observable) that TypeScript types as a subclass.
+    const kb = k.replace(/[?!]$/, ''), tb = tsType.replace(/[?!]$/, '');
+    if (kb !== tb && /^[A-Z]\w*$/.test(kb) && /^[A-Z]\w*$/.test(tb) && !['Double', 'String', 'Bool', 'Any'].includes(tb) && kb !== 'Any') {
+      return tsType.endsWith('?') ? `(${code} as? ${tb})` : `(${code} as! ${tb})`;
+    }
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0' : tsType === 'Bool' ? 'false' : null;
       return zero ? `(${code} ?? ${zero})` : `${code}!`;

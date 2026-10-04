@@ -67,7 +67,7 @@ public enum Application {
     public static var primaryWindow: NativeWindow? { NativeWindow.primary }
 
     /// `systemAppearance()`: "light" or "dark".
-    public static func systemAppearance() -> String? { Appearance.systemAppearance }
+    public static func systemAppearance() -> String { Appearance.systemAppearance }
 
     public static func orientation() -> String { Appearance.orientation }
 
@@ -102,4 +102,27 @@ public final class NativeWindow: JSDynamic {
     }
     public var jsKeys: [String] { [] }
     public var jsClassName: String? { "NativeWindow" }
+}
+
+/// `Application` as a value (`const app = Application as any`): the members apps reach past the typings for.
+/// The window's trait changes already drive the appearance, so setting it only re-reads the window.
+public final class ApplicationValue: JSDynamic {
+    public static let shared = ApplicationValue()
+    public var jsKeys: [String] { [] }
+    public var jsClassName: String? { nil }
+    public subscript(jsKey key: String) -> Any? {
+        get {
+            switch key {
+            case "systemAppearance", "getSystemAppearance": return { (_: [Any?]) throws -> Any? in Application.systemAppearance() }
+            case "setSystemAppearance": return { (_: [Any?]) throws -> Any? in
+                if let root = Modal.root { Appearance.refresh(root) }
+                return nil
+            }
+            case "orientation": return { (_: [Any?]) throws -> Any? in Application.orientation() }
+            case "hasLaunched": return { (_: [Any?]) throws -> Any? in Application.hasLaunched() }
+            default: return nil
+            }
+        }
+        set {}
+    }
 }

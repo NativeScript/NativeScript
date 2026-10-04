@@ -277,7 +277,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       }
       // The shims import core's types from the app's node_modules; a plugin's source is typed against the app's packages.
       // Shims, plugins' sources and plugin components compiled with the app (outside its folder) import the app's packages.
-      const from = containing.startsWith('/__shims__/') || pluginFiles.has(containing) || !containing.startsWith(dirname(modules) + '/') ? resolve(modules, '..', 'index.ts') : containing;
+      const from = containing.startsWith('/__shims__/') || pluginFiles.has(containing) || (!m.startsWith('.') && !containing.startsWith(dirname(modules) + '/')) ? resolve(modules, '..', 'index.ts') : containing;
       if (pluginFiles.has(containing) && m.startsWith('.')) return ts.resolveModuleName(m, containing, options, host);
       return ts.resolveModuleName(m, from, options, host);
     }

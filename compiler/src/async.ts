@@ -69,7 +69,7 @@ export interface AsyncSyntax {
   /** `yield value` (or `yield* iterator`): the body continues in `continuation`. */
   yieldCall(cap: string, operand: string, delegate: boolean, continuation: string, onError: string, onReturn: string): string;
   /** The statements taking a JavaScript iterator's next value or else running `otherwise`. */
-  nextStep(item: string, iterator: string, type: string, otherwise: string, indent: string): string[];
+  nextStep(item: string, iterator: string, type: string, otherwise: string, indent: string, current?: string): string[];
   /** IteratorClose of a loop leaving early. */
   closeIterator(iterator: string): string;
   /** `for await`: await the async iterator's next result, then `continuation` with it. */
@@ -473,7 +473,12 @@ export class AsyncLowering {
           lines.push(`${j}${x.awaitNext(o.iterator, this.closure([[r, 'Any?']], body, ctx.onError), ctx.onError)}`);
           return lines;
         }
-        if (o.kind === 'js') lines.push(...x.nextStep(item, o.iterator, t.elementTypeOf(o.of!), `${brk}(); return`, j));
+        if (o.kind === 'js') {
+          const element = t.elementTypeOf(o.of!);
+          // An iterable typed `Any?` steps through an iterator of `Any?`.
+          const untyped = /^Any\??$/.test(t.typeOf(o.of!)) && element !== 'Any?';
+          lines.push(...x.nextStep(item, o.iterator, element, `${brk}(); return`, j, untyped ? t.fromAnyCode(`${o.iterator}.jsCurrent`, element, false) : undefined));
+        }
         else lines.push(...x.nextItem(item, o.iterator, `${brk}(); return`, j));
         lines.push(...bind());
         return lines;

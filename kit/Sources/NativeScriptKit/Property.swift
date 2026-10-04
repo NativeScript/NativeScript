@@ -77,3 +77,8 @@ public func CSSType(_ name: String) -> (Any?) -> Void { { _ in } }
 public func jsReported<T>(_ body: () throws -> T) -> T? {
     do { return try body() } catch { jsReport { throw error }; return nil }
 }
+
+/// A loop's items from an expression that may throw: none when it does, the error reported.
+public func jsReportedItems<S: Sequence>(_ body: () throws -> S) -> [S.Element] {
+    jsReported { Array(try body()) } ?? []
+}

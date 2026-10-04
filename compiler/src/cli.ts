@@ -6,6 +6,9 @@
 // The app folder is a NativeScript project (package.json, app/). Its
 // components and modules are type-checked together and translated to Swift
 // against NativeScriptKit; --build generates the Xcode project and builds it.
+// --all-errors lists every construct the translator cannot handle instead of
+// stopping at the first; with --keep-going the project is written anyway, so
+// Swift's own errors show where the translation is incomplete.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +31,7 @@ import { appStylesheets, importedStylesheets, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
+import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
 import { collectProperties } from './properties.ts';
 import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
@@ -281,6 +285,9 @@ translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
 translator.plainFields = framework === 'angular';
+// The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
+const appNative = native.appSwift ? nativeTable(name).classes : {};
+translator.appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
 if (args.includes('--all-errors')) translator.errors = [];
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
@@ -315,7 +322,7 @@ for (const c of components) {
 }
 if (translator.errors?.length) {
   console.error([...new Set(translator.errors)].join('\n'));
-  throw new Error(`${new Set(translator.errors).size} constructs the release build cannot translate yet`);
+  if (!args.includes('--keep-going')) throw new Error(`${new Set(translator.errors).size} constructs the release build cannot translate yet`);
 }
 addInterfaces(translator, translated);
 // File names differ in more than case: a module `app.tsx` beside a component `App` would overwrite it on a case-insensitive disk.
@@ -340,6 +347,7 @@ const start = switches + `        Reactivity.schedule = .${SCHEDULE[framework]}\
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);
+if (translator.usedAppNative.size) writeFileSync(join(out, 'Sources', '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
 for (const f of readdirSync(join(out, 'Sources'))) {
@@ -572,4 +580,40 @@ function staticImports(text: string): string {
     return `{${names}}${eq}${value}`.padEnd(whole.length, ' ');
   });
   return added.length ? out + '\n' + added.join('\n') + '\n' : text;
+}
+
+/**
+ * A JavaScript object for each of the app's Swift classes that untyped code calls (`AppleWidgetUtils.getDataWithKey(key)`):
+ * its static methods by NativeScript's names, arguments read as the Swift parameters take them, results boxed.
+ */
+function appNativeObjects(classes: NativeClass[]): string {
+  const read = (type: string, code: string) => {
+    const t = type.replace(/\?$/, '');
+    const conv = t === 'String' ? `jsToString(${code})` : t === 'Bool' ? `jsTruthy(${code})` : t === 'Double' ? `jsToNumber(${code})` : /^(Int|Int32|Int64|UInt|CGFloat|Float)$/.test(t) ? `${t}(jsToNumber(${code}))`
+      : t === 'NSDictionary' || t === '[AnyHashable : Any]' ? `(jsToNativeDictionary(${code}) as NSDictionary)` : `(jsToNative(${code}) as! ${t})`;
+    return type.endsWith('?') ? `(jsIsNullish(${code}) ? nil : ${conv})` : conv;
+  };
+  return classes.map((c) => {
+    const methods = Object.entries(c.static).filter(([, m]) => m.kind === 'method') as [string, NativeMethod][];
+    const cases = methods.map(([js, m]) => {
+      const args = m.params.map((p, k) => `${m.labels[k] ? `${m.labels[k]}: ` : ''}${read(p, `jsArg(__a, ${k})`)}`).join(', ');
+      const call = `${c.swift}.${m.swift}(${args})`;
+      return `        case ${JSON.stringify(js)}: return { (__a: [Any?]) throws -> Any? in ${m.returns === 'Void' ? `${call}; return nil` : `return ${call}`} }`;
+    });
+    return `final class __AppNative_${c.swift}: JSDynamic {
+    static let shared = __AppNative_${c.swift}()
+    var jsKeys: [String] { [] }
+    var jsClassName: String? { ${JSON.stringify(c.swift)} }
+    subscript(jsKey key: String) -> Any? {
+        get {
+            switch key {
+${cases.join('\n')}
+            default: return nil
+            }
+        }
+        set {}
+    }
+}
+`;
+  }).join('\n');
 }

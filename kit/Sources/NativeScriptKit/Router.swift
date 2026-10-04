@@ -168,6 +168,12 @@ public final class Router {
         Frame.topmost()?.goBack()
     }
 
+    /// `RouterExtensions.router`: the router itself.
+    public var router: Router { self }
+
+    /// `router.url`: the primary outlet's URL.
+    public var url: String { "/" + (current(Router.primary) ?? []).joined(separator: "/") }
+
     public func canGoBack() -> Bool { history.contains { outlets[$0]?.frame?.canGoBack ?? false } }
 
     /// The routes of a named outlet, wherever in the configuration they are.

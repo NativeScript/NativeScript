@@ -6,11 +6,7 @@ open class Span: View {
     /// ViewBase has no CSS type: no type selector matches a span.
     open override class var cssType: String { "" }
 
-    /// The style changes `FormattedString.addPropertyChangeHandler` listens to.
-    static let watchedStyles: Set<String> = [
-        "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "textDecoration", "color", "backgroundColor",
-        "iosAccessibilityAdjustsFontSize", "iosAccessibilityMinFontScale", "iosAccessibilityMaxFontScale", "fontScaleInternal",
-    ]
+    public static let linkTapEvent = "linkTap"
 
     /// `_text`: undefined until set, then a string.
     private(set) var text: String?
@@ -28,8 +24,13 @@ open class Span: View {
                 text = toText(value) ?? ""
             }
         }
-        if Span.watchedStyles.contains(name) || !View.styleProperties.contains(name) {
+        // The style changes `FormattedString.addPropertyChangeHandler` listens to, and every other property.
+        switch name {
+        case "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "textDecoration", "color", "backgroundColor",
+             "iosAccessibilityAdjustsFontSize", "iosAccessibilityMinFontScale", "iosAccessibilityMaxFontScale", "fontScaleInternal":
             (parent as? FormattedString)?.spanChanged()
+        default:
+            if !View.styleProperties.contains(name) { (parent as? FormattedString)?.spanChanged() }
         }
     }
 
@@ -47,7 +48,9 @@ open class Span: View {
 open class FormattedString: View, RegionHost {
     open override class var cssType: String { "" }
 
-    private(set) var spans: [Span] = []
+    private(set) var spanViews: [Span] = []
+    /// `spans`: what script adds to it joins the string as a template's span does.
+    public private(set) lazy var spans: ObservableArray<Span> = ObservableArray { [weak self] span in self?.addChild(span) }
     /// A span's handlers are attached after it joins the tree, so its first values notify nothing.
     private var isAddingSpan = false
     /// Spans in template order: static ones and the runs `if`/`for` regions own.
@@ -63,7 +66,7 @@ open class FormattedString: View, RegionHost {
     }
 
     func addSpan(_ span: Span) {
-        spans.append(span)
+        spanViews.append(span)
         isAddingSpan = true
         addView(span)
         isAddingSpan = false
@@ -80,9 +83,9 @@ open class FormattedString: View, RegionHost {
     public func regionChanged(_ region: Region) {
         let next = entries.flatMap(\.views).compactMap { $0 as? Span }
         let kept = Set(next.map(ObjectIdentifier.init))
-        for span in spans where !kept.contains(ObjectIdentifier(span)) { removeView(span) }
-        let existing = Set(spans.map(ObjectIdentifier.init))
-        spans = next
+        for span in spanViews where !kept.contains(ObjectIdentifier(span)) { removeView(span) }
+        let existing = Set(spanViews.map(ObjectIdentifier.init))
+        spanViews = next
         isAddingSpan = true
         for span in next where !existing.contains(ObjectIdentifier(span)) { addView(span) }
         isAddingSpan = false
@@ -90,7 +93,7 @@ open class FormattedString: View, RegionHost {
     }
 
     open override func eachChildView(_ body: (View) -> Void) {
-        for span in spans { body(span) }
+        for span in spanViews { body(span) }
     }
 
     func spanChanged() {
@@ -107,9 +110,9 @@ open class FormattedString: View, RegionHost {
     }
 
     /// `toString()`: the spans' texts joined, an unset one as `undefined`.
-    var string: String { spans.map { $0.text ?? "undefined" }.joined() }
+    var string: String { spanViews.map { $0.text ?? "undefined" }.joined() }
 
-    var isTappable: Bool { spans.contains { $0.tappable } }
+    var isTappable: Bool { spanViews.contains { $0.tappable } }
 }
 
 /// What text-base/index.ios keeps for a formatted text: the span ranges of the
@@ -219,7 +222,7 @@ extension TextBase {
         var ranges: [NSRange] = []
         let transform = toText(applied["textTransform"]) ?? "initial"
         var start = 0
-        for span in formattedText.spans {
+        for span in formattedText.spanViews {
             var text = span.text ?? ""
             if transform != "none" && transform != "initial" { text = transformedText(text, transform) }
             var attributes: [NSAttributedString.Key: Any] = [:]
@@ -318,10 +321,30 @@ final class LinkTapHandler: NSObject {
         let glyphRect = layoutManager.boundingRect(forGlyphRange: NSRange(location: glyphIndex, length: 1), in: textContainer)
         guard glyphRect.contains(point) else { return }
         let character = layoutManager.characterIndexForGlyph(at: glyphIndex)
-        let spans = owner.formattedText?.spans ?? []
+        let spans = owner.formattedText?.spanViews ?? []
         for (i, range) in owner.formattedState.spanRanges.enumerated() where range.location <= character && range.location + range.length > character {
             if i < spans.count, spans[i].tappable { spans[i].emit("linkTap", nil) }
             break
         }
     }
+}
+
+/// core's `ObservableArray`, as far as a formatted string's `spans` is used: items pushed are handed on.
+public final class ObservableArray<T> {
+    private var items: [T] = []
+    private let added: (T) -> Void
+    init(added: @escaping (T) -> Void) { self.added = added }
+
+    public var length: Double { Double(items.count) }
+
+    @discardableResult
+    public func push(_ values: T...) -> Double {
+        for v in values {
+            items.append(v)
+            added(v)
+        }
+        return length
+    }
+
+    public func getItem(_ index: Double) -> T { items[Int(index)] }
 }

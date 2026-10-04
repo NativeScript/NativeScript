@@ -258,7 +258,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // A key may be any value (`:key="i"`); rows are kept by its string form.
       // What a template expression throws is reported, as Angular's error handler reports it, and renders nothing.
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in jsKey(${throws(node.key) ? `jsReported { ${call(node.key, inner)} } ?? nil` : call(node.key, inner)}) }` : `{ item, _ in jsKey(item) }`;
-      const items = throws(node.items) ? `Array(jsReported { ${call(node.items, loops)} } ?? [])` : `Array(${call(node.items, loops)})`;
+      const items = throws(node.items) ? `jsReportedItems { ${call(node.items, loops)} }` : `Array(${call(node.items, loops)})`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
         say(depth, `ForFragment(${host}, { ${items} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
