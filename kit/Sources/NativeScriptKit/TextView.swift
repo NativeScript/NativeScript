@@ -36,7 +36,11 @@ open class TextView: TextBase, UITextViewDelegate {
 
     override var nativeFont: UIFont? {
         get { native?.font }
-        set { native?.font = newValue }
+        set {
+            native?.font = newValue
+            // The kern scales with the font size; NativeScript applies the font before the letter spacing.
+            if !isShowingHint && toDouble(applied["letterSpacing"]) ?? 0 != 0 { setNativeText(reset: false) }
+        }
     }
 
     private var hint: String { toText(applied["hint"]) ?? "" }
