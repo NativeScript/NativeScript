@@ -42,8 +42,8 @@ public enum TouchManager {
             if handleDown { control.addTarget(handler, action: #selector(ControlHandler.down), for: [.touchDown, .touchDragEnter]) }
             if handleUp { control.addTarget(handler, action: #selector(ControlHandler.up), for: [.touchDragExit, .touchCancel, .touchUpInside, .touchUpOutside]) }
         } else if handleDown || handleUp {
-            view.on("longPress") { event in
-                guard let state = (event.value as? GestureEventPayload)?.state else { return }
+            view.on("longPress") { [weak view] event in
+                guard let view, let state = (event.value as? GestureEventPayload)?.state else { return }
                 switch state {
                 case GestureStateTypes.began: if handleDown { startAnimation(view, "down") }
                 case GestureStateTypes.cancelled, GestureStateTypes.ended: if handleUp { startAnimation(view, "up") }
