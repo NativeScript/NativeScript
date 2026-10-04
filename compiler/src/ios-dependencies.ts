@@ -60,9 +60,9 @@ export function packageLines(packages: SwiftPackage[], projectDir: string): stri
   return packages.map((p) => `  ${p.name}:\n` + (p.path ? `    path: ${JSON.stringify(relative(projectDir, p.path))}\n` : `    url: ${JSON.stringify(p.url)}\n${requirement(p.version!)}`)).join('');
 }
 
-/** A target's `dependencies:` entries on the libraries of `packages`. */
-export function productLines(packages: SwiftPackage[]): string {
-  return packages.flatMap((p) => p.libs.map((lib) => `      - package: ${p.name}\n        product: ${lib}\n`)).join('');
+/** A target's `dependencies:` entries on the libraries of `packages`; a static library builds against them and the app links them, once. */
+export function productLines(packages: SwiftPackage[], link = true): string {
+  return packages.flatMap((p) => p.libs.map((lib) => `      - package: ${p.name}\n        product: ${lib}\n${link ? '' : '        link: false\n'}`)).join('');
 }
 
 /** `classifyVersion`: an exact version, `^`/`~` ranges, `>=a <b`, `#<revision>`, else a branch. */

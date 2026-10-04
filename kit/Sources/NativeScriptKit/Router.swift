@@ -119,7 +119,8 @@ public final class Router {
                 segments += text.split(separator: "/").map(String.init)
             } else if let outlets = field(command, "outlets") {
                 for key in jsKeysOf(outlets) {
-                    let url = (field(outlets, key) as? JSArray<Any?>)?.storage.flatMap { jsToString($0).split(separator: "/").map(String.init) } ?? []
+                    let commands = (try? jsItemsOf(field(outlets, key))) ?? []
+                    let url = commands.flatMap { jsToString($0).split(separator: "/").map(String.init) }
                     targets.append((key, url))
                 }
             } else {

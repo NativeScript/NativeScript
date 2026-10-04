@@ -84,6 +84,14 @@ export class Translator implements AsyncTranslator {
   private computed = new Set<string>();
   /** Variables initialized from an element read (`const r = xs[i]`): Swift optionals, unwrapped where they are used. */
   private undefinedVars = new Map<ts.Symbol, string>();
+
+  /** A binding Swift holds as optional though TypeScript types it present (a native method's nullable parameter): reads unwrap it as undefined would read. */
+  bindsOptional(name: ts.Node, type: string): string {
+    const sym = this.resolve(name);
+    const t = optionalType(type);
+    if (sym) this.undefinedVars.set(sym, t);
+    return t;
+  }
   /** A tagged template's strings, one constant per call site, as JavaScript caches them. */
   private templateObjects: string[] = [];
   /** Accessors for module-level variables a class member of the same name hides from Swift (`__global_fruits`). */
@@ -1192,8 +1200,8 @@ export class Translator implements AsyncTranslator {
         }
         // A field the class assigns after construction (a Vue `let`) is a Swift `var`.
         const reassigned = !hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) && this.isAssigned(cls, name);
-        // Swift lets a closure capture self only once every stored property has a value: from the
-        // first initializer whose closure captures `this`, fields start nil.
+        // Swift lets a closure capture self, or a method run, only once every stored property has a
+        // value: from the first initializer that needs `this` so, fields start nil.
         late ||= capturesThis(m.initializer);
         if (late) lines.push(`    var ${ident(name)}: ${t.endsWith('?') ? t : isFunctionType(t) ? `(${t})!` : `${t}!`}`);
         else lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(name)}: ${t}`);
@@ -1329,7 +1337,9 @@ export class Translator implements AsyncTranslator {
       if (nativeProperty) { lines.push(nativeProperty); continue; }
       if (registered(n)) {
         // A field under a registered property's name is the property: core's accessor on the prototype.
-        lines.push(`    var ${ident(n)}: ${t} {`, `        get { ${this.fromAnyCode(`get(${swiftString(n)})`, t, true)} }`, `        set { set(${swiftString(n)}, ${this.convert('newValue', t, 'Any?')}) }`, '    }');
+        // A property registered without a default is undefined until set: an object-typed one reads as nil.
+        const unset = !t.endsWith('?') && !t.endsWith('!') && this.zero(t) === null && !isFunctionType(t);
+        lines.push(`    var ${ident(n)}: ${unset ? this.deferred(t) : t} {`, `        get { ${this.fromAnyCode(`get(${swiftString(n)})`, unset ? optionalType(t) : t, true)} }`, `        set { set(${swiftString(n)}, ${this.convert('newValue', unset ? optionalType(t) : t, 'Any?')}) }`, '    }');
         if (m.initializer) {
           this.indent = '        ';
           fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -2174,7 +2184,8 @@ export class Translator implements AsyncTranslator {
       clauses.forEach((c, k) => {
         if (!c.statements.length) return;
         const code = this.nested(() => this.nested(() => this.statements([...c.statements])));
-        lines.push(`${i}    if ${start} <= ${k} {`, ...code, `${i}    }`);
+        // The last clause runs from every start: unconditional, so Swift sees what it returns.
+        lines.push(k === clauses.length - 1 ? `${i}    do {` : `${i}    if ${start} <= ${k} {`, ...code, `${i}    }`);
       });
     } finally { this.plainBreak--; this.breakTargets.pop(); }
     lines.push(`${i}}`);
@@ -2539,6 +2550,9 @@ export class Translator implements AsyncTranslator {
     if (isWriteTarget(e)) return code;
     const sym = ts.isIdentifier(e) ? this.resolve(e) : undefined;
     if (sym && this.undefinedVars.has(sym)) {
+      // `x?.m`: the chain reads the optional itself.
+      const p = e.parent;
+      if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === e && p.questionDotToken) return code;
       const actual = this.typeOf(e);
       return actual.endsWith('?') ? code : this.undefinedAs(code, actual);
     }
@@ -2741,6 +2755,10 @@ export class Translator implements AsyncTranslator {
    */
   private maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    // `a?.b() as T`: undefined where the chain stops, whatever the assertion says.
+    if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && !this.typeOf(e).endsWith('?') && this.isObjectRef(e)) {
+      return `(${this.expr(e.expression)} as? ${this.typeOf(e)})`;
+    }
     // A key of a dictionary-typed object, read before its type's zero stands in for a missing one.
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && !isWriteTarget(e)
         && /^JSRecord<.*>$/.test(this.typeOf(e.expression)) && !this.typeOf(e).endsWith('?')) {
@@ -2933,7 +2951,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
-      if (this.isAny(target)) return `jsCallMethod(${this.expr(target)}, ${swiftString(method)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+      if (this.isAny(target)) return `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.expr(target)}, ${swiftString(method)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
       if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
@@ -4285,7 +4303,9 @@ function capturesThis(e: ts.Expression): boolean {
   let found = false;
   const visit = (n: ts.Node, inFunction: boolean): void => {
     if (found) return;
-    if (n.kind === ts.SyntaxKind.ThisKeyword && inFunction) { found = true; return; }
+    // Reading a field is allowed while fields are still being set; a method call or `this` as a value is not.
+    const fieldRead = ts.isPropertyAccessExpression(n.parent) && n.parent.expression === n && !(ts.isCallExpression(n.parent.parent) && n.parent.parent.expression === n.parent);
+    if (n.kind === ts.SyntaxKind.ThisKeyword && (inFunction || !fieldRead)) { found = true; return; }
     // A `function` has a `this` of its own.
     if (ts.isFunctionExpression(n) || ts.isFunctionDeclaration(n) || ts.isClassLike(n)) return;
     ts.forEachChild(n, (c) => visit(c, inFunction || ts.isArrowFunction(n)));

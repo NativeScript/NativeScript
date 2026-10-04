@@ -129,7 +129,7 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
   const p = native.package;
   return {
     packages: p ? `  ${p.name}:\n    path: ${relative(projectDir, p.dir)}\n` : '',
-    targets: native.swift.map((t) => `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${t.packages.length ? `    dependencies:\n${productLines(t.packages)}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n`).join(''),
+    targets: native.swift.map((t) => `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${t.packages.length ? `    dependencies:\n${productLines(t.packages, false)}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n`).join(''),
     dependencies: [
       ...(p?.products ?? []).map((product) => `      - package: ${p!.name}\n        product: ${product}\n`),
       ...native.swift.map((t) => `      - target: ${t.name}\n`),

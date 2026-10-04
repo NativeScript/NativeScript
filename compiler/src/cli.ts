@@ -341,6 +341,7 @@ const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n
 const css = kitCss(sheets);
 const patched = corePatches(app, nodeModules(app));
 if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
+if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
 // Set before the module initializers run: they may make views.
 const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
 const start = switches + `        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
@@ -348,7 +349,6 @@ const start = switches + `        Reactivity.schedule = .${SCHEDULE[framework]}\
   ? `        NativeScriptApplication.css = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);
 if (translator.usedAppNative.size) writeFileSync(join(out, 'Sources', '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
-if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
 for (const f of readdirSync(join(out, 'Sources'))) {
   const p = join(out, 'Sources', f);
@@ -385,6 +385,9 @@ else removePods(out, name);
 const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
 const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
 const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...signing };
+// Virtual function and witness elimination hold only when every Swift module in the link is compiled
+// for them: code from pods and packages, built without, would call methods they removed or thunks they need.
+const wholeProgram = !pods && !packages.length && !pluginLines.packages;
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
@@ -395,8 +398,7 @@ settings:
     Release:
       SWIFT_OPTIMIZATION_LEVEL: -Osize
       SWIFT_LTO: YES
-      OTHER_SWIFT_FLAGS: -Xfrontend -enable-llvm-vfe -Xfrontend -enable-llvm-wme -Xfrontend -internalize-at-link
-      DEAD_CODE_STRIPPING: YES
+${wholeProgram ? '      OTHER_SWIFT_FLAGS: -Xfrontend -enable-llvm-vfe -Xfrontend -enable-llvm-wme -Xfrontend -internalize-at-link\n' : ''}      DEAD_CODE_STRIPPING: YES
 ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}${packageLines(packages, out)}` : ''}targets:
   NativeScriptKit:
     type: library.static

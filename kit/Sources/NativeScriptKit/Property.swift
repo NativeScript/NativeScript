@@ -42,6 +42,8 @@ public final class Property {
     }
 
     func same(_ old: Any?, _ new: Any?) -> Bool {
+        // A compiled comparer takes the values its TypeScript declares; undefined differs from any value, as core's comparers report.
+        if jsIsNullish(old) || jsIsNullish(new) { return jsIsNullish(old) && jsIsNullish(new) }
         if equalityComparer != nil { return jsTruthy(jsReported { try jsCall(equalityComparer, old, new) } ?? nil) }
         return jsStrictEquals(old, new)
     }

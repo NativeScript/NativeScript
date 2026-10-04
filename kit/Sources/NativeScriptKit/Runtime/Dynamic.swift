@@ -80,6 +80,16 @@ public typealias JSMethod = (Any?, [Any?]) throws -> Any?
 /// `object.method(args)` on an untyped object: a method sees the object as `this`.
 @discardableResult
 public func jsCallMethod(_ object: Any?, _ key: String, _ arguments: Any?...) throws -> Any? {
+    try callMethod(object, key, arguments)
+}
+
+/// `object?.key(…)`: undefined when the object is undefined or null.
+@discardableResult
+public func jsCallMethodIfPresent(_ object: Any?, _ key: String, _ arguments: Any?...) throws -> Any? {
+    jsIsNullish(object) ? nil : try callMethod(object, key, arguments)
+}
+
+private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
     let f = try jsGet(object, key)
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }

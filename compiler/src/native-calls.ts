@@ -192,6 +192,9 @@ export class NativeAPI {
   private unwrapped(x: ts.Expression): string {
     const code = this.t.expr(x);
     const t = this.t.typeOf(x);
+    // `x?.objectForKey(k)`: the chain continues past a value Swift may hold as optional.
+    const p = x.parent;
+    if (ts.isPropertyAccessExpression(p) && p.expression === x && p.questionDotToken && t !== 'Any?' && !t.includes('->')) return `(${code} as ${t.replace(/\?$/, '')}?)?`;
     if (!t.endsWith('?') || t === 'Any?' || t.includes('->')) return code;
     return `(${code} as ${t})!`;
   }
@@ -654,7 +657,16 @@ export class NativeAPI {
       if (sym && m.body) visit(m.body);
       return found;
     };
-    const binds = tsParams.map((p, k) => (target.params[k] && read(k) ? `        let ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, target.params[k], p.type)}` : '')).filter(Boolean);
+    const binds = tsParams.map((p, k) => {
+      const swift = target.params[k];
+      if (!swift || !read(k)) return '';
+      // A nullable native parameter TypeScript declares present (`launchOptions`) may be nil: the body reads it as undefined.
+      if (optional(swift) && !p.type.endsWith('?') && !['Double', 'String', 'Bool'].includes(p.type) && !bridge('', swift, p.type)) {
+        const type = t.bindsOptional(m.parameters[k].name, p.type);
+        return `        let ${p.name}: ${type} = ${this.fromSwiftValue(`__a${k}`, swift, type)}`;
+      }
+      return `        let ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
+    }).filter(Boolean);
     const body = t.functionBody(m, tsRet, '        ');
     const throws = t.throwsInfo.fn(m);
     const ret = target.returns;
