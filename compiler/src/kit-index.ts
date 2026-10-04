@@ -17,6 +17,8 @@ export interface KitType {
   members: Map<string, KitMember[]>;
   /** NativeScript property names the type applies by name (the `case` labels of its setProperty and shorthands). */
   props: Set<string>;
+  /** The class of the native view a kit view creates (Android: `createNativeView(): NativeView = VerticalScrollView(…)`), fully qualified. */
+  native?: string;
 }
 
 /**

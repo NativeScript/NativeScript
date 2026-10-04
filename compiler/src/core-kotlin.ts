@@ -24,6 +24,7 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
   const files = (readdirSync(sources, { recursive: true }) as string[]).filter((f) => f.endsWith('.kt'));
   for (const f of files) {
     const text = readFileSync(join(sources, f), 'utf8').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const imports = new Map([...text.matchAll(/^import\s+([\w.]+)\.(\w+)(?:\s+as\s+(\w+))?\s*$/gm)].map((m) => [m[3] ?? m[2], `${m[1]}.${m[2]}`]));
     const stack: { type: KitType | null; depth: number; companion: boolean }[] = [];
     let depth = 0;
     for (const line of text.split('\n')) {
@@ -66,6 +67,8 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
         if (owner?.type && depth === owner.depth + 1 && !/\b(private|internal)\b/.test(line) && (!/\bprotected\b/.test(line) || /\b(open|override|abstract)\b/.test(line))) {
           const isStatic = owner.companion || !!(owner.type as KitType & { object?: boolean }).object;
           let m: RegExpExecArray | null;
+          const made = /^\s*override\s+fun\s+createNativeView\(\)\s*:\s*NativeView\s*=\s*([\w.]+)\(/.exec(line);
+          if (made) owner.type.native = imports.get(made[1]) ?? made[1];
           if ((m = /^\s*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
           else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
             const [params, rest] = parenthesized(line, m.index + m[0].length);
@@ -147,6 +150,18 @@ export class CoreKotlin implements KotlinCore {
 
   kitMember(owner: string, name: string): KitMember | null {
     return kitMember(this.index, owner, name);
+  }
+
+  /** The class of the native view `view.android` (`nativeView`) holds, when the kit view's class says. */
+  nativeClassOf(e: ts.Expression): string | null {
+    if (!ts.isPropertyAccessExpression(e) || !NATIVE_MEMBERS.has(e.name.text)) return null;
+    let name: string | null | undefined = this.owner(e.expression)?.name;
+    while (name) {
+      const type = this.index.get(name);
+      if (type?.native) return type.native;
+      name = type?.base;
+    }
+    return null;
   }
 
   /** Whether `target.method` is a method the kit declares on target's class (an optional call of it is a plain call). */
@@ -268,7 +283,7 @@ export class CoreKotlin implements KotlinCore {
     const m = this.member(owner.name, name, e);
     // A method read as a value (`typeof view.getSafeAreaInsets === 'function'`): bound to its object.
     if (m.kind === 'func' && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return `${recv}::${name}`;
-    return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e));
+    return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e), t.nullTolerant(e));
   }
 
   /** A core-typed receiver's code: unwrapped where it is nullable and the access is not an optional one (code checked without strictNullChecks). */

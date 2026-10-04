@@ -24,6 +24,7 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         // A NativeScript app rebuilds its views on a fresh start rather than restoring fragments.
         super.onCreate(null)
         current = this
+        jsTraceErrors = android.util.Log.isLoggable("NSNative", android.util.Log.DEBUG)
         setThemeOnLaunch()
         Utils.enableEdgeToEdge(this, 0, 0, LIGHT_SCRIM, DARK_SCRIM)
         installEventLoop()

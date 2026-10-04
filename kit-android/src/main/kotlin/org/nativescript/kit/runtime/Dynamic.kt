@@ -18,6 +18,24 @@ class JSFunction(val body: (List<Any?>) -> Any?) {
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
 
+// A function value held untyped, as a Kotlin function of its arity (cast to the typed function by the caller).
+@Suppress("UNCHECKED_CAST")
+fun jsFunction0(f: Any?): () -> Any? = f as? Function0<Any?> ?: { jsCall(f) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction1(f: Any?): (Any?) -> Any? = f as? Function1<Any?, Any?> ?: { a -> jsCall(f, a) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction2(f: Any?): (Any?, Any?) -> Any? = f as? Function2<Any?, Any?, Any?> ?: { a, b -> jsCall(f, a, b) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction3(f: Any?): (Any?, Any?, Any?) -> Any? = f as? Function3<Any?, Any?, Any?, Any?> ?: { a, b, c -> jsCall(f, a, b, c) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction4(f: Any?): (Any?, Any?, Any?, Any?) -> Any? = f as? Function4<Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d -> jsCall(f, a, b, c, d) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction5(f: Any?): (Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function5<Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e -> jsCall(f, a, b, c, d, e) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction6(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function6<Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g -> jsCall(f, a, b, c, d, e, g) }
+@Suppress("UNCHECKED_CAST")
+fun jsFunction7(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g, h -> jsCall(f, a, b, c, d, e, g, h) }
+
 /** Argument `index` of a dynamic call; a missing one is undefined. */
 fun jsArg(args: List<Any?>, index: Int): Any? = args.getOrNull(index)
 

@@ -70,10 +70,14 @@ abstract class LayoutBase : ContainerView(), RegionHost {
 
     private val group: ViewGroup get() = nativeView as ViewGroup
 
-    override fun addChild(child: View) {
+    override fun addChild(child: View) = appendChild(child)
+
+    // Not through addChild: a plugin may override that as a no-op (ui-drawer) and still insert its own children.
+    private fun appendChild(child: View) {
         entries.add(Entry.Child(child))
         children = children + child
         addView(child)
+        if (!isNativeViewCreated) return
         group.addView(child.nativeView)
         childAddedToNativeView(child)
     }
@@ -97,7 +101,7 @@ abstract class LayoutBase : ContainerView(), RegionHost {
     /** `insertChild(child, atIndex)` from script: before the child now at that index. */
     fun insertChild(child: View, atIndex: Double) {
         val index = maxOf(0, atIndex.toInt())
-        if (index >= children.size) return addChild(child)
+        if (index >= children.size) return appendChild(child)
         val before = children[index]
         val position = entries.indexOfFirst { (it is Entry.Child && it.view === before) || (it is Entry.Run && it.region.views.any { v -> v === before }) }
         entries.add(if (position < 0) entries.size else position, Entry.Child(child))
@@ -122,17 +126,21 @@ abstract class LayoutBase : ContainerView(), RegionHost {
             }
         }
         val kept = HashSet(next)
-        val group = group
         for (child in children) {
             if (child !in kept) {
                 removeView(child)
-                group.removeView(child.nativeView)
+                if (isNativeViewCreated && child.isNativeViewCreated) group.removeView(child.nativeView)
             }
         }
         val existing = HashSet(children)
         children = next
-        for ((index, child) in next.withIndex()) {
-            if (child !in existing) addView(child)
+        for (child in next) if (child !in existing) addView(child)
+        if (isNativeViewCreated) setUpChildViews()
+    }
+
+    override fun setUpChildViews() {
+        val group = group
+        for ((index, child) in children.withIndex()) {
             val view = child.nativeView
             if (index >= group.childCount || group.getChildAt(index) !== view) {
                 (view.parent as? ViewGroup)?.removeView(view)
@@ -353,12 +361,16 @@ open class ContentView : ContainerView() {
         contentView?.let { removeContent(it) }
         contentView = child
         addView(child)
-        addContentToNativeView(child)
+        if (isNativeViewCreated) addContentToNativeView(child)
     }
 
     private fun removeContent(child: View) {
         removeView(child)
-        (nativeView as ViewGroup).removeView(child.nativeView)
+        if (isNativeViewCreated && child.isNativeViewCreated) (nativeView as ViewGroup).removeView(child.nativeView)
+    }
+
+    override fun setUpChildViews() {
+        contentView?.let { addContentToNativeView(it) }
     }
 
     protected open fun addContentToNativeView(child: View) {

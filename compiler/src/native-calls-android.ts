@@ -267,6 +267,15 @@ export class AndroidNativeAPI implements KotlinNative {
     return !!decl && !decl.getSourceFile().isDeclarationFile;
   }
 
+  sharedClass(from: string, to: string): string | null {
+    const internal = (n: string) => n.replace(/\./g, '/');
+    if (!this.classpath.get(internal(to)) || this.classpath.distance(internal(from), internal(to)) !== null) return null;
+    for (let c = this.classpath.get(internal(from)); c?.superName; c = this.classpath.get(c.superName)) {
+      if (this.classpath.distance(internal(to), c.superName) !== null) return javaTypeName(`L${c.superName};`);
+    }
+    return null;
+  }
+
   isClassAlias(d: ts.VariableDeclaration): boolean {
     if (!ts.isIdentifier(d.name)) return false;
     // `let PageLayout: typeof com.nativescript.gesturehandler.PageLayout`, assigned the class before use.
@@ -699,7 +708,8 @@ export class AndroidNativeAPI implements KotlinNative {
       return prim ? `${prim}ArrayOf(${items})` : `arrayOf<${this.kotlinType(el, 'Any?')}>(${items})`;
     }
     const k = this.kind(e);
-    if (k.kind === 'any') return `(${t.expr(e)} as ${this.kotlinType(desc, 'Any?')})`;
+    // An untyped array where Java takes an array: converted element by element at run time, as the runtime marshals it.
+    if (k.kind === 'any') return `(toJavaValue(${t.expr(e)}, ${this.kotlinType(desc, 'Any?')}::class.java) as ${this.kotlinType(desc, 'Any?')}?)`;
     const list = `${atom(t.expr(e))}${t.typeOf(e).endsWith('?') ? '!!' : ''}.elements`;
     if (!prim) return `${list}.toTypedArray()`;
     const kotlin = KOTLIN_PRIMITIVE[el];

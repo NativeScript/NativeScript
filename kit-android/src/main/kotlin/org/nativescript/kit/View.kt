@@ -137,7 +137,18 @@ open class View : Observable() {
         lifecycleHooksRan = false
         initNativeView()
         if (!lifecycleHooksRan) runLifecycleHooks(false)
+        setUpChildViews()
     }
+
+    /**
+     * Whether the native view exists. As core sets a child up only from a parent
+     * that has been (`_setupUI`), a container adds its children's native views
+     * once its own is set up, so a child's `initNativeView` sees its ancestors.
+     */
+    val isNativeViewCreated: Boolean get() = native != null
+
+    /** `_setupUI`'s children: their native views, added to this one's. */
+    protected open fun setUpChildViews() {}
 
     protected open fun createNativeView(): NativeView = NativeView(context)
 
@@ -266,7 +277,7 @@ open class View : Observable() {
         "requestLayout" -> jsFunction { requestLayout(); null }
         "getMeasuredWidth" -> jsFunction { getMeasuredWidth() }
         "getMeasuredHeight" -> jsFunction { getMeasuredHeight() }
-        else -> get(key)
+        else -> mixinMembers[key]?.invoke(this) ?: get(key)
     }
 
     override fun jsSet(key: String, value: Any?) = set(key, value)
@@ -841,6 +852,9 @@ open class View : Observable() {
         const val shownModallyEvent: String = "shownModally"
 
         val lifecycleHooks = mutableListOf<LifecycleHook>()
+
+        /** Members a plugin's mixin adds to core classes (`applyMixins(Page, [Extended])`), for code that reads them by name. */
+        val mixinMembers = HashMap<String, (View) -> Any?>()
 
         /** Native setters plugins add for properties they register on a core class (a mixin's `[prop.setNative]`). */
         val nativeSetterHooks = HashMap<String, (View, Any?) -> Unit>()

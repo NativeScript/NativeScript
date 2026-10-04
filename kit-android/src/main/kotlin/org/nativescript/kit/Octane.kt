@@ -46,7 +46,7 @@ fun <T> jsExternalStore(site: String, subscribe: Any?, snapshot: () -> T): T {
         val made = Signal(0)
         version = made
         externalStores[site] = made
-        val listener = jsFunction { made.value += 1; null }
+        val listener: () -> Unit = { made.value += 1 }
         jsReport { jsCall(subscribe, listener) }
     }
     version.value

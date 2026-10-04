@@ -92,11 +92,15 @@ fun jsCaught(error: Throwable): Any? = when (error) {
 /** `throw value`. */
 fun jsThrow(value: Any?): Nothing = throw JSException(value)
 
+/** Whether a reported error also prints the JVM stack it was thrown from (`adb shell setprop log.tag.NSNative DEBUG`). */
+var jsTraceErrors = false
+
 /** Runs `body`; an error it throws is reported as uncaught, as a JavaScript host reports an exception escaping a callback. */
 inline fun jsReport(body: () -> Unit) {
     try {
         body()
     } catch (e: Throwable) {
+        if (jsTraceErrors) e.printStackTrace()
         jsReportUncaught(jsCaught(e))
     }
 }

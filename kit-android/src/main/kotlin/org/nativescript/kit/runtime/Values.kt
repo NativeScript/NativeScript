@@ -152,6 +152,9 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
 
 // Property access
 
+/** `object?.key`: undefined when the object is undefined or null. */
+fun jsGetOptional(target: Any?, key: String): Any? = if (target == null || target === JSNull) null else jsGet(target, key)
+
 /** `object[key]` / `object.key` on a dynamic value. Reading from undefined or null throws a TypeError. */
 fun jsGet(target: Any?, key: String): Any? = when (target) {
     null -> throw JSException(JSTypeError("Cannot read properties of undefined (reading '$key')"))

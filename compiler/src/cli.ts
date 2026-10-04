@@ -160,7 +160,7 @@ const properties = collectProperties(checker, sourceFiles);
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), plugins: plugins.all(), build: args.includes('--build'), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
+  await writeAndroid({ app, appDir, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), plugins: plugins.all(), build: args.includes('--build'), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

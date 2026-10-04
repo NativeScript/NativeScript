@@ -1,7 +1,7 @@
 // The Android target: the app's components and modules as Kotlin against
 // NativeScriptKit for Android (native-release/kit-android), in a Gradle
 // project whose resources are the app's own App_Resources/Android.
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
@@ -17,6 +17,8 @@ import type { Properties } from './properties.ts';
 
 export interface AndroidBuild {
   app: string;
+  /** The folder of the app's entry, whose `fonts/` core reads font files from. */
+  appDir?: string;
   out: string;
   name: string;
   framework: string;
@@ -116,6 +118,10 @@ val appCSS = ${kotlinString(b.css)}
 
   // The Gradle project: this app module, and the kit as a library module.
   const resources = join(b.app, 'App_Resources', 'Android', 'src', 'main', 'res');
+  const fonts = b.appDir && join(b.appDir, 'fonts');
+  const assetFonts = join(b.out, 'src', 'main', 'assets', 'app', 'fonts');
+  rmSync(assetFonts, { recursive: true, force: true });
+  if (fonts && existsSync(fonts)) cpSync(fonts, assetFonts, { recursive: true });
   if (!widgets) throw new Error('@nativescript/core is not installed in the app (its widgets AAR is the layout the native build links); run npm install, or pass --widgets <aar>');
   const applicationId = b.applicationId ?? `${pkg}.native`;
   writeFileSync(join(b.out, 'settings.gradle.kts'), `pluginManagement {
