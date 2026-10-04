@@ -108,15 +108,24 @@ develops it with live reload as usual.
 | `compiler/src/kotlin.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |
 | `kit-android/` | NativeScriptKit for Android: core's Android views and styling in Kotlin on the widgets AAR; `Signals.kt`, `Regions.kt`, `JS.kt`, `Router.kt` |
 | `kit/Sources/NativeScriptKit/` | The views, layout, CSS and navigation ported from `@nativescript/core`; `Signals.swift`, `Regions.swift`, `JS.swift`, `Router.swift` |
-| `tools/` | `compare.py`, `interact.py`, `launch.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `sizes-android.py` |
+| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView screen (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` |
+| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `launch.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `sizes-android.py` |
 
 ## Limits
 
-- **The subset.** What the six Recipes apps use compiles: the elements in
-  `compiler/src/elements.ts`, their properties and events, CSS type and
-  class selectors, and the TypeScript the translator knows (`swift.ts`). Anything else
-  stops the build with the file, line and construct.
+- **The subset.** What the Recipes and gallery apps use compiles: the elements in
+  `compiler/src/elements.ts`, their properties and events, the CSS NativeScript
+  supports (combinators, attribute and pseudo-class selectors, `@media`,
+  `@keyframes`, `var()`, `calc()`), and the TypeScript the translator knows
+  (`swift.ts`). Anything else stops the build with the file, line and construct.
 - **Plugins** and direct native API calls from JavaScript (`UIView.new()`,
-  `android.widget…`) have no translation yet.
-- **ListView**, animations and (on Android) gestures other than tap are not ported yet;
-  FlexboxLayout is ported on Android only.
+  `android.widget…`) have no translation yet, nor has core's imperative API from
+  script: `view.animate()`, `Animation`, TouchManager and RootLayout's
+  `open`/`close`. CSS animations and transforms work.
+- **iOS only so far:** ListView (in every framework), TextView, the layouts other
+  than FlexboxLayout, gestures other than tap, animations, modals, TabView, the
+  other elements gallery-vue shows, and the CSS engine's selectors, variables,
+  borders and backgrounds.
+- **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box
+  shadows, Span `verticalAlignment`, `font://` icons, and DatePicker dates given
+  as Date values.
