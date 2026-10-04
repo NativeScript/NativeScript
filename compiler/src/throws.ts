@@ -1,0 +1,195 @@
+import ts from 'typescript';
+
+type Fn = ts.SignatureDeclaration & { body?: ts.Node };
+
+/** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
+const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'Number.toFixed', 'Number.toPrecision', 'String.normalize']);
+
+/**
+ * Which functions throw, worked out across the call graph: a function is
+ * Swift `throws` when its body throws, or calls something that does, outside
+ * a `try` that catches. Calls through function values (a callback parameter,
+ * a stored closure) count as throwing, because function types are `throws`
+ * in Swift. Async functions never throw synchronously; their errors reject.
+ */
+export class Throws {
+  private throwing = new Set<ts.Node>();
+  private checker: ts.TypeChecker;
+  private files: readonly ts.SourceFile[];
+  /** Whether a value is untyped in Swift (`Any?`): reading its members goes through `jsGet`, which throws. */
+  private untyped: (n: ts.Node) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean) {
+    this.checker = checker;
+    this.files = files;
+    this.untyped = untyped;
+    const fns: Fn[] = [];
+    const collect = (n: ts.Node) => {
+      if (ts.isFunctionLike(n) && (n as Fn).body) fns.push(n as Fn);
+      ts.forEachChild(n, collect);
+    };
+    for (const f of files) collect(f);
+    for (let changed = true; changed; ) {
+      changed = false;
+      for (const fn of fns) {
+        if (this.throwing.has(fn) || isAsync(fn)) continue;
+        if (this.bodyThrows(fn)) { this.throwing.add(fn); changed = true; }
+      }
+    }
+  }
+
+  /** Whether calling `fn` (a declaration with a body) can throw. */
+  fn(fn: ts.Node): boolean {
+    if (this.throwing.has(fn)) return true;
+    // Swift overrides share `throws`: a method throws if any method of its name in the hierarchy does.
+    if ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && ts.isClassLike(fn.parent) && fn.name) {
+      const name = fn.name.getText();
+      for (const other of [...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
+        const m = other.members.find((x) => x.name?.getText() === name && x !== fn);
+        if (m && this.throwing.has(m)) return true;
+      }
+    }
+    return false;
+  }
+
+  /** Whether evaluating `e` (not the functions it creates) can throw. */
+  expr(e: ts.Node): boolean {
+    let found = false;
+    const visit = (n: ts.Node) => {
+      if (found || ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+      if (this.nodeThrows(n)) { found = true; return; }
+      ts.forEachChild(n, visit);
+    };
+    visit(e);
+    return found;
+  }
+
+  private bodyThrows(fn: Fn): boolean {
+    let found = false;
+    const visit = (n: ts.Node) => {
+      if (found || (n !== fn && (ts.isFunctionLike(n) || ts.isClassLike(n)))) return;
+      if (ts.isTryStatement(n) && n.catchClause) {
+        // What the try block throws is caught; the catch and finally blocks can still throw.
+        visit(n.catchClause.block);
+        if (n.finallyBlock) visit(n.finallyBlock);
+        return;
+      }
+      if (ts.isThrowStatement(n) || this.nodeThrows(n)) { found = true; return; }
+      ts.forEachChild(n, visit);
+    };
+    if (fn.body) visit(fn.body);
+    for (const p of fn.parameters) if (p.initializer) visit(p.initializer);
+    if (ts.isConstructorDeclaration(fn)) {
+      for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m)) visit(m.initializer);
+    }
+    return found;
+  }
+
+  private nodeThrows(n: ts.Node): boolean {
+    const c = this.checker;
+    if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
+    if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
+      // Reading a member of an untyped value throws on undefined and null.
+      if (this.untyped(n.expression)) return true;
+      const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
+      if (decl && ts.isGetAccessorDeclaration(decl) && decl.body && !isAssignmentTarget(n)) return this.fn(decl);
+    }
+    return false;
+  }
+
+  private callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
+    const c = this.checker;
+    if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
+    if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
+      const cls = ts.findAncestor(call, ts.isClassLike);
+      const base = cls && this.ancestors(cls)[1];
+      const ctor = base?.members.find(ts.isConstructorDeclaration);
+      return ctor ? this.fn(ctor) : false;
+    }
+    const decl = c.getResolvedSignature(call)?.getDeclaration();
+    const args = call.arguments ?? ts.factory.createNodeArray();
+    // A callback the callee runs: a closure literal throws if its body does; any other function value is assumed to.
+    const callbackThrows = () => args.some((a) => {
+      const arg = skipParens(a);
+      if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) return !isAsync(arg) && this.fn(arg);
+      return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
+    });
+    if (!decl || ts.isJSDocSignature(decl)) {
+      if (ts.isNewExpression(call)) return this.implicitConstructorThrows(call);
+      return true;
+    }
+    const file = decl.getSourceFile();
+    if (file.isDeclarationFile) {
+      const owner = builtinName(decl);
+      if (owner && THROWING_BUILTINS.has(owner)) return owner === 'Array.reduce' || owner === 'Array.reduceRight' ? args.length < 2 || callbackThrows() : true;
+      // The library runs callbacks synchronously (map, forEach, sort, find): it rethrows. A promise's callbacks reject instead.
+      if (/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName) && !/^Promise/.test(owner ?? '')) return callbackThrows();
+      return false;
+    }
+    // A function value (an arrow stored in a variable or an object) has a Swift function type, which throws.
+    if (ts.isArrowFunction(decl) || ts.isFunctionExpression(decl)) return true;
+    if ((decl as Fn).body) return this.fn(decl);
+    // A signature without a body (an interface method, a function-typed member) is a function type.
+    return !ts.isConstructorDeclaration(decl) && !ts.isClassLike(decl);
+  }
+
+  private implicitConstructorThrows(call: ts.NewExpression): boolean {
+    const decl = this.checker.getTypeAtLocation(call.expression).getSymbol()?.valueDeclaration;
+    if (!decl || !ts.isClassLike(decl) || decl.getSourceFile().isDeclarationFile) return false;
+    for (const cls of this.ancestors(decl)) {
+      if (cls.members.some((m) => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m) && this.expr(m.initializer))) return true;
+      const ctor = cls.members.find(ts.isConstructorDeclaration);
+      if (ctor) return this.fn(ctor);
+    }
+    return false;
+  }
+
+  /** The class and the app classes it extends, nearest first. */
+  private ancestors(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration[] {
+    const out: ts.ClassLikeDeclaration[] = [];
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; ) {
+      out.push(c);
+      const base = c.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      const decl = base && this.checker.getTypeAtLocation(base.expression).getSymbol()?.valueDeclaration;
+      c = decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile ? decl : undefined;
+    }
+    return out;
+  }
+
+  private descendants(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration[] {
+    const out: ts.ClassLikeDeclaration[] = [];
+    const visit = (n: ts.Node) => {
+      if (ts.isClassLike(n) && n !== cls && this.ancestors(n).includes(cls)) out.push(n);
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.files) visit(f);
+    return out;
+  }
+}
+
+export function isAsync(fn: ts.Node): boolean {
+  return ts.canHaveModifiers(fn) && !!ts.getModifiers(fn)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword);
+}
+
+export function isStatic(m: ts.Node): boolean {
+  return ts.canHaveModifiers(m) && !!ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
+}
+
+function skipParens(e: ts.Expression): ts.Expression {
+  while (ts.isParenthesizedExpression(e)) e = e.expression;
+  return e;
+}
+
+function isAssignmentTarget(n: ts.Node): boolean {
+  const p = n.parent;
+  return ts.isBinaryExpression(p) && p.left === n && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+}
+
+/** `Array.reduce` for the lib's `reduce` in `interface Array<T>`. */
+function builtinName(decl: ts.Declaration): string | null {
+  const owner = decl.parent;
+  const name = (decl as ts.NamedDeclaration).name?.getText();
+  if (!name) return null;
+  if (ts.isInterfaceDeclaration(owner)) return `${owner.name.text.replace(/^ReadonlyArray$/, 'Array').replace(/Constructor$/, '')}.${name}`;
+  return name;
+}

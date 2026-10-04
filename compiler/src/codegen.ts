@@ -6,23 +6,25 @@ import { ident, swiftString } from './swift.ts';
  * each binding is one effect that sets one property, and each `if`/`for`
  * owns a region of its container. Nothing is diffed at run time.
  */
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>): string[] {
+export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>, throws: (method: string) => boolean = () => false): string[] {
   const lines: string[] = [];
   let n = 0;
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
   type Loop = { item: string; index: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
-    `self.${ident(method)}(${[...loops.flatMap((l) => [ident(l.item), ident(l.index)]), ...extra].join(', ')})`;
+    `${throws(method) ? 'try ' : ''}self.${ident(method)}(${[...loops.flatMap((l) => [ident(l.item), ident(l.index)]), ...extra].join(', ')})`;
+  // What a binding or handler throws is reported, as the frameworks report errors in templates.
+  const reported = (method: string, code: string) => (throws(method) ? `jsReport { ${code} }` : code);
 
   const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${swiftString(a.value)}`);
       else say(depth, `${v}.set(${swiftString(a.name)}, ${swiftString(a.value)})`);
     } else if (a.name === 'class') {
-      say(depth, `Effect { ${v}.className = ${call(a.method, loops)} }`);
+      say(depth, `Effect { ${reported(a.method, `${v}.className = ${call(a.method, loops)}`)} }`);
     } else {
-      say(depth, `Effect { ${v}.set(${swiftString(a.name)}, ${call(a.method, loops)}) }`);
+      say(depth, `Effect { ${reported(a.method, `${v}.set(${swiftString(a.name)}, ${call(a.method, loops)})`)} }`);
     }
   };
 
@@ -36,7 +38,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         } else if (node.kind === 'element') {
           say(depth, `let ${v} = ${node.tag}()`);
           for (const a of node.attrs) attr(depth, v, a, loops);
-          for (const e of node.events) say(depth, `${v}.on(${swiftString(e.name)}) { event in ${call(e.method, loops, ['event'])} }`);
+          for (const e of node.events) say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           emit(node.children, depth, loops, v, null);
         } else {
           const info = components.get(node.name);
@@ -46,6 +48,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           const args = info.props.map((p) => {
             const a = given.get(p);
             if (!a) throw new Error(`${c.name}: <${node.name}> needs the prop "${p}"`);
+            if ('method' in a && throws(a.method)) throw new Error(`${c.name}: the binding for <${node.name}>'s prop "${p}" can throw`);
             return `${ident(p)}: ${'value' in a ? swiftString(a.value) : `untrack { ${call(a.method, loops)} }`}`;
           });
           say(depth, `let ${c0} = ${node.name}(${args.join(', ')})`);
@@ -57,8 +60,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`])} }`);
-            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${call(e.method, loops, ['event'])} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${reported(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
+            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           }
         }
         if (parent) say(depth, `${parent}.addChild(${v})`);
@@ -68,6 +71,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const region = parent ? `${parent}.addRegion()` : null;
       if (!region) throw new Error(`${c.name}: an if/for at the root of a template`);
       if (node.kind === 'if') {
+        if (node.branches.some((b) => b.cond && throws(b.cond))) throw new Error(`${c.name}: an if condition in the template can throw`);
         const which = node.branches.map((b, i) => (b.cond ? `${call(b.cond, loops)} ? ${i} : ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
         say(depth, `Choose(${region}, { ${which} }) { branch in`);
         say(depth + 1, 'switch branch {');
@@ -84,7 +88,9 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       }
       const inner = [...loops, { item: node.item, index: node.index }];
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in ${call(node.key, inner)} }` : `{ item, _ in jsKey(item) }`;
-      say(depth, `For(${region}, { ${call(node.items, loops)} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
+      if (throws(node.items) || (node.key && throws(node.key))) throw new Error(`${c.name}: a for in the template can throw`);
+      // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
+      say(depth, `For(${region}, { Array(${call(node.items, loops)}) }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
       const made: string[] = [];
       emit(node.body, depth + 1, inner, null, made);
       say(depth + 1, `return [${made.join(', ')}]`);

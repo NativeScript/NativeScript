@@ -19,6 +19,7 @@ import { octaneApp } from './octane.ts';
 import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
+import { addInterfaces, translateModules } from './modules.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -131,27 +132,27 @@ if (framework === 'vue') {
 
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-const { checker, program } = createProgram(modules, virtual);
+const { checker, program, files: sourceFiles } = createProgram(modules, virtual);
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
-const translator = new Translator(checker, infos);
+const translator = new Translator(checker, infos, sourceFiles);
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
 const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport NativeScriptKit\n\n`;
-const moduleCode = new Map(modules.map((m) => [m, translator.module(program.getSourceFile(m)!)]));
+const translated = translateModules(translator, program, modules);
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
-  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos), '}'];
+  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m)), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
 }
-// Interfaces become classes once everything that might use them is translated.
-for (const [m, code] of moduleCode) {
-  const text = (translator.interfacesOf(m) + code).trim();
-  if (text) writeFileSync(join(out, 'Sources', basename(m, '.ts') + '.swift'), header(m) + text + '\n');
-}
+addInterfaces(translator, translated);
+for (const m of translated) if (m.code.trim()) writeFileSync(join(out, 'Sources', m.name + '.swift'), header(m.file) + m.code);
+const shapes = translator.shapesCode();
+if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n\n${shapes}\n`);
+const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 const css = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
+writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project.

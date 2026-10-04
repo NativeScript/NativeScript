@@ -78,7 +78,7 @@ export function vueComponent(path: string, text: string): ComponentIR {
           inScript.names.set(id, `this.${id}`);
           inTemplate.names.set(id, `this.${id}.value`);
           const typeArgs = init.typeArguments ? `<${init.typeArguments.map((t) => t.getText()).join(', ')}>` : '';
-          later.push(() => fields.push(`  ${id} = $signal${typeArgs}(${init.arguments[0] ? rewrite(init.arguments[0].getText(), inScript) : 'undefined'});`));
+          later.push(() => fields.push(`  ${id} = $ref${typeArgs}(${init.arguments[0] ? rewrite(init.arguments[0].getText(), inScript) : 'undefined'});`));
           continue;
         }
         if (callee === 'computed' && ts.isCallExpression(init)) {
@@ -185,7 +185,7 @@ export function vueComponent(path: string, text: string): ComponentIR {
 
   const template = nodes(descriptor.template?.ast?.children ?? [], []);
   const source = [
-    `import { $signal, type EventData } from '@nativescript/release';`,
+    `import { $ref, type EventData } from '@nativescript/release';`,
     ...imports,
     ``,
     `export default class ${name} {`,

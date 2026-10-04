@@ -97,6 +97,12 @@ public final class Signal<T>: Source {
         same = (==)
     }
 
+    /// A signal whose writes compare with `equals` (JavaScript's `Object.is` for objects).
+    public init(_ value: T, equals: @escaping (T, T) -> Bool) {
+        stored = value
+        same = equals
+    }
+
     public var value: T {
         get {
             if let effect = currentEffect {

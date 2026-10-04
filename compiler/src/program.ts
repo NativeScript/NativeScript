@@ -93,18 +93,18 @@ export interface Program {
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios'): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
   files.set('/__shims__/globals.d.ts', GLOBALS);
-  const modules = nodeModules(dirname([...roots, ...virtual.keys()][0]));
+  const modules = modulesDir ?? nodeModules(dirname([...roots, ...virtual.keys()][0]));
   const platformTypes = resolve(modules, PLATFORM_TYPES[platform]);
   if (!existsSync(platformTypes)) throw new Error(`${platformTypes} is missing: install ${PLATFORM_TYPES[platform].split('/index')[0]}`);
 
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
-    strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true,
+    strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true,
   };
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
