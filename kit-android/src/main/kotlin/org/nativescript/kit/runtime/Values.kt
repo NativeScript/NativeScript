@@ -253,11 +253,11 @@ fun jsGet(target: Any?, key: String): Any? = when (target) {
     is JSDynamic -> target.jsGet(key)
     is JSArray<*> -> when {
         key == "length" -> target.size.toDouble()
-        else -> jsArrayIndex(key)?.let { if (it < target.size) target.storage[it.toInt()] else null }
+        else -> jsArrayIndex(key)?.let { if (it < target.size) target.storage[it.toInt()] else null } ?: jsArrayMethod(target, key)
     }
     is String -> when {
         key == "length" -> target.length.toDouble()
-        else -> jsArrayIndex(key)?.let { if (it < target.length) target[it.toInt()].toString() else null }
+        else -> jsArrayIndex(key)?.let { if (it < target.length) target[it.toInt()].toString() else null } ?: jsStringMethod(target, key)
     }
     is Pair<*, *> -> when (key) { "0" -> target.first; "1" -> target.second; "length" -> 2.0; else -> null }
     is Triple<*, *, *> -> when (key) { "0" -> target.first; "1" -> target.second; "2" -> target.third; "length" -> 3.0; else -> null }
@@ -531,3 +531,14 @@ fun js(value: String): String = value
 
 /** `Object.is` for a signal's writes: objects by identity. */
 fun jsSame(a: Any?, b: Any?): Boolean = jsSameValue(a, b)
+
+/**
+ * The key order of an object literal with spreads (`{ ...a, b: 1 }`): each spread source's keys as it holds
+ * them, then the literal's own, a key keeping its first position; integer keys first; only the `fields` it has.
+ */
+fun jsLiteralKeyOrder(parts: List<List<String>>, fields: List<String>): List<String> {
+    val keys = LinkedHashSet<String>()
+    for (part in parts) for (key in part) if (key in fields) keys.add(key)
+    val index = { k: String -> k.length <= 10 && (k == "0" || (k[0] != '0' && k.all(Char::isDigit))) && k.toLong() < 4294967295L }
+    return keys.filter(index).sortedBy { it.toLong() } + keys.filter { !index(it) }
+}

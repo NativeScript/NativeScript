@@ -186,6 +186,7 @@ fun jsIteratorOf(value: Any?): JSIterator<Any?> = when (val v = jsBox(value)) {
     is JSIterableValue -> JSIteratorAdapter(v.jsAnyIterator())
     is JSArray<*> -> { var i = 0; JSIterator { if (i < v.storage.size) v.storage[i++] else JSIterator.END } }
     is String -> JSIteratorAdapter(jsIterator(v))
+    is JSMatch -> jsIteratorOf(v.values)
     is JSSet<*> -> { val values = v.jsValues.iterator(); JSIterator { if (values.hasNext()) values.next() else JSIterator.END } }
     is JSMap<*, *> -> { val entries = v.jsEntries.iterator(); JSIterator { if (entries.hasNext()) entries.next().let { JSArray(arrayListOf(it.first, it.second)) } else JSIterator.END } }
     else -> throw JSException(JSTypeError("${jsToString(value)} is not iterable"))

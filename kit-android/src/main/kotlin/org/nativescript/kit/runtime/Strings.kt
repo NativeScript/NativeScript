@@ -263,3 +263,50 @@ fun jsIsInteger(x: Double): Boolean = !x.isNaN() && !x.isInfinite() && Math.floo
 fun jsIsSafeInteger(x: Double): Boolean = jsIsInteger(x) && Math.abs(x) <= 9007199254740991.0
 fun jsIsNaN(x: Double): Boolean = x.isNaN()
 fun jsIsFinite(x: Double): Boolean = !x.isNaN() && !x.isInfinite()
+
+/** An array's methods read by name from untyped code (`value.map(fn)` where `value` is `any`): the common read-only ones; results are untyped arrays. */
+internal fun jsArrayMethod(array: JSArray<*>, key: String): JSMethod? {
+    val elements = { array.storage.toList() }
+    fun each(callback: Any?, body: (Any?, Any?) -> Boolean) {
+        for ((i, element) in elements().withIndex()) if (!body(element, jsCall(callback, element, i.toDouble(), array))) return
+    }
+    fun arg(args: Array<out Any?>, i: Int) = if (i < args.size) args[i] else null
+    return when (key) {
+        "map" -> JSMethod { _, args -> val out = ArrayList<Any?>(); each(arg(args, 0)) { _, r -> out.add(r); true }; JSArray(out) }
+        "filter" -> JSMethod { _, args -> val out = ArrayList<Any?>(); each(arg(args, 0)) { e, r -> if (jsTruthy(r)) out.add(e); true }; JSArray(out) }
+        "forEach" -> JSMethod { _, args -> each(arg(args, 0)) { _, _ -> true }; null }
+        "find" -> JSMethod { _, args -> var found: Any? = null; each(arg(args, 0)) { e, r -> if (jsTruthy(r)) { found = e; false } else true }; found }
+        "some" -> JSMethod { _, args -> var result = false; each(arg(args, 0)) { _, r -> if (jsTruthy(r)) { result = true; false } else true }; result }
+        "every" -> JSMethod { _, args -> var result = true; each(arg(args, 0)) { _, r -> if (!jsTruthy(r)) { result = false; false } else true }; result }
+        "includes" -> JSMethod { _, args -> elements().any { jsSameValueZero(it, arg(args, 0)) } }
+        "join" -> JSMethod { _, args ->
+            val separator = arg(args, 0).let { if (it == null || it === JSNull) "," else jsToString(it) }
+            elements().joinToString(separator) { if (it == null || it === JSNull) "" else jsToString(it) }
+        }
+        else -> null
+    }
+}
+
+/** A string's methods read by name from untyped code (`value.split('/')` where `value` is `any`): the common ones. */
+internal fun jsStringMethod(s: String, key: String): JSMethod? {
+    fun arg(args: Array<out Any?>, i: Int) = if (i < args.size) args[i] else null
+    fun number(args: Array<out Any?>, i: Int): Double? = arg(args, i).let { if (it == null || it === JSNull) null else jsToNumber(it) }
+    return when (key) {
+        "split" -> JSMethod { _, args ->
+            val separator = arg(args, 0)
+            if (separator is JSRegExp) jsSplit(s, separator, number(args, 1))
+            else jsSplit(s, if (separator == null || separator === JSNull) null else jsToString(separator), number(args, 1))
+        }
+        "slice" -> JSMethod { _, args -> jsSlice(s, number(args, 0) ?: 0.0, number(args, 1)) }
+        "substring" -> JSMethod { _, args -> jsSubstring(s, number(args, 0) ?: 0.0, number(args, 1)) }
+        "includes" -> JSMethod { _, args -> jsIncludes(s, jsToString(arg(args, 0)), number(args, 1)) }
+        "startsWith" -> JSMethod { _, args -> jsStartsWith(s, jsToString(arg(args, 0)), number(args, 1)) }
+        "endsWith" -> JSMethod { _, args -> jsEndsWith(s, jsToString(arg(args, 0)), number(args, 1)) }
+        "indexOf" -> JSMethod { _, args -> jsIndexOf(s, jsToString(arg(args, 0)), number(args, 1)) }
+        "trim" -> JSMethod { _, _ -> jsTrim(s) }
+        "toLowerCase" -> JSMethod { _, _ -> s.lowercase() }
+        "toUpperCase" -> JSMethod { _, _ -> s.uppercase() }
+        "toString", "valueOf" -> JSMethod { _, _ -> s }
+        else -> null
+    }
+}
