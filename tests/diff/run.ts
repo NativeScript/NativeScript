@@ -165,7 +165,7 @@ if (targets.includes('swift')) {
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
       failed++;
-      console.log(`✗ ${name} (swift): ${(err as Error).message}`);
+      console.log(`✗ ${name} (swift): ${(err as Error).message}${process.env.NS_NATIVE_STACKS ? (err as Error).stack : ""}`);
     }
     if (!keep) rmSync(dir, { recursive: true, force: true });
   }

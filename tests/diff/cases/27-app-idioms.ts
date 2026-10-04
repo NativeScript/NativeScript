@@ -62,3 +62,9 @@ interface Info { a: boolean; b?: string; c?: boolean }
 const info: Info = { a: false, c: false, b: 'x' };
 const copy: Info = { ...info };
 console.log(JSON.stringify(copy), JSON.stringify({ ...info, a: true }));
+
+interface Entry { id: string; date: string }
+interface Cached { at: number; data: unknown }
+function load(raw: string): Cached | null { return raw ? (JSON.parse(raw) as Cached) : null; }
+const refs = (load('{"at":1,"data":[{"id":"a","date":"2025"}]}')?.data as Entry[]) ?? [];
+console.log(refs.length, refs[0]?.id, (load('')?.data as Entry[]) ?? 'none');

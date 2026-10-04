@@ -847,6 +847,8 @@ export class Translator implements AsyncTranslator {
     }
     const m = /^JSArray<(.*)>$/.exec(type);
     if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
+    const om = /^JSArray<(.*)>\?$/.exec(type);
+    if (om) return `{ (__a: Any?) -> ${type} in jsIsNullish(__a) ? nil : jsArrayOf(__a) { ${this.fromAny('$0', om[1])} } }(${code})`;
     const r = /^JSRecord<(.*)>\??$/.exec(type);
     // A record's values are read as its type says where they have it (a gesture's extraData holds arrays beside its numbers).
     if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r) { ${this.fromAnyCode('$0', r[1], true)} } }(${code})` : `jsRecordOf(${code}) { ${this.fromAnyCode('$0', r[1], true)} }`;
@@ -2786,7 +2788,7 @@ export class Translator implements AsyncTranslator {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     // `a?.b() as T`: undefined where the chain stops, whatever the assertion says.
     if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && !this.typeOf(e).endsWith('?') && this.isObjectRef(e)) {
-      return `(${this.expr(e.expression)} as? ${this.typeOf(e)})`;
+      return this.typeOf(e.expression) === 'Any?' ? this.fromAny(this.expr(e.expression), optionalType(this.typeOf(e))) : `(${this.expr(e.expression)} as? ${this.typeOf(e)})`;
     }
     // A key of a dictionary-typed object, read before its type's zero stands in for a missing one.
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && !isWriteTarget(e)

@@ -2643,6 +2643,10 @@ export class Translator implements AsyncTranslator {
   private maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     if (this.subst.has(e)) return null;
+    // `a?.b as T` from an untyped value: undefined where the chain stops, whatever the assertion says.
+    if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && this.typeOf(e.expression) === 'Any?' && !isNullable(this.typeOf(e))) {
+      return this.fromAny(this.expr(e.expression), optionalType(this.typeOf(e)));
+    }
     // A key of a dictionary-typed object, read before its type's zero stands in for a missing one.
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && !isWriteTarget(e)
         && /^JSRecord<.*>$/.test(this.typeOf(e.expression)) && !this.typeOf(e).endsWith('?')) {
