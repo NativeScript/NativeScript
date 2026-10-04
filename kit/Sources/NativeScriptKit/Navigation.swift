@@ -36,6 +36,8 @@ final class PageViewController: UIViewController {
         frame.didShow(owner)
     }
 
+    override var preferredStatusBarStyle: UIStatusBarStyle { IOSHelper.statusBarStyle(of: owner) }
+
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         guard runningLayout == 0, didFirstLayout, let owner else { return }
@@ -114,6 +116,7 @@ open class Page: ContentView {
             actionBar?.applyNavigationBarStyle()
         }
         actionBar?.update()
+        if let navigation = frame?.controller, applied["statusBarStyle"] != nil { IOSHelper.invalidateStatusBarAppearance(navigation) }
     }
 
     func dispose() {
@@ -268,6 +271,16 @@ final class FrameNavigationController: UINavigationController {
     }
 
     override var childForStatusBarStyle: UIViewController? { topViewController }
+
+    override func pushViewController(_ viewController: UIViewController, animated: Bool) {
+        super.pushViewController(viewController, animated: animated)
+        IOSHelper.invalidateStatusBarAppearance(self)
+    }
+
+    override func setViewControllers(_ viewControllers: [UIViewController], animated: Bool) {
+        super.setViewControllers(viewControllers, animated: animated)
+        IOSHelper.invalidateStatusBarAppearance(self)
+    }
 }
 
 /// `UINavigationControllerDelegateImpl` from frame/index.ios: default navigations use UIKit's own animation.
@@ -276,6 +289,10 @@ private final class NavigationTransitions: NSObject, UINavigationControllerDeleg
     func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? { nil }
 
     func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? { nil }
+
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+        IOSHelper.invalidateStatusBarAppearance(navigationController)
+    }
 }
 
 /// `Frame` from frame/index.ios: a navigation stack of pages.

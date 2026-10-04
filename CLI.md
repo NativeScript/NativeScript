@@ -27,6 +27,8 @@ export default {
 } as NativeScriptConfig;
 ```
 
+A property core declares that the kit does not apply stops the native build with the view, property and file:line; `nativeReleaseOptions: { allowUnimplementedProperties: true }` in the config builds anyway, with warnings.
+
 `ns run ios`, `ns debug` and every debug build stay on the JavaScript
 runtime. `--no-native` builds one release on the JavaScript runtime despite
 the config. The flag wins over the config, and the platform key wins over

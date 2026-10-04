@@ -178,6 +178,8 @@ export class Translator implements AsyncTranslator {
   native: KotlinNative | null = null;
   /** The app's package, which qualifies a module function a class member's name shadows. */
   appModule = '';
+  /** `--allow-unimplemented-properties`: a core property the kit does not apply is set by name, with a warning. */
+  allowUnapplied = false;
 
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;

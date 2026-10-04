@@ -10,10 +10,10 @@ export const SCHEDULE: Record<Framework, 'now' | 'microtask' | 'task' | 'event'>
 export const EVENT_SCOPED = new Set<string>(['angular', 'react', 'octane']);
 
 /** Views whose children are item templates, rendered through one `bind`: core's ListView and the kit's Pager. */
-const TEMPLATE_HOSTS = new Set(['ListView', 'Pager']);
+export const TEMPLATE_HOSTS = new Set(['ListView', 'Pager']);
 
 /** Item-template host attributes that `bind` takes rather than `set`. */
-const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
+export const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
 
 /**
  * A component's template as a Swift `render()`: views are created once,

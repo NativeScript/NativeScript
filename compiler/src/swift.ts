@@ -1821,6 +1821,9 @@ export class Translator implements AsyncTranslator {
   /** Component fields without an initializer are state, not props (Angular). */
   plainFields = false;
 
+  /** `--allow-unimplemented-properties`: a core property the kit does not apply is set by name, with a warning. */
+  allowUnapplied = false;
+
   /** With `--all-errors`: what each statement could not translate, collected so one run reports them all. */
   errors: string[] | null = null;
 

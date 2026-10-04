@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import type { Translator } from './swift.ts';
 
-const KIT = fileURLToPath(new URL('../../kit/Sources/NativeScriptKit', import.meta.url));
+export const KIT = fileURLToPath(new URL('../../kit/Sources/NativeScriptKit', import.meta.url));
 
 /** The native view a core class drives on iOS: what `view.ios` and `view.nativeView` are. */
 export const NATIVE_VIEWS: Record<string, string> = {
@@ -18,6 +18,22 @@ const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', '
 
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   return !!decl && KIT_PACKAGES.test(decl.getSourceFile().fileName);
+}
+
+/** A member core's declarations mark as a view property (`@nsProperty`). */
+export function isCoreProperty(decl: ts.Declaration): boolean {
+  return /[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName) && ts.getJSDocTags(decl).some((t) => t.tagName.text === 'nsProperty');
+}
+
+/**
+ * With `--allow-unimplemented-properties`, a core property the kit does not apply is
+ * stored by name and does nothing, as in a template; otherwise it stops the build.
+ */
+export function unappliedProperty(t: { resolve(n: ts.Node): ts.Symbol | undefined; allowUnapplied: boolean; error(n: ts.Node, what: string): Error }, name: ts.MemberName, what: string, kit: string): void {
+  const declared = (t.resolve(name)?.declarations ?? []).some(isCoreProperty);
+  if (!declared || !t.allowUnapplied) throw t.error(name.parent, `${what} (${declared ? `core declares it, ${kit} does not apply it` : `not a property ${kit} applies`})`);
+  const sf = name.getSourceFile();
+  console.warn(`warning: ${sf.fileName}:${sf.getLineAndCharacterOfPosition(name.getStart()).line + 1}: ${what}: core declares it, ${kit} does not apply it`);
 }
 
 /**
@@ -154,7 +170,7 @@ export class CoreAPI {
     const recv = owner.isStatic ? owner.name : t.expr(e.expression) + (chained ? '?' : '');
     if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name)) return `${recv}.nativeView`;
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
-      if (!this.isViewProperty(owner.name, name)) throw t.error(e, `${owner.name}.${name} (not a property NativeScriptKit applies)`);
+      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'NativeScriptKit');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
     }
     const m = this.member(owner.name, name, e);
@@ -181,7 +197,7 @@ export class CoreAPI {
     // A member a kit-implemented plugin declares itself (a Canvas's `width`, its surface in pixels) is not the view property of that name.
     const pluginOwn = (t.resolve(left.name)?.declarations ?? []).some((d) => KIT_PLUGINS.some((p) => d.getSourceFile().fileName.includes(`/node_modules/${p}/`)));
     if (!owner.isStatic && this.isView(owner.name) && (!kitMember(this.index, owner.name, name) || (this.isViewProperty(owner.name, name) && !pluginOwn))) {
-      if (!this.isViewProperty(owner.name, name)) throw t.error(left, `${owner.name}.${name} (not a property NativeScriptKit applies)`);
+      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'NativeScriptKit');
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
     const m = this.member(owner.name, name, left);

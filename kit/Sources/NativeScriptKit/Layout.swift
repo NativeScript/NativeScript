@@ -171,6 +171,24 @@ enum IOSHelper {
         owner.parent?.layoutParent()
     }
 
+    /// `invalidateStatusBarAppearance`: the controller (else the window's visible one), the child
+    /// it takes its style from, and its navigation controller re-read `preferredStatusBarStyle`.
+    static func invalidateStatusBarAppearance(_ controller: UIViewController?) {
+        guard let container = controller ?? Utils.ios.getVisibleViewController(Utils.ios.getWindow()?.rootViewController) else { return }
+        let child = container.childForStatusBarStyle ?? (container as? UINavigationController)?.topViewController ?? (container as? UITabBarController)?.selectedViewController
+        container.setNeedsStatusBarAppearanceUpdate()
+        child?.setNeedsStatusBarAppearanceUpdate()
+        let navigation = container as? UINavigationController ?? container.navigationController
+        navigation?.setNeedsStatusBarAppearanceUpdate()
+        navigation?.topViewController?.setNeedsStatusBarAppearanceUpdate()
+    }
+
+    /// The `preferredStatusBarStyle` of a controller showing `owner`.
+    static func statusBarStyle(of owner: View?) -> UIStatusBarStyle {
+        guard let style = toText(owner?.applied["statusBarStyle"]), !style.isEmpty else { return .default }
+        return style == "light" ? .lightContent : .darkContent
+    }
+
     static func getPositionFromFrame(_ frame: CGRect) -> Position {
         Position(
             left: LayoutHelper.round(LayoutHelper.toDevicePixels(frame.origin.x)),
@@ -290,8 +308,13 @@ final class LayoutViewController: UIViewController {
     /// A view shown by its own controller (a modal) loads as it appears.
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if let owner, !owner.isLoaded, owner.parent == nil { owner.load() }
+        guard let owner else { return }
+        IOSHelper.invalidateStatusBarAppearance(self)
+        if !owner.isLoaded, owner.parent == nil { owner.load() }
     }
+
+    override var preferredStatusBarStyle: UIStatusBarStyle { IOSHelper.statusBarStyle(of: owner) }
+    override var childForStatusBarStyle: UIViewController? { presentedViewController ?? children.last }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)

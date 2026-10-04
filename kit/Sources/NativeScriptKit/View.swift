@@ -224,7 +224,16 @@ open class View: Observable {
         for name in names where View.styleProperties.contains(name) { setProperty(name, applied[name]) }
         onLoaded()
         eachChildView { if shouldLoad($0) { $0.load() } }
+        // Again on each load: a view shown since (back navigation) may have restyled the bar.
+        if applied["statusBarStyle"] != nil { updateStatusBarStyle() }
         emit("loaded", nil)
+    }
+
+    /// `updateStatusBarStyle`: the controller showing this view re-reads its style.
+    func updateStatusBarStyle() {
+        var owner: View? = self
+        while let candidate = owner, candidate.viewController == nil { owner = candidate.parent }
+        IOSHelper.invalidateStatusBarAppearance(owner?.viewController)
     }
 
     func unload() {
@@ -550,6 +559,7 @@ open class View: Observable {
         case "translateX", "translateY", "scaleX", "scaleY", "rotate", "rotateX", "rotateY", "perspective": updateNativeTransform()
         case "originX", "originY": updateOriginPoint()
         case "zIndex": nativeView?.layer.zPosition = CGFloat(toDouble(value) ?? 0)
+        case "statusBarStyle": updateStatusBarStyle()
         // Read by TouchManager when the view loads.
         case "touchAnimation", "ignoreTouchAnimation", "touchDelay": break
         default:

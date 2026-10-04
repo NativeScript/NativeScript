@@ -202,6 +202,19 @@ fun propertyName(css: String): String = when (css) {
     "horizontal-align" -> "horizontalAlignment"
     "vertical-align" -> "verticalAlignment"
     "text-align" -> "textAlignment"
+    "rotatex" -> "rotateX"
+    "rotatey" -> "rotateY"
+    "a11y-enabled" -> "accessible"
+    "a11y-hidden" -> "accessibilityHidden"
+    "a11y-role" -> "accessibilityRole"
+    "a11y-state" -> "accessibilityState"
+    "a11y-live-region" -> "accessibilityLiveRegion"
+    "a11y-lang" -> "accessibilityLanguage"
+    "a11y-media-session" -> "accessibilityMediaSession"
+    "a11y-step" -> "accessibilityStep"
+    "ios-a11y-adjusts-font-size" -> "iosAccessibilityAdjustsFontSize"
+    "ios-a11y-min-font-scale" -> "iosAccessibilityMinFontScale"
+    "ios-a11y-max-font-scale" -> "iosAccessibilityMaxFontScale"
     else -> {
         val result = StringBuilder()
         var upper = false

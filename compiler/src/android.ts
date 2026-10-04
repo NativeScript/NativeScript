@@ -59,6 +59,8 @@ export interface AndroidBuild {
   mounted?: boolean;
   /** Kit switches the app's patch of core turns on. */
   corePatches?: string[];
+  /** `--allow-unimplemented-properties`. */
+  allowUnapplied?: boolean;
 }
 
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
@@ -79,6 +81,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const native = pluginNativeAndroid(b.plugins ?? [], { app: b.app, say });
   const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties });
   translator.appModule = pkg;
+  translator.allowUnapplied = !!b.allowUnapplied;
   translator.core = new CoreKotlin(translator);
   translator.lines = b.lines;
   const table: Record<string, [number, string, number][]> = {};

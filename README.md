@@ -658,6 +658,8 @@ node src/cli.ts ../recipes-vue --platform android --out ../build/android-vue --b
   --key-store-path release.keystore --key-store-password … --key-store-alias … --key-store-alias-password …
 ```
 
+A property core declares that the kit does not apply, set in a template, in CSS or in code, stops the compile with the view, property and file:line; `--allow-unimplemented-properties` (or `nativeReleaseOptions: { allowUnimplementedProperties: true }` in `nativescript.config.ts`) builds anyway, with warnings.
+
 Each `recipes-*` folder is an ordinary NativeScript project: `ns run ios`
 develops it with live reload as usual.
 
