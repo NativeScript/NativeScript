@@ -229,6 +229,12 @@ open class ActionBar: View {
 /// `UINavigationControllerImpl` from frame/index.ios.
 final class FrameNavigationController: UINavigationController {
     weak var owner: Frame?
+    private let transitions = NavigationTransitions()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        delegate = transitions
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -236,6 +242,14 @@ final class FrameNavigationController: UINavigationController {
     }
 
     override var childForStatusBarStyle: UIViewController? { topViewController }
+}
+
+/// `UINavigationControllerDelegateImpl` from frame/index.ios: default navigations use UIKit's own animation.
+/// Answering these keeps iOS 26's swipe back from starting anywhere in the page, as in core.
+private final class NavigationTransitions: NSObject, UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? { nil }
+
+    func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? { nil }
 }
 
 /// `Frame` from frame/index.ios: a navigation stack of pages.

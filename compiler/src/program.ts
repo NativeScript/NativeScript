@@ -11,11 +11,31 @@ const SHIMS: Record<string, string> = {
   '@nativescript/release': `
     export interface Sig<T> { value: T }
     export declare function $signal<T>(value: T): Sig<T>;
-    export interface EventData { eventName: string; object: any; value: any; index: number; item: any; view: any }
+    export interface EventData { eventName: string; object: any; value: any; index: number; item: any; view: any;
+      type: number; state: number; deltaX: number; deltaY: number; scale: number; rotation: number; direction: number; action: string;
+      getX(): number; getY(): number; getFocusX(): number; getFocusY(): number; getPointerCount(): number;
+      getActivePointers(): Pointer[]; getAllPointers(): Pointer[] }
+    export interface Pointer { getX(): number; getY(): number }
     export declare function $navigate(page: () => any): void;
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
     export declare function $writable<T>(value: T): WritableSignal<T>;
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
+  `,
+  '@nativescript/core': `
+    import type { EventData, Pointer } from '@nativescript/release';
+    export type { EventData, Pointer };
+    export interface GestureEventData extends EventData {}
+    export interface TapGestureEventData extends GestureEventData {}
+    export interface GestureEventDataWithState extends GestureEventData {}
+    export interface PinchGestureEventData extends GestureEventDataWithState {}
+    export interface SwipeGestureEventData extends GestureEventData {}
+    export interface PanGestureEventData extends GestureEventDataWithState {}
+    export interface RotationGestureEventData extends GestureEventDataWithState {}
+    export interface TouchGestureEventData extends TapGestureEventData {}
+    export declare const GestureTypes: { readonly tap: 1; readonly doubleTap: 2; readonly pinch: 4; readonly pan: 8; readonly swipe: 16; readonly rotation: 32; readonly longPress: 64; readonly touch: 128 };
+    export declare const GestureStateTypes: { readonly cancelled: 0; readonly began: 1; readonly changed: 2; readonly ended: 3 };
+    export declare const SwipeDirection: { readonly right: 1; readonly left: 2; readonly up: 4; readonly down: 8 };
+    export declare const TouchAction: { readonly down: 'down'; readonly up: 'up'; readonly move: 'move'; readonly cancel: 'cancel' };
   `,
   '@angular/core': `
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void }

@@ -118,5 +118,5 @@ develops it with live reload as usual.
   stops the build with the file, line and construct.
 - **Plugins** and direct native API calls from JavaScript (`UIView.new()`,
   `android.widget…`) have no translation yet.
-- **ListView**, gestures other than tap and animations are not ported yet;
+- **ListView**, animations and (on Android) gestures other than tap are not ported yet;
   FlexboxLayout is ported on Android only.
