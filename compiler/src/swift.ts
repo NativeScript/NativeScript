@@ -73,6 +73,7 @@ export class Translator {
   /** Template methods take their loop variables with defaults only so the checker can type them. */
   private templateParams = false;
   readonly throwsInfo: Throws;
+  readonly sourceFiles: readonly ts.SourceFile[];
   private lowering: AsyncLowering;
   private core: CoreAPI;
   readonly native: NativeAPI;
@@ -83,6 +84,7 @@ export class Translator {
   constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[]) {
     this.checker = checker;
     this.components = components;
+    this.sourceFiles = files;
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
@@ -266,7 +268,7 @@ export class Translator {
     const t = this.typeOf(n).replace(/[?!]$/, '');
     return !['Double', 'String', 'Bool', 'Any?', 'Any', 'Void'].includes(t) && !t.startsWith('(') && !t.startsWith('[');
   }
-  private zero(t: string): string | null {
+  zero(t: string): string | null {
     if (t.endsWith('?')) return 'nil';
     if (t === 'Double') return '0';
     if (t === 'String') return '""';
@@ -327,7 +329,7 @@ export class Translator {
   }
 
   /** Whether evaluating `e` early (Swift initializes globals lazily) cannot be observed. */
-  private pure(e: ts.Expression): boolean {
+  pure(e: ts.Expression): boolean {
     if (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isSatisfiesExpression(e) || ts.isNonNullExpression(e)) return this.pure(e.expression);
     if (ts.isLiteralExpression(e) || ts.isNoSubstitutionTemplateLiteral(e) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(e.kind)) return true;
     if (ts.isIdentifier(e) || ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return true;
@@ -514,7 +516,7 @@ export class Translator {
   }
 
   /** The Swift type a function returns: `JSPromise<T>` for an async one. */
-  private returnTypeOf(fn: ts.SignatureDeclaration): string {
+  returnTypeOf(fn: ts.SignatureDeclaration): string {
     return this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
   }
 
@@ -523,7 +525,7 @@ export class Translator {
   }
 
   /** A function's body block (`{ … }`), lowered when the function is async. */
-  private functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
+  functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
     return this.inFunction(ret, () => {
       const saved = this.indent;
       this.indent = base + '    ';
@@ -650,6 +652,8 @@ export class Translator {
   }
 
   private classDecl(cls: ts.ClassDeclaration): string {
+    const nativeSubclass = this.native.classDecl(cls);
+    if (nativeSubclass) return nativeSubclass;
     const name = cls.name!.text;
     const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable'));
     if (service) return [`final class ${name} {`, `    static let shared = ${name}()`, '', ...this.componentMembers(cls, []), '}'].join('\n');

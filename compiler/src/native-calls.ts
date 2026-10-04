@@ -67,8 +67,18 @@ export class NativeAPI {
       if (native) return { ...native, isStatic: true };
     }
     const type = c.getNonNullableType(c.getTypeAtLocation(e));
-    const native = this.symbolModule(type.getSymbol());
+    const native = this.symbolModule(type.getSymbol()) ?? this.nativeBase(type);
     return native ? { ...native, isStatic: false } : null;
+  }
+
+  /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
+  private nativeBase(type: ts.Type): { module: string; name: string } | null {
+    if (!type.isClassOrInterface()) return null;
+    for (const b of this.t.checker.getBaseTypes(type)) {
+      const found = this.symbolModule(b.getSymbol()) ?? this.nativeBase(b);
+      if (found) return found;
+    }
+    return null;
   }
 
   private checkAvailable(m: { introduced?: string; selector?: string }, e: ts.Node, what: string) {
@@ -78,9 +88,16 @@ export class NativeAPI {
   // ---- Reads, writes, calls ----------------------------------------------------------------
 
   /** `x.prop` and `X.classProp` on native types; also enum members (`UIViewContentMode.Center`). */
+  /** A member the app's own class declares (on a subclass of a native class): an ordinary Swift member. */
+  private appMember(name: ts.Node): boolean {
+    const decl = this.t.checker.getSymbolAtLocation(name)?.declarations?.[0];
+    return !!decl && !decl.getSourceFile().isDeclarationFile;
+  }
+
   property(e: ts.PropertyAccessExpression): string | null {
     const enumCase = this.enumMember(e);
     if (enumCase) return enumCase;
+    if (this.appMember(e.name)) return null;
     const r = this.receiver(e.expression);
     if (!r) return null;
     const struct = !r.isStatic && lookupStruct(r.module, r.name);
@@ -116,6 +133,7 @@ export class NativeAPI {
 
   /** `x.prop = value` on a native type. */
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
+    if (this.appMember(left.name)) return null;
     const r = this.receiver(left.expression);
     if (!r) return null;
     const struct = !r.isStatic && lookupStruct(r.module, r.name);
@@ -155,6 +173,7 @@ export class NativeAPI {
       return this.fromSwift(code, f.returns, e);
     }
     if (!ts.isPropertyAccessExpression(callee)) return null;
+    if (this.appMember(callee.name) && callee.name.text !== 'new') return null;
     const name = callee.name.text;
     // `X.alloc().initWithFrame(r)`, `X.alloc().init()`
     if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc') {
@@ -165,6 +184,13 @@ export class NativeAPI {
       const init = lookupInit(r.module, r.name, name);
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
       return this.fromSwift(`${cls.swift}(${this.argList([...e.arguments], init.labels, init.params)})`, init.returns, e);
+    }
+    const own = this.t.resolve(callee.expression);
+    const ownDecl = own?.valueDeclaration;
+    if (ownDecl && ts.isClassDeclaration(ownDecl) && !ownDecl.getSourceFile().isDeclarationFile && name === 'new' && this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(own!))) return `${ownDecl.name!.text}()`;
+    if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc' && name === 'init') {
+      const allocated = this.t.resolve(callee.expression.expression.expression)?.valueDeclaration;
+      if (allocated && ts.isClassDeclaration(allocated) && !allocated.getSourceFile().isDeclarationFile) return `${allocated.name!.text}()`;
     }
     const r = this.receiver(callee.expression);
     if (!r) return null;
@@ -258,6 +284,7 @@ export class NativeAPI {
     const b = base(target);
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.block(e, target);
     const source = t.typeOf(e);
+    if (b === 'Selector' && ts.isStringLiteralLike(e)) return `Selector((${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))}))`;
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
       return t.expr(e);
@@ -306,6 +333,137 @@ export class NativeAPI {
     const b = base(swiftType);
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : `Double(${code})`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
+    return code;
+  }
+
+  // ---- Subclasses of native classes ----------------------------------------------------------
+
+  /** Exposed method name → its parameter count, from every `static ObjCExposedMethods` in the program. */
+  private exposed: Map<string, number> | null = null;
+
+  private exposedArity(name: string): number {
+    if (!this.exposed) {
+      this.exposed = new Map();
+      for (const sf of this.t.sourceFiles) {
+        const visit = (n: ts.Node) => {
+          if (ts.isPropertyDeclaration(n) && n.name.getText() === 'ObjCExposedMethods' && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
+            for (const p of n.initializer.properties) {
+              const spec = ts.isPropertyAssignment(p) && ts.isObjectLiteralExpression(p.initializer) ? p.initializer : null;
+              const params = spec?.properties.find((x) => x.name?.getText() === 'params');
+              const count = params && ts.isPropertyAssignment(params) && ts.isArrayLiteralExpression(params.initializer) ? params.initializer.elements.length : 0;
+              this.exposed!.set(p.name!.getText(), count);
+            }
+          }
+          ts.forEachChild(n, visit);
+        };
+        visit(sf);
+      }
+    }
+    return this.exposed.get(name) ?? 0;
+  }
+
+  /**
+   * A TypeScript class extending an Objective-C class (`@NativeClass() class
+   * Delegate extends NSObject implements UITextFieldDelegate`): an NSObject
+   * subclass whose methods that override the base class or implement an
+   * adopted protocol take their Swift signatures from the SDK table, and whose
+   * `ObjCExposedMethods` are `@objc` for target-action selectors.
+   */
+  classDecl(cls: ts.ClassDeclaration): string | null {
+    const t = this.t;
+    const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (!heritage) return null;
+    const baseSym = t.resolve(heritage.expression);
+    const base = this.symbolModule(baseSym);
+    if (!base) return null;
+    const baseCls = lookupClass(base.module, base.name);
+    if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
+    const name = cls.name!.text;
+    const protocols: { module: string; name: string; swift: string }[] = [];
+    const addProtocol = (e: ts.Expression) => {
+      const p = this.symbolModule(t.resolve(e));
+      const pc = p && lookupClass(p.module, p.name);
+      if (!p || !pc || pc.kind !== 'protocol') throw t.error(e, `${e.getText()} (not an Objective-C protocol)`);
+      if (!protocols.some((x) => x.name === p.name)) protocols.push({ ...p, swift: pc.swift });
+    };
+    for (const i of cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addProtocol(i.expression);
+    const statics = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
+    const listed = statics.find((m) => m.name.getText() === 'ObjCProtocols');
+    if (listed && ts.isArrayLiteralExpression(listed.initializer!)) for (const e of listed.initializer.elements) addProtocol(e);
+    const exposedSpec = statics.find((m) => m.name.getText() === 'ObjCExposedMethods');
+    const exposed = new Set(exposedSpec && ts.isObjectLiteralExpression(exposedSpec.initializer!) ? exposedSpec.initializer.properties.map((p) => p.name!.getText()) : []);
+
+    const lines = [`final class ${name}: ${[baseCls.swift, ...protocols.map((p) => p.swift)].join(', ')} {`];
+    t.indent = '    ';
+    for (const m of cls.members) {
+      if (!ts.isPropertyDeclaration(m) || m === listed || m === exposedSpec) continue;
+      const n = m.name.getText();
+      const type = t.typeOf(m.name);
+      const isStatic = ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
+      if (isStatic) { lines.push(`    static var ${n}: ${type} = ${m.initializer ? t.coerce(m.initializer, type) : t.zero(type) ?? 'nil'}`); continue; }
+      if (!m.initializer) { lines.push(`    var ${n}: ${t.deferredType(type)}`); continue; }
+      // UIKit decides which initializer runs (init(frame:), init(coder:)…): fields initialize on first use instead.
+      lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? 'try! ' : ''}${t.coerce(m.initializer, type)}`);
+    }
+    if (cls.members.some((m) => ts.isConstructorDeclaration(m))) throw t.error(cls, `a constructor in a class extending ${base.name} (NativeScript creates these with new() or alloc().init())`);
+    for (const m of cls.members) {
+      if (!ts.isMethodDeclaration(m) || !m.body) continue;
+      const jsName = m.name.getText();
+      if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)) {
+        if (jsName === 'new' || jsName === 'alloc') continue;
+        lines.push('    ' + t.func(m, jsName, 'static '));
+        continue;
+      }
+      const fromProtocol = protocols.map((p) => lookupMember(p.module, p.name, jsName, false)).find(Boolean);
+      const fromBase = lookupMember(base.module, base.name, jsName, false);
+      const target = fromProtocol ?? fromBase;
+      if (target && target.kind === 'method') {
+        lines.push(this.nativeMethod(m, target, !fromProtocol && !!fromBase));
+        continue;
+      }
+      lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
+    }
+    t.indent = '';
+    lines.push('}');
+    return lines.join('\n');
+  }
+
+  /** A method with the Swift signature it overrides or implements; its body sees TypeScript's types. */
+  private nativeMethod(m: ts.MethodDeclaration, target: NativeMethod, override: boolean): string {
+    const t = this.t;
+    const tsParams = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? p.name.text : `__p${k}`, type: t.typeOf(p.name) }));
+    const swiftParams = target.params.map((type, k) => {
+      const label = target.labels[k];
+      const inner = `__a${k}`;
+      return `${label ?? '_'} ${inner}: ${type}`;
+    });
+    const tsRet = t.returnTypeOf(m);
+    const binds = tsParams.map((p, k) => (target.params[k] ? `        let ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, target.params[k], p.type)}` : '')).filter(Boolean);
+    const body = t.functionBody(m, tsRet, '        ');
+    const throws = t.throwsInfo.fn(m);
+    const ret = target.returns;
+    const call = `{ () ${throws ? 'throws ' : ''}-> ${tsRet} in${body.slice(1)}()`;
+    // A Void method's body is the method's own (its returns return from it); a value goes through a closure to be converted.
+    const result = ret === 'Void'
+      ? (throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
+      : `        let __result: ${tsRet} = ${throws ? 'try! ' : ''}${call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
+    return [`    ${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
+  }
+
+  /** A Swift parameter value as the TypeScript body reads it. */
+  private fromSwiftValue(code: string, swiftType: SwiftType, tsType: string): string {
+    const b = base(swiftType);
+    if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : optional(swiftType) ? `Double(${code}!)` : `Double(${code})`;
+    if (b === 'IndexPath' && tsType !== 'IndexPath') return `${code} as NSIndexPath`;
+    if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
+    return code;
+  }
+
+  /** A TypeScript result as the Swift method returns it. */
+  private toSwiftValue(code: string, tsType: string, swiftType: SwiftType): string {
+    const b = base(swiftType);
+    if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return `${b}(${code})`;
+    if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
     return code;
   }
 
