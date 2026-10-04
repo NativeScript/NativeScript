@@ -797,14 +797,15 @@ export class Translator implements AsyncTranslator {
   // ---- Functions -----------------------------------------------------------------------------
 
   /**
-   * An object parameter of a plugin, whose code is checked without
+   * An object or string parameter of a plugin, whose code is checked without
    * strictNullChecks: callers pass null and undefined for it (core's
-   * `valueChanged(target, oldValue, newValue)` starts from undefined).
+   * `valueChanged(target, oldValue, newValue)` starts from undefined; ui-drawer
+   * applies a closing drawer's data with no side).
    */
   private mayBeNull(p: ts.ParameterDeclaration): boolean {
     if (!this.pluginFiles.has(p.getSourceFile().fileName) || p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
     const t = this.typeOf(p.name);
-    return !t.endsWith('?') && !['Double', 'String', 'Boolean', 'Unit', 'Nothing'].includes(t) && !isFunctionType(t) && this.isObjectType(t);
+    return !t.endsWith('?') && !['Double', 'Boolean', 'Unit', 'Nothing'].includes(t) && !isFunctionType(t) && (t === 'String' || this.isObjectType(t));
   }
 
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
@@ -2833,7 +2834,7 @@ export class Translator implements AsyncTranslator {
       }
       case 'fill': return `${t}.fill(${[this.coerce(e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'slice': case 'at': return `${t}.${name}(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
-      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       case 'concat': return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {

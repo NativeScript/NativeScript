@@ -83,6 +83,13 @@ open class JSAggregateError(var errors: JSArray<Any?>, message: String = "", cau
  */
 fun jsCaught(error: Throwable): Any? = when (error) {
     is JSException -> error.value
+    else -> {
+        if (jsTraceErrors) error.printStackTrace()
+        jsCaughtJvm(error)
+    }
+}
+
+private fun jsCaughtJvm(error: Throwable): Any? = when (error) {
     is StackOverflowError -> JSRangeError("Maximum call stack size exceeded")
     is NullPointerException -> JSTypeError(error.message ?: "Cannot read properties of undefined")
     is ClassCastException -> JSTypeError(error.message ?: "")
