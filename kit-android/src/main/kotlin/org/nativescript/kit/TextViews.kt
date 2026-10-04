@@ -44,10 +44,9 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
                     "serif" -> Typeface.SERIF
                     "sans-serif", "system" -> Typeface.SANS_SERIF
                     "monospace" -> Typeface.MONOSPACE
-                    else -> null
+                    else -> AppFonts.load(f)
                 }
-                val found = base ?: fromFile(f)
-                if (found != null) return Typeface.create(found, numericWeight, isItalic)
+                if (base != null) return Typeface.create(base, numericWeight, isItalic)
             }
             return Typeface.create(Typeface.SANS_SERIF, numericWeight, isItalic)
         }
@@ -69,7 +68,7 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
                 else -> null
             }
             if (name != null) return Typeface.create(name + suffix, style)
-            val file = fromFile(f)
+            val file = AppFonts.load(f)
             if (file != null) return if (style != 0) Typeface.create(file, style) else file
         }
         return Typeface.create("sans-serif$suffix", style)
@@ -82,26 +81,6 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
             style = toText(values["fontStyle"])?.trim()?.lowercase() ?: "normal",
             weight = toText(values["fontWeight"])?.trim()?.lowercase() ?: "normal",
         )
-
-        private val files = HashMap<String, Typeface?>()
-
-        /** `loadFontFromFile`: the app's `fonts/<family>.ttf` or `.otf`, packaged under the assets' `app/`; null, remembered, when there is none. */
-        private var fontFiles: Set<String>? = null
-
-        private fun fromFile(family: String): Typeface? {
-            if (files.containsKey(family)) return files[family]
-            val assets = NativeScriptActivity.context.assets
-            val names = fontFiles ?: (assets.list("app/fonts")?.toSet() ?: emptySet()).also { fontFiles = it }
-            val file = listOf("$family.ttf", "$family.otf").firstOrNull { it in names }
-            val typeface = if (file == null) null else try {
-                if (Build.VERSION.SDK_INT >= 26) Typeface.Builder(assets, "app/fonts/$file").setFontVariationSettings("").build()
-                else Typeface.createFromAsset(assets, "app/fonts/$file")
-            } catch (e: Exception) {
-                null
-            }
-            files[family] = typeface
-            return typeface
-        }
 
         private fun parseFontFamily(value: String?): List<String> =
             value?.split(',')?.map { it.trim().trim('"', '\'') }?.filter { it.isNotEmpty() } ?: emptyList()

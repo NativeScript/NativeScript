@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // ns-native: a NativeScript app written with a web framework, compiled to a
 // native app with no JavaScript runtime.
-//   node compiler/src/cli.ts <app folder> --out <dir> [--name RecipesVue] [--build] [--device]
-//   node compiler/src/cli.ts <app folder> --platform android --out <dir> [--build] [--widgets <aar>]
+//   node compiler/src/cli.ts <app folder> --out <dir> [--name RecipesVue] [--bundle <id>] [--build] [--device [--provision <profile> | --team-id <team> [--export-method debugging|release-testing|app-store-connect|enterprise]]]
+//   node compiler/src/cli.ts <app folder> --platform android --out <dir> [--bundle <id>] [--build [--aab] [--key-store-path <file> --key-store-password <p> --key-store-alias <a> --key-store-alias-password <p>]] [--widgets <aar>]
 // The app folder is a NativeScript project (package.json, app/). Its
 // components and modules are type-checked together and translated to Swift
 // against NativeScriptKit; --build generates the Xcode project and builds it.
@@ -29,6 +29,9 @@ import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
 import { collectProperties } from './properties.ts';
+import { iosProjectResources } from './app-resources.ts';
+import { SourceLines } from './source-lines.ts';
+import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -190,15 +193,35 @@ const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), pl
 const compiledPlugins = pluginFiles.filter((f) => reach.modules.has(f) && program.getSourceFile(f)!.statements.some((st) => reach.keeps(st) && !ts.isImportDeclaration(st) && !ts.isExportDeclaration(st)));
 plugins.verify(compiledPlugins);
 const properties = collectProperties(checker, sourceFiles);
+// The files the translated code says it came from: a component's source for its virtual class, a module's own file for a replacement of it.
+const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(new Map([
+  ...components.map((c) => [c.file, componentSource(c)] as const),
+  ...[...overrides.keys()].map((f) => [f, f] as const),
+]));
+/** The file a component was written in: beside its virtual file, or the .tsx declaring its function. */
+function componentSource(c: ComponentIR): string | null {
+  for (const candidate of [c.file.replace(/\.release\.ts$/, '.ts'), c.file.replace(/\.ts$/, '')]) if (candidate !== c.file && existsSync(candidate)) return candidate;
+  return files.find((f) => /\.[jt]sx$/.test(f) && new RegExp(`function\\s+${c.name}\\b`).test(readFileSync(f, 'utf8'))) ?? null;
+}
+/** `--key-store-path` with its password, alias and alias password, as the NativeScript CLI takes them. */
+function keyStore() {
+  const path = opt('--key-store-path');
+  if (!path) return undefined;
+  const [password, alias, aliasPassword] = ['--key-store-password', '--key-store-alias', '--key-store-alias-password'].map((o) => opt(o));
+  if (password === undefined || alias === undefined || aliasPassword === undefined) throw new Error('--key-store-path needs --key-store-password, --key-store-alias and --key-store-alias-password');
+  return { path, password, alias, aliasPassword };
+}
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
-  await writeAndroid({ app, appDir, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), plugins: plugins.all(), build: args.includes('--build'), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
 const native = pluginNative(plugins.all(), out);
 const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
+translator.lines = sourceLines;
+const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
@@ -208,7 +231,7 @@ const translated = translateModules(translator, program, [...modules, ...compile
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
-  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone }), '}'];
+  const lines = [`final class ${c.name} {`, located(translator.componentMembers(cls, c.props).join('\n')), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone }), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
 }
 addInterfaces(translator, translated);
@@ -219,9 +242,9 @@ for (const m of translated) {
   let file = m.name;
   while (taken.has(file.toLowerCase())) file += '_module';
   taken.add(file.toLowerCase());
-  writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + m.code);
+  writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + located(m.code));
 }
-const shapes = translator.shapesCode();
+const shapes = SourceLines.strip(translator.shapesCode());
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 const css = kitCss(appStylesheets(app, 'ios', importedStylesheets(entry, appDir)));
@@ -251,6 +274,11 @@ const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!
 const pluginLines = xcodegenLines(native, out);
 const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'));
+const resources = iosProjectResources({ app, appDir, out, name, say });
+const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
+const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
+const signing = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { CODE_SIGNING_ALLOWED: 'NO' };
+const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...signing };
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
@@ -275,27 +303,24 @@ ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}    sett
 ${pluginLines.targets}  ${name}:
     type: application
     platform: iOS
-    sources: [Sources]
-    dependencies:
+    sources:
+      - path: Sources
+${resources.sources}    dependencies:
       - target: NativeScriptKit
-${pluginLines.dependencies}    settings:
+${pluginLines.dependencies}${resources.configFile ? `    configFiles:\n      Debug: ${resources.configFile}\n      Release: ${resources.configFile}\n` : ''}    settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ${bundle}
-        SWIFT_VERSION: "5.9"
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-        INFOPLIST_KEY_CFBundleDisplayName: ${name}
-        TARGETED_DEVICE_FAMILY: "1"
-        CODE_SIGNING_ALLOWED: NO
-`);
+${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`);
 
 if (args.includes('--build')) {
   const { execFileSync } = await import('node:child_process');
   execFileSync('xcodegen', ['generate', '--quiet'], { cwd: out, stdio: 'inherit' });
-  const destination = args.includes('--device') ? 'generic/platform=iOS' : 'generic/platform=iOS Simulator';
-  execFileSync('xcodebuild', ['-project', `${name}.xcodeproj`, '-scheme', name, '-configuration', 'Release', '-destination', destination, '-derivedDataPath', 'build', 'build', '-quiet'], { cwd: out, stdio: 'inherit' });
-  say(`built ${relative(process.cwd(), out)}/build`);
+  if (args.includes('--device')) {
+    const built = archive({ out, name, bundle, profile, team, say });
+    say(`archived ${relative(process.cwd(), built.archive)}, ${relative(process.cwd(), built.ipa)}`);
+  } else {
+    execFileSync('xcodebuild', ['-project', `${name}.xcodeproj`, '-scheme', name, '-configuration', 'Release', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', 'build', 'build', '-quiet'], { cwd: out, stdio: 'inherit' });
+    say(`built ${relative(process.cwd(), out)}/build`);
+  }
 }
 
 /**

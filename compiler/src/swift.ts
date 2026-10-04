@@ -1,3 +1,4 @@
+import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
@@ -118,6 +119,8 @@ export class Translator implements AsyncTranslator {
   /** The view properties the program registers with core's `Property`. */
   readonly properties: Properties | null;
   readonly patterns: Patterns;
+  /** Marks each statement with its source line (`#sourceLocation` in Swift, a line table for Kotlin). */
+  lines: SourceLines | null = null;
   /** The app's Swift module, which qualifies a module function a class member's name shadows. */
   appModule = '';
 
@@ -488,15 +491,17 @@ export class Translator implements AsyncTranslator {
     this.props = new Set();
     const out: string[] = [];
     const init: string[] = [];
+    let current: ts.Statement | null = null;
     const later = (code: () => string) => {
       this.indent = '    ';
       this.moduleAvailability = 0;
       try {
-        const line = code();
+        const line = (current && this.lines ? this.lines.mark(current) : '') + code();
         init.push(this.moduleAvailability ? this.availableOnly(this.moduleAvailability, line.replace(/^ {4}/gm, ''), '    ') : line);
       } finally { this.indent = ''; this.moduleAvailability = 0; }
     };
     for (const st of sf.statements) {
+      current = st;
       if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st) || ts.isExportAssignment(st)) continue;
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       if (this.reach && !this.reach.keeps(st)) continue;
@@ -1457,6 +1462,11 @@ export class Translator implements AsyncTranslator {
   }
 
   stmt(s: ts.Statement): string {
+    const code = this.statementCode(s);
+    return code && this.lines ? this.lines.mark(s) + code : code;
+  }
+
+  private statementCode(s: ts.Statement): string {
     const i = this.indent;
     const a = this.asyncCtx;
     if (ts.isExpressionStatement(s)) {
