@@ -289,12 +289,17 @@ open class View : Observable() {
     override fun set(name: String, value: Any?) {
         val property = registeredProperty(name)
         if (property != null) {
-            val v = property.converted(value)
+            val v = if (value === ScriptUndefined) null else property.converted(value)
             if (v != null && v !== JSNull) locals[name] = v else locals.remove(name)
             refresh(name)
             return
         }
-        for ((longhand, v) in expandShorthand(name, value)) {
+        if (value === ScriptUndefined && name in styleProperties && hasStyleAccessor(name)) {
+            locals[name] = ScriptUndefined
+            refresh(name)
+            return
+        }
+        for ((longhand, v) in expandShorthand(name, if (value === ScriptUndefined) null else value)) {
             if (!hasStyleAccessor(longhand)) continue
             if (v != null) locals[longhand] = v else locals.remove(longhand)
             refresh(longhand)
@@ -389,7 +394,8 @@ open class View : Observable() {
 
     internal fun refresh(name: String) {
         var value: Any? = keyframeValues[name] ?: locals[name] ?: cssValues[name]
-        if (value == null && name in inheritedProperties) value = parent?.applied?.get(name)
+        if (value === ScriptUndefined) value = null
+        else if (value == null && name in inheritedProperties) value = parent?.applied?.get(name)
         value = coerce(name, value)
         val had = applied.containsKey(name)
         val registered = registeredProperty(name)

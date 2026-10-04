@@ -85,6 +85,8 @@ export interface KotlinNative {
   classDecl(c: ts.ClassDeclaration): string | null;
   /** Whether a variable only names a Java class (`const GestureHandler = com.swmansion.gesturehandler.GestureHandler`): its uses are the class's. */
   isClassAlias(d: ts.VariableDeclaration): boolean;
+  /** The Kotlin class a variable holding NativeScript's `Base.extend({ … })` declares in its place. */
+  extensionClass(d: ts.VariableDeclaration): string | null;
   /** The nearest class `from` extends that is also a `to`, when `from` is not one itself. */
   sharedClass(from: string, to: string): string | null;
   toNumber(e: ts.Expression, t: string): string | null;
@@ -409,6 +411,11 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    // A value declared `unknown` stays untyped where checks narrow it (`value !== null` makes it `{}`, which is no object shape).
+    if (ts.isIdentifier(n)) {
+      const decl = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
+      if (decl && (ts.isParameter(decl) || ts.isVariableDeclaration(decl)) && decl.type?.kind === ts.SyntaxKind.UnknownKeyword) return 'Any?';
+    }
     const t = this.type(this.checker.getTypeAtLocation(n), n);
     if (!t.includes('.')) return t;
     const sym = ts.isIdentifier(n) ? this.checker.getSymbolAtLocation(n) : undefined;
@@ -600,6 +607,8 @@ export class Translator implements AsyncTranslator {
             later(() => `    val ${tmp}: ${this.typeOf(d.initializer!)} = ${this.expr(d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
             continue;
           }
+          const extension = this.native?.extensionClass(d);
+          if (extension) { out.push(extension); continue; }
           if (this.patterns.requiredCore(d) || this.native?.isClassAlias(d)) continue;
           const name = ident(this.topName(d, d.name.text));
           const t = this.typeOf(d.name);
@@ -1542,7 +1551,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A module-level function, class or variable's Kotlin name. */
-  private topName(decl: ts.Node, name: string): string {
+  topName(decl: ts.Node, name: string): string {
     return this.topNames().get(decl) ?? name;
   }
 
@@ -1736,6 +1745,8 @@ export class Translator implements AsyncTranslator {
 
   declaration(d: ts.VariableDeclaration, constant: boolean, lowered: boolean): string {
     const i = this.indent;
+    const extension = this.native?.extensionClass(d);
+    if (extension) return extension;
     if (this.patterns.requiredCore(d) || this.native?.isClassAlias(d)) return '';
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
@@ -2658,6 +2669,10 @@ export class Translator implements AsyncTranslator {
         break;
       }
       case 'Array':
+        if (method === 'create') {
+          const native = this.native?.call(e);
+          if (native) return native;
+        }
         if (method === 'isArray') return `JSArray.isArray(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'from' && e.arguments.length === 1) return `JSArray(${this.iterable(arg(0))}.toList())`;
         if (method === 'from' && e.arguments.length === 2 && ts.isObjectLiteralExpression(arg(0))) {

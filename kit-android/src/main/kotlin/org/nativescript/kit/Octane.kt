@@ -111,5 +111,12 @@ fun octaneClassName(value: Any?): String = if (value == null || value === Unit) 
 /** A list a template maps over; `{list?.map(…)}` with no list renders no rows. */
 fun <T> octaneItems(items: Iterable<T>?): List<T> = items?.toList() ?: emptyList()
 
+/**
+ * A view property the driver assigns `undefined` or `null` (`view.color = undefined`):
+ * core keeps it as the local value, so CSS does not apply and the native view takes
+ * its own default, unlike an unset property.
+ */
+internal object ScriptUndefined
+
 /** A template's value for a view property as script code holds it: functions are called with whatever they are given. */
-fun octaneValue(value: Any?): Any? = value
+fun octaneValue(value: Any?): Any? = if (value == null || value === JSNull) ScriptUndefined else value
