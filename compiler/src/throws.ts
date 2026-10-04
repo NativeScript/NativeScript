@@ -106,6 +106,14 @@ export class Throws {
       const ctor = base?.members.find(ts.isConstructorDeclaration);
       return ctor ? this.fn(ctor) : false;
     }
+    // A call through a variable, parameter, property or getter holding a function: Swift function types throw.
+    const callee = ts.isPropertyAccessExpression(call.expression) ? call.expression.name : call.expression;
+    let held = c.getSymbolAtLocation(callee);
+    if (held && held.flags & ts.SymbolFlags.Alias) held = c.getAliasedSymbol(held);
+    const holder = held?.valueDeclaration;
+    const signature = c.getResolvedSignature(call)?.getDeclaration();
+    if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
+      && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
     const decl = c.getResolvedSignature(call)?.getDeclaration();
     const args = call.arguments ?? ts.factory.createNodeArray();
     // A callback the callee runs: a closure literal throws if its body does; any other function value is assumed to.

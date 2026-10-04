@@ -51,6 +51,11 @@ public final class Router {
         Frame.topmost?.navigate { self.resolve(path)! }
     }
 
+    /// `navigate(['/recipe', id])` as translated code passes it.
+    public func navigate(_ commands: JSArray<Any?>, _ extras: Any? = nil) {
+        navigate(commands.storage.map { $0 ?? "" }, extras)
+    }
+
     func resolve(_ path: String) -> View? {
         guard let (route, params) = resolveRoute(path) else { return nil }
         ActivatedRoute.current = ActivatedRoute(params: params)
