@@ -17,14 +17,30 @@ object Microtasks {
 
     fun enqueue(job: () -> Unit) { queue.addLast(job) }
 
+    /** Called when a checkpoint ends after a task (`taskRan`) or a job ran: Angular's zone turning stable. */
+    var onStable: (() -> Unit)? = null
+    private var turned = false
+
+    /** A JavaScript task (an event handler, a timer callback) ran. */
+    fun taskRan() { turned = true }
+
     /** Runs queued jobs FIFO, including jobs they queue, then reports unhandled rejections. A call made while draining does nothing. */
     fun checkpoint() {
         if (draining) return
         draining = true
         try {
             while (true) {
-                while (queue.isNotEmpty()) queue.removeFirst()()
-                if (pendingRejections.isEmpty()) return
+                while (queue.isNotEmpty()) {
+                    queue.removeFirst()()
+                    turned = true
+                }
+                if (pendingRejections.isEmpty()) {
+                    val stable = onStable
+                    if (!turned || stable == null) return
+                    turned = false
+                    stable()
+                    continue
+                }
                 val pending = ArrayList(pendingRejections)
                 pendingRejections.clear()
                 for (r in pending) if (!r.handled) onUnhandledRejection(r.reason)

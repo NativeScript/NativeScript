@@ -141,6 +141,7 @@ public enum JSEventLoop {
             list.removeFirst()
             let start = now()
             timer.callback()
+            Microtasks.taskRan()
             if let interval = timer.repeatInterval, timer.active {
                 timer.duration = interval
                 insert(timer, start: start)

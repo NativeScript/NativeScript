@@ -195,7 +195,15 @@ class Effect internal constructor(internal val key: List<Int>, body: () -> Unit)
 
     init {
         Owner.current?.effects?.add(this)
+        created?.invoke(this)
         run()
+    }
+
+    internal val disposed: Boolean get() = body == null
+
+    companion object {
+        /** Called with each effect as it is made: zone.js change detection re-runs them all. */
+        internal var created: ((Effect) -> Unit)? = null
     }
 
     internal fun track(source: Source) {

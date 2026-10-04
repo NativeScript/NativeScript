@@ -143,6 +143,8 @@ export class Translator implements AsyncTranslator {
   private lowering: AsyncLowering;
   core: KotlinCore | null = null;
   native: KotlinNative | null = null;
+  /** The app's package, which qualifies a module function a class member's name shadows. */
+  appModule = '';
 
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;
@@ -284,6 +286,8 @@ export class Translator implements AsyncTranslator {
     }
     if (this.isEventData(t)) return 'EventData';
     const shim = sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/');
+    // RxJS's classes are the kit's Rx classes: core has an Observable of its own.
+    if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/rxjs.d.ts') return `Rx${name}${(t as ts.TypeReference).typeArguments?.length ? `<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>` : ''}`;
     if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && name !== '__type' && name !== '__object') {
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
@@ -1722,7 +1726,8 @@ export class Translator implements AsyncTranslator {
     const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body);
     const fnType = this.declaredTypeOf(callee) ?? this.typeOf(callee);
-    const fn = this.narrowed(callee, ident(name));
+    const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], ident(name), ident) ? `${this.appModule}.${ident(name)}` : ident(name);
+    const fn = this.narrowed(callee, qualified);
     const nullable = /^\(.*\)\?$/.test(fnType) && isFunctionType(fnType.slice(1, -2));
     return `${nullable && !fn.endsWith('!!') ? `${fn}!!` : fn}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
   }
@@ -2545,4 +2550,11 @@ export function splitTopLevel(text: string): string[] {
   }
   out.push(text.slice(start).trim());
   return out.filter((x, k) => x || k < out.length - 1);
+}
+
+/** Whether a module function `fn` called at `at` is shadowed by a member of the class around it, as a bare name is in Swift and Kotlin. */
+function shadowedByMember(at: ts.Node, decl: ts.Declaration | undefined, fn: string, ident: (name: string) => string): boolean {
+  if (!decl || !ts.isFunctionDeclaration(decl) || !ts.isSourceFile(decl.parent)) return false;
+  const cls = ts.findAncestor(at, ts.isClassLike);
+  return !!cls && cls.members.some((m) => !!m.name && ts.isIdentifier(m.name) && ident(m.name.text) === fn);
 }
