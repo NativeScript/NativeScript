@@ -90,27 +90,41 @@ struct StyleSheet {
         return result
     }
 
-    /// A prelude's selectors: commas inside parentheses (`:is(a, b)`) do not split.
+    /// A prelude's selectors: commas inside parentheses (`:is(a, b)`) or quotes do not split.
     private static func splitSelectors(_ prelude: String) -> [String] {
-        var parts: [String] = []
-        var current = ""
+        topLevel(Substring(prelude), separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+    }
+
+    /// `text` split at each `separator` outside parentheses and quotes.
+    private static func topLevel(_ text: Substring, separator: Character) -> [Substring] {
+        var parts: [Substring] = []
+        var start = text.startIndex
         var depth = 0
-        for c in prelude {
-            if c == "(" { depth += 1 } else if c == ")" { depth -= 1 }
-            if c == "," && depth == 0 {
-                parts.append(current.trimmingCharacters(in: .whitespacesAndNewlines))
-                current = ""
-            } else {
-                current.append(c)
+        var quote: Character?
+        var index = text.startIndex
+        while index < text.endIndex {
+            let c = text[index]
+            if let q = quote {
+                if c == "\\" { index = text.index(after: index) } else if c == q { quote = nil }
+            } else if c == "\"" || c == "'" {
+                quote = c
+            } else if c == "(" {
+                depth += 1
+            } else if c == ")" {
+                depth -= 1
+            } else if c == separator && depth == 0 {
+                parts.append(text[start..<index])
+                start = text.index(after: index)
             }
+            if index < text.endIndex { index = text.index(after: index) }
         }
-        parts.append(current.trimmingCharacters(in: .whitespacesAndNewlines))
-        return parts.filter { !$0.isEmpty }
+        parts.append(text[start...])
+        return parts
     }
 
     /// Declarations with names lowercased, except custom properties, and `!important` dropped.
     private static func declarations(_ body: Substring) -> [(name: String, value: String)] {
-        body.split(separator: ";").compactMap { declaration -> (String, String)? in
+        topLevel(body, separator: ";").compactMap { declaration -> (String, String)? in
             guard let colon = declaration.firstIndex(of: ":") else { return nil }
             var name = declaration[..<colon].trimmingCharacters(in: .whitespacesAndNewlines)
             if !name.hasPrefix("--") { name = name.lowercased() }

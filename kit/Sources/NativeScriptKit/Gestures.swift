@@ -114,7 +114,7 @@ final class GesturesObserver: NSObject {
     private weak var target: View?
     let type: Double
     let eventName: String
-    private var recognizers: [UIGestureRecognizer] = []
+    private(set) var recognizers: [UIGestureRecognizer] = []
 
     init(target: View, type: Double, eventName: String) {
         self.target = target
