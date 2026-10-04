@@ -22,6 +22,8 @@ import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
 import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
+import { PluginSources, configuredOverrides } from './plugins/source.ts';
+import { pluginNative, xcodegenLines } from './plugins/native.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -137,7 +139,9 @@ if (framework === 'vue') {
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
 const platform = opt('--platform') === 'android' ? 'android' : 'ios';
-const { checker, program, files: sourceFiles } = createProgram(modules, virtual, platform);
+// Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
+const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
+const { checker, program, files: sourceFiles } = createProgram(modules, virtual, platform, undefined, plugins);
 const infos = new Map<string, ComponentInfo & { outputs?: string[] }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs }]));
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
@@ -145,11 +149,13 @@ if (platform === 'android') {
   await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
   process.exit(0);
 }
+// Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
+const native = pluginNative(plugins.all(), out);
 const translator = new Translator(checker, infos, sourceFiles);
 
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
-const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n\n`;
+const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n`;
 const translated = translateModules(translator, program, modules);
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
@@ -169,6 +175,7 @@ say(`${components.length} components and ${modules.length} modules from ${framew
 
 // 4. The Xcode project.
 const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!;
+const pluginLines = xcodegenLines(native, out);
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
@@ -177,14 +184,14 @@ options:
 packages:
   NativeScriptKit:
     path: ${relative(out, kit)}
-targets:
+${pluginLines.packages}targets:
   ${name}:
     type: application
     platform: iOS
     sources: [Sources]
     dependencies:
       - package: NativeScriptKit
-    settings:
+${pluginLines.dependencies}    settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ${bundle}
         SWIFT_VERSION: "5.9"

@@ -74,11 +74,7 @@ export class PluginSources {
     return source;
   }
 
-  /**
-   * The source file an installed JavaScript file was compiled from, checked
-   * against it the first time the build reaches it; null for a file of no
-   * acquired package.
-   */
+  /** The source file an installed JavaScript file was compiled from; null for a file of no acquired package. */
   sourceOf(jsFile: string): string | null {
     const js = resolve(jsFile);
     const owner = this.byFile.get(js);
@@ -86,11 +82,28 @@ export class PluginSources {
     const source = this.packages.get(owner)!;
     const src = source.files.get(js);
     if (!src) throw new Error(`${source.name}: ${relative(source.dir, js)} has no TypeScript source in ${source.root}`);
-    if (!source.checked.has(js)) {
-      if (source.verified === 'published') verify(source.name, js, src);
-      source.checked.add(js);
-    }
     return src;
+  }
+
+  /**
+   * Checks source files the build compiles against the published files they
+   * were built from, once each: what is compiled is what npm installed.
+   */
+  verify(sources: Iterable<string>) {
+    for (const src of sources) {
+      for (const source of this.packages.values()) {
+        const js = [...source.files].find(([, s]) => s === src)?.[0];
+        if (!js) continue;
+        if (!source.checked.has(js) && source.verified === 'published') verify(source.name, js, src);
+        source.checked.add(js);
+      }
+    }
+  }
+
+  /** The package a source file belongs to. */
+  packageOfSource(src: string): PluginSource | null {
+    for (const source of this.packages.values()) if ([...source.files.values()].includes(src)) return source;
+    return null;
   }
 }
 

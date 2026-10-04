@@ -37,7 +37,9 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
       const decl = /^\s*(?:@\w+\s+)*(?:(?:public|open|final|internal)\s+)*(class|struct|enum|extension|protocol)\s+(\w+)(?:<[^>]*>)?(?:\s*:\s*([\w.]+))?/.exec(line);
       const isPublic = /\b(public|open)\b/.test(line) || decl?.[1] === 'extension';
       if (decl && line.includes('{')) {
-        const name = decl[2];
+        // A nested type is known by its qualified name (`Utils.layout`).
+        const outer = decl[1] === 'extension' ? undefined : [...stack].reverse().find((x) => x.type)?.type;
+        const name = outer ? `${outer.name}.${decl[2]}` : decl[2];
         let type = types.get(name) ?? null;
         const base = decl[1] === 'class' && decl[3] && !/Protocol$|Convertible$|Equatable|Hashable/.test(decl[3]) ? decl[3] : null;
         if (!type && isPublic) {

@@ -1,0 +1,71 @@
+import UIKit
+
+/// `Utils` from @nativescript/core's utils (iOS): numbers are JavaScript's.
+public enum Utils {
+    /// `SDK_VERSION`: `parseFloat(UIDevice.currentDevice.systemVersion)`.
+    public static var SDK_VERSION: Double { jsParseFloat(UIDevice.current.systemVersion) }
+
+    public static func isRealDevice() -> Bool {
+        ProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] == nil
+    }
+
+    /// `dismissSoftInput()`: whatever is first responder resigns.
+    public static func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    public static func dismissSoftInput(_ nativeView: UIView? = nil) {
+        if let nativeView, !nativeView.isFirstResponder { return }
+        dismissKeyboard()
+    }
+
+    public static func copyToClipboard(_ value: String) {
+        UIPasteboard.general.string = value
+    }
+
+    public enum layout {
+        public static let EXACTLY = Double(LayoutHelper.exactly)
+        public static let AT_MOST = Double(LayoutHelper.atMost)
+        public static let UNSPECIFIED = Double(LayoutHelper.unspecified)
+        public static let MODE_MASK = Double(LayoutHelper.modeMask)
+
+        public static func toDevicePixels(_ value: Double) -> Double { LayoutHelper.toDevicePixels(value) }
+        public static func toDeviceIndependentPixels(_ value: Double) -> Double { LayoutHelper.toDeviceIndependentPixels(value) }
+        public static func round(_ value: Double) -> Double { LayoutHelper.round(value) }
+        public static func makeMeasureSpec(_ size: Double, _ mode: Double) -> Double {
+            Double(LayoutHelper.makeMeasureSpec(size, Int(mode)))
+        }
+        public static func getMeasureSpecSize(_ spec: Double) -> Double { Double(LayoutHelper.size(Int(spec))) }
+        public static func getMeasureSpecMode(_ spec: Double) -> Double { Double(LayoutHelper.mode(Int(spec))) }
+        public static func getDisplayDensity() -> Double { Double(LayoutHelper.scale) }
+    }
+
+    public enum ios {
+        /// The window NativeScript drives.
+        public static func getWindow() -> UIWindow? { Appearance.window }
+
+        /// The window's root controller, then whatever it presents, all the way up.
+        public static func getRootViewController() -> UIViewController? {
+            var controller = getWindow()?.rootViewController
+            while let presented = controller?.presentedViewController { controller = presented }
+            return controller
+        }
+
+        public static func getVisibleViewController(_ root: UIViewController?) -> UIViewController? {
+            var controller = root
+            while let presented = controller?.presentedViewController { controller = presented }
+            return controller
+        }
+
+        public enum collections {
+            public static func jsArrayToNSArray(_ array: JSArray<Any?>) -> [Any] { array.storage.compactMap { jsFlat($0) } }
+            public static func nsArrayToJSArray(_ array: [Any]?) -> JSArray<Any?> { JSArray((array ?? []).map { $0 as Any? }) }
+        }
+    }
+}
+
+/// `booleanConverter` from core's view-base: the strings "true"/"false" in any case; anything else as it is.
+public func booleanConverter(_ value: Any?) -> Bool {
+    if let string = jsFlat(value) as? String { return string.lowercased() == "true" }
+    return jsTruthy(value)
+}

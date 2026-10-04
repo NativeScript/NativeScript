@@ -4,11 +4,6 @@ import UIKit
 // translated code reads and writes by name: what an app imports from
 // '@nativescript/core' that is not an element in its templates.
 
-extension View {
-    /// A property's current value by its NativeScript name (`label.text`).
-    public func get(_ name: String) -> Any? { applied[name] }
-}
-
 /// `ApplicationSettings` from application-settings/index.ios: NSUserDefaults.
 public enum ApplicationSettings {
     private static var defaults: UserDefaults { .standard }

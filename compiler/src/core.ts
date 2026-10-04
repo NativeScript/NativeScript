@@ -48,9 +48,23 @@ export class CoreAPI {
     this.index = kitIndex(KIT);
   }
 
+  /** Whether NativeScriptKit declares a type of this name. */
+  has(name: string): boolean {
+    return this.index.has(name);
+  }
+
   /** The kit type a core-typed expression is, and whether it is the type itself (`Device.model`, `Color.isValid`). */
   owner(e: ts.Expression): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
+    // A namespace inside a core namespace (`Utils.layout`): the kit's nested type of that path.
+    if (ts.isPropertyAccessExpression(e)) {
+      const sym = this.t.resolve(e);
+      if (sym && sym.flags & (ts.SymbolFlags.ValueModule | ts.SymbolFlags.NamespaceModule) && isCoreDeclaration(sym.declarations?.[0])) {
+        const outer = this.owner(e.expression);
+        const name = outer?.isStatic ? `${outer.name}.${e.name.text}` : null;
+        if (name && this.index.has(name)) return { name, isStatic: true };
+      }
+    }
     if (ts.isIdentifier(e)) {
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];

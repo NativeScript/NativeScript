@@ -3,6 +3,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
 import { nativeViewOf } from './core.ts';
+import type { PluginSources } from './plugins/source.ts';
+import { packageOf, runtimeFile } from './plugins/resolve.ts';
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -96,14 +98,25 @@ export interface Program {
   checker: ts.TypeChecker;
   /** The app's files and the components' virtual files, in translation order. */
   files: ts.SourceFile[];
+  /** The plugins' source files the program reached, beside the app's. */
+  pluginFiles: string[];
+  /** The file a module specifier resolved to from a file, as the program resolved it. */
+  resolved: (containing: string, specifier: string) => string | undefined;
 }
+
+/**
+ * Packages whose imports stay on their declarations: core is NativeScriptKit,
+ * the frameworks are the front ends, and the rest are typings or tooling.
+ */
+const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
+
 
 /**
  * A program over the app's modules and the components' virtual classes,
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -118,35 +131,70 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   };
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
-  const isApp = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && !name.includes('/node_modules/');
+  const pluginFiles = new Set<string>();
+  const extraRoots = new Set<string>();
+  const isSource = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && !name.includes('/node_modules/');
+  const isApp = (name: string) => isSource(name) && !pluginFiles.has(name);
   host.getSourceFile = (name, version, onError) => {
-    const text = files.get(name) ?? (isApp(name) && existsSync(name) ? readFileSync(name, 'utf8') : undefined);
+    const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : undefined);
     if (text === undefined) return readLib(name, version, onError);
-    return ts.createSourceFile(name, isApp(name) ? foldPlatform(text, name, platform) : text, version, true);
+    return ts.createSourceFile(name, isSource(name) ? foldPlatform(text, name, platform) : text, version, true);
   };
   const fileExists = host.fileExists.bind(host);
   host.fileExists = (name) => files.has(name) || fileExists(name);
   const readFile = host.readFile.bind(host);
   host.readFile = (name) => files.get(name) ?? readFile(name);
+  const resolutions = new Map<string, string>();
   host.resolveModuleNameLiterals = (literals, containing) =>
     literals.map((lit) => {
+      const r = resolveLiteral(lit, containing);
+      if (r.resolvedModule) resolutions.set(`${containing}\0${lit.text}`, r.resolvedModule.resolvedFileName);
+      return r;
+    });
+  const resolveLiteral = (lit: ts.StringLiteralLike, containing: string): ts.ResolvedModuleWithFailedLookupLocations => {
+    {
       const m = lit.text;
       if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       if (m.startsWith('.')) {
         const base = resolve(dirname(containing), m);
         for (const candidate of [base + '.ts', base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
-          if (candidate && (files.has(candidate) || existsSync(candidate))) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
+          if (candidate && (files.has(candidate) || existsSync(candidate))) {
+            // A plugin's own modules are compiled with it.
+            if (pluginFiles.has(containing)) pluginFiles.add(candidate);
+            return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
+          }
         }
       }
-      // The shims import core's types from the app's node_modules.
-      const from = containing.startsWith('/__shims__/') ? resolve(modules, '..', 'index.ts') : containing;
+      // A plugin is compiled from its source: an import that reaches its code resolves to the file it was built from.
+      const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly;
+      if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !NOT_PLUGINS.test(packageOf(m)) && !typeOnly) {
+        const js = runtimeFile(m, modules, platform);
+        if (js) {
+          plugins.get(js.packageDir);
+          const source = plugins.sourceOf(js.file);
+          if (source) {
+            pluginFiles.add(source);
+            for (const t of plugins.get(js.packageDir).typings) extraRoots.add(t);
+            return { resolvedModule: { resolvedFileName: source, extension: source.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
+          }
+        }
+      }
+      // The shims import core's types from the app's node_modules; a plugin's source is typed against the app's packages.
+      const from = containing.startsWith('/__shims__/') || pluginFiles.has(containing) ? resolve(modules, '..', 'index.ts') : containing;
+      if (pluginFiles.has(containing) && m.startsWith('.')) return ts.resolveModuleName(m, containing, options, host);
       return ts.resolveModuleName(m, from, options, host);
-    });
+    }
+  };
 
   const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')];
   let program = ts.createProgram(rootNames, options, host);
+  // A plugin's native API declarations (`typings/ios.d.ts`) are found as its sources are.
+  if (extraRoots.size) {
+    rootNames.push(...extraRoots);
+    program = ts.createProgram(rootNames, options, host, program);
+  }
   // `view.ios` is `any` in core's declarations: typed as the view's native class, everything read from it is typed too.
-  const casts = nativeViewCasts(program, isApp);
+  const casts = nativeViewCasts(program, isSource);
   if (casts.size) {
     for (const [name, text] of casts) files.set(name, text);
     program = ts.createProgram(rootNames, options, host, program);
@@ -156,8 +204,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     const text = ts.formatDiagnostics(diagnostics.slice(0, 12), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
   }
-  const ordered = [...roots, ...virtual.keys()].map((f) => program.getSourceFile(f)!).filter(Boolean);
-  return { program, checker: program.getTypeChecker(), files: ordered };
+  const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);
+  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`) };
 }
 
 /** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`. */

@@ -10,7 +10,7 @@ export type Platform = 'ios' | 'android';
  * every position, and so every diagnostic's line and column, is unchanged.
  */
 export function foldPlatform(text: string, fileName: string, platform: Platform): string {
-  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__)\b/.test(text)) return text;
+  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__)\b|import\.meta\.hot/.test(text)) return text;
   const flags: Record<string, boolean> = {
     isIOS: platform === 'ios', __IOS__: platform === 'ios', __APPLE__: platform === 'ios',
     isAndroid: platform === 'android', __ANDROID__: platform === 'android', __VISIONOS__: false,
@@ -20,6 +20,8 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
   for (let pass = 0; pass < 10_000; pass++) {
     const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, kind);
     const edit = findFold(sf, (n) => {
+      // A release build has no hot module replacement: `import.meta.hot` is undefined.
+      if (isHot(n)) return false;
       if (ts.isIdentifier(n) && n.text in flags && isReference(n) && !declaredAround(n)) return flags[n.text];
       if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis'].includes(n.expression.text) && n.name.text in flags) return flags[n.name.text];
       return undefined;
@@ -63,6 +65,9 @@ function findFold(sf: ts.SourceFile, flag: (n: ts.Node) => boolean | undefined):
   let found: Edit | null = null;
   const visit = (n: ts.Node): void => {
     if (found) return;
+    // `import.meta.hot?.accept()` does nothing; `import.meta.hot?.data.x ?? fallback` is the fallback.
+    if (ts.isExpressionStatement(n) && hotChain(n.expression)) { found = { span: span(n), keep: null }; return; }
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && hotChain(n.left)) { found = { span: span(n), keep: span(n.right) }; return; }
     if (ts.isIfStatement(n)) {
       const v = constant(n.expression);
       if (v !== undefined) {
@@ -149,6 +154,22 @@ function declaredAround(id: ts.Identifier): boolean {
         if (clause?.name?.text === name || (named && ts.isNamedImports(named) && named.elements.some((e) => e.name.text === name))) return true;
       }
     }
+  }
+  return false;
+}
+
+function isHot(n: ts.Node): boolean {
+  return ts.isPropertyAccessExpression(n) && n.name.text === 'hot' && ts.isMetaProperty(n.expression) && n.expression.name.text === 'meta';
+}
+
+/** An optional chain that starts at `import.meta.hot`, which short-circuits to undefined. */
+function hotChain(e: ts.Expression): boolean {
+  let n: ts.Node = e;
+  let optional = false;
+  while (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || ts.isCallExpression(n) || ts.isNonNullExpression(n) || ts.isParenthesizedExpression(n)) {
+    if (isHot(n)) return optional;
+    if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || ts.isCallExpression(n)) && n.questionDotToken && isHot(n.expression)) optional = true;
+    n = n.expression;
   }
   return false;
 }

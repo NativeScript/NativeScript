@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -90,22 +90,43 @@ const cacheDir = () => join(COMPILER, '.cache', `ios-${sdk().version}`);
 
 const tables = new Map<string, NativeTable>();
 
-export function nativeTable(module: string, options: { extraArgs?: string[] } = {}): NativeTable {
+export interface TableOptions {
+  /** Arguments that make the module visible to the extractor (`-I`, `-F`); a function runs only when the table is generated. */
+  extraArgs?: string[] | (() => string[]);
+  /**
+   * A module outside the SDK (a plugin's): its table is cached under this key,
+   * a hash of its sources, apart from the SDK's, and failing to extract it is an error.
+   */
+  key?: string;
+}
+
+export function nativeTable(module: string, options: TableOptions = {}): NativeTable {
   let table = tables.get(module);
   if (table) return table;
-  const file = join(cacheDir(), `${module}.json`);
+  const file = options.key ? join(cacheDir(), 'plugins', `${module}-${options.key}.json`) : join(cacheDir(), `${module}.json`);
   if (existsSync(file)) table = JSON.parse(readFileSync(file, 'utf8')) as NativeTable;
   else {
-    table = generate(module, options.extraArgs ?? []);
-    mkdirSync(cacheDir(), { recursive: true });
+    const extraArgs = typeof options.extraArgs === 'function' ? options.extraArgs() : options.extraArgs ?? [];
+    table = generate(module, extraArgs, !!options.key);
+    mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, JSON.stringify(table));
   }
   tables.set(module, table);
   return table;
 }
 
+/** The iOS simulator SDK and target the tables are generated for, for building a module to extract. */
+export const iosTarget = () => ({ target: TARGET, sdk: sdk().path });
+
+const declarationModules = new Map<string, string>();
+
+/** Declarations in `dtsFile` (a plugin's typings) are `module`'s. */
+export function registerDeclarationModule(dtsFile: string, module: string) {
+  declarationModules.set(resolve(dtsFile), module);
+}
+
 export function moduleOfDeclaration(fileName: string): string | null {
-  return /^objc!(.+)\.d\.ts$/.exec(basename(fileName))?.[1] ?? null;
+  return declarationModules.get(resolve(fileName)) ?? /^objc!(.+)\.d\.ts$/.exec(basename(fileName))?.[1] ?? null;
 }
 
 // ---------------------------------------------------------------- generation
@@ -122,30 +143,35 @@ interface Sym {
 }
 interface Rel { kind: string; source: string; target: string; targetFallback?: string }
 
-function generate(module: string, extraArgs: string[]): NativeTable {
+function generate(module: string, extraArgs: string[], plugin = false): NativeTable {
   const dir = mkdtempSync(join(tmpdir(), `symbols-${module}-`));
   const symbols = new Map<string, Sym>();
   const rels: Rel[] = [];
+  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`) under the USRs Objective-C's would have.
+  const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@M@\w+@/, 'c:') : (usr: string) => usr;
   try {
     try {
       execFileSync('xcrun', ['swift-symbolgraph-extract', '-module-name', module, '-target', TARGET, '-sdk', sdk().path, '-output-dir', dir,
         // `private` keeps the `__`-prefixed spellings of NS_REFINED_FOR_SWIFT APIs; non-public symbols are dropped below.
-        '-minimum-access-level', 'private', '-skip-synthesized-members', '-skip-inherited-docs', ...extraArgs], { stdio: 'ignore' });
-    } catch {
-      return emptyTable(module);
+        '-minimum-access-level', 'private', '-skip-synthesized-members', '-skip-inherited-docs', ...extraArgs], { stdio: plugin ? ['ignore', 'ignore', 'pipe'] : 'ignore', maxBuffer: 1 << 28 });
+    } catch (e: any) {
+      if (!plugin) return emptyTable(module);
+      const errors = String(e.stderr ?? '').split('\n').filter((l) => /^\S.*\berror:/.test(l));
+      throw new Error(`swift-symbolgraph-extract could not read module ${module}:\n${errors.join('\n') || String(e.stderr ?? e.message).trim()}`);
     }
     for (const f of readdirSync(dir)) {
       if (f !== `${module}.symbols.json` && !f.startsWith(`${module}@`)) continue;
       const graph = JSON.parse(readFileSync(join(dir, f), 'utf8'));
       rmSync(join(dir, f));
       for (const s of graph.symbols) {
+        s.identifier.precise = objcUSR(s.identifier.precise);
         const sym = compact(s);
         if (!sym) continue;
         const prev = symbols.get(sym.usr);
         // An Objective-C method with a completion handler is imported twice under one USR; the `async` variant drops the handler.
         if (!prev || isAsync(prev)) symbols.set(sym.usr, sym);
       }
-      rels.push(...graph.relationships);
+      for (const r of graph.relationships as Rel[]) rels.push({ ...r, source: objcUSR(r.source), target: objcUSR(r.target) });
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

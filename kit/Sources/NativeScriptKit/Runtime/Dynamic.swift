@@ -1,0 +1,45 @@
+import Foundation
+
+// JavaScript's object operations on values translated code holds untyped:
+// what plugins written against loose types do with options bags, event
+// payloads and the views they decorate.
+
+/// Argument `index` of a dynamic call; a missing one is undefined.
+@inline(__always)
+public func jsArg(_ arguments: [Any?], _ index: Int) -> Any? {
+    index < arguments.count ? arguments[index] : nil
+}
+
+/// `delete object[key]`.
+@discardableResult
+public func jsDelete(_ object: Any?, _ key: String) -> Bool {
+    switch jsFlat(object) {
+    case let o as JSObject: return o.delete(key)
+    case let d as JSDeletable: return d.jsDelete(key)
+    default: return true
+    }
+}
+
+/// An object that can lose an own property (`delete o.x`).
+public protocol JSDeletable: AnyObject {
+    func jsDelete(_ key: String) -> Bool
+}
+
+/// `Object.assign(target, ...sources)`: each source's own enumerable keys written to the target in order.
+@discardableResult
+public func jsObjectAssign(_ target: Any?, _ sources: Any?...) throws -> Any? {
+    for source in sources {
+        guard let dynamic = jsFlat(source) as? JSDynamic else { continue }
+        for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
+    }
+    return target
+}
+
+/// `key in object`, for any dynamic value.
+public func jsIn(_ key: String, _ object: Any?) -> Bool {
+    switch jsFlat(object) {
+    case let o as JSObject: return o.has(key)
+    case let d as JSDynamic: return d.jsKeys.contains(key) || d[jsKey: key] != nil
+    default: return false
+    }
+}

@@ -33,8 +33,8 @@ open class Span: View {
         }
     }
 
-    public override func on(_ event: String, _ handler: @escaping (EventData) -> Void) {
-        super.on(event, handler)
+    open override func listenerAdded(_ event: String) {
+        super.listenerAdded(event)
         if event == "linkTap" && !tappable {
             tappable = true
             (parent as? FormattedString)?.spanChanged()

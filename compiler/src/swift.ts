@@ -1,8 +1,9 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
 import { AsyncLowering, type AsyncCtx } from './async.ts';
-import { CoreAPI } from './core.ts';
+import { CoreAPI, isCoreDeclaration } from './core.ts';
 import { NativeAPI } from './native-calls.ts';
+import type { Reach } from './reach.ts';
 
 /**
  * TypeScript to Swift, typed by the checker, with JavaScript's semantics
@@ -85,7 +86,14 @@ export class Translator {
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[]) {
+  /** Files of the plugins compiled from source. */
+  readonly pluginFiles: Set<string>;
+  /** What of the plugins the app reaches; everything when absent. */
+  readonly reach: Reach | null;
+
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach } = {}) {
+    this.pluginFiles = new Set(options.pluginFiles ?? []);
+    this.reach = options.reach ?? null;
     this.checker = checker;
     this.components = components;
     this.sourceFiles = files;
@@ -207,6 +215,7 @@ export class Translator {
       });
       return `(${params.join(', ')}) throws -> ${this.type(s.getReturnType(), where)}`;
     }
+    if (sym && this.isDynamicShape(sym)) return 'Any?';
     if (this.isEventData(t)) return 'EventData';
     // A generic type the kit declares (`ListItem<Recipe>`) keeps its arguments.
     const shim = sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/');
@@ -219,6 +228,27 @@ export class Translator {
     // An inline object type naming only an event's fields is the event's data (`args: { value: boolean }`).
     if (props.length && props.every((p) => ['eventName', 'object', 'value'].includes(p))) return 'EventData';
     return this.shape(t, where);
+  }
+
+  /**
+   * A shape only a library or a plugin declares (an options interface, a
+   * class its `.d.ts` describes): an untyped JavaScript object, as the code
+   * that declared it treats it. The app's own interfaces keep their classes,
+   * and so do the core types NativeScriptKit models.
+   */
+  private isDynamicShape(sym: ts.Symbol): boolean {
+    const decls = sym.declarations ?? [];
+    if (!decls.length) return false;
+    const sf = decls[0].getSourceFile();
+    const shape = decls.every((d) => ts.isInterfaceDeclaration(d) || ts.isTypeAliasDeclaration(d) || ts.isTypeLiteralNode(d) || (ts.isClassDeclaration(d) && d.getSourceFile().isDeclarationFile));
+    if (!shape || sf.fileName.startsWith('/__shims__/') || this.native.module(decls[0]) || /[\\/]typescript[\\/]lib[\\/]/.test(sf.fileName)) return false;
+    if (isCoreDeclaration(decls[0])) return decls.every((d) => !ts.isClassDeclaration(d)) && !this.core.has(sym.name) && !this.isEventDataSymbol(sym);
+    return this.pluginFiles.has(sf.fileName) || sf.isDeclarationFile;
+  }
+
+  private isEventDataSymbol(sym: ts.Symbol): boolean {
+    const t = this.checker.getDeclaredTypeOfSymbol(sym);
+    return sym.name === 'EventData' || (t.isClassOrInterface() && this.isEventData(t));
   }
 
   /** A framework's event type (`ListViewItemTapEvent`) is an `EventData` with typed members. */
@@ -314,6 +344,7 @@ export class Translator {
     for (const st of sf.statements) {
       if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st) || ts.isExportAssignment(st)) continue;
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
+      if (this.reach && !this.reach.keeps(st)) continue;
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, sf.fileName, st.members); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, sf.fileName, st.type.members); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
@@ -494,7 +525,51 @@ export class Translator {
       this.used.add(base);
       return type.endsWith('?') ? `jsIsNullish(${code}) ? nil : ${base}(jsObject: ${code})` : `${base}(jsObject: ${code})`;
     }
+    const fn = functionParts(base);
+    if (fn) return type.endsWith('?') || type.endsWith(')?') ? `{ (__f: Any?) -> ${type} in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', fn)} }(${code})` : this.unboxFunction(code, fn);
     return type.endsWith('?') ? `(${code} as? ${base})` : `(${code} as! ${type})`;
+  }
+
+  /** A typed function value as an untyped JavaScript function, callable through `jsCall`. */
+  boxFunction(code: string, type: string): string {
+    const fn = functionParts(type.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))!;
+    const args = fn.params.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true));
+    const call = `try __f(${args.join(', ')})`;
+    const body = fn.result === 'Void' ? `${call}; return nil` : `return ${this.convert(call, fn.result, 'Any?')}`;
+    return `{ (__f: @escaping ${fn.text}) -> JSFunction in { (__a: [Any?]) throws -> Any? in ${body} } }(${code})`;
+  }
+
+  /** An untyped function value called as the typed function `fn`. */
+  private unboxFunction(code: string, fn: FunctionParts): string {
+    const params = fn.params.map((p, k) => `__p${k}: ${p}`);
+    const call = `try jsCall(__f${fn.params.map((p, k) => `, ${this.convert(`__p${k}`, p.replace(/^@escaping /, ''), 'Any?')}`).join('')})`;
+    const body = fn.result === 'Void' ? `_ = ${call}` : `return ${this.fromAnyCode(call, fn.result, true)}`;
+    // A closure of exactly this type passes through as it is.
+    return `{ (__f: Any?) -> ${fn.text} in (jsFlat(__f) as? ${fn.text}) ?? { (${params.join(', ')}) throws -> ${fn.result} in ${body} } }(${code})`;
+  }
+
+  /** Swift code of type `from` where Swift needs `to`: functions are adapted parameter by parameter. */
+  convert(code: string, from: string, to: string): string {
+    if (from === to) return code;
+    if (to === 'Any?') {
+      const fn = functionParts(from.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'));
+      if (fn) return from.endsWith('?') ? `{ (__g: ${from}) -> Any? in __g.map { ${this.boxFunction('$0', fn.text)} } }(${code})` : this.boxFunction(code, fn.text);
+      return code;
+    }
+    if (from === 'Any?') return this.fromAny(code, to);
+    const f = functionParts(from.replace(/^\((.*)\)\?$/, '$1'));
+    const g = functionParts(to.replace(/^\((.*)\)\?$/, '$1'));
+    if (f && g && f.params.length <= g.params.length) {
+      const params = g.params.map((p, k) => `__q${k}: ${p.replace(/^@escaping /, '')}`);
+      const args = f.params.map((p, k) => this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, '')));
+      const call = `try __h(${args.join(', ')})`;
+      const body = g.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, f.result, g.result)}`;
+      const wrap = `{ (__h: @escaping ${f.text}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
+      return from.endsWith('?') ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
+    }
+    if (to === optionalType(from)) return code;
+    if (from === optionalType(to)) return `${code}!`;
+    return code;
   }
 
   private enumDecl(e: ts.EnumDeclaration): string {
@@ -854,6 +929,12 @@ export class Translator {
       return i + (s.expression ? `return ${this.tryPrefix(s.expression)}${this.coerce(s.expression, this.returnType)}` : 'return');
     }
     if (ts.isIfStatement(s)) {
+      // A condition the parameters' constant values decide: only the branch that runs.
+      const fixed = this.reach?.constant(s.expression);
+      if (fixed !== undefined) {
+        const live = fixed ? s.thenStatement : s.elseStatement;
+        return live ? `${i}do ${this.block(live)}` : '';
+      }
       let out = `${i}if ${this.tryPrefix(s.expression)}${this.cond(s.expression)} ${this.block(s.thenStatement)}`;
       if (s.elseStatement) out += ts.isIfStatement(s.elseStatement) ? ` else ${this.stmt(s.elseStatement).trimStart()}` : ` else ${this.block(s.elseStatement)}`;
       return out;
@@ -1115,8 +1196,10 @@ export class Translator {
       const maybe = this.maybeUndefined(e);
       if (maybe) return `(${maybe} as Any?)`;
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
+      if (functionParts(source.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) return this.convert(this.expr(e), source, 'Any?');
       return this.expr(e);
     }
+    if (source !== target && functionParts(source.replace(/^\((.*)\)\?$/, '$1')) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) return this.convert(this.expr(e), source, target);
     if (source === 'Any?' && target !== 'Void') {
       if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.expr(e);
       return this.fromAny(this.expr(e), target);
@@ -2339,4 +2422,23 @@ function splitTopLevel(text: string): string[] {
   }
   out.push(text.slice(start).trim());
   return out;
+}
+
+interface FunctionParts { text: string; params: string[]; result: string }
+
+/** `(A, B) throws -> R` split into its parameter and result types; null for any other type. */
+function functionParts(type: string): FunctionParts | null {
+  const t = type.trim();
+  if (!t.startsWith('(')) return null;
+  let depth = 0, close = -1;
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] === '(' || t[i] === '[' || t[i] === '<') depth++;
+    else if ((t[i] === ')' || t[i] === ']' || (t[i] === '>' && t[i - 1] !== '-'))) { depth--; if (depth === 0) { close = i; break; } }
+  }
+  if (close < 0) return null;
+  const rest = /^\s*(?:throws\s*)?->\s*(.+)$/.exec(t.slice(close + 1));
+  if (!rest) return null;
+  const inner = t.slice(1, close).trim();
+  const params = inner ? splitTopLevel(inner) : [];
+  return { text: `(${params.join(', ')}) throws -> ${rest[1]}`, params, result: rest[1] };
 }

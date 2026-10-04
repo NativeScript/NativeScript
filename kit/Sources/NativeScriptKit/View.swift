@@ -1,21 +1,8 @@
 import UIKit
 
-/// What an event handler receives: `args.eventName`, `args.object`, `args.value`.
-public struct EventData {
-    public let eventName: String
-    public let object: View
-    public let value: Any?
-
-    public init(eventName: String, object: View, value: Any?) {
-        self.eventName = eventName
-        self.object = object
-        self.value = value
-    }
-}
-
 /// `View` from @nativescript/core (view-base, view-common and view/index.ios):
 /// properties, CSS, the measure/layout pass and the native view it drives.
-open class View: NSObject {
+open class View: Observable {
     open class var cssType: String { "View" }
     /// Containers (layouts, content views) extend past the safe area: NativeScript's `ContainerView`.
     open class var overflowsSafeArea: Bool { false }
@@ -92,7 +79,6 @@ open class View: NSObject {
     /// A CSS re-match is one `_batchUpdate`: its values apply in the order they were set.
     private var isBatching = false
 
-    private var handlers: [String: [(EventData) -> Void]] = [:]
     var gestureObservers: [GesturesObserver] = []
 
     // MARK: Layout state (ui/core/view/index.ios)
@@ -207,8 +193,17 @@ open class View: NSObject {
 
     // MARK: Properties
 
+    /// A property's current value by its NativeScript name (`label.text`).
+    public override func get(_ name: String) -> Any? { applied[name] }
+
+    /// `view[name]` from dynamic code: a property by its name, as core's accessors are.
+    open override subscript(jsKey key: String) -> Any? {
+        get { get(key) }
+        set { set(key, newValue) }
+    }
+
     /// Sets a local property value by its NativeScript name; nil unsets it.
-    public func set(_ name: String, _ value: Any?) {
+    public override func set(_ name: String, _ value: Any?) {
         for (longhand, v) in expandShorthand(name, value) where hasStyleAccessor(longhand) {
             if let v { locals[longhand] = v } else { locals.removeValue(forKey: longhand) }
             refresh(longhand)
@@ -457,19 +452,16 @@ open class View: NSObject {
 
     // MARK: Events
 
-    /// Subscribes to an event: a gesture (`tap`, `pan`), or a property change such as `textChange`.
-    public func on(_ event: String, _ handler: @escaping (EventData) -> Void) {
-        handlers[event, default: []].append(handler)
-        if event == "tap" { observeTap() } else { observeGesture(event) }
+    /// A listener for a gesture (`tap`, `pan`) starts observing it, as `_observe` does.
+    open override func listenerAdded(_ eventName: String) {
+        if eventName == "tap" { observeTap() } else { observeGesture(eventName) }
     }
 
     /// A tap is the tap gesture; controls with a tap event of their own override.
     open func observeTap() { observeGesture("tap") }
 
     func emit(_ event: String, _ value: Any?) {
-        guard let list = handlers[event] else { return }
-        let data = EventData(eventName: event, object: self, value: value)
-        for handler in list { handler(data) }
+        fire(EventData(eventName: event, object: self, value: value))
         // A handler is a JavaScript task: the promise jobs it queued run before anything else does.
         Microtasks.checkpoint()
     }
