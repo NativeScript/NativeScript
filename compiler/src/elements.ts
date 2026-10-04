@@ -5,6 +5,7 @@ export const ELEMENTS = new Set([
   'ListView', 'TextView',
   'FlexboxLayout', 'WrapLayout', 'AbsoluteLayout', 'DockLayout', 'RootLayout',
   'FormattedString', 'Span', 'ActionItem', 'NavigationButton',
+  'SearchBar',
 ]);
 
 /** Two-way bindings (`v-model`, `[(ngModel)]`, `bind:value`): the property, its change event and the value's type. */
@@ -14,6 +15,7 @@ export const MODELS: Record<string, { prop: string; event: string; type: string 
   Switch: { prop: 'checked', event: 'checkedChange', type: 'boolean' },
   Slider: { prop: 'value', event: 'valueChange', type: 'number' },
   SegmentedBar: { prop: 'selectedIndex', event: 'selectedIndexChange', type: 'number' },
+  SearchBar: { prop: 'text', event: 'textChange', type: 'string' },
 };
 
 /** Element names as each framework spells them (`stackLayout`, `stacklayout`), to the canonical class name. */
