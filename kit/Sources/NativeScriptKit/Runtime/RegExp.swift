@@ -29,9 +29,37 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
     public var multiline: Bool { flags.contains("m") }
     public var sticky: Bool { flags.contains("y") }
 
-    /// Pattern syntax ICU spells differently: `[^]` (any character) and `$` meaning end of input only.
+    /// Pattern syntax ICU reads differently: `[^]` (any character), `[]` (no character), and inside a class
+    /// a `[` (ICU starts a nested set or a POSIX class there) or `&&` (ICU's intersection), which JavaScript takes literally.
     private static func translate(_ pattern: String) -> String {
-        pattern.replacingOccurrences(of: "[^]", with: "[\\s\\S]")
+        let chars = Array(pattern)
+        var out = ""
+        var i = 0
+        var inClass = false
+        while i < chars.count {
+            let c = chars[i]
+            if c == "\\", i + 1 < chars.count {
+                out.append(c); out.append(chars[i + 1]); i += 2; continue
+            }
+            if !inClass && c == "[" {
+                if i + 2 < chars.count, chars[i + 1] == "^", chars[i + 2] == "]" { out += "[\\s\\S]"; i += 3; continue }
+                if i + 1 < chars.count, chars[i + 1] == "]" { out += "(?!)"; i += 2; continue }
+                inClass = true
+                out.append(c)
+                // A `]` first in the class (after `^`) is JavaScript's end of an empty class, handled above.
+                if i + 1 < chars.count, chars[i + 1] == "^" { out.append("^"); i += 1 }
+                i += 1
+                continue
+            }
+            if inClass {
+                if c == "]" { inClass = false }
+                else if c == "[" { out += "\\["; i += 1; continue }
+                else if c == "&", i + 1 < chars.count, chars[i + 1] == "&" { out += "&\\&"; i += 2; continue }
+            }
+            out.append(c)
+            i += 1
+        }
+        return out
     }
 
     /// One match at or after `from`; sticky expressions only at `from`.

@@ -54,3 +54,6 @@ stream('one two  three').then((s) => console.log(JSON.stringify(s)));
 
 const untyped: any = JSON.parse('[1, 2, 3]');
 console.log(untyped.map((n: number) => n * 2).join('-'), untyped.filter((n: number) => n > 1).length, untyped.some((n: number) => n > 2), untyped.every((n: number) => n > 2), untyped.find((n: number) => n === 2), untyped.includes(3));
+
+// Character classes holding `[` or `&&`, which ICU would read as nested sets.
+console.log('a [b](c) [d] x'.replace(/(^|[^!\]])\[([^\]]+)\](?![([:])/g, '$1<$2>'), /[a&&b]/.test('&'), /[^]/.test('\n'));
