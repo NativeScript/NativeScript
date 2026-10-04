@@ -232,6 +232,9 @@ open class View: NSObject {
         case "col", "column": col = max(0, Int(toDouble(value) ?? 0)); (parent as? GridLayout)?.invalidate()
         case "rowSpan": rowSpan = max(1, Int(toDouble(value) ?? 1)); (parent as? GridLayout)?.invalidate()
         case "colSpan", "columnSpan": colSpan = max(1, Int(toDouble(value) ?? 1)); (parent as? GridLayout)?.invalidate()
+        case "order", "flexGrow", "flexShrink", "alignSelf", "flexWrapBefore": (parent as? FlexboxLayout)?.requestLayout()
+        case "left", "top": (parent as? AbsoluteLayout)?.requestLayout()
+        case "dock": (parent as? DockLayout)?.requestLayout()
         default:
             break
         }
