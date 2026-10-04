@@ -15,6 +15,7 @@ import { angularComponent, angularRoutes } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
 import { solidComponent, solidRoutes, solidStore } from './solid.ts';
+import { octaneApp } from './octane.ts';
 import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
@@ -35,7 +36,7 @@ const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d
 walk(appDir);
 const entry = join(app, pkg.main ?? 'app/app.ts');
 const deps = { ...pkg.dependencies };
-const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : null;
+const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane' : null;
 if (!framework) throw new Error('no supported framework in package.json');
 const entryText = readFileSync(entry, 'utf8');
 const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f));
@@ -93,6 +94,13 @@ if (framework === 'vue') {
   const start = routes.find((r) => r.name === initial)!;
   components.push({ name: 'StackRouter', file: join(dirname(routerFile!), 'StackRouter.solid.ts'), source: `import ${start.component} from './components/${start.component}.solid';\nexport default class StackRouter {}\n`, props: [], template: [{ kind: 'element', tag: 'Frame', attrs: [], events: [], children: [{ kind: 'component', name: start.component, props: [], events: [] }] }] });
   root = 'StackRouter';
+} else if (framework === 'octane') {
+  const tsx = files.filter((f) => f.endsWith('.tsx'));
+  const app = octaneApp(entry, new Map([entry, ...sources, ...tsx].map((f) => [f, readFileSync(f, 'utf8')])));
+  components = app.components;
+  for (const [f, store] of app.overrides) overrides.set(f, store);
+  modules = sources.filter((f) => !app.glue.has(f));
+  root = app.root;
 } else if (framework === 'svelte') {
   const isStoreFile = (f: string) => /from\s+['"]svelte\/store['"]/.test(readFileSync(f, 'utf8'));
   components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelteComponent(f, readFileSync(f, 'utf8'), (spec) => {
