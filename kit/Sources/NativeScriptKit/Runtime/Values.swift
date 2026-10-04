@@ -370,7 +370,7 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
             let unit = units[units.index(units.startIndex, offsetBy: Int(index))]
             return String(decoding: [unit], as: UTF16.self)
         }
-        return nil
+        return jsStringMethod(string, key)
     case let match as JSMatch:
         if key == "length" { return match.length }
         if key == "index" { return match.index }

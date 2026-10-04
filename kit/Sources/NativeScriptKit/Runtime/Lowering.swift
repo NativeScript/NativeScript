@@ -331,3 +331,26 @@ public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSRecord<T> 
     guard let object = jsFlat(value) as? JSDynamic else { return JSRecord<T>() }
     return JSRecord(object.jsKeys.map { ($0, element(object[jsKey: $0])) })
 }
+
+/// A string's methods read by name from untyped code (`value.split('/')` where `value` is `any`): the common ones.
+func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
+    let number = { (args: [Any?], i: Int) -> Double? in jsIsNullish(jsArg(args, i)) ? nil : jsToNumber(jsArg(args, i)) }
+    switch key {
+    case "split":
+        return { _, args in
+            if let re = jsFlat(jsArg(args, 0)) as? JSRegExp { return jsSplit(s, re, number(args, 1)) }
+            return jsSplit(s, jsIsNullish(jsArg(args, 0)) ? nil : jsToString(jsArg(args, 0)), number(args, 1))
+        }
+    case "slice": return { _, args in jsSlice(s, number(args, 0) ?? 0, number(args, 1)) }
+    case "substring": return { _, args in jsSubstring(s, number(args, 0) ?? 0, number(args, 1)) }
+    case "includes": return { _, args in jsIncludes(s, jsToString(jsArg(args, 0))) }
+    case "startsWith": return { _, args in jsStartsWith(s, jsToString(jsArg(args, 0)), number(args, 1)) }
+    case "endsWith": return { _, args in jsEndsWith(s, jsToString(jsArg(args, 0)), number(args, 1)) }
+    case "indexOf": return { _, args in jsIndexOf(s, jsToString(jsArg(args, 0)), number(args, 1)) }
+    case "trim": return { _, _ in jsTrim(s) }
+    case "toLowerCase": return { _, _ in s.lowercased() }
+    case "toUpperCase": return { _, _ in s.uppercased() }
+    case "toString", "valueOf": return { _, _ in s }
+    default: return nil
+    }
+}

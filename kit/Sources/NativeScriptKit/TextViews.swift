@@ -480,6 +480,7 @@ open class TextField: TextBase, UITextFieldDelegate {
             field?.textColor = color
             field?.tintColor = color
         default:
+            if let field, applyTextInputTrait(field, name, value) { return }
             super.setProperty(name, value)
         }
     }

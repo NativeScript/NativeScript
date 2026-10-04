@@ -290,9 +290,17 @@ open class Image: View {
 
     open override func setProperty(_ name: String, _ value: Any?) {
         switch name {
-        case "src":
-            imageSource = Image.load(toText(value))
+        case "src", "iosSymbolScale":
+            let src = toText(applied["src"])
+            let scale = toText(applied["iosSymbolScale"])
+            if let scale, !scale.isEmpty, let src, src.hasPrefix("sys://") {
+                imageSource = UIImage(systemName: String(src.dropFirst(6)), withConfiguration: symbolConfiguration(scale))
+            } else {
+                imageSource = Image.load(src)
+            }
             setNativeImage(imageSource)
+            // `_setSrc`: a symbol drawn at its configured scale is centered, not stretched.
+            if let scale, !scale.isEmpty { imageView?.contentMode = .center }
         case "tintColor":
             setTintColor(toColor(value))
         case "stretch":
@@ -307,6 +315,16 @@ open class Image: View {
         default:
             super.setProperty(name, value)
         }
+    }
+
+    /// `ImageSource.systemImageWithConfig`: the symbol at the view's font size and weight when it has one, at `iosSymbolScale`.
+    private func symbolConfiguration(_ scale: String) -> UIImage.SymbolConfiguration {
+        let symbolScale: UIImage.SymbolScale = scale == "small" ? .small : scale == "medium" ? .medium : scale == "large" ? .large : .default
+        if let size = toDouble(applied["fontSize"]), size > 0 {
+            let weight: UIImage.SymbolWeight = toText(applied["fontWeight"]) == "bold" ? .bold : .regular
+            return UIImage.SymbolConfiguration(pointSize: size, weight: weight, scale: symbolScale)
+        }
+        return UIImage.SymbolConfiguration(scale: symbolScale)
     }
 
     private static func load(_ src: String?) -> UIImage? {
