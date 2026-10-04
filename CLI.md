@@ -142,11 +142,12 @@ and `app.gradle` values), not in the CLI.
   (many plugins' hooks) do not apply. The compiler could run its own hook
   points, or the service could fire `buildIOS`/`buildAndroid` hooks with
   the native project root.
-- **Plugins**: npm plugins with native code (CocoaPods, SPM, Gradle
-  dependencies, `platforms/` folders) are not linked into the native
-  project, and JavaScript plugin APIs have no translation (see README,
-  Limits). The CLI should fail early when the project has plugins the
-  compiler cannot carry, instead of building an app without them.
+- **Plugins**: on iOS a plugin compiles from its TypeScript source and its
+  `platforms/ios` code is linked unchanged (README, Plugins); CocoaPods and
+  Gradle dependencies, resource bundles and plugin hooks are not carried yet,
+  and stop the build with the file that needs them. The plugin sources are
+  cloned into `~/.cache/ns-native/plugins`: the CLI should prefetch them with
+  `npm install` and report a missing source before building.
 - **Simulator reinstall**: `simctl install` over an app with the same id
   merges bundles, so a native install after a JavaScript one keeps the
   JavaScript build's stale files (icons, `app/`, frameworks) in the bundle.

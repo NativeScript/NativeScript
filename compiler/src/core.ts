@@ -91,7 +91,7 @@ export class CoreAPI {
     }
     let type = c.getNonNullableType(c.getTypeAtLocation(e));
     // `View & { extra?: … }`: the core class.
-    if (type.isIntersection()) type = type.types.find((u) => isCoreDeclaration(u.getSymbol()?.declarations?.[0])) ?? type;
+    if (type.isIntersection()) type = type.types.find((u) => (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && isCoreDeclaration(u.getSymbol()?.declarations?.[0])) ?? type;
     const sym = type.getSymbol();
     const mixin = this.t.mixinOf(sym);
     if (mixin) return { name: mixin, isStatic: false };
@@ -119,7 +119,6 @@ export class CoreAPI {
 
   /** Whether the kit applies `name` by name on this view class (a property in its setProperty). */
   private isViewProperty(owner: string, name: string): boolean {
-    if (process.env.NS_NATIVE_PENDING_PROPS?.split(',').includes(name)) return true;
     // A style property applies to any view; the kit's classes each apply their own.
     if (owner === 'Style') return [...this.index.values()].some((t) => kitExtends(this.index, t.name, 'View') && t.props.has(name));
     for (let t = this.index.get(owner); t; t = t.base ? this.index.get(t.base) : undefined) if (t.props.has(name)) return true;

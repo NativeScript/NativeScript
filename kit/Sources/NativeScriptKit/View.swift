@@ -246,7 +246,9 @@ open class View: Observable {
     /// A property's current value by its NativeScript name (`label.text`).
     public override func get(_ name: String) -> Any? {
         if let value = applied[name] { return value }
-        return Property.registered(name, on: type(of: self))?.defaultValue
+        if let property = Property.registered(name, on: type(of: self)) { return property.defaultValue }
+        // An unset core property reads as its default (`view.translateY` is 0).
+        return attributeValue(name)
     }
 
     /// The property a plugin registered under `name` for this view's class.

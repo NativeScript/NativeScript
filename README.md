@@ -150,6 +150,63 @@ file, line and construct.
   instance members, 92.5% of class members, 368 of 371 initializers; what
   is left is mostly API Swift does not import (variadic methods, NSZone).
 
+## Plugins
+
+A plugin is compiled from its TypeScript source with the app, as one
+program, and its iOS code is linked as the plugin ships it. ns-octane (a copy
+of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
+`@nativescript-community/gesturehandler`, `@nstudio/nativescript-menu`,
+`@nativescript/input-accessory`, `@nstudio/nstreamdown` and
+`@nativescript/haptics`) builds this way.
+
+- **Source.** `compiler/src/plugins/source.ts` finds the commit a published
+  version was built from (the `gitHead` npm recorded, else the version's tag,
+  else the commit that set the version), clones it once into
+  `~/.cache/ns-native/plugins/<package>@<version>`, maps each published
+  JavaScript file to its TypeScript through the package's source maps, and
+  checks the source by transpiling it and comparing the result with the
+  published JavaScript (formatting, emit helpers and the `@NativeClass`
+  lowering aside). A package whose source cannot be found or does not match
+  stops the build. `nativeReleaseOptions.pluginSources` in
+  `nativescript.config.ts` names another repository or a local folder.
+- **Patches.** `patches/native-release/<package>+<version>.patch` in the app
+  applies to the plugin's source, as patch-package's patches apply to its
+  JavaScript; ns-octane's input-accessory patch is ported this way.
+- **Reachability** (`compiler/src/reach.ts`): only the modules and members
+  the app reaches are translated, with the platform's constants folded, so
+  Android branches and `install(true)`'s override of core's gesture
+  recognition drop out; imports keep their evaluation order.
+- **Core extension** (`compiler/src/patterns.ts`, `properties.ts`):
+  `new Property({...})`/`CssProperty` registered on any class (core's
+  `View` included) are properties by name, with `[prop.setNative]` replayed
+  when a view sets up; `applyMixins(View, [Extended])` becomes an extension
+  of the kit class and hooks into every view's native setup; a property a
+  plugin adds to a native object (`nativeView.nsView`) is kept with it. Any
+  other change to core's prototypes stops the build with the file and line.
+- **Untyped code.** Plugins are written for JavaScript's semantics without
+  `strictNullChecks`: their object parameters are implicitly unwrapped
+  optionals, objects held untyped (`node = {}; node[key] = …`) are
+  extensible `JSObject`s, their methods are reachable by name from untyped
+  callers, native enums read untyped as numbers, and `NSDictionary`/`NSArray`
+  answer `count`, `allKeys`, `objectAtIndex` and `valueForKey` as the runtime
+  marshals them.
+- **Native code** (`compiler/src/plugins/native.ts`): `platforms/ios` is
+  copied unchanged into `Plugins/` of the generated project. Objective-C and C
+  are targets of a local Swift package (the module its `module.modulemap`
+  declares, else `NSPlugin_<package>`), Swift is a static library target of
+  the project, and an `.xcframework` is a binary target. Each module gets a
+  symbol table as the SDK's frameworks do, so
+  `GestureHandlerManager.alloc().init()` resolves to its Swift spelling, and
+  the package's typings resolve to the module whose classes they declare.
+  An app with a plugin's Swift module links without Swift's hermetic seal:
+  sealed, a `UIView` subclass in that module loses the Objective-C class data
+  UIKit reads (`+[NSBundle bundleForClass:]` aborts).
+- **Octane's driver**: `registerElement` tags resolve to their classes at
+  compile time, `hostSlot` children set the slot property, `ref`s,
+  `onLoaded`, `renderNativeScriptApp`, `setWindowContentResolver` and
+  `useSyncExternalStore` compile; a function given to a plugin view's
+  property (`translationFunction={fn}`) is a script function to it.
+
 ## CSS
 
 The CSS a native build compiles in is the CSS the app's NativeScript build
@@ -264,6 +321,8 @@ develops it with live reload as usual.
 | `compiler/src/core.ts`, `kit-index.ts` | `@nativescript/core`'s API through the kit, checked against the kit's sources |
 | `compiler/src/natives/symbols.ts`, `native-calls.ts` | NativeScript's names for iOS APIs to Swift, from the SDK's symbol graphs; their translation |
 | `compiler/src/platform.ts` | `isIOS`/`isAndroid`/`__IOS__`/`__ANDROID__` folded for the target before type-checking |
+| `compiler/src/plugins/` | Plugins: their source found, checked and patched (`source.ts`), their iOS code as targets and symbol tables (`native.ts`) |
+| `compiler/src/reach.ts`, `patterns.ts`, `properties.ts` | What of a plugin the app reaches; the patterns by which plugins extend core; properties registered by name |
 | `compiler/src/codegen.ts` | A template as `render()`: views made once, one effect per binding, keyed regions for `if`/`for` |
 | `compiler/src/kotlin.ts`, `codegen-kotlin.ts`, `android.ts` | The Android target: TypeScript to Kotlin, `render()` in Kotlin, the Gradle project |
 | `compiler/src/css.ts`, `css-worker.ts` | The CSS the app's NativeScript build ships, through its own bundler's pipeline, for both targets |
@@ -295,8 +354,11 @@ develops it with live reload as usual.
   than FlexboxLayout, gestures other than tap, animations, modals, TabView,
   the other elements gallery-vue shows, and the CSS engine's selectors,
   variables, borders and backgrounds are iOS only so far.
-- **Plugins** are not compiled yet; their native code will get its tables
-  from its own module the same way the SDK's do.
+- **Plugins** compile from their source (see Plugins above). Not yet:
+  CocoaPods and Gradle dependencies, `.framework`s and static libraries
+  (an `.xcframework` is fine), resource bundles, Info.plist merges and
+  entitlements, plugin hooks, and changes to core's prototypes other than
+  the recognized patterns. Android does not compile plugins yet.
 - **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box
   shadows, Span `verticalAlignment`, `font://` icons, and DatePicker dates given
   as Date values.

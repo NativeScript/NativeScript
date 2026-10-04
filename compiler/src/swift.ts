@@ -897,7 +897,7 @@ export class Translator {
     // A core callback slot passing more arguments than the closure declares: the rest unused, as Swift closures take every argument.
     const slot = this.slotOf(fn);
     const coreSlot = !!slot?.getDeclaration() && isCoreDeclaration(slot.getDeclaration() as ts.Declaration);
-    const extra = coreSlot && !fn.parameters.length ? slot!.getParameters().map((p, k) => `_ __unused${k}: ${this.type(this.checker.getTypeOfSymbolAtLocation(p, fn), fn)}`) : [];
+    const extra = coreSlot && !fn.parameters.length ? slot!.getParameters().filter((p) => !(p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken)).map((p, k) => `_ __unused${k}: ${this.type(this.checker.getTypeOfSymbolAtLocation(p, fn), fn)}`) : [];
     return `{ (${[this.params(fn, true), ...extra].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
   }
 

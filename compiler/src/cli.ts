@@ -144,10 +144,6 @@ if (framework === 'vue') {
 
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-if (process.env.NS_NATIVE_DUMP) {
-  mkdirSync(process.env.NS_NATIVE_DUMP, { recursive: true });
-  for (const [f, text] of virtual) writeFileSync(join(process.env.NS_NATIVE_DUMP, basename(f)), text);
-}
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
 const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
 const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins);
