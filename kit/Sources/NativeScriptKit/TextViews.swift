@@ -70,6 +70,14 @@ open class TextBase: View {
             maxLines = Int(toDouble(value) ?? 0)
             adjustLineBreak()
             requestLayout()
+        case "textDecoration", "textTransform":
+            setNativeText(reset: false)
+        case "letterSpacing", "lineHeight", "textStroke":
+            setNativeText(reset: false)
+            requestLayout()
+        case "textShadow":
+            setShadow(value)
+            requestLayout()
         default:
             super.setProperty(name, value)
         }
@@ -94,25 +102,52 @@ open class TextBase: View {
 
     func requestLayoutOnTextChanged() { requestLayout() }
 
-    /// `_setNativeText` with `nativeScriptSetTextDecorationAndTransform`: plain text, no attributes.
+    /// `_setNativeText`: the transformed text with its decoration, letter spacing and line height, then the stroke.
     func setNativeText(reset: Bool) {
         UIView.performWithoutAnimation {
-            let value = reset ? nil : text
-            switch textView {
-            case let button as UIButton:
-                button.setAttributedTitle(nil, for: .normal)
-                button.setTitle(value, for: .normal)
-            case let label as UILabel:
-                label.attributedText = nil
-                label.text = value
-            case let field as UITextField:
-                field.attributedText = nil
-                field.text = value
-            default:
-                break
+            if reset {
+                switch textView {
+                case let button as UIButton:
+                    button.setAttributedTitle(nil, for: .normal)
+                    button.setTitle(nil, for: .normal)
+                case let label as UILabel:
+                    label.attributedText = nil
+                    label.text = nil
+                case let field as UITextField:
+                    field.attributedText = nil
+                    field.text = nil
+                default:
+                    break
+                }
+                return
             }
-            if !reset && applied["color"] == nil { setColor(.label) }
+            textView?.nativeScriptSetTextDecorationAndTransform(
+                transformedText(text, toText(applied["textTransform"])), toText(applied["textDecoration"]) ?? "",
+                toDouble(applied["letterSpacing"]) ?? 0, toDouble(applied["lineHeight"]) ?? 0)
+            if applied["color"] == nil { setColor(.label) }
+            if let stroke = toText(applied["textStroke"]).flatMap(CSSShadow.shorthand) {
+                let width = stroke.values.first?.toDevicePixels(auto: 0) ?? 0
+                textView?.nativeScriptSetFormattedTextStroke(width, Color(stroke.color)?.ios)
+            }
         }
+    }
+
+    /// `_setShadow`: the shadow's own alpha is its opacity.
+    func setShadow(_ value: Any?) {
+        guard let layer = textView?.layer else { return }
+        guard let shadow = toText(value).flatMap(CSSShadow.init(css:)) else {
+            layer.shadowOpacity = 0
+            layer.shadowRadius = 0
+            layer.shadowColor = UIColor.clear.cgColor
+            layer.shadowOffset = .zero
+            return
+        }
+        layer.shadowOpacity = Float(shadow.colorAlpha.map { $0 == 0 ? 1 : $0 / 255 } ?? 1)
+        layer.shadowColor = shadow.color?.cgColor
+        layer.shadowRadius = CGFloat(LayoutHelper.toDeviceIndependentPixels(shadow.blurRadius.toDevicePixels(auto: 0)))
+        layer.shadowOffset = CGSize(width: LayoutHelper.toDeviceIndependentPixels(shadow.offsetX.toDevicePixels(auto: 0)),
+                                    height: LayoutHelper.toDeviceIndependentPixels(shadow.offsetY.toDevicePixels(auto: 0)))
+        layer.masksToBounds = false
     }
 
     func setColor(_ color: UIColor?) {
