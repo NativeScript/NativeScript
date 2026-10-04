@@ -11,24 +11,6 @@ public protocol JSArrayProtocol: AnyObject {
     func jsSetLength(_ length: Int) throws
 }
 
-/// A JavaScript iterator object (`array.keys()`, `map.entries()`, …): live and single-pass;
-/// iterating it again continues where it stopped.
-public final class JSIterator<Element>: Sequence, IteratorProtocol {
-    private let step: () -> Element?
-    private var done = false
-
-    public init(_ step: @escaping () -> Element?) { self.step = step }
-
-    public func next() -> Element? {
-        guard !done else { return nil }
-        if let value = step() { return value }
-        done = true
-        return nil
-    }
-
-    public func makeIterator() -> JSIterator<Element> { self }
-}
-
 /// A JavaScript array: reference semantics, JavaScript method names, `Double` indexes and lengths.
 ///
 /// Limits: a subscript read past the end traps (JavaScript gives `undefined`, which a non-optional

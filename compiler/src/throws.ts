@@ -1,10 +1,11 @@
 import ts from 'typescript';
-import { isStringRaw } from './lang.ts';
+import { isStringRaw, iterationThrows } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add']);
+const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add',
+  'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw']);
 
 /**
  * Which functions throw, worked out across the call graph: a function is
@@ -33,7 +34,7 @@ export class Throws {
     for (let changed = true; changed; ) {
       changed = false;
       for (const fn of fns) {
-        if (this.throwing.has(fn) || isAsync(fn)) continue;
+        if (this.throwing.has(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken) continue;
         if (this.bodyThrows(fn)) { this.throwing.add(fn); changed = true; }
       }
     }
@@ -92,6 +93,11 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    // Iterating a generator or a script's iterator runs its code.
+    if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && iterationThrows(c.getTypeAtLocation(n.expression), c)) return true;
+    if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
+    if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
+    if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && this.untyped(n.initializer)) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);

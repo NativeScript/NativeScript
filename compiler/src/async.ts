@@ -8,6 +8,9 @@ import ts from 'typescript';
  * calls, so each await takes the ticks ECMAScript's Await() takes. A loop
  * whose body awaits is a trampolined `JSAsyncLoop`, a `try` around awaits
  * routes errors to a catch closure, and `finally` runs on every way out.
+ * Generators lower the same way, suspending at each `yield`: the runtime
+ * keeps the continuation, and the handlers `throw()` and `return()` resume
+ * through (the enclosing catch and finally blocks).
  */
 export interface AsyncCtx {
   /** The function's `JSAsync` capability. */
@@ -23,6 +26,8 @@ export interface AsyncCtx {
   /** Statements for `break`/`continue` of the innermost lowered loop. */
   brk?: string;
   cont?: string;
+  /** In a generator: what its body suspends through (`yield`), and whether it is async. */
+  generator?: 'sync' | 'async';
 }
 
 /** The target language's spelling of what the lowering writes. */
@@ -55,6 +60,27 @@ export interface AsyncSyntax {
   asyncReturn(cap: string, value: string | null, isPromise: boolean, result: string): string;
   asyncError(cap: string): string;
   loopRun(iteration: string): string;
+  /** `undefined`. */
+  readonly undefinedValue: string;
+  /** A generator's body as the object the function returns: [open, close]. */
+  generatorBody(cap: string, element: string, isAsync: boolean): [string, string];
+  /** `return value` (null: none) in a generator. */
+  generatorReturn(cap: string, value: string | null): string;
+  /** `yield value` (or `yield* iterator`): the body continues in `continuation`. */
+  yieldCall(cap: string, operand: string, delegate: boolean, continuation: string, onError: string, onReturn: string): string;
+  /** The statements taking a JavaScript iterator's next value or else running `otherwise`. */
+  nextStep(item: string, iterator: string, type: string, otherwise: string, indent: string): string[];
+  /** IteratorClose of a loop leaving early. */
+  closeIterator(iterator: string): string;
+  /** `for await`: await the async iterator's next result, then `continuation` with it. */
+  awaitNext(iterator: string, continuation: string, onError: string): string;
+  /** The statements taking an awaited result's value or else running `otherwise`. */
+  asyncStep(step: string, result: string, otherwise: string, indent: string): string[];
+  /** AsyncIteratorClose of a `for await` leaving early: then `next`, or a throw, closing then rethrowing. */
+  closeAsyncIterator(iterator: string, next: string, onError: string): string;
+  closeAsyncIteratorThrowing(iterator: string, error: string, onError: string): string;
+  /** A throwing statement whose error would end the enclosing closure: as `try` makes it. */
+  tryStatement(statement: string): string;
 }
 
 /** What the lowering needs from a translator. */
@@ -80,17 +106,27 @@ export interface AsyncTranslator {
   bindTo(name: ts.BindingName, value: string, type: string, mutable: boolean | 'assign'): string;
   iterable(e: ts.Expression): string;
   elementTypeOf(e: ts.Expression): string;
+  /** A JavaScript iterator `for…of` steps through `next()` (a generator, an iterable class); null when the target's own iteration is exact. */
+  jsIteration(e: ts.Expression): string | null;
+  /** GetIterator(e, async) for `for await`. */
+  asyncIteration(e: ts.Expression): string;
+  /** GetIterator for `yield*`: an iterator any iterable makes. */
+  delegateIteration(e: ts.Expression, isAsync: boolean): string;
+  fromAnyCode(code: string, type: string, orZero?: boolean): string;
+  /** The value `next(v)` resumes a generator with, as the `yield` expression's type reads it (undefined when none was given). */
+  resumedValue(code: string, type: string): string;
   /** `var name: type` for a value assigned later. */
   deferredDeclaration(name: string, type: string): string;
   isPromiseType(type: string): boolean;
   error(n: ts.Node | undefined, what: string): Error;
 }
 
+/** Whether `n` suspends its function: an `await`, a `for await` or a `yield`. */
 export function containsAwait(n: ts.Node): boolean {
   let found = false;
   const visit = (c: ts.Node) => {
     if (found) return;
-    if (ts.isAwaitExpression(c) || (ts.isForOfStatement(c) && c.awaitModifier)) { found = true; return; }
+    if (ts.isAwaitExpression(c) || ts.isYieldExpression(c) || (ts.isForOfStatement(c) && c.awaitModifier)) { found = true; return; }
     if (ts.isFunctionLike(c) || ts.isClassLike(c)) return;
     ts.forEachChild(c, visit);
   };
@@ -131,7 +167,39 @@ export class AsyncLowering {
     return out;
   }
 
+  /**
+   * A generator's body (`function*`, `async function*`): the parameters are
+   * bound when it is called, and the rest runs as the generator is iterated.
+   */
+  generatorBody(fn: ts.FunctionLikeDeclaration, element: string, isAsync: boolean): string[] {
+    const t = this.t;
+    const s = this.s;
+    const cap = t.fresh('__gen');
+    const i = t.indent;
+    const ctx: AsyncCtx = {
+      cap, result: 'Any?', next: null, onError: s.asyncError(cap), generator: isAsync ? 'async' : 'sync',
+      ret: (v) => s.generatorReturn(cap, v),
+    };
+    const prelude = t.paramPrelude(fn);
+    const [open, close] = s.generatorBody(cap, element, isAsync);
+    const inner = t.nested(() => this.list(fn.body && ts.isBlock(fn.body) ? [...fn.body.statements] : [], ctx));
+    return [...prelude, `${i}${open}`, ...inner, `${i}${close}`];
+  }
+
+  /** `return value` in a statement the translator writes (no await in it): in an async generator the value is awaited first. */
+  returnIn(ctx: AsyncCtx, e: ts.Expression): string { return this.retStatement(ctx, e); }
+
   private retStatement(ctx: AsyncCtx, e: ts.Expression | undefined): string {
+    const t = this.t;
+    if (e && ctx.generator === 'async') {
+      // `return value` in an async generator awaits the value before finally blocks run.
+      const v = t.fresh('__rv');
+      return this.s.awaitCall(`${t.tryPrefix(e)}${t.coerce(e, 'Any?')}`, false, this.closure([[v, 'Any?']], [`${t.indent}    ${ctx.ret(v, false)}`], ctx.onError), ctx.onError);
+    }
+    return this.plainReturn(ctx, e);
+  }
+
+  private plainReturn(ctx: AsyncCtx, e: ts.Expression | undefined): string {
     const t = this.t;
     if (!e) return ctx.ret(null, false);
     const isPromise = t.isPromiseType(t.typeOf(e));
@@ -205,8 +273,12 @@ export class AsyncLowering {
       return [...out, ...this.loop(ctx, { cond: s.condition, body: s.statement, step: s.incrementor })];
     }
     if (ts.isForOfStatement(s)) {
-      if (s.awaitModifier) throw t.error(s, 'for await');
       const it = t.fresh('__it');
+      if (s.awaitModifier) {
+        return this.linearize([s.expression], ctx, () => [`${i}${x.tryStatement(x.constant(it, null, t.asyncIteration(s.expression)))}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression, kind: 'async' })]);
+      }
+      const js = t.jsIteration(s.expression);
+      if (js) return this.linearize([s.expression], ctx, () => [`${i}${x.tryStatement(x.constant(it, null, js))}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression, kind: 'js' })]);
       return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression)}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
     }
     if (ts.isTryStatement(s)) return this.tryStatement(s, ctx);
@@ -242,7 +314,7 @@ export class AsyncLowering {
         return;
       }
       ts.forEachChild(n, visit);
-      if (ts.isAwaitExpression(n)) points.push(n);
+      if (ts.isAwaitExpression(n) || ts.isYieldExpression(n)) points.push(n);
     };
     for (const e of exprs) visit(e);
     const step = (k: number): string[] => {
@@ -255,6 +327,7 @@ export class AsyncLowering {
         lines.push(`${i}${this.s.constant(name, t.typeOf(h), `${t.tryPrefix(h)}${t.expr(h)}`)}`);
         t.subst.set(h, name);
       }
+      if (ts.isYieldExpression(a)) return [...lines, ...this.yieldPoint(a, ctx, () => t.nested(() => step(k + 1)))];
       if (!ts.isAwaitExpression(a)) return [...lines, ...this.conditional(a, ctx, () => step(k + 1))];
       const operand = a.expression;
       const isPromise = t.isPromiseType(t.typeOf(operand));
@@ -267,6 +340,27 @@ export class AsyncLowering {
       return lines;
     };
     return step(0);
+  }
+
+  /**
+   * `yield value` / `yield* iterable`: the generator suspends there; `next(v)`
+   * continues with v as the expression's value, `throw(e)` throws e there,
+   * and `return(v)` returns v there, through the enclosing finally blocks.
+   */
+  private yieldPoint(a: ts.YieldExpression, ctx: AsyncCtx, rest: () => string[]): string[] {
+    const t = this.t;
+    const x = this.s;
+    const i = t.indent;
+    if (!ctx.generator) throw t.error(a, 'yield outside a generator');
+    const operand = a.asteriskToken ? t.delegateIteration(a.expression!, ctx.generator === 'async')
+      : a.expression ? `${t.tryPrefix(a.expression)}${t.coerce(a.expression, 'Any?')}` : x.undefinedValue;
+    const v = t.fresh('__t');
+    const type = t.typeOf(a);
+    t.subst.set(a, type === t.syntax.voidType ? v : t.resumedValue(v, type));
+    const body = rest();
+    const r = t.fresh('__r');
+    const onReturn = this.closure([[r, 'Any?']], t.nested(() => [`${t.indent}${ctx.ret(r, false)}`]), ctx.onError);
+    return [`${i}${x.yieldCall(ctx.cap, operand, !!a.asteriskToken, this.closure([[v, 'Any?']], body, ctx.onError), ctx.onError, onReturn)}`];
   }
 
   /** `c ? await a : b`, `x && await y`: the operator as an if, both ways joining the rest of the work with the value. */
@@ -328,7 +422,7 @@ export class AsyncLowering {
     return false;
   }
 
-  private loop(ctx: AsyncCtx, o: { cond?: ts.Expression; body: ts.Statement; step?: ts.Expression; condAfter?: boolean; iterator?: string; binding?: ts.VariableDeclarationList; of?: ts.Expression }): string[] {
+  private loop(ctx: AsyncCtx, o: { cond?: ts.Expression; body: ts.Statement; step?: ts.Expression; condAfter?: boolean; iterator?: string; binding?: ts.VariableDeclarationList; of?: ts.Expression; kind?: 'js' | 'async' }): string[] {
     const t = this.t;
     const x = this.s;
     const i = t.indent;
@@ -337,17 +431,51 @@ export class AsyncLowering {
     const first = t.fresh('__first');
     const out = [`${i}${x.constant(brk, this.thunk(), this.closure([], t.nested(() => [t.indent + (ctx.next ?? ctx.ret(null, false))]), ctx.onError))}`];
     if (o.condAfter) out.push(`${i}var ${first} = true`);
+    // A loop over an iterator that leaves early (break, return, throw) closes it first.
+    let leave = { brk: `${brk}()`, ret: ctx.ret, onError: ctx.onError };
+    if (o.kind) {
+      const it = o.iterator!;
+      const closeErr = t.fresh('__closeError');
+      const e = t.fresh('__e');
+      const closing = o.kind === 'js'
+        ? x.inline(`${x.closeIterator(it)}; ${ctx.onError}(${e})`, [e, 'Any?'])
+        : x.inline(x.closeAsyncIteratorThrowing(it, e, ctx.onError), [e, 'Any?']);
+      out.push(`${i}${x.constant(closeErr, x.fnType(['Any?'], x.voidType), closing)}`);
+      const close = (then: string) => (o.kind === 'js' ? `${x.closeIterator(it)}; ${then}` : x.closeAsyncIterator(it, x.inline(then), ctx.onError));
+      leave = {
+        brk: close(`${brk}()`),
+        ret: (v, p) => (v === null ? close(ctx.ret(null, false)) : `${x.scopeOpen} ${x.constant('__value', null, v)}; ${close(ctx.ret('__value', p))} }`),
+        onError: closeErr,
+      };
+    }
     const iteration = t.nested(() => {
       const j = t.indent;
       const lines: string[] = [];
       const again = o.step ? `${t.exprStatement(o.step)}; ${cont}()` : `${cont}()`;
-      const inner: AsyncCtx = { ...ctx, next: again, brk: `${brk}()`, cont: again };
+      const inner: AsyncCtx = { ...ctx, next: again, brk: leave.brk, cont: again, ret: leave.ret, onError: leave.onError };
       if (o.iterator) {
         const decl = o.binding!.declarations[0];
         const item = t.fresh('__item');
-        lines.push(...x.nextItem(item, o.iterator, `${brk}(); return`, j));
-        lines.push(t.withAsync(inner, () => t.bindTo(decl.name, item, t.elementTypeOf(o.of!), !(o.binding!.flags & ts.NodeFlags.Const))));
-        lines.push(...t.withLoweredLoop(() => this.list(ts.isBlock(o.body) ? [...o.body.statements] : [o.body], inner)));
+        const bind = () => {
+          const lines = [
+            t.withAsync(inner, () => t.bindTo(decl.name, item, t.elementTypeOf(o.of!), !(o.binding!.flags & ts.NodeFlags.Const))),
+            ...t.withLoweredLoop(() => this.list(ts.isBlock(o.body) ? [...o.body.statements] : [o.body], inner)),
+          ];
+          return o.kind ? x.tryBlock(lines.map((l) => '    ' + l), leave.onError, t.indent) : lines;
+        };
+        if (o.kind === 'async') {
+          // Each step awaits the iterator's next result; a rejection ends the loop without closing it.
+          const r = t.fresh('__result');
+          const step = t.fresh('__step');
+          // The value as the binding declares it: `for await` yields what the iterable's promises fulfill with.
+          const element = ts.isIdentifier(decl.name) ? t.typeOf(decl.name) : t.elementTypeOf(o.of!);
+          const body = t.nested(() => [...x.asyncStep(step, r, `${brk}(); return`, t.indent), `${t.indent}${x.constant(item, element, t.fromAnyCode(`${step}.value`, element, false))}`, ...bind()]);
+          lines.push(`${j}${x.awaitNext(o.iterator, this.closure([[r, 'Any?']], body, ctx.onError), ctx.onError)}`);
+          return lines;
+        }
+        if (o.kind === 'js') lines.push(...x.nextStep(item, o.iterator, t.elementTypeOf(o.of!), `${brk}(); return`, j));
+        else lines.push(...x.nextItem(item, o.iterator, `${brk}(); return`, j));
+        lines.push(...bind());
         return lines;
       }
       const check = (rest: () => string[]) => (o.cond

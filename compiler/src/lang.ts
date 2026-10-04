@@ -56,3 +56,57 @@ export function jsKeyOrder(keys: string[]): string[] {
   const index = (k: string) => /^(0|[1-9]\d{0,9})$/.test(k) && Number(k) < 4294967295;
   return [...keys.filter(index).sort((a, b) => Number(a) - Number(b)), ...keys.filter((k) => !index(k))];
 }
+
+/** The kit's names for members a well-known symbol names (`[Symbol.iterator]`, `__@iterator@12` in the checker). */
+export const WELL_KNOWN_MEMBERS: Record<string, string> = { iterator: 'jsSymbolIterator', asyncIterator: 'jsSymbolAsyncIterator', toPrimitive: 'jsToPrimitive', toStringTag: 'jsToStringTag' };
+
+/** A property's name as the checker spells a well-known symbol's (`__@iterator@12`): the kit's member name. */
+export function wellKnownMember(name: string): string | null {
+  const m = /^__@(\w+)@\d+$/.exec(name);
+  return m ? WELL_KNOWN_MEMBERS[m[1]] ?? null : null;
+}
+
+/** A type's `[Symbol.iterator]` (or `[Symbol.asyncIterator]`) member. */
+function iteratorMember(t: ts.Type, async: boolean): ts.Symbol | undefined {
+  return t.getProperties().find((p) => p.escapedName.toString().startsWith(async ? '__@asyncIterator@' : '__@iterator@'));
+}
+
+const ITERATING_SCRIPT = new Set(['Generator', 'Iterator', 'IterableIterator', 'IteratorObject', 'Iterable']);
+const ITERATING_BUILTIN = new Set(['Array', 'ReadonlyArray', 'Map', 'ReadonlyMap', 'Set', 'ReadonlySet', 'String', 'ArrayIterator', 'MapIterator', 'SetIterator', 'StringIterator', 'RegExpStringIterator', 'TemplateStringsArray']);
+
+/**
+ * Whether iterating a value of this type runs script (a generator's body, an
+ * iterator class's `next`), which can throw: `for…of`, spread and
+ * destructuring over it step the iteration protocol. Arrays, strings, maps,
+ * sets and their built-in iterators iterate natively.
+ */
+export function iterationThrows(t: ts.Type, checker: ts.TypeChecker): boolean {
+  if (t.isUnion()) return t.types.some((u) => !(u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null)) && iterationThrows(u, checker));
+  if (t.flags & (ts.TypeFlags.StringLike | ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return false;
+  if (checker.isArrayType(t) || checker.isTupleType(t)) return false;
+  const name = (t.aliasSymbol ?? t.getSymbol())?.getName() ?? '';
+  if (ITERATING_BUILTIN.has(name)) return false;
+  if (ITERATING_SCRIPT.has(name)) return true;
+  return !!iteratorMember(t, false);
+}
+
+/** The type of the values an iterable yields (`T` of its `[Symbol.iterator]().next()`'s `IteratorYieldResult<T>`). */
+export function iteratedType(t: ts.Type, checker: ts.TypeChecker, where: ts.Node, async = false): ts.Type | undefined {
+  const member = iteratorMember(t, async);
+  const iterator = member ? checker.getTypeOfSymbolAtLocation(member, where).getCallSignatures()[0]?.getReturnType() : t;
+  if (!iterator) return undefined;
+  const next = iterator.getProperty('next');
+  let result = next && checker.getTypeOfSymbolAtLocation(next, where).getCallSignatures()[0]?.getReturnType();
+  if (!result) return undefined;
+  if (async) result = checker.getAwaitedType(result) ?? result;
+  const parts = result.isUnion() ? result.types : [result];
+  const yielded = parts.filter((p) => {
+    const done = p.getProperty('done');
+    const dt = done && checker.getTypeOfSymbolAtLocation(done, where);
+    return !dt || !(dt.flags & ts.TypeFlags.BooleanLiteral) || checker.typeToString(dt) !== 'true';
+  });
+  const values = yielded.map((p) => p.getProperty('value')).filter((v): v is ts.Symbol => !!v).map((v) => checker.getTypeOfSymbolAtLocation(v, where));
+  if (!values.length) return undefined;
+  // Values of several types are one union the checker already made, or untyped.
+  return values.length === 1 ? values[0] : (checker as unknown as { getUnionType(types: ts.Type[]): ts.Type }).getUnionType(values);
+}
