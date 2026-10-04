@@ -233,9 +233,13 @@ them), and `@nativescript/core`'s Android view layer ported to Kotlin over
 core's own `org.nativescript.widgets` AAR, so layout is core's Java code:
 properties applied at load in core's order, the CSS engine (selectors,
 `@media`, `var()`, `calc()`, `@keyframes`, root classes with live light/dark),
-borders, gradients, box shadows and clip paths, every layout, ListView,
-TextView, gestures with core's event data, animations, modals, TabView, the
-pickers and the other controls gallery-vue shows. Every comparison is
+borders, gradients, box shadows, clip paths and `color-mix()`, every
+layout, ListView, TextView, gestures with core's event data, animations,
+modals, TabView, the pickers and the other controls gallery-vue shows, core's
+imperative API (`view.animate()`, `Animation`, TouchManager, RootLayout's
+`open`/`close`, `Frame.navigate` and `showModal` from script), and each
+framework's update order (`EffectOrder` in `Signals.kt`, the same keys
+`codegen-kotlin.ts` emits as `codegen.ts`). Every comparison is
 against that framework's own NativeScript Android Release build, on a
 Pixel 9 emulator (API 36), below the status bar.
 
@@ -251,9 +255,9 @@ The NativeScript APKs carry `libNativeScript.so` (V8) for four ABIs,
 
 The gallery apps, against their NativeScript Release builds on the same
 emulator (`tools/gallery-android.py`, `gallery-android.json` in each app):
-gallery-vue's 35 screens in 139 shots, 136 of them 0 pixels apart; the
-other three are the pan and touch-move shots (see Limits). The ListView
-screen of the other five is 0 pixels apart in all of its shots.
+gallery-vue's 40 screens in 171 shots, 169 of them 0 pixels apart; the
+other two are the pan shots (see Limits). The ListView and Update order
+screens of the other five are 0 pixels apart in all of their shots.
 
 `native-calls-vue` on Android calls the platform from TypeScript: a
 `GradientDrawable` and elevation on the card, a tinted system drawable, a
@@ -261,7 +265,8 @@ screen of the other five is 0 pixels apart in all of its shots.
 badge drawn on a `Canvas`, the title's size and typeface, and a share sheet
 from `Intent.createChooser`. Against its NativeScript Release build: 0
 pixels differ at launch, after two runs of the tasks, with the chooser open
-and after closing it.
+and after closing it; with the chooser open, the system's share targets
+can differ by a few icon pixels from one opening to the next.
 
 Two framework behaviors the Android build reproduces: the Angular app's CSS
 is the filtered CSS its build ships (see above), and React screens sit in
@@ -326,12 +331,10 @@ develops it with live reload as usual.
   on the framework's microtask or tick.
 - **Where Swift differs, by design.** Closures have no identity; JSON
   cannot hold lone surrogates.
-- **Android:** core's imperative API from script (`view.animate()`,
-  `Animation`) is in kit-android but not yet reachable from translated code;
-  `Base.extend({…})`, Java varargs and `Array.create` are not translated;
-  a Java array a method fills in is a copy. Pan and touch-move shots depend
-  on the input events core reads (its pan starts from a recycled
-  MotionEvent), which vary from run to run in the NativeScript build too.
+- **Android:** `Base.extend({…})`, Java varargs and `Array.create` are not
+  translated; a Java array a method fills in is a copy. Core's pan starts
+  from a recycled MotionEvent, whatever event it holds by then, so a pan's
+  deltas vary from run to run in the NativeScript build itself.
 - **Plugins** are not compiled yet; their native code will get its tables
   from its own module the same way the SDK's do.
 - **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box
