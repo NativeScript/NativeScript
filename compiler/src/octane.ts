@@ -330,7 +330,8 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
       if (!renderItem) throw fail(open, 'a listview needs renderItem in a release build');
       return { kind: 'element', tag: el, attrs, events, children: rows(renderItem, attrs, loops) };
     }
-    if (TEXT_HOSTS.has(el!)) {
+    const formatted = kids.some((c) => ts.isJsxElement(c) || ts.isJsxSelfClosingElement(c));
+    if (TEXT_HOSTS.has(el!) && !formatted) {
       const text = textOf(kids, loops);
       if (text) attrs.push(text);
       return { kind: 'element', tag: el!, attrs, events, children: [] };

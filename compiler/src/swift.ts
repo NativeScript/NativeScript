@@ -183,6 +183,7 @@ export class Translator {
       case 'OutputEmitterRef': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': return 'Router';
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
+      case 'AnimationPromise': return 'JSPromise<Void>';
       case 'Map': case 'ReadonlyMap': return `JSMap<${arg(0)}, ${arg(1)}>`;
       case 'Set': case 'ReadonlySet': return `JSSet<${arg(0)}>`;
       case 'Date': return 'JSDate';
@@ -610,6 +611,19 @@ export class Translator {
   // ---- Classes -------------------------------------------------------------------------------
 
   /** The class's members; the caller adds `render()`. Returns the Swift lines inside the class. */
+  /** Whether a member of `cls` assigns `this.name`. */
+  private isAssigned(cls: ts.ClassDeclaration, name: string): boolean {
+    let found = false;
+    const visit = (n: ts.Node): void => {
+      if (found) return;
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+          && ts.isPropertyAccessExpression(n.left) && n.left.expression.kind === ts.SyntaxKind.ThisKeyword && n.left.name.text === name) found = true;
+      else ts.forEachChild(n, visit);
+    };
+    for (const m of cls.members) if (!ts.isPropertyDeclaration(m) || m.initializer) ts.forEachChild(m, visit);
+    return found;
+  }
+
   componentMembers(cls: ts.ClassDeclaration, props: string[]): string[] {
     this.props = new Set(props);
     this.computed = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && this.calleeName(m.initializer) === 'computed').map((m) => (m.name as ts.Identifier).text));
@@ -644,7 +658,9 @@ export class Translator {
           inits.push(`        self.${ident(name)} = ${this.newSignal(t, ident(name), 'identity')}`);
           continue;
         }
-        lines.push(`    let ${ident(name)}: ${t}`);
+        // A field the class assigns after construction (a Vue `let`) is a Swift `var`.
+        const reassigned = !hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) && this.isAssigned(cls, name);
+        lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(name)}: ${t}`);
         this.indent = '        ';
         inits.push(`        self.${ident(name)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
         this.indent = '    ';
@@ -1896,7 +1912,12 @@ export class Translator {
 
   /** A rejection handler: it takes the reason untyped, whatever its parameter declares. */
   private rejectionHandler(e: ts.Expression): string {
-    if (!(ts.isArrowFunction(e) || ts.isFunctionExpression(e)) || !e.parameters.length) return this.fn(e);
+    if (!(ts.isArrowFunction(e) || ts.isFunctionExpression(e))) return this.fn(e);
+    if (!e.parameters.length) {
+      // A handler that ignores the reason still takes it.
+      const ret = this.returnTypeOf(e);
+      return `{ (_: Any?) ${this.throwsInfo.fn(e) ? 'throws ' : ''}-> ${ret} in\n${this.functionBody(e, ret, this.indent).slice(1)}`;
+    }
     const p = e.parameters[0];
     if (this.typeOf(p.name) === 'Any?' && ts.isIdentifier(p.name)) return this.closure(e);
     const ret = this.returnTypeOf(e);
@@ -1924,6 +1945,7 @@ export class Translator {
         return `${t}.${adopt ? 'thenAdopt' : 'then'}(${pass}, ${this.rejectionHandler(f)})`;
       }
       case 'finally': return `${t}.finally(${this.fn(f)})`;
+      case 'cancel': return `${t}.cancel()`;
     }
     throw this.error(e, `Promise.${name}`);
   }

@@ -12,6 +12,8 @@ export const NATIVE_VIEWS: Record<string, string> = {
   ListView: 'UITableView', Progress: 'UIProgressView', DatePicker: 'UIDatePicker', TimePicker: 'UIDatePicker', View: 'UIView',
 };
 const NATIVE_MEMBERS = new Set(['ios', 'nativeView', 'nativeViewProtected']);
+/** View methods whose arguments core reads as plain script objects. */
+const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover']);
 
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   return !!decl && /[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName);
@@ -88,6 +90,8 @@ export class CoreAPI {
 
   /** A read of `target.name` where target is core-typed, or null when it is not. */
   property(e: ts.PropertyAccessExpression): string | null {
+    const constant = this.constant(e);
+    if (constant !== null) return constant;
     const owner = this.owner(e.expression);
     if (!owner) return null;
     const t = this.t;
@@ -102,6 +106,16 @@ export class CoreAPI {
     return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e));
   }
 
+  /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
+  private constant(e: ts.PropertyAccessExpression): string | null {
+    const decl = this.t.resolve(e.name)?.declarations?.[0];
+    if (!decl || !isCoreDeclaration(decl) || !ts.isVariableDeclaration(decl) || !(ts.getCombinedNodeFlags(decl) & ts.NodeFlags.Const)) return null;
+    const type = this.t.checker.getTypeAtLocation(decl);
+    if (type.isStringLiteral()) return JSON.stringify(type.value);
+    if (type.isNumberLiteral()) return String(type.value);
+    return null;
+  }
+
   /** `target.name = value` where target is core-typed. */
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
     const owner = this.owner(left.expression);
@@ -114,19 +128,26 @@ export class CoreAPI {
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
     const m = this.member(owner.name, name, left);
+    // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
+    if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
   }
 
   /** `target.method(args)` where target is core-typed, or `new CoreClass(args)`. */
   call(e: ts.CallExpression): string | null {
     if (!ts.isPropertyAccessExpression(e.expression)) return null;
+    // A factory in a core namespace is the kit class it builds.
+    if (e.expression.getText() === 'CoreTypes.AnimationCurve.cubicBezier' && isCoreDeclaration(this.t.resolve(e.expression.name)?.declarations?.[0])) {
+      return `CubicBezierAnimationCurve(${e.arguments.map((a) => this.t.coerce(a, 'Double')).join(', ')})`;
+    }
     const owner = this.owner(e.expression.expression);
     if (!owner) return null;
     const t = this.t;
     const name = e.expression.name.text;
     const m = this.member(owner.name, name, e.expression);
     const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression);
-    return this.fromKit(`${recv}.${name}(${t.args(e).join(', ')})`, m.type, t.typeOf(e));
+    const args = SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e);
+    return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e));
   }
 
   construct(e: ts.NewExpression): string | null {
@@ -140,7 +161,25 @@ export class CoreAPI {
       if (args.length === 1) return `Color(argb: UInt32(truncatingIfNeeded: Int64(${t.expr(args[0])})))`;
       return `Color(${args.slice(0, 4).map((a) => t.expr(a)).join(', ')})`;
     }
+    if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
     return `${sym.name}(${t.args(e).join(', ')})`;
+  }
+
+  /**
+   * An argument core reads as a plain script object (an animation definition):
+   * literals become JavaScript objects and arrays, whatever their declared type.
+   */
+  private scriptValue(e: ts.Expression): string {
+    if (ts.isObjectLiteralExpression(e)) {
+      const entries = e.properties.map((p) => {
+        if (ts.isPropertyAssignment(p)) return `(${JSON.stringify(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${this.scriptValue(p.initializer)})`;
+        if (ts.isShorthandPropertyAssignment(p)) return `(${JSON.stringify(p.name.text)}, ${this.t.coerce(p.name, 'Any?')})`;
+        throw this.t.error(p, 'this member in an animation definition');
+      });
+      return `JSObject([${entries.join(', ')}])`;
+    }
+    if (ts.isArrayLiteralExpression(e)) return `JSArray<Any?>([${e.elements.map((x) => this.scriptValue(x)).join(', ')}])`;
+    return this.t.coerce(e, 'Any?');
   }
 
   /** A kit value as the TypeScript type reads it: kit integers and CGFloats are Doubles. */

@@ -174,6 +174,7 @@ open class View: NSObject {
 
     func load() {
         guard !isLoaded else { return }
+        TouchManager.viewLoading(self)
         matchCSS()
         isLoaded = true
         let names = pendingNames
@@ -463,8 +464,13 @@ open class View: NSObject {
         if event == "tap" { observeTap() } else { observeGesture(event) }
     }
 
+    /// `view.on(event, () => …)` from script: a handler that takes no arguments.
+    public func on(_ event: String, _ handler: @escaping () -> Void) { on(event) { (_: EventData) in handler() } }
+
     /// A tap is the tap gesture; controls with a tap event of their own override.
     open func observeTap() { observeGesture("tap") }
+
+    func hasListeners(_ event: String) -> Bool { !(handlers[event]?.isEmpty ?? true) }
 
     func emit(_ event: String, _ value: Any?) {
         guard let list = handlers[event] else { return }

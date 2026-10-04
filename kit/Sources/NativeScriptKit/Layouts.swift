@@ -50,7 +50,33 @@ open class LayoutBase: CustomLayoutView, RegionHost {
         return region
     }
 
-    public func regionChanged(_ region: Region) {
+    public func regionChanged(_ region: Region) { rebuildChildren() }
+
+    /// `insertChild(child, atIndex)` from script: before the child now at that index.
+    public func insertChild(_ child: View, _ atIndex: Double) {
+        let index = Int(atIndex)
+        guard index < subViews.count else { return addChild(child) }
+        let before = subViews[index]
+        let position = entries.firstIndex { entry in
+            switch entry {
+            case .view(let view): return view === before
+            case .region(let region): return region.views.contains { $0 === before }
+            }
+        } ?? entries.count
+        entries.insert(.view(child), at: position)
+        rebuildChildren()
+    }
+
+    /// `removeChild(child)` from script.
+    public func removeChild(_ child: View) {
+        entries.removeAll { if case .view(let view) = $0 { return view === child } else { return false } }
+        rebuildChildren()
+    }
+
+    public func getChildIndex(_ child: View) -> Double { Double(subViews.firstIndex { $0 === child } ?? -1) }
+    public func getChildrenCount() -> Double { Double(subViews.count) }
+
+    private func rebuildChildren() {
         let next = entries.flatMap { entry -> [View] in
             switch entry {
             case .view(let view): return [view]

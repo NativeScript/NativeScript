@@ -154,7 +154,7 @@ const translated = translateModules(translator, program, modules);
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
-  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m)), '}'];
+  const lines = [`final class ${c.name} {`, ...translator.componentMembers(cls, c.props), '', ...render(c, infos, (m) => translator.memberThrows(cls, m), framework), '}'];
   writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
 }
 addInterfaces(translator, translated);
@@ -166,23 +166,38 @@ const css = kitCss(appStylesheets(app, 'ios', importedStylesheets(entry, appDir)
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
-// 4. The Xcode project.
+// 4. The Xcode project. The kit is a static library target rather than its
+// Swift package because package targets get none of the project's settings.
+// The hermetic seal lets the link drop the kit's code, vtable entries and
+// conformances the app never reaches; it needs every Swift module in the link
+// compiled with it and with full LTO.
 const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!;
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
   deploymentTarget:
     iOS: "17.0"
-packages:
-  NativeScriptKit:
-    path: ${relative(out, kit)}
+settings:
+  configs:
+    Release:
+      SWIFT_OPTIMIZATION_LEVEL: -Osize
+      SWIFT_LTO: YES
+      OTHER_SWIFT_FLAGS: -experimental-hermetic-seal-at-link
+      DEAD_CODE_STRIPPING: YES
 targets:
+  NativeScriptKit:
+    type: library.static
+    platform: iOS
+    sources: [${relative(out, join(kit, 'Sources', 'NativeScriptKit'))}]
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
   ${name}:
     type: application
     platform: iOS
     sources: [Sources]
     dependencies:
-      - package: NativeScriptKit
+      - target: NativeScriptKit
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ${bundle}
