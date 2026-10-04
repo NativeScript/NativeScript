@@ -39,13 +39,6 @@ fun jsFunction7(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f
 /** Argument `index` of a dynamic call; a missing one is undefined. */
 fun jsArg(args: List<Any?>, index: Int): Any? = args.getOrNull(index)
 
-/** `delete object[key]`. */
-fun jsDelete(target: Any?, key: String): Boolean = when (target) {
-    is JSObject -> target.delete(key)
-    is JSDeletable -> target.jsDelete(key)
-    else -> true
-}
-
 /** An object that can lose an own property (`delete o.x`). */
 interface JSDeletable {
     fun jsDelete(key: String): Boolean
@@ -61,20 +54,6 @@ fun jsAssign(target: Any?, vararg sources: Any?): Any? {
         }
     }
     return target
-}
-
-/** `{ ...source }` into an object literal being built: the source's own enumerable keys, in order. */
-fun jsObjectSpread(target: JSObject, source: Any?) {
-    val dynamic = source as? JSDynamic ?: return
-    for (key in dynamic.jsKeys) target[key] = dynamic.jsGet(key)
-}
-
-private var jsSymbolCount = 0
-
-/** `Symbol(description)`: a property key no other code spells. */
-fun jsSymbol(description: String): String {
-    jsSymbolCount++
-    return "@@$description#$jsSymbolCount"
 }
 
 /** `unescape(text)`: `%XX` and `%uXXXX` sequences as the characters they name. */
@@ -104,22 +83,6 @@ fun jsOr(a: Any?, b: Any?): Any? = if (jsTruthy(a)) a else b
 
 /** A global the platform does not define (an iOS API in an Android build): reading it throws, as in JavaScript. */
 fun jsUndefinedGlobal(name: String): Nothing = throw JSException(JSReferenceError("$name is not defined"))
-
-/** `new WeakRef(value)`. */
-class JSWeakRef<T>(value: T) : JSDynamic {
-    private val ref = java.lang.ref.WeakReference(value)
-    fun get(): T? = ref.get()
-    fun deref(): T? = ref.get()
-
-    // Read untyped (`view.nsView?.get()` on a native view): by name, as release builds rename members reflection would find.
-    override fun jsGet(key: String): Any? = when (key) {
-        "get", "deref" -> jsFunction { ref.get() }
-        else -> null
-    }
-    override fun jsSet(key: String, value: Any?) {}
-    override val jsKeys: List<String> get() = emptyList()
-    override val jsClassName: String? get() = "WeakRef"
-}
 
 /** `getClass(value)` from core's utils/types: the class name script sees for a value. */
 fun getClass(value: Any?): String = when (value) {

@@ -68,10 +68,14 @@ fun jsArrayIndex(key: String): Long? {
  * A plain JavaScript object. Own keys enumerate in JavaScript order: array-index keys
  * ascending, then the other keys in insertion order.
  */
-class JSObject() : JSDynamic, JSReactiveConvertible {
+class JSObject() : JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConvertible {
     private val storage = HashMap<String, Any?>()
     private val indexKeys = ArrayList<Long>()
     private val namedKeys = ArrayList<String>()
+    /** Properties that are accessors or not plain writable, enumerable, configurable data. */
+    private val slots = HashMap<String, JSPropertySlot>()
+    var extensible = true
+        private set
     var jsTracker: JSTracker? = null
 
     /** Created without a prototype (`Object.create(null)`, a match's `groups`): inspect prints `[Object: null prototype]`. */
@@ -86,12 +90,29 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
     }
 
     operator fun get(key: String): Any? {
+        if (slots.isNotEmpty()) slots[key]?.get?.let { return it(this) }
         val tracker = jsTracker ?: return storage[key]
         tracker.track()
         return jsReactiveAny(storage[key])
     }
 
-    operator fun set(key: String, value: Any?) {
+    operator fun set(key: String, value: Any?) = put(key, value)
+
+    /**
+     * `object[key] = value` in strict code: a read-only property, a getter without a setter
+     * or a new key on an object that is not extensible throws a TypeError.
+     */
+    fun put(key: String, value: Any?) {
+        val slot = slots[key]
+        if (slot != null) {
+            if (slot.isAccessor) {
+                val setter = slot.set ?: throw JSException(JSTypeError("Cannot set property $key of #<Object> which has only a getter"))
+                return setter(this, value)
+            }
+            if (!slot.writable) throw JSException(JSTypeError("Cannot assign to read only property '$key' of object '#<Object>'"))
+        } else if (!extensible && !storage.containsKey(key)) {
+            throw JSException(JSTypeError("Cannot add property $key, object is not extensible"))
+        }
         val tracker = jsTracker
         if (tracker == null) { define(key, value); return }
         val had = storage.containsKey(key)
@@ -100,6 +121,67 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
         if (had && jsSameValue(old, value)) return
         tracker.trigger()
     }
+
+    /** `Object.defineProperty(object, key, descriptor)`; attributes the descriptor leaves out are false for a new property. */
+    fun defineProperty(key: String, d: JSPropertyDescriptor) {
+        val exists = storage.containsKey(key)
+        val slot = slots[key] ?: JSPropertySlot(enumerable = exists, writable = exists, configurable = exists)
+        if (!exists && !extensible) throw JSException(JSTypeError("Cannot define property $key, object is not extensible"))
+        if (exists && !slot.configurable) {
+            val changes = d.get != null || d.set != null || d.configurable == true || (d.enumerable != null && d.enumerable != slot.enumerable) ||
+                (!slot.writable && (d.writable == true || (d.hasValue && !jsSameValue(d.value, storage[key]))))
+            if (changes) throw JSException(JSTypeError("Cannot redefine property: $key"))
+        }
+        if (d.get != null || d.set != null) {
+            slot.get = d.get; slot.set = d.set; slot.isAccessor = true; slot.writable = false
+        } else if (d.hasValue || d.writable != null) {
+            if (slot.isAccessor) { slot.get = null; slot.set = null; slot.isAccessor = false }
+        }
+        d.enumerable?.let { slot.enumerable = it }
+        d.writable?.let { slot.writable = it }
+        d.configurable?.let { slot.configurable = it }
+        define(key, if (slot.isAccessor) null else if (d.hasValue) d.value else storage[key])
+        if (slot.isPlain) slots.remove(key) else slots[key] = slot
+        jsTracker?.trigger()
+    }
+
+    /** `Object.getOwnPropertyDescriptor(object, key)`. */
+    fun descriptor(key: String): JSObject? {
+        if (!storage.containsKey(key)) return null
+        val slot = slots[key] ?: JSPropertySlot()
+        if (slot.isAccessor) {
+            val g = slot.get
+            val s = slot.set
+            return JSObject(listOf(
+                Pair("get", g?.let { { -> it(this) } }), Pair("set", s?.let { { v: Any? -> it(this, v) } }),
+                Pair("enumerable", slot.enumerable), Pair("configurable", slot.configurable)))
+        }
+        return JSObject(listOf(Pair("value", storage[key]), Pair("writable", slot.writable), Pair("enumerable", slot.enumerable), Pair("configurable", slot.configurable)))
+    }
+
+    /** `Object.freeze`, `Object.seal`, `Object.preventExtensions`. */
+    fun restrict(sealed: Boolean, frozen: Boolean) {
+        extensible = false
+        if (!sealed && !frozen) return
+        for (key in indexKeys.map { it.toString() } + namedKeys) {
+            val slot = slots[key] ?: JSPropertySlot()
+            slot.configurable = false
+            if (frozen && !slot.isAccessor) slot.writable = false
+            slots[key] = slot
+        }
+    }
+
+    val isSealed: Boolean get() = !extensible && storage.keys.all { !(slots[it] ?: JSPropertySlot()).configurable }
+    val isFrozen: Boolean get() = !extensible && storage.keys.all { val s = slots[it] ?: JSPropertySlot(); !s.configurable && (s.isAccessor || !s.writable) }
+
+    override fun jsAccessorKind(key: String): String? {
+        val slot = slots[key] ?: return null
+        if (!slot.isAccessor) return null
+        return if (slot.get != null && slot.set != null) "Getter/Setter" else if (slot.get != null) "Getter" else "Setter"
+    }
+
+    /** `Object.getOwnPropertyNames(object)`: string keys, enumerable or not. */
+    val ownPropertyNames: List<String> get() = indexKeys.map { it.toString() } + namedKeys.filter { !jsIsSymbolKey(it) }
 
     private fun define(key: String, value: Any?) {
         if (storage.containsKey(key)) { storage[key] = value; return }
@@ -124,6 +206,8 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
 
     /** `delete object[key]`. */
     fun delete(key: String): Boolean {
+        slots[key]?.let { if (!it.configurable) return false }
+        slots.remove(key)
         if (!storage.containsKey(key)) return true
         storage.remove(key)
         val index = jsArrayIndex(key)
@@ -135,7 +219,14 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
     val keys: List<String>
         get() {
             jsTracker?.track()
-            return indexKeys.map { it.toString() } + namedKeys
+            val all = indexKeys.map { it.toString() } + namedKeys.filter { !jsIsSymbolKey(it) }
+            return if (slots.isEmpty()) all else all.filter { slots[it]?.enumerable ?: true }
+        }
+
+    override val jsSymbolKeys: List<String>
+        get() {
+            jsTracker?.track()
+            return namedKeys.filter { jsIsSymbolKey(it) }
         }
 
     override fun jsGet(key: String): Any? = this[key]
@@ -172,7 +263,7 @@ fun jsGet(target: Any?, key: String): Any? = when (target) {
     is Triple<*, *, *> -> when (key) { "0" -> target.first; "1" -> target.second; "2" -> target.third; "length" -> 3.0; else -> null }
     is JSMap<*, *> -> if (key == "size") target.size else null
     is JSSet<*> -> if (key == "size") target.size else null
-    is Double, is Boolean, is Function<*>, is JSFunction, Unit -> null
+    is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> null
     else -> jsJavaGet(target, key)
 }
 
@@ -181,7 +272,15 @@ fun jsSet(target: Any?, key: String, value: Any?) {
     when (target) {
         null -> throw JSException(JSTypeError("Cannot set properties of undefined (setting '$key')"))
         JSNull -> throw JSException(JSTypeError("Cannot set properties of null (setting '$key')"))
-        is JSDynamic -> target.jsSet(key, value)
+        is JSObject -> target.put(key, value)
+        is JSDynamic -> {
+            val level = jsRestriction(target)
+            if (level > 0) {
+                if (key !in target.jsKeys) throw JSException(JSTypeError("Cannot add property $key, object is not extensible"))
+                if (level == 3) throw JSException(JSTypeError("Cannot assign to read only property '$key' of object '#<Object>'"))
+            }
+            target.jsSet(key, value)
+        }
         is JSArray<*> -> {
             @Suppress("UNCHECKED_CAST") val array = target as JSArray<Any?>
             if (key == "length") {
@@ -190,7 +289,7 @@ fun jsSet(target: Any?, key: String, value: Any?) {
                 array.setLength(length.toInt())
             } else jsArrayIndex(key)?.let { array.setAt(it.toInt(), value) }
         }
-        is String, is Double, is Boolean, is Function<*>, is JSFunction, Unit -> {}
+        is String, is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> {}
         else -> jsJavaSet(target, key, value)
     }
 }
@@ -217,6 +316,7 @@ fun jsCall(function: Any?, vararg args: Any?): Any? {
 
 /** `Object.keys` for what translated code holds: a typed object, an untyped one, an array. */
 fun jsKeysOf(value: Any?): List<String> = when (value) {
+    is String -> value.indices.map { it.toString() }
     is JSDynamic -> value.jsKeys
     is JSArray<*> -> (0 until value.size.toInt()).map { it.toString() }
     is String -> value.indices.map { it.toString() }
@@ -252,7 +352,7 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
 /** `key in object`. */
 fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSObject -> target.has(key)
-    is JSDynamic -> key in target.jsKeys
+    is JSDynamic -> if (jsIsSymbolKey(key)) (target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false else key in target.jsKeys
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
     else -> false
 }
@@ -269,6 +369,8 @@ fun jsTypeof(value: Any?): String = when (value) {
     is Boolean -> "boolean"
     JSNull -> "object"
     is Function<*>, is JSFunction, is JavaMethodRef -> "function"
+    is JSSymbol -> "symbol"
+    is JSBigInt -> "bigint"
     else -> if (jsNumeric(value) != null) "number" else "object"
 }
 
@@ -281,6 +383,7 @@ fun jsTruthy(value: Any?): Boolean = when (value) {
     is Boolean -> value
     is Double -> value != 0.0 && !value.isNaN()
     is String -> value.isNotEmpty()
+    is JSBigInt -> !value.isZero
     else -> jsNumeric(value)?.let { it != 0.0 && !it.isNaN() } ?: true
 }
 
@@ -291,6 +394,7 @@ fun jsStrictEquals(a: Any?, b: Any?): Boolean {
     if (x == null || y == null) return x == null && y == null
     if (x is String && y is String) return x == y
     if (x is Boolean && y is Boolean) return x == y
+    if (x is JSBigInt || y is JSBigInt) return x == y
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null || n != null) return m != null && n != null && m == n
@@ -326,6 +430,8 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
     val yNullish = y == null || y === JSNull
     if (xNullish || yNullish) return xNullish && yNullish
     x!!; y!!
+    if (x is JSBigInt) return jsBigIntLooseEquals(x, y)
+    if (y is JSBigInt) return jsBigIntLooseEquals(y, x)
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null && n != null) return m == n
@@ -344,9 +450,13 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
 
 /** ToPrimitive with the default hint: a date or object becomes its string form. */
 fun jsToPrimitive(value: Any?): Any? = when (val v = jsBox(value)) {
-    null, is String, is Boolean, JSNull -> v
+    null, is String, is Boolean, JSNull, is JSSymbol, is JSBigInt -> v
+    is JSToPrimitive -> jsUserPrimitive(v, "default")
     else -> jsNumeric(v) ?: jsToString(v)
 }
+
+/** A `+` operand beside a string: ToString(ToPrimitive(value, default)). */
+fun jsToStringDefault(value: Any?): String = jsToString(jsToPrimitive(value))
 
 /** `Number(value)` / unary `+`. */
 fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
@@ -356,7 +466,9 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
     is Boolean -> if (v) 1.0 else 0.0
     JSNull -> 0.0
     is JSDate -> v.valueOf()
-    is Function<*> -> Double.NaN
+    is JSBigInt -> v.toDouble()
+    is Function<*>, is JSSymbol -> Double.NaN
+    is JSToPrimitive -> jsToNumber(jsUserPrimitive(v, "number"))
     else -> jsNumeric(v) ?: jsNumberFromString(jsToString(v))
 }
 
@@ -369,7 +481,11 @@ fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
     is Double -> jsNumberToString(v)
     is Boolean -> if (v) "true" else "false"
     JSNull -> "null"
+    is JSToPrimitive -> jsToString(jsUserPrimitive(v, "string"))
     is JSStringConvertible -> v.toString()
+    is JSSymbol -> v.toString()
+    is JSBigInt -> v.toString()
+    is JSToStringTag -> "[object ${v.jsToStringTag}]"
     is JSError -> v.jsErrorString
     is JSArray<*> -> jsJoin(v.storage, ",", v)
     is Pair<*, *> -> jsJoin(listOf(v.first, v.second), ",", v)
