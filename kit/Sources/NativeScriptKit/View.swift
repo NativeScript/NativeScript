@@ -111,6 +111,7 @@ open class View: NSObject {
     func addView(_ child: View) {
         child.parent = self
         for name in View.inheritedProperties { child.refresh(name) }
+        child.loadIfParentLoaded()
     }
 
     func removeView(_ child: View) {

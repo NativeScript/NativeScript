@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
 import { AsyncLowering, type AsyncCtx } from './async.ts';
+import { CoreAPI } from './core.ts';
 
 /**
  * TypeScript to Swift, typed by the checker, with JavaScript's semantics
@@ -72,6 +73,7 @@ export class Translator {
   private templateParams = false;
   readonly throwsInfo: Throws;
   private lowering: AsyncLowering;
+  private core: CoreAPI;
 
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;
@@ -81,6 +83,7 @@ export class Translator {
     this.components = components;
     this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } });
     this.lowering = new AsyncLowering(this);
+    this.core = new CoreAPI(this);
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -402,6 +405,13 @@ export class Translator {
       '    }',
     ];
     return lines;
+  }
+
+  /** An untyped value read as `type`; with `orZero`, a missing value is the type's zero rather than a trap. */
+  fromAnyCode(code: string, type: string, orZero = false): string {
+    const zero = this.zero(type);
+    if (orZero && zero && zero !== 'nil' && !type.endsWith('?')) return `((${code} as? ${type}) ?? ${zero})`;
+    return this.fromAny(code, type);
   }
 
   /** Swift code reading an untyped value (`Any?`) as `type`. */
@@ -1095,6 +1105,8 @@ export class Translator {
       if (constant) return constant;
       throw this.error(e, `${target.text}.${name}`);
     }
+    const core = this.core.property(e);
+    if (core) return core;
     const dot = e.questionDotToken ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
       return this.typeOf(target).endsWith('?') ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}.utf16.count)`;
@@ -1215,6 +1227,8 @@ export class Translator {
       }
       if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
+      const core = this.core.call(e);
+      if (core) return core;
       if (this.isAny(target)) return `jsCall(jsGet(${this.expr(target)}, ${swiftString(method)})${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') ? '!' : '';
@@ -1597,6 +1611,8 @@ export class Translator {
     }
     if (ERRORS[name]) return `${ERRORS[name]}(${args.length ? this.str(args[0]) : ''})`;
     if (name === 'Array' || name === 'Date' || name === 'RegExp') throw this.error(e, `new ${name}`);
+    const core = this.core.construct(e);
+    if (core) return core;
     if (ts.isIdentifier(callee)) {
       const decl = this.checker.getTypeAtLocation(callee).getSymbol()?.valueDeclaration;
       if (decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile) return `${t}(${this.args(e).join(', ')})`;
@@ -1649,6 +1665,7 @@ export class Translator {
       case K.EqualsToken: {
         if (ts.isPropertyAccessExpression(e.left) && this.symbolName(e.left.expression) === 'VueRef' && e.left.name.text === 'value') return `${target()} = ${this.signalWrite(e.left.expression, e.right, this.typeOf(e.left))}`;
         if (ts.isArrayLiteralExpression(e.left)) throw this.error(e, 'a destructuring assignment');
+        if (ts.isPropertyAccessExpression(e.left)) { const core = this.core.assign(e.left, e.right); if (core) return core; }
         if (ts.isPropertyAccessExpression(e.left) && this.isAny(e.left.expression)) return `jsSet(${this.expr(e.left.expression)}, ${swiftString(e.left.name.text)}, ${this.coerce(e.right, 'Any?')})`;
         if (ts.isElementAccessExpression(e.left) && this.isAny(e.left.expression)) return `jsSet(${this.expr(e.left.expression)}, ${this.str(e.left.argumentExpression)}, ${this.coerce(e.right, 'Any?')})`;
         return `${target()} = ${this.coerce(e.right, this.declaredTypeOf(e.left) ?? this.typeOf(e.left))}`;

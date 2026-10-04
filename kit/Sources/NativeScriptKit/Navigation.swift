@@ -96,6 +96,7 @@ open class Page: ContentView {
             isLoaded = true
             actionBar?.applyNavigationBarStyle()
         }
+        callLoaded()
         actionBar?.update()
     }
 
