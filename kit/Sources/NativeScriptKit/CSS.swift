@@ -19,36 +19,71 @@ struct StyleSheet {
         var selectors: [Selector]
         var declarations: [(name: String, value: String)]
         var order: Int
+        var animations: [KeyframeAnimationInfo]?
     }
 
     static var app = StyleSheet(rules: [])
 
     var rules: [Rule]
+    /// `@keyframes` by name; a later block of the same name replaces an earlier one.
+    var keyframes: [String: [KeyframeRule]] = [:]
 
     init(rules: [Rule]) { self.rules = rules }
 
     init(parsing css: String) {
         var rules: [Rule] = []
+        var keyframes: [String: [KeyframeRule]] = [:]
         let text = css.replacingOccurrences(of: #"/\*[\s\S]*?\*/"#, with: "", options: .regularExpression)
-        var rest = Substring(text)
-        while let open = rest.firstIndex(of: "{") {
-            let prelude = rest[..<open].trimmingCharacters(in: .whitespacesAndNewlines)
-            guard let close = rest[open...].firstIndex(of: "}") else { break }
-            let body = rest[rest.index(after: open)..<close]
-            rest = rest[rest.index(after: close)...]
-            // At-rules (@media, @keyframes) are outside the subset this kit implements.
+        for (prelude, body) in StyleSheet.blocks(Substring(text)) {
+            if prelude.hasPrefix("@keyframes") || prelude.hasPrefix("@-webkit-keyframes") {
+                let name = prelude.split(separator: " ", maxSplits: 1).dropFirst().first.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
+                keyframes[name] = StyleSheet.blocks(body).map { selector, declarations in
+                    KeyframeRule(values: selector.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) },
+                                 declarations: StyleSheet.declarations(declarations))
+                }
+                continue
+            }
+            // Other at-rules (@media, @supports) are outside the subset this kit implements.
             if prelude.hasPrefix("@") { continue }
             let selectors = prelude.split(separator: ",").compactMap { StyleSheet.parseSelector(String($0)) }
             guard !selectors.isEmpty else { continue }
-            let declarations = body.split(separator: ";").compactMap { declaration -> (String, String)? in
-                guard let colon = declaration.firstIndex(of: ":") else { return nil }
-                let name = declaration[..<colon].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-                let value = declaration[declaration.index(after: colon)...].trimmingCharacters(in: .whitespacesAndNewlines)
-                return name.isEmpty || value.isEmpty ? nil : (name, value)
-            }
-            rules.append(Rule(selectors: selectors, declarations: declarations, order: rules.count))
+            let declarations = StyleSheet.declarations(body)
+            rules.append(Rule(selectors: selectors, declarations: declarations, order: rules.count,
+                              animations: KeyframeAnimationInfo.fromDeclarations(declarations)))
         }
         self.rules = rules
+        self.keyframes = keyframes
+    }
+
+    /// The top-level `prelude { body }` blocks of `text`, braces matched; statements such as `@import x;` are skipped.
+    private static func blocks(_ text: Substring) -> [(String, Substring)] {
+        var result: [(String, Substring)] = []
+        var rest = text
+        while let open = rest.firstIndex(of: "{") {
+            if let semicolon = rest[..<open].lastIndex(of: ";") { rest = rest[rest.index(after: semicolon)...]; continue }
+            let prelude = rest[..<open].trimmingCharacters(in: .whitespacesAndNewlines)
+            var depth = 0
+            var close: Substring.Index?
+            for index in rest[open...].indices {
+                if rest[index] == "{" { depth += 1 } else if rest[index] == "}" {
+                    depth -= 1
+                    if depth == 0 { close = index; break }
+                }
+            }
+            guard let close else { break }
+            result.append((prelude, rest[rest.index(after: open)..<close]))
+            rest = rest[rest.index(after: close)...]
+        }
+        return result
+    }
+
+    private static func declarations(_ body: Substring) -> [(name: String, value: String)] {
+        body.split(separator: ";").compactMap { declaration -> (String, String)? in
+            guard let colon = declaration.firstIndex(of: ":") else { return nil }
+            let name = declaration[..<colon].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let value = declaration[declaration.index(after: colon)...].trimmingCharacters(in: .whitespacesAndNewlines)
+            return name.isEmpty || value.isEmpty ? nil : (name, value)
+        }
     }
 
     /// A compound selector; descendant and child combinators are not supported
@@ -64,6 +99,17 @@ struct StyleSheet {
 
     /// The declarations that apply to `view` as view property names, later
     /// values winning; each name keeps the position where it first appeared.
+    /// `CssState.playKeyframeAnimations`: the matched rules' animations, in cascade order, with their keyframes.
+    func keyframeAnimations(for view: View) -> [KeyframeAnimation] {
+        let matched = rules.compactMap { rule -> (specificity: Int, order: Int, animations: [KeyframeAnimationInfo])? in
+            guard let animations = rule.animations, let best = rule.selectors.filter({ $0.matches(view) }).map(\.specificity).max() else { return nil }
+            return (best, rule.order, animations)
+        }.sorted { $0.specificity != $1.specificity ? $0.specificity < $1.specificity : $0.order < $1.order }
+        return matched.flatMap(\.animations).compactMap { info in
+            KeyframeAnimation(info, keyframes[info.name].map(KeyframeInfo.parse))
+        }
+    }
+
     func values(for view: View) -> [(name: String, value: Any)] {
         var matched: [(specificity: Int, order: Int, declarations: [(name: String, value: String)])] = []
         for rule in rules {
@@ -146,6 +192,7 @@ func expandShorthand(_ name: String, _ value: Any?) -> [(String, Any?)] {
         default: return []
         }
         return zip(corners, values).map { ($0, $1) }
+    case "transform": return expandTransform(value)
     case "flex": return expandFlex(value)
     case "flexFlow": return expandFlexFlow(value)
     case "gap": return expandGap(value)

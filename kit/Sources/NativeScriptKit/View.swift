@@ -37,6 +37,9 @@ open class View: NSObject {
     // A property's value: the local one (template attribute or binding) wins
     // over CSS, which wins over the parent's for inherited properties.
     private var locals: [String: Any] = [:]
+    /// Values a CSS keyframe animation sets (`style['keyframe:<name>']`); they win over local ones.
+    private var keyframeValues: [String: Any] = [:]
+    private var keyframeAnimations: [KeyframeAnimation] = []
     private var cssValues: [String: Any] = [:]
     private var cssOrder: [String] = []
     var applied: [String: Any] = [:]
@@ -93,6 +96,10 @@ open class View: NSObject {
     private var oldLeft: Double?, oldTop: Double?, oldRight: Double?, oldBottom: Double?
     private var cachedFrame: CGRect?
     private var isLaidOut = false
+    var isTransformed = false
+    /// An animation's start sets model values while its presentation layer animates.
+    var presentationLayerSuspensions = 0
+    var isPresentationLayerUpdateSuspended: Bool { presentationLayerSuspensions > 0 || !isLoaded || isBatching }
 
     var styleWidth = Length.auto, styleHeight = Length.auto
     var styleMaxWidth = Length.auto, styleMaxHeight = Length.auto
@@ -166,6 +173,7 @@ open class View: NSObject {
 
     func unload() {
         guard isLoaded else { return }
+        stopKeyframeAnimations()
         isLoaded = false
         eachChildView { $0.unload() }
     }
@@ -181,21 +189,56 @@ open class View: NSObject {
 
     /// Sets a local property value by its NativeScript name; nil unsets it.
     public func set(_ name: String, _ value: Any?) {
-        for (longhand, v) in expandShorthand(name, value) {
+        for (longhand, v) in expandShorthand(name, value) where hasStyleAccessor(longhand) {
             if let v { locals[longhand] = v } else { locals.removeValue(forKey: longhand) }
             refresh(longhand)
         }
     }
 
-    /// `CssState.setPropertyValues`: removed values are unset first, in their old
-    /// order, then the matched ones are set in cascade order.
+    /// A template sets `view[name]`, which reaches a style property only through
+    /// an accessor NativeScript defines on the view's class; without one the
+    /// value lands on the JavaScript object and styles nothing.
+    private func hasStyleAccessor(_ name: String) -> Bool {
+        switch name {
+        case "backgroundInternal", "clipPath", "cornerShape", "fontInternal", "fontScaleInternal", "iconFontFamily",
+             "paddingInternal", "placeholderColor", "zIndex":
+            return false
+        case "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "letterSpacing", "lineHeight",
+             "maxLines", "textAlignment", "textDecoration", "textOverflow", "textShadow", "textStroke", "whiteSpace":
+            return self is TextBase
+        case "paddingTop", "paddingRight", "paddingBottom", "paddingLeft":
+            return self is TextBase || self is LayoutBase
+        case "alignContent", "alignItems", "flexDirection", "flexWrap", "justifyContent", "rowGap", "columnGap":
+            return self is FlexboxLayout
+        case "tintColor": return self is Image
+        case "selectedBackgroundColor", "selectedTextColor": return self is SegmentedBar
+        case "accessibilityStep": return self is Slider
+        default: return true
+        }
+    }
+
+    /// `CssState.updateDynamicState`: keyframe animations stop, the matched values
+    /// are set (`setPropertyValues`: removed ones unset first, in their old order,
+    /// then the matched ones in cascade order), and the matched animations play.
     private func matchCSS() {
+        stopKeyframeAnimations()
         let next = StyleSheet.app.values(for: self)
         let removed = cssOrder.filter { name in !next.contains { $0.name == name } }
         cssValues = Dictionary(next.map { ($0.name, $0.value) }, uniquingKeysWith: { $1 })
         cssOrder = next.map(\.name)
         for name in removed { refresh(name) }
         for name in cssOrder { refresh(name) }
+        keyframeAnimations = StyleSheet.app.keyframeAnimations(for: self)
+        for animation in keyframeAnimations { animation.play(self) }
+    }
+
+    private func stopKeyframeAnimations() {
+        guard !keyframeAnimations.isEmpty else { return }
+        for animation in keyframeAnimations where animation.isPlaying { animation.cancel() }
+        keyframeAnimations = []
+        for name in ["rotate", "rotateX", "rotateY", "scaleX", "scaleY", "translateX", "translateY", "backgroundColor", "opacity"] {
+            setKeyframe(name, nil)
+        }
     }
 
     func applyCSS() {
@@ -208,8 +251,13 @@ open class View: NSObject {
         for name in names { setProperty(name, applied[name]) }
     }
 
+    func setKeyframe(_ name: String, _ value: Any?) {
+        if let value { keyframeValues[name] = value } else { keyframeValues.removeValue(forKey: name) }
+        refresh(name)
+    }
+
     func refresh(_ name: String) {
-        var value: Any? = locals[name] ?? cssValues[name]
+        var value: Any? = keyframeValues[name] ?? locals[name] ?? cssValues[name]
         if value == nil, View.inheritedProperties.contains(name) { value = parent?.applied[name] }
         let had = applied[name] != nil
         if !had && value == nil { return }
@@ -309,6 +357,9 @@ open class View: NSObject {
         case "order", "flexGrow", "flexShrink", "alignSelf", "flexWrapBefore": (parent as? FlexboxLayout)?.requestLayout()
         case "left", "top": (parent as? AbsoluteLayout)?.requestLayout()
         case "dock": (parent as? DockLayout)?.requestLayout()
+        case "translateX", "translateY", "scaleX", "scaleY", "rotate", "rotateX", "rotateY", "perspective": updateNativeTransform()
+        case "originX", "originY": updateOriginPoint()
+        case "zIndex": nativeView?.layer.zPosition = CGFloat(toDouble(value) ?? 0)
         default:
             break
         }
@@ -464,10 +515,19 @@ open class View: NSObject {
         }
     }
 
+    func takeCachedFrame() -> CGRect? {
+        defer { cachedFrame = nil }
+        return cachedFrame
+    }
+
     open func modifyNativeViewFrame(_ nativeView: UIView, _ frame: CGRect) {
+        // A frame is only valid under the identity transform.
+        let transform = isTransformed ? nativeView.layer.transform : nil
+        if isTransformed { nativeView.layer.transform = CATransform3DIdentity }
         nativeView.frame = frame
         let adjustedFrame = applySafeAreaInsets(frame)
         if let adjustedFrame { nativeView.frame = adjustedFrame }
+        if let transform { nativeView.layer.transform = transform }
         let boundsSize = (adjustedFrame ?? frame).size
         nativeView.bounds = CGRect(origin: nativeView.bounds.origin, size: boundsSize)
         nativeView.layoutIfNeeded()
