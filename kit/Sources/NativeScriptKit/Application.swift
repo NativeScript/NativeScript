@@ -55,8 +55,5 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         self.root = root
-        if ProcessInfo.processInfo.environment["NS_TRACE"] != nil {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { print("TREE", (window.value(forKey: "recursiveDescription") as? String) ?? "") }
-        }
     }
 }

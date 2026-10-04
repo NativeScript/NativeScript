@@ -3005,6 +3005,15 @@ export class Translator {
     // Comparing a typed optional with null or undefined.
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
     if (maybe) return `${maybe} ${negate ? '!=' : '=='} nil`;
+    // A member of an untyped object compared with null or undefined: the value as read, before any conversion to the declared type.
+    const untypedRead = (x: ts.Expression) => (ts.isElementAccessExpression(x) || ts.isPropertyAccessExpression(x)) && this.isAny(x.expression) && this.typeOf(x) !== 'Any?';
+    if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
+      const [x, n] = isNullish(b) ? [a, b] : [b, a];
+      const target = (x as ts.PropertyAccessExpression | ts.ElementAccessExpression).expression;
+      const key = ts.isElementAccessExpression(x) ? this.str(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
+      const read = `jsGet(${this.expr(target)}, ${key})`;
+      return `${negate ? '!' : ''}${strict ? `jsStrictEquals(${read}, ${this.coerce(n, 'Any?')})` : `jsIsNullish(${read})`}`;
+    }
     if (isNullish(b) && lt !== 'Any?') return `${this.expr(a)} ${negate ? '!=' : '=='} nil`;
     if (isNullish(a) && rt !== 'Any?') return `${this.expr(b)} ${negate ? '!=' : '=='} nil`;
     if (lt === 'Any?' || rt === 'Any?' || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, ''))) {
