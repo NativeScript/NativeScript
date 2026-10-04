@@ -144,6 +144,25 @@ export function unsafeReceiver(target: ts.Expression, checker: ts.TypeChecker): 
   return null;
 }
 
+/**
+ * The member read a statement starts with when its receiver is narrowed to
+ * `never` (`x.android` in the else of `if (x)`, x an object, as folding
+ * `if (__APPLE__ && x)` leaves it): that code runs only when x is null or
+ * undefined, so it throws there before anything else in it runs.
+ */
+export function leadingNeverRead(st: ts.Statement, checker: ts.TypeChecker): ts.PropertyAccessExpression | null {
+  let e: ts.Expression | undefined = ts.isExpressionStatement(st) ? st.expression
+    : ts.isVariableStatement(st) ? st.declarationList.declarations[0]?.initializer
+    : ts.isReturnStatement(st) || ts.isThrowStatement(st) ? st.expression : undefined;
+  while (e) {
+    if (ts.isPropertyAccessExpression(e) && !e.questionDotToken && checker.getTypeAtLocation(e.expression).flags & ts.TypeFlags.Never) return e;
+    if (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isTypeAssertionExpression(e) || ts.isNonNullExpression(e) || ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e) || ts.isCallExpression(e)) e = e.expression;
+    else if (ts.isBinaryExpression(e) && !(e.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && e.operatorToken.kind <= ts.SyntaxKind.LastAssignment)) e = e.left;
+    else return null;
+  }
+  return null;
+}
+
 /** Whether a statement beside a `for` declares one of the loop's variable names. */
 export function redeclaredBeside(loop: ts.ForStatement, list: ts.VariableDeclarationList): boolean {
   const names = new Set(list.declarations.flatMap((d) => (ts.isIdentifier(d.name) ? [d.name.text] : [])));

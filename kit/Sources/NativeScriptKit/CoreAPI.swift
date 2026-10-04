@@ -72,6 +72,8 @@ extension Color {
     }
     public var name: String? { nil }
     public func equals(_ other: Color) -> Bool { self == other }
+    /// `Color.equals(a, b)`: two missing colors are equal.
+    public static func equals(_ a: Color?, _ b: Color?) -> Bool { a == b }
     public var isDark: Bool { (Double(r) * 299 + Double(g) * 587 + Double(b) * 114) / 1000 < 128 }
     public var isLight: Bool { !isDark }
 }

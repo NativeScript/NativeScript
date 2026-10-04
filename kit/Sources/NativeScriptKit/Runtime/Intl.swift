@@ -676,3 +676,9 @@ extension JSDate {
         return try JSDateTimeFormat(locales, options, required: "time", defaults: "time").formatTime(time)
     }
 }
+
+/// `Intl` read as a value (`typeof Intl.DateTimeFormat`, `(Intl as any).NumberFormat`): its constructors by name.
+public let jsIntl = JSObject([
+    ("DateTimeFormat", { (args: [Any?]) throws -> Any? in try JSDateTimeFormat(jsArg(args, 0), jsArg(args, 1)) } as JSFunction),
+    ("NumberFormat", { (args: [Any?]) throws -> Any? in try JSNumberFormat(jsArg(args, 0), jsArg(args, 1)) } as JSFunction),
+])

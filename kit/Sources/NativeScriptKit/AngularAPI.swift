@@ -39,6 +39,8 @@ public final class ComponentFactory {
 /// `NativeDialogRef`: the open dialog a component was created in.
 public final class NativeDialogRef {
     public static var current: NativeDialogRef!
+    /// `NATIVE_DIALOG_DATA`: the `data` the dialog was opened with.
+    public internal(set) var data: Any? = nil
     private let closed = RxReplaySubject<Any?>(1)
 
     public func close(_ result: Any? = nil) { Modal.close(result) }
@@ -53,6 +55,7 @@ public final class NativeDialogService {
     @discardableResult
     public func open(_ component: Any?, _ config: Any? = nil) -> NativeDialogRef {
         let ref = NativeDialogRef()
+        ref.data = (try? jsGet(config, "data")) ?? nil
         guard let factory = jsFlat(component) as? ComponentFactory, let parent = Modal.top else { return ref }
         let owner = Owner(parent: nil)
         let previous = NativeDialogRef.current

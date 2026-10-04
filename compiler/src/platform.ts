@@ -105,6 +105,12 @@ function findFold(sf: ts.SourceFile, flag: (n: ts.Node) => boolean | undefined):
         return;
       }
     }
+    // `if (__APPLE__ && x) … else if (x) …` folded: the else's test is the one that just failed, so its branch never runs.
+    if (ts.isIfStatement(n) && n.elseStatement && ts.isIfStatement(n.elseStatement) && pure(n.expression) && same(n.expression, n.elseStatement.expression, sf)) {
+      const inner = n.elseStatement;
+      found = { span: span(inner), keep: inner.elseStatement ? span(inner.elseStatement) : null };
+      return;
+    }
     if (ts.isConditionalExpression(n)) {
       const v = constant(n.condition);
       if (v !== undefined) { found = { span: span(n), keep: span(v ? n.whenTrue : n.whenFalse) }; return; }
@@ -152,7 +158,13 @@ function needsStatement(text: string, at: number): boolean {
 
 function pure(e: ts.Expression): boolean {
   while (ts.isParenthesizedExpression(e)) e = e.expression;
+  if (ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind)) return pure(e.left) && pure(e.right);
+  if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return pure(e.operand);
   return ts.isIdentifier(e) || (ts.isPropertyAccessExpression(e) && pure(e.expression)) || e.kind === ts.SyntaxKind.ThisKeyword || ts.isLiteralExpression(e);
+}
+
+function same(a: ts.Expression, b: ts.Expression, sf: ts.SourceFile): boolean {
+  return a.getText(sf).replace(/\s+/g, '') === b.getText(sf).replace(/\s+/g, '');
 }
 
 function isReference(id: ts.Identifier): boolean {

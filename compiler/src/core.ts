@@ -59,6 +59,15 @@ export class CoreAPI {
     this.index = kitIndex(KIT);
   }
 
+  /** Whether NativeScriptKit declares a type of this name itself, not only extends one. */
+  declares(name: string): boolean {
+    return !!this.index.get(name)?.declared;
+  }
+
+  typeNames(): string[] {
+    return [...this.index.values()].filter((t) => t.declared && !t.name.includes('.')).map((t) => t.name);
+  }
+
   /** Whether NativeScriptKit declares a type of this name. */
   has(name: string): boolean {
     return this.index.has(name);
@@ -219,6 +228,12 @@ export class CoreAPI {
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
     const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e, e.arguments.length));
+    // A closure for a kit parameter that cannot throw (`dispatchToMainThread`) reports what it throws, as a handler does.
+    const kitParams = (m.params ?? '').trim() ? splitParams(m.params!) : [];
+    e.arguments.forEach((a, k) => {
+      const p = kitParams[k];
+      if (!listener && p && (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && !a.parameters.length && (t.checker.getContextualType(a)?.getCallSignatures()[0]?.getParameters().length ?? 0) === 0 && /->/.test(p) && !/\bthrows\b/.test(p) && /\(\s*\)\s*->/.test(p)) args[k] = t.callback(a);
+    });
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e));
   }
 
@@ -312,4 +327,18 @@ export class CoreAPI {
     const k = kitType.replace(/\?$/, '');
     return /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)$/.test(k) ? `${k}(${code})` : code;
   }
+}
+
+/** A parameter list's parameters, split at top-level commas. */
+function splitParams(text: string): string[] {
+  const out: string[] = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if ('([<'.includes(ch)) depth++;
+    else if (')]>'.includes(ch) && text[i - 1] !== '-') depth--;
+    else if (ch === ',' && depth === 0) { out.push(text.slice(start, i).trim()); start = i + 1; }
+  }
+  out.push(text.slice(start).trim());
+  return out;
 }
