@@ -10,6 +10,8 @@ import { render } from './codegen-kotlin.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
+import { SourceLines } from './source-lines.ts';
+import { androidManifest, appResourcesDir, copyAndroidFonts, pluginManifests } from './app-resources.ts';
 
 export interface AndroidBuild {
   app: string;
@@ -26,9 +28,17 @@ export interface AndroidBuild {
   css: string;
   root: string;
   routes: { routes: { path: string; component: string }[]; initial: string } | null;
+  /** Source lines for the Kotlin, written as `source-lines.json` for `retrace.ts`; null leaves them out. */
+  lines: SourceLines | null;
   applicationId?: string;
   widgetsAar?: string;
+  /** The app folder: its fonts become assets. */
+  appDir: string;
   build: boolean;
+  /** Build an app bundle (.aab) beside the APK. */
+  bundle?: boolean;
+  /** The release keystore (`--key-store-path`, `--key-store-password`, `--key-store-alias`, `--key-store-alias-password`). */
+  keyStore?: { path: string; password: string; alias: string; aliasPassword: string };
 }
 
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
@@ -46,6 +56,20 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
 
   const translator = new Translator(b.checker, b.infos, b.files);
   translator.core = new CoreKotlin(translator);
+  translator.lines = b.lines;
+  const table: Record<string, [number, string, number][]> = {};
+  /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
+  const write = (file: string, code: string) => {
+    if (!b.lines) { writeFileSync(file, code); return; }
+    const located = b.lines.kotlin(code);
+    writeFileSync(file, located.code);
+    const ranges: [number, string, number][] = [];
+    located.lines.forEach((at, i) => {
+      const last = ranges.at(-1);
+      if (at ? !last || last[1] !== relative(b.app, at.file) || last[2] !== at.line : last && last[2] !== 0) ranges.push([i + 1, at ? relative(b.app, at.file) : '', at?.line ?? 0]);
+    });
+    if (ranges.length) table[basename(file)] = ranges;
+  };
   translator.native = new AndroidNativeAPI(translator, androidClassPath(b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app)));
   const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
@@ -54,12 +78,13 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     const { params, lines } = translator.componentMembers(cls, c.props);
-    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos, { framework: b.framework, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
-    writeFileSync(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
+    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+    write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
   }
   addKotlinInterfaces(translator, modules);
-  for (const m of modules) if (m.code.trim()) writeFileSync(join(sources, m.name + '.kt'), header(m.file) + m.code);
-  const shapes = translator.shapesCode();
+  for (const m of modules) if (m.code.trim()) write(join(sources, m.name + '.kt'), header(m.file) + m.code);
+  writeFileSync(join(b.out, 'source-lines.json'), JSON.stringify({ package: pkg, files: table }) + '\n');
+  const shapes = SourceLines.strip(translator.shapesCode());
   if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
   const inits = modules.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
   const routes = b.routes
@@ -83,10 +108,14 @@ val appCSS = ${kotlinString(b.css)}
   say(`${b.components.length} components and ${b.modules.length} modules from ${b.framework} compiled to Kotlin in ${Date.now() - started} ms → ${relative(process.cwd(), sources)}`);
 
   // The Gradle project: this app module, and the kit as a library module.
-  const resources = join(b.app, 'App_Resources', 'Android', 'src', 'main', 'res');
+  const appResources = join(appResourcesDir(b.app), 'Android');
+  const main = join(appResources, 'src', 'main');
+  const resources = join(main, 'res');
   const widgets = b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app);
   if (!widgets) throw new Error('@nativescript/core is not installed in the app (its widgets AAR is the layout the native build links); run npm install, or pass --widgets <aar>');
   const applicationId = b.applicationId ?? `${pkg}.native`;
+  const overlays = pluginManifests({ app: b.app, applicationId, dir: join(b.out, 'plugin-manifests') });
+  const gradleFile = (f: string) => (existsSync(join(appResources, f)) ? `apply(from = ${kotlinString(join(appResources, f))})\n` : '');
   writeFileSync(join(b.out, 'settings.gradle.kts'), `pluginManagement {
     repositories {
         google()
@@ -113,7 +142,7 @@ nativescriptWidgetsAar=${widgets}
     id("com.android.library") version "8.12.1" apply false
     id("org.jetbrains.kotlin.android") version "2.2.20"
 }
-
+${gradleFile('before-plugins.gradle')}
 android {
     namespace = ${kotlinString(pkg)}
     compileSdk = 36
@@ -127,7 +156,7 @@ android {
     }
 
     sourceSets["main"].res.srcDirs(${kotlinString(resources)}, "src/main/res")
-
+${['java', 'assets'].filter((d) => existsSync(join(main, d))).map((d) => `    sourceSets["main"].${d}.srcDirs(${kotlinString(join(main, d))})\n`).join('')}
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -151,20 +180,26 @@ kotlin {
 dependencies {
     implementation(project(":kit"))
 }
-`);
+${overlays.length ? `
+// The plugins' manifests, merged into the app's as the plugins' own would be.
+androidComponents {
+    onVariants { variant ->
+${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile(${kotlinString(m)})\n`).join('')}    }
+}
+` : ''}${gradleFile('app.gradle')}`);
   writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
-  // The NativeScript CLI names the app after its folder, letters and digits only, unless App_Resources does.
-  const appStrings = join(b.app, 'App_Resources', 'Android', 'src', 'main', 'res', 'values', 'strings.xml');
-  const label = (existsSync(appStrings) && /<string name="app_name">([^<]*)</.exec(readFileSync(appStrings, 'utf8'))?.[1]) || basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
-  writeFileSync(join(b.out, 'src', 'main', 'res', 'values', 'strings.xml'), `<?xml version="1.0" encoding="utf-8"?>
+  // The runtime template's strings.xml, named after the folder (letters and digits only), unless App_Resources replaces the file.
+  const label = basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
+  if (!existsSync(join(resources, 'values', 'strings.xml'))) writeFileSync(join(b.out, 'src', 'main', 'res', 'values', 'strings.xml'), `<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">${label}</string>
     <string name="title_activity_kimera">${label}</string>
 </resources>
 `);
-  // The activity as App_Resources declares NativeScript's: the launch theme, then AppTheme once created.
-  writeFileSync(join(b.out, 'src', 'main', 'AndroidManifest.xml'), `<?xml version="1.0" encoding="utf-8"?>
+  copyAndroidFonts(b.appDir, join(b.out, 'src', 'main', 'assets'));
+  // App_Resources' manifest, else the runtime template's activity: the launch theme, then AppTheme once created.
+  writeFileSync(join(b.out, 'src', 'main', 'AndroidManifest.xml'), androidManifest({ app: b.app, applicationId, activity: `${pkg}.MainActivity` }) ?? `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="true"
@@ -192,9 +227,15 @@ dependencies {
 
   if (b.build) {
     const { execFileSync } = await import('node:child_process');
-    execFileSync(join(kit, 'gradlew'), ['-p', b.out, ':assembleRelease', '--quiet'], { stdio: 'inherit' });
-    const apk = join(b.out, 'build', 'outputs', 'apk', 'release', `${basename(b.out)}-release.apk`);
+    // Signed with the keystore when one is given, as Android Studio's signed builds inject it.
+    const k = b.keyStore;
+    const signing = k ? [`-Pandroid.injected.signing.store.file=${resolve(k.path)}`, `-Pandroid.injected.signing.store.password=${k.password}`, `-Pandroid.injected.signing.key.alias=${k.alias}`, `-Pandroid.injected.signing.key.password=${k.aliasPassword}`] : [];
+    execFileSync(join(kit, 'gradlew'), ['-p', b.out, ':assembleRelease', ...(b.bundle ? [':bundleRelease'] : []), ...signing, '--quiet'], { stdio: 'inherit' });
+    const apk = join(b.out, 'build', 'outputs', 'apk', 'release', `${b.name}-release.apk`);
     say(`built ${relative(process.cwd(), existsSync(apk) ? apk : join(b.out, 'build', 'outputs', 'apk', 'release'))}`);
+    const aab = join(b.out, 'build', 'outputs', 'bundle', 'release', `${b.name}-release.aab`);
+    if (b.bundle) say(`built ${relative(process.cwd(), aab)}`);
+    if (!k) say('no --key-store-path: signed with the debug key, which installs for testing but no store accepts');
   }
 }
 

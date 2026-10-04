@@ -44,7 +44,7 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
                     "serif" -> Typeface.SERIF
                     "sans-serif", "system" -> Typeface.SANS_SERIF
                     "monospace" -> Typeface.MONOSPACE
-                    else -> null
+                    else -> AppFonts.load(f)
                 }
                 if (base != null) return Typeface.create(base, numericWeight, isItalic)
             }
@@ -68,6 +68,8 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
                 else -> null
             }
             if (name != null) return Typeface.create(name + suffix, style)
+            val file = AppFonts.load(f)
+            if (file != null) return if (style != 0) Typeface.create(file, style) else file
         }
         return Typeface.create("sans-serif$suffix", style)
     }
