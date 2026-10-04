@@ -212,6 +212,7 @@ private final class JSInspectContext {
         case let d as JSDate: return d.time.isFinite ? ((try? d.toISOString()) ?? "Invalid Date") : "Invalid Date"
         case let r as JSRegExp: return r.toString()
         case let symbol as JSSymbol: return symbol.toString()
+        case let big as JSBigInt: return big.toString() + "n"
         default: break
         }
         if let n = jsNumeric(v) { return jsInspectNumber(n) }

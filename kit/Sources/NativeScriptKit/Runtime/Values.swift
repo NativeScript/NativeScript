@@ -486,6 +486,7 @@ public func jsTypeof(_ value: Any?) -> String {
     case is Bool: return "boolean"
     case is JSNull: return "object"
     case is JSSymbol: return "symbol"
+    case is JSBigInt: return "bigint"
     default:
         if jsNumeric(v) != nil { return "number" }
         return jsIsFunction(v) ? "function" : "object"
@@ -506,6 +507,7 @@ public func jsIsTruthy(_ value: Any?) -> Bool {
     case let d as Double: return d != 0 && !d.isNaN
     case let s as String: return !s.isEmpty
     case is JSNull: return false
+    case let b as JSBigInt: return !b.isZero
     case let v?:
         if let n = jsNumeric(v) { return n != 0 && !n.isNaN }
         return true
@@ -522,6 +524,7 @@ public func jsStrictEquals(_ a: Any?, _ b: Any?) -> Bool {
     case let (x as Double, y as Double): return x == y
     case let (x as String, y as String): return jsStringEquals(x, y)
     case let (x as Bool, y as Bool): return x == y
+    case let (x as JSBigInt, y as JSBigInt): return x == y
     case let (x?, y?):
         if let m = jsNumeric(x), let n = jsNumeric(y) { return m == n }
         guard jsIsObject(x), jsIsObject(y) else { return false }
@@ -552,6 +555,8 @@ public func jsLooseEquals(_ a: Any?, _ b: Any?) -> Bool {
     let bNullish = b == nil || b is JSNull
     if aNullish || bNullish { return aNullish && bNullish }
     guard let x = a, let y = b else { return false }
+    if let big = x as? JSBigInt { return jsBigIntLooseEquals(big, y) }
+    if let big = y as? JSBigInt { return jsBigIntLooseEquals(big, x) }
     if let m = jsNumeric(x), let n = jsNumeric(y) { return m == n }
     if let s = x as? String, let t = y as? String { return jsStringEquals(s, t) }
     if let p = x as? Bool, let q = y as? Bool { return p == q }
@@ -570,7 +575,7 @@ public func jsLooseEquals(_ a: Any?, _ b: Any?) -> Bool {
 func jsToPrimitive(_ value: Any?) -> Any? {
     guard let v = jsFlat(value) else { return nil }
     switch v {
-    case is String, is Bool, is JSNull, is JSSymbol: return v
+    case is String, is Bool, is JSNull, is JSSymbol, is JSBigInt: return v
     default:
         if let n = jsNumeric(v) { return n }
         if let user = jsUserPrimitive(v, "default") { return user }
@@ -589,6 +594,7 @@ public func jsToNumber(_ value: Any?) -> Double {
     case let s as String: return jsNumberFromString(s)
     case let b as Bool: return b ? 1 : 0
     case is JSNull: return 0
+    case let big as JSBigInt: return big.toDouble()
     case let v?:
         if let n = jsNumeric(v) { return n }
         if jsIsFunction(v) || v is JSSymbol { return .nan }
@@ -612,6 +618,7 @@ public func jsToString(_ value: Any?) -> String {
     case let v as JSToPrimitive: return jsToString(jsUserPrimitive(v, "string") ?? nil)
     case let v as JSStringConvertible: return v.toString()
     case let symbol as JSSymbol: return symbol.toString()
+    case let big as JSBigInt: return big.toString()
     case let tagged as JSToStringTag: return "[object \(tagged.jsToStringTag)]"
     case let error as JSError: return error.jsErrorString
     case let array as JSArrayProtocol: return array.jsJoin(",")

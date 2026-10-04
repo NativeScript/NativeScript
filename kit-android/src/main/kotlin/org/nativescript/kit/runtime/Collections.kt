@@ -14,6 +14,7 @@ internal class JSCollectionKey(val value: Any?) {
         if (a == null || b == null) return a == null && b == null
         if (a is String && b is String) return a == b
         if (a is Boolean && b is Boolean) return a == b
+        if (a is JSBigInt || b is JSBigInt) return a == b
         val m = jsNumeric(a)
         val n = jsNumeric(b)
         if (m != null || n != null) return m != null && n != null && (m == n || (m.isNaN() && n.isNaN()))
@@ -22,7 +23,7 @@ internal class JSCollectionKey(val value: Any?) {
 
     override fun hashCode(): Int {
         val v = value ?: return 0
-        if (v is String || v is Boolean) return v.hashCode()
+        if (v is String || v is Boolean || v is JSBigInt) return v.hashCode()
         val n = jsNumeric(v)
         if (n != null) return if (n == 0.0) 0 else n.hashCode()
         return System.identityHashCode(v)

@@ -38,6 +38,7 @@ enum JSCollectionKey: Hashable {
         case let d as Double: return number(d)
         case let b as Bool: return .bool(b)
         case is JSNull: return .null
+        case let big as JSBigInt: return .string(JSPropertyKey("\u{0}n" + big.toString()))
         case let v?:
             if let n = jsNumeric(v) { return number(n) }
             if jsIsObject(v) { return .object(ObjectIdentifier(v as AnyObject)) }

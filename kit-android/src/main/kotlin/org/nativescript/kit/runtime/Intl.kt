@@ -166,12 +166,18 @@ class JSNumberFormat(locales: Any? = null, options: Any? = null) : JSDynamic {
     internal fun formatNumber(x: Double): String {
         if (!jsIsEnUS(locale)) return platformFormat(x)
         val negative = !x.isNaN() && (x < 0 || (x == 0.0 && 1.0 / x < 0))
+        if (x.isNaN() || x.isInfinite()) return formatDecimal(null, negative, if (x.isNaN()) "NaN" else "∞")
+        return formatDecimal(JSDecimalDigits.of(Math.abs(x)), negative)
+    }
+
+    /** A decimal's digits as this format writes them (`special`: NaN's or infinity's text). */
+    internal fun formatDecimal(digits: JSDecimalDigits?, negative: Boolean, special: String? = null): String {
         var body: String
         var isZero = false
-        if (x.isNaN()) body = "NaN"
-        else if (x.isInfinite()) body = "∞"
+        val isNaN = special == "NaN"
+        if (special != null) body = special
         else {
-            var d = JSDecimalDigits.of(Math.abs(x))
+            var d = digits!!.copy()
             if (style == "percent") d.shift(2)
             when (notation) {
                 "scientific", "engineering" -> { val (text, rounded) = scientific(d, notation == "engineering"); body = text; d = rounded }
@@ -181,11 +187,11 @@ class JSNumberFormat(locales: Any? = null, options: Any? = null) : JSDynamic {
             isZero = d.isZero
         }
         if (style == "percent") body += "%"
-        if (style == "currency" && currency != null) body = currencyText(body, currency, x)
+        if (style == "currency" && currency != null) body = currencyText(body, currency, digits != null && digits.digits == listOf(1) && digits.point == 1)
         val (showMinus, showPlus) = when (signDisplay) {
             "never" -> Pair(false, false)
-            "always" -> Pair(negative, !negative && !x.isNaN())
-            "exceptZero" -> Pair(negative && !isZero, !negative && !isZero && !x.isNaN())
+            "always" -> Pair(negative, !negative && !isNaN)
+            "exceptZero" -> Pair(negative && !isZero, !negative && !isZero && !isNaN)
             "negative" -> Pair(negative && !isZero, false)
             else -> Pair(negative, false)
         }
@@ -252,11 +258,11 @@ class JSNumberFormat(locales: Any? = null, options: Any? = null) : JSDynamic {
         return Pair(layout(s) + units[level], s)
     }
 
-    private fun currencyText(number: String, code: String, x: Double): String {
+    private fun currencyText(number: String, code: String, one: Boolean): String {
         val data = currencies[code]
         return when (currencyDisplay) {
             "code" -> "$code $number"
-            "name" -> "$number ${if (Math.abs(x) == 1.0 && !number.contains('.')) data?.one ?: code else data?.other ?: code}"
+            "name" -> "$number ${if (one && !number.contains('.')) data?.one ?: code else data?.other ?: code}"
             "narrowSymbol" -> (data?.narrow ?: code) + number
             else -> {
                 val symbol = data?.symbol ?: code

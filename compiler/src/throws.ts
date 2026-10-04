@@ -4,9 +4,9 @@ import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from '.
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add',
+const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
-  'Number.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
+  'Number.toLocaleString', 'BigInt.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
 
 /**
  * Which functions throw, worked out across the call graph: a function is
@@ -94,6 +94,9 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    // BigInt division, remainder and exponent throw a RangeError (a zero divisor, a negative exponent).
+    if (ts.isBinaryExpression(n) && [ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken, ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.SlashEqualsToken, ts.SyntaxKind.PercentEqualsToken, ts.SyntaxKind.AsteriskAsteriskEqualsToken].includes(n.operatorToken.kind)
+      && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;
     // Iterating a generator or a script's iterator runs its code.
     if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && iterationThrows(c.getTypeAtLocation(n.expression), c)) return true;
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
@@ -138,8 +141,9 @@ export class Throws {
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
-    // Intl's constructors reject options out of range.
+    // Intl's constructors reject options out of range; BigInt() a value with no integer.
     if (intlConstructor(call.expression, c)) return true;
+    if (ts.isIdentifier(call.expression) && call.expression.text === 'BigInt' && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak collection made from entries rejects a primitive key.
     if (ts.isNewExpression(call) && args.length && ts.isIdentifier(call.expression) && ['WeakMap', 'WeakSet'].includes(call.expression.text)) return true;
     if (!decl || ts.isJSDocSignature(decl)) {

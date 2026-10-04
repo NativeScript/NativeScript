@@ -296,6 +296,7 @@ private struct JSJSONWriter {
         case let s as String: return jsJSONQuote(s)
         case let d as Double: return d.isFinite ? jsNumberToString(d) : "null"
         case let date as JSDate: return date.toJSON().map(jsJSONQuote) ?? "null"
+        case is JSBigInt: throw JSException(JSTypeError("Do not know how to serialize a BigInt"))
         default: break
         }
         if let n = jsNumeric(v) { return n.isFinite ? jsNumberToString(n) : "null" }

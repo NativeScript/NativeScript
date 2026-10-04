@@ -189,15 +189,19 @@ public final class JSNumberFormat: JSDynamic {
 
     func formatNumber(_ x: Double) -> String {
         guard jsIsEnUS(locale) else { return platformFormat(x) }
-        let negative = x.sign == .minus && !x.isNaN
+        if x.isNaN || x.isInfinite { return formatDecimal(nil, negative: x.sign == .minus && !x.isNaN, special: x.isNaN ? "NaN" : "∞") }
+        return formatDecimal(JSDecimalDigits(abs(x)), negative: x.sign == .minus)
+    }
+
+    /// A decimal's digits as this format writes them (`special`: NaN's or infinity's text).
+    func formatDecimal(_ digits: JSDecimalDigits?, negative: Bool, special: String? = nil) -> String {
         var body: String
         var isZero = false
-        if x.isNaN {
-            body = "NaN"
-        } else if x.isInfinite {
-            body = "∞"
+        let isNaN = special == "NaN"
+        if let special {
+            body = special
         } else {
-            var d = JSDecimalDigits(abs(x))
+            var d = digits!
             if style == "percent" { d.shift(2) }
             switch notation {
             case "scientific", "engineering":
@@ -211,13 +215,13 @@ public final class JSNumberFormat: JSDynamic {
             isZero = d.isZero
         }
         if style == "percent" { body += "%" }
-        if style == "currency", let code = currency { body = currencyText(body, code, x) }
+        if style == "currency", let code = currency { body = currencyText(body, code, one: digits.map { $0.digits == [1] && $0.point == 1 } ?? false) }
         let showMinus: Bool
         let showPlus: Bool
         switch signDisplay {
         case "never": showMinus = false; showPlus = false
-        case "always": showMinus = negative; showPlus = !negative && !x.isNaN
-        case "exceptZero": showMinus = negative && !isZero; showPlus = !negative && !isZero && !x.isNaN
+        case "always": showMinus = negative; showPlus = !negative && !isNaN
+        case "exceptZero": showMinus = negative && !isZero; showPlus = !negative && !isZero && !isNaN
         case "negative": showMinus = negative && !isZero; showPlus = false
         default: showMinus = negative; showPlus = false
         }
@@ -290,12 +294,12 @@ public final class JSNumberFormat: JSDynamic {
         return layout(s) + units[level]
     }
 
-    private func currencyText(_ number: String, _ code: String, _ x: Double) -> String {
+    private func currencyText(_ number: String, _ code: String, one isOne: Bool) -> String {
         let data = jsCurrencies[code]
         switch currencyDisplay {
         case "code": return "\(code)\u{a0}\(number)"
         case "name":
-            let one = abs(x) == 1 && !number.contains(".")
+            let one = isOne && !number.contains(".")
             return "\(number) \(one ? data?.one ?? code : data?.other ?? code)"
         case "narrowSymbol": return (data?.narrow ?? code) + number
         default:

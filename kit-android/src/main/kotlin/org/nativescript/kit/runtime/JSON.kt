@@ -267,6 +267,7 @@ private class JSONWriter(val gap: String?) {
             is String -> return jsJSONQuote(v)
             is JSDate -> return v.toJSON()?.let { jsJSONQuote(it) } ?: "null"
             is Function<*> -> return null
+            is JSBigInt -> throw JSException(JSTypeError("Do not know how to serialize a BigInt"))
         }
         jsNumeric(v)?.let { return if (it.isNaN() || it.isInfinite()) "null" else jsNumberToString(it) }
         return when (v) {

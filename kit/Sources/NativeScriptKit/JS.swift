@@ -27,16 +27,7 @@ public func jsIndexOf(_ s: String, _ sub: String) -> Double {
 }
 
 /// JavaScript truthiness for the values translated code tests.
-public func jsTruthy(_ value: Any?) -> Bool {
-    switch value {
-    case nil: return false
-    case let b as Bool: return b
-    case let d as Double: return d != 0 && !d.isNaN
-    case let i as Int: return i != 0
-    case let s as String: return !s.isEmpty
-    default: return true
-    }
-}
+public func jsTruthy(_ value: Any?) -> Bool { jsIsTruthy(value) }
 
 /// `a.slice(start, end)`: negative indexes count from the end; out-of-range clamps.
 public func jsSlice<T>(_ a: [T], _ start: Double = 0, _ end: Double? = nil) -> [T] {

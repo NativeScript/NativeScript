@@ -222,6 +222,7 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
             JSNull -> return "null"
             is Function<*> -> return "[Function (anonymous)]"
             is JSSymbol -> return v.toString()
+            is JSBigInt -> return v.toString() + "n"
             is JSInspectAccessor -> return "[${v.kind}]"
         }
         jsNumeric(v)?.let { return formatNumber(it) }

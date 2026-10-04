@@ -68,7 +68,7 @@ export interface ComponentInfo {
 }
 
 const ERRORS: Record<string, string> = { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' };
-const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet']);
+const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet', 'BigInt']);
 
 export class Translator implements AsyncTranslator {
   readonly syntax = SWIFT_SYNTAX;
@@ -237,7 +237,7 @@ export class Translator implements AsyncTranslator {
     if (t.flags & F.NonPrimitive) return 'Any?';
     if (t.flags & (F.String | F.StringLiteral | F.TemplateLiteral)) return 'String';
     if (t.flags & (F.Boolean | F.BooleanLiteral)) return 'Bool';
-    if (t.flags & F.BigIntLike) return 'Double';
+    if (t.flags & F.BigIntLike) return 'JSBigInt';
     if (c.isTupleType(t)) return `(${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')})`;
     if (c.isArrayType(t)) {
       const el = c.getTypeArguments(t as ts.TypeReference)[0];
@@ -507,7 +507,7 @@ export class Translator implements AsyncTranslator {
   private isArray(n: ts.Node) { return this.typeOf(n).replace(/\?$/, '').startsWith('JSArray<'); }
   private isObjectRef(n: ts.Node) {
     const t = this.typeOf(n).replace(/[?!]$/, '');
-    return !['Double', 'String', 'Bool', 'Any?', 'Any', 'Void'].includes(t) && !t.startsWith('(') && !t.startsWith('[') && !this.native.isEnumType(t) && !this.native.isStructType(t);
+    return !['Double', 'String', 'Bool', 'Any?', 'Any', 'Void', 'JSBigInt', 'JSSymbol'].includes(t) && !t.startsWith('(') && !t.startsWith('[') && !this.native.isEnumType(t) && !this.native.isStructType(t);
   }
   zero(t: string): string | null {
     if (t.endsWith('?')) return 'nil';
@@ -2142,7 +2142,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
-    if (ts.isBigIntLiteral(e)) throw this.error(e, 'BigInt');
+    if (ts.isBigIntLiteral(e)) return `JSBigInt(literal: ${swiftString(e.text.replace(/n$/, ''))})`;
     if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return swiftString(e.text);
     if (e.kind === ts.SyntaxKind.TrueKeyword) return 'true';
     if (e.kind === ts.SyntaxKind.FalseKeyword) return 'false';
@@ -2717,6 +2717,7 @@ export class Translator implements AsyncTranslator {
       }
       if (t === 'String') return this.stringMethod(method, target, e);
       if (t === 'Double') return this.numberMethod(method, target, e);
+      if (t === 'JSBigInt' && method === 'toLocaleString') return `jsBigIntToLocaleString(${[this.expr(target), ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
       if (t.startsWith('JSPromise<')) return this.promiseMethod(method, target, e);
       if (/^JS(Iterator|Generator)</.test(t) && ['next', 'return', 'throw'].includes(method)) {
         return `${this.expr(target)}${q}.js${method[0].toUpperCase()}${method.slice(1)}Result(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : method === 'throw' ? 'nil' : ''})`;
@@ -2825,6 +2826,7 @@ export class Translator implements AsyncTranslator {
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
         case 'unescape': return `jsUnescape(${this.str(arg(0))})`;
         case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : 'nil'})`;
+        case 'BigInt': return `JSBigInt(convert: ${this.coerce(arg(0), 'Any?')})`;
       }
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
@@ -2836,6 +2838,8 @@ export class Translator implements AsyncTranslator {
     }
     const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body);
+    // A function held untyped (one of several function types): called as script calls it.
+    if (this.typeOf(callee) === 'Any?') return `jsCall(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
     return `${this.narrowed(callee, ident(ts.isIdentifier(callee) ? this.declaredName(callee) : name))}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
   }
 
@@ -2894,6 +2898,7 @@ export class Translator implements AsyncTranslator {
   private toNumber(e: ts.Expression): string {
     const t = this.typeOf(e);
     if (t === 'Double') return this.expr(e);
+    if (t === 'JSBigInt') return `${this.expr(e)}.toDouble()`;
     if (t === 'JSDate') return `${this.expr(e)}.valueOf()`;
     if (this.native.isEnumType(t)) return `Double(${this.expr(e)}.rawValue)`;
     if (t.endsWith('?') && this.native.isEnumType(t.slice(0, -1))) return `Double(${this.expr(e)}?.rawValue ?? 0)`;
@@ -2915,7 +2920,7 @@ export class Translator implements AsyncTranslator {
       }
       case 'JSON':
         if (method === 'parse') return `jsJSONParse(${this.expr(arg(0))})`;
-        if (method === 'stringify') return `jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})!`;
+        if (method === 'stringify') return `jsJSONStringifyChecked(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})!`;
         break;
       case 'Object': {
         const record = this.typeOf(arg(0)).startsWith('JSRecord<');
@@ -2974,6 +2979,9 @@ export class Translator implements AsyncTranslator {
         break;
       case 'String':
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
+        break;
+      case 'BigInt':
+        if (method === 'asIntN' || method === 'asUintN') return `JSBigInt.${method}(${this.toNumber(arg(0))}, ${this.expr(arg(1))})`;
         break;
       case 'Symbol':
         if (method === 'for') return `JSSymbol.for(${this.str(arg(0))})`;
@@ -3318,7 +3326,7 @@ export class Translator implements AsyncTranslator {
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Void') return '"undefined"';
-    const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
+    const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base === 'JSBigInt' ? 'bigint' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
     if (t === 'Any?' || !known) return `jsTypeof(${this.expr(e.expression)})`;
     const maybe = this.maybeUndefined(e.expression);
     if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
@@ -3333,9 +3341,11 @@ export class Translator implements AsyncTranslator {
         return operand.startsWith('!') ? `!(${operand})` : `!${operand}`;
       }
       // `-0` is negative zero; Swift reads the literal `-0` as an integer zero.
-      case K.MinusToken: return ts.isNumericLiteral(e.operand) ? (Number(e.operand.text) === 0 ? '-0.0' : `-${this.expr(e.operand)}`) : `-${this.toNumber(e.operand)}`;
+      case K.MinusToken:
+        if (this.typeOf(e.operand) === 'JSBigInt') return `(-${this.expr(e.operand)})`;
+        return ts.isNumericLiteral(e.operand) ? (Number(e.operand.text) === 0 ? '-0.0' : `-${this.expr(e.operand)}`) : `-${this.toNumber(e.operand)}`;
       case K.PlusToken: return this.toNumber(e.operand);
-      case K.TildeToken: return `jsBitNot(${this.toNumber(e.operand)})`;
+      case K.TildeToken: return this.typeOf(e.operand) === 'JSBigInt' ? `(~${this.expr(e.operand)})` : `jsBitNot(${this.toNumber(e.operand)})`;
       case K.PlusPlusToken: return `jsPreIncrement(&${this.lvalue(e.operand)})`;
       case K.MinusMinusToken: return `jsPreDecrement(&${this.lvalue(e.operand)})`;
     }
@@ -3372,6 +3382,8 @@ export class Translator implements AsyncTranslator {
       [K.LessThanLessThanEqualsToken]: K.LessThanLessThanToken, [K.GreaterThanGreaterThanEqualsToken]: K.GreaterThanGreaterThanToken,
       [K.GreaterThanGreaterThanGreaterThanEqualsToken]: K.GreaterThanGreaterThanGreaterThanToken,
     };
+    const big = this.bigIntBinary(e);
+    if (big) return big;
     if (bit[op]) return `${bit[op]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
     if (compound[op]) {
       const value = `${bit[compound[op]!]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
@@ -3444,6 +3456,38 @@ export class Translator implements AsyncTranslator {
       case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
     }
     throw this.error(e, `operator ${ts.tokenToString(op)}`);
+  }
+
+  /** An operator on BigInts (both sides, or a comparison with a number). */
+  private bigIntBinary(e: ts.BinaryExpression): string | null {
+    const K = ts.SyntaxKind;
+    const lt = this.typeOf(e.left), rt = this.typeOf(e.right);
+    if (lt !== 'JSBigInt' && rt !== 'JSBigInt') return null;
+    const l = () => this.expr(e.left), r = () => this.expr(e.right);
+    const op = e.operatorToken.kind;
+    const both = lt === 'JSBigInt' && rt === 'JSBigInt';
+    const ops: Partial<Record<ts.SyntaxKind, (a: string, b: string) => string>> = {
+      [K.PlusToken]: (a, b) => `(${a} + ${b})`, [K.MinusToken]: (a, b) => `(${a} - ${b})`, [K.AsteriskToken]: (a, b) => `(${a} * ${b})`,
+      [K.SlashToken]: (a, b) => `JSBigInt.divide(${a}, ${b})`, [K.PercentToken]: (a, b) => `JSBigInt.remainder(${a}, ${b})`, [K.AsteriskAsteriskToken]: (a, b) => `JSBigInt.power(${a}, ${b})`,
+      [K.AmpersandToken]: (a, b) => `(${a} & ${b})`, [K.BarToken]: (a, b) => `(${a} | ${b})`, [K.CaretToken]: (a, b) => `(${a} ^ ${b})`,
+      [K.LessThanLessThanToken]: (a, b) => `JSBigInt.shiftLeft(${a}, ${b})`, [K.GreaterThanGreaterThanToken]: (a, b) => `JSBigInt.shiftRight(${a}, ${b})`,
+    };
+    const compound: Partial<Record<ts.SyntaxKind, ts.SyntaxKind>> = {
+      [K.PlusEqualsToken]: K.PlusToken, [K.MinusEqualsToken]: K.MinusToken, [K.AsteriskEqualsToken]: K.AsteriskToken, [K.SlashEqualsToken]: K.SlashToken,
+      [K.PercentEqualsToken]: K.PercentToken, [K.AsteriskAsteriskEqualsToken]: K.AsteriskAsteriskToken, [K.AmpersandEqualsToken]: K.AmpersandToken,
+      [K.BarEqualsToken]: K.BarToken, [K.CaretEqualsToken]: K.CaretToken, [K.LessThanLessThanEqualsToken]: K.LessThanLessThanToken, [K.GreaterThanGreaterThanEqualsToken]: K.GreaterThanGreaterThanToken,
+    };
+    if (both && ops[op]) return ops[op]!(l(), r());
+    if (both && compound[op]) return `${this.lvalue(e.left)} = ${ops[compound[op]!]!(l(), r())}`;
+    const comparison: Partial<Record<ts.SyntaxKind, string>> = { [K.LessThanToken]: '<', [K.GreaterThanToken]: '>', [K.LessThanEqualsToken]: '<=', [K.GreaterThanEqualsToken]: '>=' };
+    if (comparison[op]) {
+      if (both) return `(${l()} ${comparison[op]} ${r()})`;
+      // A BigInt against a number: exactly, NaN comparing false.
+      const leftBig = lt === 'JSBigInt';
+      const c = `JSBigInt.compare(${leftBig ? l() : r()}, ${this.toNumber(leftBig ? e.right : e.left)})`;
+      return `(${c}.map { ${leftBig ? '$0' : '-$0'} ${comparison[op]} 0 } ?? false)`;
+    }
+    return null;
   }
 
   private equality(e: ts.BinaryExpression): string {

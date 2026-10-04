@@ -360,6 +360,7 @@ fun jsTypeof(value: Any?): String = when (value) {
     JSNull -> "object"
     is Function<*> -> "function"
     is JSSymbol -> "symbol"
+    is JSBigInt -> "bigint"
     else -> if (jsNumeric(value) != null) "number" else "object"
 }
 
@@ -372,6 +373,7 @@ fun jsTruthy(value: Any?): Boolean = when (value) {
     is Boolean -> value
     is Double -> value != 0.0 && !value.isNaN()
     is String -> value.isNotEmpty()
+    is JSBigInt -> !value.isZero
     else -> jsNumeric(value)?.let { it != 0.0 && !it.isNaN() } ?: true
 }
 
@@ -382,6 +384,7 @@ fun jsStrictEquals(a: Any?, b: Any?): Boolean {
     if (x == null || y == null) return x == null && y == null
     if (x is String && y is String) return x == y
     if (x is Boolean && y is Boolean) return x == y
+    if (x is JSBigInt || y is JSBigInt) return x == y
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null || n != null) return m != null && n != null && m == n
@@ -417,6 +420,8 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
     val yNullish = y == null || y === JSNull
     if (xNullish || yNullish) return xNullish && yNullish
     x!!; y!!
+    if (x is JSBigInt) return jsBigIntLooseEquals(x, y)
+    if (y is JSBigInt) return jsBigIntLooseEquals(y, x)
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null && n != null) return m == n
@@ -435,7 +440,7 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
 
 /** ToPrimitive with the default hint: a date or object becomes its string form. */
 fun jsToPrimitive(value: Any?): Any? = when (val v = jsBox(value)) {
-    null, is String, is Boolean, JSNull, is JSSymbol -> v
+    null, is String, is Boolean, JSNull, is JSSymbol, is JSBigInt -> v
     is JSToPrimitive -> jsUserPrimitive(v, "default")
     else -> jsNumeric(v) ?: jsToString(v)
 }
@@ -451,6 +456,7 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
     is Boolean -> if (v) 1.0 else 0.0
     JSNull -> 0.0
     is JSDate -> v.valueOf()
+    is JSBigInt -> v.toDouble()
     is Function<*>, is JSSymbol -> Double.NaN
     is JSToPrimitive -> jsToNumber(jsUserPrimitive(v, "number"))
     else -> jsNumeric(v) ?: jsNumberFromString(jsToString(v))
@@ -468,6 +474,7 @@ fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
     is JSToPrimitive -> jsToString(jsUserPrimitive(v, "string"))
     is JSStringConvertible -> v.toString()
     is JSSymbol -> v.toString()
+    is JSBigInt -> v.toString()
     is JSToStringTag -> "[object ${v.jsToStringTag}]"
     is JSError -> v.jsErrorString
     is JSArray<*> -> jsJoin(v.storage, ",", v)
