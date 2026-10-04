@@ -106,9 +106,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     methods.push(`  ${m}(${params(loops)}) { return ${rewrite(clean(code), local(loops))}; }`);
     return m;
   };
-  const handler = (code: string, loops: Loop[]) => {
+  // A component's output gives its handler the emitted value as `$event`; a view's event gives the event data.
+  const handler = (code: string, loops: Loop[], payload = false) => {
     const m = `$e${next++}`;
-    methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${rewrite(clean(code), local(loops), 'statements')}; }`);
+    methods.push(`  ${m}(${[params(loops), `$event: ${payload ? 'any' : '$EventData'}`].filter(Boolean).join(', ')}) { ${rewrite(clean(code), local(loops), 'statements')}; }`);
     return m;
   };
 
@@ -130,7 +131,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
           }
         }
         for (const i of n.inputs) if (!(isList && i.name === 'itemTemplateSelector')) attrs.push({ name: i.name, method: expr(code(i.value, loops), loops) });
-        for (const o of n.outputs) events.push({ name: o.name, method: handler(code(o.handler, loops), loops) });
+        for (const o of n.outputs) events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
         if (n.name === 'ng-container') {
           if (attrs.length || events.length) throw new Error(`${path}: <ng-container> takes no bindings`);
           out.push(...nodes(n.children, loops));

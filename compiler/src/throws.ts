@@ -129,6 +129,9 @@ export class Throws {
     let held = c.getSymbolAtLocation(callee);
     if (held && held.flags & ts.SymbolFlags.Alias) held = c.getAliasedSymbol(held);
     const holder = held?.valueDeclaration;
+    // Reading an Angular `computed(fn)` runs fn.
+    const init = holder && (ts.isPropertyDeclaration(holder) || ts.isVariableDeclaration(holder)) ? holder.initializer : undefined;
+    if (init && ts.isCallExpression(init) && init.expression.getText() === 'computed' && init.arguments[0] && ts.isFunctionLike(init.arguments[0])) return this.fn(init.arguments[0]);
     const signature = c.getResolvedSignature(call)?.getDeclaration();
     if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
       && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;

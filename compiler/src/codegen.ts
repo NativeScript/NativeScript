@@ -155,7 +155,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             }
             for (const e of node.events) {
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
-              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: nil, value: value)`]))} }`);
+              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: nil, value: value)`]))} }`);
             }
             say(depth, `${c0}.render(into: ${parent}.addRegion())`);
             continue;
@@ -168,7 +168,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
             else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');

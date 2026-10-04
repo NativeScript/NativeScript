@@ -22,6 +22,8 @@ export interface Event {
   ifPassed?: string;
   /** A method deciding, when the view is made, whether to listen at all (`onX={cond ? fn : undefined}`). */
   when?: string;
+  /** The handler takes the emitted value itself (an Angular component's output), not event data. */
+  payload?: boolean;
 }
 
 export type TNode =

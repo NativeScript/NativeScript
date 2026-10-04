@@ -593,7 +593,7 @@ export class Translator implements AsyncTranslator {
           const fn = ts.isCallExpression(d.initializer) && this.calleeName(d.initializer) === 'computed' ? d.initializer.arguments[0] : undefined;
           if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
             const rt = this.returnTypeOf(fn);
-            out.push(`var ${name}: ${rt} ${this.functionBody(fn, rt, '')}`);
+            out.push(this.throwsInfo.fn(fn) ? `var ${name}: ${rt} {\n    get throws ${this.functionBody(fn, rt, '    ')}\n}` : `var ${name}: ${rt} ${this.functionBody(fn, rt, '')}`);
             continue;
           }
           const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
@@ -1107,6 +1107,13 @@ export class Translator implements AsyncTranslator {
     let late = false;
     this.indent = '    ';
     for (const m of cls.members) {
+      if (ts.isPropertyDeclaration(m) && isStatic(m)) {
+        // A static field of a component or service (`static readonly PILL_HEIGHT = 44`): the class's.
+        const name = (m.name as ts.Identifier).text;
+        const t = this.typeOf(m.name);
+        lines.push(m.initializer ? `    static ${hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) ? 'let' : 'var'} ${ident(name)}: ${t} = ${this.coerce(m.initializer, t)}` : `    static var ${ident(name)}: ${this.deferred(t)}`);
+        continue;
+      }
       if (ts.isPropertyDeclaration(m)) {
         const name = (m.name as ts.Identifier).text;
         const callee = m.initializer ? this.calleeName(m.initializer) : '';
@@ -1117,6 +1124,12 @@ export class Translator implements AsyncTranslator {
           lines.push(`    let ${ident(name)}: Signal<${t}>`);
           propParams.push(`${ident(name)}: ${t}${given ? ` = ${this.expr(given)}` : ''}`);
           inits.push(`        self.${ident(name)} = ${this.newSignal(t, ident(name), 'identity')}`);
+          continue;
+        }
+        // `signal.asReadonly()`: a field reading the signal it wraps.
+        if (/\.asReadonly$/.test(callee) && ts.isPropertyAccessExpression((m.initializer as ts.CallExpression).expression)) {
+          const source = ((m.initializer as ts.CallExpression).expression as ts.PropertyAccessExpression).expression;
+          lines.push(`    var ${ident(name)}: ${this.typeOf(m.name)} { ${this.expr(source)}.value }`);
           continue;
         }
         if (callee === 'computed') {
@@ -2394,7 +2407,7 @@ export class Translator implements AsyncTranslator {
       for (const st of sf.statements) {
         if (ts.isClassDeclaration(st) && st.name) add(st.name.text, st);
         if (ts.isFunctionDeclaration(st) && st.name) add(st.name.text, st);
-        if (ts.isVariableStatement(st)) for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) add(d.name.text, d);
+        if (ts.isVariableStatement(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) add(d.name.text, d);
       }
     }
     this.renamedTop = new Map();
