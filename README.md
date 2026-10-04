@@ -67,13 +67,13 @@ its NativeScript Release build: 0 pixels differ at launch and after each of
 two runs of the tasks (`tools/native_calls.py`).
 
 The gallery apps, against their NativeScript Release builds on the same
-simulator: gallery-vue's 40 screens (layouts, ListView, TextView, gestures,
+simulator: gallery-vue's 41 screens (layouts, ListView, TextView, gestures,
 transforms, animations, spans, pickers, CSS selectors and variables,
-borders, backgrounds, modals, TabView, Tailwind v4, the update order, and
-core's imperative API: `view.animate()`, `Animation`, TouchManager,
-RootLayout's `open`/`close`, `Frame.navigate` and `showModal` from script)
-are 0 pixels apart in all 182 shots; the ListView and Update order screens
-of the other five are 0 pixels apart in all of their shots
+borders, backgrounds, modals, TabView, Tailwind v4, the update order,
+batching, and core's imperative API: `view.animate()`, `Animation`,
+TouchManager, RootLayout's `open`/`close`, `Frame.navigate` and `showModal`
+from script) are 0 pixels apart in all 174 shots; the ListView, Update order
+and Batching screens of the other five are 0 pixels apart in all of their shots
 (`tools/gallery.py`).
 
 Launch, footprint and CPU are in `results/launch.json` (five interleaved
@@ -273,12 +273,31 @@ covers it. Each gallery app's Update order screen binds both.
 
 | Framework | Order, from its source |
 | --- | --- |
-| Vue 3.5 | Post-order: `patchElement` patches a block's dynamic children before the element's props, and a block's dynamic children are collected post-order (`normalizeChildren` renders the slot before `createBaseVNode` pushes the parent); `mountElement` mounts children, then props, then inserts. Components re-render after the component that created them (`queueJob` sorted by uid), a child with changed props inline. Flushed on a microtask. |
-| Angular 22 | Pre-order: a template's update block runs in slot order (`ɵɵclassMap`, `ɵɵproperty` after `ɵɵadvance`); `refreshView` then refreshes embedded views (`@if`, `@for`) and child components after the view's own bindings. Elements are appended as they are created (`elementLikeStartShared`), before any binding. Zoneless, a tick after a write. |
-| Svelte 4 | Post-order: the compiler's `ElementWrapper` renders children before `add_attributes`, so `p()` sets descendants first; child components update after their parent (`flush` walks `dirty_components`). `m()` inserts a block top-down after `c()` made it. Flushed on a microtask. |
-| React 18 | Post-order: `commitMutationEffects` traverses a host's children before `commitUpdate` on it; `completeWork` appends children before `finalizeInitialChildren`. Each `setState` commits synchronously in react-nativescript's legacy root. |
-| Solid 2 | Pre-order within a template, whose one effect applies its props after the template's views, components and control flow exist; across templates by owner depth, then creation (`@solidjs/signals`' heap). Flushed on a microtask. |
-| Octane 0.8 | Pre-order over the whole tree (`walkDraft` collects creates and updates), synchronously at the end of an event. |
+| Vue 3.5 | Post-order: `patchElement` patches a block's dynamic children before the element's props, and a block's dynamic children are collected post-order (`normalizeChildren` renders the slot before `createBaseVNode` pushes the parent); `mountElement` mounts children, then props, then inserts. Components re-render after the component that created them (`queueJob` sorted by uid), a child with changed props inline. |
+| Angular 22 | Pre-order: a template's update block runs in slot order (`ɵɵclassMap`, `ɵɵproperty` after `ɵɵadvance`); `refreshView` then refreshes embedded views (`@if`, `@for`) and child components after the view's own bindings. Elements are appended as they are created (`elementLikeStartShared`), before any binding. |
+| Svelte 4 | Post-order: the compiler's `ElementWrapper` renders children before `add_attributes`, so `p()` sets descendants first; child components update after their parent (`flush` walks `dirty_components`). `m()` inserts a block top-down after `c()` made it. |
+| React 18 | Post-order: `commitMutationEffects` traverses a host's children before `commitUpdate` on it; `completeWork` appends children before `finalizeInitialChildren`. |
+| Solid 2 | Pre-order within a template, whose one effect applies its props after the template's views, components and control flow exist; across templates by owner depth, then creation (`@solidjs/signals`' heap). |
+| Octane 0.8 | Pre-order over the whole tree (`walkDraft` collects creates and updates). |
+
+The effects re-run when the framework updates (`Reactivity.schedule`, set at
+launch for the app's framework): the writes of a handler cause one update,
+after the last of them, so a value the handler passes through never reaches a
+view. Before the update a handler reads what the framework gives it. A
+property change announces `<name>Change` on its view, as core's properties do.
+Each gallery app's Batching screen writes one value three times in a tap and
+shows, from the native label, every change of its text, what the handler read
+right after the writes and what it read after the framework's `nextTick()`,
+`tick()`, a microtask or a timer.
+
+| Framework | When it updates, from its source | Read in a handler before that |
+| --- | --- | --- |
+| Vue 3.5 | In a microtask the first write queues (`queueFlush`: `resolvedPromise.then(flushJobs)`); `nextTick()` returns that promise | The new value; `computed` is pulled, so fresh |
+| Angular 22 | In a task: zoneless `ChangeDetectionSchedulerImpl.notify` races `setTimeout` against `requestAnimationFrame` (`scheduleCallbackWithRafRace`) and on NativeScript the timer comes first; every template listener schedules one (`markViewDirty`); in the microtask checkpoint after an update, a microtask (`switchToMicrotaskScheduler`) | The new value; `computed` is fresh |
+| Svelte 4 | In a microtask (`schedule_update`: `resolved_promise.then(flush)`); `tick()` schedules one and returns the settled promise | The new value; a `$:` declaration is recomputed by the update (`$$.update()`), so the old one |
+| React 18 | At once: react-nativescript renders a `LegacyRoot` and listens with `view.on`, outside `batchedUpdates`, so each `setState` commits (`scheduleUpdateOnFiber`, `flushSyncCallbacksOnlyInLegacyMode`) | The state of the render that made the handler, until it returns |
+| Solid 2 | In a microtask (`schedule`: `queueMicrotask(flush)`) | The last flushed value, outside a computation (`read`); a memo's too |
+| Octane 0.8 | When the handler returns: the driver runs each listener in a discrete `eventScope`, which flushes as it ends; a write outside an event, in a microtask (`queueScheduledWork`) | The state of the render that made the handler |
 
 ## Differential tests
 
@@ -382,7 +401,7 @@ develops it with live reload as usual.
 | `kit/Sources/NativeScriptKit/Runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting (Foundation only) |
 | `kit-android/` | NativeScriptKit for Android: core's Android views, styling, CSS engine, gestures, animations and modals in Kotlin on the widgets AAR; `Signals.kt`, `Regions.kt`, `JS.kt`, `Router.kt`, `CoreAPI.kt` |
 | `kit-android/.../runtime/` | JavaScript's values, arrays, maps, sets, errors, promises and microtasks, timers, JSON, RegExp, Date and console formatting in Kotlin |
-| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView screen (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` (`gallery.json`) and `tools/gallery-android.py` (`gallery-android.json`) |
+| `gallery-vue/`, `gallery-<framework>/` | Gallery apps: a screen per feature (gallery-vue) or the ListView, Update order and Batching screens (the other five), each shot compared with its NativeScript Release build by `tools/gallery.py` (`gallery.json`) and `tools/gallery-android.py` (`gallery-android.json`) |
 | `native-calls-vue/` | A Vue app calling UIKit, and on Android the Android SDK, directly; compared by `tools/native_calls.py` and `tools/gallery-android.py` |
 | `tests/diff/` | Differential tests: each case under Node and as a native program |
 | `tests/color-mix/` | The kit's `color-mix()` against core's color parser |
@@ -397,9 +416,10 @@ develops it with live reload as usual.
   available on iOS 17. Anything else stops the build with the file, line and
   construct. Not yet: generators, `Symbol`, `WeakMap`, getters on object
   literals, `toLocale*String`, and constructors in classes that extend
-  Objective-C classes (NativeScript creates those with `new()`). Bindings
-  re-run in each framework's order but as each write happens, not batched
-  on the framework's microtask or tick.
+  Objective-C classes (NativeScript creates those with `new()`), and
+  `nextTick(fn)` with a callback. React and Octane handlers read the state
+  of their render until they return; after an `await` their closures still
+  hold it, where the native build reads the committed state.
 - **Where Swift differs, by design.** Closures have no identity; JSON
   cannot hold lone surrogates.
 - **Android:** `Base.extend({…})`, Java varargs and `Array.create` are not
