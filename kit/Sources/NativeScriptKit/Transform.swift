@@ -139,6 +139,7 @@ extension View {
         if !suspended { CATransaction.begin() }
         CATransaction.setDisableActions(true)
         nativeView.layer.transform = transform
+        backgroundLayers.outerShadowContainerLayer?.transform = transform
         isTransformed = !CATransform3DEqualToTransform(nativeView.transform3D, CATransform3DIdentity)
         CATransaction.setDisableActions(false)
         if !suspended { CATransaction.commit() }

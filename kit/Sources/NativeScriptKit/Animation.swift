@@ -1,9 +1,56 @@
 import UIKit
 
-/// `CoreTypes.AnimationCurve`.
+/// `CoreTypes`: the animation curves script passes (`AnimationCurve.easeOut` is the string `'easeOut'`).
+public enum CoreTypes {
+    public enum AnimationCurve {
+        public static let ease: String = "ease"
+        public static let easeIn: String = "easeIn"
+        public static let easeOut: String = "easeOut"
+        public static let easeInOut: String = "easeInOut"
+        public static let linear: String = "linear"
+        public static let spring: String = "spring"
+        public static func cubicBezier(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) -> CubicBezierAnimationCurve {
+            CubicBezierAnimationCurve(x1, y1, x2, y2)
+        }
+    }
+}
+
+/// `CubicBezierAnimationCurve` from core-types/animation-types.
+public final class CubicBezierAnimationCurve {
+    public var x1: Double, y1: Double, x2: Double, y2: Double
+    public init(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) {
+        self.x1 = x1; self.y1 = y1; self.x2 = x2; self.y2 = y2
+    }
+}
+
+/// A resolved animation curve.
 public enum AnimationCurve: Equatable {
     case ease, easeIn, easeOut, easeInOut, linear, spring
     case cubicBezier(Double, Double, Double, Double)
+    case timingFunction(CAMediaTimingFunction)
+
+    /// animation/index.ios `_resolveAnimationCurve`: script's names, a
+    /// `CubicBezierAnimationCurve` or a `CAMediaTimingFunction`; anything else
+    /// is reported and leaves the animation without a timing function.
+    static func resolve(_ curve: Any?) -> AnimationCurve? {
+        switch jsFlat(curve) {
+        case let name as String:
+            switch name {
+            case "easeIn": return .easeIn
+            case "easeOut": return .easeOut
+            case "easeInOut": return .easeInOut
+            case "linear": return .linear
+            case "spring": return .spring
+            case "ease": return .ease
+            default: break
+            }
+        case let bezier as CubicBezierAnimationCurve: return .cubicBezier(bezier.x1, bezier.y1, bezier.x2, bezier.y2)
+        case let function as CAMediaTimingFunction: return .timingFunction(function)
+        default: break
+        }
+        jsError("Invalid animation curve: \(jsToString(curve))")
+        return nil
+    }
 
     /// `animationTimingFunctionConverter`: CSS names and `cubic-bezier()`, coordinates clamped to 0...1.
     init?(css value: String) {
@@ -32,6 +79,7 @@ public enum AnimationCurve: Equatable {
         case .linear: return CAMediaTimingFunction(name: .linear)
         case .spring: return nil
         case let .cubicBezier(x1, y1, x2, y2): return CAMediaTimingFunction(controlPoints: Float(x1), Float(y1), Float(x2), Float(y2))
+        case let .timingFunction(function): return function
         }
     }
 }
@@ -54,6 +102,58 @@ public struct AnimationDefinition {
     var fromKeyframe = false
 
     public init(target: View?) { self.target = target }
+
+    /// A definition object from script, checked as animation-common's
+    /// `_createPropertyAnimations` checks it: nil after reporting what is wrong.
+    init?(script value: Any?) {
+        let object = jsFlat(value) as? JSDynamic
+        guard let target = jsFlat(object?[jsKey: "target"]) as? View, let object else {
+            jsError("No animation target specified.")
+            return nil
+        }
+        self.init(target: target)
+        let curve = object[jsKey: "curve"]
+        if jsTruthy(jsFlat(curve)) { self.curve = AnimationCurve.resolve(curve) }
+        func number(_ v: Any?) -> Double? { jsFlat(v).flatMap(jsNumeric) }
+        func pair(_ v: Any) -> (x: Double, y: Double)? {
+            guard let o = v as? JSDynamic, let x = number(o[jsKey: "x"]), let y = number(o[jsKey: "y"]) else { return nil }
+            return (x, y)
+        }
+        func point(_ v: Any) -> (x: Double, y: Double, z: Double)? {
+            if let z = jsNumeric(v) { return (0, 0, z) }
+            guard let o = v as? JSDynamic, let x = number(o[jsKey: "x"]), let y = number(o[jsKey: "y"]), let z = number(o[jsKey: "z"]) else { return nil }
+            return (x, y, z)
+        }
+        for key in object.jsKeys {
+            guard let v = jsFlat(object[jsKey: key]) else { continue }
+            let text = jsToString(v)
+            switch key {
+            case "opacity", "duration", "delay", "iterations":
+                guard let n = jsNumeric(v) else { jsError("Property \(key) must be valid number. Value: \(text)"); return nil }
+                switch key {
+                case "opacity": opacity = n
+                case "duration": duration = n
+                case "delay": delay = n
+                default: iterations = n
+                }
+            case "scale", "translate":
+                guard let p = pair(v) else { jsError("Property \(key) must be valid Pair. Value: \(text)"); return nil }
+                if key == "scale" { scale = p } else { translate = p }
+            case "backgroundColor":
+                guard let color = toColor(v) else { jsError("Property \(key) must be valid color. Value: \(text)"); return nil }
+                backgroundColor = color
+            case "rotate":
+                guard let p = point(v) else { jsError("Property \(text) must be valid number or Point3D. Value: \(text)"); return nil }
+                rotate = p
+            case "width": width = v
+            case "height": height = v
+            default: break
+            }
+        }
+        if opacity == nil && backgroundColor == nil && translate == nil && scale == nil && rotate == nil && width == nil && height == nil {
+            jsError("No known animation properties specified")
+        }
+    }
 }
 
 /// One animated property of an `Animation` (`PropertyAnimation`).
@@ -140,12 +240,14 @@ private final class AnimationDelegate: NSObject, CAAnimationDelegate {
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         finished?(!flag)
         if flag { next?() }
+        Microtasks.checkpoint()
     }
 }
 
 /// `Animation` from animation/index.ios: Core Animation for each property,
-/// played together or in sequence. Its completion runs when every property
-/// animation finishes; a cancelled animation never completes, as on iOS.
+/// played together or in sequence. It finishes when every property animation
+/// has; a cancelled one never finishes and stays playing, as on iOS, so its
+/// promise never settles and playing it again rejects.
 public final class Animation {
     private let propertyAnimations: [PropertyAnimation]
     private let playSequentially: Bool
@@ -153,6 +255,9 @@ public final class Animation {
     private var finishedAnimations = 0
     private var cancelledAnimations = 0
     private var completion: (() -> Void)?
+    private var resolvers: JSResolvers<Void>?
+    /// Definitions core's constructor throws on; reported when constructed.
+    private var isInvalid = false
     public private(set) var isPlaying = false
 
     public init(_ definitions: [AnimationDefinition], playSequentially: Bool = false) {
@@ -163,21 +268,79 @@ public final class Animation {
         propertyAnimations = playSequentially ? animations : Animation.mergeAffineTransformAnimations(animations)
     }
 
-    /// `play`; an animation already playing is not restarted.
-    public func play(_ completion: (() -> Void)? = nil) {
+    /// `new Animation(definitions, playSequentially)`: an array of definition
+    /// objects (`{ target, translate, scale, opacity, duration, curve, … }`).
+    public convenience init(_ definitions: Any?, _ playSequentially: Any? = nil) {
+        let objects = (jsFlat(definitions) as? JSArrayProtocol)?.jsAnyElements ?? []
+        if objects.isEmpty { jsError("No animation definitions specified") }
+        var parsed: [AnimationDefinition] = []
+        var isInvalid = objects.isEmpty
+        let isKeyframe = jsStrictEquals((jsFlat(objects.first ?? nil) as? JSDynamic)?[jsKey: "valueSource"], "keyframe")
+        for object in objects {
+            guard var definition = AnimationDefinition(script: object) else { isInvalid = true; continue }
+            definition.fromKeyframe = isKeyframe
+            parsed.append(definition)
+        }
+        self.init(isInvalid ? [] : parsed, playSequentially: jsTruthy(jsFlat(playSequentially)))
+        if isInvalid {
+            self.isInvalid = true
+            jsReportUncaught(JSTypeError(objects.isEmpty ? "Cannot read properties of undefined (reading 'length')" : "Cannot read properties of undefined (reading '_skip')"))
+        }
+    }
+
+    /// `play()`: resolves when the animation finishes; rejects with
+    /// `'Animation is already playing.'` while it plays.
+    public func play() -> JSPromise<Void> {
+        if isPlaying { return JSPromise<Void>.reject("Animation is already playing.") }
+        let (promise, resolvers) = JSPromise<Void>.pending()
+        self.resolvers = resolvers
+        isPlaying = true
+        if isInvalid { return promise }
+        if propertyAnimations.isEmpty {
+            jsReportUncaught(JSTypeError("Cannot read properties of undefined (reading 'target')"))
+            return promise
+        }
+        start()
+        return promise
+    }
+
+    /// `play`, with a completion for the kit's own callers; an animation already playing is not restarted.
+    func play(completion: (() -> Void)?) {
         guard !isPlaying, !propertyAnimations.isEmpty else { return }
         isPlaying = true
         self.completion = completion
+        start()
+    }
+
+    private func start() {
         finishedAnimations = 0
         cancelledAnimations = 0
         animationFunction(0)(false)
     }
 
+    /// `cancel`: the native animations are removed and the values the animation set are reset.
     public func cancel() {
         guard isPlaying else { return }
         for animation in propertyAnimations {
-            animation.target?.nativeView?.layer.mask?.removeAllAnimations()
-            animation.target?.nativeView?.layer.removeAllAnimations()
+            if let view = animation.target, let nativeView = view.nativeView {
+                nativeView.layer.mask?.removeAllAnimations()
+                nativeView.layer.removeAllAnimations()
+                let layers = view.backgroundLayers
+                layers.gradientLayer?.removeAllAnimations()
+                if let border = layers.borderLayer {
+                    border.mask?.removeAllAnimations()
+                    border.sublayers?.forEach { $0.removeAllAnimations() }
+                    border.removeAllAnimations()
+                }
+                if let shadows = layers.outerShadowContainerLayer {
+                    shadows.mask?.removeAllAnimations()
+                    shadows.sublayers?.forEach {
+                        $0.mask?.removeAllAnimations()
+                        $0.removeAllAnimations()
+                    }
+                    shadows.removeAllAnimations()
+                }
+            }
             animation.resetCallback?()
         }
     }
@@ -192,11 +355,14 @@ public final class Animation {
         if finishedAnimations == propertyAnimations.count { resolve() }
     }
 
+    /// `_resolveAnimationFinishedPromise`.
     private func resolve() {
         isPlaying = false
-        let completion = self.completion
+        let completion = self.completion, resolvers = self.resolvers
         self.completion = nil
+        self.resolvers = nil
         completion?()
+        resolvers?.resolve()
     }
 
     private func animationFunction(_ index: Int) -> (Bool) -> Void {
@@ -324,10 +490,14 @@ public final class Animation {
         let nativeAnimation: CAAnimation = args.subProperties != nil ? groupAnimation(args, animation) : basicAnimation(args, animation)
         let delegate = AnimationDelegate(animation, fromKeyframe: fromKeyframe) { cancelled in self.finished(cancelled) }
         nativeAnimation.delegate = delegate
-        if let nativeView = animation.target?.nativeView {
+        if let view = animation.target, let nativeView = view.nativeView {
             nativeView.layer.add(nativeAnimation, forKey: args.keyPath)
-            if args.keyPath == "bounds", let rect = (args.toValue as? NSValue)?.cgRectValue, let view = animation.target {
+            if args.keyPath == "bounds", let rect = (args.toValue as? NSValue)?.cgRectValue {
                 animateNestedLayerSize(view, nativeView, rect, args, animation)
+            }
+            // The shadows sit in the parent's layer; their copy reports to the same delegate.
+            if !args.keyPath.hasSuffix("Color"), let shadows = view.backgroundLayers.outerShadowContainerLayer {
+                shadows.add(nativeAnimation, forKey: args.keyPath)
             }
         }
         if index + 1 < propertyAnimations.count {
@@ -397,6 +567,7 @@ public final class Animation {
             case .transform:
                 let original = nativeView.layer.transform
                 nativeView.layer.setValue(args.toValue, forKeyPath: args.keyPath)
+                view.backgroundLayers.outerShadowContainerLayer?.setValue(args.toValue, forKeyPath: args.keyPath)
                 animation.resetCallback = { nativeView.layer.transform = original }
             default: break
             }
@@ -417,6 +588,7 @@ public final class Animation {
             }
             self.finished(!didFinish)
             if didFinish { next?(false) }
+            Microtasks.checkpoint()
         })
     }
 
@@ -486,14 +658,27 @@ public final class Animation {
 }
 
 extension View {
-    /// `view.animate(definition)`.
+    /// `view.animate(definition)` for Swift callers.
     @discardableResult
     public func animate(_ configure: (inout AnimationDefinition) -> Void, completion: (() -> Void)? = nil) -> Animation {
         var definition = AnimationDefinition(target: self)
         configure(&definition)
         let animation = Animation([definition])
-        animation.play(completion)
+        animation.play(completion: completion)
         return animation
+    }
+
+    /// view-common `animate(options)`: the options object becomes the
+    /// definition, its `target` set to this view.
+    @discardableResult
+    public func animate(_ options: Any?) -> JSPromise<Void> {
+        createAnimation(options).play()
+    }
+
+    /// view-common `createAnimation(options)`.
+    public func createAnimation(_ options: Any?) -> Animation {
+        jsReport { try jsSet(options, "target", self) }
+        return Animation(JSArray<Any?>([options]))
     }
 }
 
@@ -793,10 +978,10 @@ final class KeyframeAnimation {
                 animation = Animation([definition])
                 nativeAnimations.append(animation)
             }
-            animation.play { [weak self, weak view] in
+            animation.play(completion: { [weak self, weak view] in
                 guard let view else { return }
                 self?.animate(view, index + 1, iterations)
-            }
+            })
         }
     }
 

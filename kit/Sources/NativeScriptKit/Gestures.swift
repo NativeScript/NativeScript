@@ -151,9 +151,13 @@ final class GesturesObserver: NSObject {
         add(recognizer, to: nativeView)
     }
 
+    /// `_createRecognizer`: `gestureAttached` announces the recognizer before it is added.
     private func add(_ recognizer: UIGestureRecognizer, to nativeView: UIView) {
         recognizer.delegate = GestureRecognizerDelegate.shared
         recognizers.append(recognizer)
+        if let target, target.hasListeners(GestureEvents.gestureAttached) {
+            target.notify(JSObject([("eventName", GestureEvents.gestureAttached), ("object", target), ("type", type), ("view", target), ("ios", recognizer)]))
+        }
         nativeView.addGestureRecognizer(recognizer)
     }
 
