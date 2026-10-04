@@ -11,6 +11,9 @@ open class TextBase: View {
 
     var whiteSpace = "initial"
     var maxLines = 0
+    let formattedState = FormattedTextState()
+
+    var formattedText: FormattedString? { applied["formattedText"] as? FormattedString }
 
     open override func initNativeView() {
         // `text` defaults to "": setting it to "" is not a change.
@@ -39,11 +42,43 @@ open class TextBase: View {
 
     var text: String { toText(applied["text"]) ?? "" }
 
+    override func load() {
+        formattedState.isSetUp = true
+        super.load()
+    }
+
+    /// A FormattedString child is the `formattedText`; a Span child joins it, creating it first.
+    open override func addChild(_ child: View) {
+        if let formatted = child as? FormattedString {
+            set("formattedText", formatted)
+        } else if let span = child as? Span {
+            if let formattedText {
+                formattedText.addSpan(span)
+            } else {
+                let formatted = FormattedString()
+                formatted.addSpan(span)
+                set("formattedText", formatted)
+            }
+        }
+    }
+
+    open override func eachChildView(_ body: (View) -> Void) {
+        if let formattedText { body(formattedText) }
+    }
+
+    open override func propertyValueChanged(_ name: String, _ value: Any?) {
+        super.propertyValueChanged(name, value)
+        if name == "formattedText" { formattedTextChanged(to: value as? FormattedString) }
+    }
+
     open override func setProperty(_ name: String, _ value: Any?) {
         switch name {
         case "text":
+            if value != nil && formattedText != nil { return }
             setNativeText(reset: value == nil)
             requestLayoutOnTextChanged()
+        case "formattedText":
+            formattedTextSetNative(value as? FormattedString)
         case "color":
             setColor(toColor(value))
         case "fontSize":
@@ -92,7 +127,9 @@ open class TextBase: View {
 
     /// `fontInternalProperty.setNative`: the default font when nothing is styled.
     private func fontChanged() {
-        if font.isDefault {
+        if formattedText != nil && !font.isDefault {
+            requestLayout()
+        } else if font.isDefault {
             nativeFont = defaultFont
         } else {
             nativeFont = font.uiFont(default: nativeFont)
@@ -104,6 +141,10 @@ open class TextBase: View {
 
     /// `_setNativeText`: the transformed text with its decoration, letter spacing and line height, then the stroke.
     func setNativeText(reset: Bool) {
+        if !reset, let formattedText {
+            UIView.performWithoutAnimation { setFormattedNativeText(formattedText) }
+            return
+        }
         UIView.performWithoutAnimation {
             if reset {
                 switch textView {
