@@ -155,7 +155,27 @@ open class Observable: NSObject, JSDynamic {
     // MARK: JSDynamic
 
     open subscript(jsKey key: String) -> Any? {
-        get { expandos?[key] }
+        get {
+            switch key {
+            // An Observable held untyped (`handler.on(…)` on an `any`): its listener methods by name.
+            case "on", "once", "off", "addEventListener", "removeEventListener":
+                return { [weak self] (args: [Any?]) throws -> Any? in
+                    guard let self, let names = jsArg(args, 0) as? String else { return nil }
+                    let fn = jsArg(args, 1)
+                    let callback: (EventData) throws -> Void = { event in _ = try jsCall(fn, event) }
+                    // A function's identity is the function value itself, as script compares it.
+                    let identity = (jsFlat(fn) as AnyObject?).map { String(describing: ObjectIdentifier($0)) }
+                    switch key {
+                    case "on", "addEventListener": self.on(names, callback, jsArg(args, 2), key: identity)
+                    case "once": self.once(names, callback, jsArg(args, 2), key: identity)
+                    default: self.off(names, identity == nil ? nil : callback, jsArg(args, 2), key: identity)
+                    }
+                    return nil
+                } as JSFunction
+            case "notify": return { [weak self] (args: [Any?]) throws -> Any? in self?.notify(jsArg(args, 0)); return nil } as JSFunction
+            default: return expandos?[key]
+            }
+        }
         set {
             if expandos == nil { expandos = JSObject() }
             expandos![key] = newValue

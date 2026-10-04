@@ -15,9 +15,9 @@ open class DatePicker: View {
 
     open override func initNativeView() {
         let now = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
-        for (name, unit) in DatePicker.components { applied[name] = Double(now.value(for: unit) ?? 0) }
-        applied["showTime"] = false
-        applied["iosPreferredDatePickerStyle"] = 0.0
+        for (name, unit) in DatePicker.components { if applied[name] == nil { applied[name] = Double(now.value(for: unit) ?? 0) } }
+        if applied["showTime"] == nil { applied["showTime"] = false }
+        if applied["iosPreferredDatePickerStyle"] == nil { applied["iosPreferredDatePickerStyle"] = 0.0 }
         picker?.addTarget(self, action: #selector(valueChanged(_:)), for: .valueChanged)
     }
 
@@ -124,8 +124,8 @@ open class TimePicker: View {
     }
 
     open override func initNativeView() {
-        applied["iosPreferredDatePickerStyle"] = 0.0
-        applied["minuteInterval"] = 1.0
+        if applied["iosPreferredDatePickerStyle"] == nil { applied["iosPreferredDatePickerStyle"] = 0.0 }
+        if applied["minuteInterval"] == nil { applied["minuteInterval"] = 1.0 }
         picker?.addTarget(self, action: #selector(valueChanged(_:)), for: .valueChanged)
     }
 

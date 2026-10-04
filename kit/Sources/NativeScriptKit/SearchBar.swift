@@ -21,7 +21,7 @@ open class SearchBar: View, UISearchBarDelegate {
     open override func createNativeView() -> UIView? { UISearchBarImpl() }
 
     open override func initNativeView() {
-        applied["text"] = ""
+        if applied["text"] == nil { applied["text"] = "" }
         searchBar?.delegate = self
         defaultFont = textField?.font
     }

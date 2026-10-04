@@ -12,8 +12,8 @@ open class Progress: View {
     open override func createNativeView() -> UIView? { UIProgressView() }
 
     open override func initNativeView() {
-        applied["value"] = 0.0
-        applied["maxValue"] = 100.0
+        if applied["value"] == nil { applied["value"] = 0.0 }
+        if applied["maxValue"] == nil { applied["maxValue"] = 100.0 }
     }
 
     open override func setProperty(_ name: String, _ value: Any?) {

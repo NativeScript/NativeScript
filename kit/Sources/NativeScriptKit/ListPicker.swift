@@ -13,7 +13,7 @@ open class ListPicker: View, UIPickerViewDataSource, UIPickerViewDelegate {
     open override func createNativeView() -> UIView? { UIPickerView() }
 
     open override func initNativeView() {
-        applied["selectedIndex"] = -1.0
+        if applied["selectedIndex"] == nil { applied["selectedIndex"] = -1.0 }
         picker?.dataSource = self
         picker?.delegate = self
     }

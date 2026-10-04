@@ -38,7 +38,8 @@ extension View {
             shadowLayer.shadowOpacity = Float(shadow.alpha == 0 ? 1 : Double(shadow.alpha) / 255)
             // Half the blur radius imitates CSS's blur.
             shadowLayer.shadowRadius = dip(shadow.blurRadius) * 0.5
-            shadowLayer.shadowColor = shadow.color?.cgColor
+            // The color's alpha is the layer's opacity, as core sets it: the color itself is opaque.
+            shadowLayer.shadowColor = shadow.color?.withAlphaComponent(1).cgColor
             shadowLayer.shadowOffset = CGSize(width: dip(shadow.offsetX), height: dip(shadow.offsetY))
             shadowLayer.shadowPath = paths.shadow
             (shadowLayer.mask as? CAShapeLayer)?.path = paths.mask

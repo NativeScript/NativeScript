@@ -20,7 +20,7 @@ open class HtmlView: View {
     }
 
     open override func initNativeView() {
-        applied["html"] = ""
+        if applied["html"] == nil { applied["html"] = "" }
         defaultFont = textView?.font
         textView?.textContainer.lineFragmentPadding = 0
         textView?.textContainerInset = .zero

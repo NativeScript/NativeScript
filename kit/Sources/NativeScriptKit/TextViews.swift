@@ -17,7 +17,7 @@ open class TextBase: View {
 
     open override func initNativeView() {
         // `text` defaults to "": setting it to "" is not a change.
-        applied["text"] = ""
+        if applied["text"] == nil { applied["text"] = "" }
         defaultFont = nativeFont
     }
 

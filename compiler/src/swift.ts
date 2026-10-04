@@ -628,7 +628,7 @@ export class Translator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string }[] = []): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -638,6 +638,7 @@ export class Translator {
       '        get {',
       '            switch key {',
       ...fields.map((f) => `            case ${swiftString(f.name)}: return ${ident(f.name)}`),
+      ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
       `            default: return ${override ? 'super[jsKey: key]' : 'nil'}`,
       '            }',
       '        }',
@@ -748,11 +749,32 @@ export class Translator {
 
   // ---- Functions -----------------------------------------------------------------------------
 
+  /** A parameter's Swift type as `params` declares it (an unwrapped optional written as optional, as a function type has it). */
+  private paramType(p: ts.ParameterDeclaration): string {
+    const t = this.typeOf(p.name);
+    if (p.questionToken || (p.initializer && !this.templateParams)) return p.initializer && this.isConstant(p.initializer) ? t : optionalType(t);
+    return this.mayBeNull(p) ? optionalType(t) : t;
+  }
+
+  /**
+   * An object parameter of a plugin, whose code is checked without
+   * strictNullChecks: callers pass null and undefined for it (core's
+   * `valueChanged(target, oldValue, newValue)` starts from undefined), so
+   * Swift takes it as an implicitly unwrapped optional.
+   */
+  private mayBeNull(p: ts.ParameterDeclaration): boolean {
+    if (!this.pluginFiles.has(p.getSourceFile().fileName) || p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
+    const t = this.typeOf(p.name);
+    return !t.endsWith('?') && !t.endsWith('!') && !['Double', 'String', 'Bool', 'Void', 'Never'].includes(t) && !hasTopLevelArrow(t) && !t.startsWith('(')
+      && !this.native.isEnumType(t) && !this.native.isStructType(t);
+  }
+
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
     return fn.parameters.map((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       if (p.dotDotDotToken) return `${closure ? '' : '_ '}${name}: ${this.typeOf(p.name)}`;
       let t = this.typeOf(p.name);
+      if (this.mayBeNull(p)) t = `${t}!`;
       let given = '';
       if (p.questionToken || (p.initializer && !this.templateParams)) {
         if (!closure && p.initializer && this.isConstant(p.initializer)) given = ` = ${this.coerce(p.initializer, t)}`;
@@ -775,7 +797,15 @@ export class Translator {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       // A parameter the body assigns is a variable of its own (Swift parameters are constants).
       const assigned = ts.isIdentifier(p.name) && !!fn.body && assignsTo(fn.body, this.checker.getSymbolAtLocation(p.name), this.checker);
-      if (p.initializer && !this.templateParams && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || !this.isConstant(p.initializer))) {
+      const pt = this.typeOf(p.name);
+      const untyped = !!p.initializer && (this.typeOf(p.initializer) === 'Any?' || ((ts.isElementAccessExpression(p.initializer) || ts.isPropertyAccessExpression(p.initializer)) && this.isAny(p.initializer.expression)));
+      if (p.initializer && !this.templateParams && untyped && pt !== 'Any?' && !pt.endsWith('?') && ts.isIdentifier(p.name)) {
+        // A default read from an untyped value (`mode = this.modes[side]`) may be undefined: the parameter is optional where Swift reads it.
+        const sym = this.checker.getSymbolAtLocation(p.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(pt));
+        const read = this.typeOf(p.initializer) === 'Any?' ? this.expr(p.initializer) : ts.isElementAccessExpression(p.initializer) ? `jsGet(${this.expr(p.initializer.expression)}, ${this.str(p.initializer.argumentExpression)})` : `jsGet(${this.expr((p.initializer as ts.PropertyAccessExpression).expression)}, ${swiftString((p.initializer as ts.PropertyAccessExpression).name.text)})`;
+        lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${optionalType(pt)} = ${this.tryPrefix(p.initializer)}${name} ?? ${this.fromAny(read, optionalType(pt))}`);
+      } else if (p.initializer && !this.templateParams && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || !this.isConstant(p.initializer))) {
         lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${this.typeOf(p.name)} = ${this.tryPrefix(p.initializer)}${name} ?? ${this.coerce(p.initializer, this.typeOf(p.name))}`);
       } else if (assigned) lines.push(`${i}var ${name} = ${name}`);
       if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', false));
@@ -876,7 +906,7 @@ export class Translator {
 
   /** A closure literal's Swift function type, as `closure` writes it. */
   private closureType(fn: ts.ArrowFunction | ts.FunctionExpression): string {
-    return `(${fn.parameters.map((p) => (p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
+    return `(${fn.parameters.map((p) => (p.questionToken || this.mayBeNull(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
   }
 
   /** A callback for an API that does not take throwing closures (a timer): what it throws is reported. */
@@ -1133,6 +1163,7 @@ export class Translator {
       }
       lines.push('        default: super.setProperty(name, value)', '        }', '    }');
     }
+    const dynMethods: { name: string; type: string }[] = [];
     for (const m of cls.members) {
       if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name)) continue;
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
@@ -1150,12 +1181,16 @@ export class Translator {
       const overridden = inherited.has(n) && !isStatic(m) ? this.inheritedMethod(cls, n) : undefined;
       const extra = overridden ? overridden.parameters.slice(m.parameters.length).map((p, k) => `_ __unused${k}: ${p.questionToken || p.initializer ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)}`) : [];
       lines.push('    ' + this.func(m, ident(n), `${isStatic(m) ? 'static ' : ''}${inherited.has(n) && !isStatic(m) ? 'override ' : ''}`, extra));
+      // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
+      if (this.pluginFiles.has(cls.getSourceFile().fileName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length) {
+        dynMethods.push({ name: n, type: `(${m.parameters.map((p) => this.paramType(p)).join(', ')}) throws -> ${this.returnTypeOf(m)}` });
+      }
     }
     if (isView) {
       const own = fields.map((f) => f.name);
       if (own.length) lines.push(`    override func hasJSProperty(_ name: String) -> Bool { [${own.map(swiftString).join(', ')}].contains(name) || super.hasJSProperty(name) }`);
     }
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot));
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods));
     this.indent = '';
     lines.push('}');
     return lines.join('\n');
@@ -1712,7 +1747,9 @@ export class Translator {
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
       if ((ts.isArrowFunction(e) || ts.isFunctionExpression(e)) && !e.parameters.some((p) => p.dotDotDotToken || !ts.isIdentifier(p.name))) return this.convert(this.expr(e), this.closureType(e), 'Any?');
       if (functionParts(source.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) return this.convert(this.expr(e), source, 'Any?');
-      return this.expr(e);
+      // An object read with an unwrap (`view.parent!`) is undefined where it is missing, as an untyped value can be.
+      const code = this.expr(e);
+      return /[\w)\]]!$/.test(code) && this.isObjectRef(e) ? code.slice(0, -1) : code;
     }
     // A number where Swift has a native enum or option set (`UIMenuOptions.A | UIMenuOptions.B`).
     if (source === 'Double' && target !== 'Double' && this.native.isEnumType(target.replace(/\?$/, ''))) return this.native.enumFromNumber(this.expr(e), target);
@@ -2083,6 +2120,16 @@ export class Translator {
     if (ts.isPropertyAccessExpression(e) && e.questionDotToken && !this.typeOf(e.expression).endsWith('?')) {
       const target = this.maybeUndefined(e.expression);
       if (target) return `${target}?.${ident(e.name.text)}`;
+    }
+    // `this[side + 'Drawer']`: a member by computed key, missing when the object has none.
+    let access: ts.Expression = e;
+    while (ts.isParenthesizedExpression(access) || ts.isAsExpression(access)) access = access.expression;
+    if (ts.isElementAccessExpression(access) && !isWriteTarget(access) && !ts.isStringLiteral(access.argumentExpression) && this.isObjectRef(access.expression)) {
+      const t = this.typeOf(e);
+      const base = this.typeOf(access.expression).replace(/\?$/, '');
+      if (!t.endsWith('?') && t !== 'Any?' && this.isObjectRef(e) && !/^JS(Array|Record|Match)/.test(base) && !base.startsWith('(') && base !== 'String') {
+        return `(${this.expr(access.expression)}${access.questionDotToken ? '?' : ''}[jsKey: ${this.str(access.argumentExpression)}] as? ${t})`;
+      }
     }
     // `ref.get()`: undefined once the object is gone, though core's typings say `T`.
     if (ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['get', 'deref'].includes(e.expression.name.text)

@@ -21,6 +21,7 @@ import { createProgram } from './program.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
+import { cssFromReleaseBundle } from './release-css.ts';
 import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
@@ -171,7 +172,7 @@ const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, re
 rmSync(join(out, 'Sources'), { recursive: true, force: true });
 mkdirSync(join(out, 'Sources'), { recursive: true });
 const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n`;
-const translated = translateModules(translator, program, [...modules, ...compiledPlugins]);
+const translated = translateModules(translator, program, [...modules, ...compiledPlugins], resolved);
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
@@ -192,7 +193,9 @@ const shapes = translator.shapesCode();
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 const sourceCSS = files.filter((f) => f.endsWith('.css')).map((f) => readFileSync(f, 'utf8')).join('\n');
-const css = usesNativeScriptTailwind(app) ? nativescriptTailwind(sourceCSS) : sourceCSS;
+// `--css-bundle <bundle.mjs>`: the stylesheet the app's NativeScript release build compiled, in place of the app's CSS sources.
+const cssBundle = opt('--css-bundle');
+const css = cssBundle ? cssFromReleaseBundle(resolve(cssBundle)) : usesNativeScriptTailwind(app) ? nativescriptTailwind(sourceCSS) : sourceCSS;
 const start = mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n        Reactivity.scheduled = true\n${inits}`

@@ -15,7 +15,7 @@ open class Switch: View {
     open override func createNativeView() -> UIView? { UISwitch() }
 
     open override func initNativeView() {
-        applied["checked"] = false
+        if applied["checked"] == nil { applied["checked"] = false }
         control?.addTarget(self, action: #selector(valueChanged), for: .valueChanged)
     }
 
@@ -92,7 +92,7 @@ open class Slider: View {
     open override func createNativeView() -> UIView? { TNSSlider() }
 
     open override func initNativeView() {
-        applied["value"] = 0.0
+        if applied["value"] == nil { applied["value"] = 0.0 }
         slider?.minimumValue = 0
         slider?.maximumValue = Float(maxValue)
         slider?.addTarget(self, action: #selector(valueChanged), for: .valueChanged)
@@ -173,7 +173,7 @@ open class SegmentedBar: View {
     open override func createNativeView() -> UIView? { UISegmentedControl() }
 
     open override func initNativeView() {
-        applied["selectedIndex"] = -1.0
+        if applied["selectedIndex"] == nil { applied["selectedIndex"] = -1.0 }
         control?.addTarget(self, action: #selector(selected), for: .valueChanged)
     }
 

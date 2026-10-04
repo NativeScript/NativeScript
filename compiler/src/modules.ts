@@ -17,8 +17,8 @@ export interface TranslatedModule {
  * effects become an init function per module: Swift initializes globals
  * lazily, so they run from the entry point in that order instead.
  */
-export function translateModules(translator: Translator, program: ts.Program, files: string[]): TranslatedModule[] {
-  const ordered = evaluationOrder(program, files);
+export function translateModules(translator: Translator, program: ts.Program, files: string[], resolved?: (containing: string, specifier: string) => string | undefined): TranslatedModule[] {
+  const ordered = evaluationOrder(program, files, resolved);
   const used = new Set<string>();
   const out: TranslatedModule[] = [];
   for (const file of ordered) {
@@ -41,7 +41,7 @@ export function addInterfaces(translator: Translator, modules: TranslatedModule[
 }
 
 /** Post-order over imports, starting from each file in `files`. */
-function evaluationOrder(program: ts.Program, files: string[]): string[] {
+function evaluationOrder(program: ts.Program, files: string[], resolvedBy?: (containing: string, specifier: string) => string | undefined): string[] {
   const wanted = new Set(files);
   const seen = new Set<string>();
   const order: string[] = [];
@@ -53,9 +53,11 @@ function evaluationOrder(program: ts.Program, files: string[]): string[] {
     for (const st of sf.statements) {
       if (!ts.isImportDeclaration(st) && !(ts.isExportDeclaration(st) && st.moduleSpecifier)) continue;
       const spec = (st.moduleSpecifier as ts.StringLiteral).text;
-      const resolved = ts.resolveModuleName(spec, file, program.getCompilerOptions(), ts.sys).resolvedModule?.resolvedFileName
+      // As the program resolved it (a plugin's import reaches its source), else as TypeScript would.
+      const resolved = resolvedBy?.(file, spec) ?? ts.resolveModuleName(spec, file, program.getCompilerOptions(), ts.sys).resolvedModule?.resolvedFileName
         ?? (program as any).getResolvedModule?.(sf, spec, undefined)?.resolvedModule?.resolvedFileName;
-      if (resolved && wanted.has(resolved)) visit(resolved);
+      // A module that only re-exports (a plugin's index) is passed through to the modules it imports.
+      if (resolved && (wanted.has(resolved) || !program.getSourceFile(resolved)?.isDeclarationFile)) visit(resolved);
     }
     if (wanted.has(file)) order.push(file);
   };

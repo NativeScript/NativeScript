@@ -303,6 +303,7 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
 @discardableResult
 public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
+    if ProcessInfo.processInfo.environment["NS_TRACE"] != nil { print("TRACE not a function", Thread.callStackSymbols.prefix(8).joined(separator: "\n")) }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
 }
 
@@ -521,5 +522,6 @@ extension JSArrayProtocol {
 public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any? {
     if jsIsNullish(function) { return nil }
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
+    if ProcessInfo.processInfo.environment["NS_TRACE"] != nil { print("TRACE not a function", Thread.callStackSymbols.prefix(8).joined(separator: "\n")) }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
 }
