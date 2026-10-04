@@ -261,6 +261,12 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
             return String(decoding: [unit], as: UTF16.self)
         }
         return nil
+    case let match as JSMatch:
+        if key == "length" { return match.length }
+        if key == "index" { return match.index }
+        if key == "input" { return match.input }
+        if let index = jsArrayIndex(key) { return match.values.element(Double(index)) ?? nil }
+        return nil
     case let map as JSMapProtocol:
         return key == "size" ? Double(map.jsSize) : nil
     case let set as JSSetProtocol:

@@ -301,7 +301,8 @@ open class View: Observable {
             return
         }
         for (longhand, v) in expandShorthand(name, value) where hasStyleAccessor(longhand) {
-            if let v { locals[longhand] = v } else { locals.removeValue(forKey: longhand) }
+            // A style property set to undefined is a local value still (core resets only on `unsetValue` or ''): CSS no longer applies to it.
+            if let v { locals[longhand] = v } else if View.styleProperties.contains(longhand) { locals[longhand] = LocalUndefined.value } else { locals.removeValue(forKey: longhand) }
             refresh(longhand)
         }
     }
@@ -402,6 +403,7 @@ open class View: Observable {
 
     func refresh(_ name: String) {
         var value: Any? = keyframeValues[name] ?? locals[name] ?? cssValues[name]
+        if value is LocalUndefined { value = nil }
         if value == nil, View.inheritedProperties.contains(name) { value = parent?.applied[name] }
         let had = applied[name] != nil
         if !had && value == nil { return }
@@ -812,4 +814,9 @@ open class View: Observable {
         guard let nativeView else { return }
         nativeView.clipsToBounds = nativeView is UIScrollView || background.hasBorderWidth || background.hasBorderRadius
     }
+}
+
+/// A style property's local value of `undefined`: it outranks CSS and applies as unset.
+struct LocalUndefined {
+    static let value = LocalUndefined()
 }
