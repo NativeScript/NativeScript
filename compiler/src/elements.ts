@@ -2,11 +2,14 @@
 export const ELEMENTS = new Set([
   'Frame', 'Page', 'ActionBar', 'StackLayout', 'GridLayout', 'ScrollView', 'ContentView',
   'Label', 'Button', 'TextField', 'Switch', 'Slider', 'SegmentedBar', 'SegmentedBarItem', 'Image', 'ActivityIndicator',
+  'ListView', 'TextView',
+  'FlexboxLayout', 'WrapLayout', 'AbsoluteLayout', 'DockLayout', 'RootLayout',
 ]);
 
 /** Two-way bindings (`v-model`, `[(ngModel)]`, `bind:value`): the property, its change event and the value's type. */
 export const MODELS: Record<string, { prop: string; event: string; type: string }> = {
   TextField: { prop: 'text', event: 'textChange', type: 'string' },
+  TextView: { prop: 'text', event: 'textChange', type: 'string' },
   Switch: { prop: 'checked', event: 'checkedChange', type: 'boolean' },
   Slider: { prop: 'value', event: 'valueChange', type: 'number' },
   SegmentedBar: { prop: 'selectedIndex', event: 'selectedIndexChange', type: 'number' },

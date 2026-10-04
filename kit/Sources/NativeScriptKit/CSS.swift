@@ -138,6 +138,9 @@ func expandShorthand(_ name: String, _ value: Any?) -> [(String, Any?)] {
         default: return []
         }
         return zip(corners, values).map { ($0, $1) }
+    case "flex": return expandFlex(value)
+    case "flexFlow": return expandFlexFlow(value)
+    case "gap": return expandGap(value)
     default:
         return [(name, value)]
     }

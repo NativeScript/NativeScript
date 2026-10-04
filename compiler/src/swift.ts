@@ -84,9 +84,20 @@ export class Translator {
       const params = s.getParameters().map((p) => this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where));
       return `(${params.join(', ')}) -> ${this.type(s.getReturnType(), where)}`;
     }
+    if (this.isEventData(t)) return 'EventData';
+    // A generic type the kit declares (`ListItem<Recipe>`) keeps its arguments.
+    const shim = sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/');
+    if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && name !== '__type' && name !== '__object') { this.used.add(name); return name; }
     // An inline object type in this subset is an event's data (`args: { value: boolean }`).
     return 'EventData';
+  }
+
+  /** A framework's event type (`ListViewItemTapEvent`) is an `EventData` with typed members. */
+  private isEventData(t: ts.Type): boolean {
+    const target = (t as ts.TypeReference).target ?? t;
+    if (!(target.flags & ts.TypeFlags.Object) || !target.isClassOrInterface()) return false;
+    return this.checker.getBaseTypes(target).some((b) => b.getSymbol()?.getName() === 'EventData' || this.isEventData(b));
   }
 
   typeOf(n: ts.Node): string {
@@ -414,9 +425,9 @@ export class Translator {
     }
     const base = this.typeOf(target);
     // An event's data: the value's type is the one the handler declared.
-    if (base === 'EventData' && name === 'value') {
+    if (base === 'EventData' && (name === 'value' || name === 'item')) {
       const t = this.typeOf(e);
-      return t === 'Any' ? `${this.expr(target)}.value` : `(${this.expr(target)}.value as! ${t})`;
+      return t === 'Any' ? `${this.expr(target)}.${name}` : `(${this.expr(target)}.${name} as! ${t})`;
     }
     return `${this.expr(target)}${dot}${ident(name)}`;
   }

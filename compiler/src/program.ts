@@ -11,7 +11,7 @@ const SHIMS: Record<string, string> = {
   '@nativescript/release': `
     export interface Sig<T> { value: T }
     export declare function $signal<T>(value: T): Sig<T>;
-    export interface EventData { eventName: string; object: any; value: any }
+    export interface EventData { eventName: string; object: any; value: any; index: number; item: any; view: any }
     export declare function $navigate(page: () => any): void;
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
     export declare function $writable<T>(value: T): WritableSignal<T>;
@@ -57,6 +57,9 @@ const SHIMS: Record<string, string> = {
     export declare function computed<T>(fn: () => T): { readonly value: T };
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
     export declare function createApp(component: any): { start(): void };
+    export interface ListItem<T = any> { item: T; index: number; even: boolean; odd: boolean }
+    import type { EventData } from '@nativescript/release';
+    export interface ListViewItemTapEvent<T = any> extends EventData { item: T }
   `,
 };
 
