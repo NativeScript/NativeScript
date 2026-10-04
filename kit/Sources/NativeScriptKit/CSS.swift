@@ -249,6 +249,15 @@ func expandShorthand(_ name: String, _ value: Any?) -> [(String, Any?)] {
         }
         return zip(corners, values).map { ($0, $1) }
     case "transform": return expandTransform(value)
+    case "background":
+        // A gradient is the image; any other part is the color.
+        guard let text = value as? String else { return [("backgroundColor", value)] }
+        if let start = text.range(of: "linear-gradient("), let end = text[start.upperBound...].lastIndex(of: ")") {
+            let gradient = String(text[start.lowerBound...end])
+            let rest = (text[..<start.lowerBound] + text[text.index(after: end)...]).trimmingCharacters(in: .whitespaces)
+            return [("backgroundColor", rest.isEmpty ? nil : rest), ("backgroundImage", gradient)]
+        }
+        return [("backgroundColor", text), ("backgroundImage", nil)]
     case "flex": return expandFlex(value)
     case "flexFlow": return expandFlexFlow(value)
     case "gap": return expandGap(value)

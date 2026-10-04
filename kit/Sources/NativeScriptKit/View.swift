@@ -59,7 +59,7 @@ open class View: NSObject {
 
     static let inheritedProperties: Set<String> = [
         "color", "fontFamily", "fontSize", "fontStyle", "fontWeight", "textAlignment", "textTransform",
-        "whiteSpace", "letterSpacing", "lineHeight", "tintColor", "iosOverflowSafeAreaEnabled", "iosIgnoreSafeArea",
+        "whiteSpace", "letterSpacing", "lineHeight", "textShadow", "textStroke", "tintColor", "iosOverflowSafeAreaEnabled", "iosIgnoreSafeArea",
     ]
 
     /// The names NativeScript registers as style (CSS) properties; every other name is a view property.
@@ -375,6 +375,15 @@ open class View: NSObject {
         case "backgroundColor":
             background.color = toColor(value)
             backgroundInternalChanged()
+        case "backgroundImage":
+            background.image = toText(value).flatMap(LinearGradient.init(css:))
+            backgroundInternalChanged()
+        case "boxShadow":
+            background.boxShadows = toText(value).map(BoxShadow.parseList) ?? []
+            backgroundInternalChanged()
+        case "clipPath":
+            background.clipPath = toText(value).flatMap(ClipPath.init(css:))
+            backgroundInternalChanged()
         case "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth":
             let px = Length(value, default: .zero).toDevicePixels(auto: 0)
             switch name {
@@ -656,10 +665,13 @@ open class View: NSObject {
 
     private func updateBackground(sizeChanged: Bool, needsLayout: Bool) {
         if sizeChanged {
-            let dependsOnSize = !background.hasUniformBorder || background.hasBorderRadius
+            let dependsOnSize = background.image != nil || background.clipPath != nil || !background.hasUniformBorder
+                || background.hasBorderRadius || !background.boxShadows.isEmpty
             if nativeBackgroundState == .invalid || (nativeBackgroundState == .drawn && dependsOnSize) { redrawNativeBackground() }
         } else if nativeBackgroundState == .invalid {
             redrawNativeBackground()
+        } else if needsLayout {
+            layoutOuterShadows()
         }
     }
 

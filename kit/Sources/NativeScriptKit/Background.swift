@@ -6,30 +6,42 @@ final class BackgroundLayers {
     enum MaskType { case border, clipPath }
 
     var borderLayer: CAShapeLayer?
+    var gradientLayer: CAGradientLayer?
+    /// Box shadows sit in the parent's layer, below the view's, so borders and masks do not clip them.
+    var outerShadowContainerLayer: CALayer?
     var hasNonUniformBorder = false
     var hasNonUniformBorderColor = false
     var maskType: MaskType?
     var originalMask: CALayer?
 }
 
-private struct CornerRadii {
+struct CornerRadii {
     var topLeft: CGFloat, topRight: CGFloat, bottomLeft: CGFloat, bottomRight: CGFloat
 }
 
 extension View {
-    /// `ios.createBackgroundUIColor`: visual effects drawn, then the color to `apply`.
+    /// `ios.createBackgroundUIColor`: visual effects drawn, then the color to
+    /// `apply`; a gradient background leaves the view's color as it was.
     func createBackgroundUIColor(_ apply: (UIColor?) -> Void) {
         guard nativeView != nil else { return }
         nativeView?.layer.backgroundColor = nil
         clearBackgroundVisualEffects()
         drawBackgroundVisualEffects()
-        apply(background.color)
+        if background.image == nil { apply(background.color) }
     }
 
     /// `drawBackgroundVisualEffects`.
     func drawBackgroundVisualEffects() {
         guard let nativeView else { return }
         let layer = nativeView.layer
+        if let gradient = background.image {
+            if backgroundLayers.gradientLayer == nil {
+                let gradientLayer = CAGradientLayer()
+                layer.insertSublayer(gradientLayer, at: 0)
+                backgroundLayers.gradientLayer = gradientLayer
+            }
+            if let gradientLayer = backgroundLayers.gradientLayer { gradient.draw(nativeView, gradientLayer) }
+        }
         maskLayerIfNeeded()
         if background.hasUniformBorder {
             layer.borderColor = background.borderTopColor?.cgColor
@@ -41,17 +53,32 @@ extension View {
         } else {
             drawNonUniformBorders()
         }
+        // The clip path follows the borders.
+        if backgroundLayers.maskType == .clipPath, let mask = layer.mask as? CAShapeLayer {
+            mask.path = background.clipPath?.path(layer.bounds)
+        }
+        if !background.boxShadows.isEmpty { drawBoxShadow() }
     }
 
     /// `clearBackgroundVisualEffects`.
     func clearBackgroundVisualEffects() {
         guard let nativeView else { return }
         let layers = backgroundLayers
-        let needsMask = layers.maskType == .border && !background.hasUniformBorder && background.hasBorderRadius
+        let needsMask: Bool
+        switch layers.maskType {
+        case .border: needsMask = !background.hasUniformBorder && background.hasBorderRadius
+        case .clipPath: needsMask = background.clipPath != nil
+        case nil: needsMask = false
+        }
         if !needsMask {
+            layers.outerShadowContainerLayer?.mask = nil
             nativeView.layer.mask = layers.originalMask
             layers.originalMask = nil
             layers.maskType = nil
+        }
+        if background.boxShadows.isEmpty {
+            layers.outerShadowContainerLayer?.removeFromSuperlayer()
+            layers.outerShadowContainerLayer = nil
         }
         if layers.hasNonUniformBorder {
             if layers.hasNonUniformBorderColor && background.hasUniformBorderColor {
@@ -65,12 +92,21 @@ extension View {
                 layers.hasNonUniformBorder = false
             }
         }
+        if background.image == nil {
+            layers.gradientLayer?.removeFromSuperlayer()
+            layers.gradientLayer = nil
+        }
     }
 
+    /// The clip path is the mask when there is one; otherwise rounded non-uniform borders are.
     private func maskLayerIfNeeded() {
         guard let layer = nativeView?.layer, !(layer.mask is CAShapeLayer) else { return }
         let layers = backgroundLayers
-        layers.maskType = !background.hasUniformBorder && background.hasBorderRadius ? .border : nil
+        if background.clipPath != nil {
+            layers.maskType = .clipPath
+        } else {
+            layers.maskType = !background.hasUniformBorder && background.hasBorderRadius ? .border : nil
+        }
         if layers.maskType != nil {
             layers.originalMask = layer.mask
             layer.mask = CAShapeLayer()
@@ -129,13 +165,13 @@ extension View {
         if let mask = borderLayer.mask as? CAShapeLayer { mask.path = innerClipPath(bounds, radii) }
     }
 
-    private func dip(_ px: Double) -> CGFloat { CGFloat(LayoutHelper.toDeviceIndependentPixels(px)) }
+    func dip(_ px: Double) -> CGFloat { CGFloat(LayoutHelper.toDeviceIndependentPixels(px)) }
 
     /// `getBorderCapRadius`: a zero radius stays zero.
-    private static func capRadius(_ a: CGFloat, _ b: CGFloat, _ c: CGFloat) -> CGFloat { a == 0 ? 0 : min(a, min(b, c)) }
+    static func capRadius(_ a: CGFloat, _ b: CGFloat, _ c: CGFloat) -> CGFloat { a == 0 ? 0 : min(a, min(b, c)) }
 
     /// `calculateNonUniformBorderCappedRadii`: radii scaled down where neighbors would overlap.
-    private func cappedRadii(_ bounds: CGRect) -> CornerRadii {
+    func cappedRadii(_ bounds: CGRect) -> CornerRadii {
         let width = bounds.width, height = bounds.height
         let tl = dip(background.borderTopLeftRadius), tr = dip(background.borderTopRightRadius)
         let br = dip(background.borderBottomRightRadius), bl = dip(background.borderBottomLeftRadius)
@@ -148,7 +184,7 @@ extension View {
     }
 
     /// `generateNonUniformBorderOuterClipPath`.
-    private static func outerClipPath(_ bounds: CGRect, _ radii: CornerRadii, _ offset: CGFloat = 0) -> CGPath {
+    static func outerClipPath(_ bounds: CGRect, _ radii: CornerRadii, _ offset: CGFloat = 0) -> CGPath {
         let left = bounds.minX - offset, top = bounds.minY - offset
         let right = bounds.minX + bounds.width + offset, bottom = bounds.minY + bounds.height + offset
         let path = CGMutablePath()

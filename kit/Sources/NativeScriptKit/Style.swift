@@ -42,6 +42,10 @@ struct Background: Equatable {
     var borderTopWidth: Double = 0, borderRightWidth: Double = 0, borderBottomWidth: Double = 0, borderLeftWidth: Double = 0
     var borderTopColor: UIColor?, borderRightColor: UIColor?, borderBottomColor: UIColor?, borderLeftColor: UIColor?
     var borderTopLeftRadius: Double = 0, borderTopRightRadius: Double = 0, borderBottomRightRadius: Double = 0, borderBottomLeftRadius: Double = 0
+    var image: LinearGradient?
+    /// Drawn last first: the first one declared is closest to the view.
+    var boxShadows: [BoxShadow] = []
+    var clipPath: ClipPath?
 
     var hasBorderWidth: Bool { borderTopWidth > 0 || borderRightWidth > 0 || borderBottomWidth > 0 || borderLeftWidth > 0 }
     var hasBorderRadius: Bool { borderTopLeftRadius > 0 || borderTopRightRadius > 0 || borderBottomRightRadius > 0 || borderBottomLeftRadius > 0 }
