@@ -45,8 +45,10 @@ also drops the space before an expression in JSX text, so the app sets those
 labels through ``text={`…`}``.
 
 `native-calls-vue` is a Vue app that calls UIKit directly from TypeScript
-(SF Symbols with a symbol configuration, fonts, colors, layer shadows and
-corner radius on the views' `ios`), uses `@nativescript/core`'s
+(SF Symbols with a symbol configuration, fonts, colors and layer shadows on
+the views' `ios`, a `UIView` subclass written in TypeScript whose `drawRect`
+strokes a `UIBezierPath`, an image drawn with `UIGraphicsImageRenderer`),
+uses `@nativescript/core`'s
 `ApplicationSettings`, `Screen` and `Color`, and runs async work over timers
 (a class with a Map and a Set, `Promise.all`, a custom error caught across
 awaits, JSON round trips) whose log is a Vue ref pushed to in place. Against
@@ -107,7 +109,15 @@ file, line and construct.
   through a table generated from the SDK's symbol graphs
   (`compiler/src/natives/symbols.ts`, cached per framework under
   `compiler/.cache/`), with numbers converted to the CGFloat, Int or enum the
-  Swift API takes (`compiler/src/native-calls.ts`).
+  Swift API takes and blocks given Swift's parameter types
+  (`compiler/src/native-calls.ts`). Classes extending Objective-C classes
+  (`@NativeClass() class Delegate extends NSObject implements
+  UITextFieldDelegate`) get the Swift signatures of the methods they
+  override or implement; `ObjCExposedMethods` are `@objc` for target-action.
+  `node compiler/src/natives/symbols.ts verify UIKit` reports how much of a
+  framework's d.ts the table maps: for UIKit 722 of 727 classes, 99.1% of
+  instance members, 92.5% of class members, 368 of 371 initializers; what
+  is left is mostly API Swift does not import (variadic methods, NSZone).
 
 ## Differential tests
 
@@ -152,9 +162,9 @@ develops it with live reload as usual.
   properties and events, CSS type and class selectors, the TypeScript above,
   the core APIs the kit has, and iOS APIs available on iOS 17. Anything else
   stops the build with the file, line and construct. Not yet: generators,
-  `Symbol`, `WeakMap`, getters on object literals, subclassing Objective-C
-  classes and implementing protocols from TypeScript (delegates), and
-  `toLocale*String`.
+  `Symbol`, `WeakMap`, getters on object literals, `toLocale*String`, and
+  constructors in classes that extend Objective-C classes (NativeScript
+  creates those with `new()`).
 - **Where Swift differs, by design.** Reading past the end of an array traps
   (TypeScript types it as the element); closures have no identity; JSON
   cannot hold lone surrogates.
