@@ -270,6 +270,8 @@ open class View: NSObject {
         guard let list = handlers[event] else { return }
         let data = EventData(eventName: event, object: self, value: value)
         for handler in list { handler(data) }
+        // A handler is a JavaScript task: the promise jobs it queued run before anything else does.
+        Microtasks.checkpoint()
     }
 
     // MARK: Measure and layout

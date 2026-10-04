@@ -8,6 +8,7 @@ public enum NativeScriptApplication {
 
     public static func run(css: String, root: @escaping () -> View) -> Never {
         StyleSheet.app = StyleSheet(parsing: css)
+        JSEventLoop.installRunLoopObserver()
         makeRoot = root
         UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(ApplicationDelegate.self))
         fatalError("UIApplicationMain returned")
