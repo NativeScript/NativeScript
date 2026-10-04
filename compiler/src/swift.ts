@@ -2582,6 +2582,14 @@ export class Translator implements AsyncTranslator {
     }
     const checked = this.receiver(target, name);
     if (checked) return this.narrowed(e, `${checked}${dot}${ident(name)}`);
+    // `x?.name` on a value Swift has as non-optional: cast to optional, valid for an implicitly unwrapped one too.
+    const tt = this.typeOf(target);
+    if (e.questionDotToken && tt !== 'Any?' && !tt.endsWith('?') && !tt.endsWith('!') && !hasTopLevelArrow(tt) && !ts.isOptionalChain(target) && !isWriteTarget(e)
+        && !(ts.isCallExpression(target) && this.maybeUndefined(target)) && !(ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e)) {
+      const code = `(${this.expr(target)} as ${optionalType(tt)})?.${ident(name)}`;
+      const rt = this.typeOf(e);
+      return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt);
+    }
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
     return this.narrowed(e, `${this.expr(target)}${unwrap ? '!' : ''}${dot}${ident(name)}`);
   }
@@ -2871,6 +2879,13 @@ export class Translator implements AsyncTranslator {
       const held = this.checker.getSymbolAtLocation(callee.name)?.valueDeclaration;
       const optionalFn = !!held && (ts.isPropertyDeclaration(held) || ts.isPropertySignature(held)) && isOptional(this.declaredTypeOf(callee) ?? '') && hasTopLevelArrow(this.declaredTypeOf(callee)!.replace(/^\((.*)\)\?$/, '$1'));
       const checked = !callee.questionDotToken ? this.receiver(target, method) : null;
+      // `x?.method()` on a value Swift has as non-optional: cast to optional, valid for an implicitly unwrapped one too.
+      const tt = this.typeOf(target);
+      if (callee.questionDotToken && !tt.endsWith('?') && !tt.endsWith('!') && !hasTopLevelArrow(tt) && !ts.isOptionalChain(target) && !(ts.isCallExpression(target) && this.maybeUndefined(target))) {
+        const code = `(${this.expr(target)} as ${optionalType(tt)})?.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+        const rt = this.typeOf(e);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) ? code : this.undefinedAs(`(${code})`, rt);
+      }
       return `${checked ?? `${this.expr(target)}${q}`}.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
