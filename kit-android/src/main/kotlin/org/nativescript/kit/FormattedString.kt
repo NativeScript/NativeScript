@@ -17,7 +17,6 @@ import android.text.style.UnderlineSpan
  * the text view's spannable text.
  */
 open class FormattedString : View() {
-    override val cssType: String get() = "FormattedString"
 
     internal val spans = mutableListOf<Span>()
 
@@ -48,7 +47,6 @@ open class FormattedString : View() {
 
 /** `Span` from text/span: a run of text with its own style. */
 open class Span : View() {
-    override val cssType: String get() = "Span"
 
     internal val formattedString: FormattedString? get() = parent as? FormattedString
 

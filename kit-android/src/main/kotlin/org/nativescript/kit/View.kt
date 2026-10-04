@@ -43,7 +43,8 @@ internal object AndroidHelper {
  * through the layout params set here.
  */
 open class View {
-    open val cssType: String get() = "View"
+    /** `CSSType`: the type selectors match; classes core does not register have none. */
+    open val cssType: String get() = ""
 
     private var native: NativeView? = null
 
@@ -301,15 +302,24 @@ open class View {
     internal fun refresh(name: String) {
         var value: Any? = keyframeValues[name] ?: locals[name] ?: cssValues[name]
         if (value == null && name in inheritedProperties) value = parent?.applied?.get(name)
+        value = coerce(name, value)
         val had = applied.containsKey(name)
-        if (!had && value == null) return
+        if (!had && (value == null || sameValue(value, defaultValue(name)))) return
         if (had && sameValue(value, applied[name])) return
         if (value == null) applied.remove(name) else applied[name] = value
         propertyValueChanged(name, value)
         if (isLoaded && !isBatching) setProperty(name, value) else deferApplication(name)
+        // A view property announces its change; a style property's event is the style object's.
+        if (name !in styleProperties && hasHandlers(name + "Change")) emit(name + "Change", value)
         notifyCSSDependents(name)
         if (name in inheritedProperties) eachChildView { it.refresh(name) }
     }
+
+    /** A property's `defaultValue`: setting it on a view that has no value changes nothing. */
+    protected open fun defaultValue(name: String): Any? = null
+
+    /** A `CoercibleProperty`'s `coerceValue`: the value kept is derived from the one set, and re-derived by `refresh`. */
+    protected open fun coerce(name: String, value: Any?): Any? = value
 
     /**
      * The value a native control reports (user input): stored without being
@@ -333,6 +343,36 @@ open class View {
             "isEnabled" -> if (toBool(value) ?: true) removeVisualState("disabled") else addVisualState("disabled")
             "id" -> onCssStateChange()
             "checked" -> if (this is Switch) { if (toBool(value) ?: false) addVisualState("checked") else removeVisualState("checked") }
+            // `effectivePadding*` and `backgroundInternal` follow their style properties at once, loaded or not.
+            "paddingTop", "paddingRight", "paddingBottom", "paddingLeft" -> {
+                val px = value?.let { Length.parse(it, Length.zero).toDevicePixels(0.0).toInt() }
+                when (name) {
+                    "paddingTop" -> paddingTop = px
+                    "paddingRight" -> paddingRight = px
+                    "paddingBottom" -> paddingBottom = px
+                    else -> paddingLeft = px
+                }
+            }
+            "backgroundColor" -> {
+                val color = toColor(value)?.argb
+                if (color == null && background.color != null) background = background.copy(clearColor = true)
+                background = background.copy(color = color)
+            }
+            "backgroundImage" -> background = background.copy(image = toText(value)?.let { LinearGradient.parse(it) })
+            "boxShadow" -> background = background.copy(boxShadows = toText(value)?.let { BoxShadow.parseList(it) } ?: emptyList())
+            "clipPath" -> background = background.copy(clipPath = toText(value)?.takeIf { it.isNotBlank() && it != "none" })
+            "borderTopWidth" -> background = background.copy(borderTopWidth = borderPx(value))
+            "borderRightWidth" -> background = background.copy(borderRightWidth = borderPx(value))
+            "borderBottomWidth" -> background = background.copy(borderBottomWidth = borderPx(value))
+            "borderLeftWidth" -> background = background.copy(borderLeftWidth = borderPx(value))
+            "borderTopColor" -> background = background.copy(borderTopColor = toColor(value)?.argb)
+            "borderRightColor" -> background = background.copy(borderRightColor = toColor(value)?.argb)
+            "borderBottomColor" -> background = background.copy(borderBottomColor = toColor(value)?.argb)
+            "borderLeftColor" -> background = background.copy(borderLeftColor = toColor(value)?.argb)
+            "borderTopLeftRadius" -> background = background.copy(borderTopLeftRadius = borderPx(value))
+            "borderTopRightRadius" -> background = background.copy(borderTopRightRadius = borderPx(value))
+            "borderBottomRightRadius" -> background = background.copy(borderBottomRightRadius = borderPx(value))
+            "borderBottomLeftRadius" -> background = background.copy(borderBottomLeftRadius = borderPx(value))
         }
     }
 
@@ -349,42 +389,16 @@ open class View {
             "marginRight" -> setPercentLength(value, 0, ViewHelper::setMarginRight, ViewHelper::setMarginRightPercent)
             "marginBottom" -> setPercentLength(value, 0, ViewHelper::setMarginBottom, ViewHelper::setMarginBottomPercent)
             "marginLeft" -> setPercentLength(value, 0, ViewHelper::setMarginLeft, ViewHelper::setMarginLeftPercent)
-            "paddingTop", "paddingRight", "paddingBottom", "paddingLeft" -> {
-                val px = value?.let { Length.parse(it, Length.zero).toDevicePixels(0.0).toInt() }
-                when (name) {
-                    "paddingTop" -> paddingTop = px
-                    "paddingRight" -> paddingRight = px
-                    "paddingBottom" -> paddingBottom = px
-                    else -> paddingLeft = px
-                }
-                applyPadding()
-            }
+            "paddingTop", "paddingRight", "paddingBottom", "paddingLeft" -> applyPadding()
             "horizontalAlignment" -> setHorizontalAlignment((value as? String)?.trim() ?: "stretch")
             "verticalAlignment" -> {
                 val v = (value as? String)?.trim()?.lowercase() ?: "stretch"
                 setVerticalAlignment(if (v == "center") "middle" else v)
             }
-            "backgroundColor" -> {
-                val color = toColor(value)?.argb
-                if (color == null && background.color != null) background = background.copy(clearColor = true)
-                background = background.copy(color = color)
-                backgroundChanged()
-            }
-            "backgroundImage" -> { background = background.copy(image = toText(value)?.let { LinearGradient.parse(it) }); backgroundChanged() }
-            "boxShadow" -> { background = background.copy(boxShadows = toText(value)?.let { BoxShadow.parseList(it) } ?: emptyList()); backgroundChanged() }
-            "clipPath" -> { background = background.copy(clipPath = toText(value)?.takeIf { it.isNotBlank() && it != "none" }); backgroundChanged() }
-            "borderTopWidth" -> { background = background.copy(borderTopWidth = borderPx(value)); backgroundChanged() }
-            "borderRightWidth" -> { background = background.copy(borderRightWidth = borderPx(value)); backgroundChanged() }
-            "borderBottomWidth" -> { background = background.copy(borderBottomWidth = borderPx(value)); backgroundChanged() }
-            "borderLeftWidth" -> { background = background.copy(borderLeftWidth = borderPx(value)); backgroundChanged() }
-            "borderTopColor" -> { background = background.copy(borderTopColor = toColor(value)?.argb); backgroundChanged() }
-            "borderRightColor" -> { background = background.copy(borderRightColor = toColor(value)?.argb); backgroundChanged() }
-            "borderBottomColor" -> { background = background.copy(borderBottomColor = toColor(value)?.argb); backgroundChanged() }
-            "borderLeftColor" -> { background = background.copy(borderLeftColor = toColor(value)?.argb); backgroundChanged() }
-            "borderTopLeftRadius" -> { background = background.copy(borderTopLeftRadius = borderPx(value)); backgroundChanged() }
-            "borderTopRightRadius" -> { background = background.copy(borderTopRightRadius = borderPx(value)); backgroundChanged() }
-            "borderBottomRightRadius" -> { background = background.copy(borderBottomRightRadius = borderPx(value)); backgroundChanged() }
-            "borderBottomLeftRadius" -> { background = background.copy(borderBottomLeftRadius = borderPx(value)); backgroundChanged() }
+            "backgroundColor", "backgroundImage", "boxShadow", "clipPath",
+            "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
+            "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor",
+            "borderTopLeftRadius", "borderTopRightRadius", "borderBottomRightRadius", "borderBottomLeftRadius" -> backgroundChanged()
             "opacity" -> nativeView.alpha = (toDouble(value) ?: 1.0).toFloat()
             "visibility" -> nativeView.visibility = when ((value as? String)?.trim()?.lowercase()) {
                 "hidden" -> NativeView.INVISIBLE
@@ -517,6 +531,9 @@ open class View {
         }
         view.layoutParams = lp
     }
+
+    /** `Property.isSet`: whether a value was set locally. */
+    internal fun isSet(name: String): Boolean = locals.containsKey(name)
 
     internal fun setPropertyNow(name: String) = setProperty(name, applied[name])
 
@@ -679,17 +696,24 @@ open class View {
     internal fun emit(event: String, value: Any?) {
         val list = handlers[event] ?: return
         val data = EventData(event, this, value)
-        for (handler in list.toList()) handler(data)
-        // A handler is a JavaScript task: the promise jobs it queued run before anything else does.
-        Microtasks.checkpoint()
+        dispatchDepth++
+        try {
+            for (handler in list.toList()) handler(data)
+        } finally {
+            dispatchDepth--
+        }
+        // The outermost handler is a JavaScript task: the promise jobs it queued run before anything else does.
+        if (dispatchDepth == 0) Microtasks.checkpoint()
     }
 
     /** `PseudoClassHandler`: a view starts tracking a native state once a selector depends on it. */
     internal open fun observePseudoClass(name: String, on: Boolean) {}
 
-    override fun toString(): String = "$cssType(${System.identityHashCode(this)})"
+    override fun toString(): String = "${javaClass.simpleName}(${System.identityHashCode(this)})"
 
     companion object {
+        private var dispatchDepth = 0
+
         internal val inheritedProperties = setOf(
             "color", "fontFamily", "fontSize", "fontStyle", "fontWeight", "textAlignment", "textTransform",
             "whiteSpace", "letterSpacing", "lineHeight", "textShadow", "textStroke", "tintColor", "direction",

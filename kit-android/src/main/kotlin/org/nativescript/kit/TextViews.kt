@@ -87,6 +87,8 @@ internal class Font(val family: String?, val size: Double?, val style: String, v
 
 /** `TextBase` from text-base/index.android. */
 abstract class TextBase : View() {
+    override fun defaultValue(name: String): Any? = if (name == "text") "" else null
+
     protected val textView: NativeTextView get() = nativeView as NativeTextView
 
     private var defaultTypeface: Typeface? = null
@@ -107,7 +109,12 @@ abstract class TextBase : View() {
     internal var formattedString: FormattedString? = null
         private set
 
+    /** `_addChildFromBuilder`: spans given directly go into a formatted string made for them. */
     override fun addChild(child: View) {
+        if (child is Span) {
+            (formattedString ?: FormattedString().also { addChild(it) }).addChild(child)
+            return
+        }
         val formatted = child as? FormattedString ?: return
         formattedString?.let { removeView(it) }
         formattedString = formatted

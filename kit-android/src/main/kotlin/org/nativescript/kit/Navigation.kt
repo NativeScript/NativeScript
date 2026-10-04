@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.transition.Fade
 import org.nativescript.widgets.ContentLayout
@@ -24,6 +25,8 @@ open class Page : ContentView() {
     internal var actionBar: ActionBar? = null
         private set
     internal var owner: Owner? = null
+    /** The frame's fragment showing the page; fragments inside the page are its children. */
+    internal var fragment: Fragment? = null
 
     val frame: Frame? get() = parent as? Frame
 
@@ -71,6 +74,40 @@ open class Page : ContentView() {
     }
 }
 
+/** `ActionItem` from action-bar/index.android: a toolbar menu item, shown as its icon or text. */
+open class ActionItem : View() {
+
+    override val ownEvents: Set<String> get() = setOf("tap")
+
+    internal var actionBar: ActionBar? = null
+    internal val itemId = ++lastItemId
+
+    val text: String get() = toText(applied["text"]) ?: ""
+    val icon: String? get() = toText(applied["icon"])
+    internal val isVisible: Boolean get() = (toText(applied["visibility"])?.trim() ?: "visible") == "visible"
+    internal val position: String get() = toText(applied["android.position"])?.trim() ?: "actionBar"
+    internal val systemIcon: String? get() = toText(applied["android.systemIcon"])
+
+    override fun propertyValueChanged(name: String, value: Any?) {
+        super.propertyValueChanged(name, value)
+        if (name == "text" || name == "icon" || name == "visibility") actionBar?.update()
+    }
+
+    override fun setProperty(name: String, value: Any?) {}
+
+    override fun backgroundChanged() {}
+
+    internal fun raiseTap() = emit("tap", null)
+
+    private companion object {
+        var lastItemId = 10000
+    }
+}
+
+/** `NavigationButton`: the toolbar's navigation icon. */
+open class NavigationButton : ActionItem() {
+}
+
 /** `ActionBar` from action-bar/index.android: an AppCompat Toolbar styled by the app theme's toolbarStyle. */
 open class ActionBar : View() {
     override val cssType: String get() = "ActionBar"
@@ -81,7 +118,45 @@ open class ActionBar : View() {
     private val page: Page? get() = parent as? Page
     private var updated = false
 
+    var navigationButton: NavigationButton? = null
+        private set
+    private val actionItems = mutableListOf<ActionItem>()
+    var titleView: View? = null
+        private set
+
     override fun createNativeView(): NativeView = Toolbar(context)
+
+    override fun initNativeView() {
+        super.initNativeView()
+        toolbar.setOnMenuItemClickListener { item -> onItemSelected(item.itemId) }
+    }
+
+    override fun addChild(child: View) {
+        when (child) {
+            is NavigationButton -> {
+                navigationButton = child
+                child.actionBar = this
+                addView(child)
+            }
+            is ActionItem -> {
+                actionItems.add(child)
+                child.actionBar = this
+                addView(child)
+            }
+            else -> {
+                titleView = child
+                addView(child)
+                toolbar.addView(child.nativeView)
+            }
+        }
+        update()
+    }
+
+    override fun eachChildView(body: (View) -> Unit) {
+        for (item in actionItems.toList()) body(item)
+        titleView?.let(body)
+        navigationButton?.let(body)
+    }
 
     override fun setProperty(name: String, value: Any?) {
         when (name) {
@@ -90,25 +165,85 @@ open class ActionBar : View() {
                 val color = toColor(value)
                 toolbar.setTitleTextColor(color?.argb ?: defaultTitleTextColor())
             }
+            "flat" -> ViewCompat.setElevation(toolbar, if (toBool(value) == true) 0f else 4 * Layout.density)
             else -> super.setProperty(name, value)
         }
     }
 
+    /** `update`: hidden outside a frame; otherwise the items, title and navigation button again. */
     internal fun update() {
+        val page = page ?: return
         updated = true
         val toolbar = toolbar
-        if (page?.frame == null) {
+        if (page.frame == null) {
             toolbar.visibility = NativeView.GONE
             return
         }
         toolbar.visibility = NativeView.VISIBLE
-        toolbar.menu.clear()
+        addActionItems()
         updateTitle()
         toolbar.logo = null
-        toolbar.navigationIcon = null
+        updateNavigationButton()
     }
 
+    private fun onItemSelected(id: Int): Boolean {
+        val nav = navigationButton
+        if (nav != null && id == android.R.id.home) {
+            nav.raiseTap()
+            return true
+        }
+        val item = actionItems.firstOrNull { it.itemId == id } ?: return false
+        item.raiseTap()
+        return true
+    }
+
+    private fun addActionItems() {
+        val menu = toolbar.menu
+        menu.clear()
+        for (item in actionItems.filter { it.isVisible }) {
+            val menuItem = menu.add(android.view.Menu.NONE, item.itemId, android.view.Menu.NONE, item.text)
+            val systemIcon = item.systemIcon
+            val icon = item.icon
+            if (systemIcon != null) {
+                systemResourceId(systemIcon).takeIf { it != 0 }?.let { menuItem.setIcon(it) }
+            } else if (icon != null) {
+                drawableResourceId(icon).takeIf { it != 0 }?.let { menuItem.setIcon(it) }
+            }
+            menuItem.setShowAsAction(
+                when (item.position) {
+                    "actionBarIfRoom" -> android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM
+                    "popup" -> android.view.MenuItem.SHOW_AS_ACTION_NEVER
+                    else -> android.view.MenuItem.SHOW_AS_ACTION_ALWAYS
+                },
+            )
+        }
+    }
+
+    private fun updateNavigationButton() {
+        val nav = navigationButton
+        if (nav != null && nav.isVisible) {
+            val systemIcon = nav.systemIcon
+            val icon = nav.icon
+            if (systemIcon != null) {
+                systemResourceId(systemIcon).takeIf { it != 0 }?.let { toolbar.setNavigationIcon(it) }
+            } else if (icon != null) {
+                drawableResourceId(icon).takeIf { it != 0 }?.let { toolbar.setNavigationIcon(it) }
+            }
+            toolbar.navigationContentDescription = nav.text.ifEmpty { null }
+            toolbar.setNavigationOnClickListener { nav.raiseTap() }
+        } else {
+            toolbar.navigationIcon = null
+        }
+    }
+
+    /** `getDrawableOrResourceId`: only `res://` icons resolve; images from files are not loaded. */
+    private fun drawableResourceId(icon: String): Int =
+        if (icon.startsWith("res://")) context.resources.getIdentifier(icon.substring(6), "drawable", context.packageName) else 0
+
+    private fun systemResourceId(name: String): Int = android.content.res.Resources.getSystem().getIdentifier(name, "drawable", "android")
+
     private fun updateTitle() {
+        if (titleView != null) return
         val title = toText(applied["title"])
         if (title != null) {
             toolbar.title = title
@@ -257,6 +392,7 @@ open class Frame : View() {
     private fun createFragment(page: Page): PageFragment = PageFragment().also {
         it.page = page
         it.frame = this
+        page.fragment = it
     }
 
     private fun allowTransitionOverlap(fragment: Fragment) {

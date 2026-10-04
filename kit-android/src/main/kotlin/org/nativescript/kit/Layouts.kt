@@ -215,6 +215,8 @@ open class FlexboxLayout : LayoutBase() {
             "justifyContent" -> flexbox.justifyContent = when (v) { "flex-end" -> 1; "center" -> 2; "space-between" -> 3; "space-around" -> 4; else -> 0 }
             "alignItems" -> flexbox.alignItems = when (v) { "flex-start" -> 0; "flex-end" -> 1; "center" -> 2; "baseline" -> 3; else -> 4 }
             "alignContent" -> flexbox.alignContent = when (v) { "flex-start" -> 0; "flex-end" -> 1; "center" -> 2; "space-between" -> 3; "space-around" -> 4; else -> 5 }
+            "rowGap" -> flexbox.rowGap = maxOf(0, Length.parse(value, Length.zero).toDevicePixels(0.0).toInt())
+            "columnGap" -> flexbox.columnGap = maxOf(0, Length.parse(value, Length.zero).toDevicePixels(0.0).toInt())
             else -> super.setProperty(name, value)
         }
     }

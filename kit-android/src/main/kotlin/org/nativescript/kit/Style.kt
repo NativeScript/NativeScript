@@ -110,5 +110,6 @@ fun sameValue(a: Any?, b: Any?): Boolean = when {
     a is String && b is String -> a == b
     a is Boolean && b is Boolean -> a == b
     a is Color && b is Color -> a.argb == b.argb
+    a is JSDate && b is JSDate -> a.getTime() == b.getTime()
     else -> a::class == b::class && a.toString() == b.toString()
 }

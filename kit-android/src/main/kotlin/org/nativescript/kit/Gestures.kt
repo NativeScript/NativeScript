@@ -275,7 +275,9 @@ internal class GesturesObserver(val target: View, val type: Double, val callback
                 deltaY = null
                 isTracking = false
             }
-            lastEventCache = if (cache) MotionEvent.obtain(event) else null
+            // The event itself, not a copy, as core keeps it: the system recycles it for the
+            // next event, so a pan starts from where the first move was, not the touch down.
+            lastEventCache = if (cache) event else null
         }
 
         private fun trackStart(event: MotionEvent) {
