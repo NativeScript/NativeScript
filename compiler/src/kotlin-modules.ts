@@ -18,10 +18,10 @@ export interface KotlinModule {
  * the entry point calls in that order: Kotlin initializes a file's properties
  * when the file is first used instead.
  */
-export function translateKotlinModules(translator: Translator, program: ts.Program, files: string[]): KotlinModule[] {
+export function translateKotlinModules(translator: Translator, program: ts.Program, files: string[], resolved?: (containing: string, specifier: string) => string | undefined): KotlinModule[] {
   const used = new Set<string>();
   const out: KotlinModule[] = [];
-  for (const file of evaluationOrder(program, files)) {
+  for (const file of evaluationOrder(program, files, resolved)) {
     const sf = program.getSourceFile(file)!;
     let name = basename(file).replace(/\.tsx?$/, '').replace(/\W/g, '_');
     if (/^\d/.test(name)) name = '_' + name;

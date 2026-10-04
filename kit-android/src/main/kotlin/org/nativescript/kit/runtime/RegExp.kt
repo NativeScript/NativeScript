@@ -220,6 +220,11 @@ class JSMatch internal constructor(
     override val jsClassName: String? get() = "Array"
 
     override fun toString(): String = jsJoin(values.storage, ",", this)
+
+    companion object {
+        /** `[]` where code holds a match (`text.match(re) || []`): no values. */
+        fun empty(): JSMatch = JSMatch(JSArray(), 0.0, "", null, false)
+    }
 }
 
 /** A match's `indices` (the `d` flag): `[start, end]` per group, with `groups`. */

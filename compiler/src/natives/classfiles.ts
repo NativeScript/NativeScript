@@ -107,6 +107,11 @@ function openArchive(path: string): Zip[] {
   return [...zip.entries.keys()].filter((n) => n === 'classes.jar' || /^libs\/[^/]+\.jar$/.test(n)).map((n) => new Zip(zip.read(n)!));
 }
 
+/** The internal names of the classes in a jar or an AAR. */
+export function archiveClasses(path: string): string[] {
+  return openArchive(path).flatMap((z) => [...z.entries.keys()].filter((n) => n.endsWith('.class') && !n.startsWith('META-INF/') && !n.endsWith('module-info.class')).map((n) => n.slice(0, -6)));
+}
+
 // ---- Class files -------------------------------------------------------------------------------
 
 export function parseClass(b: Buffer): JavaClass {
@@ -198,7 +203,7 @@ function versionKey(v: string): number[] {
   return v.split(/[.-]/).map((x) => (/^\d+$/.test(x) ? Number(x) : -1));
 }
 
-function newer(a: string, b: string): boolean {
+export function newer(a: string, b: string): boolean {
   const stable = (v: string) => !/-/.test(v);
   if (stable(a) !== stable(b)) return stable(a);
   const ka = versionKey(a), kb = versionKey(b);

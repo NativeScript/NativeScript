@@ -61,12 +61,43 @@ object Screen {
     val mainScreen: ScreenMetrics get() = ScreenMetrics()
 }
 
+/** `Utils` from @nativescript/core's utils (Android): numbers are JavaScript's. */
+object Utils {
+    /** `SDK_VERSION`: `android.os.Build.VERSION.SDK_INT`. */
+    val SDK_VERSION: Double get() = Build.VERSION.SDK_INT.toDouble()
+
+    /** `dismissSoftInput(nativeView)`: the input method hides from the view, or from whatever has focus. */
+    fun dismissSoftInput(nativeView: android.view.View? = null) {
+        val activity = NativeScriptActivity.current
+        val view = nativeView ?: activity.currentFocus ?: activity.window.decorView
+        val manager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        manager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun dismissKeyboard() = dismissSoftInput()
+}
+
 /** `Utils.layout` from utils/layout-helper/index.android (core-kotlin.ts reads `Utils.layout` as `UtilsLayout`). */
 object UtilsLayout {
+    // Core's measure spec constants as JavaScript's 32-bit integers.
+    val EXACTLY: Double get() = (1 shl 30).toDouble()
+    val AT_MOST: Double get() = (2 shl 30).toDouble()
+    val UNSPECIFIED: Double get() = 0.0
+    val MODE_MASK: Double get() = (3 shl 30).toDouble()
+
     fun getDisplayDensity(): Double = Layout.density.toDouble()
     fun toDevicePixels(value: Double): Double = Layout.toDevicePixels(value)
     fun toDeviceIndependentPixels(value: Double): Double = Layout.toDeviceIndependentPixels(value)
     fun round(value: Double): Double = Layout.round(value)
+
+    /** `makeMeasureSpec(size, mode)`: `(Math.round(Math.max(0, size)) & ~MODE_MASK) | (mode & MODE_MASK)`. */
+    fun makeMeasureSpec(size: Double, mode: Double): Double {
+        val mask = 3 shl 30
+        return ((Math.round(maxOf(0.0, size)).toInt() and mask.inv()) or (mode.toLong().toInt() and mask)).toDouble()
+    }
+
+    fun getMeasureSpecSize(spec: Double): Double = (spec.toLong().toInt() and (3 shl 30).inv()).toDouble()
+    fun getMeasureSpecMode(spec: Double): Double = (spec.toLong().toInt() and (3 shl 30)).toDouble()
 }
 
 /** `Utils.android` from utils/native-helper-for-android. */
@@ -80,7 +111,51 @@ object UtilsAndroid {
 
 /** `Application` from application/application.android: the app has one activity, NativeScriptActivity. */
 object Application {
+    private val events = Observable()
+    private var create: Any? = null
+
     val android: ApplicationAndroid get() = ApplicationAndroid
+
+    /** `run({ create })`: the activity's root view is what `create` returns. */
+    fun run(entry: Any?) {
+        create = jsField(entry, "create")
+    }
+
+    /** The root view of an app that called `run`. */
+    fun rootView(): View = (try { jsCall(create) } catch (e: Throwable) { jsReportUncaught(jsCaught(e)); null }) as? View ?: ContentView()
+
+    fun on(eventNames: String, callback: (EventData) -> Unit, thisArg: Any? = null, key: Any? = null) = events.on(eventNames, callback, thisArg, key)
+
+    fun off(eventNames: String, callback: ((EventData) -> Unit)? = null, thisArg: Any? = null, key: Any? = null) = events.off(eventNames, callback, thisArg, key)
+
+    fun notify(data: Any?) = events.notify(data)
+
+    /** `setWindowContentResolver(resolver)`: content for windows other than the primary one, which this app has none of. */
+    @Suppress("UNUSED_PARAMETER")
+    fun setWindowContentResolver(resolver: Any?) {}
+
+    val primaryWindow: NativeWindow get() = NativeWindow.primary
+
+    /** `systemAppearance()`: "light" or "dark". */
+    fun systemAppearance(): String = Appearance.systemAppearance
+
+    fun orientation(): String = Appearance.orientation
+
+    internal fun appearanceChanged(value: String) {
+        notify(JSObject("eventName" to "systemAppearanceChanged", "object" to events, "newValue" to value))
+    }
+}
+
+/** `NativeWindow` (core 9.1's multi-window model): the app's one window. */
+class NativeWindow private constructor() : JSDynamic {
+    override fun jsGet(key: String): Any? = null
+    override fun jsSet(key: String, value: Any?) {}
+    override val jsKeys: List<String> get() = emptyList()
+    override val jsClassName: String? get() = "NativeWindow"
+
+    companion object {
+        val primary = NativeWindow()
+    }
 }
 
 object ApplicationAndroid {

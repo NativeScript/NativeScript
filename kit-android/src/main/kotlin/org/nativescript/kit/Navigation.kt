@@ -21,7 +21,7 @@ import org.nativescript.widgets.LayoutBase as NativeLayoutBase
 open class Page : ContentView() {
     override val cssType: String get() = "Page"
 
-    override val androidOverflowEdge: Int get() = NativeLayoutBase.OverflowEdgeNone
+    override val defaultOverflowEdge: Int get() = NativeLayoutBase.OverflowEdgeNone
 
     internal var actionBar: ActionBar? = null
         private set
@@ -30,10 +30,16 @@ open class Page : ContentView() {
     val frame: Frame? get() = parent as? Frame
 
     override fun createNativeView(): NativeView {
+        nativeViewFactory?.let { return it(this) }
         val grid = org.nativescript.widgets.GridLayout(context)
         grid.addRow(1, GridUnitType.auto)
         grid.addRow(1, GridUnitType.star)
         return grid
+    }
+
+    companion object {
+        /** What a plugin puts in place of `Page.prototype.createNativeView` (gesturehandler's PageLayout): every page's native view. */
+        var nativeViewFactory: (Page.() -> NativeView)? = null
     }
 
     override fun initNativeView() {
@@ -58,6 +64,13 @@ open class Page : ContentView() {
     override fun eachChildView(body: (View) -> Unit) {
         actionBar?.let(body)
         super.eachChildView(body)
+    }
+
+    override fun setProperty(name: String, value: Any?) {
+        when (name) {
+            "actionBarHidden" -> actionBar?.update()
+            else -> super.setProperty(name, value)
+        }
     }
 
     /** `onLoaded`: a page without an action bar gets the default one, showing the app's name. */
@@ -174,7 +187,7 @@ open class ActionBar : View() {
         val page = page ?: return
         updated = true
         val toolbar = toolbar
-        if (page.frame == null) {
+        if (page.frame == null || toBool(page.applied["actionBarHidden"]) == true) {
             toolbar.visibility = NativeView.GONE
             return
         }

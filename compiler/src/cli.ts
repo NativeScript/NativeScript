@@ -18,7 +18,7 @@ import { reactComponent, reactScreens, zustandStore } from './react.ts';
 import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
 import { createProgram, nodeModules } from './program.ts';
-import { corePatches } from './core-patches.ts';
+import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render } from './codegen.ts';
 import { addInterfaces, translateModules } from './modules.ts';
@@ -147,7 +147,7 @@ if (framework === 'vue') {
 
 // 3. Type-check everything as one program, then translate.
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-// Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
+// Plugins: compiled from their TypeScript source; their native code is linked as a local Swift package on iOS, built into AARs on Android.
 const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
 const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; optional?: string[]; passed?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, optional: c.optional, passed: c.passed }]));
@@ -160,7 +160,7 @@ const properties = collectProperties(checker, sourceFiles);
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(appStylesheets(app, 'android', importedStylesheets(entry, appDir)));
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), build: args.includes('--build') });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), plugins: plugins.all(), build: args.includes('--build'), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

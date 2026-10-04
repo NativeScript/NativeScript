@@ -58,13 +58,30 @@ interface Source {
 private var currentEffect: Effect? = null
 private var batchDepth = 0
 private var queue = mutableListOf<Effect>()
+private var flushScheduled = false
+
+/** How writes reach the effects that read them. */
+object Reactivity {
+    /** Effects re-run in a microtask after the writes, as a renderer that batches updates (Octane's root) re-renders; otherwise at once. */
+    var scheduled = false
+}
 
 /** Groups writes so each affected effect runs once, after the last write. */
 fun batch(body: () -> Unit) {
     batchDepth += 1
     body()
     batchDepth -= 1
-    if (batchDepth == 0) flush()
+    if (batchDepth == 0) flushOrSchedule()
+}
+
+private fun flushOrSchedule() {
+    if (!Reactivity.scheduled) return flush()
+    if (flushScheduled) return
+    flushScheduled = true
+    Microtasks.enqueue {
+        flushScheduled = false
+        flush()
+    }
 }
 
 private fun flush() {
@@ -170,7 +187,7 @@ class Signal<T>(private var stored: T, private val equals: ((T, T) -> Boolean)? 
             if (equals?.invoke(stored, newValue) ?: (stored == newValue)) return
             stored = newValue
             for (target in subscribers.toList()) target.invalidate()
-            if (batchDepth == 0) flush()
+            if (batchDepth == 0) flushOrSchedule()
         }
 
     /** `signal.update { it + 1 }`, as Angular writes it. */

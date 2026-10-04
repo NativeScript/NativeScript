@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isCoreDeclaration } from './core.ts';
 import { kitExtends, kitMember, type KitMember, type KitType } from './kit-index.ts';
-import { kotlinString, numberLiteral, type KotlinCore, type Translator } from './kotlin.ts';
+import { KIT_NAMES_ANDROID, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 
 /** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
 const TOP_LEVEL = '';
@@ -36,10 +36,13 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
           const isPublic = !/\b(private|internal|protected)\b/.test(decl![1]);
           const name = decl![3];
           let type = types.get(name) ?? null;
+          const base = decl![2] === 'class' && decl![4] ? decl![4] : null;
           if (!type && isPublic) {
-            type = { name, base: decl![2] === 'class' && decl![4] ? decl![4] : null, members: new Map(), props: new Set() };
+            type = { name, base, members: new Map(), props: new Set() };
             types.set(name, type);
           }
+          // Extension members in a file read earlier made the entry: the class declaration names the base.
+          if (type && base) type.base = base;
           if (type && decl![2] === 'object') (type as KitType & { object?: boolean }).object = true;
           stack.push({ type: isPublic ? type : null, depth, companion: false });
         }
@@ -60,11 +63,14 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
         if (enclosing && /^\s*"\w+"(\s*,\s*"\w+")*\s*->/.test(line)) for (const m of line.matchAll(/"(\w+)"/g)) enclosing.props.add(m[1]);
-        if (owner?.type && depth === owner.depth + 1 && !/\b(private|internal|protected)\b/.test(line)) {
+        if (owner?.type && depth === owner.depth + 1 && !/\b(private|internal)\b/.test(line) && (!/\bprotected\b/.test(line) || /\b(open|override|abstract)\b/.test(line))) {
           const isStatic = owner.companion || !!(owner.type as KitType & { object?: boolean }).object;
           let m: RegExpExecArray | null;
-          if ((m = /^\s*(?:(?:override|open|final|lateinit|const|abstract)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
-          else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(([^)]*)\)\s*(?::\s*([^={]+))?/.exec(line))) add(owner.type, m[1], { kind: 'func', static: isStatic, type: (m[3] ?? 'Unit').trim(), params: m[2] });
+          if ((m = /^\s*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
+          else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
+            const [params, rest] = parenthesized(line, m.index + m[0].length);
+            add(owner.type, m[1], { kind: 'func', static: isStatic, type: (/^\s*:\s*([^={]+)/.exec(rest)?.[1] ?? 'Unit').trim(), params });
+          }
         }
       }
       for (const ch of line) {
@@ -76,7 +82,25 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
       }
     }
   }
+  // Shorthands (`borderRadius`, `margin`) any view takes, expanded by a top-level function.
+  for (const f of files) {
+    const text = readFileSync(join(sources, f), 'utf8');
+    const at = text.indexOf('\nfun expandShorthand(');
+    if (at < 0) continue;
+    const body = text.slice(at, text.indexOf('\n}\n', at));
+    for (const m of body.matchAll(/^\s*((?:"\w+"(?:,\s*)?)+)\s*->/gm)) for (const n of m[1].matchAll(/"(\w+)"/g)) types.get('View')?.props.add(n[1]);
+  }
   return types;
+}
+
+/** The text up to the parenthesis closing the one before `start`, and the text after it. */
+function parenthesized(line: string, start: number): [string, string] {
+  let depth = 1;
+  for (let i = start; i < line.length; i++) {
+    if (line[i] === '(') depth++;
+    else if (line[i] === ')' && --depth === 0) return [line.slice(start, i), line.slice(i + 1)];
+  }
+  return [line.slice(start), ''];
 }
 
 function add(type: KitType, name: string, member: KitMember) {
@@ -113,6 +137,25 @@ export class CoreKotlin implements KotlinCore {
 
   type(_t: ts.Type): string | null { return null; }
 
+  has(name: string): boolean {
+    return this.index.has(name);
+  }
+
+  isKitView(name: string): boolean {
+    return kitExtends(this.index, name, 'View');
+  }
+
+  kitMember(owner: string, name: string): KitMember | null {
+    return kitMember(this.index, owner, name);
+  }
+
+  /** Whether `target.method` is a method the kit declares on target's class (an optional call of it is a plain call). */
+  isKitMethod(callee: ts.Expression): boolean {
+    if (!ts.isPropertyAccessExpression(callee)) return false;
+    const owner = this.owner(callee.expression);
+    return !!owner && !owner.isStatic && kitMember(this.index, owner.name, callee.name.text)?.kind === 'func';
+  }
+
   owner(e: ts.Expression): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
     // A namespace core nests in a static owner (`Utils.layout`, `Application.android`) is the kit object `UtilsLayout`.
@@ -131,11 +174,59 @@ export class CoreKotlin implements KotlinCore {
       }
       if (sym && sym.flags & ts.SymbolFlags.Alias) return null;
     }
-    const type = c.getNonNullableType(c.getTypeAtLocation(e));
+    let type = c.getNonNullableType(c.getTypeAtLocation(e));
+    // `View & { extra?: … }`: the core class.
+    if (type.isIntersection()) type = type.types.find((u) => (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && isCoreDeclaration(u.getSymbol()?.declarations?.[0])) ?? type;
     const sym = type.getSymbol();
+    const mixin = this.t.mixinOf(sym);
+    if (mixin) return { name: mixin, isStatic: false };
+    // An interface extending a core class (`interface MenuView extends View`): that class.
+    if (sym && sym.flags & ts.SymbolFlags.Interface && !isCoreDeclaration(sym.declarations?.[0]) && type.isClassOrInterface()) {
+      const base = c.getBaseTypes(type as ts.InterfaceType).map((b) => b.getSymbol()).find((b) => b && b.flags & ts.SymbolFlags.Class && isCoreDeclaration(b.declarations?.[0]));
+      if (base) return { name: KIT_NAMES_ANDROID[base.name] ?? base.name, isStatic: false };
+    }
     if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
     if (this.t.type(type, e) === 'EventData') return null;
-    return { name: sym.name, isStatic: false };
+    return { name: KIT_NAMES_ANDROID[sym.name] ?? sym.name, isStatic: false };
+  }
+
+  /** A core member read through a class of the app or a plugin that extends a core class (`this.isPassThroughParentEnabled` in a GridLayout subclass). */
+  private inheritedOwner(target: ts.Expression, name: ts.MemberName): { name: string; isStatic: boolean } | null {
+    const c = this.t.checker;
+    const decl = c.getSymbolAtLocation(name)?.valueDeclaration;
+    if (!decl || !isCoreDeclaration(decl)) return null;
+    const cls = c.getNonNullableType(c.getTypeAtLocation(target)).getSymbol()?.valueDeclaration;
+    const root = cls && ts.isClassLike(cls) && !cls.getSourceFile().isDeclarationFile ? this.t.kitRootOf(cls) : null;
+    return root ? { name: root, isStatic: false } : null;
+  }
+
+  /** A member a mixin class declares: the extension it becomes has it by name. */
+  private mixinOwn(name: ts.MemberName): boolean {
+    const decl = this.t.checker.getSymbolAtLocation(name)?.valueDeclaration;
+    return !!decl && ts.isClassDeclaration(decl.parent) && !!this.t.mixinOf(this.t.checker.getSymbolAtLocation(decl.parent.name!));
+  }
+
+  /**
+   * `on`/`off`/`once` with a named function: a function value made once per
+   * evaluation has no identity across them, so the kit matches a listener by
+   * key, here the declaration the function comes from.
+   */
+  private listenerArgs(e: ts.CallExpression, m: KitMember): string[] | null {
+    const name = (e.expression as ts.PropertyAccessExpression).name.text;
+    if (!['on', 'once', 'off', 'addEventListener', 'removeEventListener'].includes(name) || !/\bkey: Any\?/.test(m.params ?? '')) return null;
+    const [event, callback, thisArg] = e.arguments;
+    if (!event || !callback) return null;
+    const t = this.t;
+    const sym = ts.isIdentifier(callback) || ts.isPropertyAccessExpression(callback) ? t.resolve(ts.isIdentifier(callback) ? callback : callback.name) : undefined;
+    const decl = sym?.valueDeclaration;
+    const named = decl && (ts.isFunctionDeclaration(decl) || ts.isMethodDeclaration(decl) || (ts.isPropertyDeclaration(decl) && !!decl.initializer && ts.isArrowFunction(decl.initializer))
+      || (ts.isVariableDeclaration(decl) && !!(decl.parent.flags & ts.NodeFlags.Const) && !!decl.initializer && (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))));
+    const key = named ? kotlinString(`${decl!.getSourceFile().fileName.split('/').pop()}:${decl!.getStart()}`) : 'null';
+    // The key goes in the `key` parameter; any between (`once` of addEventListener) take their defaults.
+    const params = splitTopLevel(m.params ?? '');
+    const at = params.findIndex((p) => /^key\s*:/.test(p));
+    const between = params.slice(3, at).map((p) => /=\s*(.+)$/.exec(p)?.[1].trim() ?? 'null');
+    return [t.str(event), t.coerce(callback, '(EventData) -> Unit'), thisArg ? t.coerce(thisArg, 'Any?') : 'null', ...between, key];
   }
 
   private member(owner: string, name: string, e: ts.Node): KitMember {
@@ -144,11 +235,14 @@ export class CoreKotlin implements KotlinCore {
     return m;
   }
 
+  /** A view, or a view's `style`: properties by name. */
   private isView(owner: string): boolean {
-    return kitExtends(this.index, owner, 'View');
+    return owner === 'Style' || kitExtends(this.index, owner, 'View');
   }
 
   private isViewProperty(owner: string, name: string): boolean {
+    // A style property applies to any view; the kit's classes each apply their own.
+    if (owner === 'Style') return [...this.index.values()].some((t) => kitExtends(this.index, t.name, 'View') && t.props.has(name));
     for (let t = this.index.get(owner); t; t = t.base ? this.index.get(t.base.replace(/\(.*$/, '')) : undefined) if (t.props.has(name)) return true;
     return false;
   }
@@ -156,11 +250,13 @@ export class CoreKotlin implements KotlinCore {
   property(e: ts.PropertyAccessExpression): string | null {
     const constant = this.constant(e);
     if (constant !== null) return constant;
-    const owner = this.owner(e.expression);
+    const owner = this.mixinOwn(e.name) ? null : this.owner(e.expression) ?? this.inheritedOwner(e.expression, e.name);
     if (!owner) return null;
     const t = this.t;
     const name = e.name.text;
-    const recv = owner.isStatic ? owner.name : t.expr(e.expression);
+    const recv = owner.isStatic ? owner.name : this.receiver(e.expression, e);
+    // The other platform's native view: undefined, as on Android.
+    if (!owner.isStatic && name === 'ios' && this.isView(owner.name)) return 'null';
     if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name)) {
       const native = t.typeOf(e);
       return native === 'Any?' ? `${recv}.nativeView` : `(${recv}.nativeView as ${native})`;
@@ -170,7 +266,18 @@ export class CoreKotlin implements KotlinCore {
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
     }
     const m = this.member(owner.name, name, e);
+    // A method read as a value (`typeof view.getSafeAreaInsets === 'function'`): bound to its object.
+    if (m.kind === 'func' && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return `${recv}::${name}`;
     return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e));
+  }
+
+  /** A core-typed receiver's code: unwrapped where it is nullable and the access is not an optional one (code checked without strictNullChecks). */
+  private receiver(target: ts.Expression, access: ts.PropertyAccessExpression): string {
+    const code = this.t.expr(target);
+    if (code === 'super' || code === 'this' || code.endsWith('!!')) return code;
+    const nullable = this.t.typeOf(target).endsWith('?');
+    if (access.questionDotToken || (access.flags & ts.NodeFlags.OptionalChain && nullable)) return `${code}?`;
+    return nullable ? `${code}!!` : code;
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
@@ -184,18 +291,18 @@ export class CoreKotlin implements KotlinCore {
   }
 
   lvalue(e: ts.PropertyAccessExpression): string | null {
-    const owner = this.owner(e.expression);
+    const owner = this.mixinOwn(e.name) ? null : this.owner(e.expression) ?? this.inheritedOwner(e.expression, e.name);
     if (!owner) return null;
     const m = kitMember(this.index, owner.name, e.name.text);
     return m ? `${owner.isStatic ? owner.name : this.t.expr(e.expression)}.${e.name.text}` : null;
   }
 
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
-    const owner = this.owner(left.expression);
+    const owner = this.mixinOwn(left.name) ? null : this.owner(left.expression) ?? this.inheritedOwner(left.expression, left.name);
     if (!owner) return null;
     const t = this.t;
     const name = left.name.text;
-    const recv = owner.isStatic ? owner.name : t.expr(left.expression);
+    const recv = owner.isStatic ? owner.name : this.receiver(left.expression, left);
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
       if (!this.isViewProperty(owner.name, name)) throw t.error(left, `${owner.name}.${name} (not a property kit-android applies)`);
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
@@ -213,14 +320,20 @@ export class CoreKotlin implements KotlinCore {
     if (e.expression.getText() === 'CoreTypes.AnimationCurve.cubicBezier' && isCoreDeclaration(this.t.resolve(e.expression.name)?.declarations?.[0])) {
       return `CubicBezierAnimationCurve(${e.arguments.map((a) => this.t.coerce(a, 'Double')).join(', ')})`;
     }
-    const owner = this.owner(e.expression.expression);
+    const owner = this.mixinOwn(e.expression.name) ? null : this.owner(e.expression.expression) ?? this.inheritedOwner(e.expression.expression, e.expression.name);
     if (!owner) return null;
     const t = this.t;
     const name = e.expression.name.text;
     const m = this.member(owner.name, name, e.expression);
-    const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression);
+    const recv = owner.isStatic ? owner.name : this.receiver(e.expression.expression, e.expression);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
-    const args = SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e);
+    const listener = this.listenerArgs(e, m);
+    const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e));
+    // A super call names every argument: Kotlin does not fill in defaults there.
+    if (recv === 'super') {
+      const params = (m.params ?? '').trim() ? splitTopLevel(m.params!) : [];
+      for (let k = args.length; k < params.length; k++) args.push(/=\s*(.+)$/.exec(params[k])?.[1].trim() ?? 'null');
+    }
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e), keepsNullable(e));
   }
 

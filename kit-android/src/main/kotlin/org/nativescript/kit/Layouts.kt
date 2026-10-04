@@ -10,11 +10,45 @@ import org.nativescript.widgets.LayoutBase as NativeLayoutBase
 
 /** `ContainerView`: layouts leave window insets to the page unless told otherwise. */
 open class ContainerView : View() {
-    protected open val androidOverflowEdge: Int get() = NativeLayoutBase.OverflowEdgeIgnore
+    /** `androidOverflowEdge`'s default for the class: `ignore`, a page's `none`. */
+    protected open val defaultOverflowEdge: Int get() = NativeLayoutBase.OverflowEdgeIgnore
 
     override fun initNativeView() {
         super.initNativeView()
-        (nativeView as? NativeLayoutBase)?.setOverflowEdge(androidOverflowEdge)
+        (nativeView as? NativeLayoutBase)?.setOverflowEdge(defaultOverflowEdge)
+    }
+
+    override fun setProperty(name: String, value: Any?) {
+        when (name) {
+            "androidOverflowEdge" -> {
+                val edge = if (value == null) defaultOverflowEdge else overflowEdge(value)
+                if (edge != null) (nativeView as? NativeLayoutBase)?.setOverflowEdge(edge)
+            }
+            else -> super.setProperty(name, value)
+        }
+    }
+
+    private companion object {
+        // Core's own values (view/index.android), as it passes them to the widgets' setOverflowEdge.
+        val edges = mapOf(
+            "none" to 0, "left" to (1 shl 1), "top" to (1 shl 2), "right" to (1 shl 3), "bottom" to (1 shl 4), "dont-apply" to (1 shl 5),
+            "left-dont-consume" to (1 shl 6), "top-dont-consume" to (1 shl 7), "right-dont-consume" to (1 shl 8), "bottom-dont-consume" to (1 shl 9),
+            "all-but-left" to (1 shl 10), "all-but-top" to (1 shl 11), "all-but-right" to (1 shl 12), "all-but-bottom" to (1 shl 13),
+        )
+
+        /** `androidOverflowEdgeProperty.setNative`: `none`, `ignore`, or edges joined by commas (`dont-apply` wins). */
+        fun overflowEdge(value: Any?): Int? {
+            val text = value as? String ?: return null
+            if (text == "ignore") return NativeLayoutBase.OverflowEdgeIgnore
+            if (text == "none") return NativeLayoutBase.OverflowEdgeNone
+            var result = 0
+            for (raw in text.split(",")) {
+                val edge = edges[raw.trim()] ?: continue
+                if (edge == 1 shl 5) return edge
+                result = result or edge
+            }
+            return if (result == 0) null else result
+        }
     }
 }
 
@@ -113,8 +147,15 @@ abstract class LayoutBase : ContainerView(), RegionHost {
     }
 
     override fun setProperty(name: String, value: Any?) {
-        if (name == "isPassThroughParentEnabled") (nativeView as NativeLayoutBase).passThroughParent = toBool(value) ?: false
-        else super.setProperty(name, value)
+        when (name) {
+            "isPassThroughParentEnabled" -> (nativeView as NativeLayoutBase).passThroughParent = toBool(value) ?: false
+            "clipToBounds" -> if (CorePatches.clipToBoundsChildren) {
+                val clip = toBool(value) ?: true
+                group.clipChildren = clip
+                group.clipToPadding = clip
+            }
+            else -> super.setProperty(name, value)
+        }
     }
 
     override fun applyPadding() {
@@ -344,8 +385,52 @@ open class ScrollView : ContentView() {
         when (name) {
             "scrollBarIndicatorVisible" -> nativeView.isVerticalScrollBarEnabled = toBool(value) ?: true
             "isScrollEnabled" -> (nativeView as VerticalScrollView).setScrollEnabled(toBool(value) ?: true)
+            // An iOS property: Android lays the content out without it.
+            "iosContentInsetAdjustmentBehavior" -> {}
             else -> super.setProperty(name, value)
         }
+    }
+
+    override fun defaultValue(name: String): Any? = if (name == "iosContentInsetAdjustmentBehavior") "never" else super.defaultValue(name)
+
+    private val isScrollEnabled: Boolean get() = toBool(applied["isScrollEnabled"]) ?: true
+
+    val horizontalOffset: Double get() = nativeView.scrollX / Layout.density.toDouble()
+    val verticalOffset: Double get() = nativeView.scrollY / Layout.density.toDouble()
+    val scrollableWidth: Double get() = 0.0
+    val scrollableHeight: Double get() = (nativeView as VerticalScrollView).scrollableLength / Layout.density.toDouble()
+
+    /** `scrollToVerticalOffset(value, animated)`: in dips, as core scrolls the widgets' view. */
+    fun scrollToVerticalOffset(value: Double, animated: Boolean? = null) {
+        if (!isScrollEnabled) return
+        val px = (value * Layout.density).toInt()
+        val view = nativeView as VerticalScrollView
+        if (animated == true) view.smoothScrollTo(0, px) else view.scrollTo(0, px)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun scrollToHorizontalOffset(value: Double, animated: Boolean? = null) {}
+
+    private var scrollListener: android.view.ViewTreeObserver.OnScrollChangedListener? = null
+    private var lastScrollX = -1
+    private var lastScrollY = -1
+
+    /** A `scroll` listener: the native view's scroll changes are reported, once per new position. */
+    override fun eventSubscribed(event: String) {
+        if (event != "scroll" || scrollListener != null) return
+        val listener = android.view.ViewTreeObserver.OnScrollChangedListener { onScrollChanged() }
+        scrollListener = listener
+        nativeView.viewTreeObserver.addOnScrollChangedListener(listener)
+    }
+
+    private fun onScrollChanged() {
+        val x = nativeView.scrollX
+        val y = nativeView.scrollY
+        if (x == lastScrollX && y == lastScrollY) return
+        lastScrollX = x
+        lastScrollY = y
+        val density = Layout.density.toDouble()
+        notify(JSObject("object" to this, "eventName" to "scroll", "scrollX" to x / density, "scrollY" to y / density))
     }
 }
 

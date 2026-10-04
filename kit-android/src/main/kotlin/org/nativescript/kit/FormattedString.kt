@@ -16,16 +16,38 @@ import android.text.style.UnderlineSpan
  * style reaches the spans by inheritance; a change to any span re-renders
  * the text view's spannable text.
  */
-open class FormattedString : View() {
+open class FormattedString : View(), RegionHost {
 
     internal val spans = mutableListOf<Span>()
+
+    /** Spans in template order: static ones and the runs `if`/`for` regions own. */
+    private val entries = mutableListOf<RegionPart>()
 
     internal val textBase: TextBase? get() = parent as? TextBase
 
     override fun addChild(child: View) {
         val span = child as? Span ?: return
+        entries.add(RegionPart.Child(span))
         spans.add(span)
         addView(span)
+        changed()
+    }
+
+    fun addRegion(): Region {
+        val region = Region(this)
+        entries.add(RegionPart.Nested(region))
+        return region
+    }
+
+    /** A region's spans changed: spans that left are removed, new ones join, and the text rebuilds once. */
+    override fun regionChanged(region: Region) {
+        val next = entries.flatMap { it.views }.filterIsInstance<Span>()
+        val kept = next.toHashSet()
+        for (span in spans) if (span !in kept) removeView(span)
+        val existing = spans.toHashSet()
+        spans.clear()
+        spans.addAll(next)
+        for (span in next) if (span !in existing) addView(span)
         changed()
     }
 
