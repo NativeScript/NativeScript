@@ -1,4 +1,5 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
+import type { Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
 /** ListView attributes that `bind` takes rather than `set`. */
@@ -12,6 +13,7 @@ const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
  * templates.
  */
 export interface RenderOptions {
+  framework?: string;
   /**
    * Properties of a layout the navigator puts around a routed page's content
    * (react-nativescript-navigation's flexbox), or none.
@@ -21,6 +23,27 @@ export interface RenderOptions {
 
 export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>, options: RenderOptions = {}): string[] {
   const lines: string[] = [];
+  const framework = (options.framework ?? 'octane') as Framework;
+  // The order each framework applies bindings and inserts views in, as codegen.ts does for Swift.
+  const postOrder = framework === 'vue' || framework === 'svelte' || framework === 'react';
+  const deferBindings = framework === 'solid' || framework === 'angular';
+  const insertion = framework === 'angular' ? 'created' : framework === 'svelte' ? 'mounted' : 'built';
+  type Line = { depth: number; text: string };
+  const templates: { bindings: Line[]; inserts: Line[] }[] = [];
+  /** A template's views and structure, then its deferred inserts and bindings. */
+  const template = (depth: number, body: () => void) => {
+    templates.push({ bindings: [], inserts: [] });
+    body();
+    const t = templates.pop()!;
+    for (const d of [...t.inserts, ...t.bindings]) say(d.depth, d.text);
+  };
+  /** A lambda that renders content in the scope its framework orders it in. */
+  const scoped = (kind: 'template' | 'region') => {
+    if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? 'EffectOrder.component {' : null;
+    if (framework === 'angular') return kind === 'template' ? 'EffectOrder.view {' : 'EffectOrder.embedded(__view) {';
+    if (framework === 'solid') return kind === 'template' ? 'EffectOrder.solid {' : 'EffectOrder.deeper {';
+    return null;
+  };
   let n = 0;
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
@@ -29,31 +52,45 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
     `this.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
 
+  const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
+  /** Puts a view into its container or region at the point its framework inserts it. */
+  const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
+    const text = parent ? `${parent}.addChild(${v})` : region ? `${region}.attach(${v})` : null;
+    if (!text) return;
+    if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
+    if ((insertion === 'created') === (at === 'created')) say(depth, text);
+  };
   const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${kotlinString(a.value)}`);
       else say(depth, `${v}.set(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
     } else if (a.name === 'class') {
-      say(depth, `Effect { jsReport { ${v}.className = ${call(a.method, loops)} } }`);
+      binding(depth, `Effect { jsReport { ${v}.className = ${call(a.method, loops)} } }`);
     } else {
-      say(depth, `Effect { jsReport { ${v}.set(${kotlinString(a.name)}, ${call(a.method, loops)}) } }`);
+      binding(depth, `Effect { jsReport { ${v}.set(${kotlinString(a.name)}, ${call(a.method, loops)}) } }`);
     }
   };
 
   /** Emits the nodes into the container `parent`; returns the views made at this level when `collect` is set. */
-  const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null) => {
+  const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
     for (const node of nodes) {
       if (node.kind === 'element' || node.kind === 'component') {
         const v = `v${n++}`;
         if (node.kind === 'element' && node.tag === 'Frame' && node.attrs.some((a) => a.name === 'router')) {
           say(depth, `val ${v} = Router.shared.outlet()`);
+          attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
           say(depth, `val ${v} = ${node.tag}()`);
           const isList = node.tag === 'ListView';
-          for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
-          for (const e of node.events) say(depth, `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`);
+          const props = () => {
+            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
+            for (const e of node.events) say(depth, `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`);
+          };
+          if (isList || !postOrder) props();
+          attach(depth, v, parent, region, 'created');
           if (isList) list(node, depth, loops, v);
           else emit(node.children, depth, loops, v, null);
+          if (!isList && postOrder) props();
         } else {
           const info = components.get(node.name);
           if (!info) throw new Error(`${c.name}: <${node.name}> is not a component`);
@@ -76,27 +113,39 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value -> jsReport { ${call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`])} } }`);
             else say(depth, `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`);
           }
+          attach(depth, v, parent, region, 'created');
         }
-        if (parent) say(depth, `${parent}.addChild(${v})`);
+        attach(depth, v, parent, region, 'built');
         collect?.push(v);
         continue;
       }
       if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
-      const region = parent ? `${parent}.addRegion()` : null;
-      if (!region) throw new Error(`${c.name}: an if/for at the root of a template`);
+      if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
+      // A framework that inserts top-down puts a branch's views in place as it builds them.
+      const live = insertion !== 'built' ? `r${n++}` : null;
+      if (live && insertion === 'mounted' && templates.length) {
+        say(depth, `val ${live} = Region(null)`);
+        templates.at(-1)!.inserts.push({ depth, text: `${parent}.addRegion(${live})` });
+      } else if (live) say(depth, `val ${live} = ${parent}.addRegion()`);
+      const host = live ?? `${parent}.addRegion()`;
       if (node.kind === 'if') {
         const which = node.branches.map((b, i) => (b.cond ? `if (${call(b.cond, loops)}) ${i} else ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
-        say(depth, `Choose(${region}, { ${which} }) { branch ->`);
-        say(depth + 1, 'when (branch) {');
+        say(depth, `Choose(${host}, { ${which} }) { branch ->`);
+        const wrap = scoped('region');
+        const d = wrap ? depth + 1 : depth;
+        if (wrap) say(depth + 1, wrap);
+        if (framework === 'angular' && node.branches.some((b) => hasRegion(b.body))) say(d + 1, 'val __view = EffectOrder.current');
+        say(d + 1, 'when (branch) {');
         node.branches.forEach((b, i) => {
-          say(depth + 2, `${i} -> {`);
+          say(d + 2, `${i} -> {`);
           const made: string[] = [];
-          emit(b.body, depth + 3, loops, null, made);
-          say(depth + 3, `listOf(${made.join(', ')})`);
-          say(depth + 2, '}');
+          template(d + 3, () => emit(b.body, d + 3, loops, null, made, live));
+          say(d + 3, `listOf(${made.join(', ')})`);
+          say(d + 2, '}');
         });
-        say(depth + 2, 'else -> listOf()');
-        say(depth + 1, '}');
+        say(d + 2, 'else -> listOf()');
+        say(d + 1, '}');
+        if (wrap) say(depth + 1, '}');
         say(depth, '}');
         continue;
       }
@@ -104,10 +153,15 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // A key may be any value (`:key="i"`); rows are kept by its string form.
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} -> jsKey(${call(node.key, inner)}) }` : `{ item, _ -> jsKey(item) }`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
-      say(depth, `For(${region}, { ${call(node.items, loops)}.elements }, ${key}) { ${ident(node.item)}, ${ident(node.index)} ->`);
+      say(depth, `For(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${ident(node.item)}, ${ident(node.index)} ->`);
+      const wrap = scoped('region');
+      const d = wrap ? depth + 1 : depth;
+      if (wrap) say(depth + 1, wrap);
+      if (framework === 'angular' && hasRegion(node.body)) say(d + 1, 'val __view = EffectOrder.current');
       const made: string[] = [];
-      emit(node.body, depth + 1, inner, null, made);
-      say(depth + 1, `listOf(${made.join(', ')})`);
+      template(d + 1, () => emit(node.body, d + 1, inner, null, made, live));
+      say(d + 1, `listOf(${made.join(', ')})`);
+      if (wrap) say(depth + 1, '}');
       say(depth, '}');
     }
   };
@@ -118,18 +172,23 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     if (!items || !('method' in items)) throw new Error(`${c.name}: <ListView> needs bound items`);
     const selector = node.attrs.find((a) => a.name === 'itemTemplateSelector');
     const sel = selector && 'method' in selector ? `, selector = { item, index -> ${call(selector.method, loops, ['item', 'index'])} }` : '';
-    const templates = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
-    if (!templates.length) { say(depth, `${v}.bind(items = { ${call(items.method, loops)}.elements }${sel})`); return; }
+    const rowTemplates = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
+    if (!rowTemplates.length) { say(depth, `${v}.bind(items = { ${call(items.method, loops)}.elements }${sel})`); return; }
     const row = `row${n++}`;
-    const fallback = templates.find((t) => t.key === 'default') ?? templates[0];
-    say(depth, `${v}.bind(items = { ${call(items.method, loops)}.elements }, templates = listOf(${templates.map((t) => kotlinString(t.key)).join(', ')})${sel}) { key, ${row} ->`);
+    const fallback = rowTemplates.find((t) => t.key === 'default') ?? rowTemplates[0];
+    say(depth, `${v}.bind(items = { ${call(items.method, loops)}.elements }, templates = listOf(${rowTemplates.map((t) => kotlinString(t.key)).join(', ')})${sel}) { key, ${row} ->`);
     say(depth + 1, 'when (key) {');
-    for (const t of [...templates.filter((t) => t !== fallback), fallback]) {
+    for (const t of [...rowTemplates.filter((t) => t !== fallback), fallback]) {
       say(depth + 2, `${t === fallback ? 'else' : kotlinString(t.key)} -> {`);
+      const wrap = scoped('template');
+      const d = wrap ? depth + 3 : depth + 2;
+      if (wrap) say(depth + 3, wrap);
+      if (framework === 'angular' && hasRegion(t.body)) say(d + 1, 'val __view = EffectOrder.current');
       const made: string[] = [];
-      emit(t.body, depth + 3, [...loops, { item: t.item, index: t.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }], null, made);
+      template(d + 1, () => emit(t.body, d + 1, [...loops, { item: t.item, index: t.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }], null, made));
       if (made.length !== 1) throw new Error(`${c.name}: a ListView template needs exactly one root element`);
-      say(depth + 3, made[0]);
+      say(d + 1, made[0]);
+      if (wrap) say(depth + 3, '}');
       say(depth + 2, '}');
     }
     say(depth + 1, '}');
@@ -137,26 +196,40 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   };
 
   say(1, 'fun render(): View {');
+  const wrap = scoped('template');
+  const d = wrap ? 3 : 2;
+  if (wrap) say(2, `return ${wrap}`);
+  if (framework === 'angular' && hasRegion(c.template)) say(d, 'val __view = EffectOrder.current');
+  // Inside the scope lambda the result is its last expression.
+  const result = (v: string) => say(d, wrap ? v : `return ${v}`);
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
-    say(2, 'val page = Page()');
+    say(d, 'val page = Page()');
     if (options.screenContent) {
       const isBar = (n: TNode) => n.kind === 'element' && n.tag === 'ActionBar';
-      emit(c.template.filter(isBar), 2, [], 'page', null);
-      say(2, 'val content = FlexboxLayout()');
-      for (const [name, value] of Object.entries(options.screenContent)) say(2, `content.set(${kotlinString(name)}, ${kotlinString(value)})`);
-      emit(c.template.filter((n) => !isBar(n)), 2, [], 'content', null);
-      say(2, 'page.addChild(content)');
+      template(d, () => {
+        emit(c.template.filter(isBar), d, [], 'page', null);
+        say(d, 'val content = FlexboxLayout()');
+        for (const [name, value] of Object.entries(options.screenContent!)) say(d, `content.set(${kotlinString(name)}, ${kotlinString(value)})`);
+        emit(c.template.filter((n) => !isBar(n)), d, [], 'content', null);
+      });
+      say(d, 'page.addChild(content)');
     } else {
-      emit(c.template, 2, [], 'page', null);
+      template(d, () => emit(c.template, d, [], 'page', null));
     }
-    say(2, 'return page');
+    result('page');
   } else {
     const roots: string[] = [];
-    emit(c.template, 2, [], null, roots);
+    template(d, () => emit(c.template, d, [], null, roots));
     if (roots.length !== 1) throw new Error(`${c.name}: a template needs exactly one root element`);
-    say(2, `return ${roots[0]}`);
+    result(roots[0]);
   }
+  if (wrap) say(2, '}');
   say(1, '}');
   return lines;
+}
+
+/** Whether a template holds an `if` or `for` of its own (not inside a ListView row). */
+function hasRegion(nodes: TNode[]): boolean {
+  return nodes.some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && n.tag !== 'ListView' && hasRegion(n.children)));
 }

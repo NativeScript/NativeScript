@@ -48,7 +48,15 @@ abstract class LayoutBase : ContainerView(), RegionHost {
     protected open fun childAddedToNativeView(child: View) {}
 
     /** A run of children owned by an `if` or `for`, at this point in template order. */
-    fun addRegion(): Region = Region(this).also { entries.add(Entry.Run(it)) }
+    fun addRegion(): Region = addRegion(Region(null))
+
+    /** A region made before its container mounts it (Svelte's blocks), with what it already holds. */
+    fun addRegion(region: Region): Region {
+        region.host = this
+        entries.add(Entry.Run(region))
+        if (region.views.isNotEmpty()) regionChanged(region)
+        return region
+    }
 
     override fun regionChanged(region: Region) {
         val next = entries.flatMap {
