@@ -544,6 +544,8 @@ function angularLibraries(sources: string[], modulesDir: string, plugins: Plugin
         for (const m of text.matchAll(/from\s*['"](\.[^'"]+)['"]/g)) {
           const support = [resolve(dirname(file), m[1]) + '.ts', join(resolve(dirname(file), m[1]), 'index.ts')].find(existsSync);
           if (support && !files.includes(support) && !out.includes(support)) out.push(support);
+          // A component the code itself uses (a dialog it opens).
+          for (const [other, f] of components) if (f === support) queue.push(other);
         }
       }
     }

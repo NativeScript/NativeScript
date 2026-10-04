@@ -663,3 +663,7 @@ public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
 }
+
+/// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
+/// in a native app, so reading one gives undefined.
+public let jsGlobalThis = JSObject([])

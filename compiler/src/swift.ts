@@ -408,7 +408,7 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
-    if (this.untypedThis.has(n)) return 'Any?';
+    if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n))) return 'Any?';
     return this.type(this.checker.getTypeAtLocation(n), n);
   }
 
@@ -2364,6 +2364,8 @@ export class Translator implements AsyncTranslator {
     if (name === 'undefined') return 'nil';
     if (name === 'NaN') return 'Double.nan';
     if (name === 'Infinity') return 'Double.infinity';
+    if (name === 'Intl' && isLibDeclaration(this.resolve(e)?.declarations?.[0])) return 'jsIntl';
+    if (name === 'globalThis' && this.isGlobalThis(e)) return 'jsGlobalThis';
     const native = this.native.identifier(e);
     if (native) return native;
     const sym = this.resolve(e);
@@ -2792,6 +2794,17 @@ export class Translator implements AsyncTranslator {
   }
 
   /** The symbol a name refers to, through imports. */
+  private isGlobalThis(e: ts.Node): boolean {
+    const sym = this.checker.getSymbolAtLocation(e);
+    return !!sym && sym.name === 'globalThis' && !!(sym.flags & ts.SymbolFlags.ValueModule) && (sym.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile);
+  }
+
+  /** An injection token's name: a framework class by the name it is declared with (`NativeDialog` is `NativeDialogService`). */
+  private tokenName(e: ts.Expression): string {
+    const decl = this.resolve(e)?.declarations?.[0];
+    return decl && ts.isClassDeclaration(decl) && decl.name && decl.getSourceFile().fileName.startsWith('/__shims__/') ? decl.name.text : e.getText();
+  }
+
   resolve(n: ts.Node): ts.Symbol | undefined {
     const sym = this.checker.getSymbolAtLocation(n);
     return sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym) : sym;
@@ -2837,7 +2850,7 @@ export class Translator implements AsyncTranslator {
         return `${this.expr(target)}.value = ${this.coerce(a, signalValue())}`;
       }
       if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
-      if (owner === 'Injector' && method === 'get' && e.arguments[0] && ts.isIdentifier(e.arguments[0])) return injected(e.arguments[0].text);
+      if (owner === 'Injector' && method === 'get' && e.arguments[0] && ts.isIdentifier(e.arguments[0])) return injected(this.tokenName(e.arguments[0]));
       // `http.get<T>(url, options)`: the parsed body read as T.
       if (owner === 'HttpClient' && method === 'get') {
         const value = /^RxObservable<(.*)>$/.exec(this.typeOf(e))?.[1] ?? 'Any?';
@@ -2979,7 +2992,11 @@ export class Translator implements AsyncTranslator {
     if (name === '$state' && lib) return `stateSignal(${this.expr(arg(0))})`;
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
-    if (name === 'inject' && lib) return injected((ts.isExpressionWithTypeArguments(arg(0)) ? arg(0).expression : arg(0)).getText());
+    if (name === 'inject' && lib) {
+      const token = this.tokenName(ts.isExpressionWithTypeArguments(arg(0)) ? arg(0).expression : arg(0));
+      if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', this.typeOf(e));
+      return injected(token);
+    }
     if (name === 'effect' && lib) return `Effect.deferred(${this.callback(arg(0))})`;
     if (name === 'firstValueFrom' && lib) return `rxFirstValueFrom(${this.expr(arg(0))})`;
     if (name === 'registerElement' && lib) return '()';
@@ -3292,6 +3309,7 @@ export class Translator implements AsyncTranslator {
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         if (e.arguments.length > 1) throw this.error(e, `${name} with a thisArg`);
         const callback = e.arguments[0];
+        if (ts.isIdentifier(callback) && callback.text === 'Boolean' && this.isLibGlobal(callback)) return `${t}.${name}({ (__e: ${el}) -> Bool in jsTruthy(__e) })`;
         const result = this.checker.getTypeAtLocation(callback).getCallSignatures()[0]?.getReturnType();
         // A predicate returning any value (`labels.find((l) => GROUPS[l])`) decides by its truthiness.
         if (['filter', 'find', 'findIndex', 'findLast', 'findLastIndex', 'some', 'every'].includes(name) && result && !(result.flags & ts.TypeFlags.BooleanLike)) {
