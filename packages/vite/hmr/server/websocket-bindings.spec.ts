@@ -3,7 +3,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { parse as babelParse } from '@babel/parser';
 import { afterEach, describe, it, expect } from 'vitest';
-import { ensureNativeScriptModuleBindings } from './websocket-module-bindings.js';
+import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 import { rewriteImports } from './websocket-device-transform.js';
 
 // Helper to normalize whitespace for robust assertions
@@ -202,6 +202,56 @@ describe('ensureNativeScriptModuleBindings — package metadata NativeScript det
 		expect(text).toContain(`import { Zip } from '/ns/m/node_modules/@nativescript/zip?ns_worker=1'`);
 		expect(text).not.toContain('__nsVendorRequire');
 		expect(text).not.toContain('__nsVendorModule_');
+	});
+
+	it('routes node_modules re-exports to the /ns/m worker form with vendorImportsAsHttp, even without imports', () => {
+		// Left bare, a package's own `export * from './sub'` resolves through the
+		// import map to the deps-bundle shim, so the worker evaluates the bundle
+		// as well and holds two copies of the package.
+		const input = [`export * from "/node_modules/@nativescript/canvas/Canvas2D/Path2D/index.js?v=1a2b";`, `export { Helpers } from "/node_modules/@nativescript/canvas/helpers.js";`, `export * from "/node_modules/@nativescript/core/index.js";`, `export { local } from "./local";`].join('\n');
+
+		const worker = ensureNativeScriptModuleBindings(input, { vendorImportsAsHttp: true });
+		expect(worker).toContain(`export * from "/ns/m/node_modules/@nativescript/canvas/Canvas2D/Path2D/index.js?ns_worker=1";`);
+		expect(worker).toContain(`export { Helpers } from "/ns/m/node_modules/@nativescript/canvas/helpers.js?ns_worker=1";`);
+		expect(worker).toContain(`export * from "/node_modules/@nativescript/core/index.js";`);
+		expect(worker).toContain(`export { local } from "./local";`);
+
+		expect(ensureNativeScriptModuleBindings(input)).toBe(input);
+	});
+
+	it('names the resolved file for worker imports and re-exports alike, ignoring the authored spelling', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-bindings-'));
+		tempRoots.push(root);
+
+		const pkg = join(root, 'node_modules', '@nativescript', 'canvas');
+		mkdirSync(join(pkg, 'Canvas2D', 'Path2D'), { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app' }, null, 2));
+		writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@nativescript/canvas', main: './index', nativescript: { platforms: { ios: '6.0.0' } } }, null, 2));
+		writeFileSync(join(pkg, 'Canvas2D', 'Path2D', 'index.js'), `export class Path2D {}\n`);
+		writeFileSync(join(pkg, 'Canvas2D', 'index.js'), `export * from './Path2D';\n`);
+		writeFileSync(join(pkg, 'Canvas2D', 'context.js'), `import { Path2D } from './Path2D';\nexport const make = () => new Path2D();\n`);
+
+		process.chdir(root);
+
+		const served = `"/node_modules/@nativescript/canvas/Canvas2D/Path2D/index.js?v=1a2b"`;
+		const reExport = ensureNativeScriptModuleBindings(`export * from ${served};\n`, {
+			vendorImportsAsHttp: true,
+			resolvedSpecifierOverrides: getProcessCodeResolvedSpecifierOverrides('/node_modules/@nativescript/canvas/Canvas2D/index.js', root),
+		});
+		const importer = ensureNativeScriptModuleBindings(`import { Path2D } from ${served};\nexport const make = () => new Path2D();\n`, {
+			vendorImportsAsHttp: true,
+			resolvedSpecifierOverrides: getProcessCodeResolvedSpecifierOverrides('/node_modules/@nativescript/canvas/Canvas2D/context.js', root),
+		});
+
+		expect(reExport).toContain(`export * from "/ns/m/node_modules/@nativescript/canvas/Canvas2D/Path2D/index.js?ns_worker=1";`);
+		expect(importer).toContain(`import { Path2D } from "/ns/m/node_modules/@nativescript/canvas/Canvas2D/Path2D/index.js?ns_worker=1";`);
+
+		// The main realm keeps the authored spelling for the import map.
+		const mainImporter = ensureNativeScriptModuleBindings(`import { Path2D } from ${served};\nexport const make = () => new Path2D();\n`, {
+			preserveNonPluginVendorImports: true,
+			resolvedSpecifierOverrides: getProcessCodeResolvedSpecifierOverrides('/node_modules/@nativescript/canvas/Canvas2D/context.js', root),
+		});
+		expect(mainImporter).toContain(`from "@nativescript/canvas/Canvas2D/Path2D"`);
 	});
 
 	it('preserves exact bare runtime-plugin subpaths instead of collapsing them to the root package', () => {
