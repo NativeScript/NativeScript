@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { isStringRaw, iterationThrows } from './lang.ts';
+import { isStringRaw, iterationThrows, unsafeReceiver } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
@@ -104,6 +104,7 @@ export class Throws {
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.
       if (this.untyped(n.expression)) return true;
+      if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
       if (decl && ts.isGetAccessorDeclaration(decl) && decl.body && !isAssignmentTarget(n)) return this.fn(decl);
     }

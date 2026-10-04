@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
+import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -2442,8 +2442,20 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       return t === 'Any?' ? `${this.expr(target)}.${name}` : this.fromAny(`${this.expr(target)}.${name}`, t);
     }
+    const checked = this.receiver(target, name);
+    if (checked) return this.narrowed(e, `${checked}${dot}${ident(name)}`);
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
     return this.narrowed(e, `${this.expr(target)}${unwrap ? '!' : ''}${dot}${ident(name)}`);
+  }
+
+  /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
+  private receiver(target: ts.Expression, key: string): string | null {
+    const kind = unsafeReceiver(target, this.checker);
+    if (!kind) return null;
+    let x = target;
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x);
+    return value ? `(try jsUnwrap(${value}, ${swiftString(key)}${kind === 'null' ? ', null: true' : ''}))` : null;
   }
 
   private elementAccess(e: ts.ElementAccessExpression): string {
@@ -2707,7 +2719,8 @@ export class Translator implements AsyncTranslator {
       // A property holding an optional function, called (`this.onDone(x)` after a check TypeScript does not keep).
       const held = this.checker.getSymbolAtLocation(callee.name)?.valueDeclaration;
       const optionalFn = !!held && (ts.isPropertyDeclaration(held) || ts.isPropertySignature(held)) && isOptional(this.declaredTypeOf(callee) ?? '') && hasTopLevelArrow(this.declaredTypeOf(callee)!.replace(/^\((.*)\)\?$/, '$1'));
-      return `${this.expr(target)}${q}.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+      const checked = !callee.questionDotToken ? this.receiver(target, method) : null;
+      return `${checked ?? `${this.expr(target)}${q}`}.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
     if (ts.isElementAccessExpression(callee)) {

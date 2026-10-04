@@ -107,6 +107,29 @@ export function iteratedType(t: ts.Type, checker: ts.TypeChecker, where: ts.Node
   });
   const values = yielded.map((p) => p.getProperty('value')).filter((v): v is ts.Symbol => !!v).map((v) => checker.getTypeOfSymbolAtLocation(v, where));
   if (!values.length) return undefined;
-  // Values of several types are one union the checker already made, or untyped.
   return values.length === 1 ? values[0] : (checker as unknown as { getUnionType(types: ts.Type[]): ts.Type }).getUnionType(values);
+}
+
+/**
+ * A member read's receiver that TypeScript's types let through though it can
+ * be missing at run time: a non-null assertion (`x!.name`), or an array
+ * element of an object type (`items[i].name`, read past the end). The read
+ * throws JavaScript's TypeError there; which value is missing names it in the message.
+ */
+export function unsafeReceiver(target: ts.Expression, checker: ts.TypeChecker): 'undefined' | 'null' | null {
+  while (ts.isParenthesizedExpression(target)) target = target.expression;
+  const objectLike = (t: ts.Type) => !(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | ts.TypeFlags.ESSymbolLike | ts.TypeFlags.EnumLike | ts.TypeFlags.TypeParameter));
+  if (ts.isNonNullExpression(target)) {
+    const t = checker.getTypeAtLocation(target.expression);
+    const parts = t.isUnion() ? t.types : [t];
+    const undefinedOk = parts.some((p) => p.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
+    const nullOk = parts.some((p) => p.flags & ts.TypeFlags.Null);
+    if (!undefinedOk && !nullOk) return null;
+    return objectLike(checker.getNonNullableType(t)) ? (nullOk && !undefinedOk ? 'null' : 'undefined') : null;
+  }
+  if (ts.isElementAccessExpression(target) && !target.questionDotToken && checker.isArrayType(checker.getNonNullableType(checker.getTypeAtLocation(target.expression)))) {
+    const el = checker.getTypeAtLocation(target);
+    return objectLike(el) && !(el.isUnion() && el.types.some((p) => p.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null))) ? 'undefined' : null;
+  }
+  return null;
 }

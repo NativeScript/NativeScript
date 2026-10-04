@@ -128,3 +128,10 @@ public func jsCaught(_ error: Error) -> Any? {
     if let exception = error as? JSException { return exception.value }
     return JSError(error.localizedDescription)
 }
+
+/// A member read from a receiver its type promised (`x!.name`, `items[i].name`): JavaScript's TypeError when it is missing.
+@inline(__always)
+public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -> T {
+    guard let value else { throw JSException(JSTypeError("Cannot read properties of \(null ? "null" : "undefined") (reading '\(key)')")) }
+    return value
+}

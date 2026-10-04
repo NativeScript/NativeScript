@@ -236,10 +236,10 @@ public func jsIteratorOf(_ value: Any?) throws -> JSIterator<Any?> {
     case let s as String: return JSIteratorAdapter(jsIterator(s))
     case let set as JSSetProtocol:
         var values = set.jsAnyValues.makeIterator()
-        return JSIterator { values.next().map { Optional($0) } }
+        return JSIterator<Any?> { values.next() }
     case let map as JSMapProtocol:
         var entries = map.jsAnyEntries.makeIterator()
-        return JSIterator { entries.next().map { Optional(JSArray<Any?>([$0.0, $0.1])) } }
+        return JSIterator<Any?> { entries.next().map { JSArray<Any?>([$0.0, $0.1]) as Any? } }
     default:
         throw JSException(JSTypeError("\(jsToString(value)) is not iterable"))
     }

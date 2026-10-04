@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
+import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
 
 /**
  * TypeScript to Kotlin, typed by the checker, with JavaScript's semantics
@@ -1728,7 +1728,7 @@ export class Translator implements AsyncTranslator {
     // Inside an optional chain (`a?.b.c`) an undefined link ends the chain.
     const inChain = !!(e.flags & ts.NodeFlags.OptionalChain) && base.endsWith('?');
     const dot = e.questionDotToken || inChain ? '?.' : '.';
-    const recv = () => (base.endsWith('?') && !e.questionDotToken && !inChain ? `${this.expr(target)}!!` : this.expr(target));
+    const recv = () => this.receiver(target, name) ?? (base.endsWith('?') && !e.questionDotToken && !inChain ? `${this.expr(target)}!!` : this.expr(target));
     if (name === 'length' && this.isString(target)) {
       return e.questionDotToken ? `${this.expr(target)}?.length?.toDouble()` : `${recv()}.length.toDouble()`;
     }
@@ -1754,6 +1754,16 @@ export class Translator implements AsyncTranslator {
     const called = ts.isCallExpression(e.parent) && e.parent.expression === e;
     if (symbol && symbol.flags & ts.SymbolFlags.Method && !called) return `${recv()}::${ident(name)}`;
     return this.narrowed(e, `${recv()}${dot}${ident(name)}`);
+  }
+
+  /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
+  private receiver(target: ts.Expression, key: string): string | null {
+    const kind = unsafeReceiver(target, this.checker);
+    if (!kind) return null;
+    let x = target;
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x);
+    return value ? `jsUnwrap(${value}, ${kotlinString(key)}${kind === 'null' ? ', true' : ''})` : null;
   }
 
   private elementAccess(e: ts.ElementAccessExpression): string {
@@ -1959,7 +1969,8 @@ export class Translator implements AsyncTranslator {
       if (/^JS(AsyncIterator|AsyncGenerator)</.test(t) && ['next', 'return', 'throw'].includes(method)) {
         return `${this.expr(target)}${q}.${ident(method)}(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : method === 'throw' ? 'null' : ''})`;
       }
-      return `${this.expr(target)}${q === '!!' ? '!!' : q ? '?' : ''}.${ident(method)}(${this.args(e, this.arity(e)).join(', ')})`;
+      const checked = !callee.questionDotToken ? this.receiver(target, method) : null;
+      return `${checked ?? `${this.expr(target)}${q === '!!' ? '!!' : q ? '?' : ''}`}.${ident(method)}(${this.args(e, this.arity(e)).join(', ')})`;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
     let fn: ts.Expression = callee;
