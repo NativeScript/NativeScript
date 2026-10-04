@@ -308,7 +308,11 @@ private final class JSInspectContext {
         currentDepth = level
         var output = formatter(level)
         if let keyed {
-            for key in keys { output.append(formatProperty(key, keyed[jsKey: key], level)) }
+            let accessors = keyed as? JSAccessorKeyed
+            for key in keys {
+                if let kind = accessors?.jsAccessorKind(key) { output.append("\(jsIsIdentifierKey(key) ? key : jsInspectQuote(key)): [\(kind)]"); continue }
+                output.append(formatProperty(key, keyed[jsKey: key], level))
+            }
         }
         if id != nil { seen.removeLast() }
 

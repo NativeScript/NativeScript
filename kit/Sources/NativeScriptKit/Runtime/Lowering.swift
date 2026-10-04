@@ -70,6 +70,7 @@ public func jsField(_ object: Any?, _ key: String) -> Any? {
 
 /// `Object.keys` for what translated code holds: a typed object, an untyped one, a dictionary.
 public func jsKeysOf(_ value: Any?) -> [String] {
+    if let string = jsFlat(value) as? String { return (0..<string.utf16.count).map { String($0) } }
     if let dynamic = value as? JSDynamic { return dynamic.jsKeys }
     if let dictionary = value as? [String: Any] { return Array(dictionary.keys).sorted() }
     if let array = value as? JSArrayProtocol { return array.jsAnyElements.indices.map(String.init) }

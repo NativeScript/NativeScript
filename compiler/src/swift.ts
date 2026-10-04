@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { isObjectToStringCall, isStringRaw, neverDefined, templateParts } from './lang.ts';
+import { isObjectToStringCall, isStringRaw, jsKeyOrder, literalKey, neverDefined, templateParts } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -76,7 +76,7 @@ export class Translator implements AsyncTranslator {
   /** Named types translated code uses: an interface becomes a class only if something does. */
   readonly used = new Set<string>();
   private interfaces = new Map<string, { file: string; code: () => string }>();
-  private shapes = new Map<string, { name: string; fields: { name: string; type: string }[] }>();
+  private shapes = new Map<string, { name: string; fields: ShapeField[] }>();
   private shaping = new Set<ts.Type>();
   /** Angular `computed()` fields, translated as getters: `this.total()` reads `self.total`. */
   private computed = new Set<string>();
@@ -267,6 +267,7 @@ export class Translator implements AsyncTranslator {
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
       case 'WeakRef': return `JSWeakRef<${arg(0)}>`;
       case 'TemplateStringsArray': return 'JSArray<String>';
+      case 'PropertyDescriptor': case 'PropertyDescriptorMap': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
       case 'Reference':
         if (sym?.declarations?.[0] && /[\\/]interop\.d\.ts$/.test(sym.declarations[0].getSourceFile().fileName)) return 'InteropReference';
         break;
@@ -284,6 +285,8 @@ export class Translator implements AsyncTranslator {
     if (native) return native;
     const index = t.getStringIndexType() ?? t.getNumberIndexType();
     if (index && !t.getProperties().length) return `JSRecord<${this.type(index, where)}>`;
+    // A literal with computed keys beside named ones (`{ [k]: 1, a: 2 }`): its keys are known only when it runs.
+    if (index && sym?.getName() === '__object') return 'Any?';
     // A mapped type (`Partial<…>`, `{ [k in Side]: number }`) is read by computed keys: an untyped object.
     if (name && ['Partial', 'Required', 'Readonly', 'Pick', 'Omit'].includes(name) && t.aliasSymbol) {
       const of = t.aliasTypeArguments?.[0];
@@ -372,7 +375,23 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    if (this.untypedThis.has(n)) return 'Any?';
     return this.type(this.checker.getTypeAtLocation(n), n);
+  }
+
+  /** `this` nodes that read an untyped object (a method of an object literal typed `any`). */
+  private untypedThis = new Set<ts.Node>();
+
+  /** `this` as the class being translated, not a value a function rebinds it to. */
+  private isSelf(e: ts.Expression): boolean {
+    return e.kind === ts.SyntaxKind.ThisKeyword && !this.subst.has(e);
+  }
+
+  /** Runs `body` with `this` in `fn` (and in the arrow functions inside it) read as `name`. */
+  private withThis<T>(fn: ts.Node, name: string, untyped: boolean, body: () => T): T {
+    const nodes = thisNodes(fn);
+    for (const n of nodes) { this.subst.set(n, name); if (untyped) this.untypedThis.add(n); }
+    try { return body(); } finally { for (const n of nodes) { this.subst.delete(n); this.untypedThis.delete(n); } }
   }
 
   /** A declared type, before the narrowing the checker applies at a use. */
@@ -435,18 +454,24 @@ export class Translator implements AsyncTranslator {
       const order: string[] = [];
       if (where && ts.isObjectLiteralExpression(where)) {
         for (const p of where.properties) {
-          const keys = ts.isSpreadAssignment(p) ? this.checker.getTypeAtLocation(p.expression).getProperties().map((x) => x.name) : p.name ? [p.name.getText().replace(/^['"]|['"]$/g, '')] : [];
+          const keys = ts.isSpreadAssignment(p) ? this.checker.getTypeAtLocation(p.expression).getProperties().map((x) => x.name) : p.name ? [literalKey(p.name, this.checker) ?? p.name.getText()] : [];
           for (const k of keys) if (!order.includes(k)) order.push(k);
         }
       }
-      const rank = (n: string) => (order.includes(n) ? order.indexOf(n) : order.length);
+      const ordered = jsKeyOrder(order);
+      const rank = (n: string) => (ordered.includes(n) ? ordered.indexOf(n) : ordered.length);
       const props = [...t.getProperties()].sort((a, b) => rank(a.name) - rank(b.name));
-      const fields = props.map((p) => {
+      const literal = t.getSymbol()?.declarations?.[0];
+      const fields = props.map((p): ShapeField => {
         let pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (pt === 'Void' || pt === 'Never') pt = 'Any?';
+        // Accessors of the literal itself; a spread copies an accessor's value into a plain property.
+        const getter = p.declarations?.find((d) => ts.isGetAccessorDeclaration(d) && d.parent === literal);
+        const setter = p.declarations?.find((d) => ts.isSetAccessorDeclaration(d) && d.parent === literal);
+        if (getter || setter) return { name: p.name, type: getter ? pt : optionalType(pt), accessor: { get: !!getter, set: !!setter, throws: !!getter && this.throwsInfo.fn(getter as ts.GetAccessorDeclaration), value: pt } };
         return { name: p.name, type: p.flags & ts.SymbolFlags.Optional ? optionalType(pt) : pt };
       });
-      const key = fields.map((f) => `${f.name}:${f.type}`).sort().join(',');
+      const key = fields.map((f) => `${f.name}:${f.type}${f.accessor ? `:${f.accessor.get ? 'get' : ''}${f.accessor.set ? 'set' : ''}` : ''}`).sort().join(',');
       let s = this.shapes.get(key);
       if (!s) {
         let name = 'Object_' + (fields.map((f) => f.name.replace(/\W/g, '')).join('_') || 'empty');
@@ -617,7 +642,9 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
-  private objectClass(name: string, fields: { name: string; type: string }[], className: string | null): string {
+  private objectClass(name: string, allFields: ShapeField[], className: string | null): string {
+    if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
+    const fields = allFields;
     const lines = [`final class ${name}: JSDynamic {`];
     for (const f of fields) lines.push(`    var ${ident(f.name)}: ${f.type}`);
     // Keys in the order the literal that made this object wrote them, when not the declared order.
@@ -635,6 +662,46 @@ export class Translator implements AsyncTranslator {
     members[0] = `    var jsKeys: [String] {\n        let keys = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${ident(f.name)} != nil`).join('; ')}; default: return true }` : 'true'} }\n    }`;
     lines.push(...members);
     lines.push('}');
+    return lines.join('\n');
+  }
+
+  /**
+   * An object literal's class when it has accessors: each accessor runs a
+   * closure the literal gives, with the object as `this`.
+   */
+  private accessorClass(name: string, fields: ShapeField[]): string {
+    const lines = [`final class ${name}: JSDynamic, JSAccessorKeyed {`];
+    const params: string[] = [];
+    const inits: string[] = [];
+    for (const f of fields) {
+      const n = ident(f.name);
+      if (!f.accessor) {
+        lines.push(`    var ${n}: ${f.type}`);
+        params.push(`${n}: ${isFunctionType(f.type) ? '@escaping ' : ''}${f.type}${isOptional(f.type) ? ' = nil' : ''}`);
+        inits.push(`        self.${n} = ${n}`);
+        continue;
+      }
+      const a = f.accessor;
+      const getType = `(${name}) ${a.throws ? 'throws ' : ''}-> ${f.type}`;
+      const setType = `(${name}, ${a.value}) -> Void`;
+      if (a.get) { lines.push(`    private let __get_${f.name}: ${getType}`); params.push(`__get_${f.name}: @escaping ${getType}`); inits.push(`        self.__get_${f.name} = __get_${f.name}`); }
+      if (a.set) { lines.push(`    private let __set_${f.name}: ${setType}`); params.push(`__set_${f.name}: @escaping ${setType}`); inits.push(`        self.__set_${f.name} = __set_${f.name}`); }
+      const get = a.get ? `${a.throws ? 'try ' : ''}__get_${f.name}(self)` : 'nil';
+      if (a.set) lines.push(`    var ${n}: ${f.type} {`, `        get { ${get} }`, `        set { __set_${f.name}(self, newValue${a.get ? '' : '!'}) }`, '    }');
+      else lines.push(`    var ${n}: ${f.type} {`, `        get${a.throws ? ' throws' : ''} { ${get} }`, '    }');
+    }
+    lines.push('    private let jsOrder: [String]?');
+    lines.push(`    init(${[...params, 'jsOrder: [String]? = nil'].join(', ')}) {`, ...inits, '        self.jsOrder = jsOrder', '    }');
+    lines.push(`    var jsKeys: [String] { jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}] }`);
+    lines.push('    var jsClassName: String? { nil }');
+    lines.push('    subscript(jsKey key: String) -> Any? {', '        get {', '            switch key {');
+    for (const f of fields) lines.push(`            case ${swiftString(f.name)}: return ${f.accessor?.throws ? `(try? ${ident(f.name)}) ?? nil` : ident(f.name)}`);
+    lines.push('            default: return nil', '            }', '        }', '        set {', '            switch key {');
+    for (const f of fields) if (!f.accessor || f.accessor.set) lines.push(`            case ${swiftString(f.name)}: ${ident(f.name)} = ${this.fromAny('newValue', f.type)}`);
+    lines.push('            default: break', '            }', '        }', '    }');
+    lines.push('    func jsAccessorKind(_ key: String) -> String? {', '        switch key {');
+    for (const f of fields) if (f.accessor) lines.push(`        case ${swiftString(f.name)}: return ${swiftString(f.accessor.get && f.accessor.set ? 'Getter/Setter' : f.accessor.get ? 'Getter' : 'Setter')}`);
+    lines.push('        default: return nil', '        }', '    }', '}');
     return lines.join('\n');
   }
 
@@ -2137,7 +2204,7 @@ export class Translator implements AsyncTranslator {
 
   /** An assignable place: a component prop is its signal's value. */
   private lvalue(e: ts.Expression): string {
-    if (ts.isPropertyAccessExpression(e) && e.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(e.name.text)) return `self.${ident(e.name.text)}.value`;
+    if (ts.isPropertyAccessExpression(e) && this.isSelf(e.expression) && this.props.has(e.name.text)) return `self.${ident(e.name.text)}.value`;
     if (ts.isPropertyAccessExpression(e)) return `${this.expr(e.expression)}.${ident(e.name.text)}`;
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
     if (ts.isIdentifier(e)) return ident(this.declaredName(e));
@@ -2171,7 +2238,7 @@ export class Translator implements AsyncTranslator {
   private property(e: ts.PropertyAccessExpression): string {
     const name = e.name.text;
     const target = e.expression;
-    if (target.kind === ts.SyntaxKind.ThisKeyword && this.props.has(name)) return `self.${ident(name)}.value`;
+    if (this.isSelf(target) && this.props.has(name)) return `self.${ident(name)}.value`;
     if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (name === 'description' && this.typeOf(target) === 'JSSymbol') return `${this.expr(target)}.jsDescription`;
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
@@ -2409,8 +2476,8 @@ export class Translator implements AsyncTranslator {
     const callee = e.expression;
     // Reading a callable signal (Angular, Solid) (`count()`, an input, a computed field).
     if (!e.arguments.length && ['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(callee))) {
-      if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
-      if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
+      if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
+      if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
       return this.symbolName(callee) === 'Signal' ? this.expr(callee) : `${this.expr(callee)}.value`;
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
@@ -2419,7 +2486,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     if (isObjectToStringCall(callee, this.checker)) return `jsObjectToString(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : 'nil'})`;
     // A callback passed as a prop (`onTap: () => void`).
-    if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
+    if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) {
       const unwrap = this.declaredTypeOf(callee)?.endsWith('?') ? '!' : '';
       return `self.${ident(callee.name.text)}.value${unwrap}(${this.args(e, this.arity(e)).join(', ')})`;
     }
@@ -2444,7 +2511,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
-      if (this.isAny(target)) return `jsCall(jsGet(${this.expr(target)}, ${swiftString(method)})${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+      if (this.isAny(target)) return `jsCallMethod(${this.expr(target)}, ${swiftString(method)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
       if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
@@ -2678,8 +2745,18 @@ export class Translator implements AsyncTranslator {
           const read = this.fromAnyCode('jsField(__o, $0)', value);
           return `{ (__o: Any?) -> ${T()} in JSArray(jsKeysOf(__o).map { ${method === 'values' ? read : `($0, ${read})`} }) }(${this.expr(arg(0))})`;
         }
-        if (method === 'freeze') return this.expr(arg(0));
-        if (method === 'getOwnPropertySymbols') return `jsOwnPropertySymbols(${this.coerce(arg(0), 'Any?')})`;
+        if (method === 'freeze') return `jsFreeze(${this.expr(arg(0))})`;
+        if (method === 'seal' || method === 'preventExtensions') return `jsRestrict(${this.expr(arg(0))}, sealed: ${method === 'seal'})`;
+        const untyped: Record<string, string> = { isFrozen: 'jsIsFrozen', isSealed: 'jsIsSealed', isExtensible: 'jsIsExtensible', getOwnPropertySymbols: 'jsOwnPropertySymbols', getOwnPropertyNames: 'jsOwnPropertyNames' };
+        if (untyped[method]) return `${untyped[method]}(${this.coerce(arg(0), 'Any?')})`;
+        if (method === 'is') return `jsSameValue(${this.coerce(arg(0), 'Any?')}, ${this.coerce(arg(1), 'Any?')})`;
+        if (method === 'getOwnPropertyDescriptor') return `jsOwnPropertyDescriptor(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
+        if (method === 'fromEntries') return `jsObjectFromEntries(${this.iterable(arg(0))})`;
+        if (method === 'defineProperty') {
+          const d = arg(2);
+          const code = `try jsDefineProperty(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))}, ${ts.isObjectLiteralExpression(d) ? this.dynamicObject(d) : this.coerce(d, 'Any?')})`;
+          return T() === 'Any?' ? code : this.fromAnyCode(code, T(), true);
+        }
         if (method === 'assign') {
           // The target is an open JavaScript object: a literal there is untyped, so the sources' keys all land.
           const target = ts.isObjectLiteralExpression(arg(0)) ? this.dynamicObject(arg(0) as ts.ObjectLiteralExpression) : this.coerce(arg(0), 'Any?');
@@ -3067,7 +3144,8 @@ export class Translator implements AsyncTranslator {
         const operand = this.isBool(e.operand) && !this.maybeUndefined(e.operand) ? this.expr(e.operand) : this.cond(e.operand);
         return operand.startsWith('!') ? `!(${operand})` : `!${operand}`;
       }
-      case K.MinusToken: return ts.isNumericLiteral(e.operand) ? `-${this.expr(e.operand)}` : `-${this.toNumber(e.operand)}`;
+      // `-0` is negative zero; Swift reads the literal `-0` as an integer zero.
+      case K.MinusToken: return ts.isNumericLiteral(e.operand) ? (Number(e.operand.text) === 0 ? '-0.0' : `-${this.expr(e.operand)}`) : `-${this.toNumber(e.operand)}`;
       case K.PlusToken: return this.toNumber(e.operand);
       case K.TildeToken: return `jsBitNot(${this.toNumber(e.operand)})`;
       case K.PlusPlusToken: return `jsPreIncrement(&${this.lvalue(e.operand)})`;
@@ -3256,7 +3334,7 @@ export class Translator implements AsyncTranslator {
     if (name.startsWith('JSRecord<')) {
       const v = name.replace(/^JSRecord<(.*)>$/, '$1');
       const entries = e.properties.map((p) => {
-        if (ts.isPropertyAssignment(p)) return `(${swiftString(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${this.coerce(p.initializer, v)})`;
+        if (ts.isPropertyAssignment(p)) return `(${ts.isComputedPropertyName(p.name) ? this.propertyKey(p.name.expression) : swiftString(literalKey(p.name, this.checker) ?? p.name.getText())}, ${this.coerce(p.initializer, v)})`;
         if (ts.isShorthandPropertyAssignment(p)) return `(${swiftString(p.name.text)}, ${ident(p.name.text)})`;
         throw this.error(p, 'this member in a dictionary literal');
       });
@@ -3282,10 +3360,26 @@ export class Translator implements AsyncTranslator {
     } else throw this.error(e, `an object literal of type ${name}`);
     const given = new Map<string, string>();
     const spreadTemps: string[] = [];
+    // Methods that read `this` see the object through a weak reference the literal sets once it exists.
+    const self = e.properties.some((p) => ts.isMethodDeclaration(p) && thisNodes(p).length) ? this.fresh('__self') : null;
     for (const p of e.properties) {
       if (ts.isPropertyAssignment(p)) {
-        const key = p.name.getText().replace(/^['"]|['"]$/g, '');
+        const key = literalKey(p.name, this.checker) ?? p.name.getText();
         given.set(key, this.coerce(p.initializer, order.find((f) => f.name === key)?.type ?? 'Any?'));
+      } else if (ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)) {
+        const key = literalKey(p.name, this.checker) ?? p.name.getText();
+        const f = order.find((x) => x.name === key) as ShapeField | undefined;
+        if (!f?.accessor) throw this.error(p, 'an accessor in an object literal of this type');
+        if (ts.isGetAccessorDeclaration(p)) {
+          if (f.accessor.throws && f.accessor.set) throw this.error(p, 'a getter that throws beside a setter');
+          const body = this.withThis(p, '__this', false, () => this.functionBody(p, f.type, this.indent));
+          given.set(`__get_${key}`, `{ (__this: ${target}) ${f.accessor.throws ? 'throws ' : ''}-> ${f.type} in${body.slice(1)}`);
+        } else {
+          if (this.throwsInfo.fn(p)) throw this.error(p, 'a setter that throws');
+          const v = p.parameters[0].name as ts.Identifier;
+          const body = this.withThis(p, '__this', false, () => this.functionBody(p, 'Void', this.indent));
+          given.set(`__set_${key}`, `{ (__this: ${target}, ${ident(v.text)}: ${f.accessor.value}) -> Void in${body.slice(1)}`);
+        }
       } else if (ts.isShorthandPropertyAssignment(p)) given.set(p.name.text, this.narrowed(p.name, ident(p.name.text)));
       else if (ts.isSpreadAssignment(p)) {
         const src = this.expr(p.expression);
@@ -3301,22 +3395,31 @@ export class Translator implements AsyncTranslator {
         const fields = new Set(this.checker.getTypeAtLocation(p.expression).getProperties().map((x) => x.name));
         for (const f of order) if (fields.has(f.name)) given.set(f.name, `${src}.${ident(f.name)}`);
       } else if (ts.isMethodDeclaration(p)) {
-        given.set(p.name.getText(), `{ (${this.params(p, true)}) ${this.throwsInfo.fn(p) ? 'throws ' : ''}-> ${this.returnTypeOf(p)} in${this.functionBody(p, this.returnTypeOf(p), this.indent).slice(1)}`);
+        const ret = this.returnTypeOf(p);
+        const body = self ? this.withThis(p, `${self}!`, false, () => this.functionBody(p, ret, this.indent)) : this.functionBody(p, ret, this.indent);
+        given.set(literalKey(p.name, this.checker) ?? p.name.getText(), `{ (${this.params(p, true)}) ${this.throwsInfo.fn(p) ? 'throws ' : ''}-> ${ret} in${body.slice(1)}`);
       } else throw this.error(p, 'object member');
     }
     this.used.add(name);
     const written: string[] = [];
     for (const p of e.properties) {
-      const keys = ts.isSpreadAssignment(p) ? this.checker.getTypeAtLocation(p.expression).getProperties().map((x) => x.name) : p.name ? [p.name.getText().replace(/^['"]|['"]$/g, '')] : [];
+      const keys = ts.isSpreadAssignment(p) ? this.checker.getTypeAtLocation(p.expression).getProperties().map((x) => x.name) : p.name ? [literalKey(p.name, this.checker) ?? p.name.getText()] : [];
       for (const k of keys) if (!written.includes(k) && order.some((f) => f.name === k)) written.push(k);
     }
-    const declared = order.map((f) => f.name).filter((n) => written.includes(n));
-    const reorder = written.join() !== declared.join() ? `, jsOrder: [${written.map(swiftString).join(', ')}]` : '';
-    const args = order.filter((f) => given.has(f.name)).map((f) => `${ident((f as { label?: string }).label ?? f.name)}: ${given.get(f.name)}`).join(', ');
+    const inOrder = jsKeyOrder(written);
+    const declared = order.map((f) => f.name).filter((n) => inOrder.includes(n));
+    const reorder = inOrder.join() !== declared.join() ? `, jsOrder: [${inOrder.map(swiftString).join(', ')}]` : '';
+    const args = order.flatMap((f) => {
+      const a = (f as ShapeField).accessor;
+      if (a) return [...(a.get ? [`__get_${f.name}: ${given.get(`__get_${f.name}`)}`] : []), ...(a.set ? [`__set_${f.name}: ${given.get(`__set_${f.name}`)}`] : [])];
+      return given.has(f.name) ? [`${ident((f as { label?: string }).label ?? f.name)}: ${given.get(f.name)}`] : [];
+    }).join(', ');
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)})`;
-    if (!spreadTemps.length) return made;
+    if (!spreadTemps.length && !self) return made;
     const throws = spreadTemps.some((x) => /\btry\b/.test(x)) || /\btry\b/.test(made);
-    return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.join('; ')}; return ${throws && !/^try /.test(made) ? 'try ' : ''}${made} }()`;
+    const made2 = `${throws && !/^try /.test(made) ? 'try ' : ''}${made}`;
+    if (self) return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.map((x) => x + '; ').join('')}weak var ${self}: ${target}?; let __made = ${made2}; ${self} = __made; return __made }()`;
+    return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.join('; ')}; return ${made2} }()`;
   }
 
   /** An object literal typed `any`: a plain JavaScript object. */
@@ -3324,7 +3427,7 @@ export class Translator implements AsyncTranslator {
     const simple = e.properties.every((p) => (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name)) || ts.isShorthandPropertyAssignment(p));
     if (simple) {
       const entries = e.properties.map((p) => {
-        if (ts.isPropertyAssignment(p)) return `(${swiftString(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${ts.isObjectLiteralExpression(p.initializer) ? this.dynamicObject(p.initializer) : this.coerce(p.initializer, 'Any?')})`;
+        if (ts.isPropertyAssignment(p)) return `(${swiftString(literalKey(p.name, this.checker) ?? p.name.getText())}, ${ts.isObjectLiteralExpression(p.initializer) ? this.dynamicObject(p.initializer) : this.coerce(p.initializer, 'Any?')})`;
         const sh = p as ts.ShorthandPropertyAssignment;
         return `(${swiftString(sh.name.text)}, ${this.coerce(sh.name, 'Any?')} as Any?)`;
       });
@@ -3332,22 +3435,43 @@ export class Translator implements AsyncTranslator {
     }
     // Spreads, computed keys and methods: the object built key by key, in the literal's order.
     const o = this.fresh('__o');
-    const steps = e.properties.map((p) => {
-      if (ts.isSpreadAssignment(p)) return `${this.tryPrefix(p.expression)}jsObjectSpread(${o}, ${this.coerce(p.expression, 'Any?')})`;
-      if (ts.isShorthandPropertyAssignment(p)) return `${o}[${swiftString(p.name.text)}] = ${this.coerce(p.name, 'Any?')}`;
-      const key = (n: ts.PropertyName) => (ts.isComputedPropertyName(n) ? `${this.tryPrefix(n.expression)}${this.propertyKey(n.expression)}` : swiftString(n.getText().replace(/^['"]|['"]$/g, '')));
-      if (ts.isPropertyAssignment(p)) return `${o}[${key(p.name)}] = ${this.tryPrefix(p.initializer)}${this.coerce(p.initializer, 'Any?')}`;
-      if (ts.isMethodDeclaration(p)) {
-        const ret = this.returnTypeOf(p);
-        const fn = `{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`;
-        const type = `(${p.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${ret}`;
-        return `${o}[${key(p.name)}] = ${this.boxFunction(fn, type)}`;
+    const key = (n: ts.PropertyName) => (ts.isComputedPropertyName(n) ? `${this.tryPrefix(n.expression)}${this.propertyKey(n.expression)}` : swiftString(literalKey(n, this.checker) ?? n.getText()));
+    const accessorsDone = new Set<string>();
+    const steps = e.properties.flatMap((p) => {
+      if (ts.isSpreadAssignment(p)) return [`${this.tryPrefix(p.expression)}jsObjectSpread(${o}, ${this.coerce(p.expression, 'Any?')})`];
+      if (ts.isShorthandPropertyAssignment(p)) return [`${o}[${swiftString(p.name.text)}] = ${this.coerce(p.name, 'Any?')}`];
+      if (ts.isPropertyAssignment(p)) return [`${o}[${key(p.name)}] = ${this.tryPrefix(p.initializer)}${this.coerce(p.initializer, 'Any?')}`];
+      if (ts.isMethodDeclaration(p)) return [`${o}[${key(p.name)}] = ${this.untypedMethod(p)}`];
+      if (ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)) {
+        // A getter and a setter of one key make one property, where the first of them is.
+        const name = p.name.getText();
+        if (accessorsDone.has(name)) return [];
+        accessorsDone.add(name);
+        const pair = e.properties.filter((q): q is ts.AccessorDeclaration => (ts.isGetAccessorDeclaration(q) || ts.isSetAccessorDeclaration(q)) && q.name.getText() === name);
+        const g = pair.find(ts.isGetAccessorDeclaration), st = pair.find(ts.isSetAccessorDeclaration);
+        const get = g ? `get: { (__this: Any?) throws -> Any? in${this.withThis(g, '__this', true, () => this.functionBody(g, 'Any?', this.indent)).slice(1)}` : '';
+        const v = st && (st.parameters[0].name as ts.Identifier);
+        const set = st && v ? `set: { (__this: Any?, ${ident(v.text)}: Any?) throws -> Void in${this.withThis(st, '__this', true, () => this.functionBody(st, 'Void', this.indent)).slice(1)}` : '';
+        return [`try ${o}.defineProperty(${key(p.name)}, JSPropertyDescriptor(${[get, set, 'enumerable: true', 'configurable: true'].filter(Boolean).join(', ')}))`];
       }
       throw this.error(p, 'this member in an untyped object literal');
     });
     // Whether building the object throws (closures it holds throw on their own).
-    const throws = this.throwsInfo.expr(e);
+    const throws = this.throwsInfo.expr(e) || steps.some((x) => x.startsWith('try '));
     return `{ () ${throws ? 'throws ' : ''}-> JSObject in let ${o} = JSObject(); ${steps.join('; ')}; return ${o} }()`;
+  }
+
+  /** A method of an untyped object literal: a function value, or one taking `this` when its body reads it. */
+  private untypedMethod(p: ts.MethodDeclaration): string {
+    const ret = this.returnTypeOf(p);
+    const type = `(${p.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${ret}`;
+    if (!thisNodes(p).length) return this.boxFunction(`{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`, type);
+    const fn = functionParts(type)!;
+    const binds = fn.params.map((t, k) => `let ${ident((p.parameters[k].name as ts.Identifier).text)}: ${t} = ${this.fromAnyCode(`jsArg(__a, ${k})`, t, true)}`);
+    const body = this.withThis(p, '__this', true, () => this.functionBody(p, ret, this.indent + '    '));
+    const call = `try { () throws -> ${ret} in${body.slice(1)}()`;
+    const result = ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`;
+    return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${binds.join('; ')}${binds.length ? '; ' : ''}${result} } as JSMethod)`;
   }
 
   error(n: ts.Node | undefined, what: string): Error {
@@ -3399,6 +3523,21 @@ const LIB_CONSTANTS: Record<string, string> = {
   'Symbol.iterator': 'JSSymbol.iterator', 'Symbol.asyncIterator': 'JSSymbol.asyncIterator', 'Symbol.toPrimitive': 'JSSymbol.toPrimitive',
   'Symbol.toStringTag': 'JSSymbol.toStringTag', 'Symbol.hasInstance': 'JSSymbol.hasInstance',
 };
+
+/** A field of an object literal's class; an accessor runs closures the literal gives. */
+interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string } }
+
+/** The `this` nodes of a function, and of the arrow functions inside it. */
+function thisNodes(fn: ts.Node): ts.Node[] {
+  const out: ts.Node[] = [];
+  const visit = (n: ts.Node) => {
+    if (n.kind === ts.SyntaxKind.ThisKeyword) out.push(n);
+    if (n !== fn && (ts.isFunctionDeclaration(n) || ts.isFunctionExpression(n) || ts.isMethodDeclaration(n) || ts.isAccessor(n) || ts.isClassLike(n) || ts.isConstructorDeclaration(n))) return;
+    ts.forEachChild(n, visit);
+  };
+  visit(fn);
+  return out;
+}
 
 function isLibDeclaration(d: ts.Node | undefined): boolean {
   return !!d && /[\\/]typescript[\\/]lib[\\/]/.test(d.getSourceFile().fileName);

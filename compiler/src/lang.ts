@@ -37,3 +37,22 @@ export function isObjectToStringCall(callee: ts.Expression, checker: ts.TypeChec
   const owner = fn.expression.expression;
   return ts.isIdentifier(owner) && owner.text === 'Object' && !!checker.getSymbolAtLocation(owner)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
 }
+
+/** A property name as the key it makes: computed names only when the checker knows their literal value. */
+export function literalKey(name: ts.PropertyName, checker: ts.TypeChecker): string | null {
+  if (ts.isIdentifier(name) || ts.isPrivateIdentifier(name)) return name.text;
+  if (ts.isStringLiteral(name) || ts.isNoSubstitutionTemplateLiteral(name)) return name.text;
+  if (ts.isNumericLiteral(name)) return String(Number(name.text.replace(/_/g, '')));
+  if (ts.isComputedPropertyName(name)) {
+    const t = checker.getTypeAtLocation(name.expression);
+    if (t.isStringLiteral()) return t.value;
+    if (t.isNumberLiteral()) return String(t.value);
+  }
+  return null;
+}
+
+/** Keys in the order JavaScript enumerates an object's own keys: array indexes ascending, then the rest as written. */
+export function jsKeyOrder(keys: string[]): string[] {
+  const index = (k: string) => /^(0|[1-9]\d{0,9})$/.test(k) && Number(k) < 4294967295;
+  return [...keys.filter(index).sort((a, b) => Number(a) - Number(b)), ...keys.filter((k) => !index(k))];
+}

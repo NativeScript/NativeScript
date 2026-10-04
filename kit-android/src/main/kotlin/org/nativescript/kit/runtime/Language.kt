@@ -186,11 +186,161 @@ class JSWeakSet<T>() : JSWeakCollection {
 }
 
 /** `delete object[key]`. */
-fun jsDelete(target: Any?, key: String): Boolean = (jsBox(target) as? JSObject)?.delete(key) ?: true
+fun jsDelete(target: Any?, key: String): Boolean = when (val v = jsBox(target)) {
+    is JSObject -> if (v.delete(key)) true else throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>"))
+    is JSDynamic -> if (jsRestriction(v) >= 2 && key in v.jsKeys) throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>")) else true
+    else -> true
+}
 
 /** `{ ...source }` into an object literal being built: the source's own enumerable keys, symbols last. */
 fun jsObjectSpread(target: JSObject, source: Any?) {
     val dynamic = jsBox(source) as? JSDynamic ?: return
     for (key in dynamic.jsKeys) target[key] = dynamic.jsGet(key)
     if (dynamic is JSSymbolKeyed) for (key in dynamic.jsSymbolKeys) target[key] = dynamic.jsGet(key)
+}
+
+/** A property's slot when it is an accessor or its attributes are not all true. */
+class JSPropertySlot(
+    var get: ((Any?) -> Any?)? = null,
+    var set: ((Any?, Any?) -> Unit)? = null,
+    var isAccessor: Boolean = false,
+    var enumerable: Boolean = true,
+    var writable: Boolean = true,
+    var configurable: Boolean = true,
+) {
+    val isPlain: Boolean get() = !isAccessor && enumerable && writable && configurable
+}
+
+/** A property descriptor as `Object.defineProperty` reads it. */
+class JSPropertyDescriptor(
+    val value: Any? = null,
+    val hasValue: Boolean = false,
+    val get: ((Any?) -> Any?)? = null,
+    val set: ((Any?, Any?) -> Unit)? = null,
+    val enumerable: Boolean? = null,
+    val writable: Boolean? = null,
+    val configurable: Boolean? = null,
+) {
+    companion object {
+        /** A descriptor object script wrote (`{ value, enumerable, get() {…} }`). */
+        fun of(o: Any?): JSPropertyDescriptor {
+            val d = jsBox(o) as? JSDynamic ?: throw JSException(JSTypeError("Property description must be an object: ${jsToString(o)}"))
+            val has = { k: String -> jsHasKey(d, k) }
+            val g = if (has("get")) jsBox(d.jsGet("get"))?.let { jsReceiving(it) } else null
+            val s = if (has("set")) jsBox(d.jsGet("set"))?.let { jsReceiving(it) } else null
+            return JSPropertyDescriptor(
+                value = if (has("value")) d.jsGet("value") else null, hasValue = has("value"),
+                get = g?.let { f -> { self: Any? -> f(self, emptyArray()) } },
+                set = s?.let { f -> { self: Any?, v: Any? -> f(self, arrayOf(v)); Unit } },
+                enumerable = if (has("enumerable")) jsTruthy(d.jsGet("enumerable")) else null,
+                writable = if (has("writable")) jsTruthy(d.jsGet("writable")) else null,
+                configurable = if (has("configurable")) jsTruthy(d.jsGet("configurable")) else null,
+            )
+        }
+    }
+}
+
+/** A function value called with a receiver: a method sees it as `this`. */
+private fun jsReceiving(f: Any): (Any?, Array<out Any?>) -> Any? = when (f) {
+    is JSMethod -> { self, args -> f.call(self, args) }
+    is Function<*> -> { _, args -> jsCall(f, *args) }
+    else -> throw JSException(JSTypeError("Getter must be a function: ${jsInspect(f)}"))
+}
+
+/** A function that reads `this`: a method of an untyped object literal. */
+class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?>
+
+/** `object.method(args)` on an untyped object: a method sees the object as `this`. */
+fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
+    val f = jsGet(target, key)
+    if (f is JSMethod) return jsBox(f.call(target, args))
+    if (f is Function<*>) return jsCall(f, *args)
+    throw JSException(JSTypeError("${jsInspect(f)} is not a function"))
+}
+
+/** An object whose accessor properties print as `[Getter]`, `[Setter]` or `[Getter/Setter]`. */
+interface JSAccessorKeyed {
+    fun jsAccessorKind(key: String): String?
+}
+
+/** What inspect prints in place of an accessor's value. */
+class JSInspectAccessor(val kind: String)
+
+/** `Object.defineProperty(object, key, descriptor)`. */
+fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
+    val d = JSPropertyDescriptor.of(descriptor)
+    when (val v = jsBox(target)) {
+        is JSObject -> v.defineProperty(key, d)
+        is JSDynamic -> {
+            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
+            if (d.hasValue) v.jsSet(key, d.value)
+        }
+        else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
+    }
+    return target
+}
+
+/** `Object.getOwnPropertyDescriptor(object, key)`. */
+fun jsOwnPropertyDescriptor(target: Any?, key: String): Any? = when (val v = jsBox(target)) {
+    is JSObject -> v.descriptor(key)
+    is JSDynamic -> if (key !in v.jsKeys) null else {
+        val level = jsRestriction(v)
+        JSObject(listOf(Pair("value", v.jsGet(key)), Pair("writable", level < 3), Pair("enumerable", true), Pair("configurable", level < 2)))
+    }
+    else -> null
+}
+
+/** `Object.getOwnPropertyNames(value)`. */
+fun jsOwnPropertyNames(value: Any?): JSArray<String> = when (val v = jsBox(value)) {
+    is JSObject -> JSArray(ArrayList(v.ownPropertyNames))
+    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).map { it.toString() } + "length"))
+    is String -> JSArray(ArrayList(v.indices.map { it.toString() } + "length"))
+    else -> JSArray(ArrayList(jsKeysOf(v)))
+}
+
+/** How far `Object.preventExtensions`, `seal` or `freeze` closed an object other than a plain one. */
+private class JSRestriction(obj: Any, var level: Int) {
+    val ref = WeakReference(obj)
+}
+
+private val restricted = HashMap<Int, MutableList<JSRestriction>>()
+
+/** 0: open; 1: not extensible; 2: sealed; 3: frozen. */
+fun jsRestriction(obj: Any): Int = restricted[System.identityHashCode(obj)]?.firstOrNull { it.ref.get() === obj }?.level ?: 0
+
+private fun restrict(value: Any?, level: Int) {
+    when (val v = jsBox(value)) {
+        is JSObject -> v.restrict(level >= 2, level >= 3)
+        null, JSNull, is String, is Boolean, is Double, is JSSymbol -> {}
+        else -> {
+            val list = restricted.getOrPut(System.identityHashCode(v)) { ArrayList() }
+            list.removeAll { it.ref.get() == null }
+            val existing = list.firstOrNull { it.ref.get() === v }
+            if (existing != null) existing.level = maxOf(existing.level, level) else list.add(JSRestriction(v, level))
+        }
+    }
+}
+
+/** `Object.freeze(value)`. */
+fun <T> jsFreeze(value: T): T { restrict(value, 3); return value }
+
+/** `Object.seal(value)` and `Object.preventExtensions(value)`. */
+fun <T> jsRestrict(value: T, sealed: Boolean): T { restrict(value, if (sealed) 2 else 1); return value }
+
+private fun level(value: Any?): Int? = when (val v = jsBox(value)) {
+    is JSObject -> if (v.isFrozen) 3 else if (v.isSealed) 2 else if (v.extensible) 0 else 1
+    null, JSNull, is String, is Boolean, is Double, is JSSymbol -> null
+    else -> jsRestriction(v)
+}
+
+/** `Object.isFrozen(value)`: primitives are. */
+fun jsIsFrozen(value: Any?): Boolean = (level(value) ?: 3) == 3
+fun jsIsSealed(value: Any?): Boolean = (level(value) ?: 3) >= 2
+fun jsIsExtensible(value: Any?): Boolean = (level(value) ?: 1) == 0
+
+/** `Object.fromEntries(entries)`. */
+fun <V> jsObjectFromEntries(entries: Iterable<Pair<String, V>>): JSRecord<V> {
+    val record = JSRecord<V>()
+    for ((k, v) in entries) record[k] = v
+    return record
 }
