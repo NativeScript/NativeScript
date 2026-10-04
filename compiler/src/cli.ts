@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // ns-native: a NativeScript app written with a web framework, compiled to a
 // native app with no JavaScript runtime.
-//   node compiler/src/cli.ts <app folder> --out <dir> [--name RecipesVue] [--bundle <id>] [--build] [--device [--provision <profile>]]
+//   node compiler/src/cli.ts <app folder> --out <dir> [--name RecipesVue] [--bundle <id>] [--build] [--device [--provision <profile> | --team-id <team> [--export-method debugging|release-testing|app-store-connect|enterprise]]]
 //   node compiler/src/cli.ts <app folder> --platform android --out <dir> [--bundle <id>] [--build [--aab] [--key-store-path <file> --key-store-password <p> --key-store-alias <a> --key-store-alias-password <p>]] [--widgets <aar>]
 // The app folder is a NativeScript project (package.json, app/). Its
 // components and modules are type-checked together and translated to Swift
@@ -31,7 +31,7 @@ import { reachability } from './reach.ts';
 import { collectProperties } from './properties.ts';
 import { iosProjectResources } from './app-resources.ts';
 import { SourceLines } from './source-lines.ts';
-import { archive, findProfile, signingSettings } from './ios-signing.ts';
+import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -275,9 +275,10 @@ const pluginLines = xcodegenLines(native, out);
 const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'));
 const resources = iosProjectResources({ app, appDir, out, name, say });
-if (opt('--team-id') && !opt('--provision')) throw new Error('--team-id alone would sign automatically, which registers the app on the team; give the provisioning profile with --provision');
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
-const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...(profile ? signingSettings(profile) : { CODE_SIGNING_ALLOWED: 'NO' }) };
+const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
+const signing = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { CODE_SIGNING_ALLOWED: 'NO' };
+const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...signing };
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
@@ -314,7 +315,7 @@ if (args.includes('--build')) {
   const { execFileSync } = await import('node:child_process');
   execFileSync('xcodegen', ['generate', '--quiet'], { cwd: out, stdio: 'inherit' });
   if (args.includes('--device')) {
-    const built = archive({ out, name, bundle, profile, say });
+    const built = archive({ out, name, bundle, profile, team, say });
     say(`archived ${relative(process.cwd(), built.archive)}, ${relative(process.cwd(), built.ipa)}`);
   } else {
     execFileSync('xcodebuild', ['-project', `${name}.xcodeproj`, '-scheme', name, '-configuration', 'Release', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', 'build', 'build', '-quiet'], { cwd: out, stdio: 'inherit' });
