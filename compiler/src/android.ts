@@ -22,13 +22,15 @@ export interface AndroidBuild {
   out: string;
   name: string;
   framework: string;
+  /** Angular checked by zone.js. */
+  zone?: boolean;
   components: ComponentIR[];
   modules: string[];
   program: ts.Program;
   checker: ts.TypeChecker;
   /** The app's files and the components' virtual files, in translation order. */
   files: readonly ts.SourceFile[];
-  infos: Map<string, { name: string; props: string[]; outputs?: string[] }>;
+  infos: Map<string, { name: string; props: string[]; outputs?: string[]; outputFields?: Record<string, string> }>;
   css: string;
   root: string;
   routes: { routes: { path: string; component: string }[]; initial: string } | null;
@@ -67,6 +69,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   // Before the translator: calls into plugin classes are checked against the plugins' built AARs.
   const native = pluginNativeAndroid(b.plugins ?? [], { app: b.app, say });
   const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties });
+  translator.appModule = pkg;
   translator.core = new CoreKotlin(translator);
   translator.native = new AndroidNativeAPI(translator, androidClassPath(widgets, native));
   for (const p of b.plugins ?? []) for (const t of p.typings) (translator.native as AndroidNativeAPI).pluginTypings.add(t);
@@ -77,7 +80,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     const { params, lines } = translator.componentMembers(cls, c.props);
-    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos, { framework: b.framework, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, '', ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
     writeFileSync(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
   }
   addKotlinInterfaces(translator, modules);
@@ -92,7 +95,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   }
   const shapes = translator.shapesCode();
   if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
-  const inits = modules.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
+  const inits = (b.zone ? '        Zone.enabled = true\n' : '') + modules.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
   const routes = b.routes
     ? `        Router.shared.routes = listOf(${b.routes.routes.map((r) => `Route(${kotlinString(r.path)}) { ${r.component}().render() }`).join(', ')})\n        Router.shared.initial = ${kotlinString(b.routes.initial)}\n`
     : '';

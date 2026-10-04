@@ -27,6 +27,22 @@ const SHIMS: Record<string, string> = {
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void; $write(value: T | ((previous: T) => T)): void }
     export declare function $writable<T>(value: T): WritableSignal<T>;
     export declare function $navigateTo(component: any, options?: { props?: Record<string, any> }): void;
+    import type { Observable } from 'rxjs';
+    /** Angular's async pipe at one binding site. */
+    export declare class AsyncPipe { transform<T>(observable: Observable<T> | null | undefined): T | null }
+  `,
+  rxjs: `
+    export declare class Subscription { readonly closed: boolean; unsubscribe(): void }
+    export interface OperatorFunction<T, R> { readonly __operator: [T, R] }
+    export declare class Observable<T> {
+      subscribe(next: (value: T) => void): Subscription;
+      pipe<A>(a: OperatorFunction<T, A>): Observable<A>;
+      pipe<A, B>(a: OperatorFunction<T, A>, b: OperatorFunction<A, B>): Observable<B>;
+      pipe<A, B, C>(a: OperatorFunction<T, A>, b: OperatorFunction<A, B>, c: OperatorFunction<B, C>): Observable<C>;
+    }
+    export declare class Subject<T> extends Observable<T> { next(value: T): void; asObservable(): Observable<T> }
+    export declare class BehaviorSubject<T> extends Subject<T> { constructor(value: T); readonly value: T; getValue(): T }
+    export declare function map<T, R>(project: (value: T, index: number) => R): OperatorFunction<T, R>;
   `,
   '@angular/core': `
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void }
@@ -41,6 +57,12 @@ const SHIMS: Record<string, string> = {
     export declare function Component(meta: any): <C>(c: C) => C;
     export declare function Injectable(meta?: any): <C>(c: C) => C;
     export declare const NO_ERRORS_SCHEMA: any;
+    export declare function NgModule(meta: any): <C>(c: C) => C;
+    export declare function Input(options?: any): any;
+    export declare function Output(options?: any): any;
+    export declare class EventEmitter<T = void> { emit(value: T): void }
+    export declare enum ChangeDetectionStrategy { OnPush = 0, Eager = 1, Default = 1 }
+    export declare function provideZoneChangeDetection(options?: any): any;
   `,
   '@angular/router': `
     export declare class ActivatedRoute { snapshot: { params: Record<string, string> } }
@@ -49,6 +71,10 @@ const SHIMS: Record<string, string> = {
   '@nativescript/angular': `
     export declare class RouterExtensions { navigate(commands: any[], extras?: any): void; back(): void }
     export declare const NativeScriptCommonModule: any;
+    export declare const NativeScriptModule: any;
+    export declare const NativeScriptRouterModule: { forRoot(routes: any): any };
+    export declare function platformNativeScript(): { bootstrapModule(module: any, options?: any): Promise<any> };
+    export declare function runNativeScriptAngularApp(options: any): void;
     export declare const PageRouterOutlet: any;
   `,
   'svelte/store': `

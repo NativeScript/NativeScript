@@ -166,6 +166,8 @@ export class Translator implements AsyncTranslator {
   private lowering: AsyncLowering;
   core: KotlinCore | null = null;
   native: KotlinNative | null = null;
+  /** The app's package, which qualifies a module function a class member's name shadows. */
+  appModule = '';
 
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;
@@ -376,6 +378,8 @@ export class Translator implements AsyncTranslator {
     if (sym && this.isDynamicShape(sym)) return 'Any?';
     if (this.isEventData(t)) return 'EventData';
     const shim = sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/');
+    // RxJS's classes are the kit's Rx classes: core has an Observable of its own.
+    if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/rxjs.d.ts') return `Rx${name}${(t as ts.TypeReference).typeArguments?.length ? `<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>` : ''}`;
     if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && Object.hasOwn(KIT_NAMES_ANDROID, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES_ANDROID[name];
     const renamed = sym?.valueDeclaration && this.topNames().get(sym.valueDeclaration);
@@ -2571,7 +2575,9 @@ export class Translator implements AsyncTranslator {
       const rt = this.typeOf(e);
       return rt === 'Any?' || rt === 'Unit' ? code : this.fromAnyCode(code, rt, true);
     }
-    const fn = this.narrowed(callee, ident(this.declaredName(callee)));
+    const own = ident(this.declaredName(callee));
+    const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], own, ident) ? `${this.appModule}.${own}` : own;
+    const fn = this.narrowed(callee, qualified);
     const nullable = /^\(.*\)\?$/.test(fnType) && isFunctionType(fnType.slice(1, -2));
     return `${nullable && !fn.endsWith('!!') ? `${fn}!!` : fn}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
   }
@@ -3483,7 +3489,6 @@ export function splitTopLevel(text: string): string[] {
   return out.filter((x, k) => x || k < out.length - 1);
 }
 
-/** A Kotlin parameter's type without its default value (`= null`). */
 /** An operand of `==`, `===`, `!=` or `!==`: a dynamic read there may be undefined whatever its declared type. */
 function isCompared(e: ts.Expression): boolean {
   let n: ts.Node = e;
@@ -3492,6 +3497,7 @@ function isCompared(e: ts.Expression): boolean {
   return ts.isBinaryExpression(p) && [ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(p.operatorToken.kind);
 }
 
+/** A Kotlin parameter's type without its default value (`= null`). */
 function withoutDefault(text: string): string {
   let depth = 0;
   for (let i = 0; i < text.length; i++) {
@@ -3542,4 +3548,11 @@ function redeclaredBeside(loop: ts.ForStatement, list: ts.VariableDeclarationLis
     return !!l && l.declarations.some((d) => ts.isIdentifier(d.name) && names.has(d.name.text));
   };
   return siblings.some((st) => st !== loop && st !== loop.parent && declares(st));
+}
+
+/** Whether a module function `fn` called at `at` is shadowed by a member of the class around it, as a bare name is in Swift and Kotlin. */
+function shadowedByMember(at: ts.Node, decl: ts.Declaration | undefined, fn: string, ident: (name: string) => string): boolean {
+  if (!decl || !ts.isFunctionDeclaration(decl) || !ts.isSourceFile(decl.parent)) return false;
+  const cls = ts.findAncestor(at, ts.isClassLike);
+  return !!cls && cls.members.some((m) => !!m.name && ts.isIdentifier(m.name) && ident(m.name.text) === fn);
 }
