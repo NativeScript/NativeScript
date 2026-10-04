@@ -45,7 +45,7 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
         if (ext) {
           const receiver = types.get(ext[2]) ?? { name: ext[2], base: null, members: new Map(), props: new Set() };
           types.set(ext[2], receiver);
-          add(receiver, ext[4], { kind: ext[1] === 'fun' ? 'func' : 'var', static: !!ext[3], type: ext[7].trim() || 'Unit', params: ext[6] });
+          add(receiver, ext[4], { kind: ext[1] === 'fun' ? 'func' : 'var', static: !!ext[3], type: ext[7].trim().replace(/\s+get\(\).*$/, '') || 'Unit', params: ext[6] });
         }
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
@@ -105,6 +105,12 @@ export class CoreKotlin implements KotlinCore {
 
   owner(e: ts.Expression): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
+    // A namespace core nests in a static owner (`Utils.layout`, `Application.android`) is the kit object `UtilsLayout`.
+    if (ts.isPropertyAccessExpression(e) && (ts.isIdentifier(e.expression) || ts.isPropertyAccessExpression(e.expression))) {
+      const outer = this.owner(e.expression);
+      const nested = outer?.isStatic ? outer.name + e.name.text[0].toUpperCase() + e.name.text.slice(1) : '';
+      if (nested && this.index.has(nested)) return { name: nested, isStatic: true };
+    }
     if (ts.isIdentifier(e)) {
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];

@@ -104,6 +104,8 @@ abstract class TextBase : View() {
     private var defaultMovementMethod: android.text.method.MovementMethod? = null
     private var defaultTransformationMethod: android.text.method.TransformationMethod? = null
     private var tappable = false
+    /** The paint flags before a decoration first replaced them (anti-aliasing among them), which unsetting restores. */
+    private var defaultPaintFlags: Int? = null
 
     /** The `formattedText` child, whose spans are the text when it is set. */
     internal var formattedString: FormattedString? = null
@@ -221,11 +223,15 @@ abstract class TextBase : View() {
             }
             "fontFamily", "fontStyle", "fontWeight" -> fontChanged()
             "textAlignment" -> setTextAlignment((value as? String)?.trim() ?: initialTextAlignment)
-            "textDecoration" -> tv.paintFlags = when ((value as? String)?.trim()) {
-                "underline" -> Paint.UNDERLINE_TEXT_FLAG
-                "line-through" -> Paint.STRIKE_THRU_TEXT_FLAG
-                "underline line-through" -> Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG
-                else -> 0
+            "textDecoration" -> {
+                val default = defaultPaintFlags ?: tv.paintFlags.also { defaultPaintFlags = it }
+                tv.paintFlags = when ((value as? String)?.trim()) {
+                    "underline" -> Paint.UNDERLINE_TEXT_FLAG
+                    "line-through" -> Paint.STRIKE_THRU_TEXT_FLAG
+                    "underline line-through" -> Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG
+                    null -> default
+                    else -> 0
+                }
             }
             "textShadow" -> {
                 val shadow = toText(value)?.let { CSSShadow.parse(it) }

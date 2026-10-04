@@ -42,7 +42,9 @@ const deps = { ...pkg.dependencies };
 const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane' : null;
 if (!framework) throw new Error('no supported framework in package.json');
 const entryText = readFileSync(entry, 'utf8');
-const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f));
+// `x.ios.ts` and `x.android.ts` are one module, `./x`, for their platform.
+const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;
+const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f));
 // Virtual replacements for app modules the release build reads differently (a zustand store).
 const overrides = new Map<string, string>();
 

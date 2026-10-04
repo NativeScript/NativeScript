@@ -43,9 +43,13 @@ object Device {
     val region: String get() = Locale.getDefault().country
 }
 
-/** `Screen.mainScreen` from platform/screen (Android): the display's metrics. */
+/** `Screen.mainScreen` from platform/screen (Android): the whole display's metrics, system bars included. */
 class ScreenMetrics {
-    private val metrics get() = NativeScriptActivity.context.resources.displayMetrics
+    @Suppress("DEPRECATION")
+    private val metrics: android.util.DisplayMetrics
+        get() = android.util.DisplayMetrics().also {
+            (NativeScriptActivity.context.applicationContext.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager).defaultDisplay.getRealMetrics(it)
+        }
     val scale: Double get() = metrics.density.toDouble()
     val widthPixels: Double get() = metrics.widthPixels.toDouble()
     val heightPixels: Double get() = metrics.heightPixels.toDouble()
@@ -55,6 +59,41 @@ class ScreenMetrics {
 
 object Screen {
     val mainScreen: ScreenMetrics get() = ScreenMetrics()
+}
+
+/** `Utils.layout` from utils/layout-helper/index.android (core-kotlin.ts reads `Utils.layout` as `UtilsLayout`). */
+object UtilsLayout {
+    fun getDisplayDensity(): Double = Layout.density.toDouble()
+    fun toDevicePixels(value: Double): Double = Layout.toDevicePixels(value)
+    fun toDeviceIndependentPixels(value: Double): Double = Layout.toDeviceIndependentPixels(value)
+    fun round(value: Double): Double = Layout.round(value)
+}
+
+/** `Utils.android` from utils/native-helper-for-android. */
+object UtilsAndroid {
+    fun getApplication(): android.app.Application = NativeScriptActivity.context.applicationContext as android.app.Application
+    fun getApplicationContext(): Context = getApplication().applicationContext
+    fun getCurrentActivity(): android.app.Activity? = NativeScriptActivity.current
+    fun getResources(): android.content.res.Resources = getApplication().resources
+    fun getPackageName(): String = getApplicationContext().packageName
+}
+
+/** `Application` from application/application.android: the app has one activity, NativeScriptActivity. */
+object Application {
+    val android: ApplicationAndroid get() = ApplicationAndroid
+}
+
+object ApplicationAndroid {
+    val nativeApp: android.app.Application
+        get() = UtilsAndroid.getApplication()
+    val context: Context
+        get() = UtilsAndroid.getApplicationContext()
+    val packageName: String
+        get() = UtilsAndroid.getPackageName()
+    val startActivity: androidx.appcompat.app.AppCompatActivity
+        get() = NativeScriptActivity.current
+    val foregroundActivity: androidx.appcompat.app.AppCompatActivity
+        get() = NativeScriptActivity.current
 }
 
 /** `new Color(value)` as core reads it: an unparsable string is transparent black there too. */

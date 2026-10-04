@@ -9,6 +9,7 @@ import { Translator, kotlinString } from './kotlin.ts';
 import { render } from './codegen-kotlin.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
 import { CoreKotlin } from './core-kotlin.ts';
+import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
 import { nativescriptTailwind, usesNativeScriptTailwind } from './tailwind.ts';
 
 export interface AndroidBuild {
@@ -46,6 +47,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
 
   const translator = new Translator(b.checker, b.infos, b.files);
   translator.core = new CoreKotlin(translator);
+  translator.native = new AndroidNativeAPI(translator, androidClassPath(b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app)));
   const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
   const modules = translateKotlinModules(translator, b.program, b.modules);

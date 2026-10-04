@@ -79,6 +79,7 @@ const SHIMS: Record<string, string> = {
 const GLOBALS = `
   declare var console: { log(...data: any[]): void; info(...data: any[]): void; warn(...data: any[]): void; error(...data: any[]): void; debug(...data: any[]): void };
   declare function queueMicrotask(callback: () => void): void;
+  declare var global: typeof globalThis;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */
@@ -135,7 +136,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       if (m.startsWith('.')) {
         const base = resolve(dirname(containing), m);
-        for (const candidate of [base + '.ts', base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
+        for (const candidate of [`${base}.${platform}.ts`, base + '.ts', base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Ts } };
         }
       }

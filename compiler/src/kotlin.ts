@@ -219,7 +219,7 @@ export class Translator implements AsyncTranslator {
       const translated = parts.flatMap((u) => { try { return [this.type(u, where)]; } catch { return []; } });
       if (!translated.length) return this.type(parts[0], where);
       const kinds = [...new Set(translated)];
-      const base = kinds.length === 1 ? kinds[0] : 'Any?';
+      const base = kinds.length === 1 ? kinds[0] : this.native?.type(t) ?? 'Any?';
       return optional ? optionalType(base) : base;
     }
     if (t.flags & (F.Number | F.NumberLiteral)) return 'Double';
