@@ -35,6 +35,12 @@ public func jsObjectAssign(_ target: Any?, _ sources: Any?...) throws -> Any? {
     return target
 }
 
+/// `{ ...source }` into an object literal being built: the source's own enumerable keys, in order.
+public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
+    guard let dynamic = jsFlat(source) as? JSDynamic else { return }
+    for key in dynamic.jsKeys { target[key] = dynamic[jsKey: key] }
+}
+
 /// `key in object`, for any dynamic value.
 public func jsIn(_ key: String, _ object: Any?) -> Bool {
     switch jsFlat(object) {

@@ -199,7 +199,10 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     for (const [name, text] of casts) files.set(name, text);
     program = ts.createProgram(rootNames, options, host, program);
   }
-  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)));
+  // The build types the app strictly; an app whose own configuration is not strict is held only to what that configuration checks.
+  const lenient = appStrictness(roots[0] ?? [...virtual.keys()][0]);
+  const strictOnly = new Set([2322, 2345, 2531, 2532, 2533, 2454, 2564, 7005, 7006, 7008, 7015, 7031, 7034, 7053, 18047, 18048, 18049]);
+  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)) && !(lenient && strictOnly.has(d.code)));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, 12), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
@@ -230,4 +233,17 @@ function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean):
     out.set(sf.fileName, text);
   }
   return out;
+}
+
+/** Whether the app's tsconfig.json leaves strict checking off. */
+function appStrictness(from: string | undefined): boolean {
+  if (!from) return false;
+  for (let dir = dirname(from); dirname(dir) !== dir; dir = dirname(dir)) {
+    const file = resolve(dir, 'tsconfig.json');
+    if (!existsSync(file)) continue;
+    const config = ts.readConfigFile(file, ts.sys.readFile).config ?? {};
+    const o = config.compilerOptions ?? {};
+    return !(o.strict || o.strictNullChecks);
+  }
+  return false;
 }

@@ -188,7 +188,7 @@ enum IOSHelper {
     }
 
     static func shrinkToSafeArea(_ view: View, _ frame: CGRect) -> CGRect? {
-        let insets = view.getSafeAreaInsets()
+        let insets = view.safeAreaInsetsPosition()
         guard insets.left != 0 || insets.top != 0 else { return nil }
         return getFrameFromPosition(getPositionFromFrame(frame), insets: insets)
     }

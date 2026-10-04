@@ -621,7 +621,7 @@ open class FlexboxLayout: LayoutBase {
     // MARK: Layout
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         var isRtl = false
         switch flexDirection {
         case "row":

@@ -72,6 +72,13 @@ function findFold(sf: ts.SourceFile, flag: (n: ts.Node) => boolean | undefined):
       const v = constant(n.expression);
       if (v !== undefined) {
         const kept = v ? n.thenStatement : n.elseStatement;
+        // `if (isIOS) { …; return; }`: what follows in the block is the other platform's, unreachable.
+        const block = n.parent;
+        const rest = ts.isBlock(block) || ts.isSourceFile(block) ? block.statements.slice(block.statements.indexOf(n as ts.Statement) + 1) : [];
+        if (kept && exits(kept) && rest.length && !rest.some(ts.isFunctionDeclaration)) {
+          found = { span: [span(n)[0], rest[rest.length - 1].getEnd()], keep: span(kept) };
+          return;
+        }
         found = { span: span(n), keep: kept ? span(kept) : null };
         return;
       }
@@ -171,5 +178,13 @@ function hotChain(e: ts.Expression): boolean {
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || ts.isCallExpression(n)) && n.questionDotToken && isHot(n.expression)) optional = true;
     n = n.expression;
   }
+  return false;
+}
+
+/** A statement after which control never continues: it ends in `return` or `throw`. */
+function exits(st: ts.Statement): boolean {
+  if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
+  if (ts.isBlock(st)) return st.statements.length > 0 && exits(st.statements[st.statements.length - 1]);
+  if (ts.isIfStatement(st)) return !!st.elseStatement && exits(st.thenStatement) && exits(st.elseStatement);
   return false;
 }

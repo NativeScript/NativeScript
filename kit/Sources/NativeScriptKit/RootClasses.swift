@@ -49,5 +49,11 @@ enum Appearance {
     static func refresh(_ root: View) {
         let next = rootClasses()
         if root.rootClasses != next { root.rootClasses = next }
+        let appearance = systemAppearance
+        if appearance != lastAppearance {
+            lastAppearance = appearance
+            Application.appearanceChanged(appearance)
+        }
     }
+    private static var lastAppearance = systemAppearance
 }

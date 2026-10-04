@@ -149,7 +149,7 @@ open class GridLayout: LayoutBase {
     }
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         let paddingLeft = effectiveBorderLeftWidth + effectivePaddingLeft + insets.left
         let paddingTop = effectiveBorderTopWidth + effectivePaddingTop + insets.top
         columnOffsets = [paddingLeft]

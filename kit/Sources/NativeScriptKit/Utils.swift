@@ -69,3 +69,9 @@ public func booleanConverter(_ value: Any?) -> Bool {
     if let string = jsFlat(value) as? String { return string.lowercased() == "true" }
     return jsTruthy(value)
 }
+
+/// Whether the running OS is at least `version` (a class introduced later reads as undefined before it).
+public func jsOSAtLeast(_ version: Double) -> Bool {
+    let major = Int(version), minor = Int(((version - Double(major)) * 10).rounded())
+    return ProcessInfo.processInfo.isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: major, minorVersion: minor, patchVersion: 0))
+}

@@ -125,7 +125,7 @@ open class Page: ContentView {
     }
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         ViewHelper.layoutChild(self, layoutView, insets.left, insets.top, right - insets.right, bottom - insets.bottom)
     }
 }
@@ -137,7 +137,6 @@ open class ActionBar: View {
 
     var title: String?
     let barItems = ActionBarItems()
-    private var page: Page? { parent as? Page }
 
     private var navigationBar: UINavigationBar? {
         page?.frame?.controller.navigationBar

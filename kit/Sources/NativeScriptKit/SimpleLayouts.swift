@@ -108,7 +108,7 @@ open class WrapLayout: LayoutBase {
     }
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         let isVertical = orientation == "vertical"
         let paddingLeft = effectiveBorderLeftWidth + effectivePaddingLeft + insets.left
         let paddingTop = effectiveBorderTopWidth + effectivePaddingTop + insets.top
@@ -187,7 +187,7 @@ open class AbsoluteLayout: LayoutBase {
     }
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         eachLayoutChild { child in
             let childLeft = effectiveBorderLeftWidth + effectivePaddingLeft + AbsoluteLayout.effectiveLeft(child) + insets.left
             let childTop = effectiveBorderTopWidth + effectivePaddingTop + AbsoluteLayout.effectiveTop(child) + insets.top
@@ -274,7 +274,7 @@ open class DockLayout: LayoutBase {
     }
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         let horizontalPaddingsAndMargins = effectivePaddingLeft + effectivePaddingRight + effectiveBorderLeftWidth + effectiveBorderRightWidth + insets.left + insets.right
         let verticalPaddingsAndMargins = effectivePaddingTop + effectivePaddingBottom + effectiveBorderTopWidth + effectiveBorderBottomWidth + insets.top + insets.bottom
         var childLeft = effectiveBorderLeftWidth + effectivePaddingLeft + insets.left

@@ -265,6 +265,8 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         return key == "size" ? Double(map.jsSize) : nil
     case let set as JSSetProtocol:
         return key == "size" ? Double(set.jsSize) : nil
+    case let native as NSObject:
+        return jsNativeGet(native, key)
     default:
         return nil
     }
@@ -280,6 +282,8 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
         throw JSException(JSTypeError("Cannot set properties of null (setting '\(key)')"))
     case let dynamic as JSDynamic:
         dynamic[jsKey: key] = value
+    case let native as NSObject:
+        jsNativeSet(native, key, value)
     case let array as JSArrayProtocol:
         if key == "length" {
             let length = jsToNumber(value)
@@ -351,6 +355,8 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) -> T {
 /// `typeof value`.
 public func jsTypeof(_ value: Any?) -> String {
     guard let v = jsFlat(value) else { return "undefined" }
+    if let boolean = jsNativeBoolean(v) { _ = boolean; return "boolean" }
+    if jsIsNativeNumber(v) { return "number" }
     switch v {
     case is String: return "string"
     case is Bool: return "boolean"

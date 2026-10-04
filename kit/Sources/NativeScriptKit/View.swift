@@ -10,7 +10,7 @@ open class View: Observable {
     var cssType: String { type(of: self).cssType }
 
     public internal(set) var nativeView: UIView?
-    var viewController: UIViewController?
+    public internal(set) var viewController: UIViewController?
     public internal(set) weak var parent: View?
 
     public var className: String = "" {
@@ -105,7 +105,7 @@ open class View: Observable {
     var styleMarginTop = Length.zero, styleMarginRight = Length.zero, styleMarginBottom = Length.zero, styleMarginLeft = Length.zero
     var horizontalAlignment = "stretch"
     var verticalAlignment = "stretch"
-    var isCollapsed = false
+    public var isCollapsed: Bool = false
 
     var effectiveWidth: Double = 0, effectiveHeight: Double = 0
     var effectiveMinWidth: Double = 0, effectiveMinHeight: Double = 0
@@ -132,11 +132,44 @@ open class View: Observable {
         super.init()
         nativeView = createNativeView()
         defaultBackgroundColor = nativeView?.backgroundColor
-        initNativeView()
     }
 
     open func createNativeView() -> UIView? { nil }
     open func initNativeView() {}
+    open func disposeNativeView() {}
+
+    /// `_setupUI`: a view is set up once it joins a set-up parent, or when it loads as a root.
+    public private(set) var isSetUp: Bool = false
+    /// `reusable`: a removed view keeps its native view set up, to be added again.
+    public var reusable: Bool = false
+
+    func setupUI() {
+        guard !isSetUp else { return }
+        isSetUp = true
+        initNativeView()
+        View.lifecycleHooks.forEach { $0.initNativeView?(self) }
+        eachChildView { $0.setupUI() }
+    }
+
+    /// `_tearDownUI`: a removed view that is not reusable disposes its native view.
+    func tearDownUI() {
+        guard isSetUp, !reusable else { return }
+        eachChildView { $0.tearDownUI() }
+        disposeNativeView()
+        View.lifecycleHooks.forEach { $0.disposeNativeView?(self) }
+        isSetUp = false
+    }
+
+    /// What a plugin adds to every view's native lifecycle (`applyMixins(View, …)`): run after the view's own.
+    public struct LifecycleHook {
+        public var initNativeView: ((View) -> Void)?
+        public var disposeNativeView: ((View) -> Void)?
+        public init(initNativeView: ((View) -> Void)? = nil, disposeNativeView: ((View) -> Void)? = nil) {
+            self.initNativeView = initNativeView
+            self.disposeNativeView = disposeNativeView
+        }
+    }
+    public static var lifecycleHooks: [LifecycleHook] = []
 
     // MARK: Children
 
@@ -148,11 +181,13 @@ open class View: Observable {
     func addView(_ child: View) {
         child.parent = self
         for name in View.inheritedProperties { child.refresh(name) }
+        if isSetUp { child.setupUI() }
         if isLoaded && shouldLoad(child) { child.load() }
     }
 
     func removeView(_ child: View) {
         child.unload()
+        child.tearDownUI()
         if child.parent === self { child.parent = nil }
     }
 
@@ -160,6 +195,8 @@ open class View: Observable {
 
     func load() {
         guard !isLoaded else { return }
+        setupUI()
+        TouchManager.viewLoading(self)
         matchCSS()
         isLoaded = true
         let names = pendingNames
@@ -194,7 +231,21 @@ open class View: Observable {
     // MARK: Properties
 
     /// A property's current value by its NativeScript name (`label.text`).
-    public override func get(_ name: String) -> Any? { applied[name] }
+    public override func get(_ name: String) -> Any? {
+        if let value = applied[name] { return value }
+        return Property.registered(name, on: type(of: self))?.defaultValue
+    }
+
+    /// The property a plugin registered under `name` for this view's class.
+    func registeredProperty(_ name: String) -> Property? { Property.registered(name, on: type(of: self)) }
+
+    /// `name in view`: a property this view's class or a plugin defines.
+    open func hasJSProperty(_ name: String) -> Bool { registeredProperty(name) != nil }
+
+    /// A template child: one that names a slot (`hostSlot`) the parent has is set as that property, as the driver does.
+    public func addTemplateChild(_ child: View) {
+        if let slot = child.get("hostSlot") as? String, hasJSProperty(slot) { set(slot, child) } else { addChild(child) }
+    }
 
     /// `view[name]` from dynamic code: a property by its name, as core's accessors are.
     open override subscript(jsKey key: String) -> Any? {
@@ -204,6 +255,12 @@ open class View: Observable {
 
     /// Sets a local property value by its NativeScript name; nil unsets it.
     public override func set(_ name: String, _ value: Any?) {
+        if let property = registeredProperty(name) {
+            let v = property.converted(value)
+            if let v = jsFlat(v), !(v is JSNull) { locals[name] = v } else { locals.removeValue(forKey: name) }
+            refresh(name)
+            return
+        }
         for (longhand, v) in expandShorthand(name, value) where hasStyleAccessor(longhand) {
             if let v { locals[longhand] = v } else { locals.removeValue(forKey: longhand) }
             refresh(longhand)
@@ -309,10 +366,18 @@ open class View: Observable {
         if value == nil, View.inheritedProperties.contains(name) { value = parent?.applied[name] }
         let had = applied[name] != nil
         if !had && value == nil { return }
-        if had && sameValue(value, applied[name]) { return }
+        let registered = registeredProperty(name)
+        if let registered {
+            if registered.same(applied[name] ?? registered.defaultValue, value ?? registered.defaultValue) { return }
+        } else if had && sameValue(value, applied[name]) { return }
+        let old = applied[name]
         applied[name] = value
+        registered?.changed(self, old, value)
         propertyValueChanged(name, value)
         if isLoaded && !isBatching { setProperty(name, value) } else { deferApplication(name) }
+        if registered != nil && hasListeners(name + "Change") {
+            fire(EventData(js: JSObject([("eventName", name + "Change"), ("object", self), ("propertyName", name), ("value", value ?? registered?.defaultValue), ("oldValue", old ?? registered?.defaultValue)]), notifier: self))
+        }
         notifyCSSDependents(name)
         if View.inheritedProperties.contains(name) { eachChildView { $0.refresh(name) } }
     }
@@ -436,6 +501,8 @@ open class View: Observable {
         case "translateX", "translateY", "scaleX", "scaleY", "rotate", "rotateX", "rotateY", "perspective": updateNativeTransform()
         case "originX", "originY": updateOriginPoint()
         case "zIndex": nativeView?.layer.zPosition = CGFloat(toDouble(value) ?? 0)
+        // Read by TouchManager when the view loads.
+        case "touchAnimation", "ignoreTouchAnimation", "touchDelay": break
         default:
             break
         }
@@ -606,7 +673,7 @@ open class View: Observable {
         return nil
     }
 
-    func getSafeAreaInsets() -> Position {
+    func safeAreaInsetsPosition() -> Position {
         var insets = Position(left: 0, top: 0, right: 0, bottom: 0)
         if iosIgnoreSafeArea || hasIOSManagedInsetAncestor { return insets }
         if let safe = nativeView?.safeAreaInsets {

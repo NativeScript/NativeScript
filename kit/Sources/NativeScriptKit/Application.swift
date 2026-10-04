@@ -5,6 +5,8 @@ import UIKit
 /// scene's window.
 public enum NativeScriptApplication {
     static var makeRoot: (() -> View)?
+    /// The app's CSS, for an entry that runs through `Application.run`.
+    public static var css = ""
 
     public static func run(css: String, root: @escaping () -> View) -> Never {
         StyleSheet.app = StyleSheet(parsing: css)

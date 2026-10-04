@@ -50,7 +50,9 @@ open class LayoutBase: CustomLayoutView, RegionHost {
         return region
     }
 
-    public func regionChanged(_ region: Region) {
+    public func regionChanged(_ region: Region) { syncChildren() }
+
+    private func syncChildren() {
         let next = entries.flatMap { entry -> [View] in
             switch entry {
             case .view(let view): return [view]
@@ -66,16 +68,75 @@ open class LayoutBase: CustomLayoutView, RegionHost {
         let existing = Set(subViews.map(ObjectIdentifier.init))
         subViews = next
         for (index, child) in next.enumerated() {
-            if !existing.contains(ObjectIdentifier(child)) {
+            let added = !existing.contains(ObjectIdentifier(child))
+            if added {
                 addView(child)
                 registerLayoutChild(child)
             }
-            if let parentView = nativeView, let childView = child.nativeView,
-               index >= parentView.subviews.count || parentView.subviews[index] !== childView {
+            // A native view a plugin moved into another view (a keyboard accessory) stays there.
+            guard let parentView = nativeView, let childView = child.nativeView, added || childView.superview === parentView else { continue }
+            if index >= parentView.subviews.count || parentView.subviews[index] !== childView {
                 parentView.insertSubview(childView, at: index)
             }
         }
         requestLayout()
+    }
+
+    // MARK: Core's child API (layout-base-common)
+
+    public func getChildrenCount() -> Double { Double(subViews.count) }
+
+    public func getChildAt(_ index: Double) -> View? { Int(index) >= 0 && Int(index) < subViews.count ? subViews[Int(index)] : nil }
+
+    public func getChildIndex(_ child: View) -> Double { Double(subViews.firstIndex { $0 === child } ?? -1) }
+
+    /// `insertChild(child, atIndex)`: the child joins the children at that index, before any template region that follows.
+    public func insertChild(_ child: View, _ atIndex: Double) {
+        let index = max(0, Int(atIndex))
+        var flat = 0
+        var position = entries.count
+        for (k, entry) in entries.enumerated() {
+            let count: Int
+            switch entry {
+            case .view: count = 1
+            case .region(let region): count = region.views.count
+            }
+            if flat + count > index || (flat == index && count == 0) { position = k; break }
+            flat += count
+        }
+        if case .region(let region)? = entries.indices.contains(position) ? entries[position] : nil, flat < index, !region.views.isEmpty {
+            position += 1
+        }
+        entries.insert(.view(child), at: position)
+        let wasChild = subViews.contains { $0 === child }
+        subViews.insert(child, at: min(index, subViews.count))
+        if !wasChild {
+            addView(child)
+            registerLayoutChild(child)
+        }
+        if let parentView = nativeView, let childView = child.nativeView {
+            // `_addViewToNativeVisualTree`: below the native view now at that index, or last.
+            if index < parentView.subviews.count, parentView.subviews[index] !== childView {
+                parentView.insertSubview(childView, belowSubview: parentView.subviews[index])
+            } else if childView.superview !== parentView {
+                parentView.addSubview(childView)
+            }
+        }
+        requestLayout()
+    }
+
+    public func removeChild(_ child: View) {
+        guard let index = subViews.firstIndex(where: { $0 === child }) else { return }
+        subViews.remove(at: index)
+        entries.removeAll { if case .view(let v) = $0 { return v === child } else { return false } }
+        removeView(child)
+        child.nativeView?.removeFromSuperview()
+        unregisterLayoutChild(child)
+        requestLayout()
+    }
+
+    public func removeChildren() {
+        for child in subViews { removeChild(child) }
     }
 
     func registerLayoutChild(_ child: View) {}
@@ -90,10 +151,13 @@ open class LayoutBase: CustomLayoutView, RegionHost {
     }
 
     open override func setProperty(_ name: String, _ value: Any?) {
-        if name == "clipToBounds" {
+        switch name {
+        case "clipToBounds":
             clipToBounds = toBool(value) ?? true
             setNativeClipToBounds()
-        } else {
+        case "isPassThroughParentEnabled":
+            nativeView?.setPassThroughParent(booleanConverter(value))
+        default:
             super.setProperty(name, value)
         }
     }
@@ -169,7 +233,7 @@ open class StackLayout: LayoutBase {
     }
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
-        let insets = getSafeAreaInsets()
+        let insets = safeAreaInsetsPosition()
         let paddingLeft = effectiveBorderLeftWidth + effectivePaddingLeft + insets.left
         let paddingTop = effectiveBorderTopWidth + effectivePaddingTop + insets.top
         let paddingRight = effectiveBorderRightWidth + effectivePaddingRight + insets.right
@@ -325,7 +389,7 @@ open class ScrollView: ContentView, UIScrollViewDelegate {
 
     open override func onLayout(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) {
         guard let scrollView else { return }
-        let insets = contentInsetAdjustmentBehavior != "never" ? Position(left: 0, top: 0, right: 0, bottom: 0) : getSafeAreaInsets()
+        let insets = contentInsetAdjustmentBehavior != "never" ? Position(left: 0, top: 0, right: 0, bottom: 0) : safeAreaInsetsPosition()
         var scrollWidth = right - left - insets.right - insets.left
         var scrollHeight = bottom - top - insets.bottom - insets.top
         var scrollInsetWidth = scrollWidth + insets.left + insets.right

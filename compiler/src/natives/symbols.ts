@@ -48,6 +48,7 @@ export interface NativeClass {
   swiftInits?: (NativeMethod & { defaults: boolean[] })[];
   /** Generic parameters Swift keeps (`NSHashTable<ObjectType>`); `swift` names the type without its arguments. */
   generics?: string[];
+  introduced?: string;
 }
 export interface NativeEnum {
   /** '' when Swift imports the cases as global constants (a C enum without NS_ENUM): `cases[…].swift` is then the global's name. */
@@ -338,6 +339,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
         instance: {}, static: {}, constructors: {}, inits: {},
       };
       if (!own) c.extension = true;
+      if (own?.introduced) c.introduced = own.introduced;
       const generics = own?.decl.filter((f) => f.kind === 'genericParameter').map((f) => f.spelling);
       if (generics?.length) c.generics = generics;
     }
@@ -437,7 +439,8 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
       const target = aliased.length === 1 && /^c:@SA?@\w+$/.test(aliased[0].preciseIdentifier ?? '') ? aliased[0].preciseIdentifier : undefined;
       const fields = fieldsOf(target ?? usr);
       if (target || Object.keys(fields).length) table.structs[m[1]] ??= { swift: s.path.join('.'), fields };
-      (table.typealiases ??= {})[s.path.join('.')] = typeText(aliased);
+      const text = typeText(s.decl);
+      (table.typealiases ??= {})[s.path.join('.')] = text.slice(text.indexOf('=') + 1).trim();
     } else if (s.kind === 'swift.var' && usr.startsWith('s:So') && s.path.length === 1) {
       // An anonymous enum's constant, imported as a global variable.
       table.constants[s.path[0]] ??= { swift: s.path[0], type: valueType(s) };

@@ -53,13 +53,23 @@ export class CoreAPI {
     return this.index.has(name);
   }
 
+  /** Whether a kit type is a view (extends View). */
+  isKitView(name: string): boolean {
+    return kitExtends(this.index, name, 'View');
+  }
+
+  /** A member of a kit type or a type it extends, as the kit declares it. */
+  kitMember(owner: string, name: string): KitMember | null {
+    return kitMember(this.index, owner, name);
+  }
+
   /** The kit type a core-typed expression is, and whether it is the type itself (`Device.model`, `Color.isValid`). */
   owner(e: ts.Expression): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
     // A namespace inside a core namespace (`Utils.layout`): the kit's nested type of that path.
     if (ts.isPropertyAccessExpression(e)) {
       const sym = this.t.resolve(e);
-      if (sym && sym.flags & (ts.SymbolFlags.ValueModule | ts.SymbolFlags.NamespaceModule) && isCoreDeclaration(sym.declarations?.[0])) {
+      if (sym && sym.flags & (ts.SymbolFlags.ValueModule | ts.SymbolFlags.NamespaceModule | ts.SymbolFlags.Variable) && isCoreDeclaration(sym.declarations?.[0])) {
         const outer = this.owner(e.expression);
         const name = outer?.isStatic ? `${outer.name}.${e.name.text}` : null;
         if (name && this.index.has(name)) return { name, isStatic: true };
@@ -90,12 +100,16 @@ export class CoreAPI {
     return m;
   }
 
+  /** A view, or a view's `style`: properties by name. */
   private isView(owner: string): boolean {
-    return kitExtends(this.index, owner, 'View');
+    return owner === 'Style' || kitExtends(this.index, owner, 'View');
   }
 
   /** Whether the kit applies `name` by name on this view class (a property in its setProperty). */
   private isViewProperty(owner: string, name: string): boolean {
+    if (process.env.NS_NATIVE_PENDING_PROPS?.split(',').includes(name)) return true;
+    // A style property applies to any view; the kit's classes each apply their own.
+    if (owner === 'Style') return [...this.index.values()].some((t) => kitExtends(this.index, t.name, 'View') && t.props.has(name));
     for (let t = this.index.get(owner); t; t = t.base ? this.index.get(t.base) : undefined) if (t.props.has(name)) return true;
     return false;
   }
