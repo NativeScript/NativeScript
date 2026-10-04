@@ -1,5 +1,5 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
-import type { Framework } from './codegen.ts';
+import { EVENT_SCOPED, type Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
 /** ListView attributes that `bind` takes rather than `set`. */
@@ -59,6 +59,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   type Loop = { item: string; index: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
     `this.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
+  const handler = (code: string) => (EVENT_SCOPED.has(framework) ? `Reactivity.event { jsReport { ${code} } }` : `jsReport { ${code} }`);
   /** A value a binding computes; what it throws is reported and the value is undefined. */
   const caught = (code: string) => `try { ${code} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }`;
   // Mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
@@ -106,7 +107,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
-              const listen = `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`;
+              const listen = `${v}.on(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if (jsTruthy(${caught(call(e.when, loops))})) ${listen}` : listen;
               listener(depth, e.ifPassed ? `if (this._passed.contains(${kotlinString(e.ifPassed)})) ${guarded}` : guarded);
             }
@@ -137,8 +138,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> jsReport { ${call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`])} } }`);
-            else say(depth, `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
+            else say(depth, `${v}.on(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
         }
@@ -279,6 +280,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const d = wrap ? 3 : 2;
   if (wrap) say(2, `return ${wrap}`);
   if (framework === 'angular' && hasRegion(c.template)) say(d, 'val __view = EffectOrder.current');
+  for (const x of c.derived ?? []) say(d, `derive { jsReport { this.${ident(x.name)}.value = ${call(x.method, [])} } }`);
   // Inside the scope lambda the result is its last expression.
   const result = (v: string) => say(d, wrap ? v : `return ${v}`);
   if (c.init) say(d, `jsReport { this.${ident(c.init)}() }`);

@@ -103,7 +103,11 @@ class JSWeakRef<T : Any>(target: T) : JSDynamic {
     fun deref(): T? = ref?.get()
     fun clear() { ref = null }
 
-    override fun jsGet(key: String): Any? = null
+    // Read untyped (`view.nsView?.get()` on a native view): by name, as release builds rename members reflection would find.
+    override fun jsGet(key: String): Any? = when (key) {
+        "get", "deref" -> jsFunction { ref?.get() }
+        else -> null
+    }
     override fun jsSet(key: String, value: Any?) {}
     override val jsKeys: List<String> get() = emptyList()
     override val jsClassName: String? get() = "WeakRef"
@@ -188,6 +192,7 @@ class JSWeakSet<T>() : JSWeakCollection {
 /** `delete object[key]`. */
 fun jsDelete(target: Any?, key: String): Boolean = when (val v = jsBox(target)) {
     is JSObject -> if (v.delete(key)) true else throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>"))
+    is JSDeletable -> v.jsDelete(key)
     is JSDynamic -> if (jsRestriction(v) >= 2 && key in v.jsKeys) throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>")) else true
     else -> true
 }
@@ -254,8 +259,7 @@ class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?>
 fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
     val f = jsGet(target, key)
     if (f is JSMethod) return jsBox(f.call(target, args))
-    if (f is Function<*>) return jsCall(f, *args)
-    throw JSException(JSTypeError("${jsInspect(f)} is not a function"))
+    return jsCall(f, *args)
 }
 
 /** An object whose accessor properties print as `[Getter]`, `[Setter]` or `[Getter/Setter]`. */

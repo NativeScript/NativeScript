@@ -7,6 +7,7 @@ import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import { render } from './codegen-kotlin.ts';
+import { SCHEDULE, type Framework } from './codegen.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
@@ -125,7 +126,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   // Set before the module initializers run: they may make views.
   const switches = (b.corePatches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
   // The entry's own statements run the app (`Application.run`), after every module it imports.
-  const start = b.mounted ? `${switches}        Reactivity.scheduled = true\n${inits}        return Application.rootView()\n` : `${switches}${inits}${routes}        return ${b.root}().render()\n`;
+  const start = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted ? `${inits}        return Application.rootView()\n` : `${inits}${routes}        return ${b.root}().render()\n`);
   writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 
