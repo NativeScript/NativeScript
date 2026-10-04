@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.TextView as NativeTextView
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.viewpager.widget.PagerAdapter
 import org.nativescript.widgets.CommonLayoutParams
@@ -277,17 +276,6 @@ open class TabView : View() {
         for (i in toLoad) if (isLoaded) items[i].loadContent()
     }
 
-    /** `_getFragmentManager`: the fragments of the page or modal the tab view is in. */
-    private fun fragmentManager(): FragmentManager {
-        var v: View? = parent
-        while (v != null) {
-            if (v is Page) v.fragment?.let { if (it.isAdded) return it.childFragmentManager }
-            Modal.records.values.firstOrNull { it.view === v }?.fragment?.let { if (it.isAdded) return it.childFragmentManager }
-            v = v.parent
-        }
-        return NativeScriptActivity.current.supportFragmentManager
-    }
-
     private fun paletteColor(name: String): Int {
         val id = context.resources.getIdentifier(name, "attr", context.packageName)
         if (id == 0) return 0
@@ -314,7 +302,7 @@ open class TabView : View() {
 
         @Suppress("DEPRECATION")
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            val manager = fragmentManager()
+            val manager = hostFragmentManager()
             val t = transaction ?: manager.beginTransaction().also { transaction = it }
             val name = "android:viewpager:${container.id}:$position"
             var fragment = manager.findFragmentByTag(name)
@@ -334,7 +322,7 @@ open class TabView : View() {
         override fun getItemPosition(item: Any): Int = if (adapterItems != null) POSITION_UNCHANGED else POSITION_NONE
 
         override fun destroyItem(container: ViewGroup, position: Int, item: Any) {
-            val t = transaction ?: fragmentManager().beginTransaction().also { transaction = it }
+            val t = transaction ?: hostFragmentManager().beginTransaction().also { transaction = it }
             val fragment = item as Fragment
             t.detach(fragment)
             if (primary === fragment) primary = null

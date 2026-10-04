@@ -93,6 +93,15 @@ const ERRORS: Record<string, string> = { Error: 'JSError', TypeError: 'JSTypeErr
 const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date']);
 const VALUE_TYPES = new Set(['Double', 'String', 'Boolean', 'Any?', 'Any', 'Unit', 'Nothing']);
 
+/**
+ * A module-level property: its JVM accessors would clash with a function the
+ * module declares by that name (`state` and `getState()`), so it has none.
+ */
+function moduleProperty(decl: string): string {
+  const name = /(?:var|val) (\S+):/.exec(decl)![1];
+  return decl.startsWith('lateinit ') ? `@get:JvmName("__get_${name.replace(/`/g, '')}") @set:JvmName("__set_${name.replace(/`/g, '')}") ${decl}` : `@JvmField ${decl}`;
+}
+
 export class Translator implements AsyncTranslator {
   readonly syntax = KOTLIN_SYNTAX;
   /** The component class being translated: its props read as `this.<prop>.value`. */
@@ -401,24 +410,24 @@ export class Translator implements AsyncTranslator {
         const constant = !!(st.declarationList.flags & ts.NodeFlags.Const);
         for (const d of st.declarationList.declarations) {
           if (!ts.isIdentifier(d.name)) {
-            for (const n of boundNames(d.name)) out.push(this.deferredDeclaration(ident(n.text), this.typeOf(n)));
+            for (const n of boundNames(d.name)) out.push(moduleProperty(this.deferredDeclaration(ident(n.text), this.typeOf(n))));
             const tmp = this.fresh('__d');
             later(() => `    val ${tmp}: ${this.typeOf(d.initializer!)} = ${this.expr(d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
             continue;
           }
           const name = ident(d.name.text);
           const t = this.typeOf(d.name);
-          if (!d.initializer) { out.push(this.deferredDeclaration(name, t)); continue; }
+          if (!d.initializer) { out.push(moduleProperty(this.deferredDeclaration(name, t))); continue; }
           const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
           if (maybe) {
             const sym = this.resolve(d.name);
             if (sym) this.undefinedVars.set(sym, optionalType(t));
-            out.push(`var ${name}: ${optionalType(t)} = null`);
+            out.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
             later(() => `    ${name} = ${maybe}`);
             continue;
           }
-          if (this.pure(d.initializer)) { out.push(`${constant && !this.mutatedLater(d) ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`); continue; }
-          out.push(this.deferredDeclaration(name, t));
+          if (this.pure(d.initializer)) { out.push(moduleProperty(`${constant && !this.mutatedLater(d) ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`)); continue; }
+          out.push(moduleProperty(this.deferredDeclaration(name, t)));
           later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
         }
         continue;

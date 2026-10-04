@@ -8,6 +8,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.transition.Fade
 import org.nativescript.widgets.ContentLayout
 import org.nativescript.widgets.GridUnitType
@@ -25,8 +26,6 @@ open class Page : ContentView() {
     internal var actionBar: ActionBar? = null
         private set
     internal var owner: Owner? = null
-    /** The frame's fragment showing the page; fragments inside the page are its children. */
-    internal var fragment: Fragment? = null
 
     val frame: Frame? get() = parent as? Frame
 
@@ -360,7 +359,7 @@ open class Frame : View() {
         allowTransitionOverlap(fragment)
         previous.fragment = fragment
         current = previous
-        val manager = NativeScriptActivity.current.supportFragmentManager
+        val manager = hostFragmentManager()
         manager.beginTransaction().replace(nativeView.id, fragment, previous.tag).commitAllowingStateLoss()
         removeView(leaving.page)
         leaving.page.dispose()
@@ -385,14 +384,16 @@ open class Frame : View() {
             leaving.page.unload()
         }
         current = entry
-        val manager = NativeScriptActivity.current.supportFragmentManager
+        val manager = hostFragmentManager()
         manager.beginTransaction().replace(nativeView.id, fragment, entry.tag).commitAllowingStateLoss()
     }
+
+    /** `_getChildFragmentManager`: the fragments of the page the frame shows. */
+    internal fun childFragmentManager(): FragmentManager? = current?.fragment?.takeIf { it.isAdded }?.childFragmentManager
 
     private fun createFragment(page: Page): PageFragment = PageFragment().also {
         it.page = page
         it.frame = this
-        page.fragment = it
     }
 
     private fun allowTransitionOverlap(fragment: Fragment) {
@@ -428,4 +429,23 @@ open class Frame : View() {
             return page
         }
     }
+}
+
+/**
+ * `_getFragmentManager`: a frame or tab view hosts its fragments in the
+ * fragments of the next frame up, or of the modal it is in, else the activity's.
+ */
+internal fun View.hostFragmentManager(): FragmentManager {
+    var view: View? = this
+    var hostFound = false
+    while (view != null) {
+        if (view is Frame || view is TabView) {
+            if (hostFound && view is Frame) view.childFragmentManager()?.let { return it }
+            hostFound = true
+        }
+        val dialog = Modal.records.values.firstOrNull { it.view === view }?.fragment
+        if (dialog != null && dialog.isAdded) return dialog.childFragmentManager
+        view = view.parent
+    }
+    return NativeScriptActivity.current.supportFragmentManager
 }
