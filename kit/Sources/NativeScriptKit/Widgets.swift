@@ -7,6 +7,7 @@ import UIKit
 
 /// `Switch` from switch/index.ios.
 open class Switch: View {
+    open override class var announcedProperties: Set<String> { ["checked"] }
     open override class var cssType: String { "Switch" }
 
     private var control: UISwitch? { nativeView as? UISwitch }
@@ -81,6 +82,7 @@ final class TNSSlider: UISlider {}
 
 /// `Slider` from slider/index.ios and slider-common.
 open class Slider: View {
+    open override class var announcedProperties: Set<String> { ["value"] }
     open override class var cssType: String { "Slider" }
 
     private var slider: UISlider? { nativeView as? UISlider }
@@ -163,6 +165,7 @@ open class SegmentedBarItem: View {
 
 /// `SegmentedBar` from segmented-bar/index.ios.
 open class SegmentedBar: View {
+    open override class var announcedProperties: Set<String> { ["selectedIndex"] }
     open override class var cssType: String { "SegmentedBar" }
 
     private var control: UISegmentedControl? { nativeView as? UISegmentedControl }

@@ -3,6 +3,12 @@ import { ident, swiftString } from './swift.ts';
 
 export type Framework = 'vue' | 'angular' | 'svelte' | 'react' | 'solid' | 'octane';
 
+/** When each framework applies the updates a write causes (`Reactivity.Schedule`). */
+export const SCHEDULE: Record<Framework, 'now' | 'microtask' | 'task' | 'event'> = { vue: 'microtask', svelte: 'microtask', solid: 'microtask', angular: 'task', react: 'now', octane: 'event' };
+
+/** Frameworks that do something around each template handler (`Reactivity.event`). */
+export const EVENT_SCOPED = new Set<string>(['angular', 'react', 'octane']);
+
 /** ListView attributes that `bind` takes rather than `set`. */
 const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
 
@@ -55,6 +61,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     `${throws(method) ? 'try ' : ''}self.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
   // What a binding or handler throws is reported, as the frameworks report errors in templates.
   const reported = (method: string, code: string) => (throws(method) ? `jsReport { ${code} }` : code);
+  const handler = (method: string, code: string) => (EVENT_SCOPED.has(framework) ? `Reactivity.event { ${reported(method, code)} }` : reported(method, code));
 
   // A condition that throws is reported and counts as false; mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
   const cond = (m: string, loops: Loop[]) => options.slots
@@ -101,7 +108,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
-              const listen = `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`;
+              const listen = `${v}.on(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if jsTruthy(${throws(e.when) ? `(try? ${call(e.when, loops).replace(/^try /, '')})` : call(e.when, loops)}) { ${listen} }` : listen;
               say(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
             }
@@ -133,8 +140,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${reported(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
-            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${handler(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
+            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
         }
@@ -275,6 +282,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const d = wrap ? 3 : 2;
   if (wrap) say(2, `return ${wrap}`);
   if (framework === 'angular' && hasRegion(c.template)) say(d, 'let __view = EffectOrder.current');
+  for (const x of c.derived ?? []) say(d, `derive { ${reported(x.method, `self.${ident(x.name)}.value = ${call(x.method, [])}`)} }`);
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
     say(d, 'let page = Page()');

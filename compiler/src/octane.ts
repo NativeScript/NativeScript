@@ -311,7 +311,7 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
         const value = ((d.name as ts.ArrayBindingPattern).elements[0] as ts.BindingElement).name.getText();
         const call = init as ts.CallExpression;
         const typeArgs = call.typeArguments ? `<${call.typeArguments.map((t) => t.getText()).join(', ')}>` : '';
-        fields.push(`  ${value} = $writable${typeArgs}(${args[0] ? rewrite(args[0].getText(), full(scope)) : 'undefined'});`);
+        fields.push(`  ${value} = $state($writable${typeArgs}(${args[0] ? rewrite(args[0].getText(), full(scope)) : 'undefined'}));`);
         continue;
       }
       const id = (d.name as ts.Identifier).text;
@@ -615,7 +615,7 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
   }).filter(used);
   for (const tag of propTypes) if (!imports.some((i) => i.startsWith(`import ${tag} from`))) imports.push(`import type ${tag} from '${moduleFrom(file, components.get(tag)!, tag)}';`);
   if (fileLocals.length && options.elements) imports.push(`import { ${fileLocals.join(', ')} } from './${basename(path).replace(/\.tsx?$/, '')}';`);
-  const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
+  const source = [`import { $writable, $state, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
   return { name, file, source, props, template, page, optional, passed: !!rest, effects };
 }
 

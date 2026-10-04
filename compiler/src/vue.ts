@@ -5,7 +5,7 @@ import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { ELEMENTS, MODELS } from './elements.ts';
 
-const VUE_KEPT = new Set(['$navigateTo', '$navigateBack', '$showModal', '$closeModal', 'ListItem', 'ListViewItemTapEvent']);
+const VUE_KEPT = new Set(['$navigateTo', '$navigateBack', '$showModal', '$closeModal', 'nextTick', 'ListItem', 'ListViewItemTapEvent']);
 
 /**
  * A NativeScript-Vue single-file component (`<script setup lang="ts">` and a

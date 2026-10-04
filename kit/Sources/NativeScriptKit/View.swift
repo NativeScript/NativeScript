@@ -49,6 +49,9 @@ open class View: Observable {
         "whiteSpace", "letterSpacing", "lineHeight", "textShadow", "textStroke", "tintColor", "iosOverflowSafeAreaEnabled", "iosIgnoreSafeArea",
     ]
 
+    /// View properties a class announces itself, once coerced.
+    open class var announcedProperties: Set<String> { [] }
+
     /// The names NativeScript registers as style (CSS) properties; every other name is a view property.
     static let styleProperties: Set<String> = [
         "accessibilityLanguage", "accessibilityLiveRegion", "accessibilityRole", "accessibilityState", "accessibilityStep", "accessible",
@@ -418,7 +421,8 @@ open class View: Observable {
         registered?.changed(self, old, value)
         propertyValueChanged(name, value)
         if isLoaded && !isBatching { setProperty(name, value) } else { deferApplication(name) }
-        if registered != nil && hasListeners(name + "Change") {
+        // A view property announces its change; a style property's event is the style object's.
+        if hasAnyListeners, registered != nil || !View.styleProperties.contains(name), !type(of: self).announcedProperties.contains(name), hasListeners(name + "Change") {
             fire(EventData(js: JSObject([("eventName", name + "Change"), ("object", self), ("propertyName", name), ("value", value ?? registered?.defaultValue), ("oldValue", old ?? registered?.defaultValue)]), notifier: self))
         }
         notifyCSSDependents(name)
