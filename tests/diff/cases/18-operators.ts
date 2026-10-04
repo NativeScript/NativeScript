@@ -86,6 +86,9 @@ console.log(2 ** 10, 2 ** -1, (-2) ** 3, 2 ** 3 ** 2, 2 ** 0.5, 0 ** 0, (-8) ** 
 let p = 3;
 p **= 2;
 console.log(p, 1 ** Infinity, Infinity ** 0, (-Infinity) ** 3, 10 ** 21, 10 ** -7);
+const powers: string[] = [];
+for (let k = -9; k <= 9; k++) powers.push(`${10 ** k === Number('1e' + k)}:${(-3) ** k}:${1.1 ** k}`);
+console.log(powers.join(' '));
 
 const big = 2 ** 32 + 5;
 console.log(big | 0, big >>> 0, big >> 1, -1 >>> 0, -1 >>> 28, 1 << 31, 1 << 32, 1 << 33);

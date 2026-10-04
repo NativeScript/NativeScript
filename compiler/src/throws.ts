@@ -1,11 +1,12 @@
 import ts from 'typescript';
-import { isStringRaw, iterationThrows, unsafeReceiver } from './lang.ts';
+import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
 const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add',
-  'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw']);
+  'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
+  'Number.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
 
 /**
  * Which functions throw, worked out across the call graph: a function is
@@ -137,6 +138,8 @@ export class Throws {
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
+    // Intl's constructors reject options out of range.
+    if (intlConstructor(call.expression, c)) return true;
     // A weak collection made from entries rejects a primitive key.
     if (ts.isNewExpression(call) && args.length && ts.isIdentifier(call.expression) && ['WeakMap', 'WeakSet'].includes(call.expression.text)) return true;
     if (!decl || ts.isJSDocSignature(decl)) {

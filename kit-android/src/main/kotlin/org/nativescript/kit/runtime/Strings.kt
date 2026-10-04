@@ -186,8 +186,9 @@ fun jsLowerCase(s: String): String = s.lowercase(Locale.ROOT)
 /** `Math.round`: halves round toward +∞, and -0.5…-0 round to -0. */
 fun jsRound(value: Double): Double {
     if (value.isNaN() || value.isInfinite()) return value
-    val r = Math.floor(value + 0.5)
-    return if (r == 0.0 && value < 0) -0.0 else r
+    val floor = Math.floor(value)
+    val r = if (value - floor >= 0.5) floor + 1 else floor
+    return if (r == 0.0 && (value < 0 || 1.0 / value < 0)) -0.0 else r
 }
 
 fun jsSign(x: Double): Double = if (x.isNaN()) Double.NaN else if (x > 0) 1.0 else if (x < 0) -1.0 else x
@@ -204,7 +205,36 @@ fun jsHypot(vararg values: Double): Double {
 fun jsPow(base: Double, exponent: Double): Double {
     if (exponent.isNaN()) return Double.NaN
     if (Math.abs(base) == 1.0 && exponent.isInfinite()) return Double.NaN
-    return Math.pow(base, exponent)
+    val approx = Math.pow(base, exponent)
+    if (exponent != Math.rint(exponent) || Math.abs(exponent) > 64 || base == 0.0 || base.isInfinite() || base.isNaN() || approx == 0.0 || approx.isInfinite()) return approx
+    return nearestPower(base, exponent.toInt(), approx)
+}
+
+/**
+ * The double nearest base^n, from an approximation an ulp or two off: JavaScript engines' pow
+ * rounds integer powers correctly (`10 ** -5 === 1e-5`), where the JVM's may not.
+ */
+private fun nearestPower(base: Double, n: Int, approx: Double): Double {
+    val p = java.math.BigDecimal(Math.abs(base)).pow(Math.abs(n))
+    val negative = base < 0 && n % 2 != 0
+    var c = Math.abs(approx)
+    val two = java.math.BigDecimal(2)
+    // x against a bound m, x = p or 1/p: 1/p < m ⇔ 1 < m·p.
+    val compare = { m: java.math.BigDecimal -> if (n >= 0) p.compareTo(m) else java.math.BigDecimal.ONE.compareTo(m.multiply(p)) }
+    repeat(4) {
+        val c0 = java.math.BigDecimal(c)
+        val lo = c0.add(java.math.BigDecimal(Math.nextDown(c))).divide(two)
+        val hi = c0.add(java.math.BigDecimal(Math.nextUp(c))).divide(two)
+        val even = (java.lang.Double.doubleToRawLongBits(c) and 1L) == 0L
+        val below = compare(lo)
+        val above = compare(hi)
+        c = when {
+            below < 0 || (below == 0 && !even) -> Math.nextDown(c)
+            above > 0 || (above == 0 && !even) -> Math.nextUp(c)
+            else -> return if (negative) -c else c
+        }
+    }
+    return if (negative) -c else c
 }
 
 /** `Math.max`: NaN wins, +0 beats -0, and no arguments is -Infinity. */

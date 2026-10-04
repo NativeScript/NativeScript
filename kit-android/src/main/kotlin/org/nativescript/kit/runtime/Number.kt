@@ -100,7 +100,20 @@ internal fun jsShortestDigits(value: Double): Pair<String, Int> {
     return digitsOf(exact.round(MathContext(17, RoundingMode.HALF_EVEN)))
 }
 
-private fun roundTrips(d: BigDecimal, value: Double): Boolean = java.lang.Double.parseDouble(d.toString()) == value
+/**
+ * Whether `d` reads back as `value`: it lies within half an ulp of it, a tie going to the even
+ * mantissa. Exact, where `Double.parseDouble` on some JVMs rounds a few inputs to the wrong neighbor.
+ */
+private fun roundTrips(d: BigDecimal, value: Double): Boolean {
+    val v = BigDecimal(value)
+    val two = BigDecimal(2)
+    val lo = v.add(BigDecimal(Math.nextDown(value))).divide(two)
+    val hi = v.add(BigDecimal(Math.nextUp(value))).divide(two)
+    val even = (java.lang.Double.doubleToRawLongBits(value) and 1L) == 0L
+    val below = d.compareTo(lo)
+    val above = d.compareTo(hi)
+    return (below > 0 || (below == 0 && even)) && (above < 0 || (above == 0 && even))
+}
 
 private fun digitsOf(d: BigDecimal): Pair<String, Int> {
     val unscaled = d.unscaledValue().toString()

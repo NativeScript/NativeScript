@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
 
 /**
  * TypeScript to Kotlin, typed by the checker, with JavaScript's semantics
@@ -272,6 +272,10 @@ export class Translator implements AsyncTranslator {
       case 'PropertyDescriptor': case 'PropertyDescriptorMap': if (sym?.declarations?.[0] && /[\\/]typescript[\\/]lib[\\/]/.test(sym.declarations[0].getSourceFile().fileName)) return 'Any?'; break;
 
       case 'Generator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSGenerator<${arg(0)}>`; break;
+      case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
+      case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
+        if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
+        break;
       case 'IterableIterator': case 'MapIterator': case 'SetIterator': case 'ArrayIterator': case 'Iterator': case 'IteratorObject': case 'StringIterator': return `JSIterator<${arg(0)}>`;
       case 'Iterable': if (isLibDeclaration(sym?.declarations?.[0])) return `JSIterable<${arg(0)}>`; break;
       case 'AsyncGenerator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSAsyncGenerator<${arg(0)}>`; break;
@@ -1367,9 +1371,13 @@ export class Translator implements AsyncTranslator {
     return ` = JSArray(ArrayList(${js}.${rest ? 'jsCollect()' : `jsTake(${(name as ts.ArrayBindingPattern).elements.length})`}))`;
   }
 
-  private forStatement(s: ts.ForStatement): string {
+  private forStatement(s: ts.ForStatement, scoped = false): string {
     const i = this.indent;
     const list = s.initializer && ts.isVariableDeclarationList(s.initializer) ? s.initializer : null;
+    // A `let` loop variable is the loop's own: a sibling declaring the same name needs the loop in a scope of its own.
+    if (!scoped && list && list.flags & ts.NodeFlags.BlockScoped && redeclaredBeside(s, list)) {
+      return `${i}run {\n${this.nested(() => this.forStatement(s, true))}\n${i}}`;
+    }
     const init = list ? this.declarationList(list, true) : s.initializer ? i + this.exprStatement(s.initializer as ts.Expression) : '';
     const cond = s.condition ? this.cond(s.condition) : 'true';
     const step = s.incrementor ? this.exprStatement(s.incrementor) : '';
@@ -1916,6 +1924,8 @@ export class Translator implements AsyncTranslator {
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
     if (e.questionDotToken) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
+    const intl = intlConstructor(callee, this.checker);
+    if (intl) return `JS${intl}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
     if (isObjectToStringCall(callee, this.checker)) return `jsObjectToString(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : 'null'})`;
     if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) {
       return `this.${ident(callee.name.text)}.value(${this.args(e, this.arity(e)).join(', ')})`;
@@ -2390,6 +2400,7 @@ export class Translator implements AsyncTranslator {
     const a = e.arguments.map((x) => this.toNumber(x));
     switch (name) {
       case 'toFixed': return `jsToFixed(${t}${a[0] ? `, ${a[0]}` : ''})`;
+      case 'toLocaleString': return `jsNumberToLocaleString(${[t, ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
       case 'toPrecision': return a[0] ? `jsToPrecision(${t}, ${a[0]})` : `js(${t})`;
       case 'toExponential': return `jsToExponential(${t}${a[0] ? `, ${a[0]}` : ''})`;
       case 'toString': return a[0] ? `jsNumberToString(${t}, ${a[0]})` : `js(${t})`;
@@ -2501,6 +2512,8 @@ export class Translator implements AsyncTranslator {
       return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
     }
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
+    const intl = intlConstructor(callee, this.checker);
+    if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     if (name === 'Array') throw this.error(e, `new ${name}`);

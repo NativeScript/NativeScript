@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -268,6 +268,10 @@ export class Translator implements AsyncTranslator {
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
       case 'WeakRef': return `JSWeakRef<${arg(0)}>`;
       case 'TemplateStringsArray': return 'JSArray<String>';
+      case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
+      case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
+        if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
+        break;
       case 'Generator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSGenerator<${arg(0)}>`; break;
       case 'Iterator': case 'IterableIterator': case 'IteratorObject': case 'MapIterator': case 'SetIterator': case 'ArrayIterator': case 'StringIterator':
         if (isLibDeclaration(sym?.declarations?.[0])) return `JSIterator<${arg(0)}>`;
@@ -1842,6 +1846,13 @@ export class Translator implements AsyncTranslator {
     const js = this.jsIteration(e);
     if (js) return `${js}.jsCollect()`;
     const t = this.typeOf(e);
+    // A tuple (`['a', 'b'] as const`) iterates its elements.
+    if (t.startsWith('(') && this.checker.isTupleType(this.checker.getTypeAtLocation(e))) {
+      const n = this.checker.getTypeArguments(this.checker.getTypeAtLocation(e) as ts.TypeReference).length;
+      const el = splitTopLevel(t.slice(1, -1));
+      const element = el.every((x) => x === el[0]) ? el[0] : 'Any?';
+      return `({ (__t: ${t}) -> [${element}] in [${Array.from({ length: n }, (_, k) => `__t.${k}`).join(', ')}] }(${this.expr(e)}))`;
+    }
     if (t === 'String') return `jsCodePoints(${this.expr(e)})`;
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
     if (t === 'JSMatch') return `${this.expr(e)}.values`;
@@ -2641,6 +2652,8 @@ export class Translator implements AsyncTranslator {
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
     if (e.questionDotToken && !this.core.isKitMethod(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
+    const intl = intlConstructor(callee, this.checker);
+    if (intl) return `JS${intl}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
     if (isObjectToStringCall(callee, this.checker)) return `jsObjectToString(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : 'nil'})`;
     // A callback passed as a prop (`onTap: () => void`).
     if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) {
@@ -3167,6 +3180,7 @@ export class Translator implements AsyncTranslator {
     const a = this.args(e);
     switch (name) {
       case 'toFixed': return `jsToFixed(${t}, ${a[0] ?? '0'})`;
+      case 'toLocaleString': return `jsNumberToLocaleString(${[t, ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
       case 'toPrecision': return a[0] ? `jsToPrecision(${t}, ${a[0]})` : `js(${t})`;
       case 'toString': return a[0] ? `jsNumberToString(${t}, radix: ${a[0]})` : `js(${t})`;
       case 'valueOf': return t;
@@ -3278,6 +3292,8 @@ export class Translator implements AsyncTranslator {
       return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
     }
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
+    const intl = intlConstructor(callee, this.checker);
+    if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     if (t === 'InteropReference') return `InteropReference(${args[0] ? this.coerce(args[0], 'Any?') : ''})`;
@@ -3865,19 +3881,6 @@ function assignsTo(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeCh
   };
   visit(node);
   return found;
-}
-
-/** Whether a statement beside a `for` declares one of the loop's variable names. */
-function redeclaredBeside(loop: ts.ForStatement, list: ts.VariableDeclarationList): boolean {
-  const names = new Set(list.declarations.flatMap((d) => (ts.isIdentifier(d.name) ? [d.name.text] : [])));
-  const parent = ts.isLabeledStatement(loop.parent) ? loop.parent.parent : loop.parent;
-  const siblings = ts.isBlock(parent) || ts.isSourceFile(parent) || ts.isModuleBlock(parent) || ts.isCaseClause(parent) || ts.isDefaultClause(parent) ? parent.statements : [];
-  const declares = (st: ts.Statement): boolean => {
-    const inner = ts.isLabeledStatement(st) ? st.statement : st;
-    const l = ts.isVariableStatement(inner) ? inner.declarationList : ts.isForStatement(inner) && inner.initializer && ts.isVariableDeclarationList(inner.initializer) ? inner.initializer : null;
-    return !!l && l.declarations.some((d) => ts.isIdentifier(d.name) && names.has(d.name.text));
-  };
-  return siblings.some((st) => st !== loop && st !== loop.parent && declares(st));
 }
 
 /** A Swift parameter's type without its default value (`= nil`). */

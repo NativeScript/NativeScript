@@ -2,6 +2,13 @@ import ts from 'typescript';
 
 // JavaScript semantics both translators share, decided from the syntax tree and the checker.
 
+/** `Intl.NumberFormat` or `Intl.DateTimeFormat`, as the library declares `Intl`: which one. */
+export function intlConstructor(e: ts.Expression, checker: ts.TypeChecker): 'NumberFormat' | 'DateTimeFormat' | null {
+  if (!ts.isPropertyAccessExpression(e) || !ts.isIdentifier(e.expression) || e.expression.text !== 'Intl') return null;
+  if (!checker.getSymbolAtLocation(e.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return null;
+  return e.name.text === 'NumberFormat' || e.name.text === 'DateTimeFormat' ? e.name.text : null;
+}
+
 /** `String.raw` as the library declares it. */
 export function isStringRaw(tag: ts.Expression, checker: ts.TypeChecker): boolean {
   if (!ts.isPropertyAccessExpression(tag) || tag.name.text !== 'raw' || !ts.isIdentifier(tag.expression) || tag.expression.text !== 'String') return false;
@@ -132,4 +139,17 @@ export function unsafeReceiver(target: ts.Expression, checker: ts.TypeChecker): 
     return objectLike(el) && !(el.isUnion() && el.types.some((p) => p.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null))) ? 'undefined' : null;
   }
   return null;
+}
+
+/** Whether a statement beside a `for` declares one of the loop's variable names. */
+export function redeclaredBeside(loop: ts.ForStatement, list: ts.VariableDeclarationList): boolean {
+  const names = new Set(list.declarations.flatMap((d) => (ts.isIdentifier(d.name) ? [d.name.text] : [])));
+  const parent = ts.isLabeledStatement(loop.parent) ? loop.parent.parent : loop.parent;
+  const siblings = ts.isBlock(parent) || ts.isSourceFile(parent) || ts.isModuleBlock(parent) || ts.isCaseClause(parent) || ts.isDefaultClause(parent) ? parent.statements : [];
+  const declares = (st: ts.Statement): boolean => {
+    const inner = ts.isLabeledStatement(st) ? st.statement : st;
+    const l = ts.isVariableStatement(inner) ? inner.declarationList : ts.isForStatement(inner) && inner.initializer && ts.isVariableDeclarationList(inner.initializer) ? inner.initializer : null;
+    return !!l && l.declarations.some((d) => ts.isIdentifier(d.name) && names.has(d.name.text));
+  };
+  return siblings.some((st) => st !== loop && st !== loop.parent && declares(st));
 }

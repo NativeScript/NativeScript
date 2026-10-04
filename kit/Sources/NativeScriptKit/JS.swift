@@ -10,7 +10,12 @@ public func js(_ value: Bool) -> String { value ? "true" : "false" }
 public func js(_ value: String) -> String { value }
 
 /// `Math.round`: halves round toward +∞.
-public func jsRound(_ value: Double) -> Double { (value + 0.5).rounded(.down) }
+public func jsRound(_ value: Double) -> Double {
+    guard value.isFinite else { return value }
+    let floor = value.rounded(.down)
+    let r = value - floor >= 0.5 ? floor + 1 : floor
+    return r == 0 && value.sign == .minus ? -0.0 : r
+}
 
 /// `s.includes(sub)`: true for an empty `sub`, as JavaScript has it.
 public func jsIncludes(_ s: String, _ sub: String) -> Bool { sub.isEmpty || s.contains(sub) }
