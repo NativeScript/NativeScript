@@ -6,7 +6,8 @@ import UIKit
 enum Appearance {
     static weak var window: UIWindow?
 
-    private static var traits: UITraitCollection { window?.rootViewController?.traitCollection ?? window?.traitCollection ?? UITraitCollection.current }
+    /// The window's traits change before its controllers' do.
+    private static var traits: UITraitCollection { window?.traitCollection ?? UITraitCollection.current }
 
     static var systemAppearance: String { traits.userInterfaceStyle == .dark ? "dark" : "light" }
 

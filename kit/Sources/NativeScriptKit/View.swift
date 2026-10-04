@@ -53,6 +53,8 @@ open class View: NSObject {
     private var keyframeAnimations: [KeyframeAnimation] = []
     private var cssValues: [String: Any] = [:]
     private var cssOrder: [String] = []
+    /// Custom properties (`--name`) the matched rules declare, reset on every match.
+    var scopedCssVariables: [String: String] = [:]
     var applied: [String: Any] = [:]
 
     static let inheritedProperties: Set<String> = [
@@ -235,7 +237,37 @@ open class View: NSObject {
     private func matchCSS() {
         stopKeyframeAnimations()
         let match = StyleSheet.app.match(self)
-        let next = match.values
+        // Plain values and variables first, then values with var() or calc()
+        // (once the variables are known), then shorthands that held them.
+        scopedCssVariables = [:]
+        var next: [(name: String, value: Any)] = []
+        var expressions: [(name: String, value: String)] = []
+        var pending: [(name: String, value: PendingShorthand)] = []
+        for (name, value) in match.values {
+            if let shorthand = value as? PendingShorthand {
+                pending.append((name, shorthand))
+            } else if isCssExpression(value), let text = value as? String {
+                expressions.append((name, text))
+            } else if name.hasPrefix("--") {
+                scopedCssVariables[name] = toText(value)
+            } else {
+                next.append((name, value))
+            }
+        }
+        for (name, text) in expressions {
+            let value = evaluateCssExpressions(text)
+            if name.hasPrefix("--") {
+                scopedCssVariables[name] = value ?? "unset"
+            } else if let value {
+                next.append((name, value))
+            }
+        }
+        var resolved: [String: [(String, Any?)]] = [:]
+        for (name, shorthand) in pending {
+            let longhands = resolved[shorthand.shorthand + shorthand.value] ?? evaluateCssExpressions(shorthand.value).map { expandShorthand(shorthand.shorthand, $0) } ?? []
+            resolved[shorthand.shorthand + shorthand.value] = longhands
+            if let value = longhands.first(where: { $0.0 == name })?.1 { next.append((name, value)) }
+        }
         let removed = cssOrder.filter { name in !next.contains { $0.name == name } }
         cssValues = Dictionary(next.map { ($0.name, $0.value) }, uniquingKeysWith: { $1 })
         cssOrder = next.map(\.name)

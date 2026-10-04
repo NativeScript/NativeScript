@@ -146,7 +146,11 @@ struct StyleSheet {
             let rule = rules[entry.rule]
             for declaration in rule.declarations {
                 let name = declaration.name.hasPrefix("--") ? declaration.name : propertyName(css: declaration.name)
-                for (longhand, value) in expandShorthand(name, declaration.value) {
+                var longhands = expandShorthand(name, declaration.value)
+                if isCssExpression(declaration.value), let names = StyleSheet.shorthandLonghands(name) {
+                    longhands = names.map { ($0, PendingShorthand(shorthand: name, value: declaration.value)) }
+                }
+                for (longhand, value) in longhands {
                     guard let value else { continue }
                     if let index = position[longhand] {
                         result.values[index].value = value
@@ -161,6 +165,12 @@ struct StyleSheet {
             }
         }
         return result
+    }
+
+    /// The longhands a shorthand sets, or nil for a property that is not one.
+    static func shorthandLonghands(_ name: String) -> [String]? {
+        let names = expandShorthand(name, "0").map(\.0)
+        return names == [name] ? nil : names
     }
 
     /// The dependencies of a dynamic selector: a simple one on the view itself
