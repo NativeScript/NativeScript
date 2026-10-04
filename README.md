@@ -79,7 +79,7 @@ transforms, animations, spans, pickers, CSS selectors and variables,
 borders, backgrounds, modals, TabView, Tailwind v4, the update order, and
 core's imperative API: `view.animate()`, `Animation`, TouchManager,
 RootLayout's `open`/`close`, `Frame.navigate` and `showModal` from script)
-are 0 pixels apart in all 182 shots; the ListView and Update order screens
+are 0 pixels apart in all 171 shots; the ListView and Update order screens
 of the other five are 0 pixels apart in all of their shots
 (`tools/gallery.py`).
 
