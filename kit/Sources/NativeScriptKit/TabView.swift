@@ -61,6 +61,8 @@ open class TabViewItem: View {
     open override func setProperty(_ name: String, _ value: Any?) {
         switch name {
         case "title", "iconSource", "textTransform": update()
+        // Read when the tab view makes its tabs, as core reads `role`.
+        case "role": break
         default: super.setProperty(name, value)
         }
     }
@@ -155,6 +157,16 @@ open class TabView: View {
         case "iosIconRenderingMode":
             iconsCache = [:]
             for item in items where item.iconSource != nil { item.update() }
+        case "iosTabBarMinimizeBehavior":
+            guard #available(iOS 26.0, *), let controller = tabBarController else { return }
+            switch toText(value) {
+            case "never": controller.tabBarMinimizeBehavior = .never
+            case "onScrollDown": controller.tabBarMinimizeBehavior = .onScrollDown
+            case "onScrollUp": controller.tabBarMinimizeBehavior = .onScrollUp
+            default: controller.tabBarMinimizeBehavior = .automatic
+            }
+        case "iosBottomAccessory":
+            applyBottomAccessory(value as? View)
         default:
             super.setProperty(name, value)
         }
@@ -223,7 +235,12 @@ open class TabView: View {
         for (index, item) in items.enumerated() {
             guard let itemController = viewController(for: item) else { continue }
             controllers.append(itemController)
-            tabs.append(UITab(title: item.title, image: icon(for: item), identifier: "\(index)") { _ in itemController })
+            // `role: 'search'` is a UISearchTab, which iOS 26 sets apart from the other tabs.
+            if toText(item.applied["role"]) == "search" {
+                tabs.append(UISearchTab(title: item.title, image: icon(for: item), identifier: "\(index)") { _ in itemController })
+            } else {
+                tabs.append(UITab(title: item.title, image: icon(for: item), identifier: "\(index)") { _ in itemController })
+            }
         }
         controller.tabs = tabs
         controller.viewControllers = controllers
@@ -295,8 +312,72 @@ open class TabView: View {
         updateAppearance(tabBar, appearance)
     }
 
+    private var bottomAccessoryView: View?
+
+    /// `_applyBottomAccessory` (iOS 26): the view measured at the tab bar's width, at least 44 high, in a `UITabAccessory`.
+    private func applyBottomAccessory(_ view: View?) {
+        guard #available(iOS 26.0, *), let controller = tabBarController else { return }
+        guard let view else {
+            controller.setBottomAccessory(nil, animated: false)
+            bottomAccessoryView?.unload()
+            bottomAccessoryView = nil
+            return
+        }
+        if !view.isLoaded { view.load() }
+        guard let content = view.nativeView else { return }
+        content.translatesAutoresizingMaskIntoConstraints = true
+        var width = Double(controller.tabBar.frame.width > 0 ? controller.tabBar.frame.width : UIScreen.main.bounds.width)
+        let insets = controller.tabBar.safeAreaInsets
+        if insets.left + insets.right > 0 && Double(insets.left + insets.right) < width { width -= Double(insets.left + insets.right) }
+        let widthPx = floor(LayoutHelper.toDevicePixels(width))
+        view.measure(LayoutHelper.makeMeasureSpec(widthPx, LayoutHelper.exactly), LayoutHelper.makeMeasureSpec(0, LayoutHelper.unspecified))
+        let height = max(44, LayoutHelper.toDeviceIndependentPixels(Double(view.measuredHeight)))
+        let container = TabAccessoryContainer(owner: view)
+        container.translatesAutoresizingMaskIntoConstraints = true
+        container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        container.clipsToBounds = true
+        container.addSubview(content)
+        let constraint = container.heightAnchor.constraint(equalToConstant: height)
+        constraint.priority = UILayoutPriority(999)
+        NSLayoutConstraint.activate([constraint])
+        controller.setBottomAccessory(UITabAccessory(contentView: container), animated: false)
+        controller.tabBar.setNeedsLayout()
+        controller.tabBar.layoutIfNeeded()
+        bottomAccessoryView = view
+    }
+
     private func updateAppearance(_ tabBar: UITabBar, _ appearance: UITabBarAppearance) {
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
+    }
+}
+
+/// `NSTabAccessoryContainer`: lays the accessory's view out at its own bounds on every layout pass.
+private final class TabAccessoryContainer: UIView {
+    private weak var owner: View?
+
+    init(owner: View) {
+        self.owner = owner
+        super.init(frame: .zero)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    override func traitCollectionDidChange(_ previous: UITraitCollection?) {
+        super.traitCollectionDidChange(previous)
+        guard let previous, traitCollection.horizontalSizeClass != previous.horizontalSizeClass else { return }
+        invalidateIntrinsicContentSize()
+        setNeedsLayout()
+        layoutIfNeeded()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let owner, let native = owner.nativeView else { return }
+        native.frame = bounds
+        let wp = floor(LayoutHelper.toDevicePixels(Double(bounds.width)))
+        let hp = floor(LayoutHelper.toDevicePixels(Double(bounds.height)))
+        owner.measure(LayoutHelper.makeMeasureSpec(wp, LayoutHelper.exactly), LayoutHelper.makeMeasureSpec(hp, LayoutHelper.exactly))
+        owner.layout(0, 0, wp, hp)
     }
 }

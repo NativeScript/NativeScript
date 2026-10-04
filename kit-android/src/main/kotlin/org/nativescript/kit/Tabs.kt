@@ -99,6 +99,8 @@ open class TabViewItem : View() {
                     tv.transformationMethod = null
                 }
             }
+            // Core's Android tab view makes a search-role item a tab like the others.
+            "role" -> {}
         }
     }
 
