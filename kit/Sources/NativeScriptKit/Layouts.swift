@@ -69,7 +69,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
         let kept = Set(next.map(ObjectIdentifier.init))
         for child in subViews where !kept.contains(ObjectIdentifier(child)) {
             removeView(child)
-            child.nativeView?.removeFromSuperview()
+            child.removeFromNativeVisualTree()
             unregisterLayoutChild(child)
         }
         let existing = Set(subViews.map(ObjectIdentifier.init))
@@ -137,7 +137,7 @@ open class LayoutBase: CustomLayoutView, RegionHost {
         subViews.remove(at: index)
         entries.removeAll { if case .view(let v) = $0 { return v === child } else { return false } }
         removeView(child)
-        child.nativeView?.removeFromSuperview()
+        child.removeFromNativeVisualTree()
         unregisterLayoutChild(child)
         requestLayout()
     }
@@ -296,7 +296,7 @@ open class ContentView: CustomLayoutView {
     func setContent(_ value: View?) {
         if let old = contentView {
             removeView(old)
-            old.nativeView?.removeFromSuperview()
+            old.removeFromNativeVisualTree()
         }
         contentView = value
         if let value {

@@ -3,6 +3,13 @@ import UIKit
 // Box shadows, gradients and clip paths of styling/background.ios.
 
 extension View {
+    /// `_removeViewFromNativeVisualTree`: the native view and the shadow container
+    /// drawn beside it leave the parent (the container stays the view's, as in core).
+    func removeFromNativeVisualTree() {
+        nativeView?.removeFromSuperview()
+        backgroundLayers.outerShadowContainerLayer?.removeFromSuperlayer()
+    }
+
     /// `drawBoxShadow`: a shadow layer per shadow in a container under the
     /// view's layer, each masked so a transparent view shows no shadow beneath.
     func drawBoxShadow() {

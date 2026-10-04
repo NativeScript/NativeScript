@@ -1798,6 +1798,13 @@ export class Translator {
   expr(e: ts.Expression): string {
     const s = this.subst.get(e);
     if (s) return s;
+    if (ts.isParenthesizedExpression(e) && ts.isBinaryExpression(e.expression) && e.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(e.expression.left)) {
+      // `(match = re.exec(s)) !== null`: the assignment's value is the variable after it (Swift's assignment has none).
+      const a = e.expression;
+      const t = this.declaredTypeOf(a.left) ?? this.typeOf(a.left);
+      const tp = this.tryPrefix(a);
+      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.expr(a)}; return ${this.expr(a.left)} }())`;
+    }
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
     if (ts.isBigIntLiteral(e)) throw this.error(e, 'BigInt');
