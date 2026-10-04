@@ -56,6 +56,8 @@ export class Translator {
   private computed = new Set<string>();
   /** App classes another app class extends: they stay open. */
   private extended = new Set<string>();
+  /** Interfaces an app class implements: Swift protocols, with a class for their object literals. */
+  private protocols = new Set<string>();
   indent = '';
   private tmp = 0;
   /** Expressions already evaluated into a Swift name (awaited values, operands read before an await). */
@@ -87,6 +89,7 @@ export class Translator {
         if (ts.isClassLike(n)) {
           const base = n.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
           if (base && ts.isIdentifier(base.expression)) this.extended.add(base.expression.text);
+          for (const i of n.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) this.protocols.add(i.expression.getText());
         }
         ts.forEachChild(n, visit);
       };
@@ -178,7 +181,7 @@ export class Translator {
     }
     if (name && ERRORS[name] && sym?.declarations?.some((d) => d.getSourceFile().isDeclarationFile)) return ERRORS[name];
     const index = t.getStringIndexType() ?? t.getNumberIndexType();
-    if (index && !t.getProperties().length) return `[String: ${this.type(index, where)}]`;
+    if (index && !t.getProperties().length) return `JSRecord<${this.type(index, where)}>`;
     const calls = t.getCallSignatures();
     if (calls.length && !t.getProperties().length) {
       const s = calls[0];
@@ -331,10 +334,33 @@ export class Translator {
   }
 
   private registerInterface(name: string, file: string, members: ts.NodeArray<ts.TypeElement>) {
+    if (this.protocols.has(name)) { this.interfaces.set(name, { file, code: () => this.protocolCode(name, members) }); return; }
     this.interfaces.set(name, { file, code: () => this.objectClass(name, members.filter(ts.isPropertySignature).map((m) => {
       const t = this.typeOf(m);
       return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t };
     }), null) });
+  }
+
+  /** An interface classes implement: a protocol, and `<Name>Object` for the object literals of its type. */
+  private protocolCode(name: string, members: ts.NodeArray<ts.TypeElement>): string {
+    const fields = members.filter(ts.isPropertySignature).map((m) => {
+      const t = this.typeOf(m);
+      return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t, readonly: hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) };
+    });
+    const methods = members.filter(ts.isMethodSignature).map((m) => {
+      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name) }));
+      return { name: ident(m.name.getText()), params, ret: this.returnTypeOf(m) };
+    });
+    const signature = (m: (typeof methods)[0]) => `func ${m.name}(${m.params.map((p) => `_ ${p.name}: ${p.type}`).join(', ')}) throws${m.ret === 'Void' ? '' : ` -> ${m.ret}`}`;
+    const fnType = (m: (typeof methods)[0]) => `(${m.params.map((p) => p.type).join(', ')}) throws -> ${m.ret}`;
+    const lines = [`protocol ${name}: JSDynamic {`];
+    for (const f of fields) lines.push(`    var ${ident(f.name)}: ${f.type} { get${f.readonly ? '' : ' set'} }`);
+    for (const m of methods) lines.push(`    ${signature(m)}`);
+    lines.push('}', '');
+    const literal = this.objectClass(`${name}Object`, [...fields, ...methods.map((m) => ({ name: `_${m.name}`, type: fnType(m) }))], null)
+      .replace(/^final class (\w+): JSDynamic \{/, `final class $1: ${name} {`)
+      .replace(/\n}$/, '\n' + methods.map((m) => `    ${signature(m)} { try _${m.name}(${m.params.map((p) => p.name).join(', ')}) }`).join('\n') + '\n}');
+    return lines.join('\n') + literal;
   }
 
   /** The classes for a module's interfaces that translated code used; call after translating everything. */
@@ -626,7 +652,10 @@ export class Translator {
       else throw this.error(heritage, `extending ${baseName}`);
     }
     const isError = !!base && !appBase;
-    const lines = [`${this.extended.has(name) ? '' : 'final '}class ${ident(name)}${this.generics(cls)}${base ? `: ${base}` : ': JSDynamic'} {`];
+    const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).map((i) => i.expression.getText());
+    for (const i of implemented) this.used.add(i);
+    const conformances = [...(base ? [base] : []), ...implemented];
+    const lines = [`${this.extended.has(name) ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${conformances.length ? conformances.join(', ') : 'JSDynamic'} {`];
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fieldInits: string[] = [];
@@ -713,6 +742,12 @@ export class Translator {
       lines.push(`    ${mods}var ${ident(n)}: ${t} {`, ...parts, '    }');
     }
     for (const m of cls.members) {
+      if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
+        // An abstract method: subclasses override it.
+        const ret = this.returnTypeOf(m);
+        lines.push(`    func ${ident(m.name.getText())}(${this.params(m, false)})${this.throwsInfo.fn(m) ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} { fatalError("abstract method ${name}.${m.name.getText()}") }`);
+        continue;
+      }
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const n = m.name.getText();
       lines.push('    ' + this.func(m, ident(n), `${isStatic(m) ? 'static ' : ''}${inherited.has(n) && !isStatic(m) ? 'override ' : ''}`));
@@ -1055,6 +1090,12 @@ export class Translator {
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.closure(e);
     if (ts.isTypeOfExpression(e)) return this.typeofExpr(e);
     if (ts.isAwaitExpression(e)) throw this.error(e, 'await outside a statement of an async function');
+    if (ts.isDeleteExpression(e)) {
+      const target = e.expression;
+      if (ts.isElementAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${this.str(target.argumentExpression)})`;
+      if (ts.isPropertyAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${swiftString(target.name.text)})`;
+      throw this.error(e, 'delete of this member');
+    }
     if (ts.isVoidExpression(e)) return `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
     if (ts.isRegularExpressionLiteral(e)) {
       const text = e.text;
@@ -1133,7 +1174,7 @@ export class Translator {
       return t === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, t);
     }
     const base = this.typeOf(target);
-    if (base.replace(/\?$/, '').startsWith('[String:')) {
+    if (base.replace(/\?$/, '').startsWith('JSRecord<')) {
       // A key of a dictionary-typed object: undefined when missing.
       const read = `${this.expr(target)}${base.endsWith('?') ? '?' : ''}[${swiftString(name)}]`;
       const t = this.typeOf(e);
@@ -1158,7 +1199,7 @@ export class Translator {
     if (t.startsWith('JSArray<')) return `${target}${q}[Int(${this.expr(key)})]`;
     if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
     if (t.startsWith('(') && ts.isNumericLiteral(key)) return `${target}.${key.text}`;
-    if (t.startsWith('[String:')) {
+    if (t.startsWith('JSRecord<')) {
       // A missing key is undefined in JavaScript; its declared type here is the value type.
       if (isWriteTarget(e)) return `${target}[${this.str(key)}]`;
       const vt = this.typeOf(e);
@@ -1400,11 +1441,19 @@ export class Translator {
         if (method === 'parse') return `jsJSONParse(${this.expr(arg(0))})`;
         if (method === 'stringify') return `jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})!`;
         break;
-      case 'Object':
+      case 'Object': {
+        const record = this.typeOf(arg(0)).startsWith('JSRecord<');
+        if (record && ['keys', 'values', 'entries'].includes(method)) return `${this.expr(arg(0))}.${method}`;
         if (method === 'keys') return `JSArray(jsKeysOf(${this.expr(arg(0))}))`;
-        if (method === 'values') return `JSArray(jsKeysOf(${this.expr(arg(0))}).map { jsGet(${this.expr(arg(0))}, $0) })`;
+        if (method === 'values' || method === 'entries') {
+          const el = T().replace(/^JSArray<(.*)>$/, '$1');
+          const value = method === 'values' ? el : el.replace(/^\(String, (.*)\)$/, '$1');
+          const read = this.fromAnyCode('jsField(__o, $0)', value);
+          return `{ (__o: Any?) -> ${T()} in JSArray(jsKeysOf(__o).map { ${method === 'values' ? read : `($0, ${read})`} }) }(${this.expr(arg(0))})`;
+        }
         if (method === 'freeze') return this.expr(arg(0));
         break;
+      }
       case 'Array':
         if (method === 'isArray') return `JSArray<Any?>.isArray(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'from' && e.arguments.length === 1) return `${T()}.from(${this.iterable(arg(0))})`;
@@ -1845,20 +1894,27 @@ export class Translator {
     const contextual = this.checker.getContextualType(e);
     const type = contextual && !(contextual.flags & ts.TypeFlags.Any) ? contextual : this.checker.getTypeAtLocation(e);
     const name = this.type(this.checker.getNonNullableType(type), e).replace(/\?$/, '');
-    if (name.startsWith('[String:')) {
-      const v = name.replace(/^\[String: (.*)\]$/, '$1');
+    if (name.startsWith('JSRecord<')) {
+      const v = name.replace(/^JSRecord<(.*)>$/, '$1');
       const entries = e.properties.map((p) => {
-        if (ts.isPropertyAssignment(p)) return `${swiftString(p.name.getText().replace(/^['"]|['"]$/g, ''))}: ${this.coerce(p.initializer, v)}`;
-        if (ts.isShorthandPropertyAssignment(p)) return `${swiftString(p.name.text)}: ${ident(p.name.text)}`;
+        if (ts.isPropertyAssignment(p)) return `(${swiftString(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${this.coerce(p.initializer, v)})`;
+        if (ts.isShorthandPropertyAssignment(p)) return `(${swiftString(p.name.text)}, ${ident(p.name.text)})`;
         throw this.error(p, 'this member in a dictionary literal');
       });
-      return entries.length ? `[${entries.join(', ')}]` : '[:]';
+      return entries.length ? `${name}([${entries.join(', ')}])` : `${name}()`;
     }
     if (name === 'Any?') return this.dynamicObject(e);
     const decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     const shape = [...this.shapes.values()].find((s) => s.name === name);
     let order: { name: string; type: string }[];
-    if (shape) order = shape.fields;
+    let target = name;
+    if (this.protocols.has(name) && decl && ts.isInterfaceDeclaration(decl)) {
+      target = `${name}Object`;
+      order = [
+        ...decl.members.filter(ts.isPropertySignature).map((m) => ({ name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m) })),
+        ...decl.members.filter(ts.isMethodSignature).map((m) => ({ name: m.name.getText(), type: this.typeOf(m), label: `_${m.name.getText()}` })),
+      ];
+    } else if (shape) order = shape.fields;
     else if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl))) {
       order = decl.members.filter(ts.isPropertySignature).map((m) => ({ name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m) }));
     } else throw this.error(e, `an object literal of type ${name}`);
@@ -1884,8 +1940,8 @@ export class Translator {
     }
     const declared = order.map((f) => f.name).filter((n) => written.includes(n));
     const reorder = written.join() !== declared.join() ? `, jsOrder: [${written.map(swiftString).join(', ')}]` : '';
-    const args = order.filter((f) => given.has(f.name)).map((f) => `${ident(f.name)}: ${given.get(f.name)}`).join(', ');
-    return `${name}(${args}${args && reorder ? reorder : reorder.slice(2)})`;
+    const args = order.filter((f) => given.has(f.name)).map((f) => `${ident((f as { label?: string }).label ?? f.name)}: ${given.get(f.name)}`).join(', ');
+    return `${target}(${args}${args && reorder ? reorder : reorder.slice(2)})`;
   }
 
   /** An object literal typed `any`: a plain JavaScript object. */

@@ -15,10 +15,10 @@ extension Emitter where T == Void {
 /// The route a component was created for (Angular `ActivatedRoute`): set by the
 /// router before it constructs the routed component.
 public final class ActivatedRoute {
-    public struct Snapshot { public let params: [String: String] }
+    public struct Snapshot { public let params: JSRecord<String> }
     public let snapshot: Snapshot
     public static var current = ActivatedRoute(params: [:])
-    public init(params: [String: String]) { snapshot = Snapshot(params: params) }
+    public init(params: [String: String]) { snapshot = Snapshot(params: JSRecord(params)) }
 }
 
 public struct Route {

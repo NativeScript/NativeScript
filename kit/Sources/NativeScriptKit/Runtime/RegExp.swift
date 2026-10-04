@@ -73,7 +73,7 @@ public final class JSMatch {
     public let index: Double
     public let input: String
     public let values: JSArray<String?>
-    public let groups: [String: String]?
+    public let groups: JSRecord<String>?
 
     init(_ m: NSTextCheckingResult, in s: String, regex: NSRegularExpression) {
         let ns = s as NSString
@@ -86,7 +86,7 @@ public final class JSMatch {
         index = Double(m.range.location)
         input = s
         let names = JSMatch.groupNames(regex.pattern)
-        var named: [String: String] = [:]
+        let named = JSRecord<String>()
         for name in names {
             let r = m.range(withName: name)
             if r.location != NSNotFound { named[name] = ns.substring(with: r) }
