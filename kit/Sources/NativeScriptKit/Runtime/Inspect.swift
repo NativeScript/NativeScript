@@ -211,6 +211,7 @@ private final class JSInspectContext {
         case is JSNull: return "null"
         case let d as JSDate: return d.time.isFinite ? ((try? d.toISOString()) ?? "Invalid Date") : "Invalid Date"
         case let r as JSRegExp: return r.toString()
+        case let symbol as JSSymbol: return symbol.toString()
         default: break
         }
         if let n = jsNumeric(v) { return jsInspectNumber(n) }
@@ -278,10 +279,13 @@ private final class JSInspectContext {
             keyed = error
             base = formatError(error)
             if keys.isEmpty { return base }
+        } else if let weak = value as? JSDynamic & JSWeakCollection {
+            return "\(weak.jsClassName ?? "") { <items unknown> }"
         } else if let dynamic = value as? JSDynamic {
-            keys = dynamic.jsKeys
+            keys = dynamic.jsKeys + ((dynamic as? JSSymbolKeyed)?.jsSymbolKeys ?? [])
             keyed = dynamic
-            if let className = dynamic.jsClassName {
+            if var className = dynamic.jsClassName {
+                if let tag = (dynamic as? JSToStringTag)?.jsToStringTag, tag != className { className += " [\(tag)]" }
                 name = className
                 if keys.isEmpty { return "\(className) {}" }
                 braces.0 = "\(className) {"
@@ -319,7 +323,7 @@ private final class JSInspectContext {
         indentationLvl += 2
         let text = formatValue(value, recurseTimes)
         indentationLvl -= 2
-        let name = key == "__proto__" ? "['__proto__']" : jsIsIdentifierKey(key) ? key : jsInspectQuote(key)
+        let name = key == "__proto__" ? "['__proto__']" : JSSymbol.of(key: key).map { $0.toString() } ?? (jsIsIdentifierKey(key) ? key : jsInspectQuote(key))
         return "\(name): \(text)"
     }
 

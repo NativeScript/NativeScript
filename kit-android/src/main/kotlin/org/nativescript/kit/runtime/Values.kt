@@ -68,7 +68,7 @@ fun jsArrayIndex(key: String): Long? {
  * A plain JavaScript object. Own keys enumerate in JavaScript order: array-index keys
  * ascending, then the other keys in insertion order.
  */
-class JSObject() : JSDynamic, JSReactiveConvertible {
+class JSObject() : JSDynamic, JSSymbolKeyed, JSReactiveConvertible {
     private val storage = HashMap<String, Any?>()
     private val indexKeys = ArrayList<Long>()
     private val namedKeys = ArrayList<String>()
@@ -135,7 +135,13 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
     val keys: List<String>
         get() {
             jsTracker?.track()
-            return indexKeys.map { it.toString() } + namedKeys
+            return indexKeys.map { it.toString() } + namedKeys.filter { !jsIsSymbolKey(it) }
+        }
+
+    override val jsSymbolKeys: List<String>
+        get() {
+            jsTracker?.track()
+            return namedKeys.filter { jsIsSymbolKey(it) }
         }
 
     override fun jsGet(key: String): Any? = this[key]
@@ -242,7 +248,7 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
 /** `key in object`. */
 fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSObject -> target.has(key)
-    is JSDynamic -> key in target.jsKeys
+    is JSDynamic -> if (jsIsSymbolKey(key)) (target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false else key in target.jsKeys
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
     else -> false
 }
@@ -259,6 +265,7 @@ fun jsTypeof(value: Any?): String = when (value) {
     is Boolean -> "boolean"
     JSNull -> "object"
     is Function<*> -> "function"
+    is JSSymbol -> "symbol"
     else -> if (jsNumeric(value) != null) "number" else "object"
 }
 
@@ -334,9 +341,13 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
 
 /** ToPrimitive with the default hint: a date or object becomes its string form. */
 fun jsToPrimitive(value: Any?): Any? = when (val v = jsBox(value)) {
-    null, is String, is Boolean, JSNull -> v
+    null, is String, is Boolean, JSNull, is JSSymbol -> v
+    is JSToPrimitive -> jsUserPrimitive(v, "default")
     else -> jsNumeric(v) ?: jsToString(v)
 }
+
+/** A `+` operand beside a string: ToString(ToPrimitive(value, default)). */
+fun jsToStringDefault(value: Any?): String = jsToString(jsToPrimitive(value))
 
 /** `Number(value)` / unary `+`. */
 fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
@@ -346,7 +357,8 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
     is Boolean -> if (v) 1.0 else 0.0
     JSNull -> 0.0
     is JSDate -> v.valueOf()
-    is Function<*> -> Double.NaN
+    is Function<*>, is JSSymbol -> Double.NaN
+    is JSToPrimitive -> jsToNumber(jsUserPrimitive(v, "number"))
     else -> jsNumeric(v) ?: jsNumberFromString(jsToString(v))
 }
 
@@ -359,7 +371,10 @@ fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
     is Double -> jsNumberToString(v)
     is Boolean -> if (v) "true" else "false"
     JSNull -> "null"
+    is JSToPrimitive -> jsToString(jsUserPrimitive(v, "string"))
     is JSStringConvertible -> v.toString()
+    is JSSymbol -> v.toString()
+    is JSToStringTag -> "[object ${v.jsToStringTag}]"
     is JSError -> v.jsErrorString
     is JSArray<*> -> jsJoin(v.storage, ",", v)
     is Pair<*, *> -> jsJoin(listOf(v.first, v.second), ",", v)

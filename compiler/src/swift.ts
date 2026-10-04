@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { isStringRaw, neverDefined, templateParts } from './lang.ts';
+import { isObjectToStringCall, isStringRaw, neverDefined, templateParts } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -67,7 +67,7 @@ export interface ComponentInfo {
 }
 
 const ERRORS: Record<string, string> = { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' };
-const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef']);
+const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet']);
 
 export class Translator implements AsyncTranslator {
   readonly syntax = SWIFT_SYNTAX;
@@ -232,8 +232,8 @@ export class Translator implements AsyncTranslator {
       return optional ? optionalType(base) : base;
     }
     if (t.flags & (F.Number | F.NumberLiteral)) return 'Double';
-    // `Symbol('key')`: a unique string key (`jsSymbol`).
-    if (t.flags & (F.ESSymbol | F.UniqueESSymbol)) return 'String';
+    if (t.flags & (F.ESSymbol | F.UniqueESSymbol)) return 'JSSymbol';
+    if (t.flags & F.NonPrimitive) return 'Any?';
     if (t.flags & (F.String | F.StringLiteral | F.TemplateLiteral)) return 'String';
     if (t.flags & (F.Boolean | F.BooleanLiteral)) return 'Bool';
     if (t.flags & F.BigIntLike) return 'Double';
@@ -270,8 +270,9 @@ export class Translator implements AsyncTranslator {
       case 'Reference':
         if (sym?.declarations?.[0] && /[\\/]interop\.d\.ts$/.test(sym.declarations[0].getSourceFile().fileName)) return 'InteropReference';
         break;
-      case 'WeakMap': case 'WeakSet':
-        throw this.error(where, `the ${name} type`);
+      case 'WeakMap': return `JSWeakMap<${arg(0)}, ${arg(1)}>`;
+      case 'WeakSet': return `JSWeakSet<${arg(0)}>`;
+      case 'Symbol': if (isLibDeclaration(sym?.declarations?.[0])) return 'JSSymbol'; break;
     }
     if (name && ERRORS[name] && sym?.declarations?.some((d) => d.getSourceFile().isDeclarationFile)) return ERRORS[name];
     if (name === 'NonNullable' && t.aliasSymbol && args().length === 1) {
@@ -638,16 +639,18 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string }[] = []): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string }[] = [], symbols: { key: string; member: string; type: string }[] = []): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
       `    ${o}var jsKeys: [String] { ${[override ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || '[]'} }`,
+      ...(symbols.length ? [`    var jsSymbolKeys: [String] { [${symbols.map((f) => f.key).join(', ')}] }`] : []),
       `    ${o}var jsClassName: String? { ${className ? swiftString(className) : 'nil'} }`,
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       '            switch key {',
       ...fields.map((f) => `            case ${swiftString(f.name)}: return ${this.untypedEnum(ident(f.name), f.type)}`),
+      ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
       `            default: return ${override ? 'super[jsKey: key]' : 'nil'}`,
       '            }',
@@ -655,6 +658,7 @@ export class Translator implements AsyncTranslator {
       '        set {',
       '            switch key {',
       ...fields.map((f) => `            case ${swiftString(f.name)}: ${ident(f.name)} = ${this.fromAny('newValue', f.type)}`),
+      ...symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`),
       `            default: ${override ? 'super[jsKey: key] = newValue' : 'break'}`,
       '            }',
       '        }',
@@ -824,7 +828,7 @@ export class Translator implements AsyncTranslator {
         // A default read from an untyped value (`mode = this.modes[side]`) may be undefined: the parameter is optional where Swift reads it.
         const sym = this.checker.getSymbolAtLocation(p.name);
         if (sym) this.undefinedVars.set(sym, optionalType(pt));
-        const read = this.typeOf(p.initializer) === 'Any?' ? this.expr(p.initializer) : ts.isElementAccessExpression(p.initializer) ? `jsGet(${this.expr(p.initializer.expression)}, ${this.str(p.initializer.argumentExpression)})` : `jsGet(${this.expr((p.initializer as ts.PropertyAccessExpression).expression)}, ${swiftString((p.initializer as ts.PropertyAccessExpression).name.text)})`;
+        const read = this.typeOf(p.initializer) === 'Any?' ? this.expr(p.initializer) : ts.isElementAccessExpression(p.initializer) ? `jsGet(${this.expr(p.initializer.expression)}, ${this.propertyKey(p.initializer.argumentExpression)})` : `jsGet(${this.expr((p.initializer as ts.PropertyAccessExpression).expression)}, ${swiftString((p.initializer as ts.PropertyAccessExpression).name.text)})`;
         lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${optionalType(pt)} = ${this.tryPrefix(p.initializer)}${name} ?? ${this.fromAny(read, optionalType(pt))}`);
       } else if (p.initializer && !this.templateParams && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || !this.isConstant(p.initializer))) {
         lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${this.typeOf(p.name)} = ${this.tryPrefix(p.initializer)}${name} ?? ${this.coerce(p.initializer, this.typeOf(p.name))}`);
@@ -1067,7 +1071,8 @@ export class Translator implements AsyncTranslator {
     const conformances = [...(base ? [base] : []), ...implemented];
     // A class's own toString is what JavaScript's string conversion calls.
     if (cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls)) conformances.push('JSStringConvertible');
-    const lines = [`${this.extended.has(name) || this.extendedDecls.has(cls) ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${conformances.length ? conformances.join(', ') : 'JSDynamic'} {`];
+    const header = () => `${this.extended.has(name) || this.extendedDecls.has(cls) ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${[...(base || implemented.length ? [] : ['JSDynamic']), ...conformances].join(', ')} {`;
+    const lines = [''];
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fieldInits: string[] = [];
@@ -1079,8 +1084,22 @@ export class Translator implements AsyncTranslator {
       lines.push(`    var ${ident(n)}: ${this.deferred(t)}`);
       fields.push({ name: n, type: t });
     }
+    const symbolFields: { key: string; member: string; type: string }[] = [];
     for (const m of cls.members) {
       if (!ts.isPropertyDeclaration(m)) continue;
+      const keyed = this.symbolMember(m.name);
+      if (keyed?.key && !isStatic(m)) {
+        const t = this.typeOf(m.name);
+        symbolFields.push({ key: keyed.key, member: keyed.member, type: t });
+        lines.push(`    var ${keyed.member}: ${this.deferred(t)}`);
+        if (m.initializer) {
+          this.indent = '        ';
+          fieldInits.push(`        self.${keyed.member} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
+          this.indent = '    ';
+        }
+        continue;
+      }
+      if (keyed) throw this.error(m.name, 'a field named by this symbol');
       const n = m.name.getText();
       const t = this.typeOf(m.name);
       if (isStatic(m)) {
@@ -1150,11 +1169,15 @@ export class Translator implements AsyncTranslator {
     const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
     for (const m of cls.members) {
       if (ts.isGetAccessorDeclaration(m) || ts.isSetAccessorDeclaration(m)) {
-        const a = accessors.get(m.name.getText()) ?? {};
+        const keyed = this.symbolMember(m.name);
+        if (keyed && (keyed.member !== 'jsToStringTag' || ts.isSetAccessorDeclaration(m))) throw this.error(m.name, 'an accessor named by this symbol');
+        const key = keyed ? keyed.member : m.name.getText();
+        const a = accessors.get(key) ?? {};
         if (ts.isGetAccessorDeclaration(m)) a.get = m; else a.set = m;
-        accessors.set(m.name.getText(), a);
+        accessors.set(key, a);
       }
     }
+    if (accessors.has('jsToStringTag')) conformances.push('JSToStringTag');
     for (const [n, a] of accessors) {
       // A property with only a setter reads as undefined in JavaScript.
       const t = a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name));
@@ -1183,6 +1206,18 @@ export class Translator implements AsyncTranslator {
     const setters: { property: string; method: string; param: string; throws: boolean }[] = [];
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !m.body || !ts.isComputedPropertyName(m.name)) continue;
+      const keyed = this.symbolMember(m.name);
+      if (keyed?.member === 'jsToPrimitive') {
+        const ret = this.returnTypeOf(m);
+        const throws = this.throwsInfo.fn(m);
+        lines.push('    ' + this.func(m, '__symbol_toPrimitive'));
+        const call = `${throws ? 'try ' : ''}__symbol_toPrimitive(${m.parameters.length ? 'hint' : ''})`;
+        lines.push(`    func jsToPrimitive(_ hint: String) throws -> Any? { ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} }`);
+        conformances.push('JSToPrimitive');
+        continue;
+      }
+      if (keyed?.key) { lines.push('    ' + this.func(m, keyed.member)); continue; }
+      if (keyed) throw this.error(m.name, 'a method named by this symbol');
       const property = this.setNativeOf(m.name.expression);
       if (!property) throw this.error(m.name, 'a computed method name');
       const method = `__setNative_${property}`;
@@ -1226,10 +1261,29 @@ export class Translator implements AsyncTranslator {
       const own = fields.map((f) => f.name);
       if (own.length) lines.push(`    override func hasJSProperty(_ name: String) -> Bool { [${own.map(swiftString).join(', ')}].contains(name) || super.hasJSProperty(name) }`);
     }
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods));
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields));
+    if (symbolFields.length) conformances.push('JSSymbolKeyed');
     this.indent = '';
     lines.push('}');
+    lines[0] = header();
     return lines.join('\n');
+  }
+
+  /**
+   * A member named by a symbol (`[Symbol.toPrimitive]`, `[key]` for a
+   * `const key = Symbol()`): its Swift name, and for a symbol of the program,
+   * the Swift code of its property key.
+   */
+  private symbolMember(name: ts.PropertyName): { member: string; key: string | null } | null {
+    if (!ts.isComputedPropertyName(name)) return null;
+    const e = name.expression;
+    if (ts.isPropertyAccessExpression(e) && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol' && this.isLibGlobal(e.expression)) {
+      const member = WELL_KNOWN_MEMBERS[e.name.text];
+      if (!member) throw this.error(name, `a member named Symbol.${e.name.text}`);
+      return { member, key: null };
+    }
+    if (ts.isIdentifier(e) && this.typeOf(e) === 'JSSymbol') return { member: `__symbol_${e.text}`, key: `${this.expr(e)}.key` };
+    return null;
   }
 
   /** Member names the program's code reads anywhere, and the string fragments it builds names from. */
@@ -1918,7 +1972,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isElementAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${this.str(target.argumentExpression)})`;
       if (ts.isPropertyAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${swiftString(target.name.text)})`;
       if (ts.isPropertyAccessExpression(target) && this.isAny(target.expression)) return `jsDelete(${this.expr(target.expression)}, ${swiftString(target.name.text)})`;
-      if (ts.isElementAccessExpression(target) && this.isAny(target.expression)) return `jsDelete(${this.expr(target.expression)}, ${this.str(target.argumentExpression)})`;
+      if (ts.isElementAccessExpression(target) && this.isAny(target.expression)) return `jsDelete(${this.expr(target.expression)}, ${this.propertyKey(target.argumentExpression)})`;
       throw this.error(e, 'delete of this member');
     }
     if (ts.isVoidExpression(e)) return `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
@@ -2094,6 +2148,16 @@ export class Translator implements AsyncTranslator {
     return swiftString(text).slice(1, -1);
   }
 
+  /** An operand of `+` beside a string: an object converts with the default hint. */
+  private concatOperand(e: ts.Expression): string {
+    return this.isObjectRef(e) && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.expr(e)})` : this.str(e);
+  }
+
+  /** A property key: a symbol's own key, anything else as a string. */
+  private propertyKey(e: ts.Expression): string {
+    return this.typeOf(e) === 'JSSymbol' ? `${this.expr(e)}.key` : this.str(e);
+  }
+
   /** A value as JavaScript converts it to a string (`String(x)`, `${x}`, `'' + x`). */
   str(e: ts.Expression): string {
     const maybe = this.maybeUndefined(e);
@@ -2109,6 +2173,7 @@ export class Translator implements AsyncTranslator {
     const target = e.expression;
     if (target.kind === ts.SyntaxKind.ThisKeyword && this.props.has(name)) return `self.${ident(name)}.value`;
     if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
+    if (name === 'description' && this.typeOf(target) === 'JSSymbol') return `${this.expr(target)}.jsDescription`;
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
@@ -2191,14 +2256,19 @@ export class Translator implements AsyncTranslator {
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
     if (this.typeOf(e.expression) === 'Any?') {
-      const code = `jsGet(${target}, ${this.str(key)})`;
+      const code = `jsGet(${target}, ${this.propertyKey(key)})`;
       const rt = this.typeOf(e);
       return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, rt);
     }
     if (ts.isStringLiteral(key)) return `${target}${q}.${ident(key.text)}`;
+    const keyed = ts.isIdentifier(key) && this.typeOf(key) === 'JSSymbol' ? this.checker.getTypeAtLocation(e.expression).getProperties().find((p) => {
+      const n = p.valueDeclaration && (p.valueDeclaration as ts.NamedDeclaration).name;
+      return !!n && ts.isComputedPropertyName(n) && this.resolve(n.expression) === this.resolve(key);
+    }) : undefined;
+    if (keyed) return `${target}${q}.__symbol_${(key as ts.Identifier).text}`;
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
-      const code = `${target}${q}[jsKey: ${this.str(key)}]`;
+      const code = `${target}${q}[jsKey: ${this.propertyKey(key)}]`;
       const rt = this.typeOf(e);
       return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, rt, true);
     }
@@ -2231,7 +2301,7 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       const base = this.typeOf(access.expression).replace(/\?$/, '');
       if (!t.endsWith('?') && t !== 'Any?' && this.isObjectRef(e) && !/^JS(Array|Record|Match)/.test(base) && !base.startsWith('(') && base !== 'String') {
-        return `(${this.expr(access.expression)}${access.questionDotToken ? '?' : ''}[jsKey: ${this.str(access.argumentExpression)}] as? ${t})`;
+        return `(${this.expr(access.expression)}${access.questionDotToken ? '?' : ''}[jsKey: ${this.propertyKey(access.argumentExpression)}] as? ${t})`;
       }
     }
     // `ref.get()`: undefined once the object is gone, though core's typings say `T`.
@@ -2347,6 +2417,7 @@ export class Translator implements AsyncTranslator {
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
     if (e.questionDotToken && !this.core.isKitMethod(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
+    if (isObjectToStringCall(callee, this.checker)) return `jsObjectToString(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : 'nil'})`;
     // A callback passed as a prop (`onTap: () => void`).
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword && this.props.has(callee.name.text)) {
       const unwrap = this.declaredTypeOf(callee)?.endsWith('?') ? '!' : '';
@@ -2504,7 +2575,7 @@ export class Translator implements AsyncTranslator {
         case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.coerce(arg(0), 'Double?') : 'nil'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
         case 'unescape': return `jsUnescape(${this.str(arg(0))})`;
-        case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : '""'})`;
+        case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : 'nil'})`;
       }
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
@@ -2608,6 +2679,7 @@ export class Translator implements AsyncTranslator {
           return `{ (__o: Any?) -> ${T()} in JSArray(jsKeysOf(__o).map { ${method === 'values' ? read : `($0, ${read})`} }) }(${this.expr(arg(0))})`;
         }
         if (method === 'freeze') return this.expr(arg(0));
+        if (method === 'getOwnPropertySymbols') return `jsOwnPropertySymbols(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'assign') {
           // The target is an open JavaScript object: a literal there is untyped, so the sources' keys all land.
           const target = ts.isObjectLiteralExpression(arg(0)) ? this.dynamicObject(arg(0) as ts.ObjectLiteralExpression) : this.coerce(arg(0), 'Any?');
@@ -2643,6 +2715,10 @@ export class Translator implements AsyncTranslator {
         break;
       case 'String':
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
+        break;
+      case 'Symbol':
+        if (method === 'for') return `JSSymbol.for(${this.str(arg(0))})`;
+        if (method === 'keyFor') return `JSSymbol.keyFor(${this.expr(arg(0))})`;
         break;
       case 'Date':
         if (method === 'now') return 'JSDate.now()';
@@ -2954,6 +3030,7 @@ export class Translator implements AsyncTranslator {
     }
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
+    if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     if (t === 'InteropReference') return `InteropReference(${args[0] ? this.coerce(args[0], 'Any?') : ''})`;
     if (name === 'Array') throw this.error(e, `new ${name}`);
     const core = this.core.construct(e) ?? this.native.construct(e);
@@ -2976,7 +3053,7 @@ export class Translator implements AsyncTranslator {
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Void') return '"undefined"';
-    const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
+    const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
     if (t === 'Any?' || !known) return `jsTypeof(${this.expr(e.expression)})`;
     const maybe = this.maybeUndefined(e.expression);
     if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
@@ -3010,7 +3087,7 @@ export class Translator implements AsyncTranslator {
       if (special) return special;
     }
     if (ts.isPropertyAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
-    if (ts.isElementAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${this.str(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
+    if (ts.isElementAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
 
@@ -3050,7 +3127,7 @@ export class Translator implements AsyncTranslator {
       case K.BarBarEqualsToken: return `if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.coerce(e.right, this.typeOf(e.left))} }`;
       case K.AmpersandAmpersandEqualsToken: return `if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.coerce(e.right, this.typeOf(e.left))} }`;
       case K.PlusToken: {
-        if (this.isString(e.left) || this.isString(e.right)) return `${this.str(e.left)} + ${this.str(e.right)}`;
+        if (this.isString(e.left) || this.isString(e.right)) return `${this.concatOperand(e.left)} + ${this.concatOperand(e.right)}`;
         if (this.isAny(e.left) || this.isAny(e.right)) return `jsAdd(${this.coerce(e.left, 'Any?')}, ${this.coerce(e.right, 'Any?')})`;
         return `${this.toNumber(e.left)} + ${this.toNumber(e.right)}`;
       }
@@ -3098,7 +3175,7 @@ export class Translator implements AsyncTranslator {
         return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '') ?? name})`;
       }
       case K.CommaToken: return `({ ${this.exprStatement(e.left)}; return ${r()} }())`;
-      case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.str(e.left)})`;
+      case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
     }
     throw this.error(e, `operator ${ts.tokenToString(op)}`);
   }
@@ -3120,7 +3197,7 @@ export class Translator implements AsyncTranslator {
     const raw = (x: ts.Expression) => {
       if (!untypedRead(x)) return this.coerce(x, 'Any?');
       const target = (x as ts.PropertyAccessExpression | ts.ElementAccessExpression).expression;
-      const key = ts.isElementAccessExpression(x) ? this.str(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
+      const key = ts.isElementAccessExpression(x) ? this.propertyKey(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
       return `jsGet(${this.expr(target)}, ${key})`;
     };
     if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
@@ -3171,7 +3248,7 @@ export class Translator implements AsyncTranslator {
     // `{ … } as unknown as T`: an object script reads and extends untyped.
     if (contextual && contextual.flags & ts.TypeFlags.Unknown) return this.dynamicObject(e);
     // An object held untyped that code fills in by key (`node = {}; node[key] = …`): extensible, as every script object is.
-    if (contextual && contextual.flags & ts.TypeFlags.Any && (!e.properties.length || this.pluginFiles.has(e.getSourceFile().fileName))) return this.dynamicObject(e);
+    if (contextual && contextual.flags & ts.TypeFlags.Any) return this.dynamicObject(e);
     const type = contextual && !(contextual.flags & ts.TypeFlags.Any) ? contextual : this.checker.getTypeAtLocation(e);
     const struct = this.native.structLiteral(e, this.checker.getNonNullableType(type));
     if (struct) return struct;
@@ -3258,7 +3335,7 @@ export class Translator implements AsyncTranslator {
     const steps = e.properties.map((p) => {
       if (ts.isSpreadAssignment(p)) return `${this.tryPrefix(p.expression)}jsObjectSpread(${o}, ${this.coerce(p.expression, 'Any?')})`;
       if (ts.isShorthandPropertyAssignment(p)) return `${o}[${swiftString(p.name.text)}] = ${this.coerce(p.name, 'Any?')}`;
-      const key = (n: ts.PropertyName) => (ts.isComputedPropertyName(n) ? `${this.tryPrefix(n.expression)}${this.str(n.expression)}` : swiftString(n.getText().replace(/^['"]|['"]$/g, '')));
+      const key = (n: ts.PropertyName) => (ts.isComputedPropertyName(n) ? `${this.tryPrefix(n.expression)}${this.propertyKey(n.expression)}` : swiftString(n.getText().replace(/^['"]|['"]$/g, '')));
       if (ts.isPropertyAssignment(p)) return `${o}[${key(p.name)}] = ${this.tryPrefix(p.initializer)}${this.coerce(p.initializer, 'Any?')}`;
       if (ts.isMethodDeclaration(p)) {
         const ret = this.returnTypeOf(p);
@@ -3311,12 +3388,21 @@ const SWIFT_SYNTAX: AsyncSyntax = {
   loopRun: (iteration) => `JSAsyncLoop().run ${iteration}`,
 };
 
+/** Members named by a well-known symbol: the kit's protocol requirements. */
+const WELL_KNOWN_MEMBERS: Record<string, string> = { iterator: 'jsSymbolIterator', asyncIterator: 'jsSymbolAsyncIterator', toPrimitive: 'jsToPrimitive', toStringTag: 'jsToStringTag' };
+
 const LIB_CONSTANTS: Record<string, string> = {
   'Math.PI': 'Double.pi', 'Math.E': 'M_E', 'Math.LN2': 'M_LN2', 'Math.LN10': 'M_LN10', 'Math.LOG2E': 'M_LOG2E', 'Math.LOG10E': 'M_LOG10E', 'Math.SQRT2': '2.0.squareRoot()', 'Math.SQRT1_2': '0.5.squareRoot()',
   'Number.MAX_SAFE_INTEGER': '9007199254740991', 'Number.MIN_SAFE_INTEGER': '-9007199254740991', 'Number.EPSILON': 'Double.ulpOfOne',
   'Number.MAX_VALUE': 'Double.greatestFiniteMagnitude', 'Number.MIN_VALUE': 'Double.leastNonzeroMagnitude', 'Number.POSITIVE_INFINITY': 'Double.infinity',
   'Number.NEGATIVE_INFINITY': '-Double.infinity', 'Number.NaN': 'Double.nan',
+  'Symbol.iterator': 'JSSymbol.iterator', 'Symbol.asyncIterator': 'JSSymbol.asyncIterator', 'Symbol.toPrimitive': 'JSSymbol.toPrimitive',
+  'Symbol.toStringTag': 'JSSymbol.toStringTag', 'Symbol.hasInstance': 'JSSymbol.hasInstance',
 };
+
+function isLibDeclaration(d: ts.Node | undefined): boolean {
+  return !!d && /[\\/]typescript[\\/]lib[\\/]/.test(d.getSourceFile().fileName);
+}
 
 function boundNames(name: ts.BindingName): ts.Identifier[] {
   if (ts.isIdentifier(name)) return [name];

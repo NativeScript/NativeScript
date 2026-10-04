@@ -39,6 +39,7 @@ public func jsObjectAssign(_ target: Any?, _ sources: Any?...) throws -> Any? {
 public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
     guard let dynamic = jsFlat(source) as? JSDynamic else { return }
     for key in dynamic.jsKeys { target[key] = dynamic[jsKey: key] }
+    for key in (dynamic as? JSSymbolKeyed)?.jsSymbolKeys ?? [] { target[key] = dynamic[jsKey: key] }
 }
 
 /// `Symbol(description)`: a property key no other code spells.

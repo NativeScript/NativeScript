@@ -221,6 +221,7 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
             is Boolean -> return if (v) "true" else "false"
             JSNull -> return "null"
             is Function<*> -> return "[Function (anonymous)]"
+            is JSSymbol -> return v.toString()
         }
         jsNumeric(v)?.let { return formatNumber(it) }
         if (seen.any { it === v }) {
@@ -326,9 +327,12 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
             }
             is JSDate -> return if (value.time.isNaN()) "Invalid Date" else value.toISOString()
             is JSRegExp -> return value.toString()
+            is JSWeakCollection -> return "${value.jsClassName} { <items unknown> }"
             is JSDynamic -> {
                 for (key in value.jsKeys) keys.add(JSInspectProperty(key, value.jsGet(key)))
-                val className = value.jsClassName
+                if (value is JSSymbolKeyed) for (key in value.jsSymbolKeys) keys.add(JSInspectProperty(key, value.jsGet(key)))
+                var className = value.jsClassName
+                if (className != null && value is JSToStringTag && value.jsToStringTag != className) className += " [${value.jsToStringTag}]"
                 if (value is JSObject && value.jsNullPrototype) {
                     name = "[Object: null prototype]"
                     bracketName = false
@@ -362,6 +366,7 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
         val text = formatValue(p.value, recurseTimes)
         indentationLvl -= 2
         var name = when {
+            jsIsSymbolKey(p.key) -> JSSymbol.of(p.key)?.toString() ?: p.key
             p.key == "__proto__" -> "['__proto__']"
             keyPattern.matches(p.key) -> p.key
             else -> jsInspectQuote(p.key)

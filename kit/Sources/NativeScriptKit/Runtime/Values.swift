@@ -151,7 +151,7 @@ func jsArrayIndex(_ key: String) -> UInt32? {
 
 /// A plain JavaScript object. Own keys enumerate in JavaScript order: array-index keys
 /// ascending, then the other keys in insertion order.
-public final class JSObject: JSDynamic, JSReactiveConvertible, ExpressibleByDictionaryLiteral, CustomStringConvertible {
+public final class JSObject: JSDynamic, JSSymbolKeyed, JSReactiveConvertible, ExpressibleByDictionaryLiteral, CustomStringConvertible {
     private var storage: [JSPropertyKey: Any?] = [:]
     private var indexKeys: [UInt32] = []
     private var namedKeys: [String] = []
@@ -219,7 +219,12 @@ public final class JSObject: JSDynamic, JSReactiveConvertible, ExpressibleByDict
     /// `Object.keys(object)` as a Swift array.
     public var keys: [String] {
         jsTracker?.track()
-        return indexKeys.map { String($0) } + namedKeys
+        return indexKeys.map { String($0) } + namedKeys.filter { !jsIsSymbolKey($0) }
+    }
+
+    public var jsSymbolKeys: [String] {
+        jsTracker?.track()
+        return namedKeys.filter(jsIsSymbolKey)
     }
 
     public subscript(jsKey key: String) -> Any? {
@@ -367,6 +372,7 @@ public func jsTypeof(_ value: Any?) -> String {
     case is String: return "string"
     case is Bool: return "boolean"
     case is JSNull: return "object"
+    case is JSSymbol: return "symbol"
     default:
         if jsNumeric(v) != nil { return "number" }
         return jsIsFunction(v) ? "function" : "object"
@@ -451,12 +457,16 @@ public func jsLooseEquals(_ a: Any?, _ b: Any?) -> Bool {
 func jsToPrimitive(_ value: Any?) -> Any? {
     guard let v = jsFlat(value) else { return nil }
     switch v {
-    case is String, is Bool, is JSNull: return v
+    case is String, is Bool, is JSNull, is JSSymbol: return v
     default:
         if let n = jsNumeric(v) { return n }
+        if let user = jsUserPrimitive(v, "default") { return user }
         return jsToString(v)
     }
 }
+
+/// A `+` operand beside a string: ToString(ToPrimitive(value, default)).
+public func jsToStringDefault(_ value: Any?) -> String { jsToString(jsToPrimitive(value)) }
 
 /// `Number(value)` / unary `+`.
 public func jsToNumber(_ value: Any?) -> Double {
@@ -468,7 +478,8 @@ public func jsToNumber(_ value: Any?) -> Double {
     case is JSNull: return 0
     case let v?:
         if let n = jsNumeric(v) { return n }
-        if jsIsFunction(v) { return .nan }
+        if jsIsFunction(v) || v is JSSymbol { return .nan }
+        if let user = jsUserPrimitive(v, "number") { return jsToNumber(user) }
         return jsNumberFromString(jsToString(v))
     }
 }
@@ -485,7 +496,10 @@ public func jsToString(_ value: Any?) -> String {
     case let d as Double: return jsNumberToString(d)
     case let b as Bool: return b ? "true" : "false"
     case is JSNull: return "null"
+    case let v as JSToPrimitive: return jsToString(jsUserPrimitive(v, "string") ?? nil)
     case let v as JSStringConvertible: return v.toString()
+    case let symbol as JSSymbol: return symbol.toString()
+    case let tagged as JSToStringTag: return "[object \(tagged.jsToStringTag)]"
     case let error as JSError: return error.jsErrorString
     case let array as JSArrayProtocol: return array.jsJoin(",")
     case is JSMapProtocol: return "[object Map]"

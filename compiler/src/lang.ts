@@ -28,3 +28,12 @@ export function templateParts(t: ts.TemplateLiteral): { cooked: string[]; raw: s
     values: t.templateSpans.map((s) => s.expression),
   };
 }
+
+/** `Object.prototype.toString.call`, as the library declares `Object`. */
+export function isObjectToStringCall(callee: ts.Expression, checker: ts.TypeChecker): boolean {
+  if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'call') return false;
+  const fn = callee.expression;
+  if (!ts.isPropertyAccessExpression(fn) || fn.name.text !== 'toString' || !ts.isPropertyAccessExpression(fn.expression) || fn.expression.name.text !== 'prototype') return false;
+  const owner = fn.expression.expression;
+  return ts.isIdentifier(owner) && owner.text === 'Object' && !!checker.getSymbolAtLocation(owner)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
+}

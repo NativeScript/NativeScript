@@ -48,17 +48,6 @@ public final class CoreFont {
     }
 }
 
-/// NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives.
-public final class JSWeakRef<T: AnyObject> {
-    private weak var target: T?
-
-    public init(_ target: T) { self.target = target }
-
-    public func get() -> T? { target }
-    public func deref() -> T? { target }
-    public func clear() { target = nil }
-}
-
 /// `unescape(string)`: `%XX` and `%uXXXX` escapes as the code units they name.
 public func jsUnescape(_ s: String) -> String {
     let units = Array(s.utf16)

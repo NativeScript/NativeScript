@@ -78,6 +78,8 @@ public func jsKeysOf(_ value: Any?) -> [String] {
 
 /// `key in object`.
 public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
+    if let plain = jsFlat(object) as? JSObject { return plain.has(key) }
+    if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }
     if let dynamic = object as? JSDynamic { return dynamic.jsKeys.contains(key) }
     if let array = object as? JSArrayProtocol { return key == "length" || (Int(key).map { $0 >= 0 && $0 < array.jsAnyElements.count } ?? false) }
     return false
