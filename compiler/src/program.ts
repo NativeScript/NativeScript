@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
-import { nativeViewOf } from './core.ts';
+import { KIT_PLUGINS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
@@ -186,11 +186,12 @@ export interface Program {
 }
 
 /**
- * Packages whose imports stay on their declarations: core is NativeScriptKit,
- * the frameworks are the front ends, and the rest are typings or tooling.
+ * Packages whose imports stay on their declarations: core and the plugins in
+ * KIT_PLUGINS are NativeScriptKit, the frameworks are the front ends, and the
+ * rest are typings or tooling.
  */
-const NOT_PLUGINS = /^(@nativescript\/(core|canvas|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
-
+const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
+const notPlugin = (pkg: string) => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg);
 
 /**
  * A program over the app's modules and the components' virtual classes,
@@ -225,7 +226,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const nativeReferences = (text: string, file: string) => text.replace(/^\/\/\/\s*<reference\s+(path|types)="([^"]*)"\s*\/>.*$/gm, (line, kind: string, ref: string) => {
     const target = resolve(dirname(file), ref);
     const pkg = /[\\/]node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)/.exec(target)?.[1].replace(/\\/g, '/');
-    return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !NOT_PLUGINS.test(pkg)) ? line : '';
+    return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !notPlugin(pkg)) ? line : '';
   });
   host.getSourceFile = (name, version, onError) => {
     const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
@@ -263,7 +264,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       if (replacement) return { resolvedModule: { resolvedFileName: replacement, extension: ts.Extension.Ts } };
       // A plugin is compiled from its source: an import that reaches its code resolves to the file it was built from.
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly;
-      if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !NOT_PLUGINS.test(packageOf(m)) && !typeOnly) {
+      if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
           plugins.get(js.packageDir);

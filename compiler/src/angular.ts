@@ -199,11 +199,14 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   /**
    * `<ListView [items]>` with `<ng-template let-item let-i="index" nsTemplateKey="…">` children, as
    * @nativescript/angular's ListViewComponent renders them: the first template is also the default, and
-   * `[itemTemplateSelector]` is called with `(item, index, items)`.
+   * `[itemTemplateSelector]` is called with `(item, index, items)`. A `<Pager>` (@nstudio/nativescript-ui-pager's
+   * PagerComponent) is the same with `pagerTemplateKey`.
    */
   const listTemplates = (n: ng.TmplAstElement, attrs: Attr[], loops: Loop[]): TNode[] => {
+    const host = canonical(n.name) ?? options.elements?.get(n.name) ?? n.name;
+    const keyName = host === 'Pager' ? 'pagerTemplateKey' : 'nsTemplateKey';
     const items = attrs.find((a) => a.name === 'items');
-    if (!items || !('method' in items)) throw new Error(`${path}: <ListView> needs [items]`);
+    if (!items || !('method' in items)) throw new Error(`${path}: <${host}> needs [items]`);
     const list = `this.${items.method}(${args(loops)})`;
     // A sectioned ListView's items are sections (`{ title, items }`); a row's item is one of a section's.
     const sectioned = isSectioned(n);
@@ -222,10 +225,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     const out: TNode[] = [];
     for (const t of n.children) {
       if (t instanceof ng.TmplAstText) continue;
-      if (!(t instanceof ng.TmplAstTemplate) || t.tagName !== 'ng-template') throw new Error(`${path}: a ListView's children are <ng-template let-item> item templates`);
-      const bound = t.inputs.find((i) => i.name === 'nsTemplateKey');
-      const key = t.attributes.find((a) => a.name === 'nsTemplateKey')?.value ?? (bound ? literalKey(sourceOf(bound.value), path) : out.length ? null : 'default');
-      if (key === null) throw new Error(`${path}: a ListView's second and later <ng-template>s need an nsTemplateKey`);
+      if (!(t instanceof ng.TmplAstTemplate) || t.tagName !== 'ng-template') throw new Error(`${path}: a ${host}'s children are <ng-template let-item> item templates`);
+      const bound = t.inputs.find((i) => i.name === keyName);
+      const key = t.attributes.find((a) => a.name === keyName)?.value ?? (bound ? literalKey(sourceOf(bound.value), path) : out.length ? null : 'default');
+      if (key === null) throw new Error(`${path}: a ${host}'s second and later <ng-template>s need a ${keyName}`);
       if (t.inputs.some((i) => i.name === 'nsTemplateKeys')) throw new Error(`${path}: nsTemplateKeys is not supported in a release build yet`);
       const named = (v: string) => t.variables.find((x) => (x.value || '$implicit') === v)?.name;
       const item = named('$implicit') ?? named('item') ?? `$item${loops.length}`;
@@ -236,7 +239,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         if ((what === '$implicit' || what === 'item') && v.name !== item) names[v.name] = item;
         else if (what === 'even') names[v.name] = `(${index} % 2 === 0)`;
         else if (what === 'odd') names[v.name] = `(${index} % 2 !== 0)`;
-        else if (!['$implicit', 'item', 'index'].includes(what)) throw new Error(`${path}: a ListView template's "${what}" is not part of its context`);
+        else if (!['$implicit', 'item', 'index'].includes(what)) throw new Error(`${path}: a ${host} template's "${what}" is not part of its context`);
       }
       const loop: Loop = { item, index, param: `${item} = ${rows}[0], ${index} = 0`, names };
       out.push({ kind: 'template', key, item, index, body: nodes(t.children, [...loops, loop]) });

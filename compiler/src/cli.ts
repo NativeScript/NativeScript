@@ -23,6 +23,7 @@ import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
+import { KIT_PLUGINS } from './core.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
@@ -516,7 +517,8 @@ function angularLibraries(sources: string[], modulesDir: string, plugins: Plugin
   for (const f of sources) {
     for (const m of readFileSync(f, 'utf8').matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
       const wanted = m[1].split(',').map((x) => x.trim().split(/\s+as\s+/)[0]).filter(Boolean);
-      if (seen.has(m[2])) continue;
+      // A plugin the kit implements renders its elements itself: its Angular wrapper's components are not compiled.
+      if (seen.has(m[2]) || KIT_PLUGINS.includes(m[2])) continue;
       seen.add(m[2]);
       const dir = join(modulesDir, m[2]);
       const main = ['index.ios.js', 'index.js'].map((x) => join(dir, x)).find(existsSync);

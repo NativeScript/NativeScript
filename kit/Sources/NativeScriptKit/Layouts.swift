@@ -282,7 +282,7 @@ open class StackLayout: LayoutBase {
 }
 
 /// `ContentView`: a single child, laid out over the whole of it.
-open class ContentView: CustomLayoutView {
+open class ContentView: CustomLayoutView, RegionHost {
     open override class var cssType: String { "ContentView" }
 
     private var contentView: View?
@@ -297,6 +297,23 @@ open class ContentView: CustomLayoutView {
 
     open override func addChild(_ child: View) {
         setContent(child)
+    }
+
+    /// An `if` or `for` inside: the view it holds is the content, as the renderers' `appendChild` sets it.
+    public func addRegion() -> Region {
+        addRegion(Region(host: nil))
+    }
+
+    @discardableResult
+    public func addRegion(_ region: Region) -> Region {
+        region.host = self
+        if !region.views.isEmpty { regionChanged(region) }
+        return region
+    }
+
+    public func regionChanged(_ region: Region) {
+        let next = region.views.last
+        if next !== contentView { setContent(next) }
     }
 
     func setContent(_ value: View?) {

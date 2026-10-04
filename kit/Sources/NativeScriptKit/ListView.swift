@@ -52,7 +52,7 @@ final class ListContent {
     }
 }
 
-private final class ItemsSource<Section, Item>: ListSource {
+final class ItemsSource<Section, Item>: ListSource {
     private(set) var sections: [Section] = []
     /// Each section's rows, read once per update.
     private var rowsBySection: [[Item]] = []
