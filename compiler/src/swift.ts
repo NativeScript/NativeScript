@@ -849,6 +849,8 @@ export class Translator implements AsyncTranslator {
     }
     const m = /^JSArray<(.*)>$/.exec(type);
     if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
+    if (type === 'JSDate') return `jsDateOf(${code})`;
+    if (type === 'JSDate?') return `{ (__d: Any?) -> JSDate? in jsIsNullish(__d) ? nil : jsDateOf(__d) }(${code})`;
     const om = /^JSArray<(.*)>\?$/.exec(type);
     if (om) return `{ (__a: Any?) -> ${type} in jsIsNullish(__a) ? nil : jsArrayOf(__a) { ${this.fromAny('$0', om[1])} } }(${code})`;
     const r = /^JSRecord<(.*)>\??$/.exec(type);

@@ -204,3 +204,14 @@ func jsModPositive(_ a: Double, _ b: Double) -> Double {
     let r = a.truncatingRemainder(dividingBy: b)
     return r < 0 ? r + b : r
 }
+
+/// A value read untyped into a `Date`-typed field (an object from `JSON.parse`, where the date is still its
+/// string): the date it holds, or the date `new Date(value)` makes of it.
+public func jsDateOf(_ value: Any?) -> JSDate {
+    switch jsFlat(value) {
+    case let date as JSDate: return date
+    case let text as String: return JSDate(text)
+    case let ms as Double: return JSDate(ms)
+    default: return JSDate(Double.nan)
+    }
+}
