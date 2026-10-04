@@ -77,7 +77,7 @@ open class View: NSObject {
     private var isBatching = false
 
     private var handlers: [String: [(EventData) -> Void]] = [:]
-    private var tapRecognizer: UITapGestureRecognizer?
+    var gestureObservers: [GesturesObserver] = []
 
     // MARK: Layout state (ui/core/view/index.ios)
 
@@ -325,23 +325,14 @@ open class View: NSObject {
 
     // MARK: Events
 
-    /// Subscribes to an event: `tap`, or a property change such as `textChange`.
+    /// Subscribes to an event: a gesture (`tap`, `pan`), or a property change such as `textChange`.
     public func on(_ event: String, _ handler: @escaping (EventData) -> Void) {
         handlers[event, default: []].append(handler)
-        if event == "tap" { observeTap() }
+        if event == "tap" { observeTap() } else { observeGesture(event) }
     }
 
-    /// A tap is a UITapGestureRecognizer on the native view, as NativeScript's gesture observer adds.
-    open func observeTap() {
-        guard tapRecognizer == nil, let nativeView else { return }
-        let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        nativeView.addGestureRecognizer(recognizer)
-        tapRecognizer = recognizer
-    }
-
-    @objc private func handleTap(_ recognizer: UITapGestureRecognizer) {
-        if recognizer.state == .ended { emit("tap", nil) }
-    }
+    /// A tap is the tap gesture; controls with a tap event of their own override.
+    open func observeTap() { observeGesture("tap") }
 
     func emit(_ event: String, _ value: Any?) {
         guard let list = handlers[event] else { return }

@@ -22,5 +22,5 @@ public final class ItemEventPayload: EventPayload {
 extension EventData {
     public var index: Double { (value as? ItemEventPayload)?.index ?? 0 }
     public var item: Any? { (value as? ItemEventPayload)?.item }
-    public var view: View? { (value as? ItemEventPayload)?.view }
+    public var view: View? { (value as? ItemEventPayload)?.view ?? (value as? GestureEventPayload)?.view }
 }
