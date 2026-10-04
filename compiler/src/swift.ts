@@ -2357,7 +2357,14 @@ export class Translator implements AsyncTranslator {
       if (from === 'Double' && this.native.isEnumType(to)) return this.native.toSwift(e.expression, to);
       if (to === 'Never') return this.expr(e.expression);
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
-      if (from !== to && from.replace(/[?!]$/, '') !== to.replace(/[?!]$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) return `(${this.expr(e.expression)} as! ${to})`;
+      if (from !== to && from.replace(/[?!]$/, '') !== to.replace(/[?!]$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) {
+        // An object of another shape asserted to an interface (`cur as ICalEvent`): the interface's class read from it.
+        const target = this.checker.getTypeAtLocation(e).getSymbol();
+        const shaped = !!target && !!(target.flags & ts.SymbolFlags.Interface) && !(target.flags & ts.SymbolFlags.Class) && !to.endsWith('?') && /^[A-Z]\w*$/.test(to)
+          && !target.declarations?.some((d) => d.getSourceFile().isDeclarationFile);
+        if (shaped) return `{ (__o: Any?) -> ${to} in (__o as? ${to}) ?? ${to}(jsObject: __o) }(${this.expr(e.expression)})`;
+        return `(${this.expr(e.expression)} as! ${to})`;
+      }
       return this.expr(e.expression);
     }
     if (ts.isNonNullExpression(e)) {
