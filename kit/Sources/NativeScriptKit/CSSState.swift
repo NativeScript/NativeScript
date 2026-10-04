@@ -65,6 +65,10 @@ extension View {
             if node.cssDependents[key]?.isEmpty ?? false {
                 node.cssDependents[key] = nil
                 if key.hasPrefix(":") { node.observePseudoClass(String(key.dropFirst()), false) }
+                if (key == ":focus" || key == ":blur") && node.cssDependents[":focus"] == nil && node.cssDependents[":blur"] == nil {
+                    node.removeVisualState("focus")
+                    node.removeVisualState("blur")
+                }
             }
         }
         cssSubscriptions = []
@@ -99,6 +103,13 @@ extension View {
             pseudoClasses.remove(pseudo)
             notifyCSSDependents(":" + pseudo)
         }
+    }
+
+    /// editable-text-base's focus handler, active while a selector depends on `:focus` or `:blur`.
+    func focusVisualState(_ focused: Bool) {
+        guard cssDependents[":focus"] != nil || cssDependents[":blur"] != nil else { return }
+        addVisualState(focused ? "focus" : "blur")
+        removeVisualState(focused ? "blur" : "focus")
     }
 
     func addVisualState(_ state: String) {

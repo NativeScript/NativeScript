@@ -467,6 +467,18 @@ open class TextField: TextBase, UITextFieldDelegate {
         return true
     }
 
+    public func textFieldDidBeginEditing(_ textField: UITextField) {
+        emit("focus", nil)
+        focusVisualState(true)
+    }
+
+    public func textFieldDidEndEditing(_ textField: UITextField) {
+        if toText(applied["updateTextTrigger"]) == "focusLost" { nativeValueChange("text", textField.text ?? "") }
+        textField.resignFirstResponder()
+        emit("blur", nil)
+        focusVisualState(false)
+    }
+
     public func textFieldShouldClear(_ textField: UITextField) -> Bool {
         nativeValueChange("text", "")
         return true

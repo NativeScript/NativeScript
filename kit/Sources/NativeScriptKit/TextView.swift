@@ -189,6 +189,7 @@ open class TextView: TextBase, UITextViewDelegate {
     public func textViewDidBeginEditing(_ textView: UITextView) {
         isEditing = true
         emit("focus", nil)
+        focusVisualState(true)
     }
 
     public func textViewDidEndEditing(_ textView: UITextView) {
@@ -196,6 +197,7 @@ open class TextView: TextBase, UITextViewDelegate {
         isEditing = false
         textView.resignFirstResponder()
         emit("blur", nil)
+        focusVisualState(false)
         refreshHintState(hint, textView.text ?? "")
     }
 
