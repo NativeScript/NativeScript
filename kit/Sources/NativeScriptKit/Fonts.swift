@@ -1,4 +1,4 @@
-import CoreText
+import UIKit
 import Foundation
 
 /// `registerCustomFonts` from styling/font.ios: the `.ttf` and `.otf` files in

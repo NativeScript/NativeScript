@@ -11,7 +11,7 @@ import type { PluginSource } from './source.ts';
  * The iOS code plugins ship in `platforms/ios`, linked as it is, its files
  * copied unchanged into `Plugins/` in the generated project: Swift as a static
  * library target of the project (built with its settings, as the link's
- * whole-program elimination needs every Swift module to be), the rest as targets of a
+ * dead code elimination needs every Swift module to be), the rest as targets of a
  * local Swift package. One target per plugin source set:
  * - Objective-C and C: the module its `module.modulemap` declares, else `NSPlugin_<package>`;
  * - Swift: `NSPlugin_<package>`, the package's name without `@` and with every
