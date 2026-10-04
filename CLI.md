@@ -117,7 +117,10 @@ projects), so the CLI has nothing to add.
 | iOS `app.entitlements` | plugins' and the app's, merged; `CODE_SIGN_ENTITLEMENTS` unless `build.xcconfig` sets it |
 | iOS `build.xcconfig` | the app's, then plugins' (merged as the CLI merges them), as the app target's configuration file; a deployment target below the kit's iOS 17 is raised to it |
 | Fonts in `<app>/fonts` | in the bundle (iOS) or assets at `app/fonts` (Android), registered or loaded as core does |
-| `App_Resources/iOS/src` (native source the app's TypeScript calls) | **gap**: not part of the native build (ns-octane's `OctaneLogo.swift` and Metal shader, which its TypeScript never calls, are left out) |
+| `App_Resources/iOS/src` (native source the app's TypeScript calls) | Swift and Metal compiled into the app target, with a symbol table for the TypeScript that calls it; Swift that needs the JavaScript runtime's code is left out with a message (ns-octane's `OctaneLogo.swift` and its shader) |
+| `App_Resources/iOS/extensions/<name>` (widgets, Live Activities) | an app extension target per folder, `<app id>.<name>`, with `extension.json`'s frameworks and settings, embedded in the app |
+| `App_Resources/iOS/Podfile`, plugins' `platforms/ios/Podfile` | one `Podfile` merged as the CLI merges it; the compile runs `xcodegen` and `pod install` and writes `ns-native-project.json` naming the workspace to build |
+| `ios.SPMPackages` (the app's and plugins' `nativescript.config.ts`) | packages of the project, linked by the app and the extensions their `targets` name |
 
 ## Still needed for production
 
@@ -146,9 +149,16 @@ projects), so the CLI has nothing to add.
   (many plugins' hooks) do not apply. The compiler could run its own hook
   points, or the service could fire `buildIOS`/`buildAndroid` hooks with
   the native project root.
+- **Workspaces**: with CocoaPods the compile generates the Xcode project
+  and runs `pod install` itself, and writes
+  `platforms/native/ios/ns-native-project.json` (`{"workspace":
+  "<name>.xcworkspace"}`). When that file is there, `buildIOS` must not run
+  `xcodegen` (it would drop the pods' integration) and must give xcodebuild
+  `-workspace <workspace>` instead of `-project <name>.xcodeproj`, for the
+  simulator build and the archive alike.
 - **Plugins**: on iOS a plugin compiles from its TypeScript source and its
-  `platforms/ios` code is linked unchanged (README, Plugins); CocoaPods and
-  Gradle dependencies, resource bundles and plugin hooks are not carried yet,
+  `platforms/ios` code is linked unchanged (README, Plugins); Gradle
+  dependencies, resource bundles and plugin hooks are not carried yet,
   and stop the build with the file that needs them. The plugin sources are
   cloned into `~/.cache/ns-native/plugins`: the CLI should prefetch them with
   `npm install` and report a missing source before building.

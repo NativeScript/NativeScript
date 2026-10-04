@@ -49,16 +49,17 @@ export function automaticSigningSettings(team: string): Record<string, string> {
 export type ExportMethod = Profile['method'];
 
 /**
- * `xcodebuild archive` for any iOS device, then the .ipa: exported with the
- * profile when there is one, else the archived app zipped as an unsigned .ipa.
+ * `xcodebuild archive` for any iOS device (`project`: `-project` or
+ * `-workspace` and its path), then the .ipa: exported with the profile when
+ * there is one, else the archived app zipped as an unsigned .ipa.
  * Returns the archive and the .ipa.
  */
-export function archive(o: { out: string; name: string; bundle: string; profile: Profile | null; team?: { id: string; method: ExportMethod }; say: (m: string) => void }): { archive: string; ipa: string } {
+export function archive(o: { out: string; name: string; project: string[]; bundle: string; profile: Profile | null; extensionProfiles?: Record<string, string>; team?: { id: string; method: ExportMethod }; say: (m: string) => void }): { archive: string; ipa: string } {
   const archivePath = join(o.out, `${o.name}.xcarchive`);
   const exportPath = join(o.out, 'ipa');
   rmSync(archivePath, { recursive: true, force: true });
   rmSync(exportPath, { recursive: true, force: true });
-  execFileSync('xcodebuild', ['archive', '-project', `${o.name}.xcodeproj`, '-scheme', o.name, '-configuration', 'Release', '-destination', 'generic/platform=iOS',
+  execFileSync('xcodebuild', ['archive', ...o.project, '-scheme', o.name, '-configuration', 'Release', '-destination', 'generic/platform=iOS',
     '-derivedDataPath', 'build', '-archivePath', archivePath, '-quiet', ...(o.team ? ['-allowProvisioningUpdates'] : [])], { cwd: o.out, stdio: 'inherit' });
   mkdirSync(exportPath, { recursive: true });
   if (o.profile || o.team) {
@@ -67,7 +68,7 @@ export function archive(o: { out: string; name: string; bundle: string; profile:
       method: o.profile.method,
       signingStyle: 'manual',
       teamID: o.profile.team,
-      provisioningProfiles: { [o.bundle]: o.profile.uuid },
+      provisioningProfiles: { [o.bundle]: o.profile.uuid, ...o.extensionProfiles },
     } : { method: o.team!.method, signingStyle: 'automatic', teamID: o.team!.id }));
     execFileSync('xcodebuild', ['-exportArchive', '-archivePath', archivePath, '-exportPath', exportPath, '-exportOptionsPlist', options, '-quiet',
       ...(o.team ? ['-allowProvisioningUpdates'] : [])], { cwd: o.out, stdio: 'inherit' });

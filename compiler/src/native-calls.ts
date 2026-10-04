@@ -8,6 +8,12 @@ import {
 const NUMBERS = new Set(['CGFloat', 'Double', 'Float', 'Float32', 'Float64', 'Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'TimeInterval', 'NSInteger', 'NSUInteger']);
 const base = (t: SwiftType) => t.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1');
 const optional = (t: SwiftType) => /[?!]$/.test(t);
+/**
+ * A member a Swift module isolates to the main actor, reached from the
+ * translated code's nonisolated functions: the app's code runs on the main
+ * thread, as NativeScript's does.
+ */
+const isolated = (code: string, m: { mainActor?: boolean }) => (m.mainActor ? `${/\btry\b/.test(code) ? 'try ' : ''}MainActor.assumeIsolated { ${code} }` : code);
 /** The iOS version the app targets: newer APIs need `if #available` the translation cannot add. */
 const DEPLOYMENT = 17;
 
@@ -142,7 +148,7 @@ export class NativeAPI {
       return coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?' ? chained : `${chained}!`;
     }
     const target = r.isStatic ? lookupClass(r.module, r.name)!.swift : this.unwrapped(e.expression);
-    if (m.kind === 'property') return this.fromSwift(`${target}.${m.swift}`, m.type, e);
+    if (m.kind === 'property') return this.fromSwift(isolated(`${target}.${m.swift}`, m), m.type, e);
     // A no-argument method read as a property in the d.ts (`UIColor.redColor` is a class property there).
     if (m.kind === 'method' && !m.params.length) return this.fromSwift(`${target}.${m.swift}()`, m.returns, e);
     if (m.kind === 'init' && !m.params.length) return this.fromSwift(`${target}()`, m.returns, e);
@@ -227,7 +233,7 @@ export class NativeAPI {
     if (m.readonly) throw this.t.error(left, `${r.name}.${left.name.text} (read-only)`);
     this.checkAvailable(m, left, `${r.name}.${left.name.text}`);
     const target = r.isStatic ? lookupClass(r.module, r.name)!.swift : this.t.expr(left.expression);
-    return `${target}.${m.swift} = ${this.toSwift(value, m.type)}`;
+    return isolated(`${target}.${m.swift} = ${this.toSwift(value, m.type)}`, m);
   }
 
   /** A call of a native method, class method, `alloc().initWith…()`, `new()`, or global function. */
@@ -293,12 +299,12 @@ export class NativeAPI {
     // An Objective-C method Swift imports as a property.
     const chained = ts.isPropertyAccessExpression(callee) && !!callee.questionDotToken;
     const recv = r.isStatic ? '' : chained ? `${this.t.expr(callee.expression)}${this.t.typeOf(callee.expression).endsWith('?') ? '?' : ''}` : this.unwrapped(callee.expression);
-    if (m.kind === 'property') return this.fromSwift(`${r.isStatic ? lookupClass(r.module, r.name)!.swift : recv}.${m.swift}`, m.type, e);
+    if (m.kind === 'property') return this.fromSwift(isolated(`${r.isStatic ? lookupClass(r.module, r.name)!.swift : recv}.${m.swift}`, m), m.type, e);
     const args = [...e.arguments];
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
     const list = this.argList(args, m.labels, m.params);
     const target = r.isStatic ? cls!.swift : recv;
-    const code = m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`;
+    const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
     return this.fromSwift(code, m.returns, e);
   }
 

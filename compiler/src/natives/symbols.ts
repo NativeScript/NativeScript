@@ -26,8 +26,10 @@ export interface NativeMethod {
   failable?: boolean;
   introduced?: string;
   selector: string;
+  /** Isolated to the main actor by a Swift module (Objective-C's isolation is preconcurrency and needs nothing). */
+  mainActor?: boolean;
 }
-export interface NativeProperty { kind: 'property'; swift: string; type: SwiftType; readonly: boolean; introduced?: string }
+export interface NativeProperty { kind: 'property'; swift: string; type: SwiftType; readonly: boolean; introduced?: string; mainActor?: boolean }
 export interface NativeClass {
   swift: string;
   kind: 'class' | 'protocol';
@@ -99,16 +101,18 @@ export interface TableOptions {
    * a hash of its sources, apart from the SDK's, and failing to extract it is an error.
    */
   key?: string;
+  /** Internal declarations are in the table too: the module is the app's own, compiled with the code that calls it. */
+  internal?: boolean;
 }
 
 export function nativeTable(module: string, options: TableOptions = {}): NativeTable {
   let table = tables.get(module);
   if (table) return table;
-  const file = options.key ? join(cacheDir(), 'plugins', `${module}-${options.key}.json`) : join(cacheDir(), `${module}.json`);
+  const file = options.key ? join(moduleCache(), `${module}-${options.key}.json`) : join(cacheDir(), `${module}.json`);
   if (existsSync(file)) table = JSON.parse(readFileSync(file, 'utf8')) as NativeTable;
   else {
     const extraArgs = typeof options.extraArgs === 'function' ? options.extraArgs() : options.extraArgs ?? [];
-    table = generate(module, extraArgs, !!options.key);
+    table = generate(module, extraArgs, !!options.key, options.internal);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, JSON.stringify(table));
   }
@@ -118,6 +122,17 @@ export function nativeTable(module: string, options: TableOptions = {}): NativeT
 
 /** The iOS simulator SDK and target the tables are generated for, for building a module to extract. */
 export const iosTarget = () => ({ target: TARGET, sdk: sdk().path });
+
+/** Where the tables of modules outside the SDK are cached. */
+export const moduleCache = () => join(cacheDir(), 'plugins');
+
+/** A module outside the SDK whose table could not be extracted: its lookups find nothing, rather than an SDK module of its name being extracted. */
+export function setEmptyTable(module: string, key: string) {
+  const table = emptyTable(module);
+  mkdirSync(moduleCache(), { recursive: true });
+  writeFileSync(join(moduleCache(), `${module}-${key}.json`), JSON.stringify(table));
+  tables.set(module, table);
+}
 
 const declarationModules = new Map<string, string>();
 
@@ -141,15 +156,16 @@ interface Sym {
   params?: { decl: Fragment[] }[];
   returns?: Fragment[];
   introduced?: string;
+  mainActor?: boolean;
 }
 interface Rel { kind: string; source: string; target: string; targetFallback?: string }
 
-function generate(module: string, extraArgs: string[], plugin = false): NativeTable {
+function generate(module: string, extraArgs: string[], plugin = false, internal = false): NativeTable {
   const dir = mkdtempSync(join(tmpdir(), `symbols-${module}-`));
   const symbols = new Map<string, Sym>();
   const rels: Rel[] = [];
-  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`) under the USRs Objective-C's would have.
-  const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@M@\w+@/, 'c:') : (usr: string) => usr;
+  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`; in extensions `c:@CM@Module@…`, `c:@CM@Module@@…`) under the USRs Objective-C's would have.
+  const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@C?M@\w+@@?/, 'c:') : (usr: string) => usr;
   try {
     try {
       execFileSync('xcrun', ['swift-symbolgraph-extract', '-module-name', module, '-target', TARGET, '-sdk', sdk().path, '-output-dir', dir,
@@ -166,7 +182,8 @@ function generate(module: string, extraArgs: string[], plugin = false): NativeTa
       rmSync(join(dir, f));
       for (const s of graph.symbols) {
         s.identifier.precise = objcUSR(s.identifier.precise);
-        const sym = compact(s);
+        const sym = compact(s, internal);
+        if (sym && plugin && sym.decl.some((f, i) => f.spelling === 'MainActor' && sym.decl[i - 1]?.spelling === '@')) sym.mainActor = true;
         if (!sym) continue;
         const prev = symbols.get(sym.usr);
         // An Objective-C method with a completion handler is imported twice under one USR; the `async` variant drops the handler.
@@ -184,13 +201,13 @@ function emptyTable(module: string): NativeTable {
   return { module, sdk: sdk().version, classes: {}, enums: {}, functions: {}, constants: {}, structs: {} };
 }
 
-function compact(s: any): Sym | null {
+function compact(s: any, internal = false): Sym | null {
   let usr: string = s.identifier.precise;
   // Fields of a struct Swift knows by its typedef (`_NSRange` as `NSRange`) appear only as the typedef's synthesized members.
   const typedefField = /@FI@(\w+)::SYNTHESIZED::(c:@T@\w+)$/.exec(usr);
   if (typedefField) usr = `${typedefField[2]}@FI@${typedefField[1]}`;
   else if (usr.includes('::SYNTHESIZED::')) return null;
-  if (s.accessLevel !== 'public' && s.accessLevel !== 'open') return null;
+  if (s.accessLevel !== 'public' && s.accessLevel !== 'open' && !(internal && s.accessLevel === 'internal')) return null;
   const avail: any[] = s.availability ?? [];
   const applies = (a: any) => !a.domain || a.domain === 'iOS' || a.domain === 'Swift' || a.domain === '*';
   if (avail.some((a) => applies(a) && (a.isUnconditionallyUnavailable || a.obsoleted))) return null;
@@ -281,6 +298,7 @@ function method(s: Sym, selector: string, ownerSwift: string): NativeMethod {
     m.errorParam = errorPartOf(selector);
   }
   if (s.introduced) m.introduced = s.introduced;
+  if (s.mainActor) m.mainActor = true;
   return m;
 }
 
@@ -298,6 +316,7 @@ function property(s: Sym): NativeProperty {
   const readonly = hasKeyword(s, 'let') || !hasKeyword(s, 'set') && s.decl.some((f) => f.spelling.includes('{'));
   const p: NativeProperty = { kind: 'property', swift: s.path[s.path.length - 1], type: valueType(s), readonly };
   if (s.introduced) p.introduced = s.introduced;
+  if (s.mainActor) p.mainActor = true;
   return p;
 }
 
@@ -458,6 +477,13 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
   }
   for (const [js, e] of Object.entries(table.enums)) if (e.kind === 'typedConstants' && !Object.keys(e.cases).length) delete table.enums[js];
 
+  // A subclass of a UIKit class is isolated as its superclass is, which Swift imports as preconcurrency: calls need nothing.
+  for (const c of Object.values(table.classes)) {
+    let base = c.base;
+    while (base && table.classes[base] && !table.classes[base].extension) base = table.classes[base].base;
+    if (c.kind === 'protocol' || !c.extension && (!base || base === 'NSObject')) continue;
+    for (const m of [...Object.values(c.instance), ...Object.values(c.static), ...Object.values(c.inits)]) delete m.mainActor;
+  }
   if (module === 'ObjectiveC') addNSObjectFactories(table);
   // CoreFoundation declares CGFloat itself, so its own symbol graph spells the C typedef as `Double`; every floating field of its CG structs is a CGFloat.
   if (module === 'CoreFoundation') {

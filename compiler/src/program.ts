@@ -150,7 +150,7 @@ const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = []): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -165,13 +165,23 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   };
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
+  // The app's declarations reach `@nativescript/types`, which declares both platforms: the build reads its own platform's.
+  const otherTypes = resolve(modules, PLATFORM_TYPES[platform === 'ios' ? 'android' : 'ios'], '..') + '/';
+  files.set(resolve(modules, '@nativescript/types/index.d.ts'), `/// <reference path="${platformTypes}" />\n`);
   const pluginFiles = new Set<string>();
   const extraRoots = new Set<string>();
   const isSource = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && !name.includes('/node_modules/');
   const isApp = (name: string) => isSource(name) && !pluginFiles.has(name);
+  // The app's declarations are read for the native APIs they declare: the frameworks' own typings they reference would replace the shims.
+  const appTypings = new Set(declarations);
+  const nativeReferences = (text: string, file: string) => text.replace(/^\/\/\/\s*<reference\s+(path|types)="([^"]*)"\s*\/>.*$/gm, (line, kind: string, ref: string) => {
+    const target = resolve(dirname(file), ref);
+    const pkg = /[\\/]node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)/.exec(target)?.[1].replace(/\\/g, '/');
+    return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !NOT_PLUGINS.test(pkg)) ? line : '';
+  });
   host.getSourceFile = (name, version, onError) => {
-    const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : undefined);
-    if (text === undefined) return readLib(name, version, onError);
+    const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
+    if (text === undefined) return name.startsWith(otherTypes) ? ts.createSourceFile(name, '', version) : readLib(name, version, onError);
     return ts.createSourceFile(name, isSource(name) ? foldPlatform(text, name, platform) : text, version, true);
   };
   const fileExists = host.fileExists.bind(host);
@@ -222,8 +232,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     }
   };
 
-  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')];
-  let program = ts.createProgram(rootNames, options, host);
+  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
+  // A copy: a program keeps the array it is given, and a later program with equal root names reuses its files.
+  let program = ts.createProgram([...rootNames], options, host);
   // A plugin's native API declarations (`typings/ios.d.ts`) are found as its sources are.
   if (extraRoots.size) {
     rootNames.push(...extraRoots);
@@ -273,6 +284,14 @@ function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean, 
     out.set(sf.fileName, text);
   }
   return out;
+}
+
+/** The declaration files the app's tsconfig.json includes (its `references.d.ts`, its own typings), outside node_modules. */
+export function appDeclarations(app: string): string[] {
+  const file = resolve(app, 'tsconfig.json');
+  if (!existsSync(file)) return [];
+  const parsed = ts.parseJsonConfigFileContent(ts.readConfigFile(file, ts.sys.readFile).config ?? {}, ts.sys, app);
+  return parsed.fileNames.filter((f) => f.endsWith('.d.ts') && !f.includes('/node_modules/'));
 }
 
 /** Whether the app's tsconfig.json leaves strict checking off. */

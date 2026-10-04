@@ -6,6 +6,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync,
 import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { mergePlist, readPlist, writePlist, type PlistDict } from './plist.ts';
+import { productLines, type SwiftPackage } from './ios-dependencies.ts';
 
 /** The literal values of nativescript.config.ts's exported object; anything computed is left out. */
 export function readConfig(app: string): Record<string, unknown> {
@@ -71,10 +72,12 @@ function locatePackage(from: string, name: string): string | null {
 export interface IOSProjectResources {
   /** `settings.base` entries for the app target. */
   settings: Record<string, string>;
-  /** The target's base configuration file (relative to the project), if any. */
-  configFile: string | null;
+  /** The target's base configuration file per configuration (relative to the project), if any. */
+  configFiles: { Debug: string; Release: string } | null;
   /** Entries for the target's `sources:` list, as YAML lines. */
   sources: string;
+  /** The team build.xcconfig signs with. */
+  team?: string;
 }
 
 /** Entries of App_Resources/iOS the CLI does not copy into the bundle, or copies there though nothing reads them. */
@@ -84,7 +87,22 @@ const BUNDLE_LIKE = /\.(xcassets|lproj|bundle|scnassets|xcstrings|storyboardc)$/
 /** NativeScriptKit's iOS version; an app target cannot import it with a lower deployment target. */
 const KIT_DEPLOYMENT_TARGET = 17;
 
-export function iosProjectResources(o: { app: string; appDir: string; out: string; name: string; say: (m: string) => void }): IOSProjectResources {
+/** build.xcconfig, the app's first, so a plugin cannot override a setting the app chose. */
+function mergedXcconfig(app: string): XcconfigEntry[] {
+  const plugins = productionPlugins(app).map((p) => join(p.dir, 'platforms', 'ios'));
+  const xcconfigs = [join(appResourcesDir(app), 'iOS', 'build.xcconfig'), ...plugins.map((p) => join(p, 'build.xcconfig'))].filter(existsSync);
+  let merged: XcconfigEntry[] = [];
+  for (const file of xcconfigs) merged = mergeXcconfig(merged, parseXcconfig(file));
+  return merged;
+}
+
+/** The iOS version the app targets: build.xcconfig's, unless it is older than the kit's. */
+export function iosDeploymentTarget(app: string): string {
+  const set = mergedXcconfig(app).find((e) => e.kind === 'setting' && e.key === 'IPHONEOS_DEPLOYMENT_TARGET');
+  return set && set.kind === 'setting' && parseFloat(set.value) > KIT_DEPLOYMENT_TARGET ? set.value.replace(/"/g, '') : `${KIT_DEPLOYMENT_TARGET}.0`;
+}
+
+export function iosProjectResources(o: { app: string; appDir: string; out: string; name: string; pods: boolean; say: (m: string) => void }): IOSProjectResources {
   const res = join(appResourcesDir(o.app), 'iOS');
   const plugins = productionPlugins(o.app).map((p) => join(p.dir, 'platforms', 'ios'));
   const settings: Record<string, string> = {};
@@ -108,10 +126,7 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
     });
   }
 
-  // build.xcconfig: the app's first, so a plugin cannot override a setting the app chose.
-  const xcconfigs = [join(res, 'build.xcconfig'), ...plugins.map((p) => join(p, 'build.xcconfig'))].filter(existsSync);
-  let merged: XcconfigEntry[] = [];
-  for (const file of xcconfigs) merged = mergeXcconfig(merged, parseXcconfig(file));
+  const merged = mergedXcconfig(o.app);
   const configured = (key: string) => merged.find((e) => e.kind === 'setting' && e.key.replace(/\[.*$/, '') === key);
 
   // app.entitlements: the plugins', then the app's.
@@ -124,9 +139,13 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
     if (!configured('CODE_SIGN_ENTITLEMENTS')) settings.CODE_SIGN_ENTITLEMENTS = `${o.name}.entitlements`;
   }
 
-  if (merged.length) {
-    writeFileSync(join(o.out, 'build.xcconfig'), merged.map((e) => (e.kind === 'include' ? e.line : `${e.key} = ${e.value}`)).join('\n') + '\n');
-  } else rmSync(join(o.out, 'build.xcconfig'), { force: true });
+  if (merged.length) writeFileSync(join(o.out, 'build.xcconfig'), writeXcconfig(merged));
+  else rmSync(join(o.out, 'build.xcconfig'), { force: true });
+  // With pods, the app target's configuration is the pods' merged with build.xcconfig (`mergePodsXcconfig`) once `pod install` has written theirs.
+  for (const c of ['debug', 'release']) {
+    if (o.pods) writeFileSync(join(o.out, `build.${c}.xcconfig`), merged.length ? writeXcconfig(merged) : '');
+    else rmSync(join(o.out, `build.${c}.xcconfig`), { force: true });
+  }
   // The runtime template's default, which an app's build.xcconfig overrides.
   if (!configured('TARGETED_DEVICE_FAMILY')) settings.TARGETED_DEVICE_FAMILY = '"1,2"';
   const target = configured('IPHONEOS_DEPLOYMENT_TARGET');
@@ -153,8 +172,105 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
   const fonts = join(o.appDir, 'fonts');
   if (existsSync(fonts) && statSync(fonts).isDirectory()) sources.push(`      - path: ${relative(o.out, fonts)}\n        type: folder\n        buildPhase: resources\n`);
 
-  return { settings, configFile: merged.length ? 'build.xcconfig' : null, sources: sources.join('') };
+  const team = configured('DEVELOPMENT_TEAM');
+  return {
+    settings,
+    configFiles: o.pods ? { Debug: 'build.debug.xcconfig', Release: 'build.release.xcconfig' } : merged.length ? { Debug: 'build.xcconfig', Release: 'build.xcconfig' } : null,
+    sources: sources.join(''),
+    team: team?.kind === 'setting' ? team.value : undefined,
+  };
 }
+
+/**
+ * `mergePodXcconfigFile`: each configuration's pods xcconfig, with
+ * build.xcconfig merged into it, as the app target's configuration file.
+ */
+export function mergePodsXcconfig(out: string, name: string) {
+  const own = existsSync(join(out, 'build.xcconfig')) ? parseXcconfig(join(out, 'build.xcconfig')) : [];
+  for (const c of ['debug', 'release']) {
+    const pods = join(out, 'Pods', 'Target Support Files', `Pods-${name}`, `Pods-${name}.${c}.xcconfig`);
+    writeFileSync(join(out, `build.${c}.xcconfig`), writeXcconfig(mergeXcconfig(existsSync(pods) ? parseXcconfig(pods) : [], own)));
+  }
+}
+
+const writeXcconfig = (entries: XcconfigEntry[]) => entries.map((e) => (e.kind === 'include' ? e.line : `${e.key} = ${e.value}`)).join('\n') + '\n';
+
+/**
+ * App_Resources/iOS/extensions/<name>/: an app extension target per folder,
+ * as `IOSExtensionsService` adds it: its sources, `<app id>.<name>`, its
+ * Info.plist, extension.json's frameworks and build settings (both
+ * configurations', then the named one's), the Swift packages that name it,
+ * the app's signing, and embedded in the app. An extension is a link of its
+ * own, built without the app's dead code settings.
+ */
+export function iosExtensions(o: { app: string; out: string; bundle: string; packages: SwiftPackage[]; signing: Record<string, string>; team?: string; say: (m: string) => void }): { targets: string; dependencies: string; profiles: Record<string, string> } {
+  const dir = join(appResourcesDir(o.app), 'iOS', 'extensions');
+  const names = iosExtensionNames(o.app);
+  for (const p of o.packages) for (const t of p.targets) if (!names.includes(t)) o.say(`the Swift package ${p.name} names a target ${t} the app does not have`);
+  const provisioning = existsSync(join(dir, 'provisioning.json')) ? JSON.parse(readFileSync(join(dir, 'provisioning.json'), 'utf8')) as Record<string, string> : {};
+  const profiles: Record<string, string> = {};
+  const targets = names.map((name) => {
+    const ext = join(dir, name);
+    const json = existsSync(join(ext, 'extension.json')) ? JSON.parse(readFileSync(join(ext, 'extension.json'), 'utf8')) : {};
+    const bundle = `${o.bundle}.${name}`;
+    const rel = relative(o.out, ext);
+    // Paths in extension.json are relative to the CLI's platforms/ios.
+    const path = (v: unknown) => {
+      if (typeof v !== 'string' || v.startsWith('/') || v.startsWith('$')) return v;
+      const from = [resolve(o.app, 'platforms', 'ios', v), resolve(ext, v)].find(existsSync);
+      return from ? relative(o.out, from) : v;
+    };
+    const values = (props: Record<string, unknown> | undefined) => Object.fromEntries(Object.entries(props ?? {}).map(([k, v]) => [k, /^(CODE_SIGN_ENTITLEMENTS|INFOPLIST_FILE)$/.test(k) ? path(pbxValue(v)) : pbxValue(v)]));
+    const signing = { ...o.signing };
+    if (signing.PROVISIONING_PROFILE_SPECIFIER) {
+      delete signing.PROVISIONING_PROFILE_SPECIFIER;
+      if (provisioning[bundle]) signing.PROVISIONING_PROFILE_SPECIFIER = profiles[bundle] = provisioning[bundle];
+    }
+    const base: Record<string, unknown> = {
+      PRODUCT_BUNDLE_IDENTIFIER: bundle,
+      PRODUCT_NAME: name,
+      ...(existsSync(join(ext, 'Info.plist')) ? { INFOPLIST_FILE: join(rel, 'Info.plist') } : {}),
+      LD_RUNPATH_SEARCH_PATHS: '$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks',
+      SKIP_INSTALL: 'YES',
+      SWIFT_LTO: 'NO',
+      OTHER_SWIFT_FLAGS: '',
+      ...(o.team ? { DEVELOPMENT_TEAM: o.team } : {}),
+      ...signing,
+      ...(json.assetcatalogCompilerAppiconName ? { ASSETCATALOG_COMPILER_APPICON_NAME: json.assetcatalogCompilerAppiconName } : {}),
+      ...values(json.targetBuildConfigurationProperties),
+    };
+    const named = json.targetNamedBuildConfigurationProperties ?? {};
+    const configs = (['Debug', 'Release'] as const).map((c) => [c, values(named[c.toLowerCase()])] as const).filter(([, v]) => Object.keys(v).length);
+    const settings = (entries: Record<string, unknown>, indent: string) => Object.entries(entries).map(([k, v]) => `${indent}${k}: ${yamlValue(v)}\n`).join('');
+    const deps = [...((json.frameworks ?? []) as string[]).map((f) => `      - sdk: ${f}\n`), productLines(o.packages.filter((p) => p.targets.includes(name)))].join('');
+    return `  ${name}:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ${JSON.stringify(rel)}
+        excludes: ["extension.json", "Info.plist", "*.entitlements", "Podfile"]
+${deps ? `    dependencies:\n${deps}` : ''}    settings:
+      base:
+${settings(base, '        ')}${configs.length ? `      configs:\n${configs.map(([c, v]) => `        ${c}:\n${settings(v, '          ')}`).join('')}` : ''}`;
+  }).join('');
+  return { targets, dependencies: names.map((n) => `      - target: ${n}\n        embed: true\n`).join(''), profiles };
+}
+
+export function iosExtensionNames(app: string): string[] {
+  const dir = join(appResourcesDir(app), 'iOS', 'extensions');
+  return existsSync(dir) ? readdirSync(dir).filter((f) => !f.startsWith('.') && statSync(join(dir, f)).isDirectory()).sort() : [];
+}
+
+/** A value as the CLI writes it into the pbxproj: `"\"-O\""` is `-O`, `"(\"DEBUG=1\",\"$(inherited)\",)"` a list. */
+function pbxValue(v: unknown): unknown {
+  if (typeof v !== 'string') return v;
+  const t = v.trim();
+  const list = /^\(([\s\S]*)\)$/.exec(t);
+  if (list) return [...list[1].matchAll(/"((?:[^"\\]|\\.)*)"|([^\s,"]+)/g)].map((m) => (m[1] !== undefined ? m[1].replace(/\\(.)/g, '$1') : m[2]));
+  return /^"[\s\S]*"$/.test(t) ? t.slice(1, -1).replace(/\\(.)/g, '$1') : v;
+}
+
+const yamlValue = (v: unknown): string => (Array.isArray(v) ? `[${v.map((x) => JSON.stringify(String(x))).join(', ')}]` : JSON.stringify(String(v)));
 
 type XcconfigEntry = { kind: 'include'; line: string } | { kind: 'setting'; key: string; value: string };
 

@@ -18,7 +18,7 @@ import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
 import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
-import { createProgram, nodeModules } from './program.ts';
+import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches } from './core-patches.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { render, SCHEDULE, type Framework } from './codegen.ts';
@@ -29,7 +29,8 @@ import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
 import { collectProperties } from './properties.ts';
-import { iosProjectResources } from './app-resources.ts';
+import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig } from './app-resources.ts';
+import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
 
@@ -185,7 +186,8 @@ if (framework === 'vue') {
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
 const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
-const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins);
+const declarations = platform === 'ios' ? appDeclarations(app) : [];
+const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins, declarations);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
@@ -218,7 +220,18 @@ if (platform === 'android') {
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
-const native = pluginNative(plugins.all(), out);
+const packages = swiftPackages(app);
+const deploymentTarget = iosDeploymentTarget(app);
+const dependencies = iosDependencies({ app, packages, deploymentTarget, say });
+const typings = program.getSourceFiles().filter((f) => f.isDeclarationFile).map((f) => f.fileName);
+// What may declare the app's own Swift and the packages' modules: the app's declarations, and those of the plugins that add packages.
+const owners = packages.flatMap((p) => (p.pluginDir ? [p.pluginDir + '/'] : []));
+const nativeTypings = typings.filter((f) => !f.startsWith('/__shims__/') && (!f.includes('/node_modules/') || owners.some((d) => f.startsWith(d))));
+const native = pluginNative(plugins.all(), out, {
+  deps: dependencies, packages, declarations: typings, say,
+  app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
+});
+dependencies.dispose();
 const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
@@ -274,10 +287,14 @@ const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!
 const pluginLines = xcodegenLines(native, out);
 const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'));
-const resources = iosProjectResources({ app, appDir, out, name, say });
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
-const signing = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { CODE_SIGNING_ALLOWED: 'NO' };
+const signing: Record<string, string> = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { CODE_SIGNING_ALLOWED: 'NO' };
+const pods = podfile({ app, name, deploymentTarget, nested: native.swift.map((t) => t.name), extensions: iosExtensionNames(app) });
+if (pods) writeFileSync(join(out, 'Podfile'), pods);
+else removePods(out, name);
+const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
+const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
 const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...signing };
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
@@ -291,7 +308,7 @@ settings:
       SWIFT_LTO: YES
       OTHER_SWIFT_FLAGS: -Xfrontend -enable-llvm-vfe -Xfrontend -enable-llvm-wme -Xfrontend -internalize-at-link
       DEAD_CODE_STRIPPING: YES
-${pluginLines.packages ? `packages:\n${pluginLines.packages}` : ''}targets:
+${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}${packageLines(packages, out)}` : ''}targets:
   NativeScriptKit:
     type: library.static
     platform: iOS
@@ -300,25 +317,31 @@ ${pluginLines.packages ? `packages:\n${pluginLines.packages}` : ''}targets:
 ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}    settings:
       base:
         SWIFT_VERSION: "5.9"
-${pluginLines.targets}  ${name}:
+${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
     sources:
       - path: Sources
-${resources.sources}    dependencies:
+${pluginLines.sources}${resources.sources}    dependencies:
       - target: NativeScriptKit
-${pluginLines.dependencies}${resources.configFile ? `    configFiles:\n      Debug: ${resources.configFile}\n      Release: ${resources.configFile}\n` : ''}    settings:
+${pluginLines.dependencies}${productLines(packages)}${extensions.dependencies}${resources.configFiles ? `    configFiles:\n      Debug: ${resources.configFiles.Debug}\n      Release: ${resources.configFiles.Release}\n` : ''}    settings:
       base:
 ${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`);
 
+// A project with pods is generated and integrated here, so a build of it (the NativeScript CLI's) only builds its workspace.
+let project: string[] | null = null;
+if (pods) {
+  project = generateProject({ out, name, pods: true, mergeXcconfig: () => mergePodsXcconfig(out, name), say });
+  writeFileSync(join(out, PROJECT_MARKER), JSON.stringify({ workspace: `${name}.xcworkspace` }) + '\n');
+}
 if (args.includes('--build')) {
   const { execFileSync } = await import('node:child_process');
-  execFileSync('xcodegen', ['generate', '--quiet'], { cwd: out, stdio: 'inherit' });
+  project ??= generateProject({ out, name, pods: false, mergeXcconfig: () => {}, say });
   if (args.includes('--device')) {
-    const built = archive({ out, name, bundle, profile, team, say });
+    const built = archive({ out, name, project, bundle, profile, extensionProfiles: extensions.profiles, team, say });
     say(`archived ${relative(process.cwd(), built.archive)}, ${relative(process.cwd(), built.ipa)}`);
   } else {
-    execFileSync('xcodebuild', ['-project', `${name}.xcodeproj`, '-scheme', name, '-configuration', 'Release', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', 'build', 'build', '-quiet'], { cwd: out, stdio: 'inherit' });
+    execFileSync('xcodebuild', [...project, '-scheme', name, '-configuration', 'Release', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', 'build', 'build', '-quiet'], { cwd: out, stdio: 'inherit' });
     say(`built ${relative(process.cwd(), out)}/build`);
   }
 }

@@ -366,7 +366,32 @@ three Font Awesome fonts 0.4 MB of it (`results/ns-octane.json`,
   `GestureHandlerManager.alloc().init()` resolves to its Swift spelling, and
   the package's typings resolve to the module whose classes they declare.
   Plugin Swift is compiled with the app's settings, dead code elimination
-  included.
+  included. A member a Swift module isolates to the main actor (not by
+  inheriting a UIKit class's isolation) is reached through
+  `MainActor.assumeIsolated`: the translated code runs on the main thread.
+- **Swift packages and pods** (`compiler/src/ios-dependencies.ts`):
+  `ios.SPMPackages` in the app's `nativescript.config.ts` and in each
+  production plugin's are packages of the project, merged as the CLI merges
+  them (the app's first, then the first plugin to name a package; a local
+  `path` is the app's, else the plugin's), their `libs` linked by the app
+  target and by the extension targets their `targets` name. Each production
+  plugin's `platforms/ios/Podfile` and the app's `App_Resources/iOS/Podfile`
+  are one `Podfile` as `cocoapods-service` writes it (each in its `# Begin
+  Podfile` block, `post_install` blocks as functions one hook calls, the
+  platform the CLI would choose, else the deployment target, and `overridePods`),
+  with every pod target built for the app's deployment target, as the CLI's
+  command line builds it, and each extension's Podfile as its own target.
+  Plugin Swift targets inherit the pods, so a plugin's Swift that imports a
+  pod compiles after it. With a Podfile, the compile runs `xcodegen` and
+  `pod install`, merges the pods' xcconfig with `build.xcconfig` as the app
+  target's configuration (`mergePodXcconfigFile`), and writes
+  `ns-native-project.json` (`{"workspace": "<name>.xcworkspace"}`): the
+  project is built as that workspace. The modules the packages and pods build
+  get symbol tables, so `IQKeyboardManager.shared.isEnabled = true` resolves
+  through the package's typings (`objc!IQKeyboardManagerSwift.d.ts`) and
+  the module is imported where the program declares it: the first compile
+  builds them once for the simulator in a project of its own and extracts
+  their symbol graphs, cached under a hash of what the dependencies are.
 - **Octane's driver**: `registerElement` tags resolve to their classes at
   compile time, `hostSlot` children set the slot property, `ref`s,
   `onLoaded`, `renderNativeScriptApp`, `setWindowContentResolver` and
@@ -532,7 +557,19 @@ app's `App_Resources` and settings as the NativeScript CLI carries them into
   `LaunchScreen.storyboard`, `PrivacyInfo.xcprivacy`, `.lproj`s and folders)
   are resources of the app, and the app folder's `fonts` are copied into the
   bundle and registered before the first font is resolved, as core registers
-  them. Against the NativeScript builds' `Info.plist` (`plutil -p`),
+  them. `App_Resources/iOS/src`'s Swift (and Metal) is compiled into the app
+  target, as the CLI compiles it, with a symbol table of its internal
+  declarations too: `Greeter.greetingWithName('x')`, declared to TypeScript
+  in a `.d.ts` the app's `tsconfig.json` includes or references, is
+  `Greeter.greeting(name: "x")`; Swift that does not compile without the
+  JavaScript runtime's code is left out with a message. Each folder of
+  `App_Resources/iOS/extensions` is an app extension target as
+  `IOSExtensionsService` adds it: its sources, `<bundle id>.<name>`, its
+  `Info.plist`, `extension.json`'s frameworks and build settings (paths in
+  them taken from the CLI's `platforms/ios`), the packages that name it, the
+  app's signing (and its profile from `extensions/provisioning.json` with
+  `--provision`), embedded in `PlugIns/`; it is built without the app's dead
+  code settings. Against the NativeScript builds' `Info.plist` (`plutil -p`),
   ns-octane's and the Recipes apps' differ only in the bundle id the
   comparisons give the native build and, for the Recipes apps, in
   `MinimumOSVersion`: their `build.xcconfig` asks for iOS 16, the kit needs
@@ -657,10 +694,15 @@ develops it with live reload as usual.
   from a recycled MotionEvent, whatever event it holds by then, so a pan's
   deltas vary from run to run in the NativeScript build itself.
 - **Plugins** compile from their source (see Plugins above). Not yet:
-  CocoaPods and Gradle dependencies, `.framework`s and static libraries
+  Gradle dependencies, `.framework`s and static libraries
   (an `.xcframework` is fine), resource bundles, plugin hooks, and changes to core's prototypes other than
   the recognized patterns. Plugins are compiled for iOS only: an Android
   build of an app that imports one stops at that import.
+- **Swift packages and pods** are not compiled with the app's dead code
+  settings (a package target gets none of the project's settings; pods are
+  dynamic frameworks); a package product the app links statically is linked
+  as built. TypeScript reads `declare const X: any` as untyped: a call on it
+  to `App_Resources/iOS/src` Swift needs a `declare class` instead.
 - **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box
   shadows, Span `verticalAlignment`, `font://` icons, and DatePicker dates given
   as Date values.
