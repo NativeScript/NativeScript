@@ -127,6 +127,9 @@ export function unsafeReceiver(target: ts.Expression, checker: ts.TypeChecker): 
   while (ts.isParenthesizedExpression(target)) target = target.expression;
   const objectLike = (t: ts.Type) => !(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | ts.TypeFlags.ESSymbolLike | ts.TypeFlags.EnumLike | ts.TypeFlags.TypeParameter));
   if (ts.isNonNullExpression(target)) {
+    // A front end's own assertion on a signal it set before any template reads it (`this.x.value!`).
+    const held = ts.isPropertyAccessExpression(target.expression) ? checker.getSymbolAtLocation(target.expression.name)?.declarations?.[0] : undefined;
+    if (held?.getSourceFile().fileName.startsWith('/__shims__/')) return null;
     const t = checker.getTypeAtLocation(target.expression);
     const parts = t.isUnion() ? t.types : [t];
     const undefinedOk = parts.some((p) => p.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
