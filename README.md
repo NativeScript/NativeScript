@@ -32,7 +32,7 @@ Release build, on one iPhone 17 Pro simulator, below the status bar.
 | --- | --- | --- | --- | --- | --- | --- |
 | Pixels that differ, both screens | 0 | 0* | 0 | 0 | 0 | 0 |
 | Pixels that differ after the same taps | 0 | 0* | 0 | 0 | 0 | 0 |
-| Device archive, NativeScript → native | 44.8 → 1.0 MB | 45.6 → 1.0 MB | 44.8 → 1.0 MB | 44.9 → 1.0 MB | 44.6 → 1.0 MB | 44.6 → 1.0 MB |
+| Device archive, NativeScript → native | 44.8 → 1.1 MB | 45.6 → 1.1 MB | 44.8 → 1.1 MB | 44.9 → 1.1 MB | 44.6 → 1.1 MB | 44.6 → 1.1 MB |
 
 \* The Angular app depends on `@nativescript/tailwind`, whose PostCSS pass
 (autoloaded by `@nativescript/webpack`) drops declarations outside its
@@ -45,9 +45,16 @@ that same CSS, the CSS its NativeScript build ships (see CSS below).
 The device archive is the unsigned arm64 app as `xcodebuild archive` makes
 it (`tools/sizes.py`, `results/sizes.json`). The generated project builds
 NativeScriptKit as a static library target with the app's settings: `-Osize`,
-full LTO and Swift's hermetic seal, which lets the linker drop the kit code,
-vtable entries and conformances an app never reaches; as a Swift package
-built with Xcode's default Release settings it made 1.6 MB archives.
+full LTO, and virtual function and witness method elimination over symbols
+internalized at the link, which let the linker drop the kit code and vtable
+entries an app never reaches; as a Swift package built with Xcode's default
+Release settings it made 1.6 MB archives. Swift's hermetic seal would drop
+more (1.0 MB), but its conditional runtime records leave classes out of the
+Objective-C class list that the app does create, and UIKit aborts in
+`+[NSBundle bundleForClass:]` when such a view becomes first responder (a
+tap in a TextField). A kit file that imports a framework beyond UIKit
+(`WebView.swift`, WebKit) is compiled only for an app that uses its types: a
+linked framework is loaded at launch with everything it links.
 
 The Octane app needs two fixes on the NativeScript side, both described in
 `results/upstream-octane.md`. Its driver cannot host `<segmentedbaritem>`, so
@@ -72,15 +79,46 @@ transforms, animations, spans, pickers, CSS selectors and variables,
 borders, backgrounds, modals, TabView, Tailwind v4, the update order, and
 core's imperative API: `view.animate()`, `Animation`, TouchManager,
 RootLayout's `open`/`close`, `Frame.navigate` and `showModal` from script)
-are 0 pixels apart in all 182 shots; the ListView and Update order screens
+are 0 pixels apart in all 171 shots; the ListView and Update order screens
 of the other five are 0 pixels apart in all of their shots
 (`tools/gallery.py`).
 
 Launch, footprint and CPU are in `results/launch.json` (five interleaved
 cold launches per app; `tools/launch.py`). The native builds reach their
 settled first screen inside iOS's launch animation; the NativeScript builds
-take 44–53 MB of footprint against 17 MB, and about twice the CPU to get
-there (four times for Svelte).
+take 45–53 MB of footprint against 17–18 MB, and about twice the CPU to get
+there (0.85–0.92 s against 0.47 s; 2.1 s for Svelte). ns-octane: 2.1 s to
+its settled first screen against 0.8 s, 51 MB against 20 MB, 2.0 s of CPU
+against 0.78 s. Most of the native build's CPU is the system's: on the
+simulator, loading UIKit and what its text input and SF Symbols pull in
+(746 images for ns-octane, 1,236 for its NativeScript build); the app's own
+code takes a few milliseconds. `launch.py` turns the simulator's
+accessibility off first: with it on, each app also loads the accessibility
+bundles, which cost ns-octane's native build 2.3 s of CPU and 29 MB of
+footprint and its NativeScript build 1.3 s and 4 MB, and hid the difference.
+
+### On a device
+
+Recipes (Vue) and ns-octane on an iPhone 16 Pro (iOS 26.6.2), both builds
+signed for development and installed, five interleaved cold launches each
+(`tools/device.py`, `results/device-ios.json`; medians):
+
+| | Recipes NS → native | ns-octane NS → native |
+| --- | --- | --- |
+| First frame, from SpringBoard's bootstrap | 227 → 129 ms | 241 → 156 ms |
+| Settled screen | 732 → 742 ms | 740 → 731 ms |
+| Footprint after launch | 45.1 → 15.6 MB | 61.7 → 18.2 MB |
+| CPU, launch to 7 s | 0.50 → 0.41 s | 0.53 → 0.44 s |
+| `.ipa` | 14.0 → 0.45 MB | 14.4 → 0.96 MB |
+| Installed | 45.9 → 1.1 MB | 46.9 → 2.2 MB |
+| Pixels that differ, launch screen | 0 | 0 |
+
+Both builds' screens are settled when iOS's 0.7 s launch zoom ends, so the
+settled times are the zoom's. The first frame and the times come from
+SpringBoard's log on the device's clock, footprint and CPU from sysmontap
+over DVT, sizes from the phone's installation service. Screens behind a tap
+need `--taps-by-hand`: nothing outside an app can tap a phone without an
+XCUITest runner, an app ID of its own.
 
 ## What compiles
 
@@ -170,7 +208,7 @@ of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
 `@nativescript/input-accessory`, `@nstudio/nstreamdown` and
 `@nativescript/haptics`) builds this way: ten screens through the drawer,
 a chat, a streamed reply, a context menu and the settings sheet match its
-NativeScript Release build pixel for pixel, in a 2.2 MB app against 46.7 MB
+NativeScript Release build pixel for pixel, in a 1.9 MB app against 46.7 MB
 (`results/ns-octane.json`).
 
 - **Source.** `compiler/src/plugins/source.ts` finds the commit a published
@@ -220,9 +258,8 @@ NativeScript Release build pixel for pixel, in a 2.2 MB app against 46.7 MB
   symbol table as the SDK's frameworks do, so
   `GestureHandlerManager.alloc().init()` resolves to its Swift spelling, and
   the package's typings resolve to the module whose classes they declare.
-  An app with a plugin's Swift module links without Swift's hermetic seal:
-  sealed, a `UIView` subclass in that module loses the Objective-C class data
-  UIKit reads (`+[NSBundle bundleForClass:]` aborts).
+  Plugin Swift is compiled with the app's settings, dead code elimination
+  included.
 - **Octane's driver**: `registerElement` tags resolve to their classes at
   compile time, `hostSlot` children set the slot property, `ref`s,
   `onLoaded`, `renderNativeScriptApp`, `setWindowContentResolver` and
@@ -386,7 +423,7 @@ develops it with live reload as usual.
 | `native-calls-vue/` | A Vue app calling UIKit, and on Android the Android SDK, directly; compared by `tools/native_calls.py` and `tools/gallery-android.py` |
 | `tests/diff/` | Differential tests: each case under Node and as a native program |
 | `tests/color-mix/` | The kit's `color-mix()` against core's color parser |
-| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
+| `tools/` | `compare.py`, `interact.py`, `gallery.py`, `native_calls.py`, `launch.py`, `css_exact.ts`, `sizes.py`, `device.py` (a physical iPhone), and `demo/` for the video; `compare-android.py`, `interact-android.py`, `gallery-android.py`, `sizes-android.py` |
 
 ## Limits
 

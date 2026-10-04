@@ -204,13 +204,19 @@ say(`${components.length} components and ${modules.length} modules from ${framew
 
 // 4. The Xcode project. The kit is a static library target rather than its
 // Swift package because package targets get none of the project's settings.
-// The hermetic seal lets the link drop the kit's code, vtable entries and
-// conformances the app never reaches; it needs every Swift module in the link
-// compiled with it and with full LTO.
-// A plugin's Swift module goes without it: sealed, its UIView subclass loses the
-// Objective-C class data UIKit reads (`+[NSBundle bundleForClass:]` aborts).
+// Virtual function and witness method elimination with internalized public
+// symbols let the link drop the kit's code and vtable entries the app never
+// reaches; every Swift module in the link must be compiled with them and with
+// full LTO. They are `-experimental-hermetic-seal-at-link` without
+// `-conditional-runtime-records`, which keeps a class in the Objective-C class
+// list only if its `CN` symbol is referenced, and code creating instances
+// references the full metadata instead: the runtime then cannot find such a
+// class from its metaclass, and `+[NSBundle bundleForClass:]`, which UIKit
+// calls on the first responder, aborts.
 const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!;
 const pluginLines = xcodegenLines(native, out);
+const kitSources = join(kit, 'Sources', 'NativeScriptKit');
+const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'));
 writeFileSync(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
@@ -221,13 +227,15 @@ settings:
     Release:
       SWIFT_OPTIMIZATION_LEVEL: -Osize
       SWIFT_LTO: YES
-${native.swift.length ? '' : '      OTHER_SWIFT_FLAGS: -experimental-hermetic-seal-at-link\n'}      DEAD_CODE_STRIPPING: YES
+      OTHER_SWIFT_FLAGS: -Xfrontend -enable-llvm-vfe -Xfrontend -enable-llvm-wme -Xfrontend -internalize-at-link
+      DEAD_CODE_STRIPPING: YES
 ${pluginLines.packages ? `packages:\n${pluginLines.packages}` : ''}targets:
   NativeScriptKit:
     type: library.static
     platform: iOS
-    sources: [${relative(out, join(kit, 'Sources', 'NativeScriptKit'))}]
-    settings:
+    sources:
+      - path: ${relative(out, kitSources)}
+${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}    settings:
       base:
         SWIFT_VERSION: "5.9"
 ${pluginLines.targets}  ${name}:
@@ -254,4 +262,27 @@ if (args.includes('--build')) {
   const destination = args.includes('--device') ? 'generic/platform=iOS' : 'generic/platform=iOS Simulator';
   execFileSync('xcodebuild', ['-project', `${name}.xcodeproj`, '-scheme', name, '-configuration', 'Release', '-destination', destination, '-derivedDataPath', 'build', 'build', '-quiet'], { cwd: out, stdio: 'inherit' });
   say(`built ${relative(process.cwd(), out)}/build`);
+}
+
+/**
+ * The kit files importing a framework beyond Foundation and UIKit whose types
+ * the app's Swift does not name: an app links what the kit imports, and a
+ * linked framework is loaded at launch with everything it links (WebKit, some
+ * fifty images) whether or not the app reaches the code that uses it.
+ */
+function kitFilesUnreached(dir: string, appSwift: string): string[] {
+  const unreached: string[] = [];
+  const visit = (d: string) => {
+    for (const f of readdirSync(d)) {
+      const p = join(d, f);
+      if (statSync(p).isDirectory()) { visit(p); continue; }
+      if (!f.endsWith('.swift')) continue;
+      const text = readFileSync(p, 'utf8');
+      if ([...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC'].includes(m[1]))) continue;
+      const types = [...text.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)].map((m) => m[1]);
+      if (!types.some((t) => new RegExp(`\\b${t}\\b`).test(appSwift))) unreached.push(relative(dir, p));
+    }
+  };
+  visit(dir);
+  return unreached;
 }
