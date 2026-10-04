@@ -270,8 +270,8 @@ open class Frame: View {
     open override class var cssType: String { "Frame" }
 
     private static var stack: [Frame] = []
-    /// The frame that navigation goes to: the most recently created one still shown.
-    public static var topmost: Frame? { stack.last }
+    /// `Frame.topmost()`: the frame that navigation goes to, the most recently created one still shown.
+    public static func topmost() -> Frame! { stack.last }
 
     /// `_pushInFrameStackRecursive`: a selected tab's frame receives navigation.
     static func bringToTop(_ frame: Frame) {

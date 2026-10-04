@@ -241,7 +241,13 @@ open class StackLayout: LayoutBase {
 open class ContentView: CustomLayoutView {
     open override class var cssType: String { "ContentView" }
 
-    private(set) var content: View?
+    private var contentView: View?
+
+    /// `view.content` from script; a page given content through it adopts it as through its template.
+    public var content: View? {
+        get { contentView }
+        set { if let newValue { addChild(newValue) } else { setContent(nil) } }
+    }
 
     var layoutView: View? { content }
 
@@ -250,11 +256,11 @@ open class ContentView: CustomLayoutView {
     }
 
     func setContent(_ value: View?) {
-        if let old = content {
+        if let old = contentView {
             removeView(old)
             old.nativeView?.removeFromSuperview()
         }
-        content = value
+        contentView = value
         if let value {
             addView(value)
             addNativeSubview(value)

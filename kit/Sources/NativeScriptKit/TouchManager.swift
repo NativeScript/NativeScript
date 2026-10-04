@@ -60,8 +60,8 @@ public enum TouchManager {
     /// `startAnimationForType`: cancels the view's touch animations in progress, then plays (or replays) this type's.
     static func startAnimation(_ view: View, _ type: String) {
         guard let definition = definition(view, type) else { return }
-        if let function = definition as? (Any?) throws -> Any? {
-            _ = try? function(view)
+        if jsFlat(definition) is JSFunction {
+            _ = try? jsCall(definition, view)
             return
         }
         definitions.removeAll { $0.view.value == nil }

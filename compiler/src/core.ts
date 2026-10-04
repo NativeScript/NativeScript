@@ -13,7 +13,7 @@ export const NATIVE_VIEWS: Record<string, string> = {
 };
 const NATIVE_MEMBERS = new Set(['ios', 'nativeView', 'nativeViewProtected']);
 /** View methods whose arguments core reads as plain script objects. */
-const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover']);
+const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
 
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   return !!decl && /[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName);
@@ -146,6 +146,7 @@ export class CoreAPI {
     const name = e.expression.name.text;
     const m = this.member(owner.name, name, e.expression);
     const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression);
+    if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const args = SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e);
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e));
   }
@@ -165,6 +166,16 @@ export class CoreAPI {
     return `${sym.name}(${t.args(e).join(', ')})`;
   }
 
+  /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
+  private navigate(recv: string, e: ts.CallExpression): string {
+    const entry = e.arguments[0];
+    if (!entry || !ts.isObjectLiteralExpression(entry)) throw this.t.error(e, 'frame.navigate with anything but a { create } entry');
+    for (const p of entry.properties) if (p.name?.getText() !== 'create') throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
+    const create = entry.properties[0];
+    if (!create || !ts.isPropertyAssignment(create)) throw this.t.error(entry, 'a navigation entry without create');
+    return `${recv}.navigate { ${this.t.expr(create.initializer)}() }`;
+  }
+
   /**
    * An argument core reads as a plain script object (an animation definition):
    * literals become JavaScript objects and arrays, whatever their declared type.
@@ -179,6 +190,11 @@ export class CoreAPI {
       return `JSObject([${entries.join(', ')}])`;
     }
     if (ts.isArrayLiteralExpression(e)) return `JSArray<Any?>([${e.elements.map((x) => this.scriptValue(x)).join(', ')}])`;
+    if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
+      // A function core calls back (`closeCallback`) takes script values.
+      const args = e.parameters.map((p, i) => this.t.fromAnyCode(`(${i} < __args.count ? __args[${i}] : nil)`, this.t.typeOf(p)));
+      return `({ (__args: [Any?]) throws -> Any? in _ = try (${this.t.expr(e)})(${args.join(', ')}); return nil } as JSFunction)`;
+    }
     return this.t.coerce(e, 'Any?');
   }
 

@@ -1632,7 +1632,7 @@ export class Translator {
       }
     }
     const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
-    return `Frame.topmost?.navigate { ${component}(${args}).render() }`;
+    return `Frame.topmost()?.navigate { ${component}(${args}).render() }`;
   }
 
   private toNumber(e: ts.Expression): string {

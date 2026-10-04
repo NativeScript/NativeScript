@@ -25,9 +25,9 @@ public enum Modal {
     static weak var root: View?
 
     /// `showModal(view, options)`. Effects created while building the view end when it closes.
-    public static func show(fullscreen: Bool = false, animated: Bool = true, cancelable: Bool = true,
+    public static func show(fullscreen: Bool = false, animated: Bool = true, cancelable: Bool = true, from parent: View? = nil,
                             closeCallback: ((Any) -> Void)? = nil, _ create: () -> View) {
-        guard let target = stack.last?.view ?? root,
+        guard let target = parent ?? stack.last?.view ?? root,
               let parentController = viewControllerOwner(of: target)?.viewController else { return }
         // A controller presents one modal at a time, and only from the window.
         guard parentController.presentedViewController == nil, parentController.view.window != nil else { return }
@@ -98,4 +98,24 @@ public enum Modal {
             Modal.dismissedByUser(presentationController.presentedViewController)
         }
     }
+}
+
+extension View {
+    /// `view.showModal(modalView, options)` from script: presented from this view.
+    @discardableResult
+    public func showModal(_ modal: Any?, _ options: Any? = nil) -> View! {
+        guard let modal = modal as? View else { return nil }
+        func option(_ key: String) -> Any? {
+            guard let options else { return nil }
+            return (try? jsGet(options, key)) ?? nil
+        }
+        let callback = option("closeCallback")
+        Modal.show(fullscreen: toBool(option("fullscreen")) ?? false, animated: toBool(option("animated")) ?? true,
+                   cancelable: toBool(option("cancelable")) ?? true, from: self,
+                   closeCallback: callback.map { function in { result in _ = try? jsCall(function, result) } }) { modal }
+        return modal
+    }
+
+    /// `view.closeModal(result)`: closes the topmost modal.
+    public func closeModal(_ result: Any? = nil) { Modal.close(result) }
 }
