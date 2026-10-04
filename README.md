@@ -264,21 +264,28 @@ file, line and construct.
   long Java takes and back, JS arrays to Java arrays, interfaces implement
   from object literals (`new android.view.View.OnClickListener({ onClick… })`),
   and `@NativeClass()` classes extending Java classes override with Java's
-  signatures (`compiler/src/native-calls-android.ts`). `Utils.android`,
+  signatures (`compiler/src/native-calls-android.ts`). `Base.extend({…})`
+  and `java.lang.Object.extend({ interfaces: […], … })` declare a Kotlin
+  class where the variable holding them is (`this.super.m()` is the
+  superclass's), varargs methods take their arguments one by one or an
+  array, and `Array.create(type, n)` is a real Java array a method can fill
+  in. `Utils.android`,
   `Utils.layout` and `Application.android` are in kit-android's `CoreAPI.kt`,
   and `x.android.ts`/`x.ios.ts` resolve as `./x` for their platform.
 
 ## Plugins
 
 A plugin is compiled from its TypeScript source with the app, as one
-program, and its iOS code is linked as the plugin ships it. ns-octane (a copy
+program, and its native code is linked as the plugin ships it. ns-octane (a copy
 of `NathanWalker/ns-octane` with `@nativescript-community/ui-drawer`,
 `@nativescript-community/gesturehandler`, `@nstudio/nativescript-menu`,
 `@nativescript/input-accessory`, `@nstudio/nstreamdown` and
 `@nativescript/haptics`) builds this way: ten screens through the drawer,
 a chat, a streamed reply, a context menu and the settings sheet match its
 NativeScript Release build pixel for pixel, in a 1.9 MB app against 46.7 MB
-(`results/ns-octane.json`).
+(`results/ns-octane.json`). On Android the same ten screens match its
+NativeScript Release APK pixel for pixel, in a 1.2 MB APK against 104.8 MB
+(`results/ns-octane-android.json`).
 
 - **Source.** `compiler/src/plugins/source.ts` finds the commit a published
   version was built from (the `gitHead` npm recorded, else the version's tag,
@@ -300,7 +307,10 @@ NativeScript Release build pixel for pixel, in a 1.9 MB app against 46.7 MB
   opaque box-shadow colors, insertion below the native view at an index,
   clamped scroll offsets, gradient stops positioned as CSS positions them),
   and a hunk that changes iOS behavior in any other way stops the build.
-  Android builds do not read the patch yet.
+  Android reads the same patch for its own hunks (ns-octane's: layouts
+  that do not clip their children unless `clipToBounds` says so, edge-to-edge
+  re-applied when the system appearance changes, gradient stops positioned
+  as CSS positions them); a hunk it does not recognize stops the build.
 - **Reachability** (`compiler/src/reach.ts`): only the modules and members
   the app reaches are translated, with the platform's constants folded, so
   Android branches and `install(true)`'s override of core's gesture
@@ -329,6 +339,18 @@ NativeScript Release build pixel for pixel, in a 1.9 MB app against 46.7 MB
   the package's typings resolve to the module whose classes they declare.
   Plugin Swift is compiled with the app's settings, dead code elimination
   included.
+- **Android native code** (`compiler/src/plugins/native-android.ts`):
+  `platforms/android` builds as NativeScript's CLI builds it, Java and
+  Kotlin sources, `res/` and the manifest into an AAR per plugin (cached in
+  `~/.cache/ns-native/android-plugins`), with shipped AARs, `include.gradle`
+  dependencies and repositories, and its `minSdk`. The manifests merge into
+  the app's (ns-octane's haptics adds `VIBRATE`), the AARs' classes join the
+  class path direct calls resolve against, and R8 keeps the plugin packages
+  that untyped code reaches by reflection. A plugin's replacement of a core
+  method (`Page.prototype.createNativeView`, gesturehandler's `PageLayout`)
+  becomes a kit hook; `this.findRootView(view)?.registry`-style reads of a
+  mixin's members on core views go through the kit by name. The app's
+  `fonts/` folder is packaged as core reads it.
 - **Octane's driver**: `registerElement` tags resolve to their classes at
   compile time, `hostSlot` children set the slot property, `ref`s,
   `onLoaded`, `renderNativeScriptApp`, `setWindowContentResolver` and
@@ -512,16 +534,20 @@ develops it with live reload as usual.
   on the framework's microtask or tick.
 - **Where Swift differs, by design.** Closures have no identity; JSON
   cannot hold lone surrogates.
-- **Android:** `Base.extend({…})`, Java varargs and `Array.create` are not
-  translated; a Java array a method fills in is a copy. Core's pan starts
-  from a recycled MotionEvent, whatever event it holds by then, so a pan's
-  deltas vary from run to run in the NativeScript build itself.
+- **Android:** a `Base.extend('a.b.Name', {…})` class takes its variable's
+  name, not the Java name given (a manifest cannot name it); `extend` of an
+  `extend` class, an `init` with parameters and arrow members using `this`
+  stop the build; numbers passed as `Object` varargs are `Double`s. A Java
+  array a method fills in is a copy unless it came from `Array.create`.
+  Core's pan starts from a recycled MotionEvent, whatever event it holds by
+  then, so a pan's deltas vary from run to run in the NativeScript build
+  itself.
 - **Plugins** compile from their source (see Plugins above). Not yet:
-  CocoaPods and Gradle dependencies, `.framework`s and static libraries
-  (an `.xcframework` is fine), resource bundles, Info.plist merges and
+  CocoaPods dependencies, `.framework`s and static libraries (an
+  `.xcframework` is fine), resource bundles, Info.plist merges and
   entitlements, plugin hooks, and changes to core's prototypes other than
-  the recognized patterns. Plugins are compiled for iOS only: an Android
-  build of an app that imports one stops at that import.
+  the recognized patterns. On Android, `include.gradle` beyond dependencies,
+  repositories and `minSdk` stops the build.
 - **Not ported yet:** `background-image: url()`, `direction: rtl`, inset box
   shadows, Span `verticalAlignment`, `font://` icons, and DatePicker dates given
   as Date values.
