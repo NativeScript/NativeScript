@@ -295,6 +295,7 @@ private struct JSJSONWriter {
         case let b as Bool: return b ? "true" : "false"
         case let s as String: return jsJSONQuote(s)
         case let d as Double: return d.isFinite ? jsNumberToString(d) : "null"
+        case let date as JSDate: return date.toJSON().map(jsJSONQuote) ?? "null"
         default: break
         }
         if let n = jsNumeric(v) { return n.isFinite ? jsNumberToString(n) : "null" }

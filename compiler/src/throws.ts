@@ -3,7 +3,7 @@ import ts from 'typescript';
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'Number.toFixed', 'Number.toPrecision', 'String.normalize']);
+const THROWING_BUILTINS = new Set(['JSON.parse', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'Number.toFixed', 'Number.toPrecision', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString']);
 
 /**
  * Which functions throw, worked out across the call graph: a function is
@@ -122,6 +122,7 @@ export class Throws {
       if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) return !isAsync(arg) && this.fn(arg);
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
     if (!decl || ts.isJSDocSignature(decl)) {
       if (ts.isNewExpression(call)) return this.implicitConstructorThrows(call);
       return true;

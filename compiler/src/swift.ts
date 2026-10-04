@@ -42,7 +42,7 @@ export interface ComponentInfo {
 }
 
 const ERRORS: Record<string, string> = { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' };
-const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set']);
+const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date']);
 
 export class Translator {
   /** The component class being translated: its props read as `self.<prop>.value`. */
@@ -169,7 +169,11 @@ export class Translator {
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
       case 'Map': case 'ReadonlyMap': return `JSMap<${arg(0)}, ${arg(1)}>`;
       case 'Set': case 'ReadonlySet': return `JSSet<${arg(0)}>`;
-      case 'Date': case 'RegExp': case 'WeakMap': case 'WeakSet': case 'Symbol':
+      case 'Date': return 'JSDate';
+      case 'RegExp': return 'JSRegExp';
+      case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
+      case 'RegExpStringIterator': return 'JSArray<JSMatch>';
+      case 'WeakMap': case 'WeakSet': case 'Symbol':
         throw this.error(where, `the ${name} type`);
     }
     if (name && ERRORS[name] && sym?.declarations?.some((d) => d.getSourceFile().isDeclarationFile)) return ERRORS[name];
@@ -874,6 +878,7 @@ export class Translator {
     const t = this.typeOf(e);
     if (t === 'String') return `jsCodePoints(${this.expr(e)})`;
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
+    if (t === 'JSMatch') return `${this.expr(e)}.values`;
     return this.expr(e);
   }
 
@@ -1051,7 +1056,11 @@ export class Translator {
     if (ts.isTypeOfExpression(e)) return this.typeofExpr(e);
     if (ts.isAwaitExpression(e)) throw this.error(e, 'await outside a statement of an async function');
     if (ts.isVoidExpression(e)) return `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
-    if (ts.isRegularExpressionLiteral(e)) throw this.error(e, 'a regular expression');
+    if (ts.isRegularExpressionLiteral(e)) {
+      const text = e.text;
+      const end = text.lastIndexOf('/');
+      return `jsRegExpLiteral(${swiftString(text.slice(1, end))}, ${swiftString(text.slice(end + 1))})`;
+    }
     throw this.error(e, 'expression');
   }
 
@@ -1124,6 +1133,14 @@ export class Translator {
       return t === 'Any?' || isWriteTarget(e) ? code : this.fromAny(code, t);
     }
     const base = this.typeOf(target);
+    if (base.replace(/\?$/, '').startsWith('[String:')) {
+      // A key of a dictionary-typed object: undefined when missing.
+      const read = `${this.expr(target)}${base.endsWith('?') ? '?' : ''}[${swiftString(name)}]`;
+      const t = this.typeOf(e);
+      if (isWriteTarget(e) || t.endsWith('?')) return read;
+      const z = this.zero(t);
+      return z && z !== 'nil' ? `(${read} ?? ${z})` : `${read}!`;
+    }
     // An event's data: the value's type is the one the handler declared.
     if (base === 'EventData' && name === 'value') {
       const t = this.typeOf(e);
@@ -1139,6 +1156,7 @@ export class Translator {
     const q = e.questionDotToken ? '?' : '';
     if (t === 'String') return `jsCharAt(${target}, ${this.expr(key)})`;
     if (t.startsWith('JSArray<')) return `${target}${q}[Int(${this.expr(key)})]`;
+    if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
     if (t.startsWith('(') && ts.isNumericLiteral(key)) return `${target}.${key.text}`;
     if (t.startsWith('[String:')) {
       // A missing key is undefined in JavaScript; its declared type here is the value type.
@@ -1241,6 +1259,10 @@ export class Translator {
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') ? '!' : '';
       if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
+      if (t === 'JSMatch' && method !== 'toString') {
+        this.subst.set(target, `${this.expr(target)}${q}.values`);
+        try { return this.arrayMethod(method, target, e, ''); } finally { this.subst.delete(target); }
+      }
       if (t.startsWith('(') && this.checker.isTupleType(this.checker.getTypeAtLocation(target))) {
         // A tuple used as an array: its elements as one.
         const n = this.checker.getTypeArguments(this.checker.getTypeAtLocation(target) as ts.TypeReference).length;
@@ -1357,6 +1379,7 @@ export class Translator {
   private toNumber(e: ts.Expression): string {
     const t = this.typeOf(e);
     if (t === 'Double') return this.expr(e);
+    if (t === 'JSDate') return `${this.expr(e)}.valueOf()`;
     if (t === 'String') return `jsNumberFromString(${this.expr(e)})`;
     if (t === 'Bool') return `(${this.expr(e)} ? 1 : 0)`;
     return `jsToNumber(${this.expr(e)})`;
@@ -1398,6 +1421,11 @@ export class Translator {
         break;
       case 'String':
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
+        break;
+      case 'Date':
+        if (method === 'now') return 'JSDate.now()';
+        if (method === 'parse') return `JSDate.parse(${this.str(arg(0))})`;
+        if (method === 'UTC') return `JSDate.UTC(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
         break;
       case 'Promise': {
         const t = T();
@@ -1484,6 +1512,8 @@ export class Translator {
 
   private stringMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
     const t = this.expr(target);
+    const first = e.arguments[0];
+    if (first && this.typeOf(first) === 'JSRegExp') return this.regexpStringMethod(name, t, e);
     const a = this.args(e);
     const opt = (k: number) => (a[k] !== undefined ? a[k] : 'nil');
     switch (name) {
@@ -1514,6 +1544,30 @@ export class Translator {
       case 'toString': case 'valueOf': return t;
     }
     throw this.error(e, `String.${name}`);
+  }
+
+  /** `s.replace(/x/g, …)`, `s.match(re)`, `s.split(re)`… */
+  private regexpStringMethod(name: string, s: string, e: ts.CallExpression): string {
+    const [re, second] = e.arguments;
+    const r = this.expr(re);
+    switch (name) {
+      case 'match': return `jsMatch(${s}, ${r})`;
+      case 'matchAll': return `jsMatchAll(${s}, ${r})`;
+      case 'search': return `jsSearch(${s}, ${r})`;
+      case 'split': return `jsSplit(${s}, ${r}${second ? `, ${this.expr(second)}` : ''})`;
+      case 'replace': case 'replaceAll': {
+        const fn = name === 'replace' ? 'jsReplace' : 'jsReplaceAll';
+        if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second))) return `${fn}(${s}, ${r}, ${this.str(second)})`;
+        if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
+        // The replacer gets the match, then each group.
+        const m = this.fresh('__match');
+        const binds = second.parameters.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.typeOf(p.name)} = ${this.typeOf(p.name) === 'Double' ? `${m}.index` : `${m}[${k}]`}`);
+        const body = this.functionBody(second, 'String', this.indent);
+        const inner = this.indent + '    ';
+        return `${fn}(${s}, ${r}) { (${m}: JSMatch) ${this.throwsInfo.fn(second) ? 'throws ' : ''}-> String in\n${binds.map((b) => inner + b).join('\n')}${body.slice(1)}`;
+      }
+    }
+    throw this.error(e, `String.${name} with a RegExp`);
   }
 
   private numberMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
@@ -1618,7 +1672,12 @@ export class Translator {
       return `${t}(${args.length ? this.coerce(args[0], 'String') : ''})`;
     }
     if (ERRORS[name]) return `${ERRORS[name]}(${args.length ? this.str(args[0]) : ''})`;
-    if (name === 'Array' || name === 'Date' || name === 'RegExp') throw this.error(e, `new ${name}`);
+    if (name === 'Date' && this.isLibGlobal(callee as ts.Identifier)) {
+      if (args.length === 1) return `JSDate(${this.isString(args[0]) ? this.expr(args[0]) : this.toNumber(args[0])})`;
+      return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
+    }
+    if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
+    if (name === 'Array') throw this.error(e, `new ${name}`);
     const core = this.core.construct(e);
     if (core) return core;
     if (ts.isIdentifier(callee)) {
