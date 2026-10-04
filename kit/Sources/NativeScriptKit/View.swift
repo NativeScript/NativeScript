@@ -137,6 +137,7 @@ open class View: NSObject {
     var row = 0, col = 0, rowSpan = 1, colSpan = 1
 
     var background = Background()
+    let backgroundLayers = BackgroundLayers()
     enum BackgroundState { case unset, invalid, drawn }
     private(set) var nativeBackgroundState = BackgroundState.unset
     private var defaultBackgroundColor: UIColor?
@@ -676,22 +677,6 @@ open class View: NSObject {
         CATransaction.setDisableActions(false)
         CATransaction.commit()
         nativeBackgroundState = .drawn
-    }
-
-    /// `ios.createBackgroundUIColor`: borders and radius go on the layer, the color to `apply`.
-    func createBackgroundUIColor(_ apply: (UIColor?) -> Void) {
-        guard let nativeView else { return }
-        let layer = nativeView.layer
-        layer.backgroundColor = nil
-        let bg = background
-        // Non-uniform borders are drawn by NativeScript with shape layers; this kit draws the top edge's values uniformly.
-        layer.borderColor = bg.borderTopColor?.cgColor
-        layer.borderWidth = CGFloat(LayoutHelper.toDeviceIndependentPixels(bg.borderTopWidth))
-        let bounds = layer.bounds.size
-        let radius = CGFloat(LayoutHelper.toDeviceIndependentPixels(bg.borderTopLeftRadius))
-        layer.cornerRadius = min(min(bounds.width / 2, bounds.height / 2), radius)
-        layer.cornerCurve = .circular
-        apply(bg.color)
     }
 
     open func setNativeClipToBounds() {
