@@ -1702,10 +1702,9 @@ export class Translator implements AsyncTranslator {
         const it = this.fresh('__it');
         return this.loopBody(() => {
           const label = this.takeLabel();
-          const item = this.fresh('__item');
           const body = this.nested(() => this.block(s.statement));
           const bind = this.nested(() => this.nested(() => this.bindTo(decl.name, `${it}.jsCurrent`, '', mutable)));
-          return `${i}do {\n${i}    let ${it} = try ${js}\n${i}    defer { ${it}.jsClose() }\n${i}    ${label}while try ${it}.jsAdvance() {\n${bind}\n${i}        do ${body}\n${i}    }\n${i}}`.replace(`${item}`, item);
+          return `${i}do {\n${i}    let ${it} = try ${js}\n${i}    defer { ${it}.jsClose() }\n${i}    ${label}while try ${it}.jsAdvance() {\n${bind}\n${i}        do ${body}\n${i}    }\n${i}}`;
         });
       }
       const seq = this.tryPrefix(s.expression) + this.iterable(s.expression);

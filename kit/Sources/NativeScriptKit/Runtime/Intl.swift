@@ -500,7 +500,7 @@ public final class JSDateTimeFormat: JSDynamic {
     /// Widens a skeleton's pattern to the widths the options ask for.
     private func adjust(_ pattern: String, _ f: [String: String]) -> String {
         var out = ""
-        var chars = Array(pattern)
+        let chars = Array(pattern)
         var i = 0
         while i < chars.count {
             let c = chars[i]
@@ -537,7 +537,6 @@ public final class JSDateTimeFormat: JSDynamic {
             }
             i = j
         }
-        chars = []
         return out
     }
 
