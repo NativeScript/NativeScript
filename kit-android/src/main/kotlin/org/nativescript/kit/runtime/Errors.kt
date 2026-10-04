@@ -1,7 +1,7 @@
 package org.nativescript.kit
 
-/** What JavaScript `throw value` throws: any value, not only errors. */
-class JSException(val value: Any?) : RuntimeException(null, null, false, false) {
+/** What JavaScript `throw value` throws: any value, not only errors. Its JVM stack is recorded only when tracing (`jsTraceErrors`). */
+class JSException(val value: Any?) : RuntimeException(null, null, false, jsTraceErrors) {
     override val message: String get() = "Uncaught " + jsToString(value)
 }
 
@@ -83,6 +83,13 @@ open class JSAggregateError(var errors: JSArray<Any?>, message: String = "", cau
  */
 fun jsCaught(error: Throwable): Any? = when (error) {
     is JSException -> error.value
+    else -> {
+        if (jsTraceErrors) error.printStackTrace()
+        jsCaughtJvm(error)
+    }
+}
+
+private fun jsCaughtJvm(error: Throwable): Any? = when (error) {
     is StackOverflowError -> JSRangeError("Maximum call stack size exceeded")
     is NullPointerException -> JSTypeError(error.message ?: "Cannot read properties of undefined").withFrames(error)
     is ClassCastException -> JSTypeError(error.message ?: "").withFrames(error)
@@ -99,11 +106,15 @@ private fun <E : JSError> E.withFrames(error: Throwable): E {
 /** `throw value`. */
 fun jsThrow(value: Any?): Nothing = throw JSException(value)
 
+/** Whether a reported error also prints the JVM stack it was thrown from (`adb shell setprop log.tag.NSNative DEBUG`). */
+var jsTraceErrors = false
+
 /** Runs `body`; an error it throws is reported as uncaught, as a JavaScript host reports an exception escaping a callback. */
 inline fun jsReport(body: () -> Unit) {
     try {
         body()
     } catch (e: Throwable) {
+        if (jsTraceErrors) e.printStackTrace()
         jsReportUncaught(jsCaught(e))
     }
 }

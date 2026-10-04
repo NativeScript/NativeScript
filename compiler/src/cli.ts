@@ -19,7 +19,7 @@ import { reactComponent, reactScreens, zustandStore } from './react.ts';
 import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
-import { corePatches } from './core-patches.ts';
+import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { Translator, type ComponentInfo } from './swift.ts';
 import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
@@ -224,7 +224,6 @@ for (const f of modules) {
   if (rewritten !== undefined && rewritten !== text) overrides.set(f, rewritten);
 }
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-// Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
 const declarations = platform === 'ios' ? [
   ...appDeclarations(app),
   // The native typings of plugins whose components compile with the app's.
@@ -261,7 +260,7 @@ function keyStore() {
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore() });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)) });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

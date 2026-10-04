@@ -1,5 +1,5 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
-import { EVENT_SCOPED, type Framework } from './codegen.ts';
+import type { Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
 /** ListView attributes that `bind` takes rather than `set`. */
@@ -19,11 +19,15 @@ export interface RenderOptions {
    * (react-nativescript-navigation's flexbox), or none.
    */
   screenContent?: Record<string, string>;
+  /** Children join their parent as Octane's NativeScript driver attaches them: a child naming a slot (`hostSlot`) the parent has is set as that property. */
+  slots?: boolean;
+  /** A kept row renders the item now at its key (immutable updates, as React and Octane re-render): its item and index are signals. */
+  rowSignals?: boolean;
   /** Angular with zone.js: every binding is checked on each tick and applied when its value changed. */
   zone?: boolean;
 }
 
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string> }>, options: RenderOptions = {}): string[] {
+export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean }>, options: RenderOptions = {}): string[] {
   const lines: string[] = [];
   const framework = (options.framework ?? 'octane') as Framework;
   // The order each framework applies bindings and inserts views in, as codegen.ts does for Swift.
@@ -55,26 +59,35 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   type Loop = { item: string; index: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
     `this.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
-  const handler = (code: string) => (EVENT_SCOPED.has(framework) ? `Reactivity.event { jsReport { ${code} } }` : `jsReport { ${code} }`);
+  /** A value a binding computes; what it throws is reported and the value is undefined. */
+  const caught = (code: string) => `try { ${code} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }`;
+  // Mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
+  const cond = (m: string, loops: Loop[]) => (options.slots ? `jsTruthy(${caught(call(m, loops))})` : call(m, loops));
 
   const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
   /** Puts a view into its container or region at the point its framework inserts it. */
   const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
-    const text = parent ? `${parent}.addChild(${v})` : region ? `${region}.attach(${v})` : null;
+    const text = parent ? (options.slots ? `${parent}.addTemplateChild(${v})` : `${parent}.addChild(${v})`) : region ? `${region}.attach(${v})` : null;
     if (!text) return;
     if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
     if ((insertion === 'created') === (at === 'created')) say(depth, text);
   };
   const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
+    if (a.ifPassed) {
+      say(depth, `if (this._passed.contains(${kotlinString(a.ifPassed)})) {`);
+      attr(depth + 1, v, { ...a, ifPassed: undefined }, loops);
+      say(depth, '}');
+      return;
+    }
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${kotlinString(a.value)}`);
       else say(depth, `${v}.set(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
     } else if (options.zone) {
       binding(depth, `Check({ ${call(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = it` : `${v}.set(${kotlinString(a.name)}, it)`} }`);
     } else if (a.name === 'class') {
-      binding(depth, `Effect { jsReport { ${v}.className = ${call(a.method, loops)} } }`);
+      binding(depth, `Effect { jsReport { ${v}.className = ${options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops)} } }`);
     } else {
-      binding(depth, `Effect { jsReport { ${v}.set(${kotlinString(a.name)}, ${call(a.method, loops)}) } }`);
+      binding(depth, `Effect { jsReport { ${v}.set(${kotlinString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)}) } }`);
     }
   };
 
@@ -88,10 +101,15 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
           say(depth, `val ${v} = ${node.tag}()`);
+          if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           const isList = node.tag === 'ListView';
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
-            for (const e of node.events) listener(depth, `${v}.on(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
+            for (const e of node.events) {
+              const listen = `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`;
+              const guarded = e.when ? `if (jsTruthy(${caught(call(e.when, loops))})) ${listen}` : listen;
+              listener(depth, e.ifPassed ? `if (this._passed.contains(${kotlinString(e.ifPassed)})) ${guarded}` : guarded);
+            }
           };
           if (isList || !postOrder) props();
           attach(depth, v, parent, region, 'created');
@@ -103,22 +121,24 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           if (!info) throw new Error(`${c.name}: <${node.name}> is not a component`);
           const given = new Map(node.props.map((p) => [p.name, p]));
           const c0 = `c${n++}`;
-          const args = info.props.map((p) => {
+          const args = info.props.flatMap((p) => {
             const a = given.get(p);
+            if (!a && info.optional?.includes(p)) return [];
             if (!a) throw new Error(`${c.name}: <${node.name}> needs the prop "${p}"`);
-            return `${ident(p)} = ${'value' in a ? kotlinString(a.value) : `untrack { ${call(a.method, loops)} }`}`;
+            return [`${ident(p)} = ${'value' in a ? kotlinString(a.value) : `untrack { ${call(a.method, loops)} }`}`];
           });
+          if (info.passed) args.push(`_passed = setOf(${node.props.map((a) => kotlinString(a.name)).concat(node.events.map((e) => kotlinString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')})`);
           say(depth, `val ${c0} = ${node.name}(${args.join(', ')})`);
           for (const p of info.props) {
-            const a = given.get(p)!;
-            if ('method' in a) say(depth, options.zone ? `Check({ ${call(a.method, loops)} }) { ${c0}.${ident(p)}.value = it }` : `Effect { jsReport { ${c0}.${ident(p)}.value = ${call(a.method, loops)} } }`);
+            const a = given.get(p);
+            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${call(a.method, loops)} }) { ${c0}.${ident(p)}.value = it }` : `Effect { jsReport { ${c0}.${ident(p)}.value = ${call(a.method, loops)} } }`);
           }
           say(depth, `val ${v} = ${c0}.render()`);
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
-            else say(depth, `${v}.on(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> jsReport { ${call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`])} } }`);
+            else say(depth, `${v}.on(${kotlinString(e.name)}) { event -> jsReport { ${call(e.method, loops, ['event'])} } }`);
           }
           attach(depth, v, parent, region, 'created');
         }
@@ -134,9 +154,37 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         say(depth, `val ${live} = Region(null)`);
         templates.at(-1)!.inserts.push({ depth, text: `${parent}.addRegion(${live})` });
       } else if (live) say(depth, `val ${live} = ${parent}.addRegion()`);
-      const host = live ?? `${parent}.addRegion()`;
+      // A branch or row with an if/for of its own (where views attach once built) returns a fragment holding the regions nested in this one.
+      const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for');
+      const fragmented = !live && (node.kind === 'if' ? node.branches.some((b) => nested(b.body)) : nested(node.body));
+      let host = live ?? `${parent}.addRegion()`;
+      if (fragmented) {
+        const r = `r${n++}`;
+        say(depth, `val ${r} = ${host}`);
+        host = r;
+      }
+      /** A fragmented branch or row body: its views and nested regions. */
+      const fragment = (nodes: TNode[], d: number, ls: Loop[]) => {
+        const f = `f${n++}`;
+        say(d, `val ${f} = RegionFragment(${host})`);
+        template(d, () => emit(nodes, d, ls, f, null));
+        say(d, f);
+      };
+      const which = node.kind === 'if' ? node.branches.map((b, i) => (b.cond ? `if (${cond(b.cond, loops)}) ${i} else ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '') : '';
+      if (node.kind === 'if' && fragmented) {
+        say(depth, `ChooseFragment(${host}, { ${which} }) { branch ->`);
+        say(depth + 1, 'when (branch) {');
+        node.branches.forEach((b, i) => {
+          say(depth + 2, `${i} -> {`);
+          fragment(b.body, depth + 3, loops);
+          say(depth + 2, '}');
+        });
+        say(depth + 2, `else -> RegionFragment(${host})`);
+        say(depth + 1, '}');
+        say(depth, '}');
+        continue;
+      }
       if (node.kind === 'if') {
-        const which = node.branches.map((b, i) => (b.cond ? `if (${call(b.cond, loops)}) ${i} else ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
         say(depth, `Choose(${host}, { ${which} }) { branch ->`);
         const wrap = scoped('region');
         const d = wrap ? depth + 1 : depth;
@@ -156,10 +204,34 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         say(depth, '}');
         continue;
       }
+      if (options.rowSignals) {
+        const row = `row${n++}`;
+        const rowLoops = [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }];
+        const keyLoops = [...loops, { item: node.item, index: node.index }];
+        // What a list's items or keys throw is reported, the list then rendering nothing.
+        const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} -> jsKey(${caught(call(node.key, keyLoops))}) }` : `{ item, _ -> jsKey(item) }`;
+        // `{list?.map(…)}`: an absent list renders no rows.
+        const items = `{ octaneItems(try { ${call(node.items, loops)} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }) }`;
+        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, ${key}) { ${row} ->`);
+        if (fragmented) fragment(node.body, depth + 1, rowLoops);
+        else {
+          const made: string[] = [];
+          template(depth + 1, () => emit(node.body, depth + 1, rowLoops, null, made, live));
+          say(depth + 1, `listOf(${made.join(', ')})`);
+        }
+        say(depth, '}');
+        continue;
+      }
       const inner = [...loops, { item: node.item, index: node.index }];
       // A key may be any value (`:key="i"`); rows are kept by its string form.
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} -> jsKey(${call(node.key, inner)}) }` : `{ item, _ -> jsKey(item) }`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
+      if (fragmented) {
+        say(depth, `ForFragment(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${ident(node.item)}, ${ident(node.index)} ->`);
+        fragment(node.body, depth + 1, inner);
+        say(depth, '}');
+        continue;
+      }
       say(depth, `For(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${ident(node.item)}, ${ident(node.index)} ->`);
       const wrap = scoped('region');
       const d = wrap ? depth + 1 : depth;
@@ -207,7 +279,6 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const d = wrap ? 3 : 2;
   if (wrap) say(2, `return ${wrap}`);
   if (framework === 'angular' && hasRegion(c.template)) say(d, 'val __view = EffectOrder.current');
-  for (const x of c.derived ?? []) say(d, `derive { jsReport { this.${ident(x.name)}.value = ${call(x.method, [])} } }`);
   // Inside the scope lambda the result is its last expression.
   const result = (v: string) => say(d, wrap ? v : `return ${v}`);
   if (c.init) say(d, `jsReport { this.${ident(c.init)}() }`);
@@ -239,6 +310,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     const roots: string[] = [];
     template(d, () => emit(c.template, d, [], null, roots));
     if (roots.length !== 1) throw new Error(`${c.name}: a template needs exactly one root element`);
+    // Effects run once the component's views exist, as a renderer runs them after its commit.
+    for (const e of c.effects ?? []) say(d, `ComponentEffect(${e.layout}, ${e.deps ? `{ ${call(e.deps, [])}.elements }` : 'null'}) { this.${ident(e.run)}() }`);
     userEffects();
     result(roots[0]);
   }

@@ -24,10 +24,12 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         // A NativeScript app rebuilds its views on a fresh start rather than restoring fragments.
         super.onCreate(null)
         current = this
+        jsTraceErrors = android.util.Log.isLoggable("NSNative", android.util.Log.DEBUG)
         setThemeOnLaunch()
         Utils.enableEdgeToEdge(this, 0, 0, LIGHT_SCRIM, DARK_SCRIM)
         installEventLoop()
         StyleSheet.app = StyleSheet.parse(css)
+        lastAppearance = Appearance.systemAppearance
         val root = root()
         rootView = root
         setContentView(root.nativeView, CommonLayoutParams())
@@ -49,9 +51,17 @@ abstract class NativeScriptActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
+        val appearance = Appearance.systemAppearance
         rootView?.let { Appearance.refresh(it) }
         Modal.refreshRootClasses()
+        if (appearance != lastAppearance) {
+            lastAppearance = appearance
+            if (CorePatches.refreshEdgeToEdge) Utils.enableEdgeToEdge(this, 0, 0, LIGHT_SCRIM, DARK_SCRIM)
+            Application.appearanceChanged(appearance)
+        }
     }
+
+    private var lastAppearance: String? = null
 
     /**
      * Timers run from the main looper, and promise jobs run after each batch

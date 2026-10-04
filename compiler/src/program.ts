@@ -266,7 +266,6 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !NOT_PLUGINS.test(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
-          if (platform === 'android') throw new Error(`${containing}: imports the plugin ${packageOf(m)}; plugins are compiled for iOS only so far`);
           plugins.get(js.packageDir);
           const source = plugins.sourceOf(js.file);
           if (source) {
@@ -284,7 +283,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     }
   };
 
-  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
+  // An Android build types iOS API too, as an app's references to `@nativescript/types` do: code reaching it is code NativeScript runs only on iOS.
+  const iosTypes = platform === 'android' ? resolve(modules, PLATFORM_TYPES.ios) : null;
+  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, ...(iosTypes && existsSync(iosTypes) ? [iosTypes] : []), resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
   // A copy: a program keeps the array it is given, and a later program with equal root names reuses its files.
   let program = ts.createProgram([...rootNames], options, host);
   // A plugin's native API declarations (`typings/ios.d.ts`) are found as its sources are.

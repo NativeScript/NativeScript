@@ -16,9 +16,6 @@ import kotlin.math.ceil
 
 typealias NativeView = android.view.View
 
-/** What an event handler receives: `args.eventName`, `args.object`, `args.value`. */
-class EventData(val eventName: String, val `object`: View, val value: Any?)
-
 /** `AndroidHelper` from view-helper/index.android. */
 internal object AndroidHelper {
     fun setDrawableColor(color: Int, drawable: Drawable, mode: BlendModeCompat = BlendModeCompat.SRC_IN) {
@@ -42,7 +39,7 @@ internal object AndroidHelper {
  * do, once the view is loaded. Measuring and layout are the widgets AAR's,
  * through the layout params set here.
  */
-open class View {
+open class View : Observable() {
     /** `CSSType`: the type selectors match; classes core does not register have none. */
     open val cssType: String get() = ""
 
@@ -105,7 +102,6 @@ open class View {
     /** A CSS re-match is one `_batchUpdate`: its values apply in the order they were set. */
     private var isBatching = false
 
-    private val handlers = HashMap<String, MutableList<(EventData) -> Unit>>()
 
     private var defaultPaddingLeft = 0
     private var defaultPaddingTop = 0
@@ -138,12 +134,60 @@ open class View {
         defaultPaddingTop = view.paddingTop
         defaultPaddingRight = view.paddingRight
         defaultPaddingBottom = view.paddingBottom
+        lifecycleHooksRan = false
         initNativeView()
+        if (!lifecycleHooksRan) runLifecycleHooks(false)
+        setUpChildViews()
     }
+
+    /**
+     * Whether the native view exists. As core sets a child up only from a parent
+     * that has been (`_setupUI`), a container adds its children's native views
+     * once its own is set up, so a child's `initNativeView` sees its ancestors.
+     */
+    val isNativeViewCreated: Boolean get() = native != null
+
+    /** `_setupUI`'s children: their native views, added to this one's. */
+    protected open fun setUpChildViews() {}
 
     protected open fun createNativeView(): NativeView = NativeView(context)
 
-    protected open fun initNativeView() {}
+    /** Runs what plugins hooked into every view's native setup, where a subclass's `super` call reaches it. */
+    protected open fun initNativeView() = runLifecycleHooks(false)
+
+    protected open fun disposeNativeView() = runLifecycleHooks(true)
+
+    private var lifecycleHooksRan = false
+
+    private fun runLifecycleHooks(dispose: Boolean) {
+        lifecycleHooksRan = true
+        for (hook in lifecycleHooks) (if (dispose) hook.disposeNativeView else hook.initNativeView)?.invoke(this)
+    }
+
+    /** `reusable`: a removed view keeps its native view set up, to be added again. */
+    var reusable: Boolean = false
+
+    private var isSetUp = true
+
+    /** `_tearDownUI`: a removed view that is not reusable disposes its native view; added again, it sets it up anew. */
+    internal fun tearDownUI() {
+        if (native == null || reusable || !isSetUp) return
+        eachChildView { it.tearDownUI() }
+        lifecycleHooksRan = false
+        removeOnLayoutChangeListener()
+        disposeNativeView()
+        if (!lifecycleHooksRan) runLifecycleHooks(true)
+        isSetUp = false
+    }
+
+    private fun setUpAgain() {
+        if (isSetUp || native == null) return
+        isSetUp = true
+        lifecycleHooksRan = false
+        initNativeView()
+        if (!lifecycleHooksRan) runLifecycleHooks(false)
+        eachChildView { it.setUpAgain() }
+    }
 
     // Children
 
@@ -154,12 +198,14 @@ open class View {
 
     internal fun addView(child: View) {
         child.parent = this
+        child.setUpAgain()
         for (name in inheritedProperties) child.refresh(name)
         if (isLoaded && shouldLoad(child)) child.load()
     }
 
     internal fun removeView(child: View) {
         child.unload()
+        child.tearDownUI()
         if (child.parent === this) child.parent = null
     }
 
@@ -205,9 +251,55 @@ open class View {
 
     // Properties
 
+    /** A property's current value by its NativeScript name (`label.text`); an unset one reads as its default. */
+    override fun get(name: String): Any? = applied[name] ?: registeredProperty(name)?.defaultValue ?: attributeValue(name)
+
+    /** The property a plugin registered under `name` for this view's class. */
+    internal fun registeredProperty(name: String): Property? = Property.registered(name, javaClass)
+
+    /** `name in view`: a property this view's class or a plugin defines. */
+    open fun hasJSProperty(name: String): Boolean = registeredProperty(name) != null
+
+    /** A template child: one that names a slot (`hostSlot`) the parent has is set as that property, as the driver does. */
+    fun addTemplateChild(child: View) {
+        val slot = child.get("hostSlot") as? String
+        if (slot != null && hasJSProperty(slot)) set(slot, child) else addChild(child)
+    }
+
+    /** `view[name]` from dynamic code: a property by its name, as core's accessors are. */
+    override fun jsGet(key: String): Any? = when (key) {
+        "android", "nativeView", "nativeViewProtected" -> nativeView
+        "parent" -> parent
+        "page" -> page
+        "isLoaded" -> isLoaded
+        "style" -> style
+        "_context" -> context
+        "on", "once", "off", "addEventListener", "removeEventListener", "notify" -> super.jsGet(key)
+        "requestLayout" -> jsFunction { requestLayout(); null }
+        "getMeasuredWidth" -> jsFunction { getMeasuredWidth() }
+        "getMeasuredHeight" -> jsFunction { getMeasuredHeight() }
+        else -> mixinMembers[key]?.invoke(this) ?: get(key)
+    }
+
+    override fun jsSet(key: String, value: Any?) = set(key, value)
+
+    override val jsKeys: List<String> get() = emptyList()
+
     /** Sets a local property value by its NativeScript name; null unsets it. */
-    fun set(name: String, value: Any?) {
-        for ((longhand, v) in expandShorthand(name, value)) {
+    override fun set(name: String, value: Any?) {
+        val property = registeredProperty(name)
+        if (property != null) {
+            val v = if (value === ScriptUndefined) null else property.converted(value)
+            if (v != null && v !== JSNull) locals[name] = v else locals.remove(name)
+            refresh(name)
+            return
+        }
+        if (value === ScriptUndefined && name in styleProperties && hasStyleAccessor(name)) {
+            locals[name] = ScriptUndefined
+            refresh(name)
+            return
+        }
+        for ((longhand, v) in expandShorthand(name, if (value === ScriptUndefined) null else value)) {
             if (!hasStyleAccessor(longhand)) continue
             if (v != null) locals[longhand] = v else locals.remove(longhand)
             refresh(longhand)
@@ -302,17 +394,28 @@ open class View {
 
     internal fun refresh(name: String) {
         var value: Any? = keyframeValues[name] ?: locals[name] ?: cssValues[name]
-        if (value == null && name in inheritedProperties) value = parent?.applied?.get(name)
+        if (value === ScriptUndefined) value = null
+        else if (value == null && name in inheritedProperties) value = parent?.applied?.get(name)
         value = coerce(name, value)
         val had = applied.containsKey(name)
-        if (!had && (value == null || sameValue(value, defaultValue(name)))) return
-        if (had && sameValue(value, applied[name])) return
+        val registered = registeredProperty(name)
+        if (registered != null) {
+            if (!had && value == null) return
+            if (registered.same(applied[name] ?: registered.defaultValue, value ?: registered.defaultValue)) return
+        } else {
+            if (!had && (value == null || sameValue(value, defaultValue(name)))) return
+            if (had && sameValue(value, applied[name])) return
+        }
         if (affectsLayout(name)) native?.requestLayout()
+        val old = applied[name]
         if (value == null) applied.remove(name) else applied[name] = value
+        registered?.changed(this, old, value)
         propertyValueChanged(name, value)
         if (isLoaded && !isBatching) setProperty(name, value) else deferApplication(name)
         // A view property announces its change; a style property's event is the style object's.
-        if (name !in styleProperties && hasHandlers(name + "Change")) emit(name + "Change", value)
+        if (registered != null) {
+            if (hasListeners(name + "Change")) fire(EventData.fromJS(JSObject("eventName" to name + "Change", "object" to this, "propertyName" to name, "value" to (value ?: registered.defaultValue), "oldValue" to (old ?: registered.defaultValue)), this))
+        } else if (name !in styleProperties && hasListeners(name + "Change")) emit(name + "Change", value)
         notifyCSSDependents(name)
         if (name in inheritedProperties) eachChildView { it.refresh(name) }
     }
@@ -458,6 +561,9 @@ open class View {
                 "rtl" -> NativeView.LAYOUT_DIRECTION_RTL
                 else -> NativeView.LAYOUT_DIRECTION_LOCALE
             }
+            // Read by TouchManager when the view loads.
+            "touchAnimation", "ignoreTouchAnimation", "touchDelay" -> {}
+            else -> nativeSetterHooks[name]?.invoke(this, value)
         }
     }
 
@@ -649,30 +755,46 @@ open class View {
     /** Events a view class declares itself (Button's `tap`): they are not gestures. */
     protected open val ownEvents: Set<String> get() = emptySet()
 
-    /** Subscribes to an event: a gesture (`tap`, `pan`), or a property change such as `textChange`. */
-    fun on(event: String, handler: (EventData) -> Unit) {
-        val type = gestureType(event)
-        if (type != null && event !in ownEvents) {
+    /** The observer each gesture listener made, by the listener's identity, for `off`. */
+    private val gestureListeners = HashMap<Any, GesturesObserver>()
+
+    /** A gesture (`tap`, `pan`) gets an observer per listener, as `_observe` makes one; other events are the Observable's. */
+    override fun addEventListener(eventName: String, callback: (EventData) -> Unit, thisArg: Any?, once: Boolean, key: Any?) {
+        val type = gestureType(eventName)
+        if (type != null && eventName !in ownEvents) {
             val observer = GesturesObserver(this, type) { payload ->
-                handler(EventData(event, this, payload))
+                callback(EventData(eventName, this, payload))
                 Microtasks.checkpoint()
             }
             gestureObservers.getOrPut(type) { mutableListOf() }.add(observer)
+            gestureListeners[key ?: callback] = observer
             if (isLoaded) {
                 observer.attach()
                 setOnTouchListener()
             }
             return
         }
-        handlers.getOrPut(event) { mutableListOf() }.add(handler)
-        if (isLoaded) eventSubscribed(event)
+        super.addEventListener(eventName, callback, thisArg, once, key)
+        if (isLoaded) eventSubscribed(eventName)
+        if (isLoaded && eventName.contains(layoutChangedEvent)) setOnLayoutChangeListener()
     }
 
-    /** `off(event)` without a callback: every handler of the event goes. */
-    fun off(event: String) {
-        val type = gestureType(event)
-        if (type != null && event !in ownEvents) gestureObservers.remove(type)?.forEach { it.detach() }
-        else handlers.remove(event)
+    override fun removeEventListener(eventName: String, callback: ((EventData) -> Unit)?, thisArg: Any?, key: Any?) {
+        val type = gestureType(eventName)
+        if (type == null || eventName in ownEvents) {
+            super.removeEventListener(eventName, callback, thisArg, key)
+            if (eventName.contains(layoutChangedEvent) && !hasListeners(layoutChangedEvent)) removeOnLayoutChangeListener()
+            return
+        }
+        val identity = key ?: callback
+        if (identity == null) {
+            gestureObservers.remove(type)?.forEach { it.detach() }
+            return
+        }
+        val observer = gestureListeners.remove(identity) ?: return
+        observer.detach()
+        gestureObservers[type]?.remove(observer)
+        if (gestureObservers[type]?.isEmpty() == true) gestureObservers.remove(type)
     }
 
     /** A subscription to one of the view's own events, once it is loaded; controls with native listeners override. */
@@ -682,7 +804,7 @@ open class View {
 
     internal fun hasAnyGestureObservers(): Boolean = gestureObservers.isNotEmpty()
 
-    internal fun hasHandlers(event: String): Boolean = handlers[event]?.isNotEmpty() == true
+    internal fun hasHandlers(event: String): Boolean = hasListeners(event)
 
     /** `setOnTouchListener`: touches reach this view's observers, then each ancestor's. */
     private fun setOnTouchListener() {
@@ -701,10 +823,29 @@ open class View {
         parent?.handleGestureTouch(event)
     }
 
+    private var layoutChangeListener: android.view.View.OnLayoutChangeListener? = null
+
+    /** `setOnLayoutChangeListener`: `layoutChanged` when the native view's bounds change. */
+    private fun setOnLayoutChangeListener() {
+        if (layoutChangeListener != null) return
+        val listener = android.view.View.OnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) jsReport { notify(JSObject("eventName" to layoutChangedEvent, "object" to this)) }
+        }
+        layoutChangeListener = listener
+        nativeView.addOnLayoutChangeListener(listener)
+    }
+
+    private fun removeOnLayoutChangeListener() {
+        val listener = layoutChangeListener ?: return
+        layoutChangeListener = null
+        if (isNativeViewCreated) nativeView.removeOnLayoutChangeListener(listener)
+    }
+
     private fun attachGestures() {
         for (observers in gestureObservers.values) for (observer in observers) observer.attach()
+        if (hasListeners(layoutChangedEvent)) setOnLayoutChangeListener()
         setOnTouchListener()
-        for (event in handlers.keys) eventSubscribed(event)
+        for (event in observedEvents.toList()) eventSubscribed(event)
     }
 
     private fun detachGestures() {
@@ -712,11 +853,11 @@ open class View {
     }
 
     internal fun emit(event: String, value: Any?) {
-        val list = handlers[event] ?: return
+        if (!hasListeners(event)) return
         val data = EventData(event, this, value)
         dispatchDepth++
         try {
-            for (handler in list.toList()) handler(data)
+            fire(data)
         } finally {
             dispatchDepth--
         }
@@ -730,8 +871,25 @@ open class View {
 
     override fun toString(): String = "${javaClass.simpleName}(${System.identityHashCode(this)})"
 
+    /** What a plugin adds to every view's native lifecycle (`applyMixins(View, …)`): run after the view's own. */
+    class LifecycleHook(val initNativeView: ((View) -> Unit)? = null, val disposeNativeView: ((View) -> Unit)? = null)
+
     companion object {
         private var dispatchDepth = 0
+
+        const val loadedEvent: String = "loaded"
+        const val unloadedEvent: String = "unloaded"
+        const val layoutChangedEvent: String = "layoutChanged"
+        const val showingModallyEvent: String = "showingModally"
+        const val shownModallyEvent: String = "shownModally"
+
+        val lifecycleHooks = mutableListOf<LifecycleHook>()
+
+        /** Members a plugin's mixin adds to core classes (`applyMixins(Page, [Extended])`), for code that reads them by name. */
+        val mixinMembers = HashMap<String, (View) -> Any?>()
+
+        /** Native setters plugins add for properties they register on a core class (a mixin's `[prop.setNative]`). */
+        val nativeSetterHooks = HashMap<String, (View, Any?) -> Unit>()
 
         internal val inheritedProperties = setOf(
             "color", "fontFamily", "fontSize", "fontStyle", "fontWeight", "textAlignment", "textTransform",

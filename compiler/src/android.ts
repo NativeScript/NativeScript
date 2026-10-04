@@ -7,10 +7,13 @@ import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import { render } from './codegen-kotlin.ts';
-import { SCHEDULE, type Framework } from './codegen.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
+import { pluginNativeAndroid } from './plugins/native-android.ts';
+import type { PluginSource } from './plugins/source.ts';
+import type { Reach } from './reach.ts';
+import type { Properties } from './properties.ts';
 import { SourceLines } from './source-lines.ts';
 import { androidManifest, appResourcesDir, copyAndroidFonts, pluginManifests } from './app-resources.ts';
 
@@ -42,6 +45,19 @@ export interface AndroidBuild {
   bundle?: boolean;
   /** The release keystore (`--key-store-path`, `--key-store-password`, `--key-store-alias`, `--key-store-alias-password`). */
   keyStore?: { path: string; password: string; alias: string; aliasPassword: string };
+  /** The plugins the app imports: their Android code is built and linked. */
+  plugins?: PluginSource[];
+  /** The plugins' source files, what of them the app reaches, and the properties they register. */
+  pluginFiles?: string[];
+  reach?: Reach;
+  properties?: Properties;
+  /** The plugin modules translated with the app. */
+  compiledPlugins?: string[];
+  resolved?: (containing: string, specifier: string) => string | undefined;
+  /** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
+  mounted?: boolean;
+  /** Kit switches the app's patch of core turns on. */
+  corePatches?: string[];
 }
 
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
@@ -57,7 +73,10 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   rmSync(join(b.out, 'src'), { recursive: true, force: true });
   mkdirSync(sources, { recursive: true });
 
-  const translator = new Translator(b.checker, b.infos, b.files);
+  const widgets = b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app);
+  // Before the translator: calls into plugin classes are checked against the plugins' built AARs.
+  const native = pluginNativeAndroid(b.plugins ?? [], { app: b.app, say });
+  const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties });
   translator.appModule = pkg;
   translator.core = new CoreKotlin(translator);
   translator.lines = b.lines;
@@ -74,19 +93,28 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     });
     if (ranges.length) table[basename(file)] = ranges;
   };
-  translator.native = new AndroidNativeAPI(translator, androidClassPath(b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app)));
+  translator.native = new AndroidNativeAPI(translator, androidClassPath(widgets, native));
+  for (const p of b.plugins ?? []) for (const t of p.typings) (translator.native as AndroidNativeAPI).pluginTypings.add(t);
   const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
-  const modules = translateKotlinModules(translator, b.program, b.modules);
+  const modules = translateKotlinModules(translator, b.program, [...b.modules, ...(b.compiledPlugins ?? [])], b.resolved);
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     const { params, lines } = translator.componentMembers(cls, c.props);
-    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
     write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
   }
   addKotlinInterfaces(translator, modules);
-  for (const m of modules) if (m.code.trim()) write(join(sources, m.name + '.kt'), header(m.file) + m.code);
+  // File names differ in more than case: a module `streamdown.tsx` beside a component `Streamdown` would overwrite it on a case-insensitive disk.
+  const taken = new Set(b.components.map((c) => c.name.toLowerCase()));
+  for (const m of modules) {
+    if (!m.code.trim()) continue;
+    let file = m.name;
+    while (taken.has(file.toLowerCase())) file += '_module';
+    taken.add(file.toLowerCase());
+    write(join(sources, file + '.kt'), header(m.file) + m.code);
+  }
   writeFileSync(join(b.out, 'source-lines.json'), JSON.stringify({ package: pkg, files: table }) + '\n');
   const shapes = SourceLines.strip(translator.shapesCode());
   if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
@@ -94,6 +122,10 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const routes = b.routes
     ? `        Router.shared.routes = listOf(${b.routes.routes.map((r) => `Route(${kotlinString(r.path)}) { ${r.component}().render() }`).join(', ')})\n        Router.shared.initial = ${kotlinString(b.routes.initial)}\n`
     : '';
+  // Set before the module initializers run: they may make views.
+  const switches = (b.corePatches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
+  // The entry's own statements run the app (`Application.run`), after every module it imports.
+  const start = b.mounted ? `${switches}        Reactivity.scheduled = true\n${inits}        return Application.rootView()\n` : `${switches}${inits}${routes}        return ${b.root}().render()\n`;
   writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 
@@ -103,9 +135,7 @@ class MainActivity : NativeScriptActivity() {
     override val css: String get() = appCSS
 
     override fun root(): View {
-        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}
-${inits}${routes}        return ${b.root}().render()
-    }
+${start}    }
 }
 
 val appCSS = ${kotlinString(b.css)}
@@ -116,10 +146,10 @@ val appCSS = ${kotlinString(b.css)}
   const appResources = join(appResourcesDir(b.app), 'Android');
   const main = join(appResources, 'src', 'main');
   const resources = join(main, 'res');
-  const widgets = b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app);
   if (!widgets) throw new Error('@nativescript/core is not installed in the app (its widgets AAR is the layout the native build links); run npm install, or pass --widgets <aar>');
   const applicationId = b.applicationId ?? `${pkg}.native`;
-  const overlays = pluginManifests({ app: b.app, applicationId, dir: join(b.out, 'plugin-manifests') });
+  // A plugin built into an AAR brings its manifest as a library's; the merger takes it from there.
+  const overlays = pluginManifests({ app: b.app, applicationId, dir: join(b.out, 'plugin-manifests'), except: new Set((b.plugins ?? []).map((p) => p.name)) });
   const gradleFile = (f: string) => (existsSync(join(appResources, f)) ? `apply(from = ${kotlinString(join(appResources, f))})\n` : '');
   writeFileSync(join(b.out, 'settings.gradle.kts'), `pluginManagement {
     repositories {
@@ -132,7 +162,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-    }
+${native.repositories.map((r) => `        maven { url = uri(${kotlinString(r)}) }\n`).join('')}    }
 }
 rootProject.name = ${kotlinString(b.name)}
 include(":kit")
@@ -154,7 +184,7 @@ android {
 
     defaultConfig {
         applicationId = ${kotlinString(applicationId)}
-        minSdk = 24
+        minSdk = ${native.minSdk}
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
@@ -184,7 +214,7 @@ kotlin {
 
 dependencies {
     implementation(project(":kit"))
-}
+${native.archives.map((a) => `    implementation(files(${kotlinString(a)}))\n`).join('')}${native.dependencies.map((d) => `    ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}}
 ${overlays.length ? `
 // The plugins' manifests, merged into the app's as the plugins' own would be.
 androidComponents {
@@ -192,7 +222,7 @@ androidComponents {
 ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile(${kotlinString(m)})\n`).join('')}    }
 }
 ` : ''}${gradleFile('app.gradle')}`);
-  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n`);
+  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n${native.keepRules.map((r) => `${r}\n`).join('')}`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
   // The runtime template's strings.xml, named after the folder (letters and digits only), unless App_Resources replaces the file.
   const label = basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');

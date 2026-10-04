@@ -225,7 +225,9 @@ function octaneComponent(path: string, fn: ts.FunctionDeclaration, page: boolean
   const restName = rest?.name;
   const full = (s: Scope): Scope => ({ names: s.names, members: propsName ? { object: propsName, replacement: 'this' } : restName ? { object: restName, replacement: 'this' } : undefined });
 
-  const body = fn.body!.statements;
+  // A platform branch folded to a block that returns (`if (!isIOS) { … return <label/> }`) is the body; what follows it never runs.
+  const returning = fn.body!.statements.find((st): st is ts.Block => ts.isBlock(st) && !!st.statements.length && ts.isReturnStatement(st.statements[st.statements.length - 1]));
+  const body = returning ? [...fn.body!.statements.slice(0, fn.body!.statements.indexOf(returning)), ...returning.statements] : fn.body!.statements;
   const ret = body.find(ts.isReturnStatement);
   if (!ret?.expression) throw fail(fn, `${name} returns no JSX`);
   const hook = (e: ts.Expression) => (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && /^use[A-Z]/.test(e.expression.text) ? e.expression.text : null);
