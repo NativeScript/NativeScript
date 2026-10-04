@@ -31,7 +31,7 @@ interface JSStringConvertible
 fun jsBox(value: Any?): Any? = if (value === Unit) null else value
 
 /** Whether `value` is a function value. */
-fun jsIsFunction(value: Any?): Boolean = value is Function<*>
+fun jsIsFunction(value: Any?): Boolean = value is Function<*> || value is JSFunction || value is JavaMethodRef
 
 /** The numeric value of a JVM number a native API returned. */
 fun jsNumeric(value: Any?): Double? = when (value) {
@@ -152,6 +152,9 @@ class JSObject() : JSDynamic, JSReactiveConvertible {
 
 // Property access
 
+/** `object?.key`: undefined when the object is undefined or null. */
+fun jsGetOptional(target: Any?, key: String): Any? = if (target == null || target === JSNull) null else jsGet(target, key)
+
 /** `object[key]` / `object.key` on a dynamic value. Reading from undefined or null throws a TypeError. */
 fun jsGet(target: Any?, key: String): Any? = when (target) {
     null -> throw JSException(JSTypeError("Cannot read properties of undefined (reading '$key')"))
@@ -169,7 +172,8 @@ fun jsGet(target: Any?, key: String): Any? = when (target) {
     is Triple<*, *, *> -> when (key) { "0" -> target.first; "1" -> target.second; "2" -> target.third; "length" -> 3.0; else -> null }
     is JSMap<*, *> -> if (key == "size") target.size else null
     is JSSet<*> -> if (key == "size") target.size else null
-    else -> null
+    is Double, is Boolean, is Function<*>, is JSFunction, Unit -> null
+    else -> jsJavaGet(target, key)
 }
 
 /** `object[key] = value` on a dynamic value. Writing to undefined or null throws a TypeError. */
@@ -186,7 +190,8 @@ fun jsSet(target: Any?, key: String, value: Any?) {
                 array.setLength(length.toInt())
             } else jsArrayIndex(key)?.let { array.setAt(it.toInt(), value) }
         }
-        else -> {}
+        is String, is Double, is Boolean, is Function<*>, is JSFunction, Unit -> {}
+        else -> jsJavaSet(target, key, value)
     }
 }
 
@@ -200,6 +205,11 @@ fun jsCall(function: Any?, vararg args: Any?): Any? {
         is Function2<*, *, *> -> (function as (Any?, Any?) -> Any?)(a(0), a(1))
         is Function3<*, *, *, *> -> (function as (Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2))
         is Function4<*, *, *, *, *> -> (function as (Any?, Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2), a(3))
+        is Function5<*, *, *, *, *, *> -> (function as (Any?, Any?, Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2), a(3), a(4))
+        is Function6<*, *, *, *, *, *, *> -> (function as (Any?, Any?, Any?, Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2), a(3), a(4), a(5))
+        is Function7<*, *, *, *, *, *, *, *> -> (function as (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2), a(3), a(4), a(5), a(6))
+        is JSFunction -> function.body(args.toList())
+        is JavaMethodRef -> function.call(args.toList())
         else -> throw JSException(JSTypeError("${jsInspect(function)} is not a function"))
     }
     return jsBox(result)
@@ -258,7 +268,7 @@ fun jsTypeof(value: Any?): String = when (value) {
     is String -> "string"
     is Boolean -> "boolean"
     JSNull -> "object"
-    is Function<*> -> "function"
+    is Function<*>, is JSFunction, is JavaMethodRef -> "function"
     else -> if (jsNumeric(value) != null) "number" else "object"
 }
 

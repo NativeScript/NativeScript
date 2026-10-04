@@ -215,12 +215,14 @@ export function androidManifest(o: { app: string; applicationId: string; activit
 /**
  * The production plugins' `platforms/android/AndroidManifest.xml`, prepared for
  * the manifest merger as the CLI's plugin build prepares them (package
- * attribute removed, `__PACKAGE__` substituted), written under `dir`.
+ * attribute removed, `__PACKAGE__` substituted), written under `dir`; those in
+ * `except` are left to the build that links them.
  */
-export function pluginManifests(o: { app: string; applicationId: string; dir: string }): string[] {
+export function pluginManifests(o: { app: string; applicationId: string; dir: string; except?: Set<string> }): string[] {
   rmSync(o.dir, { recursive: true, force: true });
   const out: string[] = [];
   for (const p of productionPlugins(o.app)) {
+    if (o.except?.has(p.name)) continue;
     const file = join(p.dir, 'platforms', 'android', 'AndroidManifest.xml');
     if (!existsSync(file)) continue;
     const xml = readFileSync(file, 'utf8').replace(/__PACKAGE__/g, o.applicationId).replace(/(<manifest\b[^>]*?)\s+package="[^"]*"/, '$1');

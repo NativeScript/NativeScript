@@ -258,20 +258,20 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     fun toSorted(): JSArray<T> = JSArray(ArrayList(elements)).sort()
     fun toSorted(compare: (T, T) -> Double): JSArray<T> = JSArray(ArrayList(elements)).sort(compare)
 
-    fun indexOf(value: T, fromIndex: Double = 0.0): Double {
+    fun indexOf(value: Any?, fromIndex: Double = 0.0): Double {
         val n = size
         for (i in jsRelativeIndex(fromIndex, n) until n) if (jsStrictEquals(storage[i], value)) return i.toDouble()
         return -1.0
     }
 
-    fun lastIndexOf(value: T, fromIndex: Double? = null): Double {
+    fun lastIndexOf(value: Any?, fromIndex: Double? = null): Double {
         val n = size
         var i = if (fromIndex == null) n - 1 else { val k = jsToIntegerOrInfinity(fromIndex); if (k < 0) (n + k).clampToInt() else minOf(k, (n - 1).toDouble()).toInt() }
         while (i >= 0) { if (jsStrictEquals(storage[i], value)) return i.toDouble(); i-- }
         return -1.0
     }
 
-    fun includes(value: T, fromIndex: Double = 0.0): Boolean {
+    fun includes(value: Any?, fromIndex: Double = 0.0): Boolean {
         val n = size
         for (i in jsRelativeIndex(fromIndex, n) until n) if (jsSameValueZero(storage[i], value)) return true
         return false

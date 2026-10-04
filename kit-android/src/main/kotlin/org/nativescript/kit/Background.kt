@@ -95,10 +95,38 @@ internal data class BoxShadow(val offsetX: Int, val offsetY: Int, val blurRadius
 /** `LinearGradient` from a CSS `linear-gradient(...)`; the angle in radians. */
 internal data class LinearGradient(val angle: Double, val stops: List<Pair<Int, Double?>>) {
     /** background.android `fromGradient`. */
+    /**
+     * `resolveGradientStopOffsets`: a first stop without a position at 0, a last
+     * at 1, unpositioned runs spread evenly between their neighbours, and a
+     * position below an earlier one raised to it.
+     */
+    private fun resolvedOffsets(): List<Double> {
+        val offsets = stops.map { it.second }.toMutableList()
+        if (offsets.isEmpty()) return emptyList()
+        if (offsets[0] == null) offsets[0] = 0.0
+        if (offsets[offsets.size - 1] == null) offsets[offsets.size - 1] = 1.0
+        var highest = offsets[0]!!
+        for (i in 1 until offsets.size) {
+            val value = offsets[i] ?: continue
+            offsets[i] = maxOf(value, highest)
+            highest = offsets[i]!!
+        }
+        var start = 0
+        for (i in 1 until offsets.size) {
+            val end = offsets[i] ?: continue
+            val from = offsets[start]!!
+            for (k in start + 1 until i) offsets[k] = from + (end - from) * (k - start) / (i - start)
+            start = i
+        }
+        return offsets.map { it!! }
+    }
+
     fun toNative(): LinearGradientDefinition {
         val colors = IntArray(stops.size) { stops[it].first }
-        val hasStops = stops.any { it.second != null }
-        val offsets = FloatArray(stops.size) { (stops[it].second ?: 0.0).toFloat() }
+        val resolved = CorePatches.resolvedGradientStops
+        val hasStops = resolved || stops.any { it.second != null }
+        val positions = if (resolved) resolvedOffsets() else stops.map { it.second ?: 0.0 }
+        val offsets = FloatArray(stops.size) { positions[it].toFloat() }
         val alpha = angle / (Math.PI * 2)
         fun sq(v: Double) = Math.pow(Math.sin(v), 2.0).toFloat()
         return LinearGradientDefinition(sq(Math.PI * (alpha + 0.75)), sq(Math.PI * (alpha + 0.5)), sq(Math.PI * (alpha + 0.25)), sq(Math.PI * alpha), colors, if (hasStops) offsets else null)

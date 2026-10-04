@@ -29,17 +29,38 @@ const RULES: Rule[] = [
 const ANDROID_ONLY = /\.android\.js$|-for-android\.js$/;
 
 export function corePatches(app: string, modules: string): { file: string; patches: CorePatch[] } | null {
+  return readPatch(app, modules, (path) => !ANDROID_ONLY.test(path), RULES);
+}
+
+/** kit-android's `CorePatches` switches. */
+export type CorePatchAndroid = 'clipToBoundsChildren' | 'refreshEdgeToEdge' | 'resolvedGradientStops';
+
+const ANDROID_RULES: { file: RegExp; added: RegExp; patch?: CorePatchAndroid }[] = [
+  { file: /^ui\/layouts\/layout-base\.android\.js$/, added: /nativeView\.setClipChildren\(value\);\s*nativeView\.setClipToPadding\(value\)/, patch: 'clipToBoundsChildren' },
+  { file: /^application\/application\.android\.js$/, added: /refreshEdgeToEdge/, patch: 'refreshEdgeToEdge' },
+  { file: /^utils\/native-helper(-for-android|\.android)\.js$/, added: /refreshEdgeToEdge/, patch: 'refreshEdgeToEdge' },
+  { file: /^ui\/styling\/(background\.android|linear-gradient)\.js$/, added: /resolveGradientStopOffsets/, patch: 'resolvedGradientStops' },
+  // A native child index the base view leaves as it is on Android.
+  { file: /^ui\/layouts\/layout-base-common\.js$/, added: /_childIndexToNativeChildIndex/ },
+];
+
+/** The app's patch of core as kit-android's switches; a hunk that changes Android behavior in any other way stops the build. */
+export function corePatchesAndroid(app: string, modules: string): CorePatchAndroid[] {
+  return readPatch(app, modules, (path) => !/\.ios\.js$/.test(path), ANDROID_RULES)?.patches ?? [];
+}
+
+function readPatch<P extends string>(app: string, modules: string, applies: (path: string) => boolean, rules: { file: RegExp; added: RegExp; patch?: P }[]): { file: string; patches: P[] } | null {
   const version = JSON.parse(readFileSync(join(modules, '@nativescript/core/package.json'), 'utf8')).version;
   const file = join(app, 'patches', `@nativescript+core+${version}.patch`);
   if (!existsSync(file)) return null;
-  const patches = new Set<CorePatch>();
+  const patches = new Set<P>();
   for (const section of readFileSync(file, 'utf8').split(/^diff --git /m).slice(1)) {
     const path = /^a\/node_modules\/@nativescript\/core\/(\S+)/.exec(section)?.[1];
     if (!path) throw new Error(`${file}: a section that does not patch @nativescript/core`);
-    if (ANDROID_ONLY.test(path)) continue;
+    if (!applies(path)) continue;
     for (const hunk of section.split(/^(?=@@ )/m).slice(1)) {
       const added = hunk.split('\n').filter((l) => l.startsWith('+')).map((l) => l.slice(1)).join('\n');
-      const rule = RULES.find((r) => r.file.test(path) && r.added.test(added));
+      const rule = rules.find((r) => r.file.test(path) && r.added.test(added));
       if (!rule) throw new Error(`${file}: ${path} ${hunk.split('\n')[0]} changes core in a way the native build does not port`);
       if (rule.patch) patches.add(rule.patch);
     }

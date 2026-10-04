@@ -19,6 +19,7 @@ fun View.attributeValue(name: String): Any? {
         "originX", "originY" -> 0.5
         "text" -> if (this is TextBase) "" else null
         "checked" -> if (this is Switch) false else null
+        "iosContentInsetAdjustmentBehavior" -> if (this is ScrollView) "never" else null
         else -> null
     }
 }
