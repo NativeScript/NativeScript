@@ -44,7 +44,19 @@ const SHIMS: Record<string, string> = {
     }
     export declare class Subject<T> extends Observable<T> { next(value: T): void; asObservable(): Observable<T> }
     export declare class BehaviorSubject<T> extends Subject<T> { constructor(value: T); readonly value: T; getValue(): T }
+    export declare class ReplaySubject<T> extends Subject<T> { constructor(bufferSize?: number) }
     export declare function map<T, R>(project: (value: T, index: number) => R): OperatorFunction<T, R>;
+    export declare function take<T>(count: number): OperatorFunction<T, T>;
+    export declare function firstValueFrom<T>(source: Observable<T>): Promise<T>;
+  `,
+  '@angular/common/http': `
+    import type { Observable } from 'rxjs';
+    export declare class HttpHeaders { constructor(headers?: Record<string, string>) }
+    export declare class HttpClient {
+      get<T = any>(url: string, options?: { headers?: Record<string, string> | HttpHeaders; responseType?: 'json' }): Observable<T>;
+      get(url: string, options: { headers?: Record<string, string> | HttpHeaders; responseType: 'text' }): Observable<string>;
+    }
+    export declare function withInterceptorsFromDi(): any;
   `,
   '@angular/core': `
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void }
@@ -55,7 +67,8 @@ const SHIMS: Record<string, string> = {
     export declare function computed<T>(fn: () => T): Signal<T>;
     export declare const input: { <T>(value: T): InputSignal<T>; required<T>(): InputSignal<T> };
     export declare function output<T = void>(): OutputEmitterRef<T>;
-    export declare function inject<T>(token: abstract new (...args: any[]) => T): T;
+    export declare function inject<T>(token: (abstract new (...args: any[]) => T) | InjectionToken<T>, options?: { optional?: boolean }): T;
+    export declare class InjectionToken<T> { constructor(description: string) }
     export declare function Component(meta: any): <C>(c: C) => C;
     export declare function Injectable(meta?: any): <C>(c: C) => C;
     export declare const NO_ERRORS_SCHEMA: any;
@@ -65,13 +78,45 @@ const SHIMS: Record<string, string> = {
     export declare class EventEmitter<T = void> { emit(value: T): void }
     export declare enum ChangeDetectionStrategy { OnPush = 0, Eager = 1, Default = 1 }
     export declare function provideZoneChangeDetection(options?: any): any;
+    export declare function provideZonelessChangeDetection(): any;
+    export interface WritableSignal<T> { asReadonly(): Signal<T> }
+    export interface EffectRef { destroy(): void }
+    export declare function effect(fn: (onCleanup: (cleanup: () => void) => void) => void, options?: any): EffectRef;
+    export declare function untracked<T>(fn: () => T): T;
+    export declare class Injector { get<T>(token: abstract new (...args: any[]) => T): T }
+    export declare function ViewChild(selector: string, options?: any): any;
+    export declare class ElementRef<T = any> { readonly nativeElement: T }
+    export declare class DestroyRef { onDestroy(callback: () => void): () => void }
+    export declare class NgZone { run<T>(fn: () => T): T; runOutsideAngular<T>(fn: () => T): T }
+    export interface OnDestroy { ngOnDestroy(): void }
+    export interface OnInit { ngOnInit(): void }
+    export interface AfterViewInit { ngAfterViewInit(): void }
   `,
   '@angular/router': `
-    export declare class ActivatedRoute { snapshot: { params: Record<string, string> } }
-    export type Routes = { path: string; component?: any; redirectTo?: string; pathMatch?: string }[];
+    import type { Observable } from 'rxjs';
+    export declare class ActivatedRoute { snapshot: { params: Record<string, string> }; params: Observable<Record<string, string>> }
+    export type Routes = { path: string; component?: any; redirectTo?: string; pathMatch?: string; outlet?: string; children?: Routes; loadChildren?: () => Promise<any>; loadComponent?: () => Promise<any> }[];
   `,
   '@nativescript/angular': `
-    export declare class RouterExtensions { navigate(commands: any[], extras?: any): void; back(): void }
+    import type { Observable } from 'rxjs';
+    export interface NavigationExtras { relativeTo?: any; animated?: boolean; clearHistory?: boolean; transition?: any }
+    export declare class RouterExtensions { readonly router: { readonly url: string }; navigate(commands: any[], extras?: NavigationExtras): Promise<boolean>; back(options?: { relativeTo?: any; outlets?: string[] }): void; canGoBack(): boolean }
+    export declare const NativeDialogModule: any;
+    export declare const NATIVE_DIALOG_DATA: import('@angular/core').InjectionToken<any>;
+    export declare function registerElement(name: string, resolver: () => any, meta?: any): void;
+    export declare const ActionBarComponent: any;
+    export declare const ActionItemDirective: any;
+    export declare const NavigationButtonDirective: any;
+    export declare const TabViewDirective: any;
+    export declare const TabViewItemDirective: any;
+    export declare const NSEmptyOutletComponent: any;
+    export declare function provideNativeScriptHttpClient(...features: any[]): any;
+    export declare function provideNativeScriptRouter(routes: any): any;
+    export declare function bootstrapApplication(component: any, options?: any): Promise<any>;
+    export interface NativeDialogConfig { nativeOptions?: any; [key: string]: any }
+    export declare class NativeDialogRef<T = any, R = any> { close(result?: R): void; afterClosed(): Observable<R | undefined> }
+    export declare class NativeDialogService { open<T, R = any>(component: abstract new (...args: any[]) => T, config?: NativeDialogConfig): NativeDialogRef<T, R> }
+    export { NativeDialogService as NativeDialog };
     export declare const NativeScriptCommonModule: any;
     export declare const NativeScriptModule: any;
     export declare const NativeScriptRouterModule: { forRoot(routes: any): any };
@@ -114,6 +159,8 @@ const GLOBALS = `
   declare var console: { log(...data: any[]): void; info(...data: any[]): void; warn(...data: any[]): void; error(...data: any[]): void; debug(...data: any[]): void };
   declare function queueMicrotask(callback: () => void): void;
   declare var global: typeof globalThis;
+  declare function requestAnimationFrame(callback: (frameTime: number) => void): number;
+  declare function cancelAnimationFrame(id: number): void;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */
@@ -142,7 +189,7 @@ export interface Program {
  * Packages whose imports stay on their declarations: core is NativeScriptKit,
  * the frameworks are the front ends, and the rest are typings or tooling.
  */
-const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
+const NOT_PLUGINS = /^(@norrix\/client-sdk|@nativescript\/(core|canvas|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
 
 
 /**
@@ -150,7 +197,7 @@ const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = []): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -162,6 +209,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
     strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true, jsx: ts.JsxEmit.Preserve,
+    // A lenient app's caught values are `any`, as its own build types them.
+    ...(appStrictness(roots[0] ?? [...virtual.keys()][0]) ? { useUnknownInCatchVariables: false } : {}),
   };
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
@@ -216,13 +265,14 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
         }
       }
       // The shims import core's types from the app's node_modules; a plugin's source is typed against the app's packages.
-      const from = containing.startsWith('/__shims__/') || pluginFiles.has(containing) ? resolve(modules, '..', 'index.ts') : containing;
+      // Shims, plugins' sources and plugin components compiled with the app (outside its folder) import the app's packages.
+      const from = containing.startsWith('/__shims__/') || pluginFiles.has(containing) || !containing.startsWith(dirname(modules) + '/') ? resolve(modules, '..', 'index.ts') : containing;
       if (pluginFiles.has(containing) && m.startsWith('.')) return ts.resolveModuleName(m, containing, options, host);
       return ts.resolveModuleName(m, from, options, host);
     }
   };
 
-  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts')];
+  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
   let program = ts.createProgram(rootNames, options, host);
   // A plugin's native API declarations (`typings/ios.d.ts`) are found as its sources are.
   if (extraRoots.size) {
@@ -237,10 +287,14 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   }
   // The build types the app strictly; an app whose own configuration is not strict is held only to what that configuration checks.
   const lenient = appStrictness(roots[0] ?? [...virtual.keys()][0]);
-  const strictOnly = new Set([2322, 2345, 2531, 2532, 2533, 2454, 2564, 7005, 7006, 7008, 7015, 7031, 7034, 7053, 18047, 18048, 18049]);
-  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)) && !(lenient && strictOnly.has(d.code)));
+  const strictOnly = new Set([2322, 2345, 2531, 2532, 2533, 2454, 2564, 2722, 7005, 7006, 7008, 7015, 7031, 7034, 7053, 18047, 18048, 18049,
+    // What JavaScript defines that a lenient app's own build does not check: a key a spread overwrites, a `??` that never applies.
+    2783, 2869]);
+  // Strict narrowing leaves a lenient program's value `never` where its own build reads it as declared.
+  const neverRead = (d: ts.Diagnostic) => d.code === 2339 && /on type 'never'/.test(ts.flattenDiagnosticMessageText(d.messageText, '\n'));
+  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
   if (diagnostics.length) {
-    const text = ts.formatDiagnostics(diagnostics.slice(0, 12), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
+    const text = ts.formatDiagnostics(diagnostics.slice(0, Number(process.env.NS_NATIVE_DIAGNOSTICS ?? 12)), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
   }
   const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);

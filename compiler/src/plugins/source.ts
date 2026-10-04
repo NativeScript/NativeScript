@@ -318,6 +318,7 @@ function typingsNear(sources: string[], platform: 'ios' | 'android'): string[] {
   const dirs = new Set(sources.map(dirname));
   const out = new Set<string>();
   for (const d of dirs) {
+    if (existsSync(join(d, 'references.d.ts'))) out.add(join(d, 'references.d.ts'));
     const typings = join(d, 'typings');
     if (!existsSync(typings)) continue;
     for (const f of readdirSync(typings)) {

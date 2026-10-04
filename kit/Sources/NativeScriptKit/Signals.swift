@@ -333,15 +333,30 @@ public final class Effect: Subscriber {
         self.init(key: EffectOrder.key(), body)
     }
 
-    init(key: [Int], derived: Bool = false, _ body: @escaping () -> Void) {
+    init(key: [Int], derived: Bool = false, deferred: Bool = false, _ body: @escaping () -> Void) {
         self.body = body
         self.key = key
         self.derived = derived
         height = EffectOrder.current.height
         Owner.current?.effects.append(self)
         Effect.created?(self)
-        run()
+        if deferred {
+            stale = true
+            queue.append(self)
+            scheduleFlush()
+        } else {
+            run()
+        }
     }
+
+    /// Angular's `effect()`: its first run is in the next update, as change detection runs it, not at creation.
+    @discardableResult
+    public static func deferred(_ body: @escaping () -> Void) -> Effect {
+        Effect(key: EffectOrder.key(), deferred: true, body)
+    }
+
+    /// `EffectRef.destroy()`.
+    public func destroy() { dispose() }
 
     /// Called with each effect as it is made: zone.js change detection re-runs them all.
     static var created: ((Effect) -> Void)?

@@ -9,7 +9,7 @@ const KIT = fileURLToPath(new URL('../../kit/Sources/NativeScriptKit', import.me
 export const NATIVE_VIEWS: Record<string, string> = {
   Label: 'UILabel', Button: 'UIButton', TextField: 'UITextField', TextView: 'UITextView', Image: 'UIImageView', Switch: 'UISwitch',
   Slider: 'UISlider', SegmentedBar: 'UISegmentedControl', ActivityIndicator: 'UIActivityIndicatorView', ScrollView: 'UIScrollView',
-  ListView: 'UITableView', Progress: 'UIProgressView', DatePicker: 'UIDatePicker', TimePicker: 'UIDatePicker', View: 'UIView',
+  ListView: 'UITableView', Progress: 'UIProgressView', DatePicker: 'UIDatePicker', TimePicker: 'UIDatePicker', WebView: 'WKWebView', View: 'UIView',
 };
 const NATIVE_MEMBERS = new Set(['ios', 'nativeView', 'nativeViewProtected']);
 export const KIT_NAMES: Record<string, string> = { Font: 'CoreFont', ViewBase: 'View', ViewCommon: 'View', EditableTextBase: 'TextBase', LayoutBaseCommon: 'LayoutBase' };
@@ -17,8 +17,17 @@ export const KIT_NAMES: Record<string, string> = { Font: 'CoreFont', ViewBase: '
 const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
 
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
-  return !!decl && /[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName);
+  return !!decl && KIT_PACKAGES.test(decl.getSourceFile().fileName);
 }
+
+/**
+ * Packages the kit implements, typed by their own declarations: core, and plugins whose
+ * native release is a kit module (`kit/Sources/NativeScriptKit/Plugins/`) rather than their
+ * compiled source: @nativescript/canvas's 2D context on Core Graphics, and @norrix/client-sdk,
+ * whose over-the-air JavaScript updates have nothing to update in a native app.
+ */
+export const KIT_PLUGINS = ['@nativescript/canvas', '@norrix/client-sdk'];
+const KIT_PACKAGES = new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
 
 /** The native class a core class's `ios` is, walking up to the nearest one the table names. */
 export function nativeViewOf(checker: ts.TypeChecker, type: ts.Type, table: Record<string, string> = NATIVE_VIEWS): string | null {

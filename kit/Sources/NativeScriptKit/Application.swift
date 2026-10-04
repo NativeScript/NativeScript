@@ -12,7 +12,8 @@ public enum NativeScriptApplication {
         StyleSheet.app = StyleSheet(parsing: css)
         JSEventLoop.installRunLoopObserver()
         makeRoot = root
-        UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(ApplicationDelegate.self))
+        Application.observeLifecycle()
+        UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(ApplicationDelegate.delegateClass()))
         fatalError("UIApplicationMain returned")
     }
 
@@ -28,9 +29,24 @@ public enum NativeScriptApplication {
 
 final class ApplicationDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, configurationForConnecting session: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        ApplicationDelegate.sceneConfiguration(session)
+    }
+
+    static func sceneConfiguration(_ session: UISceneSession) -> UISceneConfiguration {
         let configuration = UISceneConfiguration(name: nil, sessionRole: session.role)
         configuration.delegateClass = SceneDelegate.self
         return configuration
+    }
+
+    /// The class `UIApplicationMain` runs: the app's own (`Application.ios.delegate`) with the scene
+    /// configuration installed where it has none, as core's `installSceneDelegateDefaults` does, else the kit's.
+    static func delegateClass() -> AnyClass {
+        guard let custom = iOSApplication.shared.delegate else { return ApplicationDelegate.self }
+        let selector = #selector(UIApplicationDelegate.application(_:configurationForConnecting:options:))
+        if !class_respondsToSelector(custom, selector), let method = class_getInstanceMethod(ApplicationDelegate.self, selector) {
+            class_addMethod(custom, selector, method_getImplementation(method), method_getTypeEncoding(method))
+        }
+        return custom
     }
 }
 
@@ -55,8 +71,31 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         self.root = root
+        Application.notify(JSObject([("eventName", Application.launchEvent), ("ios", UIApplication.shared)]))
         if let delay = ProcessInfo.processInfo.environment["NS_TRACE_TREE"].flatMap(Double.init) {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { print("TREE", (window.value(forKey: "recursiveDescription") as? String) ?? "") }
         }
+    }
+
+    /// core's scene-delegate-bridge: a scene's URLs and activities go to the app delegate's legacy handlers.
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        for context in URLContexts { forwardOpenURL(context.url, context.options) }
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        let selector = #selector(UIApplicationDelegate.application(_:continue:restorationHandler:))
+        guard let delegate = UIApplication.shared.delegate, delegate.responds(to: selector) else { return }
+        _ = delegate.application?(UIApplication.shared, continue: userActivity) { _ in }
+        Microtasks.checkpoint()
+    }
+
+    private func forwardOpenURL(_ url: URL, _ options: UIScene.OpenURLOptions) {
+        guard let delegate = UIApplication.shared.delegate, delegate.responds(to: #selector(UIApplicationDelegate.application(_:open:options:))) else { return }
+        var legacy: [UIApplication.OpenURLOptionsKey: Any] = [:]
+        if let source = options.sourceApplication { legacy[.sourceApplication] = source }
+        if let annotation = options.annotation { legacy[.annotation] = annotation }
+        legacy[.openInPlace] = options.openInPlace
+        _ = delegate.application?(UIApplication.shared, open: url, options: legacy)
+        Microtasks.checkpoint()
     }
 }

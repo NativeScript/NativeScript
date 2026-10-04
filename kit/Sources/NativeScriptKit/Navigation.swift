@@ -65,6 +65,12 @@ open class Page: ContentView {
 
     private(set) var controller: PageViewController!
     private(set) var actionBar: ActionBar?
+    /// The route the router created the page for.
+    var route: ActivatedRoute?
+    /// The pages the router is building, innermost last: a routed component renders into its page, and `inject(Page)` reads it.
+    static var building: [Page] = []
+    public static func routed() -> Page { building.last ?? Page() }
+    public static func injected() -> Page { building.last ?? Frame.topmost()?.topPage ?? Page() }
     var owner: Owner?
     private var didStyleNavigationBar = false
 
@@ -339,10 +345,29 @@ open class Frame: View {
 
     /// Pushes the page `create` returns. Effects created while building it end when it is popped.
     public func navigate(_ create: () -> View) {
+        navigate(animated: currentPage != nil, create)
+    }
+
+    /// A frame not shown yet takes the page as its first.
+    func navigate(animated: Bool, _ create: () -> View) {
         let owner = Owner(parent: nil)
         let page = Frame.page(for: owner.run(create))
         page.owner = owner
-        navigateCore(page, animated: currentPage != nil)
+        if !didShowInitialPage && initialPage == nil && pages.isEmpty {
+            initialPage = page
+            return
+        }
+        navigateCore(page, animated: animated)
+    }
+
+    /// The page navigated to last: the current one, or the one about to be shown.
+    var topPage: Page? { pages.last ?? initialPage }
+
+    public var canGoBack: Bool { controller.viewControllers.count > 1 }
+
+    public func goBack() {
+        guard canGoBack else { return }
+        controller.popViewController(animated: true)
     }
 
     private func navigateCore(_ page: Page, animated: Bool) {

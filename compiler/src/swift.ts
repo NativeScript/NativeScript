@@ -1147,8 +1147,15 @@ export class Translator implements AsyncTranslator {
         continue;
       }
     }
+    // The constructor's body runs once every field is set; what it throws is reported, as a failed creation is.
+    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body?.statements.length);
+    if (ctor) {
+      this.indent = '            ';
+      const body = this.statements([...ctor.body!.statements]);
+      inits.push(`        ${body.some((l) => /\btry\b/.test(l)) ? 'jsReport' : 'do'} {\n${body.join('\n')}\n        }`);
+    }
     this.indent = '';
-    const throws = inits.some((l) => /\btry\b/.test(l)) ? ' throws' : '';
+    const throws = inits.some((l) => /\btry\b/.test(l) && !l.startsWith('        jsReport {')) ? ' throws' : '';
     lines.push(`    init(${propParams.join(', ')})${throws} {`, ...inits, '    }');
     return lines;
   }
@@ -1671,7 +1678,21 @@ export class Translator implements AsyncTranslator {
     } finally { this.indent = saved; }
   }
 
+  /** With `--all-errors`: what each statement could not translate, collected so one run reports them all. */
+  errors: string[] | null = null;
+
   stmt(s: ts.Statement): string {
+    if (this.errors) {
+      try { return this.stmtChecked(s); } catch (e) {
+        const at = s.getSourceFile().getLineAndCharacterOfPosition(s.getStart());
+        this.errors.push(e instanceof RangeError ? `${s.getSourceFile().fileName}:${at.line + 1}: ${e.message}` : (e as Error).message);
+        return '';
+      }
+    }
+    return this.stmtChecked(s);
+  }
+
+  private stmtChecked(s: ts.Statement): string {
     const code = this.statementCode(s);
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
@@ -1832,7 +1853,11 @@ export class Translator implements AsyncTranslator {
     name.elements.forEach((el, k) => {
       if (ts.isOmittedExpression(el)) return;
       if (el.dotDotDotToken) {
-        if (ts.isObjectBindingPattern(name)) throw this.error(el, 'an object rest pattern');
+        if (ts.isObjectBindingPattern(name)) {
+          const named = name.elements.filter((x) => x !== el).map((x) => swiftString((x.propertyName ?? x.name).getText()));
+          lines.push(this.bindTo(el.name, this.fromAny(`jsObjectRest(${value}, [${named.join(', ')}])`, this.typeOf(el.name)), '', mutable));
+          return;
+        }
         const tuple = this.checker.isTupleType(source) ? this.checker.getTypeArguments(source as ts.TypeReference).length : 0;
         const rest = tuple ? `(${Array.from({ length: Math.max(0, tuple - k) }, (_, n) => `${value}.${k + n}`).join(', ')})` : `${value}.slice(${k})`;
         lines.push(this.bindTo(el.name, rest, '', mutable));
@@ -2696,6 +2721,8 @@ export class Translator implements AsyncTranslator {
         return `${this.expr(target)}.value = ${this.coerce(a, signalValue())}`;
       }
       if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
+      if (owner === 'Injector' && method === 'get' && e.arguments[0] && ts.isIdentifier(e.arguments[0])) return injected(e.arguments[0].text);
+      if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
@@ -2822,12 +2849,10 @@ export class Translator implements AsyncTranslator {
     if (name === '$state' && lib) return `stateSignal(${this.expr(arg(0))})`;
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
-    if (name === 'inject' && lib) {
-      const token = (arg(0) as ts.Identifier).text;
-      if (token === 'RouterExtensions') return 'Router.shared';
-      if (token === 'ActivatedRoute') return 'ActivatedRoute.current';
-      return `${token}.shared`;
-    }
+    if (name === 'inject' && lib) return injected((ts.isExpressionWithTypeArguments(arg(0)) ? arg(0).expression : arg(0)).getText());
+    if (name === 'effect' && lib) return `Effect.deferred(${this.callback(arg(0))})`;
+    if (name === 'firstValueFrom' && lib) return `rxFirstValueFrom(${this.expr(arg(0))})`;
+    if (name === 'registerElement' && lib) return '()';
     if (name === '$navigateTo' && lib) return this.navigate(e);
     if (name === '$showModal' && lib) return this.showModal(e);
     if (name === '$closeModal' && lib) return `Modal.close(${arg(0) ? this.coerce(arg(0), 'Any?') : ''})`;
@@ -2844,7 +2869,11 @@ export class Translator implements AsyncTranslator {
           return `js${name[0].toUpperCase()}${name.slice(1)}(${this.callback(arg(0))}, ${arg(1) ? this.expr(arg(1)) : '0'})`;
         case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.coerce(arg(0), 'Double?') : 'nil'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
+        case 'requestAnimationFrame': return `jsRequestAnimationFrame({ __t in jsReport { try ${this.expr(arg(0))}(__t) } })`;
+        case 'cancelAnimationFrame': return `jsCancelAnimationFrame(${this.expr(arg(0))})`;
         case 'unescape': return `jsUnescape(${this.str(arg(0))})`;
+        case 'encodeURIComponent': case 'encodeURI': case 'decodeURIComponent': case 'decodeURI':
+          return `js${name[0].toUpperCase()}${name.slice(1)}(${this.str(arg(0))})`;
         case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : 'nil'})`;
         case 'BigInt': return `JSBigInt(convert: ${this.coerce(arg(0), 'Any?')})`;
       }
@@ -3327,6 +3356,8 @@ export class Translator implements AsyncTranslator {
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     if (t === 'InteropReference') return `InteropReference(${args[0] ? this.coerce(args[0], 'Any?') : ''})`;
+    // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
+    if (name === 'Array' && args.length === 1 && !this.isString(args[0]) && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;
     if (name === 'Array') throw this.error(e, `new ${name}`);
     const core = this.core.construct(e) ?? this.native.construct(e);
     if (core) return core;
@@ -4025,4 +4056,16 @@ function shadowedByMember(at: ts.Node, decl: ts.Declaration | undefined, fn: str
   if (!decl || !ts.isFunctionDeclaration(decl) || !ts.isSourceFile(decl.parent)) return false;
   const cls = ts.findAncestor(at, ts.isClassLike);
   return !!cls && cls.members.some((m) => !!m.name && ts.isIdentifier(m.name) && ident(m.name.text) === fn);
+}
+
+/** What `inject(token)` gives: the kit's instance for a framework token, else the app's service. */
+function injected(token: string): string {
+  switch (token) {
+    case 'RouterExtensions': return 'Router.shared';
+    case 'ActivatedRoute': return 'ActivatedRoute.current';
+    case 'Page': return 'Page.injected()';
+    case 'DestroyRef': return 'DestroyRef.current()';
+    case 'NativeDialogRef': return 'NativeDialogRef.current';
+    default: return `${token}.shared`;
+  }
 }

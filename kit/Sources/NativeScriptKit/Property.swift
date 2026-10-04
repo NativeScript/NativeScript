@@ -74,6 +74,6 @@ public func CSSType(_ name: String) -> (Any?) -> Void { { _ in } }
 
 /// A JavaScript value from a call that may throw, reported like a handler's error; nil if it threw.
 @discardableResult
-func jsReported<T>(_ body: () throws -> T) -> T? {
+public func jsReported<T>(_ body: () throws -> T) -> T? {
     do { return try body() } catch { jsReport { throw error }; return nil }
 }

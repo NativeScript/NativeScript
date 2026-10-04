@@ -58,8 +58,11 @@ public enum Modal {
         parentController.present(controller, animated: animated)
     }
 
+    /// The view modals open over when script names none: the topmost modal, else the app's root.
+    static var top: View? { stack.last?.view ?? root }
+
     /// `showModal(view, options)` from script: presented by the controller nearest `parent`, as `_showNativeModalView` does.
-    static func present(_ view: View, from parent: View, options: Any?) {
+    static func present(_ view: View, from parent: View, options: Any?, owner: Owner = Owner(parent: nil), closed: ((Any?) -> Void)? = nil) {
         let o = jsFlat(options) as? JSDynamic
         let ios = jsFlat(o?[jsKey: "ios"]) as? JSDynamic
         guard let parentController = viewControllerOwner(of: parent)?.viewController,
@@ -77,8 +80,8 @@ public enum Modal {
         classes.subtract(classes.filter { $0.hasPrefix("a11y-") })
         view.rootClasses = classes
         let callback = jsFlat(o?[jsKey: "closeCallback"])
-        let record = Record(view: view, parent: parent, owner: Owner(parent: nil), animated: o.map { $0[jsKey: "animated"] == nil ? true : jsTruthy($0[jsKey: "animated"]) } ?? true,
-                            closeCallback: callback == nil ? nil : { result in jsReport { _ = try jsCall(callback, result) } })
+        let record = Record(view: view, parent: parent, owner: owner, animated: o.map { $0[jsKey: "animated"] == nil ? true : jsTruthy($0[jsKey: "animated"]) } ?? true,
+                            closeCallback: closed.map { closed in { result in closed(result) } } ?? (callback == nil ? nil : { result in jsReport { _ = try jsCall(callback, result) } }))
         stack.append(record)
         controller.modalPresentationStyle = jsTruthy(o?[jsKey: "fullscreen"]) ? .fullScreen : .formSheet
         if let width = ios?[jsKey: "width"] as? Double, let height = ios?[jsKey: "height"] as? Double, width > 0, height > 0 {

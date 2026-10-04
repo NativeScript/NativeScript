@@ -25,6 +25,41 @@ public enum Application {
 
     public static func notify(_ data: Any?) { events.notify(data) }
 
+    public static func once(_ eventNames: String, _ callback: @escaping (EventData) throws -> Void, _ thisArg: Any? = nil, key: String? = nil) {
+        events.once(eventNames, callback, thisArg, key: key)
+    }
+
+    public static let launchEvent = "launch"
+    public static let displayedEvent = "displayed"
+    public static let suspendEvent = "suspend"
+    public static let resumeEvent = "resume"
+    public static let exitEvent = "exit"
+    public static let lowMemoryEvent = "lowMemory"
+    public static let orientationChangedEvent = "orientationChanged"
+    public static let systemAppearanceChangedEvent = "systemAppearanceChanged"
+    public static let fontScaleChangedEvent = "fontScaleChanged"
+
+    /// Core's `setSuspended` on the app's notifications: `suspend` when it enters the background, `resume` when it becomes active again.
+    static func observeLifecycle() {
+        let center = NotificationCenter.default
+        center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { _ in
+            guard !suspended else { return }
+            suspended = true
+            notify(JSObject([("eventName", suspendEvent), ("object", events), ("ios", UIApplication.shared)]))
+            Microtasks.checkpoint()
+        }
+        center.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
+            guard suspended else { return }
+            suspended = false
+            notify(JSObject([("eventName", resumeEvent), ("object", events), ("ios", UIApplication.shared)]))
+            Microtasks.checkpoint()
+        }
+        center.addObserver(forName: UIApplication.willTerminateNotification, object: nil, queue: .main) { _ in
+            notify(JSObject([("eventName", exitEvent), ("object", events), ("ios", UIApplication.shared)]))
+        }
+    }
+    private static var suspended = false
+
     /// `setWindowContentResolver(resolver)`: content for windows other than the primary one, which this app has none of.
     public static func setWindowContentResolver(_ resolver: Any?) { windowContentResolver = resolver }
     static var windowContentResolver: Any?
@@ -46,6 +81,9 @@ public enum Application {
 /// `Application.ios`: the iOS side of the application object.
 public final class iOSApplication {
     static let shared = iOSApplication()
+
+    /// `Application.ios.delegate = AppDelegate`: the class `UIApplicationMain` runs, set before the app starts.
+    public var delegate: AnyClass?
 
     public var window: UIWindow? { Appearance.window }
     public var rootController: UIViewController? { Appearance.window?.rootViewController }

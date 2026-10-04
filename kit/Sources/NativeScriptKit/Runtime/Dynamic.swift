@@ -212,6 +212,15 @@ public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
     for key in (dynamic as? JSSymbolKeyed)?.jsSymbolKeys ?? [] { target[key] = dynamic[jsKey: key] }
 }
 
+/// `const { a, b, ...rest } = source`: the source's own enumerable properties but those the pattern names.
+public func jsObjectRest(_ source: Any?, _ excluded: Set<String>) -> JSObject {
+    let target = JSObject([])
+    guard let dynamic = jsFlat(source) as? JSDynamic else { return target }
+    for key in dynamic.jsKeys where !excluded.contains(key) { target[key] = dynamic[jsKey: key] }
+    for key in (dynamic as? JSSymbolKeyed)?.jsSymbolKeys ?? [] where !excluded.contains(key) { target[key] = dynamic[jsKey: key] }
+    return target
+}
+
 /// `Symbol(description)`: a property key no other code spells.
 public func jsSymbol(_ description: String) -> String {
     jsSymbolCount += 1

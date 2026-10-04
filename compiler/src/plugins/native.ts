@@ -123,6 +123,7 @@ function targetsOf(source: PluginSource, errors: string[]): Target[] {
     for (const f of readdirSync(dir).sort()) {
       const p = join(dir, f);
       if (f === '.DS_Store' || /\.md$/i.test(f)) continue;
+      else if (f === 'native-api-usage.json') continue;
       if (statSync(p).isDirectory()) {
         if (f.endsWith('.xcframework')) xcframeworks.push(p);
         else if (f.endsWith('.framework')) fail(p, 'a .framework is not supported yet (an .xcframework is)');

@@ -118,6 +118,7 @@ async function viteSheets(configPath: string): Promise<Sheet[]> {
   const { rewritePlatformCssImports } = await helper('css-platform-plugin.js');
   const { parse } = createRequire(join(nsVite, 'package.json'))('css');
   const config = await vite.resolveConfig({ configFile: configPath, mode: 'production' }, 'build', 'production', 'production');
+  defines = Object.fromEntries(Object.entries(config.define ?? {}).filter(([k, v]) => /^[\w$.]+$/.test(k) && typeof v === 'string'));
   const appCss: string | null = resolveProjectGlobalCssPath(app);
   const imported = stylesheets.filter((f) => f !== appCss);
   if (imported.length) throw new Error(`${imported.join(', ')}: stylesheets imported from modules are not read for vite apps yet`);
@@ -129,6 +130,8 @@ async function viteSheets(configPath: string): Promise<Sheet[]> {
   return [{ file: appCss, css: result.code, ast }];
 }
 
+/** The bundler's compile-time replacements (vite's `define`), as source text by the expression they replace. */
+let defines: Record<string, string> = {};
 const sheets = project.bundler === 'vite' ? await viteSheets(project.bundlerConfigPath) : await webpackSheets(project.bundlerConfigPath);
-writeFileSync(outFile, JSON.stringify(sheets));
+writeFileSync(outFile, JSON.stringify({ sheets, defines }));
 process.exit(0);

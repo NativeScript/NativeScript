@@ -3,6 +3,7 @@
 // into the AST core reads. Core keeps only rulesets, @media and @keyframes
 // from that AST (style-scope's _populateRules); the kit gets those, as CSS text.
 import { execFileSync } from 'node:child_process';
+import { setDefines } from './platform.ts';
 import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
@@ -40,7 +41,9 @@ export function appStylesheets(app: string, platform: 'ios' | 'android', importe
   const worker = join(dirname(fileURLToPath(import.meta.url)), 'css-worker.ts');
   try {
     execFileSync(process.execPath, [worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'] });
-    return JSON.parse(readFileSync(out, 'utf8'));
+    const result = JSON.parse(readFileSync(out, 'utf8'));
+    setDefines(result.defines);
+    return result.sheets;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

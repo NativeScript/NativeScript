@@ -26,7 +26,8 @@ export function translateModules(translator: Translator, program: ts.Program, fi
     let name = basename(file).replace(/\.tsx?$/, '').replace(/\W/g, '_');
     while (used.has(name)) name += '_';
     used.add(name);
-    const { code, init } = translator.module(sf);
+    let code = '', init: string[] = [];
+    try { ({ code, init } = translator.module(sf)); } catch (e) { if (!translator.errors) throw e; translator.errors.push((e as Error).message); }
     const initName = init.length ? `__init_${name}` : null;
     const throws = init.some((l) => /\btry\b/.test(l));
     const initCode = initName ? `\n\nfunc ${initName}() {\n${throws ? `    jsReport {\n${init.map((l) => '    ' + l).join('\n')}\n    }` : init.join('\n')}\n}\n` : '';

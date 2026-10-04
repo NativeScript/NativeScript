@@ -10,10 +10,12 @@ export type Platform = 'ios' | 'android';
  * every position, and so every diagnostic's line and column, is unchanged.
  */
 export function foldPlatform(text: string, fileName: string, platform: Platform): string {
-  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__)\b|import\.meta\.hot/.test(text)) return text;
+  text = applyDefines(text, fileName);
+  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)\b|import\.meta\.hot/.test(text)) return text;
+  // A release build: `__DEV__` is false, as the bundlers define it for one.
   const flags: Record<string, boolean> = {
     isIOS: platform === 'ios', __IOS__: platform === 'ios', __APPLE__: platform === 'ios',
-    isAndroid: platform === 'android', __ANDROID__: platform === 'android', __VISIONOS__: false,
+    isAndroid: platform === 'android', __ANDROID__: platform === 'android', __VISIONOS__: false, __DEV__: false,
   };
   const kind = fileName.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   // One edit per pass, outermost first, until nothing folds.
@@ -30,6 +32,26 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
     text = apply(text, edit);
   }
   throw new Error(`${fileName}: platform folding did not settle`);
+}
+
+let defines: [string, string][] = [];
+
+/** The bundler's `define` replacements, applied to every source the build reads. */
+export function setDefines(map: Record<string, string> | undefined) {
+  // The platform flags are folded for the target being built, whatever the bundler defined them as.
+  const folded = /^(global\.|globalThis\.)?(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)$/;
+  defines = Object.entries(map ?? {}).filter(([k]) => !folded.test(k)).sort((a, b) => b[0].length - a[0].length);
+}
+
+/** Each defined expression replaced as the bundler replaces it, padded so positions after it keep their columns where it fits. */
+function applyDefines(text: string, fileName: string): string {
+  if (!defines.length || /[\\/]node_modules[\\/]/.test(fileName)) return text;
+  for (const [key, value] of defines) {
+    if (!text.includes(key)) continue;
+    const pattern = new RegExp(`(?<![\\w$.])${key.replace(/[.$]/g, (c) => '\\' + c)}(?![\\w$])`, 'g');
+    text = text.replace(pattern, (m) => `(${value})`.padEnd(m.length, ' '));
+  }
+  return text;
 }
 
 type Edit = { keep: [number, number] | null; span: [number, number]; replacement?: string };

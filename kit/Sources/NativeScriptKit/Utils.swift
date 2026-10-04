@@ -23,6 +23,24 @@ public enum Utils {
         UIPasteboard.general.string = value
     }
 
+    /// `openUrl(location)`: opened when the app can open it, which it answers at once.
+    @discardableResult
+    public static func openUrl(_ location: String) -> Bool {
+        guard let url = URL(string: location.trimmingCharacters(in: .whitespacesAndNewlines)), UIApplication.shared.canOpenURL(url) else { return false }
+        UIApplication.shared.open(url)
+        return true
+    }
+
+    /// `dispatchToMainThread(fn)`: on the main operation queue, after the current task.
+    public static func dispatchToMainThread(_ fn: @escaping () -> Void) {
+        OperationQueue.main.addOperation {
+            fn()
+            Microtasks.checkpoint()
+        }
+    }
+
+    public static func isMainThread() -> Bool { Thread.isMainThread }
+
     public enum layout {
         public static let EXACTLY: Double = Double(LayoutHelper.exactly)
         public static let AT_MOST: Double = Double(LayoutHelper.atMost)

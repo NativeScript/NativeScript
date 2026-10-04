@@ -21,7 +21,7 @@ public final class Region: RegionHost {
         host?.regionChanged(self)
     }
 
-    func set(parts: [RegionPart]) {
+    public func set(parts: [RegionPart]) {
         replacing = false
         self.parts = parts
         host?.regionChanged(self)
@@ -40,7 +40,7 @@ public final class Region: RegionHost {
     public func regionChanged(_ region: Region) { host?.regionChanged(self) }
 }
 
-enum RegionPart {
+public enum RegionPart {
     case view(View)
     case region(Region)
 
@@ -55,7 +55,7 @@ enum RegionPart {
 /// The views of a row or branch that has an `if` or `for` of its own: its static views and nested regions, in template order.
 public final class RegionFragment {
     let owner: Region
-    var parts: [RegionPart] = []
+    public var parts: [RegionPart] = []
 
     public init(_ owner: Region) { self.owner = owner }
 
