@@ -83,8 +83,8 @@ extension EventData {
     public func getFocusX() -> Double { gesture?.focusX?() ?? .nan }
     public func getFocusY() -> Double { gesture?.focusY?() ?? .nan }
     public func getPointerCount() -> Double { gesture?.pointerCount?() ?? .nan }
-    public func getActivePointers() -> [Pointer] { gesture?.activePointers?() ?? [] }
-    public func getAllPointers() -> [Pointer] { gesture?.allPointers?() ?? [] }
+    public func getActivePointers() -> JSArray<Pointer> { JSArray(gesture?.activePointers?() ?? []) }
+    public func getAllPointers() -> JSArray<Pointer> { JSArray(gesture?.allPointers?() ?? []) }
 }
 
 extension View {

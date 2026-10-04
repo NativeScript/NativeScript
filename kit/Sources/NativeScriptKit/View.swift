@@ -183,6 +183,7 @@ open class View: NSObject {
         for name in names where View.styleProperties.contains(name) { setProperty(name, applied[name]) }
         onLoaded()
         eachChildView { if shouldLoad($0) { $0.load() } }
+        emit("loaded", nil)
     }
 
     func unload() {
@@ -191,6 +192,7 @@ open class View: NSObject {
         stopKeyframeAnimations()
         isLoaded = false
         eachChildView { $0.unload() }
+        emit("unloaded", nil)
     }
 
     open func onLoaded() {}
@@ -468,6 +470,8 @@ open class View: NSObject {
         guard let list = handlers[event] else { return }
         let data = EventData(eventName: event, object: self, value: value)
         for handler in list { handler(data) }
+        // A handler is a JavaScript task: the promise jobs it queued run before anything else does.
+        Microtasks.checkpoint()
     }
 
     // MARK: Measure and layout

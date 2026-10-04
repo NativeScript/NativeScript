@@ -15,10 +15,10 @@ extension Emitter where T == Void {
 /// The route a component was created for (Angular `ActivatedRoute`): set by the
 /// router before it constructs the routed component.
 public final class ActivatedRoute {
-    public struct Snapshot { public let params: [String: String] }
+    public struct Snapshot { public let params: JSRecord<String> }
     public let snapshot: Snapshot
     public static var current = ActivatedRoute(params: [:])
-    public init(params: [String: String]) { snapshot = Snapshot(params: params) }
+    public init(params: [String: String]) { snapshot = Snapshot(params: JSRecord(params)) }
 }
 
 public struct Route {
@@ -49,6 +49,11 @@ public final class Router {
         let path = commands.map { "\($0)" }.joined(separator: "/")
         guard resolveRoute(path) != nil else { return }
         Frame.topmost?.navigate { self.resolve(path)! }
+    }
+
+    /// `navigate(['/recipe', id])` as translated code passes it.
+    public func navigate(_ commands: JSArray<Any?>, _ extras: Any? = nil) {
+        navigate(commands.storage.map { $0 ?? "" }, extras)
     }
 
     func resolve(_ path: String) -> View? {

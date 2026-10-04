@@ -3,12 +3,7 @@ import Foundation
 // JavaScript's behavior where Swift's differs, for code translated from TypeScript.
 
 /// A number as JavaScript prints it: `4`, not `4.0`.
-public func js(_ value: Double) -> String {
-    if value.isNaN { return "NaN" }
-    if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
-    if value == value.rounded(.towardZero) && abs(value) < 1e21 { return String(Int64(value)) }
-    return String(value)
-}
+public func js(_ value: Double) -> String { jsNumberToString(value) }
 
 public func js(_ value: Int) -> String { String(value) }
 public func js(_ value: Bool) -> String { value ? "true" : "false" }

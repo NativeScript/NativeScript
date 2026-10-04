@@ -9,7 +9,7 @@ const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
  * each binding is one effect that sets one property, and each `if`/`for`
  * owns a region of its container. Nothing is diffed at run time.
  */
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>): string[] {
+export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[] }>, throws: (method: string) => boolean = () => false): string[] {
   const lines: string[] = [];
   let n = 0;
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
@@ -17,16 +17,18 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   // A ListView row reads its item and index through the row's signals.
   type Loop = { item: string; index: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
-    `self.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
+    `${throws(method) ? 'try ' : ''}self.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
+  // What a binding or handler throws is reported, as the frameworks report errors in templates.
+  const reported = (method: string, code: string) => (throws(method) ? `jsReport { ${code} }` : code);
 
   const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${swiftString(a.value)}`);
       else say(depth, `${v}.set(${swiftString(a.name)}, ${swiftString(a.value)})`);
     } else if (a.name === 'class') {
-      say(depth, `Effect { ${v}.className = ${call(a.method, loops)} }`);
+      say(depth, `Effect { ${reported(a.method, `${v}.className = ${call(a.method, loops)}`)} }`);
     } else {
-      say(depth, `Effect { ${v}.set(${swiftString(a.name)}, ${call(a.method, loops)}) }`);
+      say(depth, `Effect { ${reported(a.method, `${v}.set(${swiftString(a.name)}, ${call(a.method, loops)})`)} }`);
     }
   };
 
@@ -41,7 +43,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           say(depth, `let ${v} = ${node.tag}()`);
           const isList = node.tag === 'ListView';
           for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
-          for (const e of node.events) say(depth, `${v}.on(${swiftString(e.name)}) { event in ${call(e.method, loops, ['event'])} }`);
+          for (const e of node.events) say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           if (isList) list(node, depth, loops, v);
           else emit(node.children, depth, loops, v, null);
         } else {
@@ -52,6 +54,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           const args = info.props.map((p) => {
             const a = given.get(p);
             if (!a) throw new Error(`${c.name}: <${node.name}> needs the prop "${p}"`);
+            if ('method' in a && throws(a.method)) throw new Error(`${c.name}: the binding for <${node.name}>'s prop "${p}" can throw`);
             return `${ident(p)}: ${'value' in a ? swiftString(a.value) : `untrack { ${call(a.method, loops)} }`}`;
           });
           say(depth, `let ${c0} = ${node.name}(${args.join(', ')})`);
@@ -63,8 +66,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`])} }`);
-            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${call(e.method, loops, ['event'])} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(e.name)}.on { value in ${reported(e.method, call(e.method, loops, [`EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
+            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${reported(e.method, call(e.method, loops, ['event']))} }`);
           }
         }
         if (parent) say(depth, `${parent}.addChild(${v})`);
@@ -75,6 +78,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const region = parent ? `${parent}.addRegion()` : null;
       if (!region) throw new Error(`${c.name}: an if/for at the root of a template`);
       if (node.kind === 'if') {
+        if (node.branches.some((b) => b.cond && throws(b.cond))) throw new Error(`${c.name}: an if condition in the template can throw`);
         const which = node.branches.map((b, i) => (b.cond ? `${call(b.cond, loops)} ? ${i} : ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
         say(depth, `Choose(${region}, { ${which} }) { branch in`);
         say(depth + 1, 'switch branch {');
@@ -90,8 +94,11 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         continue;
       }
       const inner = [...loops, { item: node.item, index: node.index }];
-      const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in ${call(node.key, inner)} }` : `{ item, _ in jsKey(item) }`;
-      say(depth, `For(${region}, { ${call(node.items, loops)} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
+      // A key may be any value (`:key="i"`); rows are kept by its string form.
+      const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in jsKey(${call(node.key, inner)}) }` : `{ item, _ in jsKey(item) }`;
+      if (throws(node.items) || (node.key && throws(node.key))) throw new Error(`${c.name}: a for in the template can throw`);
+      // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
+      say(depth, `For(${region}, { Array(${call(node.items, loops)}) }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`);
       const made: string[] = [];
       emit(node.body, depth + 1, inner, null, made);
       say(depth + 1, `return [${made.join(', ')}]`);
@@ -106,10 +113,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     const selector = node.attrs.find((a) => a.name === 'itemTemplateSelector');
     const sel = selector && 'method' in selector ? `, selector: { item, index in ${call(selector.method, loops, ['item', 'index'])} }` : '';
     const templates = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
-    if (!templates.length) { say(depth, `${v}.bind(items: { ${call(items.method, loops)} }${sel})`); return; }
+    if (!templates.length) { say(depth, `${v}.bind(items: { Array(${call(items.method, loops)}) }${sel})`); return; }
     const row = `row${n++}`;
     const fallback = templates.find((t) => t.key === 'default') ?? templates[0];
-    say(depth, `${v}.bind(items: { ${call(items.method, loops)} }, templates: [${templates.map((t) => swiftString(t.key)).join(', ')}]${sel}) { key, ${row} in`);
+    say(depth, `${v}.bind(items: { Array(${call(items.method, loops)}) }, templates: [${templates.map((t) => swiftString(t.key)).join(', ')}]${sel}) { key, ${row} in`);
     say(depth + 1, 'switch key {');
     for (const t of [...templates.filter((t) => t !== fallback), fallback]) {
       say(depth + 1, t === fallback ? 'default:' : `case ${swiftString(t.key)}:`);

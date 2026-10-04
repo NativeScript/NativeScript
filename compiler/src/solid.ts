@@ -85,7 +85,7 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
   for (const st of body) {
     if (st === ret) continue;
     if (ts.isFunctionDeclaration(st) && st.name) {
-      fields.push(`  ${st.name.text}(${st.parameters.map((p) => p.getText()).join(', ')})${st.type ? `: ${st.type.getText()}` : ''} ${setters(navigate(rewrite(st.body!.getText(), full, 'statements'), routes))}`);
+      fields.push(`  ${(ts.getModifiers(st as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${st.name.text}(${st.parameters.map((p) => p.getText()).join(', ')})${st.type ? `: ${st.type.getText()}` : ''} ${setters(navigate(rewrite(st.body!.getText(), full, 'statements'), routes))}`);
       continue;
     }
     for (const d of (st as ts.VariableStatement).declarationList.declarations) {
@@ -110,7 +110,7 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
       }
       if (ts.isArrowFunction(init) || ts.isFunctionExpression(init)) {
         const b = ts.isBlock(init.body) ? init.body.getText() : `{ return ${init.body.getText()}; }`;
-        fields.push(`  ${id}(${init.parameters.map((p) => p.getText()).join(', ')}) ${setters(navigate(rewrite(b, full, 'statements'), routes))}`);
+        fields.push(`  ${(ts.getModifiers(init as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${id}(${init.parameters.map((p) => p.getText()).join(', ')}) ${setters(navigate(rewrite(b, full, 'statements'), routes))}`);
         continue;
       }
       fields.push(`  get ${id}() { return ${rewrite(init.getText(), full)}; }`);
@@ -147,7 +147,7 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
       const t = e.getText();
       code = `${rewrite(t, local(loops)).slice(1, -1)}(${arity.get(t) === 0 ? '' : '$event'});`;
     }
-    methods.push(`  ${m}(${[params(loops), '$event: EventData'].filter(Boolean).join(', ')}) { ${setters(navigate(code, routes))} }`);
+    methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${setters(navigate(code, routes))} }`);
     return m;
   };
 
@@ -226,7 +226,7 @@ export function solidComponent(path: string, fn: ts.FunctionDeclaration, routes:
     list.flatMap((c) => (ts.isJsxText(c) ? [] : ts.isJsxExpression(c) ? (c.expression ? jsx(c.expression, loops) : []) : jsx(c as ts.Expression, loops)));
 
   const template = jsx(ret.expression!, []);
-  const source = [`import { $writable, $navigateTo, type EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
+  const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
   return { name, file: `${dirname(path)}/${name}.solid.ts`, source, props, template, page: !!route };
 }
 

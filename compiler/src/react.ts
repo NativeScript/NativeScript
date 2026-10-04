@@ -112,7 +112,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
   for (const st of body) {
     if (st === ret) continue;
     if (ts.isFunctionDeclaration(st) && st.name) {
-      fields.push(`  ${st.name.text}(${st.parameters.map((p) => p.getText()).join(', ')})${st.type ? `: ${st.type.getText()}` : ''} ${rewrite(navigate(st.body!.getText(), navigationName, screens), routeScope(scope), 'statements')}`);
+      fields.push(`  ${(ts.getModifiers(st as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${st.name.text}(${st.parameters.map((p) => p.getText()).join(', ')})${st.type ? `: ${st.type.getText()}` : ''} ${rewrite(navigate(st.body!.getText(), navigationName, screens), routeScope(scope), 'statements')}`);
       continue;
     }
     for (const d of (st as ts.VariableStatement).declarationList.declarations) {
@@ -129,7 +129,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
       if (read) { fields.push(`  get ${id}() { return ${read}; }`); continue; }
       if (ts.isArrowFunction(init) || ts.isFunctionExpression(init)) {
         const b = ts.isBlock(init.body) ? init.body.getText() : `{ return ${init.body.getText()}; }`;
-        fields.push(`  ${id}(${init.parameters.map((p) => p.getText()).join(', ')}) ${rewrite(navigate(b, navigationName, screens), routeScope(scope), 'statements')}`);
+        fields.push(`  ${(ts.getModifiers(init as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${id}(${init.parameters.map((p) => p.getText()).join(', ')}) ${rewrite(navigate(b, navigationName, screens), routeScope(scope), 'statements')}`);
         continue;
       }
       // React recomputes a body const on every render: a derived value.
@@ -165,7 +165,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
       const t = e.getText();
       code = `${rewrite(t, local(loops)).slice(1, -1)}(${arity.get(t) === 0 ? '' : '$event'});`;
     }
-    methods.push(`  ${m}(${[params(loops), '$event: EventData'].filter(Boolean).join(', ')}) { ${code} }`);
+    methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${code} }`);
     return m;
   };
 
@@ -304,7 +304,7 @@ export function reactComponent(path: string, text: string, fn: ts.FunctionDeclar
     const title: Attr = 'value' in screen.title ? { name: 'title', value: screen.title.value } : { name: 'title', method: expr(screen.title.code, []) };
     template = [{ kind: 'element', tag: 'ActionBar', attrs: [title], events: [], children: [] }, ...template];
   }
-  const source = [`import { $writable, $navigateTo, type EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
+  const source = [`import { $writable, $navigateTo, type EventData as $EventData } from '@nativescript/release';`, ...imports, '', `export default class ${name} {`, ...fields, ...methods, '}', ''].join('\n');
   return { name, file: `${dirname(path)}/${name}.react.ts`, source, props, template, page: !!screen };
 }
 

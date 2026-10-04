@@ -76,7 +76,7 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
       scope.names.set(fn, `this.${fn}`);
       later.push(() => {
         const ret = st.type ? `: ${st.type.getText()}` : '';
-        fields.push(`  ${fn}(${st.parameters.map((p) => p.getText()).join(', ')})${ret} ${rewrite(st.body!.getText(), withStores(scope, stores), 'statements')}`);
+        fields.push(`  ${(ts.getModifiers(st as ts.FunctionDeclaration)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ? 'async ' : '')}${fn}(${st.parameters.map((p) => p.getText()).join(', ')})${ret} ${rewrite(st.body!.getText(), withStores(scope, stores), 'statements')}`);
       });
       continue;
     }
@@ -121,7 +121,7 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
       const code = src(e);
       body = `${rewrite(code, local(loops)).slice(1, -1)}(${arity.get(code) === 0 ? '' : '$event'});`;
     }
-    methods.push(`  ${m}(${[params(loops), '$event: EventData'].filter(Boolean).join(', ')}) { ${body} }`);
+    methods.push(`  ${m}(${[params(loops), '$event: $EventData'].filter(Boolean).join(', ')}) { ${body} }`);
     return m;
   };
   const value = (a: any, loops: Loop[]): Attr => {
@@ -222,7 +222,7 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
   const template = nodes(ast.html.children, []);
 
   const source = [
-    `import { $signal, type EventData } from '@nativescript/release';`,
+    `import { $signal, type EventData as $EventData } from '@nativescript/release';`,
     ...imports,
     '',
     `export default class ${name} {`,

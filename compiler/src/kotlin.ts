@@ -72,7 +72,7 @@ export class Translator {
     }
     const sym = t.aliasSymbol ?? t.getSymbol();
     const name = sym?.getName();
-    if (name === 'Sig' || name === 'Ref') {
+    if (name === 'Sig' || name === 'Ref' || name === 'VueRef') {
       const arg = (t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference))[0];
       return `Signal<${this.type(arg, where)}>`;
     }
@@ -450,7 +450,7 @@ export class Translator {
       const name = callee.text;
       if (name === 'get' && e.arguments.length === 1 && this.symbolName(e.arguments[0]) === 'Writable') return `${this.expr(e.arguments[0])}.value`;
       if (name === 'navigate' && e.arguments[0] && ts.isObjectLiteralExpression(e.arguments[0])) return this.navigate(e);
-      if (name === '$signal' || name === 'ref' || name === 'signal' || name === 'writable' || name === '$writable') return `Signal<${this.typeOf(e).replace(/^Signal<(.*)>$/, '$1')}>(${this.expr(e.arguments[0])})`;
+      if (name === '$signal' || name === '$ref' || name === 'ref' || name === 'signal' || name === 'writable' || name === '$writable') return `Signal<${this.typeOf(e).replace(/^Signal<(.*)>$/, '$1')}>(${this.expr(e.arguments[0])})`;
       if (name === 'output') return `${this.typeOf(e)}()`;
       if (name === 'inject') {
         const token = (e.arguments[0] as ts.Identifier).text;

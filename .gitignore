@@ -8,6 +8,7 @@ kit/Examples/Recipes/compare/
 */platforms/
 */hooks/
 */node_modules/
+*/node_modules
 kit-android/build/
 kit-android/.gradle/
 kit-android/.kotlin/

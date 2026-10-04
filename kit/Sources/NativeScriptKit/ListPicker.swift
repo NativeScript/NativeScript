@@ -24,7 +24,7 @@ open class ListPicker: View, UIPickerViewDataSource, UIPickerViewDelegate {
             coerceSelectedIndex()
             if selectedIndex >= 0 { picker?.selectRow(Int(selectedIndex), inComponent: 0, animated: false) }
         case "items":
-            items = value as? [Any]
+            items = toArray(value)
             picker?.reloadAllComponents()
             coerceSelectedIndex()
         case "color":
@@ -37,7 +37,7 @@ open class ListPicker: View, UIPickerViewDataSource, UIPickerViewDelegate {
     /// `selectedIndexProperty`'s coercion: -1 without items, otherwise within them.
     private func coerceSelectedIndex() {
         var next = ListPicker.parseInt(applied["selectedIndex"]) ?? -1
-        if let items = applied["items"] as? [Any] {
+        if let items = toArray(applied["items"]) {
             if next < 0 { next = 0 }
             if next > Double(items.count - 1) { next = Double(items.count - 1) }
         } else {
