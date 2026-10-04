@@ -94,6 +94,10 @@ open class TextView: TextBase, UITextViewDelegate {
     /// attributed string carrying the view's own font and alignment.
     override func setNativeText(reset: Bool) {
         guard let textView = native else { return }
+        if !reset, let formattedText {
+            UIView.performWithoutAnimation { setFormattedNativeText(formattedText) }
+            return
+        }
         UIView.performWithoutAnimation {
             if reset {
                 textView.attributedText = nil
@@ -139,6 +143,7 @@ open class TextView: TextBase, UITextViewDelegate {
     }
 
     private func refreshHintState(_ hint: String, _ text: String) {
+        if formattedText != nil { return }
         if !text.isEmpty {
             showText()
         } else if !isEditing && !hint.isEmpty {

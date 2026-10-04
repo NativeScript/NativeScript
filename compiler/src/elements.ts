@@ -4,6 +4,7 @@ export const ELEMENTS = new Set([
   'Label', 'Button', 'TextField', 'Switch', 'Slider', 'SegmentedBar', 'SegmentedBarItem', 'Image', 'ActivityIndicator',
   'ListView', 'TextView',
   'FlexboxLayout', 'WrapLayout', 'AbsoluteLayout', 'DockLayout', 'RootLayout',
+  'FormattedString', 'Span',
 ]);
 
 /** Two-way bindings (`v-model`, `[(ngModel)]`, `bind:value`): the property, its change event and the value's type. */

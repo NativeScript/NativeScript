@@ -215,8 +215,9 @@ open class View: NSObject {
         case "backgroundInternal", "clipPath", "cornerShape", "fontInternal", "fontScaleInternal", "iconFontFamily",
              "paddingInternal", "placeholderColor", "zIndex":
             return false
-        case "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "letterSpacing", "lineHeight",
-             "maxLines", "textAlignment", "textDecoration", "textOverflow", "textShadow", "textStroke", "whiteSpace":
+        case "fontFamily", "fontSize", "fontStyle", "fontWeight", "fontVariationSettings", "textDecoration":
+            return self is TextBase || self is Span || self is FormattedString
+        case "letterSpacing", "lineHeight", "maxLines", "textAlignment", "textOverflow", "textShadow", "textStroke", "whiteSpace":
             return self is TextBase
         case "paddingTop", "paddingRight", "paddingBottom", "paddingLeft":
             return self is TextBase || self is LayoutBase
