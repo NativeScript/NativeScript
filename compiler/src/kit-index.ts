@@ -19,6 +19,8 @@ export interface KitType {
   props: Set<string>;
   /** The class of the native view a kit view creates (Android: `createNativeView(): NativeView = VerticalScrollView(…)`), fully qualified. */
   native?: string;
+  /** Declared by the kit, not only extended by it (`extension UIView`). */
+  declared?: boolean;
 }
 
 /**
@@ -59,6 +61,7 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
         }
         // An extension can come before its class in file order: the class declaration names the base.
         if (type && base) type.base = base;
+        if (type && isPublic && decl[1] !== 'extension') type.declared = true;
         stack.push({ type: isPublic ? type : null, depth });
       } else {
         const owner = stack.at(-1);

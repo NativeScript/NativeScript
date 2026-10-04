@@ -59,6 +59,15 @@ export class CoreAPI {
     this.index = kitIndex(KIT);
   }
 
+  /** Whether NativeScriptKit declares a type of this name itself, not only extends one. */
+  declares(name: string): boolean {
+    return !!this.index.get(name)?.declared;
+  }
+
+  typeNames(): string[] {
+    return [...this.index.values()].filter((t) => t.declared && !t.name.includes('.')).map((t) => t.name);
+  }
+
   /** Whether NativeScriptKit declares a type of this name. */
   has(name: string): boolean {
     return this.index.has(name);

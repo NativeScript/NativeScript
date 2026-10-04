@@ -347,6 +347,9 @@ for (const f of readdirSync(join(out, 'Sources'))) {
   const text = readFileSync(p, 'utf8');
   if (text.includes(SDK_IMPORTS)) writeFileSync(p, text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')));
 }
+// A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.
+const clashes = translator.native.kitClashes(translator.kitTypes());
+if (clashes.length) writeFileSync(join(out, 'Sources', '__KitNames.swift'), `// Compiled by ns-native: the kit's types whose names the SDK also declares.\nimport NativeScriptKit\n\n${clashes.map((n) => `typealias ${n} = NativeScriptKit.${n}\n`).join('')}`);
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 

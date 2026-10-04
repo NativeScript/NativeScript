@@ -86,6 +86,7 @@ public func jsFromNative(_ value: Any?) -> Any? {
     if let b = jsNativeBoolean(v) { return b }
     if jsIsNativeNumber(v), let n = v as? NSNumber { return n.doubleValue }
     if let s = v as? NSString { return s as String }
+    if let d = v as? NSDate { return JSDate(d as Date) }
     #if canImport(UIKit)
     if let nsValue = v as? NSValue, !(v is NSNumber) {
         let type = String(cString: nsValue.objCType)
@@ -98,12 +99,20 @@ public func jsFromNative(_ value: Any?) -> Any? {
     return v
 }
 
+/// A script Date as Foundation's, the same instant: what the runtime passes for one.
+public func jsNativeDate(_ date: JSDate) -> Date { Date(timeIntervalSince1970: date.time / 1000) }
+
+extension JSDate {
+    public convenience init(_ date: Date) { self.init(date.timeIntervalSince1970 * 1000) }
+}
+
 public func jsToNative(_ value: Any?) -> Any? {
     switch jsFlat(value) {
     case nil, is JSNull: return nil
     case let d as Double: return NSNumber(value: d)
     case let b as Bool: return NSNumber(value: b)
     case let s as String: return s as NSString
+    case let d as JSDate: return jsNativeDate(d) as NSDate
     case let a as JSArrayProtocol: return a.jsAnyElements.map { jsToNative($0) ?? NSNull() }
     case let v?: return v
     }

@@ -114,6 +114,8 @@ export class Translator implements AsyncTranslator {
   private lowering: AsyncLowering;
   private core: CoreAPI;
   readonly native: NativeAPI;
+  isKitType(name: string): boolean { return this.core.declares(name); }
+  kitTypes(): string[] { return this.core.typeNames(); }
 
   readonly checker: ts.TypeChecker;
   private components: Map<string, ComponentInfo>;
