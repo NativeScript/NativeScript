@@ -1,37 +1,6 @@
 package org.nativescript.kit
 
 /**
- * A JavaScript iterator object (`array.keys()`, `map.entries()`, …): live and single-pass;
- * iterating it again continues where it stopped. `step` returns `END` when done.
- */
-class JSIterator<T>(private val step: () -> Any?) : Iterator<T>, Iterable<T> {
-    private var buffered: Any? = NONE
-    private var done = false
-
-    override fun hasNext(): Boolean {
-        if (done) return false
-        if (buffered === NONE) buffered = step()
-        if (buffered === END) { done = true; return false }
-        return true
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun next(): T {
-        if (!hasNext()) throw NoSuchElementException()
-        val v = buffered
-        buffered = NONE
-        return v as T
-    }
-
-    override fun iterator(): Iterator<T> = this
-
-    companion object {
-        private val NONE = Any()
-        val END = Any()
-    }
-}
-
-/**
  * A JavaScript array: reference semantics, JavaScript method names, `Double` indexes and lengths.
  * Reading past the end is undefined through `element`, which translated code uses for `a[i]`.
  */

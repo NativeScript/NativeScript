@@ -583,5 +583,23 @@ function conditionallyAwaits(n: ts.Node): boolean {
 
 /** Function declarations in a list, which JavaScript hoists to its top. */
 function hoistedFunctions(list: ts.Statement[]): [number, ts.FunctionDeclaration][] {
-  return list.flatMap((s, k) => (ts.isFunctionDeclaration(s) ? [[k, s] as [number, ts.FunctionDeclaration]] : [])).reverse();
+  return list.flatMap((s, k) => (ts.isFunctionDeclaration(s) && usedBefore(list, k) ? [[k, s] as [number, ts.FunctionDeclaration]] : [])).reverse();
+}
+
+/**
+ * Whether a function declaration's name is used by a statement before it, so
+ * it must be hoisted; one used only after it stays in place, after the
+ * variables it may capture (Kotlin declares nothing before its declaration).
+ */
+export function usedBefore(list: ts.Statement[], k: number): boolean {
+  const name = (list[k] as ts.FunctionDeclaration).name?.text;
+  if (!name) return false;
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    if (ts.isIdentifier(n) && n.text === name) { found = true; return; }
+    ts.forEachChild(n, visit);
+  };
+  for (const st of list.slice(0, k)) visit(st);
+  return found;
 }

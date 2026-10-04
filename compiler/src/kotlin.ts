@@ -1,7 +1,7 @@
 import ts from 'typescript';
-import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
+import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { isObjectToStringCall, isStringRaw, jsKeyOrder, literalKey, neverDefined, templateParts } from './lang.ts';
+import { isObjectToStringCall, isStringRaw, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
 
 /**
  * TypeScript to Kotlin, typed by the checker, with JavaScript's semantics
@@ -270,7 +270,14 @@ export class Translator implements AsyncTranslator {
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
       case 'TemplateStringsArray': return 'JSArray<String>';
       case 'PropertyDescriptor': case 'PropertyDescriptorMap': if (sym?.declarations?.[0] && /[\\/]typescript[\\/]lib[\\/]/.test(sym.declarations[0].getSourceFile().fileName)) return 'Any?'; break;
-      case 'IterableIterator': case 'MapIterator': case 'SetIterator': case 'ArrayIterator': case 'Iterator': case 'IteratorObject': return `JSIterator<${arg(0)}>`;
+
+      case 'Generator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSGenerator<${arg(0)}>`; break;
+      case 'IterableIterator': case 'MapIterator': case 'SetIterator': case 'ArrayIterator': case 'Iterator': case 'IteratorObject': case 'StringIterator': return `JSIterator<${arg(0)}>`;
+      case 'Iterable': if (isLibDeclaration(sym?.declarations?.[0])) return `JSIterable<${arg(0)}>`; break;
+      case 'AsyncGenerator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSAsyncGenerator<${arg(0)}>`; break;
+      case 'AsyncIterator': case 'AsyncIterableIterator': case 'AsyncIteratorObject': if (isLibDeclaration(sym?.declarations?.[0])) return `JSAsyncIterator<${arg(0)}>`; break;
+      case 'AsyncIterable': if (isLibDeclaration(sym?.declarations?.[0])) return `JSAsyncIterable<${arg(0)}>`; break;
+      case 'IteratorResult': case 'IteratorYieldResult': case 'IteratorReturnResult': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
       case 'WeakMap': return `JSWeakMap<${arg(0)}, ${arg(1)}>`;
       case 'WeakSet': return `JSWeakSet<${arg(0)}>`;
       case 'WeakRef': return `JSWeakRef<${arg(0).replace(/\?$/, '')}>`;
@@ -369,6 +376,8 @@ export class Translator implements AsyncTranslator {
       const fields = props.map((p): ShapeField => {
         let pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (pt === 'Unit') pt = 'Any?';
+        const symbolic = wellKnownMember(p.name);
+        if (symbolic) return { name: symbolic, type: pt, symbol: true };
         // Accessors of the literal itself; a spread copies an accessor's value into a plain property.
         const getter = p.declarations?.find((d) => ts.isGetAccessorDeclaration(d) && d.parent === literal);
         const setter = p.declarations?.find((d) => ts.isSetAccessorDeclaration(d) && d.parent === literal);
@@ -448,7 +457,7 @@ export class Translator implements AsyncTranslator {
           if (!ts.isIdentifier(d.name)) {
             for (const n of boundNames(d.name)) out.push(moduleProperty(this.deferredDeclaration(ident(n.text), this.typeOf(n))));
             const tmp = this.fresh('__d');
-            later(() => `    val ${tmp}: ${this.typeOf(d.initializer!)} = ${this.expr(d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
+            later(() => `    val ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
             continue;
           }
           const name = ident(d.name.text);
@@ -550,16 +559,23 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A plain JavaScript object of a known shape: a class with named fields, readable as a dynamic object. */
-  private objectClass(name: string, fields: ShapeField[], className: string | null, implementing?: string, overrides?: Set<string>): string {
-    if (fields.some((f) => f.accessor)) return this.accessorClass(name, fields);
-    const params = fields.map((f) => `${overrides?.has(f.name) ? 'override ' : ''}var ${ident(f.name)}: ${f.type}${f.type.endsWith('?') ? ' = null' : ''}`);
-    const lines = [`class ${name}(${[...params, 'private val jsOrder: List<String>? = null'].join(', ')}) : ${implementing ?? 'JSDynamic'} {`];
+  private objectClass(name: string, allFields: ShapeField[], className: string | null, implementing?: string, overrides?: Set<string>): string {
+    if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
+    const fields = allFields.filter((f) => !f.symbol);
+    const protocols = this.shapeProtocols(allFields);
+    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => `${overrides?.has(f.name) ? 'override ' : ''}var ${ident(f.name)}: ${f.type}${f.type.endsWith('?') && !isFunctionType(f.type) ? ' = null' : ''}`);
+    const lines = [`class ${name}(${[...params, 'private val jsOrder: List<String>? = null'].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
+    for (const x of protocols) lines.push(...x.lines);
+    if (allFields.some((f) => f.symbol)) {
+      lines.push(...this.dynamicMembers(fields, className, false), '}');
+      return lines.join('\n');
+    }
     // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
     lines.push('    private var jsExtra: JSDynamic? = null');
     lines.push('    companion object {');
     lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${this.fromAny(`jsField(o, ${kotlinString(f.name)})`, f.type)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic }`);
     lines.push('    }');
-    const optional = fields.filter((f) => f.type.endsWith('?'));
+    const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
     lines.push(`    override val jsKeys: List<String>`);
     lines.push(`        get() = (jsOrder ?: listOf(${fields.map((f) => kotlinString(f.name)).join(', ')})).filter { key -> ${optional.length ? `when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> ${ident(f.name)} != null`).join('; ')}; else -> true }` : 'true'} }`);
     lines.push(...this.dynamicMembers(fields, className, false, 'jsExtra?.jsGet(key)', 'jsExtra?.jsSet(key, value)').slice(1));
@@ -594,6 +610,22 @@ export class Translator implements AsyncTranslator {
     for (const f of fields) if (f.accessor) lines.push(`        ${kotlinString(f.name)} -> ${kotlinString(f.accessor.get && f.accessor.set ? 'Getter/Setter' : f.accessor.get ? 'Getter' : 'Setter')}`);
     lines.push('        else -> null', '    }', '}');
     return lines.join('\n');
+  }
+
+  /** What an object literal's class implements by its members: an iterator (`next`), an iterable (`[Symbol.iterator]`). */
+  private shapeProtocols(fields: ShapeField[]): { conformance: string; lines: string[] }[] {
+    const out: { conformance: string; lines: string[] }[] = [];
+    const fn = (n: string) => {
+      const f = fields.find((x) => x.name === n && !x.accessor);
+      const parts = f && /^\((.*)\) -> (.+)$/.exec(f.type);
+      return f && parts ? { name: n, params: parts[1].trim() ? splitTopLevel(parts[1]).length : 0, ret: parts[2] } : undefined;
+    };
+    const methods = ['next', 'return', 'throw'].map(fn).filter((m): m is NonNullable<typeof m> => !!m);
+    const protocol = this.iteratorProtocol(methods);
+    if (protocol) out.push(protocol);
+    if (fields.some((f) => f.name === 'jsSymbolIterator')) out.push({ conformance: 'JSIterableValue', lines: ['    override fun jsAnyIterator(): JSIteratorProtocol = jsSymbolIterator() as JSIteratorProtocol'] });
+    if (fields.some((f) => f.name === 'jsSymbolAsyncIterator')) out.push({ conformance: 'JSAsyncIterableValue', lines: ['    override fun jsAnyAsyncIterator(): JSAsyncIteratorProtocol = jsSymbolAsyncIterator() as JSAsyncIteratorProtocol'] });
+    return out;
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
@@ -709,7 +741,8 @@ export class Translator implements AsyncTranslator {
       this.indent = base + '    ';
       try {
         let lines: string[];
-        if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>$/, '$1'));
+        if (fn.asteriskToken) lines = this.lowering.generatorBody(fn, ret.replace(/^JS\w+<(.*)>$/, '$1'), isAsync(fn));
+        else if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>$/, '$1'));
         else if (fn.body && ts.isBlock(fn.body)) {
           lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
           const last = fn.body.statements.at(-1);
@@ -832,6 +865,7 @@ export class Translator implements AsyncTranslator {
     const c = this.checker;
     const addInterface = (h: ts.ExpressionWithTypeArguments) => {
       const t = c.getTypeAtLocation(h);
+      if (isLibDeclaration(t.getSymbol()?.declarations?.[0])) return;
       for (const p of t.getProperties()) out.add(p.name);
     };
     for (let b: ts.ClassLikeDeclaration | undefined = cls; b; ) {
@@ -867,7 +901,8 @@ export class Translator implements AsyncTranslator {
     const isError = !!base && !appBase;
     const abstract = hasModifier(cls, ts.SyntaxKind.AbstractKeyword);
     const open = this.extended.has(name) || abstract;
-    const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).map((i) => i.expression.getText());
+    // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are interfaces of the kit's, implemented below.
+    const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0])).map((i) => i.expression.getText());
     for (const i of implemented) this.used.add(i);
     const ownToString = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls);
     const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : [])];
@@ -973,6 +1008,13 @@ export class Translator implements AsyncTranslator {
         supertypes.push('JSToPrimitive');
         continue;
       }
+      if (keyed?.member === 'jsSymbolIterator' || keyed?.member === 'jsSymbolAsyncIterator') {
+        lines.push('    ' + this.func(m, keyed.member));
+        const async = keyed.member === 'jsSymbolAsyncIterator';
+        supertypes.push(async ? 'JSAsyncIterableValue' : 'JSIterableValue');
+        lines.push(async ? '    override fun jsAnyAsyncIterator(): JSAsyncIteratorProtocol = jsSymbolAsyncIterator()' : '    override fun jsAnyIterator(): JSIteratorProtocol = jsSymbolIterator()');
+        continue;
+      }
       if (keyed?.key) { lines.push('    ' + this.func(m, keyed.member)); continue; }
       if (keyed) throw this.error(m.name, 'a method named by this symbol');
       const n = m.name.getText();
@@ -980,6 +1022,10 @@ export class Translator implements AsyncTranslator {
       if (n === 'toString' && !m.parameters.length) { lines.push('    ' + this.func(m, 'toString', 'override ')); continue; }
       lines.push('    ' + this.func(m, ident(n), mods(n)));
     }
+    const protocol = this.iteratorProtocol(cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !!m.body && !isStatic(m) && ['next', 'return', 'throw'].includes(m.name.getText())).map((m) => ({
+      name: m.name.getText(), params: m.parameters.length, ret: this.returnTypeOf(m),
+    })));
+    if (protocol && !appBase) { supertypes.push(protocol.conformance); lines.push(...protocol.lines); }
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase, 'null', '', symbolFields));
     if (symbolFields.length) supertypes.push('JSSymbolKeyed');
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
@@ -987,6 +1033,36 @@ export class Translator implements AsyncTranslator {
     const head = `${abstract ? 'abstract ' : open ? 'open ' : ''}class ${ident(name)}${this.generics(cls)}`;
     const supers = [...(base ? [base] : []), ...supertypes];
     return [`${head}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...lines, '}'].join('\n');
+  }
+
+  /**
+   * A class or object with `next` (and `return`, `throw`) is an iterator
+   * script wrote: the kit steps it through these, async when `next` returns a promise.
+   */
+  private iteratorProtocol(methods: { name: string; params: number; ret: string }[]): { conformance: string; lines: string[] } | null {
+    const next = methods.find((m) => m.name === 'next');
+    if (!next || next.params > 1) return null;
+    const call = (m: { name: string; params: number }, arg: string) => `this.${ident(m.name)}(${m.params ? arg : ''})`;
+    const ret = methods.find((m) => m.name === 'return'), thr = methods.find((m) => m.name === 'throw');
+    if (next.ret.startsWith('JSPromise<')) {
+      const promise = (m: { name: string; params: number; ret: string }, arg: string) => {
+        const inner = m.ret.replace(/^JSPromise<(.*)>$/, '$1');
+        const c = call(m, arg);
+        return inner === 'Any?' ? c : `${c}.then<Any?> { it }`;
+      };
+      return { conformance: 'JSAsyncIteratorProtocol', lines: [
+        `    override fun jsNextPromise(value: Any?): JSPromise<Any?> = ${promise(next, 'value')}`,
+        `    override fun jsReturnPromise(value: Any?): JSPromise<Any?>? = ${ret ? promise(ret, 'value') : 'null'}`,
+        `    override fun jsThrowPromise(error: Any?): JSPromise<Any?>? = ${thr ? promise(thr, 'error') : 'null'}`,
+      ] };
+    }
+    return { conformance: 'JSIteratorProtocol', lines: [
+      `    override fun jsNext(value: Any?): JSStep = jsStepOf(${call(next, 'value')})`,
+      `    override fun jsReturn(value: Any?): JSStep = ${ret ? `jsStepOf(${call(ret, 'value')})` : 'JSStep(value, true)'}`,
+      `    override fun jsThrow(error: Any?): JSStep = ${thr ? `jsStepOf(${call(thr, 'error')})` : 'throw JSException(error)'}`,
+      `    override val jsHasReturn: Boolean get() = ${!!ret}`,
+      `    override val jsHasThrow: Boolean get() = ${!!thr}`,
+    ] };
   }
 
   /**
@@ -1027,8 +1103,8 @@ export class Translator implements AsyncTranslator {
   // ---- Statements --------------------------------------------------------------------------------
 
   statements(list: ts.Statement[]): string[] {
-    const fns = list.filter(ts.isFunctionDeclaration);
-    return [...fns, ...list.filter((s) => !ts.isFunctionDeclaration(s))].map((s) => this.stmt(s)).filter(Boolean);
+    const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
+    return [...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean);
   }
 
   block(b: ts.Statement, base = this.indent): string {
@@ -1048,6 +1124,7 @@ export class Translator implements AsyncTranslator {
       if (a) {
         const e = s.expression;
         if (!e) return `${i}${a.ret(null, false)}\n${i}return`;
+        if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
         const isPromise = this.isPromiseType(this.typeOf(e));
         return `${i}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
       }
@@ -1071,6 +1148,17 @@ export class Translator implements AsyncTranslator {
       if (!ts.isVariableDeclarationList(list)) throw this.error(s, 'for…of over an existing variable');
       const decl = list.declarations[0];
       const mutable = !(list.flags & ts.NodeFlags.Const);
+      const js = this.jsIteration(s.expression);
+      if (js) {
+        // The iterator protocol: a loop that leaves early closes the iterator.
+        const it = this.fresh('__it');
+        return this.loopBody(() => {
+          const label = this.takeLabel();
+          const body = this.nested(() => this.nested(() => this.block(s.statement)));
+          const bind = this.nested(() => this.nested(() => this.nested(() => this.bindTo(decl.name, `${it}.jsCurrent`, '', mutable))));
+          return `${i}run {\n${i}    val ${it} = ${js}\n${i}    try {\n${i}        ${label}while (${it}.jsAdvance()) {\n${bind}\n${i}            run ${body}\n${i}        }\n${i}    } finally { ${it}.jsClose() }\n${i}}`;
+        });
+      }
       const seq = this.iterable(s.expression);
       return this.loopBody(() => {
         const label = this.takeLabel();
@@ -1169,7 +1257,7 @@ export class Translator implements AsyncTranslator {
       return `${i}${constant && !lowered ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`;
     }
     const tmp = this.fresh('__d');
-    return `${i}val ${tmp}: ${this.typeOf(d.initializer!)} = ${this.expr(d.initializer!)}\n${this.bindTo(d.name, tmp, '', !constant)}`;
+    return `${i}val ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', !constant)}`;
   }
 
   /** Declarations binding `name` (an identifier or a destructuring pattern) to the Kotlin value `value`. */
@@ -1215,6 +1303,8 @@ export class Translator implements AsyncTranslator {
 
   /** What `for…of` iterates: arrays, sets and iterators as they are, a map's entries, a string's code points. */
   iterable(e: ts.Expression): string {
+    const js = this.jsIteration(e);
+    if (js) return `${js}.jsCollect()`;
     const t = this.typeOf(e).replace(/\?$/, '');
     if (t === 'String') return `jsCodePoints(${this.expr(e)})`;
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
@@ -1225,7 +1315,56 @@ export class Translator implements AsyncTranslator {
 
   elementTypeOf(e: ts.Expression): string {
     const t = this.typeOf(e);
-    return t.replace(/^JS(Array|Set|Iterator)<(.*)>$/, '$2');
+    if (/^JS(Array|Set|Iterator|Generator|Iterable|AsyncIterator|AsyncGenerator|AsyncIterable)<.*>\??$/.test(t)) return t.replace(/^JS\w+<(.*)>\??$/, '$1');
+    const async = ts.isForOfStatement(e.parent) && !!e.parent.awaitModifier;
+    const el = iteratedType(this.checker.getTypeAtLocation(e), this.checker, e, async);
+    return el ? this.type(el, e) : 'Any?';
+  }
+
+  resumedValue(code: string, type: string): string {
+    return ['String', 'Double', 'Boolean'].includes(type) ? this.undefinedAs(`(${code} as? ${type})`, type) : this.fromAnyCode(code, type, true);
+  }
+
+  /** A script iterator `for…of`, spread and destructuring step through `next()`; null when the value iterates natively. */
+  jsIteration(e: ts.Expression): string | null {
+    if (!iterationThrows(this.checker.getTypeAtLocation(e), this.checker)) return null;
+    return this.iteratorCode(e);
+  }
+
+  /** `e[Symbol.iterator]()`: an iterator over any iterable. */
+  private iteratorCode(e: ts.Expression): string {
+    const t = this.typeOf(e).replace(/\?$/, '');
+    const code = this.expr(e);
+    if (/^JS(Iterator|Generator)</.test(t)) return code;
+    if (t.startsWith('JSIterable<')) return `${code}.jsIterator()`;
+    if (t === 'Any?' || t === 'Any') return `jsIteratorOf(${code})`;
+    if (/^JS(Array|Set|Map)</.test(t) || t === 'String') return `jsIterator(${code})`;
+    return `JSIteratorAdapter<${this.elementTypeOf(e)}>(${code}.jsSymbolIterator())`;
+  }
+
+  /** GetIterator(e, async), for `for await`: an async iterable's own iterator, or a sync one's adapted. */
+  asyncIteration(e: ts.Expression): string {
+    const t = this.typeOf(e).replace(/\?$/, '');
+    const code = this.expr(e);
+    if (/^JS(AsyncIterator|AsyncGenerator)</.test(t)) return code;
+    if (t.startsWith('JSAsyncIterable<')) return `${code}.jsAsyncIterator()`;
+    if (t === 'Any?' || t === 'Any') return `jsAsyncIteratorOf(${code})`;
+    const el = this.elementTypeOf(e);
+    if (this.checker.getTypeAtLocation(e).getProperties().some((p) => p.escapedName.toString().startsWith('__@asyncIterator@'))) return `JSAsyncIteratorAdapter<${el}>(${code}.jsSymbolAsyncIterator())`;
+    return `JSAsyncFromSyncIterator<${el}>(${this.iteratorCode(e)})`;
+  }
+
+  /** The iterator `yield*` delegates to. */
+  delegateIteration(e: ts.Expression, isAsync: boolean): string {
+    return isAsync ? this.asyncIteration(e) : this.iteratorCode(e);
+  }
+
+  /** The type and value a destructuring pattern reads from: an iterator yields only as many values as an array pattern names. */
+  private destructured(name: ts.BindingName, init: ts.Expression): string {
+    const js = ts.isArrayBindingPattern(name) ? this.jsIteration(init) : null;
+    if (!js) return `: ${this.typeOf(init)} = ${this.expr(init)}`;
+    const rest = (name as ts.ArrayBindingPattern).elements.some((el) => ts.isBindingElement(el) && el.dotDotDotToken);
+    return ` = JSArray(ArrayList(${js}.${rest ? 'jsCollect()' : `jsTake(${(name as ts.ArrayBindingPattern).elements.length})`}))`;
   }
 
   private forStatement(s: ts.ForStatement): string {
@@ -1343,6 +1482,9 @@ export class Translator implements AsyncTranslator {
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
     const source = this.typeOf(e);
+    // An iterable where the type names only its iteration: the kit's iterable of it.
+    const iterableSlot = /^JS(Async)?Iterable<.*>\??$/.exec(target);
+    if (iterableSlot && !/^JS(Async)?(Iterable|Iterator|Generator)</.test(source)) return `${iterableSlot[1] ? 'jsAsyncIterable' : 'jsIterable'}(${this.expr(e)})`;
     if (target.endsWith('?') && target !== 'Any?' && !source.endsWith('?')) {
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
@@ -1811,8 +1953,19 @@ export class Translator implements AsyncTranslator {
       if (t.startsWith('JSPromise<')) return this.promiseMethod(method, target, e);
       if (t.startsWith('JSMap<') || t.startsWith('JSSet<')) return this.collectionMethod(method, target, e, q);
       if (t === 'JSDate' && method === 'toISOString') return `${this.expr(target)}${q}.toISOString()`;
+      if (/^JS(Iterator|Generator)</.test(t) && ['next', 'return', 'throw'].includes(method)) {
+        return `${this.expr(target)}${q}.js${method[0].toUpperCase()}${method.slice(1)}Result(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : method === 'throw' ? 'null' : ''})`;
+      }
+      if (/^JS(AsyncIterator|AsyncGenerator)</.test(t) && ['next', 'return', 'throw'].includes(method)) {
+        return `${this.expr(target)}${q}.${ident(method)}(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : method === 'throw' ? 'null' : ''})`;
+      }
       return `${this.expr(target)}${q === '!!' ? '!!' : q ? '?' : ''}.${ident(method)}(${this.args(e, this.arity(e)).join(', ')})`;
     }
+    if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
+    let fn: ts.Expression = callee;
+    while (ts.isParenthesizedExpression(fn)) fn = fn.expression;
+    // `(function () { … })()`: the function, called.
+    if (ts.isFunctionExpression(fn) || ts.isArrowFunction(fn)) return `(${this.closure(fn)})(${this.args(e).join(', ')})`;
     if (ts.isParenthesizedExpression(callee)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
@@ -2538,6 +2691,7 @@ export class Translator implements AsyncTranslator {
       return entries.length ? `${name}(listOf(${entries.join(', ')}))` : `${name}()`;
     }
     if (name === 'Any?' || name === 'Any' || name === 'JSObject') return this.dynamicObject(e);
+    if (/^JS(Iterator|AsyncIterator)</.test(name)) return this.scriptIterator(e, name);
     const decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     const shape = [...this.shapes.values()].find((s) => s.name === name);
     let order: { name: string; type: string; label?: string }[];
@@ -2585,7 +2739,7 @@ export class Translator implements AsyncTranslator {
         const fields = new Set(this.checker.getTypeAtLocation(p.expression).getProperties().map((x) => x.name));
         for (const f of order) if (fields.has(f.name)) given.set(f.name, `${src}.${ident(f.name)}`);
       } else if (ts.isMethodDeclaration(p)) {
-        given.set(p.name.getText(), this.closure(p));
+        given.set(this.symbolMemberName(p.name) ?? p.name.getText(), this.closure(p));
       } else throw this.error(p, 'object member');
     }
     this.used.add(name);
@@ -2642,6 +2796,33 @@ export class Translator implements AsyncTranslator {
     return `run { val ${o} = JSObject(); ${steps.join('; ')}; ${o} }`;
   }
 
+  /** `{ [Symbol.iterator]() {…} }`: a well-known symbol's member name. */
+  private symbolMemberName(name: ts.PropertyName): string | null {
+    if (!ts.isComputedPropertyName(name)) return null;
+    const e = name.expression;
+    return ts.isPropertyAccessExpression(e) && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol' && this.isLibGlobal(e.expression) ? WELL_KNOWN_MEMBERS[e.name.text] ?? null : null;
+  }
+
+  /** An object literal typed as an iterator (`{ next() {…}, return() {…} }`): its members are what the kit steps. */
+  private scriptIterator(e: ts.ObjectLiteralExpression, type: string): string {
+    const async = type.startsWith('JSAsyncIterator<');
+    const element = type.replace(/^JS\w+<(.*)>$/, '$1');
+    const slot = async ? '(Any?) -> JSPromise<Any?>' : '(Any?) -> Any?';
+    const member = (key: string) => {
+      const p = e.properties.find((x) => x.name && (literalKey(x.name, this.checker) ?? x.name.getText()) === key);
+      if (!p) return null;
+      if (ts.isMethodDeclaration(p)) return this.closure(p, slot);
+      if (ts.isPropertyAssignment(p) && (ts.isArrowFunction(p.initializer) || ts.isFunctionExpression(p.initializer))) return this.closure(p.initializer, slot);
+      throw this.error(p, 'this member of an iterator object');
+    };
+    for (const p of e.properties) {
+      const key = p.name && (literalKey(p.name, this.checker) ?? p.name.getText());
+      if (!key || !['next', 'return', 'throw'].includes(key)) throw this.error(p, 'this member of an iterator object');
+    }
+    const args = ['next', 'return', 'throw'].flatMap((k) => { const m = member(k); return m ? [`${k === 'next' ? 'nextResult' : k === 'return' ? 'returnResult' : 'throwResult'} = ${m}`] : []; });
+    return `${async ? 'JSScriptAsyncIterator' : 'JSScriptIterator'}<${element}>(${args.join(', ')})`;
+  }
+
   /** A method of an untyped object literal: a function value, or one taking `this` when its body reads it. */
   private untypedMethod(p: ts.MethodDeclaration): string {
     if (!thisNodes(p).length) return this.closure(p);
@@ -2684,10 +2865,31 @@ const KOTLIN_SYNTAX: AsyncSyntax = {
   asyncReturn: (cap, value, isPromise, result) => (value === null ? `${cap}.returnValue(${result === 'Unit' ? 'Unit' : 'null'})` : `${cap}.${isPromise ? 'returnPromise' : 'returnValue'}(${value})`),
   asyncError: (cap) => `${cap}.onError`,
   loopRun: (iteration) => `JSAsyncLoop().run(${iteration})`,
+  undefinedValue: 'null',
+  generatorBody: (cap, element, isAsync) => [`return ${isAsync ? 'JSAsyncGenerator' : 'JSGenerator'}<${element}>(fun(${cap}: ${isAsync ? 'JSAsyncGeneratorContext' : 'JSGeneratorContext'}) {`, '})'],
+  generatorReturn: (cap, value) => `${cap}.returnValue(${value ?? ''})`,
+  yieldCall: (cap, operand, delegate, continuation, onError, onReturn) => `${cap}.${delegate ? 'delegate' : 'yield'}(${operand}, ${continuation}, ${onError}, ${onReturn})`,
+  nextStep: (item, iterator, type, otherwise, i) => [`${i}if (!${iterator}.jsAdvance()) { ${otherwise} }`, `${i}val ${item}: ${type} = ${iterator}.jsCurrent`],
+  closeIterator: (iterator) => `${iterator}.jsClose()`,
+  awaitNext: (iterator, continuation, onError) => `jsAwait(${iterator}.jsNextPromise(null), ${continuation}, ${onError})`,
+  asyncStep: (step, result, otherwise, i) => [`${i}val ${step} = jsStepOf(${result})`, `${i}if (${step}.done) { ${otherwise} }`],
+  closeAsyncIterator: (iterator, next, onError) => `jsAsyncClose(${iterator}, ${next}, ${onError})`,
+  closeAsyncIteratorThrowing: (iterator, error, onError) => `jsAsyncCloseThrowing(${iterator}, ${error}, ${onError})`,
+  tryStatement: (statement) => statement,
 };
 
 /** A field of an object literal's class; an accessor runs functions the literal gives. */
-interface ShapeField { name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string } }
+interface ShapeField { name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string }; symbol?: boolean }
+
+/** `Symbol.iterator`, as the library declares `Symbol`. */
+function isSymbolIterator(e: ts.Expression, checker: ts.TypeChecker): boolean {
+  return ts.isPropertyAccessExpression(e) && e.name.text === 'iterator' && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol'
+    && !!checker.getSymbolAtLocation(e.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
+}
+
+function isLibDeclaration(d: ts.Node | undefined): boolean {
+  return !!d && /[\\/]typescript[\\/]lib[\\/]/.test(d.getSourceFile().fileName);
+}
 
 /** The `this` nodes of a function, and of the arrow functions inside it. */
 function thisNodes(fn: ts.Node): ts.Node[] {
@@ -2710,8 +2912,7 @@ const LIB_CONSTANTS: Record<string, string> = {
   'Symbol.toStringTag': 'JSSymbol.toStringTag', 'Symbol.hasInstance': 'JSSymbol.hasInstance',
 };
 
-/** Members named by a well-known symbol: the kit's interface members. */
-const WELL_KNOWN_MEMBERS: Record<string, string> = { iterator: 'jsSymbolIterator', asyncIterator: 'jsSymbolAsyncIterator', toPrimitive: 'jsToPrimitive', toStringTag: 'jsToStringTag' };
+
 
 function boundNames(name: ts.BindingName): ts.Identifier[] {
   if (ts.isIdentifier(name)) return [name];
