@@ -15,6 +15,8 @@ export interface Properties {
   onClass(decl: ts.ClassLikeDeclaration): Set<string>;
   /** Whether `name` is registered on this class or a class it extends. */
   isRegistered(decl: ts.ClassLikeDeclaration, name: string): boolean;
+  /** Whether `name` is registered on any class (a subclass's prototype may hold its accessor). */
+  isRegisteredAnywhere(name: string): boolean;
 }
 
 export function collectProperties(checker: ts.TypeChecker, files: readonly ts.SourceFile[]): Properties {
@@ -65,5 +67,6 @@ export function collectProperties(checker: ts.TypeChecker, files: readonly ts.So
       for (let c: ts.ClassLikeDeclaration | undefined = decl; c; c = base(c)) if (byClass.get(c)?.has(name)) return true;
       return false;
     },
+    isRegisteredAnywhere: (name) => [...byClass.values()].some((set) => set.has(name)),
   };
 }

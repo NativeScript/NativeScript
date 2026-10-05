@@ -133,3 +133,69 @@ try {
 } catch (e) {
   console.log('strict threw', e.message);
 }
+
+class Item0 {
+  name = 'item';
+}
+class Button0 extends Item0 {
+  name = 'button';
+}
+function hold(ref: WeakRef<Item0>): string {
+  return ref.deref().name;
+}
+const button0 = new Button0();
+console.log(hold(new WeakRef(button0)));
+const show = (x: Item0 | null) => console.log(x ? x.name : 'none');
+show(null);
+show(button0);
+
+interface Indexed {
+  _row?: number;
+}
+class Cell0 {
+  label = 'cell';
+}
+type IndexedCell = Cell0 & Indexed;
+function place(cell: IndexedCell, row: number): string {
+  const before = cell._row;
+  cell._row = row;
+  return `${cell.label} ${before} ${cell._row ?? 0}`;
+}
+console.log(place(new Cell0(), 3));
+
+interface Options1 {
+  changed?: (target: Cell0, oldValue: any, newValue: any) => void;
+  select?: (item: any, index: number) => string;
+}
+const bag: any = { key: 'chosen' };
+function useOptions(o: Options1): string {
+  o.changed(new Cell0(), 1, 2);
+  return o.select(bag, 0);
+}
+console.log(useOptions({ changed: (t) => console.log('changed', t.label), select: (item) => item['key'] }));
+
+function finish(done: (ok: boolean) => void, ok: boolean) {
+  done?.(ok);
+}
+finish((ok) => console.log('finished', ok), true);
+class Base7 {
+  get(): any {
+    return 'base';
+  }
+}
+class Sub7 extends Base7 {
+  get(): string {
+    return 'sub';
+  }
+}
+const sub7 = new Sub7();
+const bound7: any = sub7.get.bind(sub7);
+console.log(bound7());
+
+type Toggle = (on: boolean, handler: (data: any) => void) => void;
+let toggleCallback: Toggle;
+function setToggle(cb: (on: boolean, handler: (data: string) => void) => void) {
+  toggleCallback = cb;
+}
+setToggle((on, handler) => handler(on ? 'on' : 'off'));
+toggleCallback(true, (d) => console.log('toggled', d));

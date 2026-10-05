@@ -66,3 +66,28 @@ const modeAtLoad = Mode.On + Math.floor(Math.PI);
 settings.size = 5;
 counter = 20;
 console.log(sizeAtLoad, counterAtLoad, doubled.join(','), Defaults.size, Defaults.half, modeAtLoad);
+function describe(value: number): string {
+  let out = 'start';
+  if (value < 0) {
+    out = 'negative';
+  } else if (typeof value === 'number') {
+    out = 'number';
+  }
+  if (value > 100) {
+    out += ' big';
+  } else if (typeof value === 'string') {
+    out += ' text';
+  }
+  return out;
+}
+console.log(describe(-1), describe(5), describe(500));
+class Shape6 {
+  kind = 'shape';
+}
+class Circle6 extends Shape6 {
+  radius = 2;
+}
+const shapes6: Shape6[] = [new Shape6(), new Circle6()];
+const circles6 = shapes6.filter((s): s is Circle6 => s instanceof Circle6);
+const firstCircle6 = shapes6.find((s): s is Circle6 => s instanceof Circle6);
+console.log(circles6.length, circles6[0].radius, firstCircle6?.radius);

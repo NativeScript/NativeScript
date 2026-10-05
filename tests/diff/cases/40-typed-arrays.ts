@@ -31,3 +31,17 @@ const total = (bytes: Uint8Array) => {
   return sum;
 };
 console.log(total(view), total(fresh));
+const tag = {}.toString;
+const bufferTag = tag.call(ArrayBuffer.prototype);
+function isBuffer(x: any): boolean {
+  return tag.call(x) === bufferTag;
+}
+console.log(bufferTag, isBuffer(buffer), isBuffer(view), isBuffer({}));
+function decodeAscii(input: ArrayBuffer | ArrayBufferView): string {
+  const source = ArrayBuffer.isView(input) ? input.buffer : input;
+  const bytes = new Uint8Array(source);
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i] + 64);
+  return out;
+}
+console.log(decodeAscii(view), decodeAscii(fresh.buffer));

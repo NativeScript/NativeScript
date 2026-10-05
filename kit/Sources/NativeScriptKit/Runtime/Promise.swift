@@ -464,6 +464,11 @@ extension JSPromise where T == Any? {
         jsPromiseAllCore(values.elements.map(jsPromiseResolveAny)) { JSArray($0) }
     }
 
+    /// `Promise.all(values)` over a dynamic array, its values read as the type the code gives them (`Promise<void[]>`).
+    public static func all<R>(_ values: JSArray<Any?>, as read: @escaping ([Any?]) -> R) -> JSPromise<R> {
+        jsPromiseAllCore(values.elements.map(jsPromiseResolveAny), read)
+    }
+
     /// `Promise.allSettled(values)` over a dynamic array of promises and plain values.
     public static func allSettled(_ values: JSArray<Any?>) -> JSPromise<JSArray<JSObject>> {
         jsPromiseAllSettledCore(values.elements.map(jsPromiseResolveAny))
