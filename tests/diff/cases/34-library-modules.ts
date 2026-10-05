@@ -199,3 +199,16 @@ function setToggle(cb: (on: boolean, handler: (data: string) => void) => void) {
 }
 setToggle((on, handler) => handler(on ? 'on' : 'off'));
 toggleCallback(true, (d) => console.log('toggled', d));
+
+class ToggleData {
+  constructor(public name: string) {}
+}
+function toggleNamed(on: boolean, handler: (data: ToggleData) => void) {
+  handler(new ToggleData(on ? 'named on' : 'named off'));
+}
+let anyToggle: (on: boolean, handler: (data: any) => void) => void;
+function setAnyToggle(cb: (on: boolean, handler: (data: any) => void) => void) {
+  anyToggle = cb;
+}
+setAnyToggle(toggleNamed);
+anyToggle(false, (d) => console.log('toggled', d.name));

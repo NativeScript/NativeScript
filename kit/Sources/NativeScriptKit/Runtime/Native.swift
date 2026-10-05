@@ -77,6 +77,14 @@ public func jsSetNativeExpando(_ object: NSObject?, _ key: String, _ value: Any?
     jsExpandos(object, create: true)?[key] = value
 }
 
+/// `object.key = value` of a protocol's optional property, which Swift can't assign through the
+/// protocol: the object's setter where it implements one, else nothing.
+public func jsSetOptionalNativeProperty(_ object: Any?, _ key: String, _ value: Any?) {
+    guard let object = jsFlat(object) as? NSObject, let first = key.first else { return }
+    guard object.responds(to: NSSelectorFromString("set\(first.uppercased())\(key.dropFirst()):")) else { return }
+    object.setValue(value, forKey: key)
+}
+
 /// The iOS runtime's `__collect()`: nothing to collect where reference counting frees objects.
 public func __collect() {}
 

@@ -116,6 +116,8 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         let function = f as! JSFunction
         return { (rest: [Any?]) throws -> Any? in try function(bound + rest) } as JSFunction
     }
+    // `cls.new()` of a native class object: an instance of its plain initializer, as `[cls new]`.
+    if key == "new", arguments.isEmpty, let cls = jsFlat(object) as? NSObject.Type { return cls.init() }
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
     if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }

@@ -509,6 +509,9 @@ export class Translator implements AsyncTranslator {
     }
     // `UIView & { nsView?: … }`, `ScrollView & { … }`: the class; the members the literal adds are read by name.
     if (t.isIntersection()) {
+      // `UIApplicationDelegate & { prototype: UIApplicationDelegate }`: a native class object, as the iOS typings write one.
+      const prototype = (u: ts.Type) => { const p = !this.native.type(u) && u.getProperty('prototype'); return !!p && !!this.native.type(c.getTypeOfSymbol(p)); };
+      if (t.types.some(prototype) && t.types.some((u) => this.native.type(u))) return 'AnyClass';
       // Two classes (`value: UIColor` narrowed by `instanceof Color`): the one the test found, which comes last.
       const cls = [...t.types].reverse().find((u) => this.native.type(u) || (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class);
       if (cls) return this.type(cls, where);
@@ -1608,11 +1611,11 @@ export class Translator implements AsyncTranslator {
     const f = functionParts(from.replace(/^\((.*)\)\?$/, '$1'));
     const g = functionParts(to.replace(/^\((.*)\)\?$/, '$1'));
     if (f && g && f.params.length <= g.params.length) {
-      const params = g.params.map((p, k) => { const q = p.replace(/^@escaping /, ''); return `__q${k}: ${isFunctionType(q) ? `@escaping ${q}` : q}`; });
+      const params = g.params.map((p, k) => `__q${k}: ${escapingParam(p)}`);
       const args = f.params.map((p, k) => this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, '')));
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, f.result, g.result)}`;
-      const wrap = `{ (__h: @escaping ${f.text}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
+      const wrap = `{ (__h: @escaping ${escapingFunction(f)}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
       return isOptional(from) ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
     }
     // One promise where a promise of another type is wanted (`Promise.all(untyped)` returned as `Promise<void[]>`): its value converted.
@@ -1930,6 +1933,12 @@ export class Translator implements AsyncTranslator {
   }
 
   functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
+    const counterpart = this.memberCounterpart(fn);
+    if (counterpart) {
+      const args = ['self', ...fn.parameters.map((p) => ident((p.name as ts.Identifier).text))];
+      const call = `${this.throwsInfo.fn(fn) ? 'try ' : ''}${counterpart}(${args.join(', ')})`;
+      return `{\n${base}    ${ret === 'Void' ? call : `return ${call}`}\n${base}}`;
+    }
     this.lenientParams(fn);
     this.availability.push(0);
     let needs = 0;
@@ -1938,6 +1947,12 @@ export class Translator implements AsyncTranslator {
     if (!needs) return body;
     const inner = body.slice(2, body.length - base.length - 2);
     return `{\n${this.availableOnly(needs, inner, base + '    ')}\n${base}}`;
+  }
+
+  /** The kit's implementation of a class's method or accessor (`iOSApplication.addDelegateHandler`), which its body calls with the object. */
+  private memberCounterpart(fn: ts.FunctionLikeDeclaration): string | null {
+    if (!this.library?.counterpart || !(ts.isMethodDeclaration(fn) || ts.isAccessor(fn)) || !ts.isClassDeclaration(fn.parent) || !fn.parent.name || isStatic(fn)) return null;
+    return this.library.counterpart(fn.getSourceFile().fileName, `${fn.parent.name.text}.${fn.name.getText()}`);
   }
 
   private functionBodyLines(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
@@ -2575,8 +2590,10 @@ export class Translator implements AsyncTranslator {
       // Library mode: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
       const reported = !!this.library && !!a.set && ((!!a.get && this.throwsInfo.fn(a.get)) || this.throwsInfo.fn(a.set));
       if (a.get && reported && this.throwsInfo.fn(a.get)) {
-        const fallback = isOptional(t) ? 'nil' : this.zero(t) ?? null;
-        parts.push(`        get { jsReported { () throws -> ${t} in${this.functionBody(a.get, t, '        ').slice(1)}${fallback ? ` ?? ${fallback}` : '!'} }`);
+        // An implicitly unwrapped property's getter gives nothing where it throws, or where it gives nothing.
+        const got = declared.endsWith('!') ? declared.replace(/!$/, '?') : t;
+        const fallback = isOptional(got) ? 'nil' : this.zero(t) ?? null;
+        parts.push(`        get { jsReported { () throws -> ${got} in${this.functionBody(a.get, got, '        ').slice(1)}${fallback ? ` ?? ${fallback}` : '!'} }`);
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
       if (a.set) {
@@ -3842,7 +3859,7 @@ export class Translator implements AsyncTranslator {
       `JSArray<${element}>([${want.params.slice(fixed).map((t, k) => this.convert(`__q${fixed + k}`, p(t), element)).join(', ')}])`];
     const call = `try __h(${args.join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
-    return `{ (__h: @escaping ${have.text}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
+    return `{ (__h: @escaping ${escapingFunction(have)}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
   }
 
   /** A declared function where a function of fewer parameters is wanted: called by name, so the rest take their defaults. */
@@ -4728,6 +4745,14 @@ export class Translator implements AsyncTranslator {
     if (ts.isPropertyAccessExpression(e) && !isWriteTarget(e) && this.isAddedMember(e)) {
       const t = this.typeOf(e);
       if (t !== 'Any?' && !isOptional(t)) return this.fromAny(`jsField(${this.expr(e.expression)}, ${swiftString(e.name.text)})`, optionalType(t));
+    }
+    // `c ? value : null`, checked without strictNullChecks: the value or nothing.
+    if (ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some(isNullish) && ![e.whenTrue, e.whenFalse].every(isNullish)) {
+      const t = this.typeOf(e);
+      if (t !== 'Any?' && t !== 'Void' && !isOptional(t) && !t.endsWith('!')) {
+        const branch = (x: ts.Expression) => (isNullish(x) ? 'nil' : this.coerce(x, optionalType(t)));
+        return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
+      }
     }
     // `x?.m()` on an untyped value: undefined where x is, whatever its declared result.
     if (ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken && this.isAny(e.expression.expression)) {
@@ -6827,6 +6852,17 @@ function functionParts(type: string): FunctionParts | null {
   const inner = t.slice(1, close).trim();
   const params = inner ? splitTopLevel(inner) : [];
   return { text: `(${params.join(', ')}) throws -> ${rest[1]}`, params, result: rest[1] };
+}
+
+/** A parameter's type, escaping if it is a function: the closure may keep it. */
+function escapingParam(type: string): string {
+  const t = type.replace(/^@escaping /, '');
+  return isFunctionType(t) ? `@escaping ${t}` : t;
+}
+
+/** A function type whose function parameters are escaping, which a function of the same type with non-escaping ones converts to. */
+function escapingFunction(fn: FunctionParts): string {
+  return `(${fn.params.map(escapingParam).join(', ')}) throws -> ${fn.result}`;
 }
 
 /** Whether `node` names `sym`. */

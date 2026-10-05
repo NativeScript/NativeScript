@@ -145,3 +145,9 @@ function runTemplate(template: string | Maker): string {
   return isFn(template) ? (<Maker>template)() + (template as Maker)() : 'text';
 }
 console.log(runTemplate(() => 'made'), runTemplate('text'));
+function pick(flag: boolean): string {
+  const chosen = flag ? 'yes' : null;
+  const count = flag ? 3 : undefined;
+  return `${chosen || 'none'} ${count} ${!chosen} ${count === undefined}`;
+}
+console.log(pick(true), pick(false));

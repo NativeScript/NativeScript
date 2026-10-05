@@ -404,6 +404,9 @@ export class NativeAPI {
     if (m.readonly) throw this.t.error(left, `${r.name}.${left.name.text} (read-only)`);
     this.checkAvailable(m, left, `${r.name}.${left.name.text}`);
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : this.t.expr(left.expression);
+    if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
+      return isolated(`jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`, m);
+    }
     return isolated(`${target}.${m.swift} = ${this.toSwift(value, m.type)}`, m);
   }
 
@@ -565,10 +568,23 @@ export class NativeAPI {
   identifier(e: ts.Identifier): string | null {
     const sym = this.t.resolve(e);
     const native = this.symbolModule(sym);
+    if (native && sym!.flags & ts.SymbolFlags.Function) return this.functionValue(e, native);
     if (!native || !(sym!.flags & ts.SymbolFlags.Variable)) return null;
     const k = lookupConstant(native.module, native.name);
     if (!k) throw this.t.error(e, `${native.name} (no Swift counterpart in ${native.module})`);
     return this.fromSwift(k.swift, k.type, e);
+  }
+
+  /** A native function of no arguments as a value (`isRunning = UIAccessibilityIsVoiceOverRunning`): a closure calling it, as Swift may have it as a property. */
+  private functionValue(e: ts.Identifier, native: { module: string; name: string }): string | null {
+    const f = lookupFunction(native.module, native.name);
+    if (!f || f.params.length || !['function', 'staticMethod', 'staticProperty'].includes(f.kind)) return null;
+    this.checkAvailable(f, e, native.name);
+    const sig = this.t.checker.getTypeAtLocation(e).getCallSignatures()[0];
+    const ret = sig ? this.t.type(sig.getReturnType(), e) : null;
+    if (ret !== f.returns) return null;
+    const call = f.kind === 'staticProperty' ? `${f.owner}.${f.swift}` : f.kind === 'staticMethod' ? `${f.owner}.${f.swift}()` : `${f.swift}()`;
+    return `{ () throws -> ${ret} in ${call} }`;
   }
 
   /** An object literal for a native struct (`{ origin: { x: 0, y: 0 }, size }` as a CGRect). */
@@ -894,15 +910,27 @@ export class NativeAPI {
     }
     for (const [n, a] of accessors) {
       // A property the native base declares (`preferredStatusBarStyle`): its Swift override, the body's value converted, what it throws reported.
-      const native = this.found(lookupMember(base.module, base.name, n, false));
+      const fromBase = this.found(lookupMember(base.module, base.name, n, false));
+      // A property the native base or an adopted protocol declares (`UIApplicationDelegate.window`).
+      const native = fromBase?.kind === 'property' ? fromBase : protocols.map((p) => lookupMember(p.module, p.name, n, false)).find((m) => m?.kind === 'property') ?? fromBase;
+      const viaProtocol = native !== fromBase;
       if (native && native.kind === 'property' && a.get) {
         const own = t.returnTypeOf(a.get);
         const body = t.functionBody(a.get, own, '            ');
         const value = t.throwsInfo.fn(a.get) ? `jsReported { () throws -> ${own} in${body.slice(1)}` : `{ () -> ${own} in${body.slice(1)}()`;
-        const fallback = own.endsWith('?') || own === 'Any?' ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : '!';
+        const fallback = own.endsWith('?') || own === 'Any?' || optional(native.type) ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : '!';
         const get = `        get {\n            let __value: ${t.throwsInfo.fn(a.get) ? optionalType(own) : own} = ${value}\n            return ${this.toSwiftValue(`__value${t.throwsInfo.fn(a.get) ? fallback : ''}`, own, native.type)}\n        }`;
-        if (a.set) throw t.error(a.set, `a setter of ${base.name}.${n}`);
-        lines.push(`    override var ${native.swift}: ${native.type} {`, get, '    }');
+        const parts = [get];
+        if (a.set) {
+          if (native.readonly) throw t.error(a.set, `a setter of ${base.name}.${n}`);
+          const p = a.set.parameters[0].name as ts.Identifier;
+          const pt = t.typeOf(p);
+          const body = t.functionBody(a.set, 'Void', '            ');
+          const bt = optional(native.type) && !optional(pt) && !['Double', 'String', 'Bool'].includes(pt) ? t.bindsOptional(p, pt) : pt;
+          const bind = `            let ${p.text}: ${bt} = ${this.fromSwiftValue('newValue', native.type, bt)}`;
+          parts.push(t.throwsInfo.fn(a.set) ? `        set {\n${bind}\n            jsReport ${body.trimStart()}\n        }` : `        set {\n${bind}${body.slice(1)}`);
+        }
+        lines.push(`    ${viaProtocol ? '' : 'override '}var ${native.swift}: ${native.type} {`, ...parts, '    }');
         continue;
       }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));

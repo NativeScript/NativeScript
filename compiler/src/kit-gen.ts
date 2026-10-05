@@ -22,7 +22,8 @@ export interface KitOptions {
   /** Core's files to compile, relative to `core`: a file, or a folder ending in `/` for everything in it. */
   modules: string[];
   /**
-   * Functions the kit implements instead: core file → function → the Swift that replaces it; or, for
+   * Functions the kit implements instead: core file → function → the Swift that replaces it (a class's
+   * method or accessor as `Class.member`, the Swift called with the object and the arguments); or, for
    * an npm package core imports, `npm:<package>` → imported name (`*` for the namespace) → a value of the kit's;
    * or, for a moot module, `moot:<file>` → imported name → a value of the kit's.
    */
