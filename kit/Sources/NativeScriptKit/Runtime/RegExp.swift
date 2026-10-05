@@ -184,6 +184,12 @@ public func jsSearch(_ s: String, _ re: JSRegExp) -> Double {
 }
 
 /// `s.replace(re, replacement)` with JavaScript's `$&`, `$1`, `$<name>`, `$$`, `` $` `` and `$'` patterns.
+/// `s.replace(pattern, replacement)` with an untyped pattern: a regular expression replaces as one, any other value by its string.
+public func jsReplace(_ s: String, untyped pattern: Any?, _ replacement: String) -> String {
+    if let re = jsFlat(pattern) as? JSRegExp { return jsReplace(s, re, replacement) }
+    return jsReplace(s, jsToString(pattern), replacement)
+}
+
 public func jsReplace(_ s: String, _ re: JSRegExp, _ replacement: String) -> String {
     jsReplace(s, re) { m in expand(replacement, m, in: s) }
 }
