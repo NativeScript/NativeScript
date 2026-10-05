@@ -986,11 +986,11 @@ function getTitleAttributesForStates(tabView: TabView): TabStates {
 
 	const titleColor = tabView.style.tabTextColor;
 	if (titleColor instanceof Color) {
-		result.normalState.setValueForKey(titleColor.ios, UITextAttributeTextColor);
+		result.normalState.setValueForKey(titleColor.ios, NSForegroundColorAttributeName);
 	}
 	const selectedTitleColor = tabView.style.selectedTabTextColor;
 	if (selectedTitleColor instanceof Color) {
-		result.selectedState.setValueForKey(selectedTitleColor.ios, UITextAttributeTextColor);
+		result.selectedState.setValueForKey(selectedTitleColor.ios, NSForegroundColorAttributeName);
 	}
 
 	return result;

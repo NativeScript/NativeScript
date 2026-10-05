@@ -80,7 +80,7 @@ function showUIAlertController(alertController: UIAlertController) {
 		}
 	}
 
-	viewController.presentModalViewControllerAnimated(alertController, true);
+	viewController.presentViewControllerAnimatedCompletion(alertController, true, null);
 }
 
 export function alert(arg: any): Promise<void> {
