@@ -281,6 +281,9 @@ export class NativeAPI {
       this.keepOptional.add(inner);
       try {
         const code = this.t.expr(x);
+        // A field redeclared with a native type over its base's untyped one (`nativeViewProtected: UIView`).
+        const t = this.t.typeOf(x).replace(/[?!]$/, '');
+        if (ts.isPropertyAccessExpression(inner) && this.t.declaredTypeOf(inner) === 'Any?' && /^[A-Z]\w*$/.test(t) && this.receiver(x)) return `(${code} as? ${t})?.`;
         return `${code}${own !== null && !optional(own) ? '.' : '?.'}`;
       } finally { this.keepOptional.delete(inner); }
     }
@@ -609,6 +612,8 @@ export class NativeAPI {
     // An out-parameter: the cell's storage of the pointee's type, written back.
     const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
+    const pointed = /^UnsafePointer<(\w+)>$/.exec(b)?.[1];
+    if (pointed && this.isStructType(pointed) && (source === 'Any?' || base(source) === pointed)) return `jsStructPointer(${t.expr(e)}, ${pointed}.self)${optional(target) ? '' : '!'}`;
     // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
     if (b === 'Selector' && ts.isStringLiteralLike(e)) return `NSSelectorFromString(${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))})`;
     // A constant naming a method (`GestureEvents.touchDown`): its value, as a literal is; any other string as it is when it runs.
@@ -636,6 +641,8 @@ export class NativeAPI {
     }
     // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
     if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
+    // A BOOL the runtime marshals from any value: its truthiness.
+    if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
     // A dictionary where Swift keys one by a string-backed type (`[NSAttributedString.Key: Any]`).
     const keyed = /^\[([\w.]+): Any\]$/.exec(b)?.[1];
     if (keyed && keyed !== 'String' && keyed !== 'AnyHashable' && source.replace(/[?!]$/, '') !== b && this.isStringConstants(keyed)) {
@@ -960,6 +967,8 @@ export class NativeAPI {
     if (tsType === 'Any?' && swiftType !== 'Any?' && swiftType !== 'Any') {
       if (b === 'Bool' || b === 'ObjCBool') return `jsTruthy(${code})`;
       if (NUMBERS.has(b)) return b === 'Double' ? `jsToNumber(${code})` : `${b}(jsToNumber(${code}))`;
+      // A BOOL the runtime marshals from any value: its truthiness.
+      if (b === 'Bool' && !optional(swiftType)) return `jsTruthy(${code})`;
       return optional(swiftType) ? `(jsToNative(${code}) as? ${b})` : `(jsToNative(${code}) as! ${b})`;
     }
     if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return `${b}(${code})`;

@@ -279,7 +279,7 @@ export class AsyncLowering {
       }
       const js = t.jsIteration(s.expression);
       if (js) return this.linearize([s.expression], ctx, () => [`${i}${x.tryStatement(x.constant(it, null, js))}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression, kind: 'js' })]);
-      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression)}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
+      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression) || (t.isAny(s.expression) ? 'try ' : '')}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
     }
     if (ts.isTryStatement(s)) return this.tryStatement(s, ctx);
     if (ts.isLabeledStatement(s)) throw t.error(s, 'a labeled statement that awaits');
@@ -330,10 +330,13 @@ export class AsyncLowering {
       if (ts.isYieldExpression(a)) return [...lines, ...this.yieldPoint(a, ctx, () => t.nested(() => step(k + 1)))];
       if (!ts.isAwaitExpression(a)) return [...lines, ...this.conditional(a, ctx, () => step(k + 1))];
       const operand = a.expression;
-      const isPromise = t.isPromiseType(t.typeOf(operand));
-      const code = `${t.tryPrefix(operand)}${t.expr(operand)}`;
+      let type = t.typeOf(a);
+      // `await x?.m()` of an untyped `x`: undefined or whatever the call gives, awaited as a value is.
+      const untyped = ts.isCallExpression(operand) && ts.isPropertyAccessExpression(operand.expression) && ts.isOptionalChain(operand) && t.isAny(operand.expression.expression) && (type === 'Void' || type === 'Any?');
+      if (untyped) type = 'Any?';
+      const isPromise = !untyped && t.isPromiseType(t.typeOf(operand));
+      const code = `${t.tryPrefix(operand)}${untyped ? t.coerce(operand, 'Any?') : t.expr(operand)}`;
       const v = t.fresh('__t');
-      const type = t.typeOf(a);
       t.subst.set(a, v);
       const body = t.nested(() => step(k + 1));
       lines.push(`${i}${this.s.awaitCall(code, isPromise, this.closure([[v, type]], body, ctx.onError), ctx.onError)}`);

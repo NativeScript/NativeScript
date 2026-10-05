@@ -227,7 +227,8 @@ export class Throws {
 
   /** Whether making an instance of a class throws: its own constructor's or its base's, or (Swift initializers sharing `throws`) one a subclass declares. */
   initThrows(decl: ts.ClassLikeDeclaration): boolean {
-    for (const cls of this.ancestors(decl)) {
+    const chain = this.ancestors(decl);
+    for (const cls of chain) {
       if (cls.members.some((m) => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m) && this.expr(m.initializer))) return true;
       const ctor = cls.members.find(ts.isConstructorDeclaration);
       if (ctor) return this.fn(ctor);

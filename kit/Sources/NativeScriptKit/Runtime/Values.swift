@@ -369,6 +369,11 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
 // MARK: - Property access
 
 /// `object[key]` / `object.key` on a dynamic value. Reading from undefined or null throws a TypeError.
+/// `o?.key`, or a member read further along an optional chain, of an untyped value: undefined once the chain reaches undefined or null.
+public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
+    jsIsNullish(object) ? nil : try jsGet(object, key)
+}
+
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
     if let cls = jsFlat(object) as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : nil }

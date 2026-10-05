@@ -161,6 +161,20 @@ public func jsSubstr(_ s: String, _ start: Double, _ length: Double? = nil) -> S
     return string(u[a..<(a + n)])
 }
 
+/// `s.split(separator, limit)` with an untyped separator: a regular expression splits as one, any other value by its string.
+public func jsSplit(_ s: String, untyped separator: Any?, _ limit: Double? = nil) -> JSArray<String> {
+    switch jsFlat(separator) {
+    case nil: return jsSplit(s, nil as String?, limit)
+    case let re as JSRegExp: return jsSplit(s, re, limit).map { $0 ?? "" }
+    default: return jsSplit(s, jsToString(separator), limit)
+    }
+}
+
+/// `array.join(separator)` with an untyped separator: undefined joins with a comma.
+public func jsJoinSeparator(_ separator: Any?) -> String {
+    jsFlat(separator) == nil ? "," : jsToString(separator)
+}
+
 /// `s.split(separator, limit)` with a string separator.
 public func jsSplit(_ s: String, _ separator: String?, _ limit: Double? = nil) -> JSArray<String> {
     let max = limit.map { Int(jsToUint32Bits($0)) } ?? Int.max
