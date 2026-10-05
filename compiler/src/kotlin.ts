@@ -1131,7 +1131,9 @@ export class Translator implements AsyncTranslator {
         const sym = this.checker.getSymbolAtLocation(p.name);
         lines.push(`${i}var ${name}${sym && this.nullableDecls.has(sym) ? '' : `: ${this.typeOf(p.name)}`} = ${name}`);
       }
-      if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', false));
+      // A destructured parameter the body assigns binds variables.
+      const body = (fn as ts.FunctionLikeDeclaration).body;
+      if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', !!body && boundNames(p.name).some((b) => assignsTo(body, this.checker.getSymbolAtLocation(b), this.checker))));
     });
     return lines;
   }
@@ -2281,6 +2283,7 @@ export class Translator implements AsyncTranslator {
   iterable(e: ts.Expression): string {
     const js = this.jsIteration(e);
     if (js) return `${js}.jsCollect()`;
+    if (this.typeOf(e) === 'Any?') return `jsIteratorOf(${this.expr(e)}).jsCollect()`;
     const t = this.typeOf(e).replace(/\?$/, '');
     if (t === 'String') return `jsCodePoints(${this.expr(e)})`;
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
@@ -2465,6 +2468,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isParenthesizedExpression(e)) return this.exprStatement(e.expression);
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.CommaToken) return `${this.exprStatement(e.left)}; ${this.exprStatement(e.right)}`;
     if (ts.isVoidExpression(e)) return this.exprStatement(e.expression);
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !this.subst.has(e)) return this.binary(e);
     return this.expr(e);
   }
 
@@ -2572,6 +2576,16 @@ export class Translator implements AsyncTranslator {
     // `return (s += x)`: a compound assignment's value is its target after it (Kotlin's assignment has none).
     if (ts.isBinaryExpression(e) && e.operatorToken.kind >= ts.SyntaxKind.FirstCompoundAssignment && e.operatorToken.kind <= ts.SyntaxKind.LastCompoundAssignment && !statementLevel(e)) {
       return `run { ${this.binary(e)}; ${this.expr(e.left)} }`;
+    }
+    // `(info.name = v)` as a value: the value assigned, evaluated once (Kotlin's assignment has none).
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !statementLevel(e) && !ts.isArrayLiteralExpression(e.left) && !this.subst.has(e.right)) {
+      const t = this.typeOf(e.right) === 'Unit' ? 'Any?' : this.typeOf(e.right);
+      const v = this.fresh('__assigned');
+      const value = this.coerce(e.right, t);
+      this.subst.set(e.right, v);
+      try {
+        return `run { val ${v}: ${t} = ${value}; ${this.binary(e)}; ${v} }`;
+      } finally { this.subst.delete(e.right); }
     }
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
     if (ts.isBigIntLiteral(e)) return `JSBigInt.literal(${kotlinString(e.text.replace(/n$/, ''))})`;
@@ -3182,6 +3196,8 @@ export class Translator implements AsyncTranslator {
     // `(value as F)(…)`: the value read as the function type, called (the factory would parenthesize the cast again).
     if (ts.isParenthesizedExpression(callee) && (ts.isAsExpression(callee.expression) || ts.isTypeAssertionExpression(callee.expression) || ts.isSatisfiesExpression(callee.expression))) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     if (ts.isParenthesizedExpression(callee)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
+    // A function read from a record may be missing: calling it then throws, as calling undefined does.
+    if (ts.isElementAccessExpression(callee) && /^JSRecord</.test(this.typeOf(callee.expression))) return `jsCallable(${this.expr(callee)})(${this.args(e).join(', ')})`;
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
   }

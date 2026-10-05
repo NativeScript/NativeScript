@@ -30,3 +30,27 @@ if (found) {
   const [whole, key, value] = found;
   console.log(whole, key, value);
 }
+
+const loose: any = JSON.parse('{"list": [1, 2, 3], "set": null}');
+let sum = 0;
+for (const n of loose.list) sum += n;
+const spread = [...loose.list, 4];
+console.log(sum, spread.length);
+try {
+  for (const n of loose.set) sum += n;
+} catch (e) {
+  console.log(e instanceof TypeError);
+}
+
+const info: any = {};
+const handlers: { [key: string]: (target: any, value: string) => any } = {
+  name: (target, value) => (target.name = value.toUpperCase()),
+  size: (target, value) => (target.size = parseFloat(value)),
+};
+console.log(handlers['name'](info, 'abc'), handlers['size'](info, '2.5'), JSON.stringify(info));
+const counts = [{ key: 'a', n: 1 }, { key: 'b', n: 2 }].reduce((acc, { key, n }) => {
+  n = n * 10;
+  acc[key] = n;
+  return acc;
+}, {} as { [key: string]: number });
+console.log(JSON.stringify(counts));

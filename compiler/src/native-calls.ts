@@ -583,6 +583,8 @@ export class NativeAPI {
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
+    const raw = source === 'Double' ? this.constantsRaw(b) : null;
+    if (raw && NUMBERS.has(raw)) return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
     return t.expr(e);
@@ -603,6 +605,8 @@ export class NativeAPI {
     }
     if (this.isEnumType(b) && tsType === 'Double') return `Double(${code}.rawValue)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
+    // A number-backed constant (`UIFontWeightBold`), a number to TypeScript.
+    if (tsType === 'Double' && NUMBERS.has(this.constantsRaw(b) ?? '')) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
@@ -845,8 +849,14 @@ export class NativeAPI {
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
   private isStringConstants(swift: string): boolean {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
-    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants' && x.raw === 'String'));
+    return this.constantsRaw(swift) === 'String';
+  }
+
+  /** The raw type of a typed-constants struct (`UIFont.Weight` holds a CGFloat), or null. */
+  private constantsRaw(swift: string): string | null {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    for (const m of this.searchModules()) for (const x of Object.values(nativeTable(m).enums)) if (x.swift === swift && x.kind === 'typedConstants' && x.raw) return x.raw;
+    return null;
   }
 
   isEnumType(swift: string): boolean {

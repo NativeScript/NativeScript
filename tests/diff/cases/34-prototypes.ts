@@ -201,3 +201,31 @@ const emptyMatch: Readonly<Match> = { selectors: [], changes: new Map(), describ
 const full = new Match();
 full.selectors = ['a', 'b'];
 console.log(emptyMatch.describe(), emptyMatch.selectors.length, emptyMatch.changes.size, full.describe());
+
+class Runner {
+  private _resolve;
+  public _sequential: boolean;
+  public done: Promise<void>;
+  constructor(sequential?: boolean) {
+    this._sequential = sequential;
+    this.done = new Promise<void>((resolve) => {
+      this._resolve = resolve;
+    });
+  }
+  finish() {
+    this._resolve();
+  }
+}
+const runner = new Runner();
+runner.done.then(() => console.log('resolved', runner._sequential === true));
+runner.finish();
+
+function describeInfo(i: Info): string {
+  return `${i.name}:${i.size}`;
+}
+const base = <Info>{};
+base.name = 'base';
+base.size = 1;
+const derived = { ...base, size: undefined };
+derived.size = 5;
+console.log(describeInfo(derived), describeInfo(base));
