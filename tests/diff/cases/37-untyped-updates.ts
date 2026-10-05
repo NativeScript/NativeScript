@@ -79,3 +79,9 @@ function scaled(size: number): number {
   return size * 2;
 }
 console.log(scaled(sizes.get('small')), scaled(sizes.get('huge')), sizes.get('huge') === undefined, sizes.get('small') || 1);
+
+function memberName(key: any, prefix: string): string {
+  const name: string = prefix + key?.toString();
+  return `${name} ${key?.toString() === undefined}`;
+}
+console.log(memberName('size', 'View.'), memberName(undefined, 'View.'));

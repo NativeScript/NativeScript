@@ -4285,6 +4285,14 @@ export class Translator implements AsyncTranslator {
         try { return this.expr(e); } finally { this.rawOptional.delete(e); }
       }
     }
+    // `x?.m()` on an untyped value: undefined where x is, whatever its declared result.
+    if (ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken && this.isAny(e.expression.expression)) {
+      const t = this.typeOf(e);
+      if (t !== 'Any?' && t !== 'Void' && !isOptional(t)) {
+        this.rawOptional.add(e);
+        try { return this.fromAny(this.expr(e), optionalType(t)); } finally { this.rawOptional.delete(e); }
+      }
+    }
     if (ts.isCallExpression(e) && this.libMayBeUndefined(e)) {
       this.rawOptional.add(e);
       try { return this.expr(e); } finally { this.rawOptional.delete(e); }
@@ -4595,7 +4603,8 @@ export class Translator implements AsyncTranslator {
         const code = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.expr(target)}, ${swiftString(method)}${this.untypedArgs(e.arguments)})`;
         // An untyped receiver of a typed interface (`value: IColor` with no protocol): the result as the interface types it.
         const t = this.typeOf(e);
-        return t === 'Any?' || t === 'Void' || callee.questionDotToken ? code : this.fromAnyCode(code, t, true);
+        if (t === 'Any?' || t === 'Void' || this.rawOptional.has(e)) return code;
+        return callee.questionDotToken ? this.undefinedAs(this.fromAny(code, optionalType(t)), t) : this.fromAnyCode(code, t, true);
       }
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
