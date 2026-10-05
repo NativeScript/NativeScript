@@ -4381,7 +4381,9 @@ export class Translator implements AsyncTranslator {
       }
       // A method of a generic class, which library mode erases: the parameter's type as the method declares it.
       const erased = this.library && decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile;
-      out.push(this.coerce(a, erased ? this.paramType(decl as ts.ParameterDeclaration) : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)));
+      // In code the checker finds unreachable a parameter's type is never: its declared type.
+      const at = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      out.push(this.coerce(a, erased ? this.paramType(decl as ts.ParameterDeclaration) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function value takes every parameter: the ones JavaScript leaves out are undefined.
