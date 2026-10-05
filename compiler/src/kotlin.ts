@@ -689,7 +689,12 @@ export class Translator implements AsyncTranslator {
         if (!component && st.name) {
           // A namespace merged into the class: its companion's members.
           this.mergedStatics = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
-          try { out.push(this.classDecl(st)); } finally { this.mergedStatics = []; }
+          this.staticInits = [];
+          try { out.push(this.classDecl(st)); } finally {
+            this.mergedStatics = [];
+            for (const line of this.staticInits) later(() => line);
+            this.staticInits = null;
+          }
         }
         continue;
       }
@@ -780,6 +785,8 @@ export class Translator implements AsyncTranslator {
   }
 
   private mergedStatics: string[] = [];
+  /** The assignments of a module-level class's static fields whose initializers read changing state, run in the module's order. */
+  private staticInits: string[] | null = null;
   /** Whether a namespace merges into a class of its name in its file. */
   private mergedClass(md: ts.ModuleDeclaration): boolean {
     return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => (ts.isClassDeclaration(d) || ts.isEnumDeclaration(d)) && d.getSourceFile() === md.getSourceFile());
@@ -862,6 +869,41 @@ export class Translator implements AsyncTranslator {
     if (ts.isPropertyAccessExpression(e)) return this.pure(e.expression) && !(ts.isIdentifier(e.expression) && this.isLibGlobal(e.expression) && !LIB_CONSTANTS[`${e.expression.text}.${e.name.text}`]);
     if (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && ['ref', '$ref', '$signal', 'signal', 'writable', '$writable', 'computed'].includes(e.expression.text)) return e.arguments.every((a) => this.pure(a));
     if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text)) return !e.arguments?.length || e.arguments.every((a) => this.pure(a));
+    return false;
+  }
+
+  /** Whether an initializer gives the same value whenever it runs: pure, reading nothing that can change except constants. */
+  private constantInit(e: ts.Expression, seen = new Set<ts.Node>()): boolean {
+    const c = (x: ts.Expression) => this.constantInit(x, seen);
+    if (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isSatisfiesExpression(e) || ts.isNonNullExpression(e)) return c(e.expression);
+    if (ts.isLiteralExpression(e) || ts.isNoSubstitutionTemplateLiteral(e) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(e.kind)) return !ts.isRegularExpressionLiteral(e);
+    if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return true;
+    if (ts.isIdentifier(e)) {
+      if (['undefined', 'NaN', 'Infinity'].includes(e.text)) return true;
+      const sym = this.resolve(e);
+      if (!sym) return false;
+      if (sym.flags & (ts.SymbolFlags.Function | ts.SymbolFlags.Class | ts.SymbolFlags.Enum | ts.SymbolFlags.ValueModule)) return true;
+      const d = sym.valueDeclaration;
+      if (!d) return false;
+      if (d.getSourceFile().isDeclarationFile) return isLibDeclaration(d) || !(sym.flags & ts.SymbolFlags.Variable) || !!(d.parent && d.parent.flags & ts.NodeFlags.Const);
+      if (ts.isVariableDeclaration(d) && d.parent.flags & ts.NodeFlags.Const && d.initializer && !seen.has(d)) { seen.add(d); return c(d.initializer); }
+      return false;
+    }
+    if (ts.isTemplateExpression(e)) return e.templateSpans.every((x) => c(x.expression));
+    if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => (ts.isSpreadElement(x) ? ts.isArrayLiteralExpression(x.expression) && c(x.expression) : c(x)));
+    if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => (ts.isPropertyAssignment(p) ? c(p.initializer) && !ts.isComputedPropertyName(p.name) : ts.isShorthandPropertyAssignment(p) ? c(p.name) : ts.isMethodDeclaration(p)));
+    if (ts.isPrefixUnaryExpression(e)) return e.operator !== ts.SyntaxKind.PlusPlusToken && e.operator !== ts.SyntaxKind.MinusMinusToken && c(e.operand);
+    if (ts.isBinaryExpression(e)) return e.operatorToken.kind !== ts.SyntaxKind.EqualsToken && c(e.left) && c(e.right);
+    if (ts.isPropertyAccessExpression(e)) {
+      const sym = this.resolve(e.name);
+      const d = sym?.valueDeclaration;
+      if (sym && sym.flags & ts.SymbolFlags.EnumMember) return true;
+      if (d && (ts.isMethodDeclaration(d) || ts.isFunctionDeclaration(d) || ts.isClassDeclaration(d) || ts.isEnumDeclaration(d) || ts.isModuleDeclaration(d))) return c(e.expression);
+      if (ts.isIdentifier(e.expression) && this.isLibGlobal(e.expression)) return !!LIB_CONSTANTS[`${e.expression.text}.${e.name.text}`];
+      if (d && ts.isPropertyDeclaration(d) && isStatic(d) && hasModifier(d, ts.SyntaxKind.ReadonlyKeyword) && !!d.initializer && !seen.has(d)) { seen.add(d); return c(d.initializer); }
+      return false;
+    }
+    if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text)) return !e.arguments?.length || e.arguments.every(c);
     return false;
   }
 
@@ -1415,6 +1457,16 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(m.name);
       if (isStatic(m)) {
         this.indent = '        ';
+        // An initializer reading changing state runs with the module's statements, where the class is defined; a companion's run when it is first used.
+        if (m.initializer && this.staticInits && !this.constantInit(m.initializer)) {
+          const st = t === 'Any?' || t.endsWith('?') || this.zero(t) ? t : optionalType(t);
+          const ssym = c.getSymbolAtLocation(m.name);
+          if (ssym && st !== t) this.nullableDecls.add(ssym);
+          statics.push(`        var ${ident(n)}: ${st} = ${this.zero(t) ?? 'null'}`);
+          this.indent = '    ';
+          this.staticInits.push(`    ${name}.${ident(n)} = ${this.coerce(m.initializer, t)}`);
+          continue;
+        }
         const st = t === 'Any?' || t.endsWith('?') ? t : this.zero(t) || m.initializer ? t : optionalType(t);
         const ssym = c.getSymbolAtLocation(m.name);
         if (ssym && st !== t) this.nullableDecls.add(ssym);

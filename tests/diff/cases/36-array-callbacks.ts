@@ -49,3 +49,20 @@ function redeclared(n: number): number {
   return total;
 }
 console.log(redeclared(4));
+const settings = { size: 1 };
+let counter = 10;
+const sizeAtLoad = settings.size;
+const counterAtLoad = counter;
+const doubled = [counter * 2, settings.size + 1];
+class Defaults {
+  static size = settings.size;
+  static readonly limit = 3;
+  static half = Defaults.limit / 2;
+}
+enum Mode {
+  On = 1,
+}
+const modeAtLoad = Mode.On + Math.floor(Math.PI);
+settings.size = 5;
+counter = 20;
+console.log(sizeAtLoad, counterAtLoad, doubled.join(','), Defaults.size, Defaults.half, modeAtLoad);

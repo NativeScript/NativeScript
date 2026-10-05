@@ -1079,7 +1079,7 @@ export class Translator implements AsyncTranslator {
         later(() => `    ${target} = ${maybe}`);
         continue;
       }
-      if (this.pure(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.coerce(d.initializer, t)}`); continue; }
+      if (this.pure(d.initializer) && this.constantInit(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.coerce(d.initializer, t)}`); continue; }
       emit(`${modifiers}var ${name}: ${this.fieldType(t)}`);
       later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
     }
@@ -1146,6 +1146,14 @@ export class Translator implements AsyncTranslator {
     return null;
   }
 
+  /** `{ name }`'s value: the variable or function it names, qualified as a reference to it is. */
+  private shorthandValue(p: ts.ShorthandPropertyAssignment): string {
+    const sym = this.checker.getShorthandAssignmentValueSymbol(p);
+    const target = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym) : sym;
+    const decl = target?.valueDeclaration;
+    return (decl && this.qualifiedDecl(decl, target!.name)) ?? ident(decl && this.topNames().has(decl) ? this.topNames().get(decl)! : p.name.text);
+  }
+
   /** An identifier as a reference to what it names: qualified where its declaration is a namespace's or a library module's. */
   private refName(e: ts.Identifier): string {
     const local = this.checker.getSymbolAtLocation(e);
@@ -1181,6 +1189,51 @@ export class Translator implements AsyncTranslator {
     if (ts.isClassDeclaration(decl) || ts.isEnumDeclaration(decl)) return identPath(this.topName(decl, target!.name));
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
+  }
+
+  /**
+   * Whether a module-level or static initializer gives the same value whenever Swift's lazy
+   * global first runs it: pure, and reading nothing that can change (a variable, an object's
+   * member) except constants (enum members, a namespace's or class's constant, the library's).
+   */
+  constantInit(e: ts.Expression, seen = new Set<ts.Node>()): boolean {
+    const c = (x: ts.Expression) => this.constantInit(x, seen);
+    if (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isSatisfiesExpression(e) || ts.isNonNullExpression(e)) return c(e.expression);
+    if (ts.isLiteralExpression(e) || ts.isNoSubstitutionTemplateLiteral(e) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(e.kind)) return true;
+    if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return true;
+    if (ts.isIdentifier(e)) return this.constantName(e, seen);
+    if (ts.isTemplateExpression(e)) return e.templateSpans.every((x) => c(x.expression));
+    if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => (ts.isSpreadElement(x) ? ts.isArrayLiteralExpression(x.expression) && c(x.expression) : c(x)));
+    if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => (ts.isPropertyAssignment(p) ? c(p.initializer) : ts.isShorthandPropertyAssignment(p) ? this.constantName(p.name, seen) : ts.isMethodDeclaration(p)));
+    if (ts.isPrefixUnaryExpression(e)) return e.operator !== ts.SyntaxKind.PlusPlusToken && e.operator !== ts.SyntaxKind.MinusMinusToken && c(e.operand);
+    if (ts.isBinaryExpression(e)) return e.operatorToken.kind !== ts.SyntaxKind.EqualsToken && c(e.left) && c(e.right);
+    if (ts.isPropertyAccessExpression(e)) {
+      const sym = this.resolve(e.name);
+      const d = sym?.valueDeclaration;
+      if (sym && sym.flags & ts.SymbolFlags.EnumMember) return true;
+      if (d && (ts.isMethodDeclaration(d) || ts.isFunctionDeclaration(d) || ts.isClassDeclaration(d) || ts.isEnumDeclaration(d) || ts.isModuleDeclaration(d))) return c(e.expression);
+      // The library's constants (`Math.PI`, `Number.MAX_SAFE_INTEGER`).
+      if (d && isLibDeclaration(d) && ts.isIdentifier(e.expression) && this.isLibGlobal(e.expression)) return true;
+      if (d && ts.isPropertyDeclaration(d) && isStatic(d) && hasModifier(d, ts.SyntaxKind.ReadonlyKeyword) && !!d.initializer && !seen.has(d)) { seen.add(d); return c(d.initializer); }
+      if (d && ts.isVariableDeclaration(d) && ts.isModuleBlock(d.parent.parent.parent) && d.parent.flags & ts.NodeFlags.Const && !!d.initializer && !seen.has(d)) { seen.add(d); return c(d.initializer); }
+      return false;
+    }
+    if (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && ['ref', '$ref', '$signal', 'signal', 'writable', '$writable', 'computed'].includes(e.expression.text)) return e.arguments.every(c);
+    if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text)) return !e.arguments?.length || e.arguments.every(c);
+    return false;
+  }
+
+  /** A name whose value never changes: a function, class, enum or namespace, a library global, or a constant of a constant initializer. */
+  private constantName(id: ts.Identifier, seen: Set<ts.Node>): boolean {
+    if (id.text === 'undefined' || id.text === 'NaN' || id.text === 'Infinity') return true;
+    const sym = this.resolve(id);
+    if (!sym) return false;
+    if (sym.flags & (ts.SymbolFlags.Function | ts.SymbolFlags.Class | ts.SymbolFlags.Enum | ts.SymbolFlags.ValueModule)) return true;
+    const d = sym.valueDeclaration;
+    if (!d) return false;
+    if (d.getSourceFile().isDeclarationFile) return isLibDeclaration(d) || !(sym.flags & ts.SymbolFlags.Variable) || !!(d.parent && d.parent.flags & ts.NodeFlags.Const);
+    if (ts.isVariableDeclaration(d) && d.parent.flags & ts.NodeFlags.Const && d.initializer && !seen.has(d)) { seen.add(d); return this.constantInit(d.initializer, seen); }
+    return false;
   }
 
   /** Whether evaluating `e` early (Swift initializes globals lazily) cannot be observed. */
@@ -2093,8 +2146,8 @@ export class Translator implements AsyncTranslator {
         const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
         if (nullInit && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)} = nil`); continue; }
         if (!m.initializer && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`); continue; }
-        // A static initializer that throws runs with the module's statements, where the class is defined; Swift's static initializers cannot throw.
-        if (m.initializer && this.staticInits && !nullInit && this.throwsInfo.expr(m.initializer)) {
+        // A static initializer that throws or reads changing state runs with the module's statements, where the class is defined; Swift's run lazily and cannot throw.
+        if (m.initializer && this.staticInits && !nullInit && (this.throwsInfo.expr(m.initializer) || !this.constantInit(m.initializer))) {
           lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`);
           this.indent = '    ';
           this.staticInits.push(`    ${ident(name)}.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -4776,7 +4829,7 @@ export class Translator implements AsyncTranslator {
       const props = options.properties.find((p) => p.name && (p.name as ts.Identifier).text === 'props');
       if (props && ts.isPropertyAssignment(props) && ts.isObjectLiteralExpression(props.initializer)) {
         for (const p of props.initializer.properties) {
-          if (ts.isShorthandPropertyAssignment(p)) given.set(p.name.text, ident(p.name.text));
+          if (ts.isShorthandPropertyAssignment(p)) given.set(p.name.text, this.shorthandValue(p));
           else if (ts.isPropertyAssignment(p)) given.set((p.name as ts.Identifier).text, this.expr(p.initializer));
         }
       }
@@ -4965,7 +5018,7 @@ export class Translator implements AsyncTranslator {
         const key = (p.name as ts.Identifier).text;
         if (key === 'props' && ts.isObjectLiteralExpression(p.initializer)) {
           for (const q of p.initializer.properties) {
-            if (ts.isShorthandPropertyAssignment(q)) given.set(q.name.text, ident(q.name.text));
+            if (ts.isShorthandPropertyAssignment(q)) given.set(q.name.text, this.shorthandValue(q));
             else if (ts.isPropertyAssignment(q)) given.set((q.name as ts.Identifier).text, this.expr(q.initializer));
           }
         } else if (key === 'fullscreen' || key === 'animated' || key === 'cancelable') {
@@ -5644,7 +5697,7 @@ export class Translator implements AsyncTranslator {
       const v = name.replace(/^JSRecord<(.*)>$/, '$1');
       const entries = e.properties.map((p) => {
         if (ts.isPropertyAssignment(p)) return `(${ts.isComputedPropertyName(p.name) ? this.propertyKey(p.name.expression) : swiftString(literalKey(p.name, this.checker) ?? p.name.getText())}, ${this.coerce(p.initializer, v)})`;
-        if (ts.isShorthandPropertyAssignment(p)) return `(${swiftString(p.name.text)}, ${ident(p.name.text)})`;
+        if (ts.isShorthandPropertyAssignment(p)) return `(${swiftString(p.name.text)}, ${this.shorthandValue(p)})`;
         throw this.error(p, 'this member in a dictionary literal');
       });
       return entries.length ? `${name}([${entries.join(', ')}])` : `${name}()`;
@@ -5689,7 +5742,7 @@ export class Translator implements AsyncTranslator {
           const body = this.withThis(p, '__this', false, () => this.functionBody(p, 'Void', this.indent));
           given.set(`__set_${key}`, `{ (__this: ${target}, ${ident(v.text)}: ${f.accessor.value}) -> Void in${body.slice(1)}`);
         }
-      } else if (ts.isShorthandPropertyAssignment(p)) given.set(p.name.text, this.narrowed(p.name, ident(p.name.text)));
+      } else if (ts.isShorthandPropertyAssignment(p)) given.set(p.name.text, this.narrowed(p.name, this.shorthandValue(p)));
       else if (ts.isSpreadAssignment(p)) {
         const src = this.expr(p.expression);
         if (this.isAny(p.expression)) {

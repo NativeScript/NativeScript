@@ -90,3 +90,11 @@ function measure(screen: Screenish): string {
   return `${width}x${height}`;
 }
 console.log(measure(new Screenish()));
+
+let version = 1;
+function bump() {
+  return ++version;
+}
+const helpers = { bump, version };
+version = 5;
+console.log(helpers.version, helpers.bump(), version);
