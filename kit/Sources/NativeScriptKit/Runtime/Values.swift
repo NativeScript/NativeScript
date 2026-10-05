@@ -27,7 +27,7 @@ public protocol JSDynamic: AnyObject {
 
 /// A class with its own `toString()`, which JavaScript's string conversion calls.
 public protocol JSStringConvertible {
-    func toString() -> String
+    func toString() throws -> String
 }
 
 // MARK: - Optionals inside Any
@@ -647,7 +647,8 @@ public func jsToString(_ value: Any?) -> String {
     case let b as Bool: return b ? "true" : "false"
     case is JSNull: return "null"
     case let v as JSToPrimitive: return jsToString(jsUserPrimitive(v, "string") ?? nil)
-    case let v as JSStringConvertible: return v.toString()
+    // What a throwing toString() throws is not seen by a conversion that cannot throw: the default conversion.
+    case let v as JSStringConvertible: return (try? v.toString()) ?? "[object Object]"
     case let symbol as JSSymbol: return symbol.toString()
     case let big as JSBigInt: return big.toString()
     case let tagged as JSToStringTag: return "[object \(tagged.jsToStringTag)]"

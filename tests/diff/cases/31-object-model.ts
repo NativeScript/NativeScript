@@ -188,3 +188,22 @@ class IOSFrameLike extends FrameLike {
 }
 IOSFrameLike.animated = false;
 console.log(FrameLike.animated, IOSFrameLike.animated);
+
+// Methods of a generic class, which library mode erases.
+class Bag<T> {
+  private items: T[] = [];
+  add(item: T): void {
+    this.items.push(item);
+  }
+  getItem(i: number): T {
+    return this.items[i];
+  }
+  each(fn: (value: T, index: number) => void): void {
+    this.items.forEach((v, i) => fn(v, i));
+  }
+}
+const bag = new Bag<Named>();
+bag.add(new Named('n2'));
+let bagNames = '';
+bag.each((v: Named, i: number) => (bagNames += `${i}:${v.name}`));
+console.log(bag.getItem(0).name, bagNames);

@@ -1654,6 +1654,11 @@ export class Translator implements AsyncTranslator {
   /** A generic function compiled with its type parameters erased (`makeParser<T>`): its result as this call instantiates it. */
   private erasedResult(e: ts.CallExpression, code: string): string {
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+    // A method of a generic class, which library mode erases: what it gives is untyped.
+    if (this.library && decl && !ts.isJSDocSignature(decl) && ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && decl.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile) {
+      const declared = this.returnTypeOf(decl), actual = this.typeOf(e);
+      return declared === actual || actual === 'Void' ? code : this.convert(code, declared, actual);
+    }
     if (!decl || ts.isJSDocSignature(decl) || !decl.typeParameters?.length || decl.getSourceFile().isDeclarationFile) return code;
     if (!this.pluginFiles.has(decl.getSourceFile().fileName) && !decl.typeParameters.some(erasedTypeParameter)) return code;
     const declared = this.returnTypeOf(decl), actual = this.typeOf(e);
@@ -3230,6 +3235,12 @@ export class Translator implements AsyncTranslator {
     let bare: ts.Expression = e;
     while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare)) bare = bare.expression;
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
+    // Library mode: a function literal for a slot an erased generic types otherwise (`(value: Span) => …` where `(Any?) -> Void` is taken): adapted.
+    if (this.library && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && !this.carriesMethod(bare) && functionParts(target)) {
+      const own = this.closureType(bare);
+      const want = functionParts(target)!, have = functionParts(own);
+      if (have && have.params.length <= want.params.length && have.params.some((p, k) => p.replace(/^@escaping /, '') !== want.params[k].replace(/^@escaping /, ''))) return this.convert(this.expr(e), own, target);
+    }
     // An async function where a function returning nothing is wanted (a callback typed `() => void`): its promise is dropped.
     const want = functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')), have = functionParts(this.typeOf(e).replace(/^\((.*)\)[?!]$/, '$1'));
     if (want && have && want.result === 'Void' && /^JSPromise</.test(have.result) && want.params.length === have.params.length) {
@@ -4147,7 +4158,9 @@ export class Translator implements AsyncTranslator {
         out.push(this.coerce(a, pt));
         continue;
       }
-      out.push(this.coerce(a, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)));
+      // A method of a generic class, which library mode erases: the parameter's type as the method declares it.
+      const erased = this.library && decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile;
+      out.push(this.coerce(a, erased ? this.paramType(decl as ts.ParameterDeclaration) : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function value takes every parameter: the ones JavaScript leaves out are undefined.
