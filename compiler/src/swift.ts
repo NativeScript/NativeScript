@@ -195,7 +195,7 @@ export class Translator implements AsyncTranslator {
    * variables are static members of an enum named for the module, so modules
    * never collide with each other or shadow Swift's own functions (`round`).
    */
-  library: { moduleName(file: string): string | null; counterpart?(file: string, name: string): string | null; isMoot?(file: string): boolean; identities?: Set<string> } | null = null;
+  library: { moduleName(file: string): string | null; counterpart?(file: string, name: string): string | null; isMoot?(file: string): boolean; identities?: Set<string>; internalTypes?: Set<string> } | null = null;
   /** Library mode: generated classes whose names the hand-ported kit also declares. */
   readonly kitClashes: string[] = [];
 
@@ -1156,7 +1156,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private enumDecl(e: ts.EnumDeclaration): string {
-    const lines = [`enum ${ident(e.name.text)} {`];
+    const lines = [`enum ${ident(this.topName(e, e.name.text))} {`];
     for (const m of e.members) {
       const v = this.checker.getConstantValue(m);
       if (v === undefined) throw this.error(m, 'an enum member without a constant value');
@@ -2993,7 +2993,7 @@ export class Translator implements AsyncTranslator {
       };
       const library = !!this.library?.moduleName(sf.fileName);
       for (const st of sf.statements) {
-        if (ts.isClassDeclaration(st) && st.name) add(st.name.text, st);
+        if ((ts.isClassDeclaration(st) || ts.isEnumDeclaration(st)) && st.name) add(st.name.text, st);
         if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         // Library mode: an interface becomes a class of its name, so it shares the namespace with the classes.
         if (library && (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)))) add(st.name.text, st);
@@ -3008,10 +3008,12 @@ export class Translator implements AsyncTranslator {
       const kitClash = list.some((x) => ts.isClassDeclaration(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name));
       // A generated class and a hand-ported one of the same name: the hand port of that module has to go first.
       if (kitClash && list.some((x) => this.library?.moduleName(x.file.fileName))) this.kitClashes.push(name);
-      if (list.length < 2 && !kitClash) continue;
+      // A type the hand-written kit declares for itself (Signals' `Source`): the generated one takes its module's name.
+      const internalClash = !!this.library?.internalTypes?.has(name);
+      if (list.length < 2 && !kitClash && !internalClash) continue;
       // The app's first declaration keeps its name; the others take their module's.
       // Library mode: a class keeps its name over an interface of the same name, as it is the public API.
-      const keep = kitClash ? undefined : (this.library && list.find((x) => ts.isClassDeclaration(x.decl))) || list.find((x) => !this.pluginFiles.has(x.file.fileName)) || list[0];
+      const keep = kitClash || internalClash ? undefined : (this.library && list.find((x) => ts.isClassDeclaration(x.decl))) || list.find((x) => !this.pluginFiles.has(x.file.fileName)) || list[0];
       for (const x of list) {
         if (x === keep) continue;
         const module = x.file.fileName.split('/').pop()!.replace(/\.[^.]+$/, '').replace(/\W/g, '_');

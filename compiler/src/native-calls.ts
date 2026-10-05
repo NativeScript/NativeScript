@@ -482,7 +482,8 @@ export class NativeAPI {
     // An out-parameter: the cell's storage of the pointee's type, written back.
     const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
-    if (b === 'Selector' && ts.isStringLiteralLike(e)) return `Selector((${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))}))`;
+    // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
+    if (b === 'Selector' && ts.isStringLiteralLike(e)) return `NSSelectorFromString(${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))})`;
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
       return t.expr(e);
