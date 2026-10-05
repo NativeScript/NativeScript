@@ -23,6 +23,23 @@ public enum CorePackages {
     /// a compiled app resolves no module names at run time, so there is nothing to prepare or clear.
     public static let noModuleResolver: JSFunction = { _ in nil }
 
+    /// module-name-resolver's `resolveModuleName(path, ext)`: a compiled app's modules are named as written.
+    public static let resolveModuleName: JSFunction = { args in
+        let path = jsToString(args.first ?? nil), ext = args.count > 1 ? jsToString(args[1]) : ""
+        return ext.isEmpty || path.hasSuffix("." + ext) ? path : "\(path).\(ext)"
+    }
+
+    /// The app's stylesheet, which core loads as the module `app.css` (`global.loadModule`).
+    static var appCSS = ""
+
+    static func installModuleLoader() {
+        let load: JSFunction = { args in
+            let name = jsToString(args.first ?? nil)
+            return name.split(separator: "/").last.map(String.init) == "app.css" ? CorePackages.appCSS : nil
+        }
+        _ = try? jsSet(jsGlobalThis, "loadModule", load)
+    }
+
     /// ui/builder's `Builder`, which a compiled app has no XML for: views from an entry's `create`.
     public static let builder = JSObject([("createViewFromEntry", { (args: [Any?]) throws -> Any? in
         let entry = args.first ?? nil

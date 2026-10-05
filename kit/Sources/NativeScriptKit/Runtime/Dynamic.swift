@@ -118,6 +118,12 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     }
     // `cls.new()` of a native class object: an instance of its plain initializer, as `[cls new]`.
     if key == "new", arguments.isEmpty, let cls = jsFlat(object) as? NSObject.Type { return cls.init() }
+    // A class's `toString()`: one the program declares as its source begins, any other as the
+    // runtime prints a native one (`function WeakRef() { [native code] }`).
+    if key == "toString", let cls = jsFlat(object) as? Any.Type {
+        let name = String(describing: cls).components(separatedBy: "<")[0]
+        return cls is JSStaticKeyed.Type ? "class \(name) { }" : "function \(name.replacingOccurrences(of: "JS", with: "", options: .anchored))() { [native code] }"
+    }
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
     if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }

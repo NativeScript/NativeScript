@@ -370,3 +370,36 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
 
     public var description: String { jsInspect(self) }
 }
+
+/// A `Map`'s methods read by name from untyped code (`changeMap.forEach(fn)` where the map is `any`):
+/// the read-only ones, over its entries as JavaScript values; keys, values and entries as arrays.
+func jsMapMethod(_ map: JSMapProtocol, _ key: String) -> JSMethod? {
+    switch key {
+    case "forEach":
+        return { _, args in
+            for (k, v) in map.jsAnyEntries { _ = try jsCall(jsArg(args, 0), v, k, map) }
+            return nil
+        }
+    case "has": return { _, args in map.jsAnyEntries.contains { jsSameValueZero($0.0, jsArg(args, 0)) } }
+    case "get": return { _, args in map.jsAnyEntries.first { jsSameValueZero($0.0, jsArg(args, 0)) }?.1 ?? nil }
+    case "keys": return { _, _ in JSArray<Any?>(map.jsAnyEntries.map(\.0)) }
+    case "values": return { _, _ in JSArray<Any?>(map.jsAnyEntries.map(\.1)) }
+    case "entries": return { _, _ in JSArray<Any?>(map.jsAnyEntries.map { JSArray<Any?>([$0.0, $0.1]) as Any? }) }
+    default: return nil
+    }
+}
+
+/// A `Set`'s read-only methods read by name from untyped code, as `jsMapMethod`'s.
+func jsSetMethod(_ set: JSSetProtocol, _ key: String) -> JSMethod? {
+    switch key {
+    case "forEach":
+        return { _, args in
+            for v in set.jsAnyValues { _ = try jsCall(jsArg(args, 0), v, v, set) }
+            return nil
+        }
+    case "has": return { _, args in set.jsAnyValues.contains { jsSameValueZero($0, jsArg(args, 0)) } }
+    case "keys", "values": return { _, _ in JSArray<Any?>(set.jsAnyValues) }
+    case "entries": return { _, _ in JSArray<Any?>(set.jsAnyValues.map { JSArray<Any?>([$0, $0]) as Any? }) }
+    default: return nil
+    }
+}

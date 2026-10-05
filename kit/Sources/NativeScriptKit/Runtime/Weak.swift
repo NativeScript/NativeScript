@@ -1,7 +1,7 @@
 import Foundation
 
 /// NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives.
-public final class JSWeakRef<T: AnyObject>: JSDynamic {
+public final class JSWeakRef<T: AnyObject>: JSDynamic, JSToStringTag {
     private weak var target: T?
 
     public init(_ target: T) { self.target = target }
@@ -16,6 +16,7 @@ public final class JSWeakRef<T: AnyObject>: JSDynamic {
     }
     public var jsKeys: [String] { [] }
     public var jsClassName: String? { "WeakRef" }
+    public var jsToStringTag: String { "WeakRef" }
 }
 
 /// A `WeakMap` or `WeakSet`, whose contents cannot be listed.

@@ -123,13 +123,14 @@ public func kitNavigateBack() {
     jsReport { _ = try Frame.goBack() }
 }
 
-/// The app: its CSS, then the root view the template makes, as `Application.run({ create })` starts it.
+/// The app: its stylesheet, which core loads as `app.css`, then the root view the template makes, as `Application.run({ create })` starts it.
 public enum NativeScriptApplication {
     public static func run(css: String, _ root: @escaping () -> View) {
+        CorePackages.appCSS = css
+        CorePackages.installModuleLoader()
         CoreModules.initialize()
         let app: iOSApplication = Core_application_application.Application
         jsReport {
-            if !css.isEmpty { try app.addCss(css) }
             try app.run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
         }
     }

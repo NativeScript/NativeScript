@@ -406,9 +406,9 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         if let index = jsArrayIndex(key) { return match.values.element(Double(index)) ?? nil }
         return nil
     case let map as JSMapProtocol:
-        return key == "size" ? Double(map.jsSize) : nil
+        return key == "size" ? Double(map.jsSize) : jsMapMethod(map, key)
     case let set as JSSetProtocol:
-        return key == "size" ? Double(set.jsSize) : nil
+        return key == "size" ? Double(set.jsSize) : jsSetMethod(set, key)
     case let native as NSObject:
         return jsNativeGet(native, key)
     default:

@@ -1588,6 +1588,8 @@ export class Translator implements AsyncTranslator {
       return `{ (__a: Any?) -> ${type} in (${parts.map((t, k) => this.fromAny(`jsField(__a, "${k}")`, t)).join(', ')}) }(${code})`;
     }
     const whole = hasTopLevelArrow(type) ? functionParts(type) : null;
+    // Lenient code: undefined where a function is declared stays undefined (`if (valueConverter) …`).
+    if (whole && this.lenient) return `jsImplicit({ (__f: Any?) -> (${type})? in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', whole)} }(${code}))`;
     if (whole) return this.unboxFunction(code, whole);
     const base = type.replace(/\?$/, '');
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
@@ -3364,7 +3366,7 @@ export class Translator implements AsyncTranslator {
       }
       // A native struct is a value in Swift: a constant one's fields can still be assigned in JavaScript.
       const binding = constant && !this.native.isStructType(t) ? 'let' : 'var';
-      return `${i}${binding} ${name}: ${this.lenientRef(t)} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}`;
+      return `${i}${binding} ${name}: ${this.lenientRef(t)} = ${this.tryPrefix(d.initializer)}${this.keptOptional(this.coerce(d.initializer, t), this.lenientRef(t))}`;
     }
     const tmp = this.fresh('__d');
     return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, ts.isArrayBindingPattern(d.name) && this.jsIteration(d.initializer!) && !/^JSMatch[?!]?$/.test(this.typeOf(d.initializer!)) ? 'iterated' : this.typeOf(d.initializer!), !constant)}`;
@@ -3735,6 +3737,15 @@ export class Translator implements AsyncTranslator {
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    return this.keptOptional(this.coerced(e, target), target);
+  }
+
+  /** An optional the read unwraps (a native property TypeScript declares non-null), kept optional where one is held. */
+  private keptOptional(code: string, held: string): string {
+    return this.lenient && (isOptional(held) || held.endsWith('!')) && held !== 'Any?' && /^[\w.]+!$/.test(code) ? code.slice(0, -1) : code;
+  }
+
+  private coerced(e: ts.Expression, target: string): string {
     // A Promise executor's resolve passed on as a function: a function of the promise's value type.
     const resolvers = ts.isIdentifier(e) ? this.resolvers.get(this.resolve(e)!) : undefined;
     if (resolvers && (target === 'Any?' || functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')))) {
@@ -3843,6 +3854,8 @@ export class Translator implements AsyncTranslator {
       return target === 'Double?' ? `(${code}).map { Double($0.rawValue) }` : `((${code}).map { Double($0.rawValue) } ?? .nan)`;
     }
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (`map.get(k)` after `has(k)`).
+    // Lenient code: undefined passed where a string is declared stays falsy, as the string's zero.
+    if (this.lenient && target === 'String' && source === 'String?') return `(${this.expr(e)} ?? "")`;
     if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target);
     // Lenient code: a library call Swift gives as optional (`map.get(k)`), which the checker reads as its value type.
     const raw = this.lenient && ts.isCallExpression(bare) && source === target && target !== 'Any?' && !isOptional(target) && !isFunctionType(target) ? this.maybeUndefined(bare) : null;
@@ -4114,6 +4127,8 @@ export class Translator implements AsyncTranslator {
       if (from === 'Double' && this.native.isEnumType(to)) return this.native.toSwift(e.expression, to);
       if (to === 'Never') return this.expr(e.expression);
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
+      // A typed function asserted to `any` (`<any>callback`): a script function, which any caller can call.
+      if (to === 'Any?' && isFunctionType(from.replace(/^\((.*)\)[?!]$/, '$1'))) return this.convert(this.expr(e.expression), from, 'Any?');
       if (from !== to && from.replace(/[?!]$/, '') !== to.replace(/[?!]$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) {
         // An object of another shape asserted to an interface (`cur as ICalEvent`): the interface's class read from it.
         const target = this.checker.getTypeAtLocation(e).getSymbol();
@@ -6384,6 +6399,12 @@ export class Translator implements AsyncTranslator {
     return null;
   }
 
+  /** Whether a value's type is a class the program declares (not the SDK's or the runtime's). */
+  private programClass(e: ts.Expression): boolean {
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
+    return !!t.getSymbol()?.declarations?.some((d) => ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile) && !t.isUnion();
+  }
+
   private equality(e: ts.BinaryExpression): string {
     const K = ts.SyntaxKind;
     const op = e.operatorToken.kind;
@@ -6402,7 +6423,7 @@ export class Translator implements AsyncTranslator {
       if (!untypedRead(x)) return this.coerce(x, 'Any?');
       const target = (x as ts.PropertyAccessExpression | ts.ElementAccessExpression).expression;
       const key = ts.isElementAccessExpression(x) ? this.propertyKey(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
-      return `jsGet(${this.expr(target)}, ${key})`;
+      return `${ts.isOptionalChain(x) ? 'jsGetIfPresent' : 'jsGet'}(${this.expr(target)}, ${key})`;
     };
     // Two typed function values: the same function when they hold the same closure.
     if (!isNullish(a) && !isNullish(b) && (isFunctionType(lt.replace(/^\((.*)\)[?!]$/, '$1')) || isFunctionType(rt.replace(/^\((.*)\)[?!]$/, '$1')))) {
@@ -6414,8 +6435,15 @@ export class Translator implements AsyncTranslator {
     }
     // A member of an untyped object compared with a value: the comparison JavaScript makes, which a missing member fails.
     if (untypedRead(a) || untypedRead(b)) return `${negate ? '!' : ''}${strict ? 'jsStrictEquals' : 'jsLooseEquals'}(${raw(a)}, ${raw(b)})`;
-    if (isNullish(b) && lt !== 'Any?') return `${this.expr(a)} ${negate ? '!=' : '=='} nil`;
-    if (isNullish(a) && rt !== 'Any?') return `${this.expr(b)} ${negate ? '!=' : '=='} nil`;
+    // Lenient code: a variable of one of the program's classes holds nothing as undefined, which is not null.
+    if (strict && this.lenient) {
+      const [x, n] = isNullish(b) ? [a, b] : isNullish(a) ? [b, a] : [null, null];
+      if (x && n && n.kind === K.NullKeyword && ts.isIdentifier(x) && this.programClass(x)) return negate ? 'true' : 'false';
+    }
+    // An optional the read unwraps (a native property TypeScript declares non-null) is compared as it is.
+    const tested = (x: ts.Expression) => this.expr(x).replace(/!$/, '');
+    if (isNullish(b) && lt !== 'Any?') return `${tested(a)} ${negate ? '!=' : '=='} nil`;
+    if (isNullish(a) && rt !== 'Any?') return `${tested(b)} ${negate ? '!=' : '=='} nil`;
     if (lt === 'Any?' || rt === 'Any?' || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, ''))) {
       if (!strict && (isNullish(a) || isNullish(b))) return `${negate ? '!' : ''}jsIsNullish(${this.coerce(isNullish(a) ? b : a, 'Any?')})`;
       const fn = strict ? 'jsStrictEquals' : 'jsLooseEquals';
