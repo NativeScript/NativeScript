@@ -775,12 +775,41 @@ export class Translator implements AsyncTranslator {
       const init = own && ts.isVariableDeclaration(own) && !own.type ? own.initializer : undefined;
       if (init && (ts.isArrowFunction(init) || (ts.isFunctionExpression(init) && !isMethodValue(init))) && this.returnsMethod(init)) return returningAny(this.type(this.checker.getTypeAtLocation(init), init));
     }
+    if ((ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.untypedRecord(n)) return 'JSRecord<Any?>';
     // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
     if (ts.isConditionalExpression(n) && [n.whenTrue, n.whenFalse].every(isFunctionLiteral)) {
       const context = this.checker.getContextualType(n);
       if (context?.getCallSignatures().length) return this.type(context, n);
     }
     return this.type(this.checker.getTypeAtLocation(n), n);
+  }
+
+  private untypedRecords = new Map<ts.Node, boolean>();
+  /**
+   * A record a literal starts (`{ [NSFontAttributeName]: font }`) that values of another type are written to
+   * (`attributes[key] = color.ios`, untyped or by a lax check) and whose elements nothing reads: it holds any value.
+   */
+  private untypedRecord(n: ts.Identifier | ts.VariableDeclaration): boolean {
+    const d = ts.isVariableDeclaration(n) ? n : ts.isVariableDeclaration(n.parent) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration;
+    if (!d || !ts.isVariableDeclaration(d) || d.type || !d.initializer || !ts.isObjectLiteralExpression(d.initializer) || !ts.isIdentifier(d.name)) return false;
+    let found = this.untypedRecords.get(d);
+    if (found !== undefined) return found;
+    const element = this.checker.getTypeAtLocation(d.name).getStringIndexType();
+    const sym = this.checker.getSymbolAtLocation(d.name);
+    let written = false, read = false;
+    const visit = (x: ts.Node): void => {
+      if (ts.isElementAccessExpression(x) && ts.isIdentifier(x.expression) && this.checker.getSymbolAtLocation(x.expression) === sym) {
+        const write = ts.isBinaryExpression(x.parent) && x.parent.left === x && x.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken;
+        const value = write ? this.checker.getTypeAtLocation(x.parent.right) : null;
+        if (value && (value.flags & ts.TypeFlags.Any || !(this.checker as any).isTypeAssignableTo?.(value, element))) written = true;
+        else if (!write) read = true;
+      }
+      ts.forEachChild(x, visit);
+    };
+    if (element && !(element.flags & ts.TypeFlags.Any)) visit(d.parent.parent.parent);
+    found = written && !read;
+    this.untypedRecords.set(d, found);
+    return found;
   }
 
   private methodValued = new Map<ts.Node, boolean>();
@@ -6421,7 +6450,8 @@ export class Translator implements AsyncTranslator {
     if (struct) return struct;
     const literalClass = this.library ? this.literalClassOf(e) : null;
     if (literalClass) return this.classLiteral(e, literalClass);
-    const name = want ?? this.type(this.checker.getNonNullableType(type), e).replace(/\?$/, '');
+    const untyped = ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && this.untypedRecord(e.parent);
+    const name = want ?? (untyped ? 'JSRecord<Any?>' : this.type(this.checker.getNonNullableType(type), e).replace(/\?$/, ''));
     if (name.startsWith('JSRecord<')) {
       const v = name.replace(/^JSRecord<(.*)>$/, '$1');
       const entries = e.properties.map((p) => {

@@ -721,6 +721,10 @@ export class NativeAPI {
     if (source === '[Any]' && b.startsWith('[') && b !== '[Any]') return `(${t.expr(e)} as! ${b})`;
     // An untyped object where Swift takes a dictionary: its keys and values as the runtime marshals them.
     if (source === 'Any?' && /^\[\w+\s*:\s*Any\]$/.test(b)) return `jsToNativeDictionary(${t.expr(e)})`;
+    // An object of a literal's shape likewise.
+    if (/^(Object_\w+|JSObject|JSRecord<.*>)[?!]?$/.test(source) && b === '[AnyHashable: Any]') {
+      return optional(target) && /[?!]$/.test(source) ? `{ (__o: Any?) -> ${b}? in jsIsNullish(__o) ? nil : jsToNativeDictionary(__o) }(${t.expr(e)})` : `jsToNativeDictionary(${t.expr(e)})`;
+    }
     // A possibly missing option set where Swift takes one: none of the options.
     if (!optional(target) && source.endsWith('?') && this.isOptionSet(b)) return `(${t.expr(e)} ?? [])`;
     // A possibly missing string where Swift takes one: Objective-C would receive nil, which reads as empty.
