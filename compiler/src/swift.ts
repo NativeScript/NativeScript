@@ -757,6 +757,20 @@ export class Translator implements AsyncTranslator {
     return init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init)) ? init : null;
   }
 
+  /** Whether static accessors only read and write the static field a base class declares under their name. */
+  private forwardsToBaseStatic(cls: ts.ClassLikeDeclaration, name: string, a: { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }): boolean {
+    const field = (() => { for (let b = this.sourceBase(cls); b; b = this.sourceBase(b)) { const f = b.members.find((m) => ts.isPropertyDeclaration(m) && isStatic(m) && m.name.getText() === name); if (f) return b; } return null; })();
+    if (!field || !field.name) return false;
+    const target = (e: ts.Expression) => ts.isPropertyAccessExpression(e) && e.name.text === name && ts.isIdentifier(e.expression) && this.resolve(e.expression)?.valueDeclaration === field;
+    const get = a.get?.body?.statements;
+    const getOk = !!get && get.length === 1 && ts.isReturnStatement(get[0]) && !!get[0].expression && target(get[0].expression);
+    const set = a.set?.body?.statements;
+    const p = a.set?.parameters[0]?.name;
+    const setOk = !a.set || (!!set && set.length === 1 && ts.isExpressionStatement(set[0]) && ts.isBinaryExpression(set[0].expression) && set[0].expression.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && target(set[0].expression.left) && !!p && ts.isIdentifier(p) && ts.isIdentifier(set[0].expression.right) && set[0].expression.right.text === p.text);
+    return getOk && setOk;
+  }
+
   /** Library mode: a function declaration with a `this` parameter, named as a value rather than called. */
   private thisFunction(e: ts.Identifier): ts.FunctionDeclaration | null {
     if (!this.library || (ts.isCallExpression(e.parent) && e.parent.expression === e)) return null;
@@ -2160,10 +2174,10 @@ export class Translator implements AsyncTranslator {
       });
       this.indent = '    ';
       lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
-    } else if (fieldInits.length) {
-      const baseThrows = !!baseCtor && this.throwsInfo.fn(baseCtor);
-      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
-      else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init() {`, ...(appBase || kitRoot ? ['        super.init()'] : []), ...fieldInits, '    }');
+    } else if (fieldInits.length || this.throwsInfo.initThrows(cls)) {
+      const baseThrows = !!appBase && this.throwsInfo.initThrows(appBase);
+      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
+      else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...fieldInits, '    }');
     }
     // A class object literals are typed as (`const info = <Info>{}`): an instance made without its constructor or field initializers, as such a literal has none.
     if (this.library && !base && this.literalClasses().has(cls)) {
@@ -2187,6 +2201,8 @@ export class Translator implements AsyncTranslator {
     }
     if (accessors.has('jsToStringTag')) conformances.push('JSToStringTag');
     for (const [n, a] of accessors) {
+      // A static accessor pair that reads and writes a base class's static field of its name: the field, which Swift's subclass inherits.
+      if (a.get && isStatic(a.get) && this.forwardsToBaseStatic(cls, n, a)) continue;
       // A property with only a setter reads as undefined in JavaScript.
       // An override that narrows its type (`get ios(): UIColor` over `get ios(): any`) keeps the type it overrides, as Swift requires.
       const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));

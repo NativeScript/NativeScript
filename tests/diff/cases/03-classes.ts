@@ -88,3 +88,20 @@ class Box extends Maker {
 const makers: Maker[] = [new Maker(), new Box()];
 for (const m of makers) console.log(m.make() === null, m.scale(3));
 console.log(new Box().make().size);
+
+// A subclass constructor that throws, under a base without one.
+class Quiet {
+  tag = 'q';
+}
+class Loud extends Quiet {
+  constructor(n: number) {
+    super();
+    if (n < 0) throw new Error('negative');
+  }
+}
+class Louder extends Loud {}
+try {
+  new Louder(-1);
+} catch (e) {
+  console.log((e as Error).message, new Quiet().tag, new Louder(1).tag);
+}

@@ -173,3 +173,18 @@ const host: any = new TagHost();
 console.log(host.tag);
 host.tag = 'b';
 console.log(host.tag);
+
+// Static accessors of a subclass over its base's static field.
+class FrameLike {
+  static animated = true;
+}
+class IOSFrameLike extends FrameLike {
+  static get animated(): boolean {
+    return FrameLike.animated;
+  }
+  static set animated(value: boolean) {
+    FrameLike.animated = value;
+  }
+}
+IOSFrameLike.animated = false;
+console.log(FrameLike.animated, IOSFrameLike.animated);
