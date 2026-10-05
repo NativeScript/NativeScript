@@ -181,6 +181,8 @@ export class NativeAPI {
     // A no-argument method read as a property in the d.ts (`UIColor.redColor` is a class property there).
     if (m.kind === 'method' && !m.params.length) return this.fromSwift(`${target}.${m.swift}()`, m.returns, e);
     if (m.kind === 'init' && !m.params.length) return this.fromSwift(`${target}()`, m.returns, e);
+    // A method tested for (`x.method && x.method(y)`): whether the object has it, as the runtime finds it on the object.
+    if (m.kind === 'method' && tested(e)) return `${r.isStatic ? `(${target}.self as AnyObject)` : target}.responds(to: NSSelectorFromString(${JSON.stringify(m.selector)}))`;
     throw this.t.error(e, `${r.name}.${e.name.text} read as a value`);
   }
 
@@ -760,6 +762,17 @@ export class NativeAPI {
     }
     return this.enumTypes.get(swift) ?? null;
   }
+}
+
+/** An expression whose value only decides a branch: a condition, the operand of `!`, or an operand of `&&`/`||` that is one or comes first. */
+function tested(e: ts.Expression): boolean {
+  const p = e.parent;
+  if (ts.isParenthesizedExpression(p)) return tested(p);
+  if (ts.isPrefixUnaryExpression(p)) return p.operator === ts.SyntaxKind.ExclamationToken;
+  if (ts.isBinaryExpression(p) && (p.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken || p.operatorToken.kind === ts.SyntaxKind.BarBarToken)) return p.left === e || tested(p);
+  if (ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) return p.expression === e;
+  if (ts.isConditionalExpression(p) || ts.isForStatement(p)) return p.condition === e;
+  return false;
 }
 
 function inStaticMember(n: ts.Node): boolean {
