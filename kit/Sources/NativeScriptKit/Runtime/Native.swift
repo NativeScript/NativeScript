@@ -20,7 +20,13 @@ func jsNativeBoolean(_ v: Any) -> Bool? {
     return n.boolValue
 }
 
+/// A program's subclass of a native class: its own members by name, which Objective-C cannot see; nil for a name it does not declare.
+public protocol JSNativeMembers: AnyObject {
+    func jsMember(_ key: String) -> Any??
+}
+
 func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
+    if let own = object as? JSNativeMembers, let value = own.jsMember(key) { return value }
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
     if jsHasObjCProperty(type(of: object), key) { return jsFromNative(object.value(forKey: key)) }
@@ -134,6 +140,33 @@ public func jsFromNative(_ value: Any?) -> Any? {
     #endif
     return v
 }
+
+#if canImport(UIKit)
+/// A geometry struct from what script holds for one: the struct itself, an NSValue, or the object `jsFromNative` makes of it.
+public func jsNativeStruct<T>(_ value: Any?, _: T.Type) -> T? {
+    guard let v = jsFlat(value) else { return nil }
+    if let s = v as? T { return s }
+    if let nsValue = v as? NSValue, !(v is NSNumber) {
+        switch T.self {
+        case is CGRect.Type: return nsValue.cgRectValue as? T
+        case is CGSize.Type: return nsValue.cgSizeValue as? T
+        case is CGPoint.Type: return nsValue.cgPointValue as? T
+        case is UIEdgeInsets.Type: return nsValue.uiEdgeInsetsValue as? T
+        default: return nil
+        }
+    }
+    let n = { (o: Any?, k: String) -> CGFloat in CGFloat(jsToNumber((try? jsGet(o, k)) ?? nil)) }
+    switch T.self {
+    case is CGPoint.Type: return CGPoint(x: n(v, "x"), y: n(v, "y")) as? T
+    case is CGSize.Type: return CGSize(width: n(v, "width"), height: n(v, "height")) as? T
+    case is CGRect.Type:
+        let origin = (try? jsGet(v, "origin")) ?? nil, size = (try? jsGet(v, "size")) ?? nil
+        return CGRect(x: n(origin, "x"), y: n(origin, "y"), width: n(size, "width"), height: n(size, "height")) as? T
+    case is UIEdgeInsets.Type: return UIEdgeInsets(top: n(v, "top"), left: n(v, "left"), bottom: n(v, "bottom"), right: n(v, "right")) as? T
+    default: return nil
+    }
+}
+#endif
 
 /// A script Date as Foundation's, the same instant: what the runtime passes for one.
 public func jsNativeDate(_ date: JSDate) -> Date { Date(timeIntervalSince1970: date.time / 1000) }

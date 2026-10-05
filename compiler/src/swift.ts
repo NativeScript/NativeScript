@@ -1078,6 +1078,8 @@ export class Translator implements AsyncTranslator {
   isPromiseType(t: string): boolean { return t.startsWith('JSPromise<'); }
   /** A field's type and initial value before its initializer runs: lenient code's object fields hold undefined too. */
   private fieldType(t: string): string {
+    // Lenient code: a number field never assigned is undefined, which compares and computes as NaN does.
+    if (this.lenient && t === 'Double') return 'Double = .nan';
     const declared = this.lenientRef(t);
     if (declared === t) return this.deferred(t);
     const z = this.zero(t);
@@ -4956,7 +4958,9 @@ export class Translator implements AsyncTranslator {
       // An override emitted with its root's signature (library mode): the parameter as Swift has it.
       const method = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
-      out.push(this.coerce(a, emitted ?? (erased ? this.paramType(decl as ts.ParameterDeclaration) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
+      // An optional parameter of the program's (`cssFileName?: string`) takes undefined as it is.
+      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && !!decl.questionToken && !decl.getSourceFile().isDeclarationFile && ['String', 'Double', 'Bool'].includes(at);
+      out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.paramType(decl as ts.ParameterDeclaration) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.
@@ -6164,6 +6168,8 @@ export class Translator implements AsyncTranslator {
     if (maybe && held && this.undefinedVars.get(held) === 'Any?') return `jsTypeof(${maybe})`;
     if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
     if (t.endsWith('?')) return `(${this.expr(e.expression)} == nil ? "undefined" : ${swiftString(known)})`;
+    // Lenient code reads an undefined number as NaN (an omitted `atIndex`), the only value typeof can tell it by.
+    if (this.lenient && known === 'number' && ts.isIdentifier(e.expression)) return `(${this.expr(e.expression)}.isNaN ? "undefined" : "number")`;
     // Lenient code holds an object implicitly unwrapped: undefined until assigned.
     if (this.lenient && known === 'object') return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : ${swiftString(known)})`;
     return swiftString(known);
@@ -6343,6 +6349,10 @@ export class Translator implements AsyncTranslator {
         const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
           : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil' : v;
         // Lenient code: `a && a.b` where a is an object and the result is not: a falsy a is undefined, read as the result's type reads it.
+        // An object result: a falsy object operand is missing, so the result is.
+        if (this.lenient && op === K.AmpersandAmpersandToken && t !== 'Any?' && this.lenientRef(t) !== t && (leftType.endsWith('?') || this.lenientRef(leftType) !== leftType)) {
+          return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : nil }()))`;
+        }
         if (this.lenient && op === K.AmpersandAmpersandToken && leftValue === v && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') && t !== 'Any?') {
           const z = this.zero(t);
           if (z) return `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : ${z} }())`;
@@ -6440,6 +6450,8 @@ export class Translator implements AsyncTranslator {
       const [x, n] = isNullish(b) ? [a, b] : isNullish(a) ? [b, a] : [null, null];
       if (x && n && n.kind === K.NullKeyword && ts.isIdentifier(x) && this.programClass(x)) return negate ? 'true' : 'false';
     }
+    // Lenient code holds an undefined or null number as NaN.
+    if (this.lenient && (isNullish(b) && lt === 'Double' || isNullish(a) && rt === 'Double')) return `${negate ? '!' : ''}${this.expr(isNullish(b) ? a : b)}.isNaN`;
     // An optional the read unwraps (a native property TypeScript declares non-null) is compared as it is.
     const tested = (x: ts.Expression) => this.expr(x).replace(/!$/, '');
     if (isNullish(b) && lt !== 'Any?') return `${tested(a)} ${negate ? '!=' : '=='} nil`;

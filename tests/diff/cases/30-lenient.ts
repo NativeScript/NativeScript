@@ -171,3 +171,46 @@ function placed(align: string): number {
   return top;
 }
 console.log(placed('top'), placed('bottom'));
+
+// A module name without its extension, as core's sanitizeModuleName makes it.
+function withoutExtension(moduleName: string, removeExtension = true): string {
+  moduleName = moduleName.trim();
+  if (moduleName.startsWith('~/')) {
+    moduleName = moduleName.substring(2);
+  }
+  if (removeExtension) {
+    const extToRemove = ['js', 'css'];
+    const extensionRegEx = new RegExp(`(.*)\\.(?:${extToRemove.join('|')})`, 'i');
+    moduleName = moduleName.replace(extensionRegEx, '$1');
+  }
+  return moduleName;
+}
+console.log(withoutExtension('app.css'), withoutExtension('~/main.js'));
+
+// A number field never assigned is undefined: no comparison holds, and arithmetic gives NaN.
+class Measured {
+  public effectiveWidth: number;
+  public setWidth(w: number) {
+    this.effectiveWidth = w;
+  }
+}
+const measured = new Measured();
+console.log(measured.effectiveWidth >= 0, measured.effectiveWidth < 0, measured.effectiveWidth + 1, !measured.effectiveWidth);
+measured.setWidth(0);
+console.log(measured.effectiveWidth >= 0);
+
+// A number field initialized to null falls back to a default until assigned.
+class Padded {
+  private _effectivePadding: number = null;
+  public _defaultPadding = 7;
+  get effectivePadding(): number {
+    return this._effectivePadding != null ? this._effectivePadding : this._defaultPadding;
+  }
+  set effectivePadding(v: number) {
+    this._effectivePadding = v;
+  }
+}
+const padded = new Padded();
+console.log(padded.effectivePadding);
+padded.effectivePadding = 0;
+console.log(padded.effectivePadding);

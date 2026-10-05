@@ -710,6 +710,8 @@ export class NativeAPI {
     const cls = b.replace(/^any /, '');
     if (source === 'Any?' && /^[A-Z]\w*$/.test(cls) && !this.isEnumType(cls) && !NUMBERS.has(cls) && cls !== 'String' && cls !== 'Bool') {
       if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
+      // A geometry struct the runtime gives script as an object (`window.screen.bounds`): the struct again.
+      if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(cls)) return optional(target) ? `jsNativeStruct(${t.expr(e)}, ${cls}.self)` : `jsNativeStruct(${t.expr(e)}, ${cls}.self)!`;
       return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `(jsFlat(${t.expr(e)}) as! ${b})`;
     }
     // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
@@ -1002,6 +1004,19 @@ export class NativeAPI {
         continue;
       }
       lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
+    }
+    // The class's own fields and getters, which Objective-C cannot see, read by name from untyped code (`(<any>controller).owner`).
+    const native = (n: string) => !!lookupMember(base.module, base.name, n, false) || protocols.some((p) => lookupMember(p.module, p.name, n, false));
+    const own = cls.members.filter((m): m is ts.PropertyDeclaration | ts.GetAccessorDeclaration => (ts.isPropertyDeclaration(m) || ts.isGetAccessorDeclaration(m)) && ts.isIdentifier(m.name)
+      && m !== listed && m !== exposedSpec && !ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) && !native(m.name.text) && !t.typeOf(m.name).includes('->'));
+    if (own.length) {
+      lines.push('    func jsMember(_ key: String) -> Any?? {', '        switch key {');
+      for (const m of own) {
+        const n = (m.name as ts.Identifier).text;
+        lines.push(`        case ${JSON.stringify(n)}: return .some(${ts.isGetAccessorDeclaration(m) && t.throwsInfo.fn(m) ? `jsReported { try self.${n} } ?? nil` : `self.${n} as Any?`})`);
+      }
+      lines.push('        default: return nil', '        }', '    }');
+      lines[0] = lines[0].replace(/ \{$/, ', JSNativeMembers {');
     }
     t.indent = '';
     t.inNativeClassBody = false;

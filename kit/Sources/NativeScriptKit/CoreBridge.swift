@@ -58,6 +58,7 @@ final class TemplateChildren: RegionHost {
                     if let p = first as? Page { page = p } else { page = try Page(); page.content = first as? View }
                     let entry = JSObject([("create", { (_: [Any?]) throws -> Any? in page } as JSFunction), ("animated", false)])
                     try frame.navigate(entry)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) { print("DBG page", (try? page.frame) as Any, page.parent as Any, page.nativeViewProtected as Any, page.isLoaded, page._context as Any, (page.content as View?)?.nativeViewProtected as Any, (page.content as View?)?.isLoaded as Any, page.viewController as Any) }
                 }
             } else {
                 for view in next where !placed.contains(where: { $0 === view }) {
@@ -129,6 +130,7 @@ public enum NativeScriptApplication {
         CorePackages.appCSS = css
         CorePackages.installModuleLoader()
         CoreModules.initialize()
+        if ProcessInfo.processInfo.environment["NS_KIT_TRACE"] != nil { Trace.setCategories(Trace.categories.All); Trace.enable() }
         let app: iOSApplication = Core_application_application.Application
         jsReport {
             try app.run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
