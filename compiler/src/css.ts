@@ -7,7 +7,7 @@ import { setDefines } from './platform.ts';
 import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export type CssNode =
   | { type: 'rule'; selectors: string[]; declarations: CssDeclaration[] }
@@ -40,7 +40,7 @@ export function appStylesheets(app: string, platform: 'ios' | 'android', importe
   const out = join(dir, 'sheets.json');
   const worker = join(dirname(fileURLToPath(import.meta.url)), 'css-worker.ts');
   try {
-    execFileSync(process.execPath, [worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'] });
+    execFileSync(process.execPath, [...stripTypes(), worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'] });
     const result = JSON.parse(readFileSync(out, 'utf8'));
     setDefines(result.defines);
     return result.sheets;
@@ -102,4 +102,10 @@ export function kitCss(sheets: Stylesheet[]): string {
   };
   for (const sheet of sheets) emit(sheet.ast.stylesheet.rules, '');
   return lines.join('\n') + '\n';
+}
+
+/** The installed package's type-stripping hook, which a child process under node_modules needs to run the compiler's .ts. */
+function stripTypes(): string[] {
+  const hook = fileURLToPath(new URL('../../bin/strip-types.js', import.meta.url));
+  return existsSync(hook) ? ['--import', pathToFileURL(hook).href] : [];
 }
