@@ -6226,6 +6226,11 @@ export class Translator implements AsyncTranslator {
     const left = e.left, right = e.right;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
+    // Lenient code: null assigned to a local of a native struct declared without a value, which Swift holds implicitly unwrapped, is no struct.
+    if (this.lenient && isNullish(right) && ts.isIdentifier(left) && this.native.isStructType(this.typeOf(left))) {
+      const d = this.resolve(left)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && !d.initializer && !ts.isSourceFile(d.parent.parent.parent)) return `${this.expr(left)} = nil`;
+    }
     if (ts.isPropertyAccessExpression(left) && this.isAddedMember(left)) return `(${this.expr(left.expression)} as JSDynamic)[jsKey: ${swiftString(left.name.text)}] = ${this.coerce(right, 'Any?')}`;
     if (ts.isPropertyAccessExpression(left) && this.isNativeExpando(left)) return `jsSetNativeExpando(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
