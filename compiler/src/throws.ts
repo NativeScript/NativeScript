@@ -6,7 +6,7 @@ type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
 const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
-  'Number.toLocaleString', 'BigInt.toLocaleString', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
+  'Number.toLocaleString', 'BigInt.toLocaleString', 'Function.apply', 'CallableFunction.apply', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
 
 /**
  * Which functions throw, worked out across the call graph: a function is
@@ -22,10 +22,14 @@ export class Throws {
   /** Whether a value is untyped in Swift (`Any?`): reading its members goes through `jsGet`, which throws. */
   private untyped: (n: ts.Node) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean) {
+  /** A member the translation reaches by name (`jsGet`), which throws as an untyped read does. */
+  private byName: (n: ts.PropertyAccessExpression) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, byName: (n: ts.PropertyAccessExpression) => boolean = () => false) {
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
+    this.byName = byName;
     const fns: Fn[] = [];
     const collect = (n: ts.Node) => {
       if (ts.isFunctionLike(n) && (n as Fn).body) fns.push(n as Fn);
@@ -107,7 +111,7 @@ export class Throws {
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.
-      if (this.untyped(n.expression)) return true;
+      if (this.untyped(n.expression) || (ts.isPropertyAccessExpression(n) && this.byName(n))) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];

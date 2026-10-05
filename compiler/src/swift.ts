@@ -194,7 +194,58 @@ export class Translator implements AsyncTranslator {
    * variables are static members of an enum named for the module, so modules
    * never collide with each other or shadow Swift's own functions (`round`).
    */
-  library: { moduleName(file: string): string | null; counterpart?(file: string, name: string): string | null; isMoot?(file: string): boolean; identities?: Set<string> } | null = null;
+  library: { moduleName(file: string): string | null; counterpart?(file: string, name: string): string | null; isMoot?(file: string): boolean; identities?: Set<string>; sourceOf?(declarationFile: string): string | null } | null = null;
+  private argumentsReaders = new Map<ts.Node, boolean>();
+  /** Whether a function reads its `arguments`: it then takes the call's arguments as one list, and its parameters read from it. */
+  readsArguments(fn: ts.SignatureDeclaration): boolean {
+    if (!('body' in fn) || !fn.body || ts.isArrowFunction(fn)) return false;
+    let found = this.argumentsReaders.get(fn);
+    if (found !== undefined) return found;
+    found = false;
+    const visit = (n: ts.Node) => {
+      if (found || (n !== fn.body && ts.isFunctionLike(n) && !ts.isArrowFunction(n)) || ts.isClassLike(n)) return;
+      if (ts.isIdentifier(n) && this.isArguments(n)) found = true;
+      ts.forEachChild(n, visit);
+    };
+    visit(fn.body);
+    this.argumentsReaders.set(fn, found);
+    return found;
+  }
+
+  /** The `arguments` of the function around, not a variable of that name. */
+  private isArguments(e: ts.Node): boolean {
+    if (!ts.isIdentifier(e) || e.text !== 'arguments') return false;
+    const sym = this.checker.getSymbolAtLocation(e);
+    return !!sym && !sym.declarations?.length;
+  }
+
+  private compiledSymbols = new Map<ts.Symbol, ts.Symbol | null>();
+  /** Library mode: a member a compiled class's published declaration gives it that the class does not declare (an optional method its subclasses implement): reached by name. */
+  private undeclaredMember(e: ts.PropertyAccessExpression): boolean {
+    const decl = this.library?.sourceOf ? this.checker.getSymbolAtLocation(e.name)?.declarations?.[0] : undefined;
+    if (!decl?.getSourceFile().isDeclarationFile || !(ts.isClassLike(decl.parent) || ts.isInterfaceDeclaration(decl.parent)) || !decl.parent.name) return false;
+    const compiled = this.compiledCounterpart(this.checker.getSymbolAtLocation(decl.parent.name));
+    return !!compiled && !!(compiled.flags & ts.SymbolFlags.Class) && !this.checker.getDeclaredTypeOfSymbol(compiled).getProperty(e.name.text);
+  }
+  /**
+   * Library mode: what a name core's published declarations give (`import { ActionItem } from '.'`) is
+   * in the program, when the module those declarations describe is compiled with it: its export of that name.
+   */
+  compiledCounterpart(sym: ts.Symbol | undefined): ts.Symbol | null {
+    if (!sym || !this.library?.sourceOf) return null;
+    let found = this.compiledSymbols.get(sym);
+    if (found !== undefined) return found;
+    found = null;
+    const decl = sym.declarations?.[0];
+    const source = decl?.parent && ts.isSourceFile(decl.parent) && decl.getSourceFile().isDeclarationFile ? this.library.sourceOf(decl.getSourceFile().fileName) : null;
+    const sf = source ? this.sourceFiles.find((f) => f.fileName === source) : undefined;
+    const module = sf && this.checker.getSymbolAtLocation(sf);
+    const exported = module && this.checker.getExportsOfModule(module).find((x) => x.name === sym.name);
+    const target = exported && (exported.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(exported) : exported);
+    if (target && target.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.Interface | ts.SymbolFlags.Enum) && target.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) found = target;
+    this.compiledSymbols.set(sym, found);
+    return found;
+  }
   /** Library mode: generated classes whose names the hand-ported kit also declares. */
   readonly kitClashes: string[] = [];
 
@@ -211,7 +262,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } });
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (n) => this.undeclaredMember(n));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -413,7 +464,7 @@ export class Translator implements AsyncTranslator {
       });
       return `(${params.join(', ')}) throws -> ${this.type(s.getReturnType(), where)}`;
     }
-    const extended = sym && sym.flags & ts.SymbolFlags.Interface ? this.extendedClass(t) : null;
+    const extended = sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) ? this.extendedClass(t) : null;
     if (extended) return this.type(extended, where);
     if (sym && this.isDynamicShape(sym)) return 'Any?';
     if (this.isEventData(t)) return 'EventData';
@@ -422,6 +473,8 @@ export class Translator implements AsyncTranslator {
     // RxJS's classes are the kit's Rx classes: core has an Observable of its own.
     if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/rxjs.d.ts') return `Rx${name}${(t as ts.TypeReference).typeArguments?.length ? `<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>` : ''}`;
     if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
+    const compiled = this.compiledCounterpart(sym);
+    if (compiled) return this.type(this.checker.getDeclaredTypeOfSymbol(compiled), where);
     if (name && Object.hasOwn(KIT_NAMES, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES[name];
     const renamed = sym && this.topNames().get(sym.valueDeclaration ?? sym.declarations?.[0]!);
     if (renamed) return renamed;
@@ -488,6 +541,7 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    if (this.isArguments(n)) return 'JSArray<Any?>';
     if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n))) return 'Any?';
     if (this.library && this.holdsMethods(n)) return 'Any?';
     // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
@@ -527,7 +581,9 @@ export class Translator implements AsyncTranslator {
   private methodValue(fn: ts.FunctionExpression): string {
     const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this'));
     const ret = this.returnTypeOf(fn);
-    const binds = params.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.paramType(p)} = ${this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true)}`);
+    // A function reading `arguments` binds its parameters from them itself.
+    const binds = this.readsArguments(fn) ? ['let __arguments = JSArray<Any?>(__a)']
+      : params.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.paramType(p)} = ${this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true)}`);
     const body = this.withThis(fn, '__this', true, () => this.functionBody(fn, ret, this.indent + '    '));
     const call = `try { () throws -> ${ret} in${body.slice(1)}()`;
     const result = ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`;
@@ -1104,9 +1160,9 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A typed function value as an untyped JavaScript function, callable through `jsCall`. */
-  boxFunction(code: string, type: string): string {
+  boxFunction(code: string, type: string, restAt = -1): string {
     const fn = functionParts(isOptional(type) ? type.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1') : type)!;
-    const args = fn.params.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true));
+    const args = fn.params.map((p, k) => k === restAt ? `${p}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', p.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true));
     const call = `try __f(${args.join(', ')})`;
     const body = fn.result === 'Void' ? `${call}; return nil` : `return ${this.convert(call, fn.result, 'Any?')}`;
     return `{ (__f: @escaping ${fn.text}) -> JSFunction in { (__a: [Any?]) throws -> Any? in ${body} } }(${code})`;
@@ -1190,6 +1246,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
+    if (this.readsArguments(fn)) return `${closure ? '' : '_ '}__arguments: JSArray<Any?>`;
     return fn.parameters.map((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       if (p.dotDotDotToken) return `${closure ? '' : '_ '}${name}: ${this.typeOf(p.name)}`;
@@ -1219,6 +1276,22 @@ export class Translator implements AsyncTranslator {
   paramPrelude(fn: ts.SignatureDeclaration): string[] {
     const i = this.indent;
     const lines: string[] = [];
+    if (this.readsArguments(fn)) {
+      // The parameters read from the arguments the call passed, undefined where it passed none.
+      fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this')).forEach((p, k) => {
+        if (!ts.isIdentifier(p.name)) throw this.error(p, 'a destructured parameter of a function reading `arguments`');
+        const name = ident(p.name.text);
+        const assigned = !!fn.body && assignsTo(fn.body, this.checker.getSymbolAtLocation(p.name), this.checker);
+        const arg = `jsArg(__arguments.storage, ${k})`;
+        const pt = this.typeOf(p.name);
+        let value: string;
+        if (p.dotDotDotToken) value = `JSArray(__arguments.storage.dropFirst(${k}).map { ${this.fromAnyCode('$0', pt.replace(/^JSArray<(.*)>$/, '$1'), true)} })`;
+        else if (p.initializer) value = `(jsFlat(${arg}) == nil ? ${this.coerce(p.initializer, pt)} : ${this.fromAnyCode(arg, pt, true)})`;
+        else value = this.fromAnyCode(arg, p.questionToken ? optionalType(pt) : pt, true);
+        lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${p.questionToken && !p.initializer ? optionalType(pt) : pt} = ${value}`);
+      });
+      return lines;
+    }
     fn.parameters.forEach((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       // A parameter the body assigns is a variable of its own (Swift parameters are constants).
@@ -1372,7 +1445,7 @@ export class Translator implements AsyncTranslator {
 
   /** `(r) => r.id` as a Swift closure with explicit types. */
   closure(fn: ts.ArrowFunction | ts.FunctionExpression, pad: string[] = []): string {
-    if (this.library && ts.isFunctionExpression(fn) && isMethodValue(fn)) return this.methodValue(fn);
+    if (this.library && ts.isFunctionExpression(fn) && (isMethodValue(fn) || this.readsArguments(fn))) return this.methodValue(fn);
     // A callback whose slot returns void returns nothing, whatever its expression body evaluates to.
     const ret = this.closureReturn(fn);
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? 'throws ' : '';
@@ -1604,6 +1677,8 @@ export class Translator implements AsyncTranslator {
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
     const witnesses: string[] = [];
     const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
+      // A class's published declaration (`implements ActionBarDefinition`) only checks its shape.
+      .filter((i) => !(this.library && (this.checker.getTypeAtLocation(i).getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class))
       // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
       .filter((i) => !this.baseImplements(cls, i.expression.getText()) && this.protocolWitnesses(cls, i, witnesses))
       .map((i) => i.expression.getText());
@@ -1728,7 +1803,7 @@ export class Translator implements AsyncTranslator {
       this.indent = '    ';
       lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
     } else if (fieldInits.length) {
-      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)}) {`, `        super.init(${baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
+      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)}) {`, `        super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init() {`, ...(appBase || kitRoot ? ['        super.init()'] : []), ...fieldInits, '    }');
     }
     // Accessors pair into one property.
@@ -2353,7 +2428,7 @@ export class Translator implements AsyncTranslator {
       return `${i}${binding} ${name}: ${t} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}`;
     }
     const tmp = this.fresh('__d');
-    return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', !constant)}`;
+    return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, ts.isArrayBindingPattern(d.name) && this.jsIteration(d.initializer!) ? 'iterated' : this.typeOf(d.initializer!), !constant)}`;
   }
 
   /** The type and value a destructuring pattern reads from: an iterator yields only as many values as an array pattern names. */
@@ -2372,6 +2447,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(name)) return declare(name, this.typeOf(name), value);
     const lines: string[] = [];
     const source = this.checker.getTypeAtLocation(name);
+    const arrayValue = (_type || this.typeOf(name)).replace(/\?$/, '').startsWith('JSArray<');
     name.elements.forEach((el, k) => {
       if (ts.isOmittedExpression(el)) return;
       if (el.dotDotDotToken) {
@@ -2395,7 +2471,9 @@ export class Translator implements AsyncTranslator {
         read = this.isAny(name) ? `(try jsGet(${value}, ${swiftString(key)}))`
           : record ? this.undefinedAs(`${value}[${swiftString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1])
           : `${value}.${ident(key)}`;
-      } else read = this.checker.isTupleType(source) ? `${value}.${k}` : `${value}[${k}]`;
+      } else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
+      // Past the end is undefined.
+      else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : `${value}[${k}]`;
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);
@@ -2680,7 +2758,10 @@ export class Translator implements AsyncTranslator {
       const maybe = this.maybeUndefined(e);
       if (maybe) return `(${maybe} as Any?)`;
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
-      if ((ts.isArrowFunction(e) || ts.isFunctionExpression(e)) && !e.parameters.some((p) => p.dotDotDotToken || !ts.isIdentifier(p.name))) return this.convert(this.expr(e), this.closureType(e), 'Any?');
+      if ((ts.isArrowFunction(e) || ts.isFunctionExpression(e)) && !e.parameters.some((p) => !ts.isIdentifier(p.name))) {
+        const rest = e.parameters.findIndex((p) => p.dotDotDotToken);
+        return rest < 0 ? this.convert(this.expr(e), this.closureType(e), 'Any?') : this.boxFunction(this.expr(e), this.closureType(e), rest);
+      }
       if (functionParts(source.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) return this.convert(this.expr(e), source, 'Any?');
       // An object read with an unwrap (`view.parent!`) is undefined where it is missing, as an untyped value can be.
       const code = this.expr(e);
@@ -2868,6 +2949,11 @@ export class Translator implements AsyncTranslator {
 
   private identifier(e: ts.Identifier): string {
     const name = e.text;
+    if (this.isArguments(e)) {
+      const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;
+      if (!fn || !this.readsArguments(fn) || (ts.isFunctionExpression(fn) && !this.library)) throw this.error(e, '`arguments` of a function expression');
+      return '__arguments';
+    }
     const moot = this.mootImport(e);
     if (moot) return moot;
     const appNative = this.appNativeOf(e);
@@ -3196,6 +3282,11 @@ export class Translator implements AsyncTranslator {
     }
     const maybeChain = e.questionDotToken ? this.maybeUndefined(e) : null;
     if (maybeChain) return this.undefinedAs(maybeChain, this.typeOf(e));
+    if (this.undeclaredMember(e)) {
+      const t = this.typeOf(e);
+      const code = `jsGet(${this.expr(target)}, ${swiftString(name)})`;
+      return t === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, t, true);
+    }
     const core = this.core.property(e);
     if (core) return core;
     if (this.isExpando(e)) {
@@ -3220,8 +3311,8 @@ export class Translator implements AsyncTranslator {
       const read = `${this.expr(target)}${base.endsWith('?') ? '?' : ''}[${swiftString(name)}]`;
       const t = this.typeOf(e);
       if (isWriteTarget(e)) return read;
-      if (t.endsWith('?')) return `(${read} ?? nil)`;
-      const z = this.zero(t);
+      if (isOptional(t)) return `(${read} ?? nil)`;
+      const z = isFunctionType(t) ? null : this.zero(t);
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
     // A handler typing its event's sender (`args: { object: Canvas }`).
@@ -3277,7 +3368,10 @@ export class Translator implements AsyncTranslator {
     if (t === 'String') return `jsCharAt(${target}, ${this.expr(key)})`;
     if (t.startsWith('JSArray<')) {
       if (isWriteTarget(e)) return `${target}${q}[Int(${this.expr(key)})]`;
-      return this.undefinedAs(this.maybeUndefined(e)!, this.typeOf(e));
+      // An untyped element the checker narrows (`Array.isArray(xs[0])`): read as the narrowed type.
+      const rt = this.typeOf(e);
+      if (t === 'JSArray<Any?>' && rt !== 'Any?') return this.fromAny(`(${this.maybeUndefined(e)!} ?? nil)`, rt);
+      return this.undefinedAs(this.maybeUndefined(e)!, rt);
     }
     if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
     if (t.startsWith('(') && ts.isNumericLiteral(key)) return `${target}.${key.text}`;
@@ -3286,8 +3380,8 @@ export class Translator implements AsyncTranslator {
       const read = `${target}${this.typeOf(e.expression).endsWith('?') ? '?' : ''}[${this.str(key)}]`;
       if (isWriteTarget(e)) return read;
       const vt = this.typeOf(e);
-      if (vt.endsWith('?')) return `(${read} ?? nil)`;
-      const z = this.zero(vt);
+      if (isOptional(vt)) return `(${read} ?? nil)`;
+      const z = isFunctionType(vt) ? null : this.zero(vt);
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
     if (this.typeOf(e.expression) === 'Any?') {
@@ -3340,7 +3434,7 @@ export class Translator implements AsyncTranslator {
     }
     // A key of a dictionary-typed object, read before its type's zero stands in for a missing one.
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && !isWriteTarget(e)
-        && /^JSRecord<.*>$/.test(this.typeOf(e.expression)) && !this.typeOf(e).endsWith('?')) {
+        && /^JSRecord<.*>$/.test(this.typeOf(e.expression)) && !isOptional(this.typeOf(e))) {
       const key = ts.isPropertyAccessExpression(e) ? swiftString(e.name.text) : this.str(e.argumentExpression);
       return `${this.expr(e.expression)}[${key}]`;
     }
@@ -3401,6 +3495,8 @@ export class Translator implements AsyncTranslator {
     // An overload's call is the implementation's in Swift: its parameters take the arguments.
     const impl = sig?.getDeclaration() && implementationOf(sig.getDeclaration());
     const params = impl ? impl.parameters.map((p) => this.checker.getSymbolAtLocation(p.name)!).filter(Boolean) : sig?.getParameters() ?? [];
+    const target = impl ?? sig?.getDeclaration();
+    if (target && !ts.isJSDocSignature(target) && this.readsArguments(target)) return [this.packed(all, 'JSArray<Any?>')];
     const out: string[] = [];
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
     const appDeclared = !!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile;
@@ -3440,13 +3536,21 @@ export class Translator implements AsyncTranslator {
     return t === 'Any?' ? 'JSArray<Any?>' : t;
   }
 
+  /** The arguments of a call on an untyped value, after its leading ones: each, or with spreads, all as one list. */
+  private untypedArgs(args: readonly ts.Expression[]): string {
+    if (args.some(ts.isSpreadElement)) return `, spread: ${this.packed(args, 'JSArray<Any?>')}.storage`;
+    return args.map((a) => `, ${this.coerce(a, 'Any?')}`).join('');
+  }
+
   /** Arguments (spreads included) as one `JSArray` of `arrayType`. */
   private packed(items: readonly ts.Expression[], arrayType: string): string {
     const el = arrayType.replace(/^JSArray<(.*)>$/, '$1');
     const parts: string[] = [];
     let run: string[] = [];
     for (const x of items) {
-      if (ts.isSpreadElement(x)) {
+      // A literal spread in place (`f(...[a, b])`) is its elements.
+      if (ts.isSpreadElement(x) && ts.isArrayLiteralExpression(x.expression) && !x.expression.elements.some((y) => ts.isSpreadElement(y) || ts.isOmittedExpression(y))) run.push(...x.expression.elements.map((y) => this.coerce(y, el)));
+      else if (ts.isSpreadElement(x)) {
         if (run.length) { parts.push(`[${run.join(', ')}]`); run = []; }
         parts.push(`Array(${this.iterable(x.expression)})`);
       } else run.push(this.coerce(x, el));
@@ -3499,7 +3603,7 @@ export class Translator implements AsyncTranslator {
     // `getWindow<UIWindow>?.()`: the type arguments are only TypeScript's, and a function declaration is always there.
     const declaredFunction = (x: ts.Expression) => ts.isIdentifier(x) && !!this.resolve(x)?.declarations?.some(ts.isFunctionDeclaration);
     if (ts.isExpressionWithTypeArguments(callee) && (!e.questionDotToken || declaredFunction(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, callee.typeArguments, e.arguments));
-    if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
     // `obj.method?.(…)` on a method a declaration file declares: the method is always there, so the call is a plain one.
     const declaredMethod = ts.isPropertyAccessExpression(callee) && this.resolve(callee.name)?.declarations?.some((d) => (ts.isMethodDeclaration(d) || ts.isMethodSignature(d)) && d.getSourceFile().isDeclarationFile);
     if (e.questionDotToken && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
@@ -3545,10 +3649,15 @@ export class Translator implements AsyncTranslator {
       }
       if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
+      if (this.undeclaredMember(callee)) {
+        const t = this.typeOf(e);
+        const code = `jsCallMethod(${this.expr(target)}, ${swiftString(method)}${this.untypedArgs(e.arguments)})`;
+        return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
+      }
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
       if (this.isAny(target)) {
-        const code = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.expr(target)}, ${swiftString(method)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+        const code = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.expr(target)}, ${swiftString(method)}${this.untypedArgs(e.arguments)})`;
         // An untyped receiver of a typed interface (`value: IColor` with no protocol): the result as the interface types it.
         const t = this.typeOf(e);
         return t === 'Any?' || t === 'Void' || callee.questionDotToken ? code : this.fromAnyCode(code, t, true);
@@ -3627,12 +3736,12 @@ export class Translator implements AsyncTranslator {
     // `(function () { … })()`: the closure, called.
     if (ts.isFunctionExpression(fn) || ts.isArrowFunction(fn)) return `${this.closure(fn)}(${this.args(e).join(', ')})`;
     // A callee the factory would parenthesize again (`(f as F)(…)`) is called through its own translation.
-    if (ts.isParenthesizedExpression(callee) && !ts.isAsExpression(callee.expression) && !ts.isTypeAssertionExpression(callee.expression) && !ts.isSatisfiesExpression(callee.expression)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
+    if (ts.isParenthesizedExpression(callee) && (ts.isIdentifier(callee.expression) || ts.isPropertyAccessExpression(callee.expression) || ts.isElementAccessExpression(callee.expression) || ts.isCallExpression(callee.expression) || ts.isParenthesizedExpression(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
     // `(value as F)(…)`: the value read as the function type, called.
     if (ts.isParenthesizedExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     // `view[setNative](value)` (library mode): the method under that key, called with the object as `this`.
     if (this.library && ts.isElementAccessExpression(callee) && (this.isAny(callee.expression) || this.typeOf(callee) === 'Any?')) {
-      return `jsCallMethod(${[this.coerce(callee.expression, 'Any?'), this.propertyKey(callee.argumentExpression), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+      return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.propertyKey(callee.argumentExpression)}${this.untypedArgs(e.arguments)})`;
     }
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
@@ -3739,7 +3848,7 @@ export class Translator implements AsyncTranslator {
     const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body) || ts.isArrowFunction(declared) || ts.isFunctionExpression(declared);
     // A function held untyped (one of several function types): called as script calls it.
-    if (this.typeOf(callee) === 'Any?') return `jsCall(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
     const fn = ts.isIdentifier(callee) ? this.refName(callee) : ident(name);
     const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], fn, ident) ? `${this.appModule}.${fn}` : fn;
     return `${this.narrowed(callee, qualified)}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
@@ -3823,7 +3932,8 @@ export class Translator implements AsyncTranslator {
       }
       case 'JSON':
         if (method === 'parse') return `jsJSONParse(${this.expr(arg(0))})`;
-        if (method === 'stringify') return `jsJSONStringifyChecked(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})!`;
+        // Undefined, a function or a symbol stringifies to undefined.
+        if (method === 'stringify') return this.undefinedAs(`jsJSONStringifyChecked(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})`, T());
         break;
       case 'Object': {
         // A literal (with spreads) is built as an untyped object whatever record type it has.
@@ -3874,6 +3984,11 @@ export class Translator implements AsyncTranslator {
         }
         if (method === 'from' && e.arguments.length === 2) return `${T()}.from(${this.iterable(arg(0))}).map(${this.expr(arg(1))})`;
         if (method === 'of') return `${T()}([${a().join(', ')}])`;
+        // `Array.apply(thisArg, list)`: `Array(...list)`, a length when the list is one number.
+        if (method === 'apply' && e.arguments.length === 2) {
+          const made = `(try jsArrayConstruct(${this.coerce(arg(1), 'JSArray<Any?>')}.storage))`;
+          return T() === 'JSArray<Any?>' ? made : this.fromAny(`(${made} as Any?)`, T());
+        }
         break;
       case 'Number':
         if (method === 'isInteger') return `jsIsInteger(${this.expr(arg(0))})`;
@@ -4016,7 +4131,9 @@ export class Translator implements AsyncTranslator {
       case 'fill': return `${t}.fill(${a().join(', ')})`;
       case 'slice': case 'indexOf': case 'lastIndexOf': case 'includes': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
-      case 'concat': return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `[${this.coerce(x, el)}]`)).join(', ')})`;
+      case 'concat':
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.concat(spread: ${this.packed(e.arguments, `JSArray<${el}>`)}.storage)`;
+        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `[${this.coerce(x, el)}]`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         const callback = e.arguments[0];
         const call = () => {
@@ -4266,7 +4383,7 @@ export class Translator implements AsyncTranslator {
     // `new UIEdgeInsets({ top, left, bottom, right })`: the struct from its fields.
     if (this.native.isStructType(t) && args.length === 1 && ts.isObjectLiteralExpression(args[0])) return this.coerce(args[0], t);
     // An untyped constructor (a moot module's class): constructed as script would, which a moot value refuses.
-    if (this.typeOf(callee) === 'Any?') return `try jsConstruct(${[this.expr(callee), ...args.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    if (this.typeOf(callee) === 'Any?') return `try jsConstruct(${this.expr(callee)}${this.untypedArgs(args)})`;
     // `new Trace.Writer()`: a namespace's class.
     if (ts.isPropertyAccessExpression(callee) && this.namespaceMember(callee)) return `${t}(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) {
@@ -4417,7 +4534,7 @@ export class Translator implements AsyncTranslator {
         const chain = op === K.BarBarToken && ts.isPropertyAccessExpression(inner) && !!inner.questionDotToken;
         if (chain) this.optionalReads.set(inner, false);
         // A call that may give undefined (lenient code): the operand is the optional itself, falsy when missing.
-        const missing = ts.isCallExpression(inner) && !this.typeOf(e.left).endsWith('?') ? this.maybeUndefined(inner) : null;
+        const missing = (ts.isCallExpression(inner) || ts.isElementAccessExpression(inner)) && !isOptional(this.typeOf(e.left)) ? this.maybeUndefined(inner) : null;
         const leftCode = missing ?? this.expr(e.left);
         const leftType = missing || this.optionalReads.get(inner) ? optionalType(this.typeOf(e.left)) : this.typeOf(e.left);
         this.optionalReads.delete(inner);
@@ -4517,7 +4634,8 @@ export class Translator implements AsyncTranslator {
     if (context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter))) {
       const full = this.type(context, e);
       const c = full.replace(/\?$/, '');
-      if (full !== 'Any?' && (c.startsWith('JSArray<') || c.startsWith('(') || !e.elements.length)) t = c;
+      // A spread's length is known only when it runs: no tuple.
+      if (full !== 'Any?' && (c.startsWith('JSArray<') || (c.startsWith('(') && !e.elements.some(ts.isSpreadElement)) || !e.elements.length)) t = c;
     }
     if (t === 'Any?' || t === 'JSArray<Never>') t = 'JSArray<Any?>';
     if (t.startsWith('(')) return `(${e.elements.map((x) => this.expr(x)).join(', ')})`;
@@ -4720,9 +4838,9 @@ export class Translator implements AsyncTranslator {
   private untypedMethod(p: ts.MethodDeclaration): string {
     const ret = this.returnTypeOf(p);
     const type = `(${p.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${ret}`;
-    if (!thisNodes(p).length) return this.boxFunction(`{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`, type);
+    if (!thisNodes(p).length) return this.boxFunction(`{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`, type, p.parameters.findIndex((q) => q.dotDotDotToken));
     const fn = functionParts(type)!;
-    const binds = fn.params.map((t, k) => `let ${ident((p.parameters[k].name as ts.Identifier).text)}: ${t} = ${this.fromAnyCode(`jsArg(__a, ${k})`, t, true)}`);
+    const binds = fn.params.map((t, k) => `let ${ident((p.parameters[k].name as ts.Identifier).text)}: ${t} = ${p.parameters[k].dotDotDotToken ? `${t}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', t.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, t, true)}`);
     const body = this.withThis(p, '__this', true, () => this.functionBody(p, ret, this.indent + '    '));
     const call = `try { () throws -> ${ret} in${body.slice(1)}()`;
     const result = ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`;

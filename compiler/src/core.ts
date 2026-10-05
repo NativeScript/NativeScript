@@ -132,7 +132,7 @@ export class CoreAPI {
       if (module) return { name: module, isStatic: true };
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];
-      if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable))) {
+      if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable)) && !this.t.compiledCounterpart(sym)) {
         if (sym.flags & ts.SymbolFlags.ValueModule) return { name: e.text, isStatic: true };
         if (sym.flags & ts.SymbolFlags.Class) return { name: sym.name, isStatic: true };
         // A constant core exports (`Device`): the kit has a type of that name with static members.
@@ -156,7 +156,7 @@ export class CoreAPI {
       const base = c.getBaseTypes(type as ts.InterfaceType).map((b) => b.getSymbol()).find((b) => b && b.flags & ts.SymbolFlags.Class && isCoreDeclaration(b.declarations?.[0]));
       if (base) return { name: Object.hasOwn(KIT_NAMES, base.name) ? KIT_NAMES[base.name] : base.name, isStatic: false };
     }
-    if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
+    if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     // Core's event data types are the kit's one EventData, whose members the translator reads directly.
     if (this.t.type(type, e) === 'EventData') return null;
     return { name: Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name, isStatic: false };
@@ -320,7 +320,7 @@ export class CoreAPI {
 
   construct(e: ts.NewExpression): string | null {
     const sym = this.t.resolve(e.expression);
-    if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
+    if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     const t = this.t;
     const args = e.arguments ?? ts.factory.createNodeArray();
     const kitName = Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name;

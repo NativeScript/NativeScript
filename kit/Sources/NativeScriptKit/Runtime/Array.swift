@@ -340,6 +340,11 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
     /// itself an array is spread, as in JavaScript; mixing typed arrays and elements in one call
     /// takes two calls (`a.concat(b).concat(x)`).
     public func concat(_ items: Element...) -> JSArray<Element> {
+        concat(spread: items)
+    }
+
+    /// `array.concat(...items)`.
+    public func concat(spread items: [Element]) -> JSArray<Element> {
         track()
         var out = storage
         for item in items {
@@ -900,4 +905,11 @@ func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
     default:
         return nil
     }
+}
+
+/// `Array(...items)`: one number is a length, anything else the elements.
+public func jsArrayConstruct(_ items: [Any?]) throws -> JSArray<Any?> {
+    guard items.count == 1, let length = jsFlat(items[0]) as? Double else { return JSArray(items) }
+    guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
+    return JSArray(Array(repeating: nil, count: Int(length)))
 }

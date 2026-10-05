@@ -89,6 +89,17 @@ public func jsCallMethodIfPresent(_ object: Any?, _ key: String, _ arguments: An
     jsIsNullish(object) ? nil : try callMethod(object, key, arguments)
 }
 
+/// `object.key(...args)` on an untyped object.
+@discardableResult
+public func jsCallMethod(_ object: Any?, _ key: String, spread arguments: [Any?]) throws -> Any? {
+    try callMethod(object, key, arguments)
+}
+
+@discardableResult
+public func jsCallMethodIfPresent(_ object: Any?, _ key: String, spread arguments: [Any?]) throws -> Any? {
+    jsIsNullish(object) ? nil : try callMethod(object, key, arguments)
+}
+
 private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
     // `f.call(thisArg, …)` and `f.apply(thisArg, args)` on a function value.
     if key == "call" || key == "apply", let f = jsFlat(object), f is JSMethod || f is JSFunction {

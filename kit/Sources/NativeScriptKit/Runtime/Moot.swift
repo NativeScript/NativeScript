@@ -22,6 +22,11 @@ public func jsMoot(_ name: String) -> Any? { JSMootValue(name) }
 
 /// `new f(…)` on an untyped value.
 public func jsConstruct(_ f: Any?, _ arguments: Any?...) throws -> Any? {
+    try jsConstruct(f, spread: arguments)
+}
+
+/// `new f(...args)` on an untyped value.
+public func jsConstruct(_ f: Any?, spread arguments: [Any?]) throws -> Any? {
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(f)) is not a constructor"))
 }

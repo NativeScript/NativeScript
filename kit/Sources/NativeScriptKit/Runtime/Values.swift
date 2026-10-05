@@ -449,6 +449,12 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
 /// Calls a function stored in a dynamic value. Anything else throws a TypeError.
 @discardableResult
 public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
+    try jsCall(function, spread: arguments)
+}
+
+/// `f(...args)` on an untyped value.
+@discardableResult
+public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
     if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
@@ -683,6 +689,11 @@ extension JSArrayProtocol {
 /// `f?.(args)` on an untyped value: undefined when `f` is undefined or null.
 @discardableResult
 public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any? {
+    try jsCallOptional(function, spread: arguments)
+}
+
+@discardableResult
+public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
     if jsIsNullish(function) { return nil }
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))

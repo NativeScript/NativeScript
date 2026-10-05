@@ -460,6 +460,7 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    if (this.isArguments(n)) return 'JSArray<Any?>';
     if (this.untypedThis.has(n)) return 'Any?';
     // A value declared `unknown` stays untyped where checks narrow it (`value !== null` makes it `{}`, which is no object shape).
     if (ts.isIdentifier(n)) {
@@ -1048,6 +1049,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
+    if (this.readsArguments(fn)) return '__arguments: JSArray<Any?>';
     return fn.parameters.map((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       if (p.dotDotDotToken) return `${name}: ${this.typeOf(p.name)}`;
@@ -1074,6 +1076,21 @@ export class Translator implements AsyncTranslator {
   paramPrelude(fn: ts.SignatureDeclaration): string[] {
     const i = this.indent;
     const lines: string[] = [];
+    if (this.readsArguments(fn)) {
+      // The parameters read from the arguments the call passed, undefined where it passed none.
+      fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this')).forEach((p, k) => {
+        if (!ts.isIdentifier(p.name)) throw this.error(p, 'a destructured parameter of a function reading `arguments`');
+        const assigned = !!(fn as ts.FunctionLikeDeclaration).body && assignsTo((fn as ts.FunctionLikeDeclaration).body!, this.checker.getSymbolAtLocation(p.name), this.checker);
+        const arg = `__arguments.storage.getOrNull(${k})`;
+        const pt = this.typeOf(p.name);
+        const declared = p.questionToken && !p.initializer ? optionalType(pt) : pt;
+        const value = p.dotDotDotToken ? `JSArray(__arguments.storage.drop(${k}).map { ${this.fromAnyCode('it', pt.replace(/^JSArray<(.*)>$/, '$1'), true)} }.toMutableList())`
+          : p.initializer ? `(if (${arg} == null) ${this.coerce(p.initializer, pt)} else ${this.fromAnyCode(arg, pt, true)})`
+          : this.fromAnyCode(arg, declared, true);
+        lines.push(`${i}${assigned ? 'var' : 'val'} ${ident(p.name.text)}: ${declared} = ${value}`);
+      });
+      return lines;
+    }
     fn.parameters.forEach((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       const closure = ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || (ts.isMethodDeclaration(fn) && ts.isObjectLiteralExpression(fn.parent));
@@ -1419,7 +1436,7 @@ export class Translator implements AsyncTranslator {
       this.indent = '    ';
       lines.push(`    constructor(${this.params(ctor, false)})${delegation} {`, ...body, '    }');
     } else if (base) {
-      if (baseCtor) lines.push(`    constructor(${this.params(baseCtor, false)}) : super(${baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`);
+      if (baseCtor) lines.push(`    constructor(${this.params(baseCtor, false)}) : super(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`);
       else lines.push('    constructor() : super()');
     }
     const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
@@ -2627,8 +2644,37 @@ export class Translator implements AsyncTranslator {
     return !!ctx && !(ctx.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && this.type(ctx, e) !== 'Any?';
   }
 
+  private argumentsReaders = new Map<ts.Node, boolean>();
+  /** Whether a function reads its `arguments`: it then takes the call's arguments as one list, and its parameters read from it. */
+  readsArguments(fn: ts.SignatureDeclaration): boolean {
+    if (!('body' in fn) || !fn.body || ts.isArrowFunction(fn)) return false;
+    let found = this.argumentsReaders.get(fn);
+    if (found !== undefined) return found;
+    found = false;
+    const visit = (n: ts.Node) => {
+      if (found || (n !== fn.body && ts.isFunctionLike(n) && !ts.isArrowFunction(n)) || ts.isClassLike(n)) return;
+      if (ts.isIdentifier(n) && this.isArguments(n)) found = true;
+      ts.forEachChild(n, visit);
+    };
+    visit(fn.body);
+    this.argumentsReaders.set(fn, found);
+    return found;
+  }
+
+  /** The `arguments` of the function around, not a variable of that name. */
+  private isArguments(e: ts.Node): boolean {
+    if (!ts.isIdentifier(e) || e.text !== 'arguments') return false;
+    const sym = this.checker.getSymbolAtLocation(e);
+    return !!sym && !sym.declarations?.length;
+  }
+
   private identifier(e: ts.Identifier): string {
     const name = e.text;
+    if (this.isArguments(e)) {
+      const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;
+      if (!fn || !this.readsArguments(fn) || ts.isFunctionExpression(fn)) throw this.error(e, '`arguments` of a function expression');
+      return '__arguments';
+    }
     if (name === 'undefined') return 'null';
     if (name === 'NaN') return 'Double.NaN';
     if (name === 'Infinity') return 'Double.POSITIVE_INFINITY';
@@ -2805,7 +2851,10 @@ export class Translator implements AsyncTranslator {
     if (t === 'String') return `jsCharAt(${target}, ${this.toNumber(key)})`;
     if (t.startsWith('JSArray<')) {
       if (isWriteTarget(e)) return `${target}${q}[${this.toNumber(key)}]`;
-      return this.undefinedAs(this.maybeUndefined(e)!, this.typeOf(e));
+      // An untyped element the checker narrows (`Array.isArray(xs[0])`): read as the narrowed type.
+      const rt = this.typeOf(e);
+      if (t === 'JSArray<Any?>' && rt !== 'Any?') return this.fromAny(this.maybeUndefined(e)!, rt);
+      return this.undefinedAs(this.maybeUndefined(e)!, rt);
     }
     if (t === 'JSMatch') {
       const read = `${target}${q}.get(${this.toNumber(key)})`;
@@ -2891,6 +2940,8 @@ export class Translator implements AsyncTranslator {
     // An overload's call is the implementation's in Kotlin: its parameters take the arguments.
     const impl = sig?.getDeclaration() && implementationOf(sig.getDeclaration());
     const params = impl ? impl.parameters.map((p) => this.checker.getSymbolAtLocation(p.name)!).filter(Boolean) : sig?.getParameters() ?? [];
+    const target = impl ?? sig?.getDeclaration();
+    if (target && !ts.isJSDocSignature(target) && this.readsArguments(target)) return [this.packed(all, 'JSArray<Any?>')];
     const out: string[] = [];
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
     const appDeclared = !!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile;
@@ -2927,6 +2978,12 @@ export class Translator implements AsyncTranslator {
       }
     }
     return out;
+  }
+
+  /** The arguments of a call on an untyped value, after its leading ones: each, or with spreads, all spread from one list. */
+  private untypedArgs(args: readonly ts.Expression[]): string {
+    if (args.some(ts.isSpreadElement)) return `, *${this.packed(args, 'JSArray<Any?>')}.storage.toTypedArray()`;
+    return args.map((a) => `, ${this.coerce(a, 'Any?')}`).join('');
   }
 
   /** Arguments (spreads included) as one `JSArray` of `arrayType`. */
@@ -2977,7 +3034,7 @@ export class Translator implements AsyncTranslator {
     // `getWindow<UIWindow>?.()`: the type arguments are only TypeScript's, and a function declaration is always there.
     const declaredFunction = (x: ts.Expression) => ts.isIdentifier(x) && !!this.resolve(x)?.declarations?.some(ts.isFunctionDeclaration);
     if (ts.isExpressionWithTypeArguments(callee) && (!e.questionDotToken || declaredFunction(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, callee.typeArguments, e.arguments));
-    if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
     if (e.questionDotToken && !this.core?.isKitMethod(callee) && !declaredFunction(callee)) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
@@ -3014,9 +3071,9 @@ export class Translator implements AsyncTranslator {
       const core = this.core?.call(e) ?? this.native?.call(e);
       if (core) return core;
       if (this.isAny(target)) {
-        const code = `jsCallMethod(${this.expr(target)}, ${kotlinString(method)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+        const code = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.expr(target)}, ${kotlinString(method)}${this.untypedArgs(e.arguments)})`;
         const rt = this.typeOf(e);
-        return rt === 'Any?' || rt === 'Unit' ? code : this.fromAnyCode(code, rt, true);
+        return rt === 'Any?' || rt === 'Unit' || callee.questionDotToken ? code : this.fromAnyCode(code, rt, true);
       }
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
@@ -3062,7 +3119,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isElementAccessExpression(callee)) {
       const property = this.setNativeOf(callee.argumentExpression);
       if (property) return `${this.expr(callee.expression)}.__setNative_${property}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
-      if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+      if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
     }
     let fn: ts.Expression = callee;
     while (ts.isParenthesizedExpression(fn)) fn = fn.expression;
@@ -3168,7 +3225,7 @@ export class Translator implements AsyncTranslator {
     const fnType = this.declaredTypeOf(callee) ?? this.typeOf(callee);
     // A function held untyped (one of several function types): called as script calls it.
     if (fnType === 'Any?' || this.typeOf(callee) === 'Any?') {
-      const code = `jsCall(${this.expr(callee)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+      const code = `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
       const rt = this.typeOf(e);
       return rt === 'Any?' || rt === 'Unit' ? code : this.fromAnyCode(code, rt, true);
     }
@@ -3233,7 +3290,8 @@ export class Translator implements AsyncTranslator {
       }
       case 'JSON':
         if (method === 'parse') return `jsJSONParse(${this.expr(arg(0))})`;
-        if (method === 'stringify') return `jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})${T().endsWith('?') ? '' : '!!'}`;
+        // Undefined, a function or a symbol stringifies to undefined.
+        if (method === 'stringify') return this.undefinedAs(`jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})`, T());
         break;
       case 'Object': {
         const record = this.typeOf(arg(0)).startsWith('JSRecord<');
@@ -3286,6 +3344,11 @@ export class Translator implements AsyncTranslator {
         }
         if (method === 'from' && e.arguments.length === 2) return `JSArray(${this.iterable(arg(0))}.toList()).map(${this.fn(arg(1))})`;
         if (method === 'of') return `jsArrayOf<${T().replace(/^JSArray<(.*)>$/, '$1')}>(${a().join(', ')})`;
+        // `Array.apply(thisArg, list)`: `Array(...list)`, a length when the list is one number.
+        if (method === 'apply' && e.arguments.length === 2) {
+          const made = `jsArrayConstruct(${this.coerce(arg(1), 'JSArray<Any?>')}.storage)`;
+          return T() === 'JSArray<Any?>' ? made : this.fromAny(made, T());
+        }
         break;
       case 'Number':
         if (method === 'isInteger') return `jsIsInteger(${this.toNumber(arg(0))})`;
@@ -3459,7 +3522,9 @@ export class Translator implements AsyncTranslator {
       case 'slice': case 'at': return `${t}.${name}(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
       case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
-      case 'concat': return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
+      case 'concat':
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.concatSpread(${this.packed(e.arguments, `JSArray<${element}>`)}.storage)`;
+        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         const f = e.arguments[0];
         const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
@@ -3920,7 +3985,8 @@ export class Translator implements AsyncTranslator {
   private array(e: ts.ArrayLiteralExpression): string {
     const context = this.checker.getContextualType(e);
     let t = this.typeOf(e);
-    if (context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter))) {
+    // A spread's length is known only when it runs: no tuple.
+    if (context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)) && !(this.checker.isTupleType(context) && e.elements.some(ts.isSpreadElement))) {
       const c = this.type(context, e).replace(/\?$/, '');
       if (c.startsWith('JSArray<') || c.startsWith('Pair<') || c.startsWith('Triple<') || !e.elements.length) t = c;
     }
@@ -4124,9 +4190,12 @@ export class Translator implements AsyncTranslator {
 
   /** A method of an untyped object literal: a function value, or one taking `this` when its body reads it. */
   private untypedMethod(p: ts.MethodDeclaration): string {
-    if (!thisNodes(p).length) return this.closure(p);
+    const rest = p.parameters.some((q) => q.dotDotDotToken);
+    if (!thisNodes(p).length && !rest) return this.closure(p);
     const ret = this.returnTypeOf(p);
-    const binds = p.parameters.map((q, k) => `val ${ident((q.name as ts.Identifier).text)}: ${this.typeOf(q.name)} = ${this.fromAnyCode(`__a.getOrNull(${k})`, this.typeOf(q.name), true)}`);
+    const binds = p.parameters.map((q, k) => `val ${ident((q.name as ts.Identifier).text)}: ${this.typeOf(q.name)} = ${q.dotDotDotToken
+      ? `JSArray(__a.drop(${k}).map { ${this.fromAnyCode('it', this.typeOf(q.name).replace(/^JSArray<(.*)>$/, '$1'), true)} }.toMutableList())`
+      : this.fromAnyCode(`__a.getOrNull(${k})`, this.typeOf(q.name), true)}`);
     const body = this.withThis(p, '__this', true, () => this.functionBody(p, ret, this.indent));
     return `JSMethod { __this, __a -> ${binds.map((b) => b + '; ').join('')}(fun()${ret === 'Unit' ? '' : `: ${ret}`} ${body})() }`;
   }
