@@ -221,6 +221,14 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return if (s < e) JSArray(ArrayList(storage.subList(s, e))) else JSArray()
     }
 
+    /** `array.concat(...items)`: an item that is an array adds its elements. */
+    @Suppress("UNCHECKED_CAST")
+    fun concatSpread(items: List<T>): JSArray<T> {
+        val out = ArrayList(elements)
+        for (item in items) if (item is JSArray<*>) out.addAll(item.elements as List<T>) else out.add(item)
+        return JSArray(out)
+    }
+
     fun concat(vararg parts: JSArray<T>): JSArray<T> {
         val out = ArrayList(elements)
         for (p in parts) out.addAll(p.elements)
@@ -454,4 +462,11 @@ internal fun <E> jsMergeSort(items: MutableList<E>, less: (E, E) -> Boolean) {
         width *= 2
     }
     for (i in 0 until n) items[i] = src[i]
+}
+
+/** `Array(...items)`: one number is a length, anything else the elements. */
+fun jsArrayConstruct(items: List<Any?>): JSArray<Any?> {
+    val length = items.singleOrNull() as? Double ?: return JSArray(ArrayList(items))
+    if (length < 0 || length > 4_294_967_295.0 || length != Math.floor(length)) throw JSException(JSRangeError("Invalid array length"))
+    return JSArray(ArrayList<Any?>(List(length.toInt()) { null }))
 }

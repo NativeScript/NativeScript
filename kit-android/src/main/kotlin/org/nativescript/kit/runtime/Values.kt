@@ -314,6 +314,9 @@ fun jsCall(function: Any?, vararg args: Any?): Any? {
     return jsBox(result)
 }
 
+/** `f?.(args)` on an untyped value: undefined when `f` is undefined or null. */
+fun jsCallOptional(function: Any?, vararg args: Any?): Any? = if (jsIsNullish(function)) null else jsCall(function, *args)
+
 /** `Object.keys` for what translated code holds: a typed object, an untyped one, an array. */
 fun jsKeysOf(value: Any?): List<String> = when (value) {
     is String -> value.indices.map { it.toString() }

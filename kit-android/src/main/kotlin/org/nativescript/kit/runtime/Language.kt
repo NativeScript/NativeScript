@@ -262,6 +262,9 @@ fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
     return jsCall(f, *args)
 }
 
+/** `object?.method(args)`: undefined when the object is undefined or null. */
+fun jsCallMethodIfPresent(target: Any?, key: String, vararg args: Any?): Any? = if (jsIsNullish(target)) null else jsCallMethod(target, key, *args)
+
 /** An object whose accessor properties print as `[Getter]`, `[Setter]` or `[Getter/Setter]`. */
 interface JSAccessorKeyed {
     fun jsAccessorKind(key: String): String?

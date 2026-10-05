@@ -161,6 +161,12 @@ export function generateKit(o: KitOptions): KitResult {
         identities: new Set(o.identities ?? []),
         counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
         internalTypes: kitInternal,
+        sourceOf: (dts) => {
+          const declarations = resolve(o.declarations);
+          if (!dts.startsWith(declarations + '/')) return null;
+          const base = join(core, relative(declarations, dts).replace(/\.d\.ts$/, ''));
+          return [`${base}.ios.ts`, `${base}.ts`].find((c) => compiled.has(c)) ?? null;
+        },
       },
     });
   } finally { kitIndexOptions.exclude = null; }
