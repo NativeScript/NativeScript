@@ -101,7 +101,7 @@ extension ViewBase {
 
     /// A listener for a template's event binding.
     public func kitOn(_ eventName: String, _ handler: @escaping (EventData) -> Void) {
-        jsReport { try self.on(eventName, { handler($0) }) }
+        jsReport { try self.on(eventName, { (data: EventData?) in if let data { handler(data) } }) }
     }
 }
 
