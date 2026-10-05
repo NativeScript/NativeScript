@@ -181,7 +181,6 @@ export function generateKit(o: KitOptions): KitResult {
       translator.native.used.clear();
       try { result = translator.module(sf); } catch (e) {
         if (!o.report) throw e;
-        if (process.env.NS_KIT_STACKS && e instanceof RangeError) console.error(e.stack?.split("\n").slice(0, 40).join("\n"));
         errors.push(located(e, sf, core));
         // Report mode: the member or statement that did not translate is left out, and the rest of the file is translated again.
         if (!dropAt(e, sf)) break;
