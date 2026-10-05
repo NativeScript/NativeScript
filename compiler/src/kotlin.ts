@@ -2535,6 +2535,8 @@ export class Translator implements AsyncTranslator {
       if (from.endsWith('?') && !to.endsWith('?') && from.replace(/\?$/, '') === to) return `${this.expr(e.expression)}!!`;
       return this.expr(e.expression);
     }
+    // `f<T>`: the function, its type arguments only TypeScript's.
+    if (ts.isExpressionWithTypeArguments(e)) return this.functionValue(e.expression);
     if (ts.isNonNullExpression(e)) {
       const maybe = this.maybeUndefined(e.expression);
       if (maybe) return `${maybe}!!`;
@@ -2954,8 +2956,11 @@ export class Translator implements AsyncTranslator {
       return this.symbolName(callee) === 'Signal' ? this.expr(callee) : `${this.expr(callee)}.value`;
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
+    // `getWindow<UIWindow>?.()`: the type arguments are only TypeScript's, and a function declaration is always there.
+    const declaredFunction = (x: ts.Expression) => ts.isIdentifier(x) && !!this.resolve(x)?.declarations?.some(ts.isFunctionDeclaration);
+    if (ts.isExpressionWithTypeArguments(callee) && (!e.questionDotToken || declaredFunction(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, callee.typeArguments, e.arguments));
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
-    if (e.questionDotToken && !this.core?.isKitMethod(callee)) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
+    if (e.questionDotToken && !this.core?.isKitMethod(callee) && !declaredFunction(callee)) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
@@ -3045,6 +3050,8 @@ export class Translator implements AsyncTranslator {
     while (ts.isParenthesizedExpression(fn)) fn = fn.expression;
     // `(function () { … })()`: the function, called.
     if (ts.isFunctionExpression(fn) || ts.isArrowFunction(fn)) return `(${this.closure(fn)})(${this.args(e).join(', ')})`;
+    // `(value as F)(…)`: the value read as the function type, called (the factory would parenthesize the cast again).
+    if (ts.isParenthesizedExpression(callee) && (ts.isAsExpression(callee.expression) || ts.isTypeAssertionExpression(callee.expression) || ts.isSatisfiesExpression(callee.expression))) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     if (ts.isParenthesizedExpression(callee)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
@@ -3620,6 +3627,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private newExpr(e: ts.NewExpression): string {
+    if (ts.isParenthesizedExpression(e.expression)) return this.newExpr(ts.factory.updateNewExpression(e, e.expression.expression, e.typeArguments, e.arguments));
     const t = this.typeOf(e);
     const callee = e.expression;
     const name = ts.isIdentifier(callee) ? callee.text : '';
@@ -3659,7 +3667,17 @@ export class Translator implements AsyncTranslator {
     if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
-    if (name === 'Array') throw this.error(e, `new ${name}`);
+    if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) {
+      const el = t.replace(/^JSArray<(.*)>$/, '$1');
+      if (args.length !== 1) return args.length ? `jsArrayOf<${el}>(${args.map((a) => this.coerce(a, el)).join(', ')})` : `${t}()`;
+      if (this.typeOf(args[0]) !== 'Double') {
+        if (this.typeOf(args[0]) === 'Any?') throw this.error(e, 'new Array of one untyped value (a length or an element)');
+        return `jsArrayOf<${el}>(${this.coerce(args[0], el)})`;
+      }
+      // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
+      if (el.endsWith('?') || ['Double', 'String', 'Boolean'].includes(el)) return `jsArrayFilled<${el}>(${this.expr(args[0])}, ${this.zero(el)})`;
+      throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
+    }
     const core = this.core?.construct(e) ?? this.native?.construct(e);
     if (core) return core;
     // `new Trace.Writer()`: a namespace's class.
