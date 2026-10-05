@@ -16,8 +16,9 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
  * commit that set the published version in the package's package.json. A
  * project can point a package at a local checkout instead
  * (`nativescript.config.ts`: `nativeReleaseOptions.pluginSources`), and can
- * carry source-level patches for it (`patches/native-release/<pkg>+<version>.patch`,
- * paths relative to the package's directory in its repository).
+ * carry source-level patches for it (`native-release/patches/<pkg>+<version>.patch`,
+ * paths relative to the package's directory in its repository; not under
+ * `patches/`, where patch-package would apply them to the installed package).
  */
 export interface PluginSource {
   name: string;
@@ -159,7 +160,7 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
   let files = mapFiles(dir, root, repoFiles, packageDir);
 
   // Source-level patches apply to a copy of the package's directory.
-  const patch = join(options.app, 'patches', 'native-release', `${name.replace(/\//g, '+')}+${version}.patch`);
+  const patch = join(options.app, 'native-release', 'patches', `${name.replace(/\//g, '+')}+${version}.patch`);
   if (existsSync(patch)) {
     if (!packageDir) throw new Error(`${name}: ${relative(options.app, patch)} needs the package's directory in its source, which was not found`);
     const text = readFileSync(patch, 'utf8');

@@ -335,7 +335,7 @@ NativeScript Release APK pixel for pixel, in a 1.2 MB APK against 104.8 MB
   lowering aside). A package whose source cannot be found or does not match
   stops the build. `nativeReleaseOptions.pluginSources` in
   `nativescript.config.ts` names another repository or a local folder.
-- **Patches.** `patches/native-release/<package>+<version>.patch` in the app
+- **Patches.** `native-release/patches/<package>+<version>.patch` in the app
   applies to the plugin's source, as patch-package's patches apply to its
   JavaScript; ns-octane's input-accessory patch is ported this way.
 - **Core patches.** The NativeScript build runs `@nativescript/core` as the
