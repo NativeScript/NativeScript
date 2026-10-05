@@ -2882,6 +2882,8 @@ export class Translator implements AsyncTranslator {
         const isPromise = this.typeOf(e).startsWith('JSPromise<');
         return `${i}${this.tryPrefix(e)}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
       }
+      // A value returned where nothing is (a Promise executor's `return p.then(…)`): evaluated, then dropped.
+      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${this.tryPrefix(s.expression)}_ = ${this.expr(s.expression)}\n${i}return`;
       // `return log(x)` of a function returning nothing: the call, then undefined.
       if (s.expression && this.returnType && this.returnType !== 'Void' && this.typeOf(s.expression) === 'Void' && ts.isCallExpression(s.expression)) {
         const none = isOptional(this.returnType) || this.returnType === 'Any?' ? 'nil' : this.zero(this.returnType);
@@ -3499,6 +3501,10 @@ export class Translator implements AsyncTranslator {
     if (/^JSArray<\w+>$/.test(source) && /^JSArray<\w+>[?!]?$/.test(target) && source !== target.replace(/[?!]$/, '') && (ts.isCallExpression(bare) || ts.isArrayLiteralExpression(bare))) {
       const cast = this.classCast(this.expr(e), source, target);
       if (cast) return cast;
+    }
+    if (/^JSPromise<(Any\?|JSArray<Any\?>)>$/.test(source) && /^JSPromise<.*>[?!]?$/.test(target) && source !== target.replace(/[?!]$/, '')) {
+      const all = ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && bare.expression.name.text === 'all' && ts.isIdentifier(bare.expression.expression) && bare.expression.expression.text === 'Promise' && this.isLibGlobal(bare.expression.expression) && bare.arguments.length === 1 && !ts.isArrayLiteralExpression(bare.arguments[0]) ? bare : null;
+      return all ? this.untypedAll(all.arguments[0], target) : this.promiseAs(this.expr(e), source, target);
     }
     const spread = source !== target ? this.restFunction(e, source, target) ?? this.defaultedFunction(e, source, target) : null;
     if (spread) return spread;
@@ -5176,8 +5182,12 @@ export class Translator implements AsyncTranslator {
         if (['all', 'allSettled', 'race', 'any'].includes(method)) {
           const src = arg(0);
           if (ts.isArrayLiteralExpression(src)) return this.promiseCombinator(method, src, t);
-          const inner = this.typeOf(src).replace(/^JSArray<JSPromise<(.*)>>$/, '$1');
-          return `JSPromise<${inner}>.${method}(${this.expr(src)})`;
+          const typed = /^JSArray<JSPromise<(.*)>>$/.exec(this.typeOf(src));
+          if (typed) return `JSPromise<${typed[1]}>.${method}(${this.expr(src)})`;
+          // An array of untyped values (`const toClose = []`): the dynamic combinator, its result read as TypeScript types it.
+          const code = `JSPromise<Any?>.${method}(${this.coerce(src, 'JSArray<Any?>')})`;
+          const made = method === 'all' ? 'JSPromise<JSArray<Any?>>' : method === 'allSettled' ? 'JSPromise<JSArray<JSObject>>' : 'JSPromise<Any?>';
+          return t === made ? code : method === 'all' ? this.untypedAll(src, t) : this.promiseAs(code, made, t);
         }
         break;
       }
@@ -5203,6 +5213,20 @@ export class Translator implements AsyncTranslator {
       return `try jsDefineProperty(${this.coerce(target, 'Any?')}, ${swiftString(key)}, ${this.dynamicObject(p.initializer)})`;
     }).filter(Boolean);
     return `({ () throws -> Any? in ${steps.join('; ')}; return ${this.coerce(target, 'Any?')} }())`;
+  }
+
+  /** `Promise.all(values)` of untyped values whose result is typed (`Promise<void[]>`): read as that type when it settles, with no further step. */
+  private untypedAll(src: ts.Expression, result: string): string {
+    const to = result.replace(/[?!]$/, '').slice(10, -1);
+    const value = to === 'JSArray<Void>' ? 'JSArray<Void>(Array(repeating: (), count: __v.count))' : to === 'JSArray<Any?>' ? 'JSArray<Any?>(__v)' : this.fromAny('(JSArray<Any?>(__v) as Any?)', to);
+    return `JSPromise<Any?>.all(${this.coerce(src, 'JSArray<Any?>')}, as: { (__v: [Any?]) -> ${to} in ${value} })`;
+  }
+
+  /** A promise of untyped values read as a promise of a type (`Promise<any[]>` returned as `Promise<void[]>`): its value converted when it settles. */
+  private promiseAs(code: string, from: string, to: string): string {
+    const f = from.replace(/[?!]$/, '').slice(10, -1), t = to.replace(/[?!]$/, '').slice(10, -1);
+    const value = t === 'JSArray<Void>' ? 'JSArray<Void>(Array(repeating: (), count: Int(jsToNumber(try jsGet(__v as Any?, "length")))))' : t === 'Void' ? '()' : this.fromAny('(__v as Any?)', t);
+    return `${code}.then { (__v: ${f}) throws -> ${t} in ${value} }`;
   }
 
   /** `Promise.all([a, b])` and friends over a literal list, which TypeScript types as a tuple. */
