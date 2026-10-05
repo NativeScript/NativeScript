@@ -51,7 +51,7 @@ export function swiftPackages(app: string): SwiftPackage[] {
     }
   };
   read(app, null);
-  for (const p of productionPlugins(app)) read(p.dir, p.name);
+  for (const p of productionPlugins(app, 'ios')) read(p.dir, p.name);
   return out;
 }
 
@@ -98,7 +98,7 @@ const NS_BASE_PODFILE = 'NSPodfileBase';
 export function podfile(o: { app: string; name: string; deploymentTarget: string; nested?: string[]; extensions?: string[] }): string | null {
   const res = join(appResourcesDir(o.app), 'iOS');
   const appPodfile = join(res, 'Podfile');
-  const files = [...productionPlugins(o.app).map((p) => ({ module: p.name, file: join(p.dir, 'platforms', 'ios', 'Podfile') })), { module: NS_BASE_PODFILE, file: appPodfile }].filter((f) => existsSync(f.file));
+  const files = [...productionPlugins(o.app, 'ios').map((p) => ({ module: p.name, file: join(p.dir, 'platforms', 'ios', 'Podfile') })), { module: NS_BASE_PODFILE, file: appPodfile }].filter((f) => existsSync(f.file));
   if (!files.length) return null;
   const overridden = readConfig(o.app).overridePods && existsSync(appPodfile) ? podsOf(readFileSync(appPodfile, 'utf8')) : [];
   const hooks: string[] = [];

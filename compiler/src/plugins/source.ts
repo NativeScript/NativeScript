@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, lstatSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+import { releaseOptions } from '../app-resources.ts';
 
 /**
  * A plugin's TypeScript source, as the release build compiles it instead of
@@ -15,7 +16,7 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
  * The revision is the package's `gitHead`, else a release tag, else the
  * commit that set the published version in the package's package.json. A
  * project can point a package at a local checkout instead
- * (`nativescript.config.ts`: `nativeReleaseOptions.pluginSources`), and can
+ * (`nativescript.config.ts`: `release.pluginSources`), and can
  * carry source-level patches for it (`native-release/patches/<pkg>+<version>.patch`,
  * paths relative to the package's directory in its repository; not under
  * `patches/`, where patch-package would apply them to the installed package).
@@ -108,29 +109,13 @@ export class PluginSources {
   }
 }
 
-/** `nativeReleaseOptions.pluginSources` from the project's nativescript.config.ts, paths resolved against the project. */
-export function configuredOverrides(app: string): Record<string, string> {
-  const file = ['nativescript.config.ts', 'nativescript.config.js'].map((f) => join(app, f)).find(existsSync);
-  if (!file) return {};
-  const sf = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
-  const out: Record<string, string> = {};
-  const unwrap = (e: ts.Expression): ts.Expression => (ts.isAsExpression(e) || ts.isSatisfiesExpression(e) || ts.isParenthesizedExpression(e) ? unwrap(e.expression) : e);
-  const member = (o: ts.ObjectLiteralExpression, name: string) => {
-    const p = o.properties.find((x) => ts.isPropertyAssignment(x) && x.name.getText().replace(/['"]/g, '') === name) as ts.PropertyAssignment | undefined;
-    const v = p && unwrap(p.initializer);
-    return v && ts.isObjectLiteralExpression(v) ? v : null;
-  };
-  for (const st of sf.statements) {
-    if (!ts.isExportAssignment(st)) continue;
-    const config = unwrap(st.expression);
-    if (!ts.isObjectLiteralExpression(config)) continue;
-    const sources = member(member(config, 'nativeReleaseOptions') ?? ts.factory.createObjectLiteralExpression(), 'pluginSources');
-    for (const p of sources?.properties ?? []) {
-      if (!ts.isPropertyAssignment(p) || !ts.isStringLiteralLike(p.initializer)) throw new Error(`${file}: nativeReleaseOptions.pluginSources entries are 'package': 'path'`);
-      out[p.name.getText().replace(/^['"]|['"]$/g, '')] = resolve(app, p.initializer.text);
-    }
-  }
-  return out;
+/** `release.pluginSources` for `platform` from the project's nativescript.config.ts, paths resolved against the project. */
+export function configuredOverrides(app: string, platform: 'ios' | 'android'): Record<string, string> {
+  const sources = releaseOptions(app, platform).pluginSources;
+  return Object.fromEntries(Object.entries(sources && typeof sources === 'object' ? sources : {}).map(([name, path]) => {
+    if (typeof path !== 'string') throw new Error(`nativescript.config: release.pluginSources entries are 'package': 'path'`);
+    return [name, resolve(app, path)];
+  }));
 }
 
 // ---------------------------------------------------------------- acquisition
@@ -145,11 +130,11 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
   let repo: string | null = null;
   let rev: string | null = null;
   if (override) {
-    if (!existsSync(override)) throw new Error(`${name}: the source configured in nativeReleaseOptions.pluginSources (${override}) does not exist`);
+    if (!existsSync(override)) throw new Error(`${name}: the source configured in release.pluginSources (${override}) does not exist`);
     root = override;
   } else {
     repo = repositoryOf(pkg);
-    if (!repo) throw new Error(`${name}@${version}: package.json names no repository; point nativeReleaseOptions.pluginSources['${name}'] at a checkout of its source`);
+    if (!repo) throw new Error(`${name}@${version}: package.json names no repository; point release.pluginSources['${name}'] at a checkout of its source`);
     const checkout = join(options.cache ?? DEFAULT_CACHE, `${name.replace(/\//g, '+')}@${version}`);
     rev = fetch(checkout, repo, pkg, say);
     root = join(checkout, 'repo');
@@ -251,7 +236,7 @@ function fetch(checkout: string, repo: string, pkg: any, say: (m: string) => voi
       }
     }
   }
-  if (!rev) throw new Error(`${pkg.name}@${pkg.version}: no revision of ${repo} matches the published package (no gitHead, no release tag, no commit setting the version); point nativeReleaseOptions.pluginSources['${pkg.name}'] at a checkout of its source`);
+  if (!rev) throw new Error(`${pkg.name}@${pkg.version}: no revision of ${repo} matches the published package (no gitHead, no release tag, no commit setting the version); point release.pluginSources['${pkg.name}'] at a checkout of its source`);
   git(dir, ['checkout', '-q', rev]);
   writeFileSync(meta, JSON.stringify({ repo, rev, how }, null, 2));
   say(`${pkg.name}@${pkg.version}: ${repo} @ ${rev.slice(0, 7)} (${how})`);
