@@ -403,6 +403,9 @@ export class NativeAPI {
     if (m.readonly) throw this.t.error(left, `${r.name}.${left.name.text} (read-only)`);
     this.checkAvailable(m, left, `${r.name}.${left.name.text}`);
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : this.t.expr(left.expression);
+    if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
+      return isolated(`jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`, m);
+    }
     return isolated(`${target}.${m.swift} = ${this.toSwift(value, m.type)}`, m);
   }
 

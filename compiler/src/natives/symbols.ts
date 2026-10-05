@@ -31,7 +31,16 @@ export interface NativeMethod {
   /** Isolated to the main actor by a Swift module (Objective-C's isolation is preconcurrency and needs nothing). */
   mainActor?: boolean;
 }
-export interface NativeProperty { kind: 'property'; swift: string; type: SwiftType; readonly: boolean; introduced?: string; mainActor?: boolean }
+export interface NativeProperty {
+  kind: 'property';
+  swift: string;
+  type: SwiftType;
+  readonly: boolean;
+  introduced?: string;
+  mainActor?: boolean;
+  /** A protocol's optional requirement: Swift can't assign it through the protocol type. */
+  optional?: boolean;
+}
 export interface NativeClass {
   swift: string;
   kind: 'class' | 'protocol';
@@ -95,8 +104,8 @@ function sdk() {
   };
 }
 const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}`);
-/** The layout tables are written in: availability of enums, escaping block parameters. */
-const TABLE_FORMAT = 2;
+/** The layout tables are written in: availability of enums, escaping block parameters, optional protocol properties. */
+const TABLE_FORMAT = 3;
 
 const tables = new Map<string, NativeTable>();
 
@@ -360,6 +369,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
   const types: Record<string, string> = {};
   const memberOf = new Map<string, Rel>();
   const members = new Map<string, string[]>();
+  const optionalRequirements = new Set(rels.filter((r) => r.kind === 'optionalRequirementOf').map((r) => r.source));
   for (const r of rels) {
     if (r.kind !== 'memberOf') continue;
     memberOf.set(r.source, r);
@@ -450,6 +460,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
         const target = isStatic ? c.static : c.instance;
         const js = part === 'py' || part === 'cpy' ? name : jsSelectorName(name);
         target[js] ??= property(s);
+        if (optionalRequirements.has(usr)) (target[js] as NativeProperty).optional = true;
       } else if (s.kind === 'swift.method' || s.kind === 'swift.type.method' || s.kind === 'swift.init') {
         const m = method(s, name, c.swift);
         const js = jsSelectorName(name);
