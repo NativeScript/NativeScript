@@ -423,6 +423,8 @@ export class Translator implements AsyncTranslator {
     if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/rxjs.d.ts') return `Rx${name}${(t as ts.TypeReference).typeArguments?.length ? `<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>` : ''}`;
     if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && Object.hasOwn(KIT_NAMES, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES[name];
+    // `typeof Cls`: the class itself.
+    if (sym && sym.flags & ts.SymbolFlags.Class && t.getConstructSignatures().length && classDecl && !classDecl.getSourceFile().isDeclarationFile) return `${this.type(c.getDeclaredTypeOfSymbol(sym), where)}.Type`;
     const renamed = sym && this.topNames().get(sym.valueDeclaration ?? sym.declarations?.[0]!);
     if (renamed) return renamed;
     // A mixin's class is the core class it is applied to.
@@ -1825,7 +1827,7 @@ export class Translator implements AsyncTranslator {
     }
     if (expando) {
       conformances.push('JSExpando');
-      lines.push('    var jsExpando: JSObject?', '    var jsSymbolKeys: [String] { jsExpando?.jsSymbolKeys ?? [] }', '    func jsDelete(_ key: String) -> Bool { jsExpando?.delete(key) ?? true }');
+      lines.push('    var jsExpando: JSObject?', '    var jsSymbolKeys: [String] { jsExpando?.jsSymbolKeys ?? [] }', '    func jsDeleteOwn(_ key: String) -> Bool { jsExpando?.delete(key) ?? true }');
     }
     if (setters.length) {
       if (!isView) throw this.error(cls, 'native setters on a class that is not a view');
@@ -3182,7 +3184,7 @@ export class Translator implements AsyncTranslator {
     if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (name === 'description' && this.typeOf(target) === 'JSSymbol') return `${this.expr(target)}.jsDescription`;
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
-    if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target)})`;
+    if (name === 'prototype' && this.library && (this.resolve(target)?.flags! & ts.SymbolFlags.Class || this.typeOf(target).endsWith('.Type'))) return `JSPrototypes.of(${this.expr(target)})`;
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
@@ -4433,7 +4435,7 @@ export class Translator implements AsyncTranslator {
         const name = e.right.getText();
         // A compiled program makes no String, Number or Boolean wrapper objects.
         if (['String', 'Number', 'Boolean'].includes(name) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `({ _ = ${this.coerce(e.left, 'Any?')}; return false }())`;
-        return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '') ?? name})`;
+        return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\.Type$/, '') ?? name})`;
       }
       case K.CommaToken: return `({ ${this.exprStatement(e.left)}; return ${r()} }())`;
       case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;

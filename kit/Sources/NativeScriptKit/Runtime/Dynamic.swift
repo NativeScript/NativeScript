@@ -19,7 +19,7 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
         return true
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
-    case let d as JSDeletable: return d.jsDelete(key)
+    case let d as JSDeletable: return d.jsDeleteOwn(key)
     default: return true
     }
 }
@@ -210,7 +210,7 @@ public func jsObjectFromEntries<S: Sequence, V>(_ entries: S) -> JSRecord<V> whe
 
 /// An object that can lose an own property (`delete o.x`).
 public protocol JSDeletable: AnyObject {
-    func jsDelete(_ key: String) -> Bool
+    func jsDeleteOwn(_ key: String) -> Bool
 }
 
 /// `Object.assign(target, ...sources)`: each source's own enumerable keys written to the target in order.
