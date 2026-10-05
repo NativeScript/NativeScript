@@ -747,3 +747,10 @@ public func jsConstructorName(_ value: Any?) -> String {
         return name.split(separator: "__").first.map(String.init) ?? name
     }
 }
+
+/// `f === g` on function values: the same closure (its code and context), as held and passed on.
+/// A method read twice makes two closures, which compare unequal where JavaScript's are one function.
+public func jsSameFunction<A, B>(_ a: A, _ b: B) -> Bool {
+    guard MemoryLayout<A>.size == MemoryLayout<B>.size else { return false }
+    return withUnsafeBytes(of: a) { x in withUnsafeBytes(of: b) { y in x.elementsEqual(y) } }
+}

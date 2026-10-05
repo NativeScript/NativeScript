@@ -2761,6 +2761,15 @@ export class Translator implements AsyncTranslator {
   }
 
   private identifier(e: ts.Identifier): string {
+    // `parseInt`, `parseFloat` as values: functions taking the parameters their slot gives (`map` passes an index, parseInt's radix).
+    if ((e.text === 'parseInt' || e.text === 'parseFloat') && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && this.resolve(e)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) {
+      const context = this.checker.getContextualType(e);
+      const slot = context && this.checker.getNonNullableType(context).getCallSignatures()[0];
+      const types = (slot?.getParameters() ?? []).map((p) => this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
+      const params = (types.length ? types : ['String']).map((t, k) => `__p${k}: ${k === 0 ? 'String' : t}`);
+      const radix = types.length > 1 ? '__p1' : 'null';
+      return `{ ${params.join(', ')} -> ${e.text === 'parseInt' ? `jsParseInt(__p0, ${radix})` : 'jsParseFloat(__p0)'} }`;
+    }
     const name = e.text;
     if (this.isArguments(e)) {
       const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;

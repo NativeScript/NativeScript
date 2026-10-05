@@ -183,3 +183,10 @@ public func jsCallValue(_ function: Any?, this: Any?, optional: Bool, _ argument
     if let method = jsFlat(function) as? JSMethod { return try method(this, arguments) }
     return try jsCall(function, spread: arguments)
 }
+
+/// A method found on a prototype (`super[key]`), called with `this`; a TypeError where there is none.
+@discardableResult
+public func jsCallFound(_ method: JSMethod?, _ this: Any?, _ arguments: [Any?]) throws -> Any? {
+    guard let method else { throw JSException(JSTypeError("method is not a function")) }
+    return try method(this, arguments)
+}

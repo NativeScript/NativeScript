@@ -211,3 +211,7 @@ withDone.done?.();
 console.log(withDone.describe('scale'));
 const infos: AnimationInfo[] = [info, withDone];
 console.log(infos.map((i) => i.propertyNameToAnimate).join());
+
+// parseInt and parseFloat as values.
+const parsers: Array<(s: string) => number> = [parseInt, parseFloat];
+console.log(parsers.map((p) => p('42.5px')).join(','), ['1', '2', '3'].map(parseFloat).join('|'));

@@ -379,7 +379,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c), (d) => this.compiledMember(d));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)), (d) => this.compiledMember(d));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -3651,6 +3651,16 @@ export class Translator implements AsyncTranslator {
 
   private identifier(e: ts.Identifier): string {
     const name = e.text;
+    // `parseInt`, `parseFloat` as values (`valueConverter: parseInt`): functions of the string they are given.
+    if ((name === 'parseInt' || name === 'parseFloat') && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && isLibDeclaration(this.resolve(e)?.declarations?.[0])) {
+      // The closure takes the parameters its slot gives (`map` passes an index, which parseInt reads as the radix).
+      const slot = this.checker.getContextualType(e) && this.checker.getNonNullableType(this.checker.getContextualType(e)!).getCallSignatures()[0];
+      const types = (slot?.getParameters() ?? []).map((p) => this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
+      const params = types.map((t, k) => `__p${k}: ${k === 0 ? 'String' : t}`);
+      const radix = types.length > 1 ? (types[1].endsWith('?') ? '__p1' : 'Optional(__p1)') : 'nil';
+      const body = name === 'parseInt' ? `jsParseInt(__p0, ${radix})` : 'jsParseFloat(__p0)';
+      return `{ (${(params.length ? params : ['__p0: String']).join(', ')}) -> Double in ${body} }`;
+    }
     // A function declaring `this`, as a value: a method value calling it with the receiver it is given.
     const thisFn = this.thisFunction(e);
     if (thisFn) {
@@ -4577,6 +4587,12 @@ export class Translator implements AsyncTranslator {
       return plain;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
+    if (ts.isElementAccessExpression(callee) && this.library && this.setNativeOf(callee.argumentExpression)) {
+      // `super[prop.setNative](value)`: the base class's method under the symbol, with this object as `this`.
+      const args = `[${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')}]`;
+      if (callee.expression.kind === ts.SyntaxKind.SuperKeyword) return `jsCallFound(super.jsSymbolMethod(${this.propertyKey(callee.argumentExpression)}), self, ${args})`;
+      return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.propertyKey(callee.argumentExpression)}${this.untypedArgs(e.arguments)})`;
+    }
     if (ts.isElementAccessExpression(callee)) {
       const property = this.setNativeOf(callee.argumentExpression);
       if (property) return `${this.expr(callee.expression)}.__setNative_${property}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
@@ -5603,6 +5619,10 @@ export class Translator implements AsyncTranslator {
       const key = ts.isElementAccessExpression(x) ? this.propertyKey(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
       return `jsGet(${this.expr(target)}, ${key})`;
     };
+    // Two typed function values: the same function when they hold the same closure.
+    if (!isNullish(a) && !isNullish(b) && (isFunctionType(lt.replace(/^\((.*)\)[?!]$/, '$1')) || isFunctionType(rt.replace(/^\((.*)\)[?!]$/, '$1')))) {
+      return `${negate ? '!' : ''}jsSameFunction(${this.expr(a)}, ${this.expr(b)})`;
+    }
     if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
       return `${negate ? '!' : ''}${strict ? `jsStrictEquals(${raw(x)}, ${this.coerce(n, 'Any?')})` : `jsIsNullish(${raw(x)})`}`;
