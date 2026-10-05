@@ -1761,6 +1761,11 @@ export class Translator implements AsyncTranslator {
   /** The newest iOS version an API used by the function being translated needs, innermost function last. */
   private availability: number[] = [];
 
+  /** A type newer than the deployment target named inside a function body: the body runs only where the OS has it. Outside a body, nothing. */
+  requireTypeAvailability(version: number) {
+    if (this.availability.length) this.requireAvailability(version);
+  }
+
   requireAvailability(version: number) {
     if (this.availability.length) this.availability[this.availability.length - 1] = Math.max(this.availability[this.availability.length - 1], version);
     else this.moduleAvailability = Math.max(this.moduleAvailability, version);

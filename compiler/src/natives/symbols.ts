@@ -23,6 +23,8 @@ export interface NativeMethod {
   returns: SwiftType;
   throws?: boolean;
   errorParam?: number;
+  /** The parameters Swift declares `@escaping`, which an implementation of the method must declare so too. */
+  escaping?: number[];
   failable?: boolean;
   introduced?: string;
   selector: string;
@@ -58,6 +60,7 @@ export interface NativeEnum {
   kind: 'enum' | 'options' | 'typedConstants';
   raw: string;
   cases: Record<string, { swift: string; value?: number | string }>;
+  introduced?: string;
 }
 export interface NativeFunction {
   /** Also 'staticProperty': `owner.swift` (`UIAccessibilityIsVoiceOverRunning()` → `UIAccessibility.isVoiceOverRunning`). */
@@ -68,6 +71,8 @@ export interface NativeConstant { swift: string; type: SwiftType; enumType?: str
 export interface NativeStruct { swift: string; fields: Record<string, SwiftType> }
 export interface NativeTable {
   module: string; sdk: string;
+  /** The table's layout; one cached in another is extracted again. */
+  format?: number;
   classes: Record<string, NativeClass>;
   enums: Record<string, NativeEnum>;
   functions: Record<string, NativeFunction>;
@@ -89,7 +94,9 @@ function sdk() {
     version: execFileSync('xcrun', ['--sdk', 'iphonesimulator', '--show-sdk-version'], { encoding: 'utf8' }).trim(),
   };
 }
-const cacheDir = () => join(COMPILER, '.cache', `ios-${sdk().version}`);
+const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}`);
+/** The layout tables are written in: availability of enums, escaping block parameters. */
+const TABLE_FORMAT = 2;
 
 const tables = new Map<string, NativeTable>();
 
@@ -110,7 +117,7 @@ export function nativeTable(module: string, options: TableOptions = {}): NativeT
   if (table) return table;
   const file = options.key ? join(moduleCache(), `${module}-${options.key}.json`) : join(cacheDir(), `${module}.json`);
   if (existsSync(file)) table = JSON.parse(readFileSync(file, 'utf8')) as NativeTable;
-  else {
+  if (!table || (table.format ?? 1) !== TABLE_FORMAT) {
     const extraArgs = typeof options.extraArgs === 'function' ? options.extraArgs() : options.extraArgs ?? [];
     table = generate(module, extraArgs, !!options.key, options.internal);
     mkdirSync(dirname(file), { recursive: true });
@@ -209,7 +216,7 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
 }
 
 function emptyTable(module: string): NativeTable {
-  return { module, sdk: sdk().version, classes: {}, enums: {}, functions: {}, constants: {}, structs: {} };
+  return { module, sdk: sdk().version, format: TABLE_FORMAT, classes: {}, enums: {}, functions: {}, constants: {}, structs: {} };
 }
 
 function compact(s: any, internal = false): Sym | null {
@@ -297,6 +304,7 @@ function method(s: Sym, selector: string, ownerSwift: string): NativeMethod {
   const { base, labels } = swiftName(s);
   const isInit = s.kind === 'swift.init';
   const params = (s.params ?? []).map((p) => paramType(p.decl));
+  const escaping = escapingParams(s);
   const m: NativeMethod = { kind: isInit ? 'init' : 'method', swift: base, labels, params, returns: 'Void', selector };
   if (isInit) {
     const text = typeText(s.decl);
@@ -308,9 +316,23 @@ function method(s: Sym, selector: string, ownerSwift: string): NativeMethod {
     m.throws = true;
     m.errorParam = errorPartOf(selector);
   }
+  if (escaping.length) m.escaping = escaping;
   if (s.introduced) m.introduced = s.introduced;
   if (s.mainActor) m.mainActor = true;
   return m;
+}
+
+/** Which parameters of a declaration are `@escaping`, by the declaration's own fragments (the signature's leave the attribute out). */
+function escapingParams(s: Sym): number[] {
+  const out: number[] = [];
+  let k = -1;
+  let afterExternal = false;
+  for (const f of s.decl) {
+    if (f.kind === 'externalParam' || (f.kind === 'internalParam' && !afterExternal)) k++;
+    afterExternal = f.kind === 'externalParam' || (afterExternal && f.kind === 'text' && !f.spelling.trim());
+    if (k >= 0 && /@escaping/.test(f.spelling) && !out.includes(k)) out.push(k);
+  }
+  return out;
 }
 
 /** Which parameters of a declaration have default values. */
@@ -400,6 +422,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
         raw: raw?.params?.length ? paramType(raw.params[0].decl) : '',
         cases: {},
       };
+      if (own?.introduced) e.introduced = own.introduced;
     }
     return e;
   };
