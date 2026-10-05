@@ -247,6 +247,26 @@ export class Translator implements AsyncTranslator {
     return !!sym && !sym.declarations?.length;
   }
 
+  /**
+   * A static field a class declares where a class it extends declares a static of that name
+   * (`static default = new Font()` over FontBase's): a field of its own, as JavaScript's
+   * constructors each hold theirs, which Swift's statics cannot redeclare.
+   */
+  private staticName(m: ts.ClassElement): string | null {
+    if (!isStatic(m) || !ts.isPropertyDeclaration(m) || !m.name || ts.isComputedPropertyName(m.name) || !ts.isClassLike(m.parent)) return null;
+    const name = m.name.getText();
+    for (let b = this.sourceBase(m.parent); b; b = this.sourceBase(b)) {
+      if (b.members.some((x) => isStatic(x) && x.name?.getText() === name)) return `${name}__${(m.parent.name?.text ?? 'class').replace(/\W/g, '_')}`;
+    }
+    return null;
+  }
+
+  /** A member's Swift name as `e` reaches it: a shadowing static's own name (see `staticName`). */
+  private memberName(e: ts.PropertyAccessExpression): string {
+    const decl = this.resolve(e.name)?.valueDeclaration;
+    return ident((decl && ts.isClassElement(decl) && this.staticName(decl)) || e.name.text);
+  }
+
   private ownCalls = new Set<ts.Node>();
   /** A call of a method an instance can replace (see `instanceKeys`): through the instance's own value, which may throw. */
   private replaceableCall(e: ts.CallExpression): boolean {
@@ -2100,7 +2120,7 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       if (keyed) throw this.error(m.name, 'a field named by this symbol');
-      const n = m.name.getText();
+      const n = this.staticName(m) ?? m.name.getText();
       const t = this.typeOf(m.name);
       if (isStatic(m)) {
         const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
@@ -3865,7 +3885,7 @@ export class Translator implements AsyncTranslator {
   /** An assignable place: a component prop is its signal's value. */
   private lvalue(e: ts.Expression): string {
     if (ts.isPropertyAccessExpression(e) && this.isSelf(e.expression) && this.props.has(e.name.text)) return `self.${ident(e.name.text)}.value`;
-    if (ts.isPropertyAccessExpression(e)) return this.namespaceMember(e) ?? `${this.expr(e.expression)}.${ident(e.name.text)}`;
+    if (ts.isPropertyAccessExpression(e)) return this.namespaceMember(e) ?? `${this.expr(e.expression)}.${this.memberName(e)}`;
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
     if (ts.isIdentifier(e)) return this.refName(e);
     return this.expr(e);
@@ -4068,7 +4088,7 @@ export class Translator implements AsyncTranslator {
       return t === 'Any?' ? `${this.expr(target)}.${name}` : this.fromAny(`${this.expr(target)}.${name}`, t);
     }
     const checked = this.receiver(target, name);
-    if (checked) return this.narrowed(e, `${checked}${dot}${ident(name)}`);
+    if (checked) return this.narrowed(e, `${checked}${dot}${this.memberName(e)}`);
     // `x?.name` on a value Swift has as non-optional: cast to optional, valid for an implicitly unwrapped one too.
     const tt = this.typeOf(target);
     if (e.questionDotToken && tt !== 'Any?' && !tt.endsWith('?') && !tt.endsWith('!') && !hasTopLevelArrow(tt) && !ts.isOptionalChain(target) && !isWriteTarget(e)
@@ -4082,7 +4102,7 @@ export class Translator implements AsyncTranslator {
       return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt);
     }
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
-    return this.narrowed(e, `${this.expr(target)}${unwrap ? '!' : ''}${dot}${ident(name)}`);
+    return this.narrowed(e, `${this.expr(target)}${unwrap ? '!' : ''}${dot}${this.memberName(e)}`);
   }
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
