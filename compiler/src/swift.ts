@@ -4884,7 +4884,7 @@ export class Translator implements AsyncTranslator {
 
   /** `o.k op= v` on an untyped object: `value` makes the new value of the old one (`__old`). */
   private untypedUpdate(member: { object: string; key: string }, value: string): string {
-    return `jsUpdate(${member.object}, ${member.key}) { (__old: Any?) throws -> Any? in ${value} }`;
+    return `jsUpdate(${member.object}, ${member.key}) { (__old: Any?) throws -> Any? in try ${value} }`;
   }
 
   /** `left = right` (also the assignment `??=` and `||=` make). */
