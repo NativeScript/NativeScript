@@ -3658,6 +3658,8 @@ export class Translator implements AsyncTranslator {
         case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : 'nil'})`;
         case 'BigInt': return `JSBigInt(convert: ${this.coerce(arg(0), 'Any?')})`;
       }
+      // `Error('x')` constructs as `new Error('x')` does.
+      if (ERRORS[name]) return this.errorValue(name, e.arguments);
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
     const resolvers = this.resolvers.get(this.resolve(callee)!);
@@ -3773,6 +3775,8 @@ export class Translator implements AsyncTranslator {
         if (method === 'is') return `jsSameValue(${this.coerce(arg(0), 'Any?')}, ${this.coerce(arg(1), 'Any?')})`;
         if (method === 'getOwnPropertyDescriptor') return `jsOwnPropertyDescriptor(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
         if (method === 'fromEntries') return `jsObjectFromEntries(${this.iterable(arg(0))})`;
+        // `Object.create(null)`: the runtime's objects inherit no keys, so an empty one.
+        if (method === 'create' && arg(0)?.kind === ts.SyntaxKind.NullKeyword && e.arguments.length === 1) return 'JSObject()';
         if (method === 'defineProperty') {
           const d = arg(2);
           const code = `try jsDefineProperty(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))}, ${ts.isObjectLiteralExpression(d) ? this.dynamicObject(d) : this.coerce(d, 'Any?')})`;
@@ -4150,7 +4154,7 @@ export class Translator implements AsyncTranslator {
     if (ERRORS[name] && this.isLibGlobal(callee as ts.Identifier) === false && ERRORS[name] === t) {
       return `${t}(${args.length ? this.coerce(args[0], 'String') : ''})`;
     }
-    if (ERRORS[name]) return `${ERRORS[name]}(${args.length ? this.str(args[0]) : ''})`;
+    if (ERRORS[name]) return this.errorValue(name, args);
     if (name === 'Date' && this.isLibGlobal(callee as ts.Identifier)) {
       if (args.length === 1) return `JSDate(${this.isString(args[0]) ? this.expr(args[0]) : this.toNumber(args[0])})`;
       return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
@@ -4179,6 +4183,13 @@ export class Translator implements AsyncTranslator {
       return `${t}(${this.args(e).join(', ')})`;
     }
     throw this.error(e, 'new');
+  }
+
+  /** One of the library's error classes, constructed: an AggregateError takes its errors first. */
+  private errorValue(name: string, args: readonly ts.Expression[]): string {
+    const [first, second] = name === 'AggregateError' ? [args[1], args[0]] : [args[0]];
+    const errors = name === 'AggregateError' ? [`errors: ${second ? this.coerce(second, 'JSArray<Any?>') : 'JSArray<Any?>()'}`] : [];
+    return `${ERRORS[name]}(${[...errors, ...(first ? [this.str(first)] : [])].join(', ')})`;
   }
 
   private typeofExpr(e: ts.TypeOfExpression): string {
