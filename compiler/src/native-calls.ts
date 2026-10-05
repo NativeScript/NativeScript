@@ -573,6 +573,8 @@ export class NativeAPI {
     if (bridged) return bridged;
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
+    // An untyped value where Swift takes a BOOL: its truthiness, as the runtime marshals it.
+    if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
     // A dispatch queue, which TypeScript types as NSObject: the queue, cast.
     if (base(source) === 'NSObject' && (b === 'DispatchQueue' || base(this.unalias(b)) === 'DispatchQueue')) {
       return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
