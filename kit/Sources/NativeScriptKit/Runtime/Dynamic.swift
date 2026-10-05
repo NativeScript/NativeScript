@@ -90,9 +90,17 @@ public func jsCallMethodIfPresent(_ object: Any?, _ key: String, _ arguments: An
 }
 
 private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
+    // `f.call(thisArg, …)` and `f.apply(thisArg, args)` on a function value.
+    if key == "call" || key == "apply", let f = jsFlat(object), f is JSMethod || f is JSFunction {
+        let this = arguments.first ?? nil
+        let rest = key == "call" ? Array(arguments.dropFirst()) : (jsFlat(arguments.count > 1 ? arguments[1] : nil) as? JSArrayProtocol)?.jsAnyElements ?? []
+        if let method = f as? JSMethod { return try method(this, rest) }
+        return try (f as! JSFunction)(rest)
+    }
     let f = try jsGet(object, key)
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
+    if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(f)) is not a function"))
 }
 

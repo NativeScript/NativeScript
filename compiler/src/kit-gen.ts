@@ -21,6 +21,13 @@ export interface KitOptions {
   modules: string[];
   /** Functions the kit implements instead (an npm dependency core calls): file → function → the Swift that replaces it. */
   counterparts?: Record<string, Record<string, string>>;
+  /**
+   * Folders of modules a compiled app has no use for (the XML builder, the inspector, runtime
+   * module resolution): what core reads from them is untyped, and using it throws.
+   */
+  moot?: string[];
+  /** Functions that return their last argument, and as decorators leave what they decorate as it is: `profile`. */
+  identities?: string[];
   /** A source's text; a patch of core is applied here. Defaults to the file on disk. */
   read?: (file: string) => string;
   /** Report every construct that does not translate instead of stopping at the first of each file. */
@@ -91,7 +98,10 @@ export function generateKit(o: KitOptions): KitResult {
   const host = ts.createCompilerHost(options);
   const readLib = host.getSourceFile.bind(host);
   const sources = new Map<string, string>();
+  const MOOT = '/__moot__/';
+  const isMoot = (abs: string) => (o.moot ?? []).some((d) => relative(core, abs).startsWith(d));
   host.getSourceFile = (name, version, onError) => {
+    if (name.startsWith(MOOT)) return ts.createSourceFile(name, 'declare const moot: any;\nexport = moot;\n', version, true);
     if (!compiled.has(name)) return readLib(name, version, onError);
     if (!sources.has(name)) sources.set(name, read(name));
     return ts.createSourceFile(name, foldPlatform(sources.get(name)!, name, 'ios'), version, true);
@@ -108,9 +118,9 @@ export function generateKit(o: KitOptions): KitResult {
     if (m.startsWith('.') && containing.startsWith(core + '/')) {
       const base = resolve(dirname(containing), m);
       const source = [`${base}.ios.ts`, `${base}.ts`, `${base}/index.ios.ts`, `${base}/index.ts`].find((c) => existsSync(c));
-      // `from '.'` in a module's own files names its declarations, as core's own build reads it.
-      const own = m === '.' || m === './index';
-      file = source && compiled.has(source) && !own ? source : declarationOf(source ?? base);
+      // `from '.'` in a module's implementation names its declarations, as core's own build reads it.
+      const self = (m === '.' || m === './index') && source === containing;
+      file = source && isMoot(source) ? MOOT + relative(core, source).replace(/\.ts$/, '.d.ts') : source && compiled.has(source) && !self ? source : declarationOf(source ?? base);
     }
     if (file) {
       resolutions.set(`${containing}\0${m}`, file);
@@ -135,6 +145,8 @@ export function generateKit(o: KitOptions): KitResult {
       pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files), lenient: true,
       library: {
         moduleName: (file) => (compiled.has(file) ? enumName(relative(core, file), barrels) : null),
+        isMoot: (file) => file.startsWith(MOOT),
+        identities: new Set(o.identities ?? []),
         counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
       },
     });

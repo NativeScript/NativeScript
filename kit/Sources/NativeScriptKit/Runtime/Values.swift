@@ -200,6 +200,19 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
         }
     }
 
+    /// A prototype's property read for an instance: a getter runs with the instance as `this`.
+    func get(_ key: String, receiver: Any?) throws -> Any? {
+        if let getter = slots[JSPropertyKey(key)]?.get { return try getter(receiver) }
+        if slots[JSPropertyKey(key)]?.isAccessor == true { return nil }
+        return storage[JSPropertyKey(key)] ?? nil
+    }
+
+    /// A prototype's setter for a key, nil when the key holds a value; an accessor without one throws as strict code does.
+    func setter(_ key: String) -> ((Any?, Any?) throws -> Void)? {
+        guard let slot = slots[JSPropertyKey(key)], slot.isAccessor else { return nil }
+        return slot.set ?? { _, _ in throw JSException(JSTypeError("Cannot set property \(key) of #<Object> which has only a getter")) }
+    }
+
     /// `object[key]`, running a getter.
     public func get(_ key: String) throws -> Any? {
         if !slots.isEmpty, let getter = slots[JSPropertyKey(key)]?.get { return try getter(self) }
@@ -357,6 +370,8 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
 
 /// `object[key]` / `object.key` on a dynamic value. Reading from undefined or null throws a TypeError.
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
+    // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
+    if let cls = jsFlat(object) as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : nil }
     switch jsFlat(object) {
     case nil:
         throw JSException(JSTypeError("Cannot read properties of undefined (reading '\(key)')"))
@@ -435,6 +450,7 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
 @discardableResult
 public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
+    if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
 }
 

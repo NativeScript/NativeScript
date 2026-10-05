@@ -15,6 +15,7 @@ import { createProgram } from '../../compiler/src/program.ts';
 import { Translator } from '../../compiler/src/swift.ts';
 import { Translator as KotlinTranslator } from '../../compiler/src/kotlin.ts';
 import { SourceLines } from '../../compiler/src/source-lines.ts';
+import { collectProperties } from '../../compiler/src/properties.ts';
 import { addInterfaces, translateModules } from '../../compiler/src/modules.ts';
 import { addKotlinInterfaces, translateKotlinModules } from '../../compiler/src/kotlin-modules.ts';
 import ts from '../../compiler/node_modules/typescript/lib/typescript.js';
@@ -46,14 +47,17 @@ function buildRuntime() {
 
 /**
  * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
- * with the generated kit's leniency (Swift only, as the kit is generated for iOS first).
+ * as the kit generated from core is, lenient and in library mode (Swift only, as the kit is
+ * generated for iOS first).
  */
 const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
 
 function translate(file: string, out: string): void {
   const loose = lenient(file);
   const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
-  const translator = new Translator(checker, new Map(), files, { lenient: loose });
+  // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
+  const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
+  const translator = new Translator(checker, new Map(), files, { lenient: loose, library, ...(loose ? { pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {}) });
   translator.appModule = 'Main';
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
@@ -109,7 +113,9 @@ function toJavaScript(dir: string, out: string) {
   writeFileSync(join(out, 'package.json'), '{ "type": "module" }');
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
     if (!f.endsWith('.ts')) continue;
-    const { outputText } = ts.transpileModule(readFileSync(join(dir, f), 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, rewriteRelativeImportExtensions: true } });
+    const text = readFileSync(join(dir, f), 'utf8');
+    // A lenient case runs as core is built: class fields assigned, not defined (a declared field leaves the prototype's accessor visible).
+    const { outputText } = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, rewriteRelativeImportExtensions: true, ...(text.startsWith('// @lenient') ? { useDefineForClassFields: false } : {}) } });
     mkdirSync(dirname(join(out, f)), { recursive: true });
     writeFileSync(join(out, f.replace(/\.ts$/, '.js')), outputText);
   }
