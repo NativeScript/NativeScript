@@ -44,9 +44,17 @@ function buildRuntime() {
     '-Onone', '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
 }
 
+/**
+ * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
+ * with the generated kit's leniency (Swift only, as the kit is generated for iOS first).
+ */
+const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
+
 function translate(file: string, out: string): void {
-  const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir);
-  const translator = new Translator(checker, new Map(), files);
+  const loose = lenient(file);
+  const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const translator = new Translator(checker, new Map(), files, { lenient: loose });
+  translator.appModule = 'Main';
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
   const modules = translateModules(translator, program, [file, ...importsOf(program, file)]);
@@ -64,6 +72,7 @@ function translate(file: string, out: string): void {
 function translateKotlin(file: string, out: string, pkg: string): void {
   const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir);
   const translator = new KotlinTranslator(checker, new Map(), files);
+  translator.appModule = pkg;
   const lines = translator.lines = new SourceLines(new Map());
   const modules = translateKotlinModules(translator, program, [file, ...importsOf(program, file)]);
   addKotlinInterfaces(translator, modules);
@@ -160,7 +169,7 @@ if (targets.includes('swift')) {
     try {
       translate(file, join(dir, 'Sources'));
       const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
-      const compiled = spawnSync('xcrun', ['swiftc', '-Onone', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
+      const compiled = spawnSync('xcrun', ['swiftc', '-Onone', '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
       if (compiled.status !== 0) throw new Error(`swiftc:\n${compiled.stderr.split('\n').filter((l) => /error:/.test(l)).slice(0, 15).join('\n')}`);
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
@@ -171,11 +180,13 @@ if (targets.includes('swift')) {
   }
 }
 
+let kotlinSkipped = 0;
 if (targets.includes('kotlin')) {
   const pkg = (name: string) => 'case_' + name.replace(/\W/g, '_');
   const translated: string[] = [];
   for (const c of cases) {
     const name = basename(c, '.ts');
+    if (lenient(join(here, 'cases', c))) { kotlinSkipped++; continue; }
     try {
       translateKotlin(join(here, 'cases', c), join(build, 'kotlin', name), pkg(name));
       translated.push(name);
@@ -208,6 +219,6 @@ if (targets.includes('kotlin')) {
   if (!keep) for (const d of readdirSync(build)) if (d.startsWith('kotlin-classes') || d === 'kotlin') rmSync(join(build, d), { recursive: true, force: true });
 }
 
-const total = cases.length * targets.length;
+const total = cases.length * targets.length - (targets.includes('kotlin') ? kotlinSkipped : 0);
 console.log(`${total - failed} of ${total} runs match Node (${targets.join(', ')})`);
 process.exit(failed ? 1 : 0);

@@ -155,6 +155,12 @@ export class Throws {
       return true;
     }
     const file = decl.getSourceFile();
+    // An overload signature: the implementation runs.
+    if (!file.isDeclarationFile && !(decl as Fn).body && (ts.isConstructorDeclaration(decl) || ts.isMethodDeclaration(decl) || ts.isFunctionDeclaration(decl))) {
+      const impl = ts.isConstructorDeclaration(decl) ? decl.parent.members.find((m) => ts.isConstructorDeclaration(m) && !!m.body)
+        : ((ts.isMethodDeclaration(decl) ? decl.parent.members : (decl.parent as ts.SourceFile).statements) as ts.NodeArray<ts.Node>).find((m) => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === decl.name?.getText());
+      if (impl) return this.fn(impl);
+    }
     if (file.isDeclarationFile) {
       const owner = builtinName(decl);
       if (owner && THROWING_BUILTINS.has(owner)) return owner === 'Array.reduce' || owner === 'Array.reduceRight' ? args.length < 2 || callbackThrows() : true;
