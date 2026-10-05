@@ -5139,7 +5139,10 @@ export class Translator implements AsyncTranslator {
       return `${negate ? '!' : ''}${fn}(${this.coerce(a, 'Any?')}, ${this.coerce(b, 'Any?')})`;
     }
     if (this.isObjectRef(a) && this.isObjectRef(b)) return `${this.expr(a)} ${negate ? '!==' : '==='} ${this.expr(b)}`;
-    return `${this.expr(a)} ${negate ? '!=' : '=='} ${this.expr(b)}`;
+    // Swift's comparisons do not associate: an operand that is one is parenthesized (`flag !== n > 0`).
+    const K2 = ts.SyntaxKind;
+    const compared = (x: ts.Expression) => (ts.isBinaryExpression(x) && x.operatorToken.kind >= K2.LessThanToken && x.operatorToken.kind <= K2.ExclamationEqualsEqualsToken ? `(${this.expr(x)})` : this.expr(x));
+    return `${compared(a)} ${negate ? '!=' : '=='} ${compared(b)}`;
   }
 
   private array(e: ts.ArrayLiteralExpression): string {

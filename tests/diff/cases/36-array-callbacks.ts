@@ -37,3 +37,9 @@ function runLater(callback: () => void) {
   callback();
 }
 runLater(retried);
+function changed(sizes: Set<number>): string {
+  const populated = sizes.size > 0;
+  sizes.clear();
+  return `${populated !== sizes.size > 0} ${populated === sizes.size >= 0} ${1 < 2 === true}`;
+}
+console.log(changed(new Set([1])));
