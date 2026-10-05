@@ -19,7 +19,7 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
         return true
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
-    case let d as JSDeletable: return d.jsDelete(key)
+    case let d as JSDeletable: return d.jsDeleteOwn(key)
     default: return true
     }
 }
@@ -89,6 +89,17 @@ public func jsCallMethodIfPresent(_ object: Any?, _ key: String, _ arguments: An
     jsIsNullish(object) ? nil : try callMethod(object, key, arguments)
 }
 
+/// `object.key(...args)` on an untyped object.
+@discardableResult
+public func jsCallMethod(_ object: Any?, _ key: String, spread arguments: [Any?]) throws -> Any? {
+    try callMethod(object, key, arguments)
+}
+
+@discardableResult
+public func jsCallMethodIfPresent(_ object: Any?, _ key: String, spread arguments: [Any?]) throws -> Any? {
+    jsIsNullish(object) ? nil : try callMethod(object, key, arguments)
+}
+
 private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
     // `f.call(thisArg, …)` and `f.apply(thisArg, args)` on a function value.
     if key == "call" || key == "apply", let f = jsFlat(object), f is JSMethod || f is JSFunction {
@@ -105,7 +116,9 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         let function = f as! JSFunction
         return { (rest: [Any?]) throws -> Any? in try function(bound + rest) } as JSFunction
     }
-    let f = try jsGet(object, key)
+    var f = try jsGet(object, key)
+    // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
+    if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
@@ -123,6 +136,9 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
     case let o as JSObject: try o.defineProperty(key, d)
+    case let expando as JSExpando:
+        if expando.jsExpando == nil { expando.jsExpando = JSObject() }
+        try expando.jsExpando!.defineProperty(key, d)
     case let dynamic as JSDynamic:
         if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on a typed object: \(key)")) }
         if case .some(let v) = d.value { dynamic[jsKey: key] = v }
@@ -218,7 +234,7 @@ public func jsObjectFromEntries<S: Sequence, V>(_ entries: S) -> JSRecord<V> whe
 
 /// An object that can lose an own property (`delete o.x`).
 public protocol JSDeletable: AnyObject {
-    func jsDelete(_ key: String) -> Bool
+    func jsDeleteOwn(_ key: String) -> Bool
 }
 
 /// `Object.assign(target, ...sources)`: each source's own enumerable keys written to the target in order.

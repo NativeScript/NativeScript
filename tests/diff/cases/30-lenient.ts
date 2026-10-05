@@ -80,3 +80,26 @@ function run(cb?: (x: number) => number, onError?: (e: any) => any): number {
   return -1;
 }
 console.log(run((x) => x * 3), run(), run(undefined, (e) => console.log(e.message)));
+
+// Object values that may be undefined, read as JavaScript reads them.
+class Leaf {
+  label = 'leaf';
+  parent: Leaf;
+}
+function findParent(leaf: Leaf): Leaf {
+  const parent = leaf.parent;
+  return parent?.parent;
+}
+function climb(leaf: Leaf): string {
+  let names = '';
+  while (leaf) {
+    names += leaf.label;
+    leaf = leaf.parent;
+  }
+  return names;
+}
+const leaf = new Leaf();
+const root = new Leaf();
+root.label = 'root';
+leaf.parent = root;
+console.log(findParent(leaf) === undefined, climb(leaf), (<Leaf>(<any>leaf))?.parent?.label);

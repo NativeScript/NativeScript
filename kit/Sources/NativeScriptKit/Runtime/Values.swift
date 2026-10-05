@@ -466,7 +466,14 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
 /// Calls a function stored in a dynamic value. Anything else throws a TypeError.
 @discardableResult
 public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
+    try jsCall(function, spread: arguments)
+}
+
+/// `f(...args)` on an untyped value.
+@discardableResult
+public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
+    if let method = jsFlat(function) as? JSMethod { return try method(nil, arguments) }
     if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
 }
@@ -700,11 +707,20 @@ extension JSArrayProtocol {
 /// `f?.(args)` on an untyped value: undefined when `f` is undefined or null.
 @discardableResult
 public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any? {
+    try jsCallOptional(function, spread: arguments)
+}
+
+@discardableResult
+public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
     if jsIsNullish(function) { return nil }
-    if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
-    throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
+    return try jsCall(function, spread: arguments)
 }
 
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
 /// in a native app, so reading one gives undefined.
 public let jsGlobalThis = JSObject([])
+
+/// Lenient code: a value that may be undefined where its type says an object, read as
+/// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
+@inline(__always)
+public func jsImplicit<T>(_ value: T?) -> T! { value }

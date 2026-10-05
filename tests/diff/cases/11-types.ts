@@ -66,3 +66,11 @@ const word = 'abc';
 const chars: string[] = [];
 for (let i = word.length - 1; i >= 0; i--) chars.push(word[i]);
 console.log(chars.join(''));
+
+// A type parameter narrowed by typeof is the primitive.
+function measure<T>(v: T): string {
+  if (typeof v === 'string') return `${v.toUpperCase()}:${v.length}`;
+  if (typeof v === 'number') return (v * 2).toFixed(1);
+  return 'other';
+}
+console.log(measure('ab'), measure(2.5), measure(true));
