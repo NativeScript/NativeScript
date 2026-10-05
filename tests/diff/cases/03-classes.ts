@@ -64,3 +64,27 @@ class Counter {
   }
 }
 console.log(new Counter().increment().increment(5).current);
+
+// Overrides narrowing what the base method takes and gives.
+class Maker {
+  make(): any {
+    return null;
+  }
+  scale(by: any): number {
+    return 1;
+  }
+}
+class Box extends Maker {
+  size = 2;
+  make(): Box {
+    const b = new Box();
+    b.size = this.size * 2;
+    return b;
+  }
+  scale(by: number): number {
+    return this.size * by;
+  }
+}
+const makers: Maker[] = [new Maker(), new Box()];
+for (const m of makers) console.log(m.make() === null, m.scale(3));
+console.log(new Box().make().size);

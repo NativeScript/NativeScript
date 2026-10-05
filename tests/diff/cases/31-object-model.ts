@@ -107,3 +107,26 @@ class Sized {
 const sized = new Sized();
 sized.width = 3;
 console.log(sized.width);
+
+// Method values carried by locals, made by local functions, passed back to fields (InheritedProperty).
+class Tagged extends Property<Base, string> {
+  public readonly setTagged: (value: string) => void;
+  constructor(options: { name: string; defaultValue?: string }) {
+    super(options);
+    const setBase = this.set;
+    const setFunc = (tag: string) =>
+      function (value: string): void {
+        setBase.call(this, `${tag}:${value}`);
+      };
+    const setTagged = setFunc('tagged');
+    this.setTagged = setTagged;
+    this.set = setFunc('local');
+  }
+}
+const tagged = new Tagged({ name: 'label', defaultValue: '-' });
+tagged.register(Base);
+const t1 = new Base();
+t1['label'] = 'x';
+console.log(t1['label'], t1.log.join());
+tagged.setTagged.call(t1, 'y');
+console.log(t1['label']);

@@ -2,7 +2,7 @@ import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -113,6 +113,7 @@ export interface KotlinCore {
 }
 
 // No prototype: a name like `toString` is no error class.
+const BUILTIN_CLASSES: Record<string, string> = Object.assign(Object.create(null), { Promise: 'JSPromise<*>', Array: 'JSArray<*>', Map: 'JSMap<*, *>', Set: 'JSSet<*>', Date: 'JSDate' });
 const ERRORS: Record<string, string> = Object.assign(Object.create(null), { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' });
 const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet', 'BigInt']);
 /** Core classes kit-android implements under another name. */
@@ -243,7 +244,7 @@ export class Translator implements AsyncTranslator {
             const d = this.resolve(base.expression)?.valueDeclaration;
             if (d) this.extendedDecls.add(d);
           }
-          for (const i of n.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) this.protocols.add(i.expression.getText());
+          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(i.expression.getText());
         }
         ts.forEachChild(n, visit);
       };
@@ -320,6 +321,9 @@ export class Translator implements AsyncTranslator {
     if (t.isIntersection()) {
       const cls = t.types.find((u) => this.native?.type(u) || (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class);
       if (cls) return this.type(cls, where);
+      // `T & string`, a type parameter narrowed by typeof: the primitive.
+      const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
+      if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -1334,7 +1338,7 @@ export class Translator implements AsyncTranslator {
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are interfaces of the kit's, implemented below.
     const witnesses: string[] = [];
     const notOverrides = new Set<string>();
-    const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
+    const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
       // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
       .filter((i) => this.protocolWitnesses(cls, i, witnesses, notOverrides))
       .map((i) => i.expression.getText());
@@ -3113,6 +3117,14 @@ export class Translator implements AsyncTranslator {
       const optionalFn = !!held && (ts.isPropertyDeclaration(held) || ts.isPropertySignature(held)) && /^\(.*\)\?$/.test(this.declaredTypeOf(callee) ?? '') && isFunctionType((this.declaredTypeOf(callee) ?? '').slice(1, -2));
       const checked = !callee.questionDotToken ? this.receiver(target, method) : null;
       const call = `${checked ?? `${this.expr(target)}${q === '!!' ? '!!' : q ? '?' : ''}`}.${ident(method)}${optionalFn ? '!!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+      // An override taking its base's signature gives what the base's result type holds.
+      const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+      if (decl && ts.isMethodDeclaration(decl) && decl.body && ts.isClassLike(decl.parent) && !q) {
+        let root: ts.MethodDeclaration = decl;
+        for (let b = this.inheritedMethod(root.parent as ts.ClassLikeDeclaration, method); b; b = this.inheritedMethod(b.parent as ts.ClassLikeDeclaration, method)) root = b;
+        const emitted = this.returnTypeOf(root), own = this.typeOf(e);
+        if (root !== decl && emitted !== 'Unit' && emitted !== this.returnTypeOf(decl)) return this.convert(this.fromPluginCall(e, call), emitted, own);
+      }
       return this.fromPluginCall(e, call);
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
@@ -3919,6 +3931,9 @@ export class Translator implements AsyncTranslator {
         const name = e.right.getText();
         // A compiled program makes no String, Number or Boolean wrapper objects.
         if (['String', 'Number', 'Boolean'].includes(name) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `run { ${this.coerce(e.left, 'Any?')}; false }`;
+        // The library's classes: the runtime's type of any of their instances (a promise of any result).
+        const builtin = BUILTIN_CLASSES[name];
+        if (builtin && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `(${l()} is ${builtin})`;
         return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '') ?? name})`;
       }
       case K.CommaToken: return `run { ${this.exprStatement(e.left)}; ${r()} }`;

@@ -43,3 +43,19 @@ const scores: Record<string, number> = { ann: 3, bo: 5 };
 scores['cy'] = 4;
 console.log(Object.keys(scores).join(','), Object.values(scores).reduce((a, b) => a + b, 0), scores['bo'], 'bo' in scores);
 for (const [k, v] of Object.entries(scores)) console.log(k, v);
+
+// Implementing a class, even the class itself, checks the shape only.
+class Point implements Point {
+  constructor(public x: number, public y: number) {}
+  sum() {
+    return this.x + this.y;
+  }
+}
+class Pair implements Point {
+  x = 4;
+  y = 5;
+  sum() {
+    return this.x * this.y;
+  }
+}
+console.log(new Point(1, 2).sum(), new Pair().sum(), new Pair() instanceof Point);

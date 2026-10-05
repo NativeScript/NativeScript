@@ -446,6 +446,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return found
     }
 
+    public func find(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Element? {
+        try find { v, i in try predicate(v, i, self) }
+    }
+
     public func findIndex(_ predicate: (Element) throws -> Bool) rethrows -> Double {
         var found = -1
         try each { v, i in
@@ -462,6 +466,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
             return true
         }
         return Double(found)
+    }
+
+    public func findIndex(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Double {
+        try findIndex { v, i in try predicate(v, i, self) }
     }
 
     public func findLast(_ predicate: (Element) throws -> Bool) rethrows -> Element? {
@@ -482,6 +490,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return found
     }
 
+    public func findLast(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Element? {
+        try findLast { v, i in try predicate(v, i, self) }
+    }
+
     public func findLastIndex(_ predicate: (Element) throws -> Bool) rethrows -> Double {
         var found = -1
         try eachReversed { v, i in
@@ -498,6 +510,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
             return true
         }
         return Double(found)
+    }
+
+    public func findLastIndex(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Double {
+        try findLastIndex { v, i in try predicate(v, i, self) }
     }
 
     public func some(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
@@ -518,6 +534,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return result
     }
 
+    public func some(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Bool {
+        try some { v, i in try predicate(v, i, self) }
+    }
+
     public func every(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
         var result = true
         try each { v, _ in
@@ -534,6 +554,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
             return true
         }
         return result
+    }
+
+    public func every(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Bool {
+        try every { v, i in try predicate(v, i, self) }
     }
 
     // MARK: Transforms
@@ -634,6 +658,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return JSArray<U>(out)
     }
 
+    public func flatMap<U>(_ transform: (Element, Double, JSArray<Element>) throws -> JSArray<U>) rethrows -> JSArray<U> {
+        try flatMap { v, i in try transform(v, i, self) }
+    }
+
     /// `array.reduce(f, initial)`.
     public func reduce<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
@@ -651,6 +679,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
             return true
         }
         return accumulator
+    }
+
+    public func reduce<U>(_ next: (U, Element, Double, JSArray<Element>) throws -> U, _ initial: U) rethrows -> U {
+        try reduce({ a, v, i in try next(a, v, i, self) }, initial)
     }
 
     /// `array.reduce(f)`: the first element is the initial value; an empty array throws a TypeError.
@@ -671,6 +703,10 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return accumulator
     }
 
+    public func reduce(_ next: (Element, Element, Double, JSArray<Element>) throws -> Element) throws -> Element {
+        try reduce { a, v, i in try next(a, v, i, self) }
+    }
+
     public func reduceRight<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
         try eachReversed { v, _ in
@@ -689,17 +725,29 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return accumulator
     }
 
+    public func reduceRight<U>(_ next: (U, Element, Double, JSArray<Element>) throws -> U, _ initial: U) rethrows -> U {
+        try reduceRight({ a, v, i in try next(a, v, i, self) }, initial)
+    }
+
     public func reduceRight(_ next: (Element, Element) throws -> Element) throws -> Element {
+        try reduceRight { a, v, _ in try next(a, v) }
+    }
+
+    public func reduceRight(_ next: (Element, Element, Double) throws -> Element) throws -> Element {
         track()
         guard !storage.isEmpty else { throw JSException(JSTypeError("Reduce of empty array with no initial value")) }
         var k = storage.count - 1
         var accumulator = read(k)
         k -= 1
         while k >= 0 {
-            if k < storage.count { accumulator = try next(accumulator, read(k)) }
+            if k < storage.count { accumulator = try next(accumulator, read(k), Double(k)) }
             k -= 1
         }
         return accumulator
+    }
+
+    public func reduceRight(_ next: (Element, Element, Double, JSArray<Element>) throws -> Element) throws -> Element {
+        try reduceRight { a, v, i in try next(a, v, i, self) }
     }
 
     // MARK: Strings

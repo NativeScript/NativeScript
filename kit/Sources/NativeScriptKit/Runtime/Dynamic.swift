@@ -19,7 +19,7 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
         return true
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
-    case let d as JSDeletable: return d.jsDelete(key)
+    case let d as JSDeletable: return d.jsDeleteOwn(key)
     default: return true
     }
 }
@@ -107,6 +107,14 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         let rest = key == "call" ? Array(arguments.dropFirst()) : (jsFlat(arguments.count > 1 ? arguments[1] : nil) as? JSArrayProtocol)?.jsAnyElements ?? []
         if let method = f as? JSMethod { return try method(this, rest) }
         return try (f as! JSFunction)(rest)
+    }
+    // `f.bind(thisArg, …)`: a function of the rest of the arguments.
+    if key == "bind", let f = jsFlat(object), f is JSMethod || f is JSFunction {
+        let this = arguments.first ?? nil
+        let bound = Array(arguments.dropFirst())
+        if let method = f as? JSMethod { return { (rest: [Any?]) throws -> Any? in try method(this, bound + rest) } as JSFunction }
+        let function = f as! JSFunction
+        return { (rest: [Any?]) throws -> Any? in try function(bound + rest) } as JSFunction
     }
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
@@ -226,7 +234,7 @@ public func jsObjectFromEntries<S: Sequence, V>(_ entries: S) -> JSRecord<V> whe
 
 /// An object that can lose an own property (`delete o.x`).
 public protocol JSDeletable: AnyObject {
-    func jsDelete(_ key: String) -> Bool
+    func jsDeleteOwn(_ key: String) -> Bool
 }
 
 /// `Object.assign(target, ...sources)`: each source's own enumerable keys written to the target in order.
