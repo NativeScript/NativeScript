@@ -592,7 +592,7 @@ export class Translator implements AsyncTranslator {
       const s = calls[0];
       const params = s.getParameters().map((p) => {
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
-        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
+        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || nullableTypeNode(p.valueDeclaration.type))) return optionalType(pt);
         return isFunctionType(pt) ? `@escaping ${pt}` : pt;
       });
       return `(${params.join(', ')}) throws -> ${this.type(s.getReturnType(), where)}`;
@@ -1604,7 +1604,8 @@ export class Translator implements AsyncTranslator {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       if (p.dotDotDotToken) return `${closure ? '' : '_ '}${name}: ${this.typeOf(p.name)}`;
       let t = this.typeOf(p.name);
-      if (this.mayBeNull(p)) t = `${t}!`;
+      // `accessory: UITabAccessory | null`, checked without strictNullChecks: null still passes; the body reads it unwrapped.
+      if (this.mayBeNull(p) || (closure && nullableTypeNode(p.type) && !isOptional(t) && t !== 'Any?' && this.lenientRef(t) !== t)) t = `${t}!`;
       let given = '';
       if (p.questionToken || (p.initializer && !this.templateParams)) {
         if (!closure && this.constantDefault(p)) given = ` = ${this.coerce(p.initializer!, t)}`;
@@ -1960,7 +1961,7 @@ export class Translator implements AsyncTranslator {
 
   /** A closure literal's Swift function type, as `closure` writes it. */
   private closureType(fn: ts.ArrowFunction | ts.FunctionExpression): string {
-    return `(${fn.parameters.map((p) => (p.questionToken || this.mayBeNull(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
+    return `(${fn.parameters.map((p) => (p.questionToken || this.mayBeNull(p) || nullableTypeNode(p.type) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
   }
 
   /** A callback for an API that does not take throwing closures (a timer): what it throws is reported. */
@@ -4711,6 +4712,8 @@ export class Translator implements AsyncTranslator {
       }
       if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
+      // A native enum's value is a number to script: its raw value's digits.
+      if (method === 'toString' && !e.arguments.length && this.native.isEnumType(this.typeOf(target).replace(/[?!]$/, ''))) return `String(${this.expr(target)}${/[?!]$/.test(this.typeOf(target)) ? '!' : ''}.rawValue)`;
       // `String.fromCharCode.apply(_, codes)`, `Math.max.apply(_, xs)`: the library function of the list's elements.
       if (method === 'apply' && e.arguments.length === 2 && this.pure(e.arguments[0]) && ts.isPropertyAccessExpression(target) && ts.isIdentifier(target.expression) && this.isLibGlobal(target.expression)) {
         const listed = LIST_APPLIED[`${target.expression.text}.${target.name.text}`];
@@ -5548,7 +5551,9 @@ export class Translator implements AsyncTranslator {
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) {
       // Where a weak reference to any object is declared (`instance: WeakRef<any>`), made as one.
       const context = this.checker.getContextualType(e);
-      const ref = context && /^JSWeakRef<AnyObject>\??$/.test(this.type(context, e)) ? 'JSWeakRef<AnyObject>' : t;
+      const wanted = context ? this.type(context, e).replace(/[?!]$/, '') : '';
+      // A reference to a subclass's object where one to the base class's is wanted, made as that.
+      const ref = wanted === 'JSWeakRef<AnyObject>' || (/^JSWeakRef<\w+>$/.test(wanted) && this.isSubclassOf(t.slice(10, -1), wanted.slice(10, -1))) ? wanted : t;
       if (ref !== 'JSWeakRef<AnyObject>') return `${ref}(${this.expr(args[0])})`;
       return `${ref}(${this.isAny(args[0]) ? `try jsWeakTarget(${this.expr(args[0])})` : `(${this.coerce(args[0], 'Any?')} as AnyObject)`})`;
     }
@@ -6218,6 +6223,11 @@ function numberLiteral(text: string): string {
   if (t.startsWith('.')) return '0' + t;
   if (t.endsWith('.')) return t + '0';
   return t;
+}
+
+/** A type written with `| null` or `| undefined`, which code checked without strictNullChecks types without them. */
+function nullableTypeNode(t: ts.TypeNode | undefined): boolean {
+  return !!t && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
 }
 
 function numericLiteralOnly(e: ts.Expression): boolean {

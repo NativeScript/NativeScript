@@ -133,3 +133,18 @@ try {
 } catch (e) {
   console.log('strict threw', e.message);
 }
+
+class Item0 {
+  name = 'item';
+}
+class Button0 extends Item0 {
+  name = 'button';
+}
+function hold(ref: WeakRef<Item0>): string {
+  return ref.deref().name;
+}
+const button0 = new Button0();
+console.log(hold(new WeakRef(button0)));
+const show = (x: Item0 | null) => console.log(x ? x.name : 'none');
+show(null);
+show(button0);
