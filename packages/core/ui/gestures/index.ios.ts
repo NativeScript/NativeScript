@@ -629,14 +629,14 @@ export class TouchGestureEventData {
 	}
 
 	getX(): number {
-		const offset = this.view.nativeViewProtected.contentOffset;
-		const offsetX = offset ? offset.x : 0;
-		return this.getMainPointer().locationInView(this.view.nativeViewProtected).x - offsetX;
+		const nativeView = this.view.nativeViewProtected;
+		const offsetX = nativeView instanceof UIScrollView ? nativeView.contentOffset.x : 0;
+		return this.getMainPointer().locationInView(nativeView).x - offsetX;
 	}
 
 	getY(): number {
-		const offset = this.view.nativeViewProtected.contentOffset;
-		const offsetY = offset ? offset.y : 0;
-		return this.getMainPointer().locationInView(this.view.nativeViewProtected).y - offsetY;
+		const nativeView = this.view.nativeViewProtected;
+		const offsetY = nativeView instanceof UIScrollView ? nativeView.contentOffset.y : 0;
+		return this.getMainPointer().locationInView(nativeView).y - offsetY;
 	}
 }
