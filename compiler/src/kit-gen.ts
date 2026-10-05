@@ -32,6 +32,8 @@ export interface KitOptions {
   read?: (file: string) => string;
   /** Report every construct that does not translate instead of stopping at the first of each file. */
   report?: boolean;
+  /** Kit files (relative to its sources) the modules replace: left out of what the generated code may name. */
+  replaces?: RegExp;
 }
 
 export interface KitFile {
@@ -137,7 +139,7 @@ export function generateKit(o: KitOptions): KitResult {
   const files = program.getSourceFiles().filter((f) => compiled.has(f.fileName));
 
   // The kit as it is without what is being generated: a hand-ported class of a compiled one's name is a clash, not a base.
-  kitIndexOptions.exclude = /^Core\//;
+  kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
   const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [join(core, f), m]));
   let translator: Translator;
   try {
@@ -179,9 +181,12 @@ export function generateKit(o: KitOptions): KitResult {
   }
   for (const name of new Set(translator.kitClashes)) errors.push(`${name}: generated from core and hand-ported in the kit; remove the hand port`);
   if (translator.errors?.length) errors.push(...translator.errors.map((e) => e.replaceAll(core + '/', '')));
-  for (const f of out) f.code = HEADER + publicize((translator.interfacesOf(join(core, Object.keys(f.sources)[0])) + f.code).trim()) + '\n';
+  // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file.
+  const imports = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m)).map((m) => `import ${m}\n`).join('');
+  const header = HEADER + imports + (imports ? '\n' : '');
+  for (const f of out) f.code = header + publicize((translator.interfacesOf(join(core, Object.keys(f.sources)[0])) + f.code).trim()) + '\n';
   const shapes = translator.shapesCode().trim();
-  if (shapes) out.push({ name: '__Objects.swift', code: HEADER + publicize(shapes) + '\n', sources: {} });
+  if (shapes) out.push({ name: '__Objects.swift', code: header + publicize(shapes) + '\n', sources: {} });
   // Core's modules run their top level once, in the order JavaScript evaluates them, before the app's.
   out.push({ name: '__Modules.swift', sources: {}, code: `${HEADER}public enum CoreModules {\n    private static var initialized = false\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));

@@ -90,3 +90,20 @@ console.log(d.text, d.native, d.log.join());
 const extra: any = d;
 extra.custom = 5;
 console.log(extra.custom, 'custom' in d, symbolPropertyMap[textProperty.key] === textProperty);
+
+function checked(v: number): number {
+  if (v < 0) throw new Error('negative');
+  return v;
+}
+class Sized {
+  private _w = 0;
+  get width(): number {
+    return checked(this._w);
+  }
+  set width(v: number) {
+    this._w = checked(v);
+  }
+}
+const sized = new Sized();
+sized.width = 3;
+console.log(sized.width);

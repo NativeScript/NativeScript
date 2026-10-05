@@ -69,3 +69,14 @@ function join(...parts: any): string {
   return result;
 }
 console.log(join('a', 'b', 'c'), join() === undefined);
+
+function run(cb?: (x: number) => number, onError?: (e: any) => any): number {
+  if (cb) {
+    return cb(2);
+  }
+  if (onError) {
+    onError(new Error('no callback'));
+  }
+  return -1;
+}
+console.log(run((x) => x * 3), run(), run(undefined, (e) => console.log(e.message)));

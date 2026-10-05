@@ -74,12 +74,6 @@ public final class Property {
 /// `CSSType('Name')`: the type selector a compiled class answers to is in its `cssType` override.
 public func CSSType(_ name: String) -> (Any?) -> Void { { _ in } }
 
-/// A JavaScript value from a call that may throw, reported like a handler's error; nil if it threw.
-@discardableResult
-public func jsReported<T>(_ body: () throws -> T) -> T? {
-    do { return try body() } catch { jsReport { throw error }; return nil }
-}
-
 /// A loop's items from an expression that may throw: none when it does, the error reported.
 public func jsReportedItems<S: Sequence>(_ body: () throws -> S) -> [S.Element] {
     jsReported { Array(try body()) } ?? []

@@ -139,3 +139,9 @@ public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -
 /// A truthy operand whose Swift type may still be optional (`a?.b` where TypeScript types `a` as present).
 @inline(__always) public func jsPresent<T>(_ value: T) -> T { value }
 @inline(__always) public func jsPresent<T>(_ value: T?) -> T { value! }
+
+/// A JavaScript value from a call that may throw, reported like a handler's error; nil if it threw.
+@discardableResult
+public func jsReported<T>(_ body: () throws -> T) -> T? {
+    do { return try body() } catch { jsReport { throw error }; return nil }
+}
