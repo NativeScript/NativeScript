@@ -372,6 +372,9 @@ export class NativeAPI {
     const c = en?.cases[e.name.text];
     // An option set's zero member has no Swift case: it is the empty set.
     if (en && !c && en.kind === 'options' && this.t.checker.getConstantValue(e) === 0) return `${en.swift}([])`;
+    // A C enum Swift imports as constants of no table (`qos_class_t.QOS_CLASS_DEFAULT`) where a number goes: its value, as the runtime gives it.
+    const value = this.t.checker.getConstantValue(e);
+    if (!en && typeof value === 'number' && ((this.t.checker.getContextualType(e)?.flags ?? 0) & ts.TypeFlags.NumberLike)) return `Double(${value})`;
     if (!en || !c) throw this.t.error(e, `${native.name}.${e.name.text} (no Swift counterpart)`);
     this.typeAvailable(en);
     if (!en.swift) return c.swift;
@@ -655,6 +658,7 @@ export class NativeAPI {
     // An out-parameter: the cell's storage of the pointee's type, written back.
     const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
+    if (source === 'InteropReference' && b === 'UnsafeMutablePointer<Unmanaged<CFError>?>') return `&${t.expr(e)}.cfError`;
     const pointed = /^UnsafePointer<(\w+)>$/.exec(b)?.[1];
     if (pointed && this.isStructType(pointed) && (source === 'Any?' || base(source) === pointed)) return `jsStructPointer(${t.expr(e)}, ${pointed}.self)${optional(target) ? '' : '!'}`;
     // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
