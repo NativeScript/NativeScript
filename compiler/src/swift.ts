@@ -5043,9 +5043,11 @@ export class Translator implements AsyncTranslator {
     if (thisArg && !plain(thisArg)) throw this.error(thisArg, `${method} with a receiver that has side effects`);
     // A method of the program's own is referred to with the signature Swift emits it with (an override's is its root's).
     const own = decl && ts.isMethodDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && ts.isClassLike(decl.parent) ? this.emittedSignature(decl) : null;
-    const type = own ? `(${own.params.map((p) => (isFunctionType(p.type) && !p.type.startsWith('@escaping') ? `@escaping ${p.type}` : p.type)).join(', ')}) throws -> ${own.ret}` : this.typeOf(target);
+    // Implicitly unwrapped in a signature, optional in a function type.
+    const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
+    const type = own ? `(${own.params.map((p) => (isFunctionType(p.type) && !p.type.startsWith('@escaping') ? `@escaping ${p.type}` : plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(own.ret)}` : this.typeOf(target);
     const fn = functionParts(type.replace(/^\((.*)\)[?!]$/, '$1'))!;
-    const optional = isOptional(type) || type.endsWith('!');
+    const optional = !own && (isOptional(type) || type.endsWith('!'));
     let items: readonly ts.Expression[] = rest;
     if (method === 'apply') {
       if (rest.length && !ts.isArrayLiteralExpression(rest[0])) {
