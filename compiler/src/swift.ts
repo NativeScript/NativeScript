@@ -617,7 +617,7 @@ export class Translator implements AsyncTranslator {
     const calls = t.getCallSignatures();
     if (calls.length && !t.getProperties().length) {
       const s = calls[0];
-      const params = s.getParameters().map((p) => {
+      const params = s.getParameters().filter((p) => p.name !== 'this').map((p) => {
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
         return isFunctionType(pt) ? `@escaping ${pt}` : pt;
@@ -2044,7 +2044,8 @@ export class Translator implements AsyncTranslator {
 
   /** A closure literal's Swift function type, as `closure` writes it. */
   private closureType(fn: ts.ArrowFunction | ts.FunctionExpression): string {
-    return `(${fn.parameters.map((p) => (p.questionToken || this.mayBeNull(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
+    const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this' && p.type?.kind === ts.SyntaxKind.VoidKeyword));
+    return `(${params.map((p) => (p.questionToken || this.mayBeNull(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
   }
 
   /** A callback for an API that does not take throwing closures (a timer): what it throws is reported. */
@@ -2444,7 +2445,10 @@ export class Translator implements AsyncTranslator {
         if (this.throwsInfo.fn(a.set) && !reported) throw this.error(a.set, 'a setter that throws');
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Void', '        ');
-        const value = declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
+        // A setter taking more than its getter gives (`set style(value: Style | string)`): its parameter as declared, from the property's value.
+        const own = this.typeOf(p);
+        const value = a.get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? `let ${ident(p.text)}: ${own} = ${this.convert('newValue', declared.replace(/!$/, '?'), own)}`
+          : declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
         parts.push(this.throwsInfo.fn(a.set)
           ? `        set {\n            ${value}\n            jsReport ${body.trimStart()}\n        }`
           : `        set {\n            ${value}${body.slice(1)}`);
@@ -6156,7 +6160,10 @@ export class Translator implements AsyncTranslator {
     const member = (key: string) => {
       const p = e.properties.find((x) => x.name && (literalKey(x.name, this.checker) ?? x.name.getText()) === key);
       if (!p) return null;
-      if (ts.isMethodDeclaration(p)) return { code: this.closure(p as unknown as ts.FunctionExpression), type: `(${p.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${this.returnTypeOf(p)}`, params: p.parameters.length };
+      if (ts.isMethodDeclaration(p)) {
+        const own = p.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
+        return { code: this.closure(p as unknown as ts.FunctionExpression), type: `(${own.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${this.returnTypeOf(p)}`, params: own.length };
+      }
       if (ts.isPropertyAssignment(p) && (ts.isArrowFunction(p.initializer) || ts.isFunctionExpression(p.initializer))) return { code: this.closure(p.initializer), type: `(${p.initializer.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${this.closureReturn(p.initializer)}`, params: p.initializer.parameters.length };
       throw this.error(p, 'this member of an iterator object');
     };
@@ -6219,10 +6226,12 @@ export class Translator implements AsyncTranslator {
   /** A method of an untyped object literal: a function value, or one taking `this` when its body reads it. */
   private untypedMethod(p: ts.MethodDeclaration): string {
     const ret = this.returnTypeOf(p);
-    const type = `(${p.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${ret}`;
-    if (!thisNodes(p).length) return this.boxFunction(`{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`, type, p.parameters.findIndex((q) => q.dotDotDotToken));
+    // A `this` parameter is no argument.
+    const own = p.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
+    const type = `(${own.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${ret}`;
+    if (!thisNodes(p).length) return this.boxFunction(`{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`, type, own.findIndex((q) => q.dotDotDotToken));
     const fn = functionParts(type)!;
-    const binds = fn.params.map((t, k) => `let ${ident((p.parameters[k].name as ts.Identifier).text)}: ${t} = ${p.parameters[k].dotDotDotToken ? `${t}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', t.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, t, true)}`);
+    const binds = fn.params.map((t, k) => `let ${ident((own[k].name as ts.Identifier).text)}: ${t} = ${own[k].dotDotDotToken ? `${t}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', t.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, t, true)}`);
     const body = this.withThis(p, '__this', true, () => this.functionBody(p, ret, this.indent + '    '));
     const call = `try { () throws -> ${ret} in${body.slice(1)}()`;
     const result = ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`;

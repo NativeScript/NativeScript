@@ -259,3 +259,20 @@ class Clickable extends Pressable {
 }
 const clickable = new Clickable();
 console.log(clickable.isEvent('press'), clickable.isEvent('click'), new Pressable().isEvent('click'), clickable.isEvent('tap'));
+
+// An options object's method declaring `this: void`, and a setter taking more than its getter gives.
+const changes: string[] = [];
+const watched = { name: 'w', valueChanged(this: void, target: string, oldValue: string, newValue: string): void { changes.push(`${target}:${oldValue}->${newValue}`); } };
+watched.valueChanged('t', 'a', 'b');
+class Styled {
+  private _style = 'none';
+  get style(): string {
+    return this._style;
+  }
+  set style(value: string | number) {
+    this._style = typeof value === 'number' ? `#${value}` : value;
+  }
+}
+const styled = new Styled();
+styled.style = 'bold';
+console.log(changes.join(), styled.style);
