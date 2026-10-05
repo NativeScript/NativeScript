@@ -28,8 +28,12 @@ export class Throws {
   /** A declaration file's method or constructor whose compiled implementation is in the program (library mode). */
   private implementation: (decl: ts.Declaration) => ts.Declaration | null;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null) {
+  /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
+  private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false) {
     this.implementation = implementation;
+    this.dynamicMember = dynamicMember;
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
@@ -128,6 +132,7 @@ export class Throws {
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.
       if (this.untyped(n.expression)) return true;
+      if (ts.isPropertyAccessExpression(n) && this.dynamicMember(n)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
@@ -139,6 +144,7 @@ export class Throws {
   private callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
     const c = this.checker;
     if (ts.isCallExpression(call) && this.nativeThrows(call)) return true;
+    if (ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression) && this.dynamicMember(call.expression)) return true;
     if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);

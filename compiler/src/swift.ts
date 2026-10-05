@@ -409,7 +409,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)), (d) => this.compiledMember(d));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)), (d) => this.compiledMember(d), (e) => { try { return this.declaredOnly(e); } catch { return false; } });
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -3527,6 +3527,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
     // Lenient code passing null or undefined where a string, number or boolean is declared: the type's zero, as such a slot reads it.
     if (this.lenient && isNullish(bare) && ['String', 'Double', 'Bool'].includes(target)) return this.zero(target)!;
+    // Library mode: an object literal of an event type is core's EventData over it.
+    if (this.library && ts.isObjectLiteralExpression(bare) && target.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${this.coerce(e, 'Any?')})`;
     // Library mode: a function literal for a slot an erased generic types otherwise (`(value: Span) => …` where `(Any?) -> Void` is taken): adapted.
     if (this.library && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && !this.carriesMethod(bare) && functionParts(target)) {
       const own = this.closureType(bare);
@@ -4727,7 +4729,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isPropertyAccessExpression(callee) && this.declaredOnly(callee)) {
       const o = this.fresh('__o'), key = swiftString(callee.name.text);
       const call = `try jsCallMethod(${[o, key, ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
-      const value = `({ () throws -> Any? in let ${o}: Any? = ${this.coerce(callee.expression, 'Any?')}; return ${e.questionDotToken || callee.questionDotToken ? `jsIsNullish(${callee.questionDotToken ? o : `jsGet(${o}, ${key})`}) ? nil : ` : ''}${call} }())`;
+      const value = `({ () throws -> Any? in let ${o}: Any? = ${this.tryPrefix(callee.expression)}${this.coerce(callee.expression, 'Any?')}; return ${e.questionDotToken || callee.questionDotToken ? `jsIsNullish(${callee.questionDotToken ? o : `try jsGet(${o}, ${key})`}) ? nil : ` : ''}${call} }())`;
       const t = this.typeOf(e);
       return t === 'Void' || t === 'Any?' || statementLevel(e) ? value : this.fromAnyCode(value, t, true);
     }
