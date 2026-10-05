@@ -1047,6 +1047,8 @@ export class Translator implements AsyncTranslator {
         later(() => `    ${target} = ${maybe}`);
         continue;
       }
+      // An object variable starting undefined or null holds one later.
+      if (isNullish(d.initializer) && !t.endsWith('?') && t !== 'Any?' && this.zero(t) === null) { emit(`${modifiers}var ${name}: ${this.deferred(t)}`); continue; }
       if (this.pure(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`); continue; }
       emit(`${modifiers}var ${name}: ${this.deferred(t)}`);
       later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
@@ -3424,7 +3426,9 @@ export class Translator implements AsyncTranslator {
       return `${fn}(&${this.lvalue(e.operand)})`;
     }
     if (ts.isConditionalExpression(e)) {
-      const t = this.typeOf(e);
+      let t = this.typeOf(e);
+      // Lenient code choosing an object or null: an optional, as the variable holding it is.
+      if (this.lenient && [e.whenTrue, e.whenFalse].some(isNullish) && this.zero(t) === null && !isFunctionType(t) && t !== 'Any?' && !t.endsWith('!')) t = optionalType(t);
       // Branches of different types are untyped values alike.
       const branch = (x: ts.Expression) => (t === 'Any?' && !['Any?', 'Void'].includes(this.typeOf(x)) && x.kind !== ts.SyntaxKind.NullKeyword ? `(${this.coerce(x, t)} as Any?)` : this.coerce(x, t));
       return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
@@ -4284,7 +4288,9 @@ export class Translator implements AsyncTranslator {
         return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
       }
       const t = this.typeOf(target).replace(/\?$/, '');
-      const q = callee.questionDotToken ? '?' : this.typeOf(target).endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
+      // `xs?.find(…)` on a value Swift holds as present (a lenient array that starts empty): a plain call.
+      const receiverType = this.typeOf(target);
+      const q = callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
       if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
         // `new Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).
         const context = this.checker.getContextualType(e);

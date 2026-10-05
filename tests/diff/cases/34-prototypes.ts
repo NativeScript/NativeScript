@@ -240,3 +240,22 @@ class FileSource extends Source {
 }
 const loose = new Source(undefined, null);
 console.log(!loose.url, !loose.size, new FileSource('a.css', 3).url);
+
+let stack: number[] = [];
+stack.push(4, 9);
+const found9 = stack?.findIndex((n) => n === 9);
+let scope: Source = null;
+function pickSource(flag: boolean): Source {
+  const made: Source = flag ? new Source('picked', 1) : null;
+  return made;
+}
+scope = pickSource(true);
+console.log(found9, scope.url, pickSource(false) === null || pickSource(false) === undefined);
+
+class Checked {
+  constructor(private parts: string[]) {}
+  toString(): string {
+    return this.parts.reduce((a, b) => a + '|' + b);
+  }
+}
+console.log(String(new Checked(['a', 'b'])), `${new Checked(['c'])}`);
