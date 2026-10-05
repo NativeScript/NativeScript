@@ -149,7 +149,9 @@ export class NativeAPI {
       const native = this.symbolModule(sym);
       if (native) return { ...native, isStatic: true };
     }
-    const type = c.getNonNullableType(c.getTypeAtLocation(e));
+    let type = c.getNonNullableType(c.getTypeAtLocation(e));
+    // `this` in a class's method: the class.
+    if (type.flags & ts.TypeFlags.TypeParameter) type = c.getBaseConstraintOfType(type) ?? type;
     const native = this.symbolModule(type.getSymbol()) ?? this.nativeBase(type);
     return native ? { ...native, isStatic: false } : null;
   }
@@ -339,12 +341,14 @@ export class NativeAPI {
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
+      if (args && !args.length && name === 'mutableCopy') return `NSMutableArray(array: ${recv})`;
       // By Foundation's own lookup: isEqual:, and NSNotFound where the array lacks the object.
       if (args && name === 'indexOfObject' && args.length === 1 && !recv.endsWith('?')) return `Double((${recv} as NSArray).index(of: ${this.t.coerce(args[0], 'Any?')} as Any))`;
     }
     if (isDict) {
       if (args === null && name === 'count') return count;
       if (args === null && name === 'allKeys') return `${recv}.keys.map { $0 as Any }`;
+      if (args && !args.length && name === 'mutableCopy') return `NSMutableDictionary(dictionary: ${recv})`;
       if (args && (name === 'objectForKey' || name === 'valueForKey')) return `(${recv}[${this.t.expr(args[0])}] as Any?)`;
     }
     return null;
@@ -469,7 +473,10 @@ export class NativeAPI {
     const list = this.argList(args, m.labels, m.params);
     const target = r.isStatic ? this.className(cls!) : recv;
     const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
-    return this.errorCall(code, m, e);
+    const result = this.errorCall(code, m, e);
+    // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
+    const tsType = this.t.typeOf(e);
+    return (chained || ts.isOptionalChain(e)) && !this.keepOptional.has(e) && ['Bool', 'Double', 'String'].includes(tsType) ? this.t.undefinedAs(result, tsType) : result;
   }
 
   /**
@@ -638,7 +645,12 @@ export class NativeAPI {
     }
     // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
     if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
-    if (/^NSMutable(Array|Dictionary)\??$/.test(source) && b.startsWith('[')) return `(${t.expr(e)}${source.endsWith('?') && !optional(target) ? '!' : ''} as${b === '[Any]' || b === '[AnyHashable: Any]' ? '' : '!'} ${b})`;
+    if (/^NSMutable(Array|Dictionary)[?!]?$/.test(source) && b.startsWith('[')) {
+      // Held implicitly unwrapped or not, alike; a missing one is nil where Swift takes an optional, else empty.
+      const immutable = base(source).replace('Mutable', '');
+      const cast = `(${t.expr(e)} as ${base(source)}?).map { $0 as ${immutable} as! ${b} }`;
+      return optional(target) ? cast : `(${cast} ?? ${b.includes(':') ? '[:]' : '[]'})`;
+    }
     if (source.startsWith('JSArray<') && b.startsWith('[') && !b.includes(':')) {
       if (ts.isArrayLiteralExpression(e) && !e.elements.length) return '[]';
       const array = source.endsWith('?') ? `(${t.expr(e)} ?? JSArray())` : t.expr(e);

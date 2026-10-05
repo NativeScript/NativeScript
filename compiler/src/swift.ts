@@ -4466,7 +4466,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
-  private undefinedAs(code: string, type: string): string {
+  undefinedAs(code: string, type: string): string {
     if (isOptional(type)) return code.endsWith('?? nil)') ? code : `(${code} ?? nil)`;
     if (type === 'Double') return `(${code} ?? .nan)`;
     if (type === 'String') return `(${code} ?? "undefined")`;
