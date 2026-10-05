@@ -65,6 +65,12 @@ public struct JSNativeKeyed {
     }
 }
 
+/// The iOS runtime's `__collect()`: nothing to collect where reference counting frees objects.
+public func __collect() {}
+
+/// The iOS runtime's `__releaseNativeCounterpart(object)`: no script wrapper holds the object here.
+public func __releaseNativeCounterpart(_ object: NSObject?) {}
+
 /// A native-property decorator's getter: the native object's getter method if it has one, else the fallback.
 public func jsNativePropertyGet(_ native: Any?, _ getter: String, fallback: Any?) -> Any? {
     guard let object = jsFlat(native) as? NSObject, object.responds(to: NSSelectorFromString(getter)) else { return fallback }
