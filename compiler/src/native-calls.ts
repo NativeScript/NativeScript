@@ -526,6 +526,8 @@ export class NativeAPI {
     if (b === 'Selector' && ts.isStringLiteralLike(e)) return `NSSelectorFromString(${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))})`;
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
+      // An untyped value: the number the runtime marshals it as.
+      if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : `${b}(jsToNumber(${t.expr(e)}))`;
       return t.expr(e);
     }
     if (source === 'Double' && this.isEnumType(b)) {
