@@ -674,13 +674,18 @@ export class Translator implements AsyncTranslator {
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, sf.fileName, st.type.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       if (ts.isEnumDeclaration(st)) { out.push(this.enumDecl(st)); continue; }
+      if (ts.isModuleDeclaration(st) && this.mergedClass(st)) continue;
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) out.push(this.func(st, ident(this.topName(st, st.name.text)))); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
         const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component'));
-        if (!component && st.name) out.push(this.classDecl(st));
+        if (!component && st.name) {
+          // A namespace merged into the class: its companion's members.
+          this.mergedStatics = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+          try { out.push(this.classDecl(st)); } finally { this.mergedStatics = []; }
+        }
         continue;
       }
       if (ts.isVariableStatement(st)) {
@@ -730,6 +735,13 @@ export class Translator implements AsyncTranslator {
    * A namespace that declares only types has no value and no object.
    */
   private namespaceDecl(md: ts.ModuleDeclaration, name: string, later: (code: () => string) => void): string {
+    const lines = this.namespaceMembers(md, later);
+    if (!lines) return '';
+    return [`object ${ident(name)} {`, ...lines.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n');
+  }
+
+  /** A namespace's members as an object's (or, merged into a class, its companion's); null when it has no values. */
+  private namespaceMembers(md: ts.ModuleDeclaration, later: (code: () => string) => void): string[] | null {
     if (!md.body || !ts.isModuleBlock(md.body)) throw this.error(md, 'a dotted namespace');
     const path = this.namespacePath(md)!;
     const lines: string[] = [];
@@ -759,8 +771,13 @@ export class Translator implements AsyncTranslator {
       if (ts.isClassDeclaration(st)) { lines.push(this.classDecl(st)); continue; }
       later(() => this.stmt(st));
     }
-    if (!values) return '';
-    return [`object ${ident(name)} {`, ...lines.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n');
+    return values ? lines : null;
+  }
+
+  private mergedStatics: string[] = [];
+  /** Whether a namespace merges into a class of its name in its file. */
+  private mergedClass(md: ts.ModuleDeclaration): boolean {
+    return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => ts.isClassDeclaration(d) && d.getSourceFile() === md.getSourceFile());
   }
 
   /** The Kotlin path of a namespace declaration (`CoreTypes.AnimationCurve`). */
@@ -809,7 +826,8 @@ export class Translator implements AsyncTranslator {
     const member = this.checker.getSymbolAtLocation(e.name);
     const target = member && member.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(member) : member;
     const decl = target?.valueDeclaration;
-    if (!decl) return null;
+    // A class's static member, where a namespace merges into the class.
+    if (!decl || ts.isClassElement(decl)) return null;
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     if (ts.isClassDeclaration(decl)) return this.className(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
@@ -1558,6 +1576,8 @@ export class Translator implements AsyncTranslator {
     lines.push(...witnesses);
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, 'null', '', symbolFields, dynMethods));
     if (symbolFields.length) supertypes.push('JSSymbolKeyed');
+    statics.push(...this.mergedStatics.map((l) => l.split('\n').map((x) => (x ? '        ' + x : x)).join('\n')));
+    this.mergedStatics = [];
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
     this.indent = '';
     const head = `${abstract ? 'abstract ' : open ? 'open ' : ''}class ${ident(name)}${this.generics(cls)}`;

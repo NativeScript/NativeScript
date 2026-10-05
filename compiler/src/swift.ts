@@ -269,6 +269,23 @@ export class Translator implements AsyncTranslator {
     return false;
   }
 
+  /** Library mode: the field or accessor a source base class declares under a field's name, which the field redeclares. */
+  private redeclaredField(m: ts.PropertyDeclaration): ts.PropertyDeclaration | ts.AccessorDeclaration | null {
+    if (!this.library || isStatic(m) || !ts.isClassLike(m.parent)) return null;
+    const name = m.name.getText();
+    let found: ts.PropertyDeclaration | ts.AccessorDeclaration | null = null;
+    for (let b = this.sourceBase(m.parent); b; b = this.sourceBase(b)) {
+      const own = b.members.find((x): x is ts.PropertyDeclaration | ts.AccessorDeclaration => (ts.isPropertyDeclaration(x) || ts.isAccessor(x)) && !isStatic(x) && x.name.getText() === name);
+      if (own) found = own;
+    }
+    return found;
+  }
+
+  /** The Swift type a redeclared field has where its base declares it. */
+  private redeclaredType(root: ts.PropertyDeclaration | ts.AccessorDeclaration): string {
+    return ts.isGetAccessorDeclaration(root) ? this.returnTypeOf(root) : ts.isSetAccessorDeclaration(root) ? this.typeOf(root.parameters[0].name) : this.typeOf(root.name);
+  }
+
   /** `X.prototype` (library mode) of a class or of `Object`: an untyped object. */
   private isPrototypeRef(e: ts.Node): boolean {
     if (!this.library || !ts.isPropertyAccessExpression(e) || e.name.text !== 'prototype') return false;
@@ -764,6 +781,8 @@ export class Translator implements AsyncTranslator {
     if (!sym || !decl) return null;
     const maybe = this.undefinedVars.get(sym);
     if (maybe) return maybe;
+    const root = ts.isPropertyDeclaration(decl) ? this.redeclaredField(decl) : null;
+    if (root) return this.redeclaredType(root);
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl) || ts.isGetAccessorDeclaration(decl))) return null;
     return this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
   }
@@ -1019,7 +1038,9 @@ export class Translator implements AsyncTranslator {
       later(() => this.stmt(st));
     }
     if (!values) return '';
-    return [`enum ${ident(name)} {`, ...lines.map((l) => indented(l)), '}'].join('\n');
+    // A namespace merged into a class of its name: the class's static members.
+    const merged = (this.checker.getSymbolAtLocation(md.name)?.flags ?? 0) & ts.SymbolFlags.Class;
+    return [`${merged ? 'extension' : 'enum'} ${ident(name)} {`, ...lines.map((l) => indented(l)), '}'].join('\n');
   }
 
   /** The Swift path of a namespace declaration (`CoreTypes.AnimationCurve`). */
@@ -1080,7 +1101,8 @@ export class Translator implements AsyncTranslator {
     const member = this.checker.getSymbolAtLocation(e.name);
     const target = member && member.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(member) : member;
     const decl = target?.valueDeclaration;
-    if (!decl) return null;
+    // A class's static member, where a namespace merges into the class.
+    if (!decl || ts.isClassElement(decl)) return null;
     if (ts.isClassDeclaration(decl) || ts.isEnumDeclaration(decl)) return identPath(this.topName(decl, target!.name));
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
@@ -1322,7 +1344,9 @@ export class Translator implements AsyncTranslator {
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) return type.endsWith('?') ? `(${code}).map { $0 as! ${base} }` : `(${code} as! ${base})`;
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
     if (this.genericNames.has(base)) return type.endsWith('?') ? `jsCast(${code}, to: ${base}.self)` : `jsCast(${code}, to: ${base}.self)!`;
-    return type.endsWith('?') ? `(${code} as? ${base})` : `(${code} as! ${type})`;
+    if (type.endsWith('?')) return `(${code} as? ${base})`;
+    // Lenient code: an untyped value read as an object may be undefined.
+    return this.lenientRef(type) !== type ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
   }
 
   /** A typed function value as an untyped JavaScript function, callable through `jsCall`. */
@@ -1990,6 +2014,16 @@ export class Translator implements AsyncTranslator {
       }
       const nativeProperty = this.nativePropertyOf(m);
       if (nativeProperty) { lines.push(nativeProperty); continue; }
+      // A field its base declares already (`nativeViewProtected: UIView` over `any`): the base's, read as this field's type.
+      const root = this.redeclaredField(m);
+      if (root) {
+        if (m.initializer) {
+          this.indent = '        ';
+          fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, this.redeclaredType(root))}`);
+          this.indent = '    ';
+        }
+        continue;
+      }
       const keys = this.library && !m.initializer && !this.properties?.isRegistered(cls, n) ? this.prototypeKeys() : null;
       if (keys?.data.has(n) && !keys.accessors.has(n)) {
         // A field `Cls.prototype.name = v` writes: the instance's own value once it has one, else its prototype chain's.
