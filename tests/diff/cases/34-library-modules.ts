@@ -98,3 +98,21 @@ function bump() {
 const helpers = { bump, version };
 version = 5;
 console.log(helpers.version, helpers.bump(), version);
+
+class Surface {
+  constructor(public role: string) {}
+}
+class Window extends Surface {
+  attached = true;
+}
+class Registry2 {
+  private items: Window[] = [new Window('application'), new Window('widget')];
+  list(role: 'all'): Surface[];
+  list(role?: string): Window[];
+  list(role?: string): Surface[] {
+    if (role === 'all') return [...this.items];
+    return this.items.filter((w) => w.role === (role ?? 'application'));
+  }
+}
+const registry2 = new Registry2();
+console.log(registry2.list().find((w) => w.attached)?.role, registry2.list('all').length, registry2.list('widget')[0].attached);

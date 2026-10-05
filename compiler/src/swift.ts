@@ -1709,6 +1709,12 @@ export class Translator implements AsyncTranslator {
   /** A generic function compiled with its type parameters erased (`makeParser<T>`): its result as this call instantiates it. */
   private erasedResult(e: ts.CallExpression, code: string): string {
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+    // An overload's result is the implementation's in Swift: read as the overload types it (`getWindows(): NativeWindow[]` of a `WindowBase[]`).
+    const impl = decl && !ts.isJSDocSignature(decl) && !decl.getSourceFile().isDeclarationFile && !('body' in decl && decl.body) ? implementationOf(decl) : null;
+    if (impl && (ts.isMethodDeclaration(impl) || ts.isFunctionDeclaration(impl))) {
+      const declared = this.returnTypeOf(impl), actual = this.typeOf(e);
+      if (declared !== actual && actual !== 'Void' && this.classCast('', declared, actual) !== null) return this.classCast(code, declared, actual)!;
+    }
     // A method of a generic class, which library mode erases: what it gives is untyped.
     if (this.library && decl && !ts.isJSDocSignature(decl) && ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && decl.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile) {
       const declared = this.returnTypeOf(decl), actual = this.typeOf(e);
@@ -3418,6 +3424,11 @@ export class Translator implements AsyncTranslator {
     if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target);
     // A Foundation mutable collection where Swift's bridged collection is declared (`NSDictionary` returned as an `NSMutableDictionary`).
     if (/^NSMutable(Array|Dictionary)[?!]?$/.test(source) && /^\[.*\]$/.test(target)) return `(${this.expr(e)} as! ${target})`;
+    // A new array of a subclass's objects where one of the base class's is wanted (`this._windows.filter(…)` as `WindowBase[]`).
+    if (/^JSArray<\w+>$/.test(source) && /^JSArray<\w+>[?!]?$/.test(target) && source !== target.replace(/[?!]$/, '') && (ts.isCallExpression(bare) || ts.isArrayLiteralExpression(bare))) {
+      const cast = this.classCast(this.expr(e), source, target);
+      if (cast) return cast;
+    }
     const spread = source !== target ? this.restFunction(e, source, target) ?? this.defaultedFunction(e, source, target) : null;
     if (spread) return spread;
     if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(source.replace(/^\((.*)\)\?$/, '$1')) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) return this.convert(this.expr(e), source, target);
@@ -3461,6 +3472,25 @@ export class Translator implements AsyncTranslator {
     const call = `try ${this.expr(e)}(${want.params.map((t, k) => this.convert(`__q${k}`, p(t), p(have.params[k]))).join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
     return `{ (${params.join(', ')}) throws -> ${want.result} in ${body} }`;
+  }
+
+  /**
+   * A value of one program class (or an array of them) read as another of its hierarchy: an
+   * object as itself, cast; an array as a new array of its elements, Swift's generic classes
+   * not being covariant. Null when the types are not so related.
+   */
+  private classCast(code: string, from: string, to: string): string | null {
+    const bare = (t: string) => t.replace(/[?!]$/, '');
+    const related = (a: string, b: string) => this.isSubclassOf(a, b) || this.isSubclassOf(b, a);
+    const fa = /^JSArray<(\w+)>$/.exec(bare(from))?.[1], ta = /^JSArray<(\w+)>$/.exec(bare(to))?.[1];
+    if (fa && ta && fa !== ta && related(fa, ta)) {
+      const up = this.isSubclassOf(fa, ta);
+      const map = `JSArray<${ta}>(${code}${/[?!]$/.test(from) ? '!' : ''}.storage.map { $0 as${up ? '' : '!'} ${ta} })`;
+      return isOptional(from) && isOptional(to) ? `(${code}).map { JSArray<${ta}>($0.storage.map { $0 as${up ? '' : '!'} ${ta} }) }` : map;
+    }
+    const f = bare(from), t = bare(to);
+    if (f !== t && /^\w+$/.test(f) && /^\w+$/.test(t) && related(f, t)) return this.isSubclassOf(f, t) ? code : `(${code} as${isOptional(to) ? '?' : '!'} ${t})`;
+    return null;
   }
 
   private classesByName: Map<string, ts.ClassLikeDeclaration> | null = null;
