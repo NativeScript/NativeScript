@@ -66,3 +66,18 @@ const modeAtLoad = Mode.On + Math.floor(Math.PI);
 settings.size = 5;
 counter = 20;
 console.log(sizeAtLoad, counterAtLoad, doubled.join(','), Defaults.size, Defaults.half, modeAtLoad);
+function describe(value: number): string {
+  let out = 'start';
+  if (value < 0) {
+    out = 'negative';
+  } else if (typeof value === 'number') {
+    out = 'number';
+  }
+  if (value > 100) {
+    out += ' big';
+  } else if (typeof value === 'string') {
+    out += ' text';
+  }
+  return out;
+}
+console.log(describe(-1), describe(5), describe(500));

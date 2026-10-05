@@ -3029,7 +3029,11 @@ export class Translator implements AsyncTranslator {
         return live ? `${i}do ${this.block(live)}` : '';
       }
       let out = `${i}if ${this.tryPrefix(s.expression)}${this.cond(s.expression)} ${this.block(s.thenStatement)}`;
-      if (s.elseStatement) out += ts.isIfStatement(s.elseStatement) ? ` else ${this.stmt(s.elseStatement).trimStart()}` : ` else ${this.block(s.elseStatement)}`;
+      if (s.elseStatement && ts.isIfStatement(s.elseStatement)) {
+        // An `else if` decided now is its live branch's block, or nothing.
+        const rest = this.statementCode(s.elseStatement).trimStart();
+        out += rest.startsWith('if ') ? ` else ${rest}` : rest.startsWith('do {') ? ` else ${rest.slice(3)}` : '';
+      } else if (s.elseStatement) out += ` else ${this.block(s.elseStatement)}`;
       return out;
     }
     if (ts.isVariableStatement(s)) return this.declarationList(s.declarationList, false);
