@@ -336,3 +336,42 @@ setTimeout(async () => {
   timed.push('async');
   console.log(timed.join(), makers.make(true).url, makers.make(false) === null || makers.make(false) === undefined);
 }, 0);
+
+class Declaration {
+  public property: string;
+  public value: any;
+}
+function declarations(values: Record<string, number>): Declaration[] {
+  return Object.keys(values).map((property) => ({ property, value: values[property] }));
+}
+function makeSource(url: string): Source {
+  return new Source(url, url.length);
+}
+const helpers = { Source, Declaration, makeSource, declarations };
+const listed = helpers.declarations({ width: 2, height: 3 });
+console.log(listed.map((d) => `${d.property}=${d.value}`).join(), helpers.makeSource('x.css').size);
+
+const untyped: any = { sep: '/', state: { page: { duration: 300 } }, entries: new Map<string, number>([['a', 1], ['b', 2]]) };
+const parts = 'a/b/c'.split(untyped.sep);
+console.log(parts.length, parts.join(untyped.sep), parts.join(untyped.missing), 'x-y'.split(untyped.missing).length);
+console.log(untyped?.state?.page?.duration, untyped?.other?.page?.duration === undefined);
+for (const [key, value] of untyped.entries) console.log(key, value);
+function pairOf(o: { x: number; y: number }): number[] {
+  return [o.x, o.y];
+}
+function addPairs(a: number[], b: number[]): number[] {
+  return [a[0] + b[0], a[1] + b[1]];
+}
+const points: any[] = [{ x: 1, y: 2 }, { x: 3, y: 4 }];
+console.log(points.map(pairOf).reduce(addPairs).join());
+type Entry = [Source, number];
+function entries(flag: boolean): Entry[] {
+  const loose: any = new Source('t', 1);
+  return flag ? [[new Source('e', 2), 2]] : [[loose, 3]];
+}
+console.log(entries(true)[0][0].url, entries(false)[0][1]);
+let sources: Source[] = [new Source('m', 1)];
+console.log(sources.map((s) => s.url).join());
+const done: { completion?: (finished?: boolean) => void } = {};
+const boxed: any = { ...done, completion: () => console.log('completed') };
+boxed.completion(true);
