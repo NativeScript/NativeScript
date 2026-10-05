@@ -97,6 +97,14 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         if let method = f as? JSMethod { return try method(this, rest) }
         return try (f as! JSFunction)(rest)
     }
+    // `f.bind(thisArg, …)`: a function of the rest of the arguments.
+    if key == "bind", let f = jsFlat(object), f is JSMethod || f is JSFunction {
+        let this = arguments.first ?? nil
+        let bound = Array(arguments.dropFirst())
+        if let method = f as? JSMethod { return { (rest: [Any?]) throws -> Any? in try method(this, bound + rest) } as JSFunction }
+        let function = f as! JSFunction
+        return { (rest: [Any?]) throws -> Any? in try function(bound + rest) } as JSFunction
+    }
     let f = try jsGet(object, key)
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
