@@ -2,7 +2,7 @@ import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -243,7 +243,7 @@ export class Translator implements AsyncTranslator {
             const d = this.resolve(base.expression)?.valueDeclaration;
             if (d) this.extendedDecls.add(d);
           }
-          for (const i of n.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) this.protocols.add(i.expression.getText());
+          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(i.expression.getText());
         }
         ts.forEachChild(n, visit);
       };
@@ -1317,7 +1317,7 @@ export class Translator implements AsyncTranslator {
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are interfaces of the kit's, implemented below.
     const witnesses: string[] = [];
     const notOverrides = new Set<string>();
-    const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
+    const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
       // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
       .filter((i) => this.protocolWitnesses(cls, i, witnesses, notOverrides))
       .map((i) => i.expression.getText());

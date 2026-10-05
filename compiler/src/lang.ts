@@ -206,3 +206,12 @@ function readsThis(fn: ts.FunctionLikeDeclaration): boolean {
   if (fn.body) visit(fn.body);
   return found;
 }
+
+/** A class's `implements` types that are interfaces: implementing a class (even itself) only checks its shape. */
+export function implementedInterfaces(checker: ts.TypeChecker, cls: ts.ClassLikeDeclaration): ts.ExpressionWithTypeArguments[] {
+  return (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => {
+    let s = checker.getSymbolAtLocation(i.expression);
+    if (s && s.flags & ts.SymbolFlags.Alias) s = checker.getAliasedSymbol(s);
+    return !(s && s.flags & ts.SymbolFlags.Class);
+  });
+}

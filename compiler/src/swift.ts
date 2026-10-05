@@ -1,7 +1,7 @@
 import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -221,7 +221,7 @@ export class Translator implements AsyncTranslator {
             const d = this.resolve(base.expression)?.valueDeclaration;
             if (d) this.extendedDecls.add(d);
           }
-          for (const i of n.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) this.protocols.add(i.expression.getText());
+          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(i.expression.getText());
         }
         ts.forEachChild(n, visit);
       };
@@ -1603,7 +1603,7 @@ export class Translator implements AsyncTranslator {
     const registered = (n: string) => isView && !!this.properties?.isRegistered(cls, n);
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
     const witnesses: string[] = [];
-    const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
+    const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
       // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
       .filter((i) => !this.baseImplements(cls, i.expression.getText()) && this.protocolWitnesses(cls, i, witnesses))
       .map((i) => i.expression.getText());
