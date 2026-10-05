@@ -264,6 +264,7 @@ export class NativeAPI {
     // `x?.objectForKey(k)`: the chain continues past a value Swift may hold as optional.
     const p = x.parent;
     if (ts.isPropertyAccessExpression(p) && p.expression === x && p.questionDotToken && t !== 'Any?' && !t.includes('->')) return `(${code} as ${t.replace(/\?$/, '')}?)?`;
+    if (this.t.givesUndefined(x) && t !== 'Any?' && !t.includes('->')) return `(${code} as ${optionalType(t.replace(/[?!]$/, ''))})!`;
     if (!t.endsWith('?') || t === 'Any?' || t.includes('->')) return code;
     return `(${code} as ${t})!`;
   }
