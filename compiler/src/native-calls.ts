@@ -372,8 +372,18 @@ export class NativeAPI {
   /** `x.prop = value` on a native type. */
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
     if (this.appMember(left.name)) return null;
-    const r = this.receiver(left.expression);
+    let r = this.receiver(left.expression);
     if (!r) return null;
+    // `view instanceof UIControl` narrowing a UISearchBar: the member is the narrowed class's, the object cast to it.
+    let cast: string | null = null;
+    const it = this.t.checker.getNonNullableType(this.t.checker.getTypeAtLocation(left.expression));
+    if (it.isIntersection() && !lookupMember(r.module, r.name, left.name.text, false)) {
+      for (const u of it.types) {
+        const n = this.symbolModule(u.getSymbol()) ?? this.nativeBase(u);
+        const c = n && lookupClass(n.module, n.name);
+        if (n && c && lookupMember(n.module, n.name, left.name.text, false)) { r = { ...n, isStatic: false }; cast = this.className(c); break; }
+      }
+    }
     const struct = !r.isStatic && lookupStruct(r.module, r.name);
     if (struct) {
       const field = struct.fields[left.name.text];
@@ -384,7 +394,7 @@ export class NativeAPI {
     if (!m || m.kind !== 'property') throw this.t.error(left, `${r.name}.${left.name.text} (no settable Swift property)`);
     if (m.readonly) throw this.t.error(left, `${r.name}.${left.name.text} (read-only)`);
     this.checkAvailable(m, left, `${r.name}.${left.name.text}`);
-    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.t.expr(left.expression);
+    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : this.t.expr(left.expression);
     return isolated(`${target}.${m.swift} = ${this.toSwift(value, m.type)}`, m);
   }
 
@@ -923,7 +933,8 @@ export class NativeAPI {
         const type = t.bindsOptional(m.parameters[k].name, p.type);
         return `        let ${p.name}: ${type} = ${this.fromSwiftValue(`__a${k}`, swift, type)}`;
       }
-      return `        let ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
+      // A struct whose fields the body assigns (`size.width = 0`) is a variable of its own.
+      return `        ${this.isStructType(p.type) && writesField(m.body!, this.t.checker.getSymbolAtLocation(m.parameters[k].name), this.t.checker) ? 'var' : 'let'} ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
     }).filter(Boolean);
     const ret = target.returns;
     // A result Objective-C declares nullable: the body may give undefined.
@@ -1155,4 +1166,17 @@ function matching(t: string, open: number): number {
     else if (t[i] === ')' || t[i] === ']' || (t[i] === '>' && t[i - 1] !== '-')) { depth--; if (depth === 0) return i; }
   }
   return -1;
+}
+
+/** Whether code assigns a field of the variable `sym` names (`size.width = 0`). */
+function writesField(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeChecker): boolean {
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && ts.isPropertyAccessExpression(n.left)
+        && ts.isIdentifier(n.left.expression) && checker.getSymbolAtLocation(n.left.expression) === sym) { found = true; return; }
+    ts.forEachChild(n, visit);
+  };
+  visit(node);
+  return found;
 }
