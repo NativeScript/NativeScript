@@ -4614,6 +4614,14 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       if (t !== 'Any?' && !isOptional(t)) return this.fromAny(`jsField(${this.expr(e.expression)}, ${swiftString(e.name.text)})`, optionalType(t));
     }
+    // `c ? value : null`, checked without strictNullChecks: the value or nothing.
+    if (ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some(isNullish) && ![e.whenTrue, e.whenFalse].every(isNullish)) {
+      const t = this.typeOf(e);
+      if (t !== 'Any?' && t !== 'Void' && !isOptional(t) && !t.endsWith('!')) {
+        const branch = (x: ts.Expression) => (isNullish(x) ? 'nil' : this.coerce(x, optionalType(t)));
+        return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
+      }
+    }
     // `x?.m()` on an untyped value: undefined where x is, whatever its declared result.
     if (ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken && this.isAny(e.expression.expression)) {
       const t = this.typeOf(e);
