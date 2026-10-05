@@ -175,3 +175,34 @@ export function redeclaredBeside(loop: ts.ForStatement, list: ts.VariableDeclara
   };
   return siblings.some((st) => st !== loop && st !== loop.parent && declares(st));
 }
+
+/**
+ * Whether an array method's callback runs the same whatever thisArg gives it as `this`: an arrow,
+ * a function that never reads `this`, or `this.method` beside `this` (a method value is bound to its object).
+ */
+export function ignoresThisArg(callback: ts.Expression, thisArg: ts.Expression, checker: ts.TypeChecker): boolean {
+  while (ts.isParenthesizedExpression(callback)) callback = callback.expression;
+  if (ts.isArrowFunction(callback)) return true;
+  if (ts.isFunctionExpression(callback)) return !readsThis(callback);
+  if (ts.isPropertyAccessExpression(callback)) return callback.expression.kind === ts.SyntaxKind.ThisKeyword && thisArg.kind === ts.SyntaxKind.ThisKeyword;
+  if (!ts.isIdentifier(callback)) return false;
+  let sym = checker.getSymbolAtLocation(callback);
+  if (sym && sym.flags & ts.SymbolFlags.Alias) sym = checker.getAliasedSymbol(sym);
+  const decl = sym?.valueDeclaration;
+  return !!decl && ts.isFunctionDeclaration(decl) && !!decl.body && !readsThis(decl);
+}
+
+/** Whether a function's own `this` is read: in its body or an arrow function's inside it. */
+function readsThis(fn: ts.FunctionLikeDeclaration): boolean {
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    if (n.kind === ts.SyntaxKind.ThisKeyword) { found = true; return; }
+    if (ts.isFunctionLike(n) && !ts.isArrowFunction(n)) return;
+    if (ts.isClassLike(n)) return;
+    ts.forEachChild(n, visit);
+  };
+  for (const p of fn.parameters) visit(p);
+  if (fn.body) visit(fn.body);
+  return found;
+}

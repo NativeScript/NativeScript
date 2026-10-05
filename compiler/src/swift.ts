@@ -1,7 +1,7 @@
 import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, KIT_NAMES } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -3950,19 +3950,21 @@ export class Translator implements AsyncTranslator {
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       case 'concat': return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `[${this.coerce(x, el)}]`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
-        if (e.arguments.length > 1) throw this.error(e, `${name} with a thisArg`);
         const callback = e.arguments[0];
-        if (ts.isIdentifier(callback) && callback.text === 'Boolean' && this.isLibGlobal(callback)) return `${t}.${name}({ (__e: ${el}) -> Bool in jsTruthy(__e) })`;
-        const result = this.checker.getTypeAtLocation(callback).getCallSignatures()[0]?.getReturnType();
-        // A predicate returning any value (`labels.find((l) => GROUPS[l])`) decides by its truthiness.
-        if (['filter', 'find', 'findIndex', 'findLast', 'findLastIndex', 'some', 'every'].includes(name) && result && !(result.flags & ts.TypeFlags.BooleanLike)) {
-          const arity = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? Math.min(2, callback.parameters.length) : 1;
-          const params = ['__e', '__i'].slice(0, Math.max(1, arity));
-          const types = [el, 'Double'];
-          const throwing = !(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback)) || this.throwsInfo.fn(callback);
-          return `${t}.${name}({ (${params.map((p, k) => `${p}: ${types[k]}`).join(', ')}) ${throwing ? 'throws ' : ''}-> Bool in jsTruthy(${throwing ? 'try ' : ''}(${this.fn(callback)})(${params.join(', ')})) })`;
-        }
-        return `${t}.${name}(${this.fn(callback)})`;
+        const call = () => {
+          if (ts.isIdentifier(callback) && callback.text === 'Boolean' && this.isLibGlobal(callback)) return `${t}.${name}({ (__e: ${el}) -> Bool in jsTruthy(__e) })`;
+          const result = this.checker.getTypeAtLocation(callback).getCallSignatures()[0]?.getReturnType();
+          // A predicate returning any value (`labels.find((l) => GROUPS[l])`) decides by its truthiness.
+          if (['filter', 'find', 'findIndex', 'findLast', 'findLastIndex', 'some', 'every'].includes(name) && result && !(result.flags & ts.TypeFlags.BooleanLike)) {
+            const arity = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? Math.min(2, callback.parameters.length) : 1;
+            const params = ['__e', '__i'].slice(0, Math.max(1, arity));
+            const types = [el, 'Double'];
+            const throwing = !(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback)) || this.throwsInfo.fn(callback);
+            return `${t}.${name}({ (${params.map((p, k) => `${p}: ${types[k]}`).join(', ')}) ${throwing ? 'throws ' : ''}-> Bool in jsTruthy(${throwing ? 'try ' : ''}(${this.fn(callback)})(${params.join(', ')})) })`;
+          }
+          return `${t}.${name}(${this.fn(callback)})`;
+        };
+        return this.ignoringThisArg(e, target, call());
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0])})` : `${t}.sort()`;
       case 'reduce': case 'reduceRight': {
@@ -3971,6 +3973,18 @@ export class Translator implements AsyncTranslator {
       }
     }
     throw this.error(e, `Array.${name}`);
+  }
+
+  /** An array method's call with a thisArg its callback ignores: the thisArg is still evaluated, before the call. */
+  private ignoringThisArg(e: ts.CallExpression, target: ts.Expression, code: string): string {
+    const [callback, thisArg] = e.arguments;
+    if (!thisArg) return code;
+    if (!ignoresThisArg(callback, thisArg, this.checker)) throw this.error(e, 'a thisArg its callback reads');
+    const quiet = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || this.pure(x) || (ts.isPropertyAccessExpression(x) && quiet(x.expression));
+    if (quiet(thisArg)) return code;
+    // Evaluated before the receiver, which must not tell.
+    if (!quiet(target)) throw this.error(thisArg, 'a thisArg beside a receiver with effects');
+    return `({ ${this.tryPrefix(thisArg)}${this.exprStatement(thisArg)}; return ${this.tryPrefix(e)}${code} }())`;
   }
 
   private stringMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {

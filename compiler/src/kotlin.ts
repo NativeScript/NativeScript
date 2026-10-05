@@ -2,7 +2,7 @@ import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -3436,12 +3436,11 @@ export class Translator implements AsyncTranslator {
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       case 'concat': return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
-        if (e.arguments.length > 1) throw this.error(e, `${name} with a thisArg`);
         const f = e.arguments[0];
         const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
         const ret = name === 'forEach' ? 'Unit' : ['map', 'flatMap'].includes(name) ? null : 'Boolean';
         const slot = ret ? `(${[element, 'Double', `JSArray<${element}>`].slice(0, Math.min(3, arity)).join(', ')}) -> ${ret}` : undefined;
-        return `${t}.${name}(${this.fn(f, slot)})`;
+        return this.ignoringThisArg(e, target, `${t}.${name}(${this.fn(f, slot)})`);
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.sort()`;
       case 'toSorted': return e.arguments[0] ? `${t}.toSorted(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.toSorted()`;
@@ -3458,6 +3457,18 @@ export class Translator implements AsyncTranslator {
       }
     }
     throw this.error(e, `Array.${name}`);
+  }
+
+  /** An array method's call with a thisArg its callback ignores: the thisArg is still evaluated, before the call. */
+  private ignoringThisArg(e: ts.CallExpression, target: ts.Expression, code: string): string {
+    const [callback, thisArg] = e.arguments;
+    if (!thisArg) return code;
+    if (!ignoresThisArg(callback, thisArg, this.checker)) throw this.error(e, 'a thisArg its callback reads');
+    const quiet = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || this.pure(x) || (ts.isPropertyAccessExpression(x) && quiet(x.expression));
+    if (quiet(thisArg)) return code;
+    // Evaluated before the receiver, which must not tell.
+    if (!quiet(target)) throw this.error(thisArg, 'a thisArg beside a receiver with effects');
+    return `run { ${this.exprStatement(thisArg)}; ${code} }`;
   }
 
   private functionArity(e: ts.Expression): number {
