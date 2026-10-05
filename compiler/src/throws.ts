@@ -160,6 +160,8 @@ export class Throws {
     const init = holder && (ts.isPropertyDeclaration(holder) || ts.isVariableDeclaration(holder)) ? holder.initializer : undefined;
     if (init && ts.isCallExpression(init) && init.expression.getText() === 'computed' && init.arguments[0] && ts.isFunctionLike(init.arguments[0])) return this.fn(init.arguments[0]);
     const signature = c.getResolvedSignature(call)?.getDeclaration();
+    // A library function held (`export const parse = parseFloat`): Swift holds it as a function value, which throws.
+    if (ts.isCallExpression(call) && init && ts.isIdentifier(init) && ['parseInt', 'parseFloat'].includes(init.text) && !holder!.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
       && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
     const decl = c.getResolvedSignature(call)?.getDeclaration();

@@ -375,3 +375,24 @@ console.log(sources.map((s) => s.url).join());
 const done: { completion?: (finished?: boolean) => void } = {};
 const boxed: any = { ...done, completion: () => console.log('completed') };
 boxed.completion(true);
+
+class Bags {
+  Bag: { new (): { [property: string]: string } };
+}
+Bags.prototype.Bag = class {
+  [property: string]: string;
+};
+const propertyBag = new new Bags().Bag();
+const pending: any = { pending: true };
+propertyBag['a'] = 'x';
+propertyBag['p'] = pending;
+for (const key in propertyBag) {
+  const value = propertyBag[key];
+  console.log(key, typeof value, value === pending);
+}
+function appendAll<T>(into: T[], more: T[]): T[] {
+  for (const m of more) into.push(m);
+  return into;
+}
+const kept = [new Source('a', 1)];
+console.log(appendAll(kept, [new Source('b', 2)]) === kept, kept.length);

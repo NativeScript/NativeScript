@@ -61,3 +61,23 @@ async function main() {
 
 main().then(() => console.log('done'));
 console.log('main started');
+
+// Promise.all over an untyped array of promises and values.
+async function allUntyped() {
+  const pending: any[] = [];
+  pending.push(Promise.resolve(1), 'two', new Promise((r) => setTimeout(() => r(3), 1)));
+  const results = await Promise.all(pending);
+  console.log('all untyped', results.join(','));
+}
+allUntyped();
+
+// A Promise executor that returns a value: the value is ignored.
+new Promise<void>((resolve) => {
+  if (Math.random() >= 0) {
+    return Promise.resolve(5).then(() => {
+      console.log('executor returned a promise');
+      resolve();
+    });
+  }
+  resolve();
+}).then(() => console.log('executor settled'));
