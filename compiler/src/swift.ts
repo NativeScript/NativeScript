@@ -2575,7 +2575,7 @@ export class Translator implements AsyncTranslator {
       // Library mode: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
       const reported = !!this.library && !!a.set && ((!!a.get && this.throwsInfo.fn(a.get)) || this.throwsInfo.fn(a.set));
       if (a.get && reported && this.throwsInfo.fn(a.get)) {
-        const fallback = t.endsWith('?') ? 'nil' : this.zero(t) ?? null;
+        const fallback = isOptional(t) ? 'nil' : this.zero(t) ?? null;
         parts.push(`        get { jsReported { () throws -> ${t} in${this.functionBody(a.get, t, '        ').slice(1)}${fallback ? ` ?? ${fallback}` : '!'} }`);
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
@@ -3325,7 +3325,7 @@ export class Translator implements AsyncTranslator {
   private destructured(name: ts.BindingName, init: ts.Expression): string {
     // A match reads its values as an array does.
     const js = ts.isArrayBindingPattern(name) && !/^JSMatch[?!]?$/.test(this.typeOf(init)) ? this.jsIteration(init) : null;
-    if (!js) return `: ${this.typeOf(init)} = ${this.tryPrefix(init)}${this.expr(init)}`;
+    if (!js) return `: ${this.typeOf(init)} = ${this.tryPrefix(init)}${this.coerce(init, this.typeOf(init))}`;
     const rest = (name as ts.ArrayBindingPattern).elements.some((el) => ts.isBindingElement(el) && el.dotDotDotToken);
     return ` = try JSArray(${js}.${rest ? 'jsCollect()' : `jsTake(${(name as ts.ArrayBindingPattern).elements.length})`})`;
   }
@@ -3431,9 +3431,11 @@ export class Translator implements AsyncTranslator {
 
   /** `e[Symbol.iterator]()`: an iterator over any iterable. */
   private iteratorCode(e: ts.Expression): string {
-    const t = this.typeOf(e).replace(/\?$/, '');
+    const t = this.typeOf(e).replace(/[?!]$/, '');
     const code = this.expr(e);
     if (/^JS(Iterator|Generator)</.test(t)) return code;
+    // A match's groups; one that matched nothing is undefined, read as the string TypeScript types it.
+    if (t === 'JSMatch') return this.elementTypeOf(e) === 'String' ? `jsIterator(${code}.values.map { (s: String?) in s ?? "" })` : `jsIterator(${code}.values)`;
     if (t.startsWith('JSIterable<')) return `${code}.jsIterator()`;
     if (t === 'Any?' || t === 'Any') return `jsIteratorOf(${code})`;
     if (/^JS(Array|Set|Map)</.test(t) || t === 'String') return `jsIterator(${code})`;
@@ -6382,7 +6384,9 @@ export class Translator implements AsyncTranslator {
   }
 
   private object(e: ts.ObjectLiteralExpression, want?: string): string {
-    const contextual = this.checker.getContextualType(e);
+    // A destructuring pattern's contextual type is the pattern's (`{ m: any }`), not the value's.
+    const destructured = ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && !ts.isIdentifier(e.parent.name);
+    const contextual = destructured ? undefined : this.checker.getContextualType(e);
     // `{ … } as unknown as T`: an object script reads and extends untyped.
     if (contextual && contextual.flags & ts.TypeFlags.Unknown) return this.dynamicObject(e);
     // An object held untyped that code fills in by key (`node = {}; node[key] = …`): extensible, as every script object is.

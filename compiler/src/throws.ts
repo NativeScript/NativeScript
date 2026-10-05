@@ -193,6 +193,8 @@ export class Throws {
         : ((ts.isMethodDeclaration(decl) ? decl.parent.members : (decl.parent as ts.SourceFile).statements) as ts.NodeArray<ts.Node>).find((m) => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === decl.name?.getText());
       if (impl) return this.fn(impl);
     }
+    // A value the program holds, of a function type a declaration file names (`callback: ControlStateChangeListenerCallback`): a Swift function type, which throws.
+    if (file.isDeclarationFile && ts.isFunctionTypeNode(decl) && holder && !holder.getSourceFile().isDeclarationFile && !/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName)) return true;
     const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
     if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {

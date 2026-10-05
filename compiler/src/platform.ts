@@ -11,7 +11,8 @@ export type Platform = 'ios' | 'android';
  */
 export function foldPlatform(text: string, fileName: string, platform: Platform): string {
   text = applyDefines(text, fileName);
-  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)\b|import\.meta\.hot/.test(text)) return text;
+  // A defined string compared with a literal (`'nativescript' === 'css-tree'`) folds as well.
+  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)\b|import\.meta\.hot|(['"])[^'"\n]*\2\)?\s*[!=]==?\s*\(?['"]/.test(text)) return text;
   // A release build: `__DEV__` is false, as the bundlers define it for one.
   const flags: Record<string, boolean> = {
     isIOS: platform === 'ios', __IOS__: platform === 'ios', __APPLE__: platform === 'ios',
@@ -69,6 +70,12 @@ function findFold(sf: ts.SourceFile, flag: (n: ts.Node) => boolean | undefined):
     }
     if (ts.isBinaryExpression(e)) {
       const op = e.operatorToken.kind;
+      const text = (x: ts.Expression) => { while (ts.isParenthesizedExpression(x)) x = x.expression; return ts.isStringLiteral(x) ? x.text : undefined; };
+      const ls = text(e.left), rs = text(e.right);
+      if (ls !== undefined && rs !== undefined) {
+        if (op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken) return ls === rs;
+        if (op === ts.SyntaxKind.ExclamationEqualsEqualsToken || op === ts.SyntaxKind.ExclamationEqualsToken) return ls !== rs;
+      }
       const l = constant(e.left), r = constant(e.right);
       if (op === ts.SyntaxKind.AmpersandAmpersandToken) {
         if (l === false) return false;
