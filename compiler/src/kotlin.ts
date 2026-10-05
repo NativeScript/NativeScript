@@ -320,6 +320,9 @@ export class Translator implements AsyncTranslator {
     if (t.isIntersection()) {
       const cls = t.types.find((u) => this.native?.type(u) || (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class);
       if (cls) return this.type(cls, where);
+      // `T & string`, a type parameter narrowed by typeof: the primitive.
+      const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
+      if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));

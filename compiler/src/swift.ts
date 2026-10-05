@@ -298,6 +298,9 @@ export class Translator implements AsyncTranslator {
     if (t.isIntersection()) {
       const cls = t.types.find((u) => this.native.type(u) || (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class);
       if (cls) return this.type(cls, where);
+      // `T & string`, a type parameter narrowed by typeof: the primitive.
+      const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
+      if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -3049,6 +3052,7 @@ export class Translator implements AsyncTranslator {
     if (declared === optionalType(actual)) return `${code}!`;
     if (declared === 'Any?') return this.fromAny(code, actual);
     if (declared.replace(/\?$/, '') !== actual.replace(/\?$/, '') && this.isObjectRef(e)) return `(${code} as! ${actual})`;
+    if (sym && this.checker.getTypeOfSymbol(sym).flags & ts.TypeFlags.TypeParameter) return `(${code} as! ${actual})`;
     return code;
   }
 
@@ -4297,7 +4301,8 @@ export class Translator implements AsyncTranslator {
     const base = t.replace(/\?$/, '');
     if (base === 'Void') return '"undefined"';
     const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base === 'JSBigInt' ? 'bigint' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
-    if (t === 'Any?' || !known) return `jsTypeof(${this.expr(e.expression)})`;
+    const generic = this.checker.getTypeAtLocation(e.expression).flags & ts.TypeFlags.TypeParameter;
+    if (t === 'Any?' || !known || generic) return `jsTypeof(${this.expr(e.expression)})`;
     const maybe = this.maybeUndefined(e.expression);
     if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
     return t.endsWith('?') ? `(${this.expr(e.expression)} == nil ? "undefined" : ${swiftString(known)})` : swiftString(known);
