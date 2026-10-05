@@ -430,7 +430,7 @@ export class Translator implements AsyncTranslator {
     if (mixin) return mixin;
     if (name && name !== '__type' && name !== '__object') {
       // Library mode: an interface only a declaration file has (the DOM's `MediaQueryListEvent`, core's `AddChildFromBuilder`) has no Swift type.
-      if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && (isLibDeclaration(d) || isCoreDeclaration(d)))) return 'Any?';
+      if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && ((isLibDeclaration(d) && /lib\.dom/.test(d.getSourceFile().fileName)) || isCoreDeclaration(d)))) return 'Any?';
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
       return name;
     }

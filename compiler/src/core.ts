@@ -118,11 +118,6 @@ export class CoreAPI {
   /** The kit type a core-typed expression is, and whether it is the type itself (`Device.model`, `Color.isValid`). */
   owner(e: ts.Expression): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
-    // Library mode: core's own interfaces (`ModuleContext`, `NavigationTransition`) are shapes the generated code reads, not kit types.
-    if (this.t.library) {
-      const decl = c.getNonNullableType(c.getTypeAtLocation(e)).getSymbol()?.declarations?.[0];
-      if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl)) && isCoreDeclaration(decl)) return null;
-    }
     // A namespace inside a core namespace (`Utils.layout`): the kit's nested type of that path.
     if (ts.isPropertyAccessExpression(e)) {
       const sym = this.t.resolve(e);
@@ -144,6 +139,11 @@ export class CoreAPI {
         if (this.index.has(sym.name)) return { name: sym.name, isStatic: true };
       }
       if (sym && sym.flags & ts.SymbolFlags.Alias) return null;
+    }
+    // Library mode: core's own interfaces (`ModuleContext`, `NavigationTransition`) are shapes the generated code reads, not kit types.
+    if (this.t.library) {
+      const decl = c.getNonNullableType(c.getTypeAtLocation(e)).getSymbol()?.declarations?.[0];
+      if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl)) && isCoreDeclaration(decl)) return null;
     }
     let type = c.getNonNullableType(c.getTypeAtLocation(e));
     // `View & { extra?: … }`: the core class.
