@@ -228,7 +228,9 @@ export class Throws {
       const ctor = cls.members.find(ts.isConstructorDeclaration);
       if (ctor) return this.fn(ctor);
     }
-    return this.descendants(decl).some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
+    // An inherited initializer throws if any constructor of the hierarchy it comes from does.
+    const root = this.ancestors(decl).at(-1)!;
+    return [root, ...this.descendants(root)].some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
   }
 
   /** The class and the app classes it extends, nearest first. */

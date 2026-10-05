@@ -116,3 +116,20 @@ class Registry2 {
 }
 const registry2 = new Registry2();
 console.log(registry2.list().find((w) => w.attached)?.role, registry2.list('all').length, registry2.list('widget')[0].attached);
+
+class Base2 {
+  kind = 'base';
+}
+class Plain2 extends Base2 {}
+class Strict2 extends Base2 {
+  constructor(ok: boolean) {
+    super();
+    if (!ok) throw new Error('not ok');
+  }
+}
+console.log(new Plain2().kind, new Strict2(true).kind);
+try {
+  new Strict2(false);
+} catch (e) {
+  console.log('strict threw', e.message);
+}
