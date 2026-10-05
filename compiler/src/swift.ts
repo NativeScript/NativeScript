@@ -5026,8 +5026,8 @@ export class Translator implements AsyncTranslator {
     if (method === 'call' && source && ts.isPropertyAccessExpression(source) && source.name.text === 'toString' && ((ts.isObjectLiteralExpression(source.expression) && !source.expression.properties.length) || source.expression.getText() === 'Object.prototype')) {
       return `jsObjectToString(${thisArg ? this.coerce(thisArg, 'Any?') : 'nil'})`;
     }
-    // A function taken from an object (`const f = obj.method`) reads the receiver it is called with, which a Swift closure cannot take.
-    if (source && ts.isPropertyAccessExpression(source)) throw this.error(e, `${method} of a method taken from its object`);
+    // A method taken from its object (`const f = obj.method`) stays bound to it in Swift: called with that object, it is the same call.
+    if (source && ts.isPropertyAccessExpression(source) && !(thisArg && source.expression.getText() === thisArg.getText())) throw this.error(e, `${method} of a method taken from its object, with another receiver`);
     const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
     let held: ts.Expression = target;
     while (ts.isParenthesizedExpression(held) || ts.isNonNullExpression(held)) held = held.expression;
