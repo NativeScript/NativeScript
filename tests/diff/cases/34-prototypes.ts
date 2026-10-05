@@ -396,3 +396,34 @@ function appendAll<T>(into: T[], more: T[]): T[] {
 }
 const kept = [new Source('a', 1)];
 console.log(appendAll(kept, [new Source('b', 2)]) === kept, kept.length);
+
+class Holder {
+  ref: WeakRef<Source>;
+  constructor(public label: string) {}
+  find(): Source {
+    return (this.ref && this.ref.deref && this.ref.deref()) || null;
+  }
+}
+const holder = new Holder('h');
+const strong = new FileSource('w.css', 1);
+holder.ref = new WeakRef(strong);
+console.log(holder.find().url, new Holder('none').find() === null);
+function describeValue(value: string | Source): string {
+  if (typeof value === 'string') return 'text ' + value;
+  if (value instanceof Source) return 'source ' + value.url;
+  return 'other ' + String(value);
+}
+console.log(describeValue('a'), describeValue(new Source('s', 1)), describeValue(<any>42));
+function noted(this: Holder, suffix: string): string {
+  return this.label + suffix;
+}
+(Holder.prototype as any).noted = noted;
+console.log((new Holder('p') as any).noted('!'));
+const converters: any = { toNumber: parseInt };
+console.log(converters.toNumber('42px'), 'a-b-a'.replace(untyped.sep2 ?? '-', '+'));
+function makeDetails() {
+  const details = { spans: [] };
+  details.spans.push('x');
+  return details;
+}
+console.log(makeDetails().spans.length);

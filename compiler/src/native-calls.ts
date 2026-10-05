@@ -264,6 +264,7 @@ export class NativeAPI {
     // `x?.objectForKey(k)`: the chain continues past a value Swift may hold as optional.
     const p = x.parent;
     if (ts.isPropertyAccessExpression(p) && p.expression === x && p.questionDotToken && t !== 'Any?' && !t.includes('->')) return `(${code} as ${t.replace(/\?$/, '')}?)?`;
+    if (this.t.givesUndefined(x) && t !== 'Any?' && !t.includes('->')) return `(${code} as ${optionalType(t.replace(/[?!]$/, ''))})!`;
     if (!t.endsWith('?') || t === 'Any?' || t.includes('->')) return code;
     return `(${code} as ${t})!`;
   }
@@ -463,6 +464,11 @@ export class NativeAPI {
     }
     const r = this.receiver(callee.expression);
     if (!r) return null;
+    // `Cls.class()`: the class itself, which Swift names `Cls.self`.
+    if (r.isStatic && name === 'class' && !e.arguments.length) {
+      const cls = this.t.expr(callee.expression);
+      return cls.endsWith('.self') ? cls : `${cls}.self`;
+    }
     const collection = !r.isStatic ? this.collectionMember(callee.expression, name, e.arguments) : null;
     if (collection) return collection;
     const cls = lookupClass(r.module, r.name);
@@ -667,6 +673,8 @@ export class NativeAPI {
     if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
     // A BOOL the runtime marshals from any value: its truthiness.
     if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
+    // A string the runtime marshals from any value: its string, null and undefined as nil.
+    if (source === 'Any?' && b === 'String') return optional(target) ? `jsNativeString(${t.expr(e)})` : `jsToString(${t.expr(e)})`;
     // A dictionary where Swift keys one by a string-backed type (`[NSAttributedString.Key: Any]`).
     const keyed = /^\[([\w.]+): Any\]$/.exec(b)?.[1];
     if (keyed && keyed !== 'String' && keyed !== 'AnyHashable' && source.replace(/[?!]$/, '') !== b && this.isStringConstants(keyed)) {
@@ -1071,6 +1079,9 @@ export class NativeAPI {
     const bridged = bridge(code, tsType, swiftType);
     if (bridged) return bridged;
     if (b === 'Date' && base(tsType) === 'JSDate') return tsType.endsWith('?') ? `${code}.map { jsNativeDate($0) }` : `jsNativeDate(${code})`;
+    // A Foundation array of objects where Swift has its element type (`NSArray<UIViewController>` as `[UIViewController]`).
+    const elements = /^\[([\w.]+)\]$/.exec(b)?.[1];
+    if (/^\[Any\][?!]?$/.test(tsType) && elements && elements !== 'Any') return optional(swiftType) ? `(${code} as? [${elements}])` : `(${code} as! [${elements}])`;
     if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
     return code;
   }
