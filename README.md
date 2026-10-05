@@ -333,7 +333,7 @@ NativeScript Release APK pixel for pixel, in a 1.2 MB APK against 104.8 MB
   checks the source by transpiling it and comparing the result with the
   published JavaScript (formatting, emit helpers and the `@NativeClass`
   lowering aside). A package whose source cannot be found or does not match
-  stops the build. `nativeReleaseOptions.pluginSources` in
+  stops the build. `release.pluginSources` in
   `nativescript.config.ts` names another repository or a local folder.
 - **Patches.** `native-release/patches/<package>+<version>.patch` in the app
   applies to the plugin's source, as patch-package's patches apply to its
@@ -658,7 +658,7 @@ node src/cli.ts ../recipes-vue --platform android --out ../build/android-vue --b
   --key-store-path release.keystore --key-store-password … --key-store-alias … --key-store-alias-password …
 ```
 
-A property core declares that the kit does not apply, set in a template, in CSS or in code, stops the compile with the view, property and file:line; `--allow-unimplemented-properties` (or `nativeReleaseOptions: { allowUnimplementedProperties: true }` in `nativescript.config.ts`) builds anyway, with warnings.
+A property core declares that the kit does not apply, set in a template, in CSS or in code, stops the compile with the view, property and file:line; `--allow-unimplemented-properties` (or `release: { allowUnimplementedProperties: true }` in `nativescript.config.ts`) builds anyway, with warnings.
 
 Each `recipes-*` folder is an ordinary NativeScript project: `ns run ios`
 develops it with live reload as usual.

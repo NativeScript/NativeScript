@@ -9,7 +9,7 @@
 // --all-errors lists every construct the translator cannot handle instead of
 // stopping at the first; with --keep-going the project is written anyway, so
 // Swift's own errors show where the translation is incomplete.
-// --allow-unimplemented-properties (or nativeReleaseOptions.allowUnimplementedProperties)
+// --allow-unimplemented-properties (or release.allowUnimplementedProperties)
 // builds an app that sets properties core declares and the kit does not apply, warning for each.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
@@ -38,7 +38,7 @@ import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
 import { collectProperties } from './properties.ts';
-import { appResourcesDir, readConfig, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements } from './app-resources.ts';
+import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
@@ -72,7 +72,7 @@ const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') &&
 const overrides = new Map<string, string>();
 
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
-const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app), say });
+const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app, platform), say });
 
 // 1. Each component through its framework's front end; 2. the component the app starts with.
 const started = Date.now();
@@ -238,7 +238,7 @@ const declarations = platform === 'ios' ? [
   // The native typings of plugins whose components compile with the app's.
   ...plugins.all().flatMap((p) => p.typings),
 ] : [];
-const replacements = pluginReplacements(app);
+const replacements = pluginReplacements(app, platform);
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
 const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
@@ -267,7 +267,7 @@ function keyStore() {
   return { path, password, alias, aliasPassword };
 }
 // Properties the app sets that core declares and the kit does not apply: an error unless the app opts out.
-const allowUnapplied = args.includes('--allow-unimplemented-properties') || (readConfig(app).nativeReleaseOptions as { allowUnimplementedProperties?: boolean } | undefined)?.allowUnimplementedProperties === true;
+const allowUnapplied = args.includes('--allow-unimplemented-properties') || releaseOptions(app, platform).allowUnimplementedProperties === true;
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
   const kit = platform === 'android'
@@ -281,7 +281,7 @@ if (unapplied.length && allowUnapplied) for (const u of unapplied) console.warn(
 // iOS with --all-errors reports them with the translator's.
 else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors'))) {
   console.error(unapplied.join('\n'));
-  if (!args.includes('--keep-going')) throw new Error(`${unapplied.length} properties core declares that ${kitName} does not apply (--allow-unimplemented-properties or nativeReleaseOptions.allowUnimplementedProperties builds anyway)`);
+  if (!args.includes('--keep-going')) throw new Error(`${unapplied.length} properties core declares that ${kitName} does not apply (--allow-unimplemented-properties or release.allowUnimplementedProperties builds anyway)`);
 }
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');

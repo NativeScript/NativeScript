@@ -32,13 +32,27 @@ export function readConfig(app: string): Record<string, unknown> {
   return {};
 }
 
+const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
 /**
- * `nativeReleaseOptions.pluginReplacements`: packages the native build replaces with a TypeScript module of
+ * The config's `release` (`compiled` and the compiler's options) with `<platform>.release` merged over it;
+ * object values such as `pluginReplacements` merge by key.
+ */
+export function releaseOptions(app: string, platform: 'ios' | 'android'): Record<string, unknown> {
+  const config = readConfig(app);
+  const own = isObject(config[platform]) ? (config[platform] as Record<string, unknown>).release : undefined;
+  const out: Record<string, unknown> = { ...(isObject(config.release) ? config.release : {}) };
+  for (const [key, v] of Object.entries(isObject(own) ? own : {})) out[key] = isObject(v) && isObject(out[key]) ? { ...out[key], ...v } : v;
+  return out;
+}
+
+/**
+ * `release.pluginReplacements`: packages the native build replaces with a TypeScript module of
  * the app's (a stand-in for a plugin whose job has no meaning without the JavaScript runtime), resolved paths.
  */
-export function pluginReplacements(app: string): Record<string, string> {
-  const options = readConfig(app).nativeReleaseOptions as { pluginReplacements?: Record<string, string> } | undefined;
-  return Object.fromEntries(Object.entries(options?.pluginReplacements ?? {}).map(([name, file]) => [name, resolve(app, file)]));
+export function pluginReplacements(app: string, platform: 'ios' | 'android'): Record<string, string> {
+  const replacements = releaseOptions(app, platform).pluginReplacements as Record<string, string> | undefined;
+  return Object.fromEntries(Object.entries(replacements ?? {}).map(([name, file]) => [name, resolve(app, file)]));
 }
 
 export function appResourcesDir(app: string): string {
@@ -50,10 +64,10 @@ export function appResourcesDir(app: string): string {
  * dependencies bring in, transitively, that declare `nativescript` in their
  * package.json, in the order the dependency tree reaches them.
  */
-export function productionPlugins(app: string): { name: string; dir: string }[] {
+export function productionPlugins(app: string, platform: 'ios' | 'android'): { name: string; dir: string }[] {
   const out: { name: string; dir: string }[] = [];
   const seen = new Set<string>();
-  const replaced = pluginReplacements(app);
+  const replaced = pluginReplacements(app, platform);
   const queue: { from: string; deps: Record<string, string> }[] = [{ from: app, deps: JSON.parse(readFileSync(join(app, 'package.json'), 'utf8')).dependencies ?? {} }];
   while (queue.length) {
     const { from, deps } = queue.shift()!;
@@ -102,7 +116,7 @@ const KIT_DEPLOYMENT_TARGET = 17;
 
 /** build.xcconfig, the app's first, so a plugin cannot override a setting the app chose. */
 function mergedXcconfig(app: string): XcconfigEntry[] {
-  const plugins = productionPlugins(app).map((p) => join(p.dir, 'platforms', 'ios'));
+  const plugins = productionPlugins(app, 'ios').map((p) => join(p.dir, 'platforms', 'ios'));
   const xcconfigs = [join(appResourcesDir(app), 'iOS', 'build.xcconfig'), ...plugins.map((p) => join(p, 'build.xcconfig'))].filter(existsSync);
   let merged: XcconfigEntry[] = [];
   for (const file of xcconfigs) merged = mergeXcconfig(merged, parseXcconfig(file));
@@ -117,7 +131,7 @@ export function iosDeploymentTarget(app: string): string {
 
 export function iosProjectResources(o: { app: string; appDir: string; out: string; name: string; pods: boolean; say: (m: string) => void }): IOSProjectResources {
   const res = join(appResourcesDir(o.app), 'iOS');
-  const plugins = productionPlugins(o.app).map((p) => join(p.dir, 'platforms', 'ios'));
+  const plugins = productionPlugins(o.app, 'ios').map((p) => join(p.dir, 'platforms', 'ios'));
   const settings: Record<string, string> = {};
   const sources: string[] = [];
 
@@ -350,7 +364,7 @@ export function androidManifest(o: { app: string; applicationId: string; activit
 export function pluginManifests(o: { app: string; applicationId: string; dir: string; except?: Set<string> }): string[] {
   rmSync(o.dir, { recursive: true, force: true });
   const out: string[] = [];
-  for (const p of productionPlugins(o.app)) {
+  for (const p of productionPlugins(o.app, 'android')) {
     if (o.except?.has(p.name)) continue;
     const file = join(p.dir, 'platforms', 'android', 'AndroidManifest.xml');
     if (!existsSync(file)) continue;

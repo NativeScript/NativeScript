@@ -4,17 +4,21 @@ Develop as usual with `ns run ios` / `ns debug` (JavaScript runtime, HMR).
 For the release, one switch compiles the app to native code with no
 JavaScript runtime, through the CLI's normal build, run and deploy flow.
 
+Names: the flag is `--compiled`, the package `@nativescript/compiler`, the
+output `platforms/compiled/<platform>`, because the output is compiled from
+the app's source. The config key is `release.compiled`.
+
 ## Use it
 
 ```sh
-npm install --save-dev @nativescript/native-release
+npm install --save-dev @nativescript/compiler
 
-ns build ios --native                 # simulator .app (--native implies --release)
-ns build ios --native --for-device    # device archive and .ipa (sign with --team-id or --provision)
-ns run ios --native                   # build, install, launch on a simulator or device
-ns build android --native --key-store-path release.keystore --key-store-password … \
+ns build ios --compiled                 # simulator .app (--compiled implies --release)
+ns build ios --compiled --for-device    # device archive and .ipa (sign with --team-id or --provision)
+ns run ios --compiled                   # build, install, launch on a simulator or device
+ns build android --compiled --key-store-path release.keystore --key-store-password … \
   --key-store-alias … --key-store-alias-password …    # signed APK; add --aab for a bundle
-ns run android --native --key-store-path …            # build, install, launch
+ns run android --compiled --key-store-path …            # build, install, launch
 ```
 
 Or make it the default for every release build in `nativescript.config.ts`:
@@ -22,15 +26,22 @@ Or make it the default for every release build in `nativescript.config.ts`:
 ```ts
 export default {
   id: 'org.example.app',
-  nativeRelease: true,                  // release builds are native
-  android: { nativeRelease: false },    // per-platform override
+  release: {
+    compiled: true,                     // release builds are compiled
+    pluginSources: { 'some-plugin': '../some-plugin' },  // the compiler's options sit beside it
+  },
+  android: { release: { compiled: false } },   // per-platform override
 } as NativeScriptConfig;
 ```
 
-A property core declares that the kit does not apply stops the native build with the view, property and file:line; `nativeReleaseOptions: { allowUnimplementedProperties: true }` in the config builds anyway, with warnings.
+`release` is also the compiler's options object: `pluginReplacements`,
+`pluginSources` and `allowUnimplementedProperties`. A platform's `release`
+merges over the top-level one, and object options merge by key.
+
+A property core declares that the kit does not apply stops the native build with the view, property and file:line; `release: { allowUnimplementedProperties: true }` in the config builds anyway, with warnings.
 
 `ns run ios`, `ns debug` and every debug build stay on the JavaScript
-runtime. `--no-native` builds one release on the JavaScript runtime despite
+runtime. `--no-compiled` builds one release on the JavaScript runtime despite
 the config. The flag wins over the config, and the platform key wins over
 the top-level key.
 
@@ -38,18 +49,18 @@ the top-level key.
 
 The CLI integrates the compiler the way it integrates `@nativescript/webpack`:
 a devDependency resolved from the project's `node_modules`, run with the
-CLI's own Node. Everything is in `lib/services/native-release-service.ts`;
+CLI's own Node. Everything is in `lib/services/compiled-release-service.ts`;
 the controllers call it at two points.
 
 | Step | JavaScript release | Native release |
 | --- | --- | --- |
-| Options | `--release` | `--native` sets `release`; `PrepareData.native` carries the flag; `NativeReleaseService.isNativeRelease` resolves flag, config and platform |
-| Prepare (`PrepareController.prepareCore`) | add `platforms/<platform>`, webpack, native prepare | `before-prepare` hooks, then `node <package bin> <project> --platform <p> --out platforms/native/<p> --name <projectName> --bundle <app id>`; no webpack, no runtime platform project |
-| Build (`BuildController.build`) | `platformProjectService.buildProject` | iOS: `xcodegen generate`, then `xcodebuild build` for the simulator or `xcodebuild archive` + `-exportArchive` for a device. Android: the package's `kit-android/gradlew -p platforms/native/android :assembleRelease` or `:bundleRelease` |
+| Options | `--release` | `--compiled` sets `release`; `PrepareData.compiled` carries the flag; `CompiledReleaseService.isCompiledRelease` resolves flag, config and platform |
+| Prepare (`PrepareController.prepareCore`) | add `platforms/<platform>`, webpack, native prepare | `before-prepare` hooks, then `node <package bin> <project> --platform <p> --out platforms/compiled/<p> --name <projectName> --bundle <app id>`; no webpack, no runtime platform project |
+| Build (`BuildController.build`) | `platformProjectService.buildProject` | iOS: `xcodegen generate`, then `xcodebuild build` for the simulator or `xcodebuild archive` + `-exportArchive` for a device. Android: the package's `kit-android/gradlew -p platforms/compiled/android :assembleRelease` or `:bundleRelease` |
 | Signing | `--provision`, `--team-id`, `--key-store-*` | iOS `--team-id`: automatic signing (`DEVELOPMENT_TEAM`, `-allowProvisioningUpdates`). iOS `--provision`: the archive stays unsigned and the export signs it with the profile (an ExportOptions.plist naming the profile, team and method). Neither: an unsigned archive and an unsigned `.ipa`, with a warning. Android: `-Pandroid.injected.signing.*` from the `--key-store-*` options, as Android Studio signs |
 | Install, launch | `getLatestAppPackagePath` → install | the build returns the package path; `ns run --release` and `ns deploy` pass it to `DeviceInstallAppService` and `startApplication` unchanged |
 
-Outputs stay under `platforms/native/<platform>`, so `platforms/ios` and
+Outputs stay under `platforms/compiled/<platform>`, so `platforms/ios` and
 `platforms/android` are never half-created: a later `ns run ios` still adds
 the runtime platform as before. The app id is the project's
 (`nativescript.config` `id`), so the native release replaces the JavaScript
@@ -66,39 +77,39 @@ Gradle wrapper): 80 files, 261 kB packed.
 ## Proof (recipes-vue copy, CLI from `feat/native-release`)
 
 The test app was a copy of `recipes-vue` with the package installed from
-`npm pack` as `file:vendor/nativescript-native-release-0.1.0.tgz`.
+`npm pack` as `file:vendor/nativescript-compiler-0.1.0.tgz`.
 
-- `ns run ios --release --native` on simulator 0283B87E: compiled, built,
+- `ns run ios --release --compiled` on simulator 0283B87E: compiled, built,
   installed and launched; the Recipes home screen matches the
   NativeScript build. The installed bundle is the executable, Info.plist,
   the asset catalog with the app icon, the launch storyboard and PkgInfo:
   4.4 MB on the simulator (as the current compiler builds it).
-- `ns build ios --release --native --for-device`: an unsigned archive and
+- `ns build ios --release --compiled --for-device`: an unsigned archive and
   an unsigned `.ipa` (562 kB; the app in the archive is 1.3 MB, as the
   current compiler's `--build --device` makes them). With
   `--provision <profile>` the archive succeeds and the export reaches
   signing; the machine had no valid profile for a matching certificate, so
   it stopped at "No signing certificate … / profile expired".
-- `ns run android --release --native` with a keytool keystore on an
+- `ns run android --release --compiled` with a keytool keystore on an
   emulator (Pixel 6a, API 35): installed, launched, Recipes home screen.
   APK 0.9 MB (915 kB as the current compiler builds it), signed with the
   given key (apksigner). `--aab`: 1.6 MB bundle, signed with the same key
   (jarsigner).
-- `ns run ios` without `--native`: the platform is added, webpack runs,
+- `ns run ios` without `--compiled`: the platform is added, webpack runs,
   Xcode builds the debug app (90 MB with the runtime), it installs and
   syncs as before.
-- `nativeRelease: true` in the config: `ns build ios --release` builds
-  native; `ns prepare ios --release --no-native` and `ns prepare ios` run
+- `release: { compiled: true }` in the config: `ns build ios --release` builds
+  native; `ns prepare ios --release --no-compiled` and `ns prepare ios` run
   webpack.
-- Without the package: "A native release build needs the
-  @nativescript/native-release compiler in the project. Install it with
-  'npm install --save-dev @nativescript/native-release', or build on the
-  JavaScript runtime with --no-native." (If the package is listed in
+- Without the package: "A compiled release build needs
+  @nativescript/compiler in the project. Install it with
+  'npm install --save-dev @nativescript/compiler', or build on the
+  JavaScript runtime with --no-compiled." (If the package is listed in
   package.json but missing from node_modules, the CLI's dependency check
   installs it first.)
-- Unit tests: `test/services/native-release-service.ts` (config and flag
+- Unit tests: `test/services/compiled-release-service.ts` (config and flag
   resolution, compiler invocation, missing package, Android signing and
-  `--aab`, iOS simulator, unsigned and `--provision` builds), the `--native`
+  `--aab`, iOS simulator, unsigned and `--provision` builds), the `--compiled`
   option in `test/options.ts`, the native prepare in
   `test/controllers/prepare-controller.ts`. The full suite passes (1911
   tests).
@@ -126,7 +137,37 @@ projects), so the CLI has nothing to add.
 
 ## Still needed for production
 
-- **Publish the compiler package** as `@nativescript/native-release`, with
+- **Core's `NativeScriptConfig` type** (`packages/core/config/config.interface.ts`)
+  needs the `release` key the CLI and the compiler read:
+
+  ```ts
+  /**
+   * Release builds compiled to native code by `@nativescript/compiler`, and the compiler's options.
+   */
+  export interface IConfigRelease {
+  	/**
+  	 * Release builds compile the app to native code instead of bundling it for the JavaScript runtime.
+  	 * `--compiled` / `--no-compiled` override it per command.
+  	 */
+  	compiled?: boolean;
+  	/** Packages the compiled build replaces with a module of the app's, as `'package': 'path'`. */
+  	pluginReplacements?: Record<string, string>;
+  	/** Checkouts of plugins' TypeScript source, as `'package': 'path'`, used instead of fetching the published revision. */
+  	pluginSources?: Record<string, string>;
+  	/** Build despite properties core declares that the compiled build does not apply, with a warning for each. */
+  	allowUnimplementedProperties?: boolean;
+  }
+
+  // IConfigPlatform (so IConfigIOS and IConfigAndroid):
+  	/** Merged over the top-level `release` for this platform; object options merge by key. */
+  	release?: IConfigRelease;
+
+  // NativeScriptConfig:
+  	/** Release builds compiled to native code, and the compiler's options. */
+  	release?: IConfigRelease;
+  ```
+
+- **Publish the compiler package** as `@nativescript/compiler`, with
   versioning tied to the kit, and CI that packs it and builds an app from
   the tarball for both platforms.
 - **A precompiled JavaScript build** of `compiler/src` (tsc or esbuild to
@@ -143,7 +184,7 @@ projects), so the CLI has nothing to add.
   archives and exports with the CLI's distribution export options, but
   it has not been run. `ns publish android` has no native counterpart to
   check.
-- **`ns debug --native`** should be refused with a message (the native app
+- **`ns debug --compiled`** should be refused with a message (the native app
   has no inspector); it is not handled specially.
 - **Hooks**: `before-prepare`/`after-prepare` run; `before-buildIOS` and
   `before-buildAndroid` do not, because the platform services' build is not
@@ -153,7 +194,7 @@ projects), so the CLI has nothing to add.
   the native project root.
 - **Workspaces**: with CocoaPods the compile generates the Xcode project
   and runs `pod install` itself, and writes
-  `platforms/native/ios/ns-native-project.json` (`{"workspace":
+  `platforms/compiled/ios/ns-native-project.json` (`{"workspace":
   "<name>.xcworkspace"}`). When that file is there, `buildIOS` must not run
   `xcodegen` (it would drop the pods' integration) and must give xcodebuild
   `-workspace <workspace>` instead of `-project <name>.xcodeproj`, for the
