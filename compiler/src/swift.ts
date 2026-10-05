@@ -3376,6 +3376,12 @@ export class Translator implements AsyncTranslator {
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    // A Promise executor's resolve passed on as a function: a function of the promise's value type.
+    const resolvers = ts.isIdentifier(e) ? this.resolvers.get(this.resolve(e)!) : undefined;
+    if (resolvers && (target === 'Any?' || functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')))) {
+      const own = `(${resolvers.type === 'Void' ? '' : resolvers.type}) throws -> Void`;
+      return target === 'Any?' ? this.boxFunction(this.expr(e), own) : this.convert(this.expr(e), own, target);
+    }
     // An iterable where the type names only its iteration: the kit's iterable of it.
     const iterableSlot = /^JS(Async)?Iterable<.*>\??$/.exec(target);
     if (iterableSlot && !/^JS(Async)?(Iterable|Iterator|Generator)</.test(this.typeOf(e))) return `${iterableSlot[1] ? 'jsAsyncIterable' : 'jsIterable'}(${this.expr(e)})`;

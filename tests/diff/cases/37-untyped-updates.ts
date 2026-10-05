@@ -85,3 +85,15 @@ function memberName(key: any, prefix: string): string {
   return `${name} ${key?.toString() === undefined}`;
 }
 console.log(memberName('size', 'View.'), memberName(undefined, 'View.'));
+
+const loader: any = {
+  load(path: string, done: any) {
+    done(path.length);
+  },
+};
+function readLength(path: string): Promise<number> {
+  return new Promise<number>((resolve) => {
+    loader.load(path, resolve);
+  });
+}
+readLength('abcd').then((n) => console.log('read', n));
