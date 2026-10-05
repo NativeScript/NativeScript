@@ -718,7 +718,13 @@ export class Translator implements AsyncTranslator {
         // Components are translated with their templates; other classes are services and models.
         // A component's class is written with its render function, in its own file.
         const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!st.name && this.components.has(st.name.text));
-        if (!component && st.name) out.push(this.classDecl(st));
+        if (!component && st.name) {
+          this.staticInits = [];
+          try { out.push(this.classDecl(st)); } finally {
+            for (const line of this.staticInits) later(() => line);
+            this.staticInits = null;
+          }
+        }
         continue;
       }
       if (ts.isVariableStatement(st)) {
@@ -1652,6 +1658,13 @@ export class Translator implements AsyncTranslator {
         const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
         if (nullInit && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)} = nil`); continue; }
         if (!m.initializer && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`); continue; }
+        // A static initializer that throws runs with the module's statements, where the class is defined; Swift's static initializers cannot throw.
+        if (m.initializer && this.staticInits && !nullInit && this.throwsInfo.expr(m.initializer)) {
+          lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`);
+          this.indent = '    ';
+          this.staticInits.push(`    ${ident(name)}.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
+          continue;
+        }
         lines.push(`    static var ${ident(n)}: ${t}${m.initializer ? ` = ${this.coerce(m.initializer, t)}` : isOptional(t) ? '' : ` = ${this.zero(t) ?? 'nil'}`}`);
         continue;
       }
@@ -2889,6 +2902,10 @@ export class Translator implements AsyncTranslator {
     // A name nothing declares for iOS (`android`, `java`, Node's `__dirname`) is a value whose use throws.
     if (this.library && name === 'global' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsGlobalThis';
     if (this.library && (!libDecl || /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
+    // Library mode: a global a module declares itself (`declare let __startCPUProfiler: any`) is the global object's, set by whatever provides it.
+    if (this.library && libDecl && ts.isVariableDeclaration(libDecl) && !libDecl.getSourceFile().isDeclarationFile && hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword)) {
+      return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
+    }
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
     // `if (!console)`: a compiled program always has its console.
     if (name === 'console' && isLibDeclaration(this.resolve(e)?.declarations?.[0])) return '(true as Any?)';
@@ -3448,6 +3465,9 @@ export class Translator implements AsyncTranslator {
     const d = name && this.resolve(name)?.valueDeclaration;
     return !!d && !d.getSourceFile().isDeclarationFile && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d) || ts.isVariableDeclaration(d) || ts.isParameter(d));
   }
+
+  /** The assignments of a module-level class's static fields whose initializers throw, run in the module's order. */
+  private staticInits: string[] | null = null;
 
   /** A rest parameter's array type; one typed `any` (`...args: any`) holds an array of anything. */
   private restType(p: ts.Symbol): string {
