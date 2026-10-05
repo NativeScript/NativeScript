@@ -191,3 +191,11 @@ class Sub7 extends Base7 {
 const sub7 = new Sub7();
 const bound7: any = sub7.get.bind(sub7);
 console.log(bound7());
+
+type Toggle = (on: boolean, handler: (data: any) => void) => void;
+let toggleCallback: Toggle;
+function setToggle(cb: (on: boolean, handler: (data: string) => void) => void) {
+  toggleCallback = cb;
+}
+setToggle((on, handler) => handler(on ? 'on' : 'off'));
+toggleCallback(true, (d) => console.log('toggled', d));

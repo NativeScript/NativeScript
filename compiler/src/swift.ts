@@ -1587,7 +1587,7 @@ export class Translator implements AsyncTranslator {
     const f = functionParts(from.replace(/^\((.*)\)\?$/, '$1'));
     const g = functionParts(to.replace(/^\((.*)\)\?$/, '$1'));
     if (f && g && f.params.length <= g.params.length) {
-      const params = g.params.map((p, k) => `__q${k}: ${p.replace(/^@escaping /, '')}`);
+      const params = g.params.map((p, k) => { const q = p.replace(/^@escaping /, ''); return `__q${k}: ${isFunctionType(q) ? `@escaping ${q}` : q}`; });
       const args = f.params.map((p, k) => this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, '')));
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, f.result, g.result)}`;
