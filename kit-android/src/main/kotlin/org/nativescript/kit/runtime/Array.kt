@@ -411,8 +411,14 @@ fun <U> JSArray<JSArray<U>>.flat(): JSArray<U> {
 fun <T> jsArrayFilled(length: Double, value: T): JSArray<T> = JSArray(ArrayList(List(length.toInt()) { value }))
 
 /** An untyped value read as an array whose elements convert with `element`. */
-fun <T> jsArrayFrom(value: Any?, element: (Any?) -> T): JSArray<T> =
-    if (value is JSArray<*>) JSArray(ArrayList(value.storage.map(element))) else JSArray()
+@Suppress("UNCHECKED_CAST")
+fun <T> jsArrayFrom(value: Any?, element: (Any?) -> T): JSArray<T> {
+    if (value !is JSArray<*>) return JSArray()
+    val mapped = value.storage.map(element)
+    // Elements that are already of the type: the same array, so what is written through either is in both.
+    if (mapped.indices.all { mapped[it] === value.storage[it] }) return value as JSArray<T>
+    return JSArray(ArrayList(mapped))
+}
 
 internal fun Double.clampToInt(): Int = when {
     this.isNaN() -> 0

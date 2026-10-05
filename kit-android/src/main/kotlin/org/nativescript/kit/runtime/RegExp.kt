@@ -197,6 +197,8 @@ class JSMatch internal constructor(
 
     operator fun get(i: Double): String? = if (i == Math.floor(i)) get(i.toInt()) else null
 
+    fun element(i: Double): String? = get(i)
+
     val length: Double get() = values.storage.size.toDouble()
 
     override fun jsGet(key: String): Any? = when (key) {

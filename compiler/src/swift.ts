@@ -208,7 +208,19 @@ export class Translator implements AsyncTranslator {
    * variables are static members of an enum named for the module, so modules
    * never collide with each other or shadow Swift's own functions (`round`).
    */
-  library: { moduleName(file: string): string | null; counterpart?(file: string, name: string): string | null; isMoot?(file: string): boolean; identities?: Set<string>; internalTypes?: Set<string>; sourceOf?(declarationFile: string): string | null } | null = null;
+  library: { moduleName(file: string): string | null; counterpart?(file: string, name: string): string | null; isMoot?(file: string): boolean; identities?: Set<string>; internalTypes?: Set<string>; sourceOf?(declarationFile: string): string | null; strict?(file: string): boolean } | null = null;
+  /**
+   * Library mode, in a file written for strictNullChecks (a package core compiles): a variable or
+   * parameter declared `T | null`, which the lenient checker reads as `T`, holds null apart from undefined: untyped.
+   */
+  private declaredNullable(n: ts.Node): boolean {
+    if (!this.library?.strict || !ts.isIdentifier(n) || !this.library.strict(n.getSourceFile().fileName)) return false;
+    const d = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
+    if (!d || !(ts.isVariableDeclaration(d) || ts.isParameter(d)) || !d.type || !this.library.strict(d.getSourceFile().fileName)) return false;
+    const nullable = (t: ts.TypeNode): boolean => ts.isUnionTypeNode(t) && t.types.some((x) => ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword);
+    return nullable(d.type);
+  }
+
   private argumentsReaders = new Map<ts.Node, boolean>();
   /** Whether a function reads its `arguments`: it then takes the call's arguments as one list, and its parameters read from it. */
   readsArguments(fn: ts.SignatureDeclaration): boolean {
@@ -669,7 +681,7 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
-    if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword)) return 'Any?';
+    if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword) || this.declaredNullable(n)) return 'Any?';
     if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n))) return 'Any?';
     if (this.library && (this.holdsMethods(n) || ((ts.isIdentifier(n) || ts.isVariableDeclaration(n) || ts.isCallExpression(n) || ts.isFunctionExpression(n)) && this.carriesMethod(n)))) return 'Any?';
     if (this.library && (ts.isIdentifier(n) || ts.isVariableDeclaration(n))) {
@@ -2828,12 +2840,13 @@ export class Translator implements AsyncTranslator {
       return `${i}${binding} ${name}: ${this.lenientRef(t)} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}`;
     }
     const tmp = this.fresh('__d');
-    return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, ts.isArrayBindingPattern(d.name) && this.jsIteration(d.initializer!) ? 'iterated' : this.typeOf(d.initializer!), !constant)}`;
+    return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, ts.isArrayBindingPattern(d.name) && this.jsIteration(d.initializer!) && !/^JSMatch[?!]?$/.test(this.typeOf(d.initializer!)) ? 'iterated' : this.typeOf(d.initializer!), !constant)}`;
   }
 
   /** The type and value a destructuring pattern reads from: an iterator yields only as many values as an array pattern names. */
   private destructured(name: ts.BindingName, init: ts.Expression): string {
-    const js = ts.isArrayBindingPattern(name) ? this.jsIteration(init) : null;
+    // A match reads its values as an array does.
+    const js = ts.isArrayBindingPattern(name) && !/^JSMatch[?!]?$/.test(this.typeOf(init)) ? this.jsIteration(init) : null;
     if (!js) return `: ${this.typeOf(init)} = ${this.tryPrefix(init)}${this.expr(init)}`;
     const rest = (name as ts.ArrayBindingPattern).elements.some((el) => ts.isBindingElement(el) && el.dotDotDotToken);
     return ` = try JSArray(${js}.${rest ? 'jsCollect()' : `jsTake(${(name as ts.ArrayBindingPattern).elements.length})`})`;
@@ -2871,7 +2884,8 @@ export class Translator implements AsyncTranslator {
         read = this.isAny(name) ? `(try jsGet(${value}, ${swiftString(key)}))`
           : record ? this.undefinedAs(`${value}[${swiftString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1])
           : `${value}.${ident(key)}`;
-      } else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
+      } else if (/^JSMatch[?!]?$/.test(_type)) read = this.undefinedAs(`(${value}.values.element(${k}) ?? nil)`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : 'Any?');
+      else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
       // Past the end is undefined.
       else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : `${value}[${k}]`;
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, this.typeOf(el.name))})`;
@@ -3155,6 +3169,11 @@ export class Translator implements AsyncTranslator {
     }
     if (target === 'Any?' && this.untypedEnum('', source)) return this.untypedEnum(this.expr(e), source);
     if (target === 'Any?') {
+      // Null kept as untyped values hold it, apart from undefined.
+      if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
+      if (ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword)) {
+        return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, 'Any?')} : ${this.coerce(bare.whenFalse, 'Any?')})`;
+      }
       const maybe = this.maybeUndefined(e);
       if (maybe) return `(${maybe} as Any?)`;
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
@@ -4855,6 +4874,12 @@ export class Translator implements AsyncTranslator {
       }
       case 'replace': case 'replaceAll': {
         const fn = name === 'replace' ? 'jsReplace' : 'jsReplaceAll';
+        // A function value: called with the match, each group (undefined where it took no part), the match's index and the string.
+        if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second)) && this.checker.getTypeAtLocation(second).getCallSignatures().length) {
+          if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
+          const f = this.typeOf(second) === 'Any?' ? this.expr(second) : this.convert(this.expr(second), this.typeOf(second), 'Any?');
+          return `${fn}(${s}, ${r}) { (__m: JSMatch) throws -> String in jsToString(try jsCall(${f}, spread: __m.values.storage.map { $0 as Any? } + [__m.index, __m.input])) }`;
+        }
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second))) return `${fn}(${s}, ${r}, ${this.str(second)})`;
         if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
         // The replacer gets the match, then each group.
@@ -5275,7 +5300,11 @@ export class Translator implements AsyncTranslator {
       const c = full.replace(/\?$/, '');
       // A spread's length is known only when it runs: no tuple.
       if (full !== 'Any?' && (c.startsWith('JSArray<') || (c.startsWith('(') && !e.elements.some(ts.isSpreadElement)) || !e.elements.length)) t = c;
+      // Where an array or other kinds of value go (`data: Selector[][] | string`): that array.
+      const arrays = context.isUnion() ? context.types.filter((u) => this.checker.isArrayType(u)) : [];
+      if (full === 'Any?' && arrays.length === 1) t = this.type(arrays[0], e);
     }
+    if (t === 'JSArray<Void>') t = 'JSArray<Any?>';
     if (t === 'Any?' || t === 'JSArray<Never>') t = 'JSArray<Any?>';
     if (t.startsWith('(')) return `(${e.elements.map((x) => this.expr(x)).join(', ')})`;
     const el = t.replace(/^JSArray<(.*)>$/, '$1');
