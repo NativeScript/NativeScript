@@ -145,8 +145,7 @@ export class Throws {
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);
       const base = cls && this.ancestors(cls)[1];
-      const ctor = base?.members.find(ts.isConstructorDeclaration);
-      return ctor ? this.fn(ctor) : false;
+      return base ? this.initThrows(base) : false;
     }
     // A call through a variable, parameter, property or getter holding a function: Swift function types throw.
     const callee = ts.isPropertyAccessExpression(call.expression) ? call.expression.name : call.expression;
@@ -217,12 +216,17 @@ export class Throws {
   private implicitConstructorThrows(call: ts.NewExpression): boolean {
     const decl = this.checker.getTypeAtLocation(call.expression).getSymbol()?.valueDeclaration;
     if (!decl || !ts.isClassLike(decl) || decl.getSourceFile().isDeclarationFile) return false;
+    return this.initThrows(decl);
+  }
+
+  /** Whether making an instance of a class throws: its own constructor's or its base's, or (Swift initializers sharing `throws`) one a subclass declares. */
+  initThrows(decl: ts.ClassLikeDeclaration): boolean {
     for (const cls of this.ancestors(decl)) {
       if (cls.members.some((m) => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m) && this.expr(m.initializer))) return true;
       const ctor = cls.members.find(ts.isConstructorDeclaration);
       if (ctor) return this.fn(ctor);
     }
-    return false;
+    return this.descendants(decl).some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
   }
 
   /** The class and the app classes it extends, nearest first. */

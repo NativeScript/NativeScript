@@ -39,6 +39,11 @@ export interface KitOptions {
   report?: boolean;
   /** Kit files (relative to its sources) the modules replace: left out of what the generated code may name. */
   replaces?: RegExp;
+  /**
+   * npm packages core imports that are compiled with it, from the TypeScript sources they publish:
+   * package → its files, relative to the package's folder beside the declarations; importing the package gives the first.
+   */
+  packages?: Record<string, string[]>;
 }
 
 export interface KitFile {
@@ -86,6 +91,7 @@ function barrelNames(core: string): Map<string, string> {
 
 /** A module's enum: its public name when core's index exports it as one, else its path. */
 function enumName(rel: string, barrels: Map<string, string>): string {
+  if (rel.startsWith('npm/')) return 'Package_' + rel.slice(4).replace(/\.ts$/, '').replace(/[^A-Za-z0-9]+/g, '_');
   return barrels.get(rel) ?? 'Core_' + rel.replace(/\.(ios\.)?ts$/, '').replace(/[^A-Za-z0-9]+/g, '_');
 }
 
@@ -96,6 +102,19 @@ export function generateKit(o: KitOptions): KitResult {
   const barrels = barrelNames(core);
   const read = o.read ?? ((f: string) => readFileSync(f, 'utf8'));
   const modules = resolve(o.declarations, '../..');
+  // A package's files by path, as `npm/<package>/<file>`; the file importing the package gives.
+  const packageFiles = new Map<string, string>();
+  const packageEntries = new Map<string, string>();
+  for (const [pkg, list] of Object.entries(o.packages ?? {})) {
+    list.forEach((f, k) => {
+      const abs = join(modules, pkg, f);
+      if (!existsSync(abs)) throw new Error(`${abs} is missing: install ${pkg} as core's package.json has it`);
+      packageFiles.set(abs, `npm/${pkg}/${f}`);
+      compiled.add(abs);
+      if (k === 0) packageEntries.set(pkg, abs);
+    });
+  }
+  const relOf = (abs: string) => packageFiles.get(abs) ?? relative(core, abs);
 
   const options: ts.CompilerOptions = {
     // Core's own compiler settings: ES2020 class fields (a redeclared field does not reset), legacy decorators, not strict.
@@ -111,6 +130,7 @@ export function generateKit(o: KitOptions): KitResult {
     if (name.startsWith(MOOT)) return ts.createSourceFile(name, 'declare const moot: any;\nexport = moot;\n', version, true);
     if (!compiled.has(name)) return readLib(name, version, onError);
     if (!sources.has(name)) sources.set(name, read(name));
+    if (packageFiles.has(name)) return ts.createSourceFile(name, sources.get(name)!, version, true);
     return ts.createSourceFile(name, foldPlatform(withCoreDefines(sources.get(name)!), name, 'ios'), version, true);
   };
   /** The published declarations of a core file: `utils/index.ios.ts` and `../utils` both as `utils/index.d.ts`. */
@@ -129,6 +149,9 @@ export function generateKit(o: KitOptions): KitResult {
       const self = (m === '.' || m === './index') && source === containing;
       file = source && isMoot(source) ? MOOT + relative(core, source).replace(/\.ts$/, '.d.ts') : source && compiled.has(source) && !self ? source : declarationOf(source ?? base);
     }
+    // A package's own modules (`./types.js`), and the package compiled with core.
+    if (m.startsWith('.') && packageFiles.has(containing)) file = [resolve(dirname(containing), m.replace(/\.js$/, '.ts')), resolve(dirname(containing), m) + '.ts'].find((c) => packageFiles.has(c));
+    if (!file && packageEntries.has(m) && (containing.startsWith(core + '/') || packageFiles.has(containing))) file = packageEntries.get(m);
     // An npm package core depends on: untyped, its functions the kit's counterparts or moot.
     if (!file && containing.startsWith(core + '/') && /^[@a-z]/i.test(m) && !m.startsWith('@nativescript/')) file = `${MOOT}npm/${m}.d.ts`;
     if (file) {
@@ -161,9 +184,10 @@ export function generateKit(o: KitOptions): KitResult {
     translator = new Translator(checker, new Map(), files, {
       pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files), lenient: true,
       library: {
-        moduleName: (file) => (compiled.has(file) ? enumName(relative(core, file), barrels) : null),
+        moduleName: (file) => (compiled.has(file) ? enumName(relOf(file), barrels) : null),
         isMoot: (file) => file.startsWith(MOOT),
         identities: new Set(o.identities ?? []),
+        strict: (file) => packageFiles.has(file),
         counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
         internalTypes: kitInternal,
         sourceOf: (dts) => {
@@ -182,12 +206,13 @@ export function generateKit(o: KitOptions): KitResult {
 
   const order = evaluationOrder(program, [...compiled], (c, s) => resolutions.get(`${c}\0${s}`));
   const out: KitFile[] = [];
+  const paths = new Map<KitFile, string>();
   const imports = new Map<KitFile, string[]>();
   const inits: string[] = [];
   const hash = (text: string) => createHash('sha1').update(text).digest('hex').slice(0, 12);
   for (const file of order) {
     const sf = program.getSourceFile(file)!;
-    const rel = relative(core, file);
+    const rel = relOf(file);
     const init = `__init_${enumName(rel, barrels)}`;
     let result: { code: string; init: string[] } | null = null;
     for (let attempt = 0; attempt < 1000 && !result; attempt++) {
@@ -203,6 +228,7 @@ export function generateKit(o: KitOptions): KitResult {
     const code = result.code + (result.init.length ? `\nfunc ${init}() {\n${result.init.some((l) => /\btry\b/.test(l)) ? `    jsReport {\n${result.init.map((l) => '    ' + l).join('\n')}\n    }` : result.init.join('\n')}\n}\n` : '');
     if (result.init.length) inits.push(init);
     const kitFile = { name: rel.replace(/\.ts$/, '').replace(/\//g, '.') + '.swift', code, sources: { [rel]: hash(sources.get(file) ?? '') } };
+    paths.set(kitFile, file);
     out.push(kitFile);
     imports.set(kitFile, [...translator.native.used]);
   }
@@ -211,7 +237,7 @@ export function generateKit(o: KitOptions): KitResult {
   // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file; core's own modules where used.
   const sdk = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m) && !coreNative.has(m));
   for (const f of out) {
-    const code = (translator.interfacesOf(join(core, Object.keys(f.sources)[0])) + f.code).trim();
+    const code = (translator.interfacesOf(paths.get(f)!) + f.code).trim();
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
   }
   const shapes = translator.shapesCode().trim();

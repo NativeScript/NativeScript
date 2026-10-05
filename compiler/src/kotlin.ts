@@ -2046,9 +2046,30 @@ export class Translator implements AsyncTranslator {
 
   // ---- Statements --------------------------------------------------------------------------------
 
+  /** Variables a function declared before them reads: declared first, assigned where they are declared. */
+  private forwardDeclared = new Set<ts.VariableDeclaration>();
+
   statements(list: ts.Statement[]): string[] {
     const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
-    return [...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean);
+    const forward: string[] = [];
+    list.forEach((st, k) => {
+      if (!ts.isVariableStatement(st)) return;
+      for (const d of st.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        let early = false;
+        const visit = (n: ts.Node, inFn: boolean) => {
+          if (early) return;
+          if (inFn && ts.isIdentifier(n) && n !== d.name && this.checker.getSymbolAtLocation(n) === sym) { early = true; return; }
+          ts.forEachChild(n, (c) => visit(c, inFn || ts.isFunctionLike(c)));
+        };
+        list.forEach((other, j) => { if (j < k || hoisted.includes(other)) visit(other, ts.isFunctionLike(other)); });
+        if (!early) continue;
+        this.forwardDeclared.add(d);
+        forward.push(`${this.indent}${this.deferredDeclaration(ident(d.name.text), this.typeOf(d.name))}`);
+      }
+    });
+    return [...forward, ...[...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
   }
 
   block(b: ts.Statement, base = this.indent): string {
@@ -2205,6 +2226,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
+      if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.coerce(d.initializer!, t)}`;
       // `var m` again in the same block: the same variable, assigned.
       if (redeclaredVar(d, this.checker)) return d.initializer ? `${i}${name} = ${this.coerce(d.initializer, t)}` : '';
       const nullInit = !!d.initializer && (d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined'));
@@ -2347,7 +2369,8 @@ export class Translator implements AsyncTranslator {
 
   /** The type and value a destructuring pattern reads from: an iterator yields only as many values as an array pattern names. */
   private destructured(name: ts.BindingName, init: ts.Expression): string {
-    const js = ts.isArrayBindingPattern(name) ? this.jsIteration(init) : null;
+    // A match reads its values as an array does.
+    const js = ts.isArrayBindingPattern(name) && !/^JSMatch\??$/.test(this.typeOf(init)) ? this.jsIteration(init) : null;
     if (!js) return `: ${this.typeOf(init)} = ${this.expr(init)}`;
     const rest = (name as ts.ArrayBindingPattern).elements.some((el) => ts.isBindingElement(el) && el.dotDotDotToken);
     return ` = JSArray(ArrayList(${js}.${rest ? 'jsCollect()' : `jsTake(${(name as ts.ArrayBindingPattern).elements.length})`}))`;
@@ -2499,6 +2522,13 @@ export class Translator implements AsyncTranslator {
       if (maybe) return maybe;
     }
     if (target === 'Any?') {
+      // Null kept as untyped values hold it, apart from undefined.
+      let bare = e;
+      while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+      if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
+      if (ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword)) {
+        return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, 'Any?')} else ${this.coerce(bare.whenFalse, 'Any?')})`;
+      }
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
       if (source === 'Unit' && !(ts.isIdentifier(e) && e.text === 'undefined')) return `jsBox(${this.expr(e)})`;
@@ -3678,6 +3708,11 @@ export class Translator implements AsyncTranslator {
       case 'split': return `jsSplit(${s}, ${r}${second ? `, ${this.toNumber(second)}` : ''})`;
       case 'replace': case 'replaceAll': {
         const fn = name === 'replace' ? 'jsReplace' : 'jsReplaceAll';
+        // A function value: called with the match, each group (undefined where it took no part), the match's index and the string.
+        if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second)) && this.checker.getTypeAtLocation(second).getCallSignatures().length) {
+          if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
+          return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString(jsCall(${this.functionValue(second)}, *(__m.values.storage + listOf<Any?>(__m.index, __m.input)).toTypedArray())))`;
+        }
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second))) return `${fn}(${s}, ${r}, ${this.str(second)})`;
         if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
         // The replacer gets the match, then each group, then the offset.
@@ -4055,6 +4090,9 @@ export class Translator implements AsyncTranslator {
     if (context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)) && !(this.checker.isTupleType(context) && e.elements.some(ts.isSpreadElement))) {
       const c = this.type(context, e).replace(/\?$/, '');
       if (c.startsWith('JSArray<') || c.startsWith('Pair<') || c.startsWith('Triple<') || !e.elements.length) t = c;
+      // Where an array or other kinds of value go (`data: string[][] | string`): that array.
+      const arrays = context.isUnion() ? context.types.filter((u) => this.checker.isArrayType(u)) : [];
+      if (c === 'Any' && arrays.length === 1) t = this.type(arrays[0], e);
     }
     if (t === 'Any?' || (context && context.flags & ts.TypeFlags.Any && this.pluginFiles.has(e.getSourceFile().fileName))) t = 'JSArray<Any?>';
     // `[]` where a match array goes (`text.match(re) || []`): an empty match.

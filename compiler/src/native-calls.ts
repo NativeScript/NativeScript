@@ -192,6 +192,14 @@ export class NativeAPI {
     return !!decl && !decl.getSourceFile().isDeclarationFile;
   }
 
+  /** An app class's override of its native base's method (`setViewControllersAnimated` in a UINavigationController subclass): called by the native name. */
+  private nativeOverride(name: ts.Node): boolean {
+    const decl = this.t.checker.getSymbolAtLocation(name)?.declarations?.[0];
+    if (!decl || !ts.isMethodDeclaration(decl) || !ts.isClassLike(decl.parent)) return false;
+    const base = this.nativeBase(this.t.checker.getTypeAtLocation(decl.parent));
+    return !!base && !!lookupMember(base.module, base.name, decl.name.getText(), false);
+  }
+
   property(e: ts.PropertyAccessExpression): string | null {
     const enumCase = this.enumMember(e);
     if (enumCase) return enumCase;
@@ -380,19 +388,24 @@ export class NativeAPI {
       return this.fromSwift(code, f.returns, e);
     }
     if (!ts.isPropertyAccessExpression(callee)) return null;
-    if (this.appMember(callee.name) && callee.name.text !== 'new') return null;
+    if (this.appMember(callee.name) && callee.name.text !== 'new' && !this.nativeOverride(callee.name)) return null;
     const name = callee.name.text;
     // `X.alloc().initWithFrame(r)`, `X.alloc().init()`
     if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc') {
-      const r = this.receiver(callee.expression.expression.expression);
+      const allocated = callee.expression.expression.expression;
+      // An app class extending a native one inherits its initializers.
+      const own = this.t.resolve(allocated)?.valueDeclaration;
+      const ownBase = own && ts.isClassDeclaration(own) && own.name && !own.getSourceFile().isDeclarationFile ? this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(this.t.resolve(allocated)!)) : null;
+      const r = ownBase ? { ...ownBase, isStatic: true } : this.receiver(allocated);
       if (!r) return null;
       const cls = lookupClass(r.module, r.name)!;
-      if (name === 'init') return `${this.className(cls)}()`;
+      const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : this.className(cls);
+      if (name === 'init') return `${made}()`;
       const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
       const args = [...e.arguments];
       if (init.errorParam !== undefined) args.splice(init.errorParam, 1);
-      return this.errorCall(`${this.className(cls)}(${this.argList(args, init.labels, init.params)})`, init, e);
+      return this.errorCall(`${made}(${this.argList(args, init.labels, init.params)})`, init, e);
     }
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
@@ -767,6 +780,25 @@ export class NativeAPI {
       lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? 'try! ' : ''}${t.coerce(m.initializer, type)}`);
     }
     if (cls.members.some((m) => ts.isConstructorDeclaration(m))) throw t.error(cls, `a constructor in a class extending ${base.name} (NativeScript creates these with new() or alloc().init())`);
+    // Accessors of the app's own: Swift properties.
+    const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
+    for (const m of cls.members) {
+      if (!ts.isGetAccessorDeclaration(m) && !ts.isSetAccessorDeclaration(m)) continue;
+      if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)) throw t.error(m, `a static accessor in a class extending ${base.name}`);
+      const a = accessors.get(m.name.getText()) ?? {};
+      if (ts.isGetAccessorDeclaration(m)) a.get = m; else a.set = m;
+      accessors.set(m.name.getText(), a);
+    }
+    for (const [n, a] of accessors) {
+      const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
+      const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, type, '        ')}` : '        get { nil }'];
+      if (a.set) {
+        const p = a.set.parameters[0].name as ts.Identifier;
+        const body = t.functionBody(a.set, 'Void', '        ');
+        parts.push(t.throwsInfo.fn(a.set) ? `        set {\n            let ${p.text}: ${type} = newValue\n            jsReport ${body.trimStart()}\n        }` : `        set {\n            let ${p.text}: ${type} = newValue${body.slice(1)}`);
+      }
+      lines.push(`    var ${n}: ${t.lenientRef(type)} {`, ...parts, '    }');
+    }
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const jsName = m.name.getText();
