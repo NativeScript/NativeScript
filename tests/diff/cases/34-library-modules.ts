@@ -148,3 +148,28 @@ console.log(hold(new WeakRef(button0)));
 const show = (x: Item0 | null) => console.log(x ? x.name : 'none');
 show(null);
 show(button0);
+
+interface Indexed {
+  _row?: number;
+}
+class Cell0 {
+  label = 'cell';
+}
+type IndexedCell = Cell0 & Indexed;
+function place(cell: IndexedCell, row: number): string {
+  const before = cell._row;
+  cell._row = row;
+  return `${cell.label} ${before} ${cell._row ?? 0}`;
+}
+console.log(place(new Cell0(), 3));
+
+interface Options1 {
+  changed?: (target: Cell0, oldValue: any, newValue: any) => void;
+  select?: (item: any, index: number) => string;
+}
+const bag: any = { key: 'chosen' };
+function useOptions(o: Options1): string {
+  o.changed(new Cell0(), 1, 2);
+  return o.select(bag, 0);
+}
+console.log(useOptions({ changed: (t) => console.log('changed', t.label), select: (item) => item['key'] }));

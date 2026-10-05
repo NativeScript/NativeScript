@@ -139,3 +139,9 @@ function settleLater(): Promise<void> {
   });
 }
 settleLater().then(() => console.log('settled'));
+type Maker = () => string;
+function runTemplate(template: string | Maker): string {
+  const isFn = (x: any): boolean => typeof x === 'function';
+  return isFn(template) ? (<Maker>template)() + (template as Maker)() : 'text';
+}
+console.log(runTemplate(() => 'made'), runTemplate('text'));

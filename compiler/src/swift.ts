@@ -1934,19 +1934,23 @@ export class Translator implements AsyncTranslator {
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? 'throws ' : '';
     // A function expression's name is only for itself: one that never refers to itself is an anonymous function.
     if (fn.name && refersTo(fn.body, this.checker.getSymbolAtLocation(fn.name), this.checker)) throw this.error(fn, 'a named function expression');
+    const extra = this.unusedParams(fn).map((t, k) => `_ __unused${k}: ${t}`);
+    return `{ (${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
+  }
+
+  /** The types of the parameters a closure's slot passes past the ones the closure declares, which Swift closures take too. */
+  private unusedParams(fn: ts.ArrowFunction | ts.FunctionExpression): string[] {
     // A core callback slot passing more arguments than the closure declares: the rest unused, as Swift closures take every argument.
     const slot = this.slotOf(fn);
     const coreSlot = !!slot?.getDeclaration() && isCoreDeclaration(slot.getDeclaration() as ts.Declaration);
     // The app's own function types are Swift's as declared: every parameter, whatever the closure uses.
     const appSlot = !!slot?.getDeclaration() && !slot.getDeclaration().getSourceFile().isDeclarationFile;
-    const extra = (coreSlot && !fn.parameters.length) || appSlot
-      ? slot!.getParameters().filter((p) => !(p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken)).slice(fn.parameters.length).map((p, k) => {
-        const pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, fn), fn);
-        const optional = p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer);
-        return `_ __unused${k}: ${optional ? optionalType(pt) : pt}`;
-      })
-      : [];
-    return `{ (${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
+    if (!((coreSlot && !fn.parameters.length) || appSlot)) return [];
+    return slot!.getParameters().filter((p) => !(p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken)).slice(fn.parameters.length).map((p) => {
+      const pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, fn), fn);
+      const optional = p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer);
+      return optional ? optionalType(pt) : pt;
+    });
   }
 
   private slotOf(fn: ts.ArrowFunction | ts.FunctionExpression): ts.Signature | undefined {
@@ -1964,12 +1968,14 @@ export class Translator implements AsyncTranslator {
     if (isAsync(fn)) return slotType && slotType !== own && /^JSPromise<Object_/.test(own) && slotType.startsWith('JSPromise<') ? slotType : own;
     // A callback returning nothing where its slot takes any value (a decorator's `TFunction | void`) returns undefined.
     if (own === 'Void' && slotType === 'Any?' && !voidSlot) return 'Any?';
+    // A closure giving an untyped value where its slot says a type (lenient code): the slot's type, its value read as that.
+    if (!voidSlot && slotType && own === 'Any?' && slotType !== 'Void' && this.lenient) return slotType;
     return voidSlot ? 'Void' : slotType && slotType !== own && /^Object_/.test(own) ? slotType : own;
   }
 
   /** A closure literal's Swift function type, as `closure` writes it. */
   private closureType(fn: ts.ArrowFunction | ts.FunctionExpression): string {
-    return `(${fn.parameters.map((p) => (p.questionToken || this.mayBeNull(p) || nullableTypeNode(p.type) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))).join(', ')}) throws -> ${this.closureReturn(fn)}`;
+    return `(${[...fn.parameters.map((p) => (p.questionToken || this.mayBeNull(p) || nullableTypeNode(p.type) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name))), ...this.unusedParams(fn)].join(', ')}) throws -> ${this.closureReturn(fn)}`;
   }
 
   /** A callback for an API that does not take throwing closures (a timer): what it throws is reported. */
@@ -4860,6 +4866,12 @@ export class Translator implements AsyncTranslator {
     if (ts.isFunctionExpression(fn) || ts.isArrowFunction(fn)) return `${this.closure(fn)}(${this.args(e).join(', ')})`;
     // A callee the factory would parenthesize again (`(f as F)(…)`) is called through its own translation.
     if (ts.isParenthesizedExpression(callee) && (ts.isIdentifier(callee.expression) || ts.isPropertyAccessExpression(callee.expression) || ts.isElementAccessExpression(callee.expression) || ts.isCallExpression(callee.expression) || ts.isParenthesizedExpression(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
+    // `(value as F)(…)` of an untyped value: called as script calls it, its result read as F gives it.
+    if (ts.isParenthesizedExpression(callee) && (ts.isAsExpression(callee.expression) || ts.isTypeAssertionExpression(callee.expression)) && this.isAny(callee.expression.expression)) {
+      const code = `jsCall(${[this.expr(callee.expression.expression), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+      const t = this.typeOf(e);
+      return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
+    }
     // `(value as F)(…)`: the value read as the function type, called.
     if (ts.isParenthesizedExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     // `view[setNative](value)` (library mode): the method under that key, called with the object as `this`.

@@ -152,6 +152,8 @@ export class NativeAPI {
     let type = c.getNonNullableType(c.getTypeAtLocation(e));
     // `this` in a class's method: the class.
     if (type.flags & ts.TypeFlags.TypeParameter) type = c.getBaseConstraintOfType(type) ?? type;
+    // A class narrowed by instanceof to another it does not extend (`UISearchBar & UIControl`): the first native one.
+    if (type.isIntersection()) type = type.types.find((u) => this.symbolModule(u.getSymbol()) || this.nativeBase(u)) ?? type;
     const native = this.symbolModule(type.getSymbol()) ?? this.nativeBase(type);
     return native ? { ...native, isStatic: false } : null;
   }
