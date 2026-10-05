@@ -203,6 +203,8 @@ export class Translator implements AsyncTranslator {
   lines: SourceLines | null = null;
   /** The app's Swift module, which qualifies a module function a class member's name shadows. */
   appModule = '';
+  /** Inside a class extending a native one, whose base's nested types (`UIViewController.Transition`) hide the module's of their names. */
+  inNativeClassBody = false;
   /**
    * Library mode (the kit generated from core): each module's functions and
    * variables are static members of an enum named for the module, so modules
@@ -605,6 +607,9 @@ export class Translator implements AsyncTranslator {
     // A mixin's class is the core class it is applied to.
     const mixin = this.mixinOf(sym);
     if (mixin) return mixin;
+    if (name && name !== '__type' && name !== '__object' && this.inNativeClassBody && this.appModule && sym?.flags! & ts.SymbolFlags.Class && sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) {
+      return `${this.appModule}.${this.topNames().get(sym!.valueDeclaration ?? sym!.declarations![0]) ?? name}`;
+    }
     if (name && name !== '__type' && name !== '__object') {
       // Library mode: an interface only a declaration file has (the DOM's `MediaQueryListEvent`, core's `AddChildFromBuilder`) has no Swift type.
       if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && ((isLibDeclaration(d) && (/lib\.dom/.test(d.getSourceFile().fileName) || DESCRIPTORS.has(name))) || isCoreDeclaration(d)))) return 'Any?';
@@ -657,7 +662,7 @@ export class Translator implements AsyncTranslator {
     if (!this.library) return false;
     const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
     let name: string | undefined;
-    if (!decl) name = this.typeOf(e.expression).replace(/[?!]$/, '');
+    if (!decl) name = this.typeOf(e.expression).replace(/[?!]$/, '').replace(/^\w+\./, '');
     else {
       const cls = decl.parent;
       if (!ts.isClassDeclaration(cls) || !cls.name || !decl.getSourceFile().isDeclarationFile || isLibDeclaration(decl) || /[\\/]objc![^\\/]+\.d\.ts$/.test(decl.getSourceFile().fileName)) return false;
@@ -4108,7 +4113,7 @@ export class Translator implements AsyncTranslator {
     if (tag && !isWriteTarget(e) && this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperties().some((p) => wellKnownMember(p.escapedName.toString()) === 'jsToStringTag')) return `${target}${q}.jsToStringTag`;
     // A computed key on a native object (`view[property]`): its Objective-C property by name, as the runtime reads and writes it.
     const receiverType = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
-    if (!ts.isStringLiteral(key) && ['String', 'Any?'].includes(this.typeOf(key)) && this.native.isClassType(receiverType)) {
+    if (!ts.isStringLiteral(key) && ['String', 'Any?'].includes(this.typeOf(key)) && (this.native.isClassType(receiverType) || this.native.extendsNative(receiverType))) {
       const code = `JSNativeKeyed(${target}${/[?!]$/.test(this.typeOf(e.expression)) ? '!' : ''})[jsKey: ${this.propertyKey(key)}]`;
       const rt = this.typeOf(e);
       return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, rt, true);
@@ -4426,6 +4431,12 @@ export class Translator implements AsyncTranslator {
       if (['call', 'apply', 'bind'].includes(method) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration()) && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(method, target, e);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
+      // A member holding an untyped value (`closedCallback: Function`), called: with the object as `this`.
+      if (this.library && !e.questionDotToken && !this.isAny(target) && this.typeOf(callee) === 'Any?' && !this.resolve(callee.name)?.declarations?.some((d) => ts.isMethodDeclaration(d) || ts.isMethodSignature(d))) {
+        const call = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.coerce(target, 'Any?')}, ${swiftString(method)}${this.untypedArgs(e.arguments)})`;
+        const rt = this.typeOf(e);
+        return rt === 'Any?' || rt === 'Void' ? call : this.fromAny(call, rt);
+      }
       if (this.isAny(target)) {
         const code = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.expr(target)}, ${swiftString(method)}${this.untypedArgs(e.arguments)})`;
         // An untyped receiver of a typed interface (`value: IColor` with no protocol): the result as the interface types it.

@@ -149,9 +149,12 @@ export class NativeAPI {
     return !!sym && !!this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(sym));
   }
 
+  /** Whether a type is an app class extending a native one. */
+  extendsNative(type: ts.Type): boolean { return !!this.nativeBase(this.t.checker.getApparentType(type)); }
+
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
   private nativeBase(type: ts.Type): { module: string; name: string } | null {
-    if (!type.isClassOrInterface()) return null;
+    if (typeof type.isClassOrInterface !== 'function' || !type.isClassOrInterface()) return null;
     for (const b of this.t.checker.getBaseTypes(type)) {
       const found = this.symbolModule(b.getSymbol()) ?? this.nativeBase(b);
       if (found) return found;
@@ -553,6 +556,8 @@ export class NativeAPI {
     while ((ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && ['any', 'unknown', 'never'].includes(e.type.getText())) e = e.expression;
     const b = base(target);
     // null for a collection Swift marks nonnull: the empty one, as Objective-C reads nil.
+    // null for a struct: its zero value, as the runtime marshals it.
+    if ((e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) && !optional(target) && this.isStructType(b)) return `${b}()`;
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return optional(target) || !b.startsWith('[') ? 'nil' : b.includes(':') ? '[:]' : '[]';
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.block(e, target);
     const source = t.typeOf(e);
@@ -769,6 +774,7 @@ export class NativeAPI {
 
     const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.map((p) => p.swift)].join(', ')} {`];
     t.indent = '    ';
+    t.inNativeClassBody = true;
     for (const m of cls.members) {
       if (!ts.isPropertyDeclaration(m) || m === listed || m === exposedSpec) continue;
       const n = m.name.getText();
@@ -790,6 +796,18 @@ export class NativeAPI {
       accessors.set(m.name.getText(), a);
     }
     for (const [n, a] of accessors) {
+      // A property the native base declares (`preferredStatusBarStyle`): its Swift override, the body's value converted, what it throws reported.
+      const native = this.found(lookupMember(base.module, base.name, n, false));
+      if (native && native.kind === 'property' && a.get) {
+        const own = t.returnTypeOf(a.get);
+        const body = t.functionBody(a.get, own, '            ');
+        const value = t.throwsInfo.fn(a.get) ? `jsReported { () throws -> ${own} in${body.slice(1)}` : `{ () -> ${own} in${body.slice(1)}()`;
+        const fallback = own.endsWith('?') || own === 'Any?' ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : '!';
+        const get = `        get {\n            let __value: ${t.throwsInfo.fn(a.get) ? optionalType(own) : own} = ${value}\n            return ${this.toSwiftValue(`__value${t.throwsInfo.fn(a.get) ? fallback : ''}`, own, native.type)}\n        }`;
+        if (a.set) throw t.error(a.set, `a setter of ${base.name}.${n}`);
+        lines.push(`    override var ${native.swift}: ${native.type} {`, get, '    }');
+        continue;
+      }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
       const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, type, '        ')}` : '        get { nil }'];
       if (a.set) {
@@ -817,6 +835,7 @@ export class NativeAPI {
       lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
     }
     t.indent = '';
+    t.inNativeClassBody = false;
     lines.push('}');
     return lines.join('\n');
   }
@@ -866,14 +885,14 @@ export class NativeAPI {
   private fromSwiftValue(code: string, swiftType: SwiftType, tsType: string): string {
     const b = base(swiftType);
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : optional(swiftType) ? `Double(${code}!)` : `Double(${code})`;
+    // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
+    const own = tsType.replace(/[?!]$/, '');
+    if (own !== b && /^(\w+\.)?[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
     // A native enum is a number in JavaScript.
     if (tsType === 'Double' && this.isEnumType(b)) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
-    // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
-    const own = tsType.replace(/[?!]$/, '');
-    if (own !== b && /^[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
     return code;
   }
