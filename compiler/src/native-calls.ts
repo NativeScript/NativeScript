@@ -517,9 +517,11 @@ export class NativeAPI {
     if (!optional(target) && source.endsWith('?') && this.isOptionSet(b)) return `(${t.expr(e)} ?? [])`;
     // A possibly missing string where Swift takes one: Objective-C would receive nil, which reads as empty.
     if (b === 'String' && !optional(target) && source === 'String?') return `(${t.expr(e)} ?? "")`;
-    // A string where Swift has a string-backed type (`UIMenu.Identifier`).
-    const nativeConstant = ts.isIdentifier(e) && !!this.symbolModule(this.t.resolve(e));
-    if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !nativeConstant) {
+    // A string where Swift has a string-backed type (`UIMenu.Identifier`); a constant of that type as Swift declares it.
+    const native = ts.isIdentifier(e) ? this.symbolModule(this.t.resolve(e)) : null;
+    const constant = native && lookupConstant(native.module, native.name);
+    if (constant && base(constant.type) === b) return constant.swift;
+    if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !native) {
       return source.endsWith('?') ? `{ (__s: String?) -> ${b}? in __s.map { ${b}(rawValue: $0) } }(${t.expr(e)})` : `${b}(rawValue: ${t.expr(e)})`;
     }
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
@@ -544,6 +546,8 @@ export class NativeAPI {
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
     if (this.isEnumType(b) && tsType === 'Double') return `Double(${code}.rawValue)`;
+    // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
+    if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;

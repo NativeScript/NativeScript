@@ -2535,7 +2535,7 @@ export class Translator implements AsyncTranslator {
         } else if (labels.every((l) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand)))) {
           lines.push(`${i}case ${labels.map((l) => this.expr(l)).join(', ')}:`);
         } else {
-          lines.push(`${i}case _ where ${labels.map((l) => `${subject} == ${this.expr(l)}`).join(' || ')}:`);
+          lines.push(`${i}case _ where ${labels.map((l) => `${subject} == ${this.coerce(l, subjectType)}`).join(' || ')}:`);
         }
         labels = [];
         const body = [...c.statements];
@@ -2566,7 +2566,7 @@ export class Translator implements AsyncTranslator {
     const tests = clauses.flatMap((c, k) => {
       if (!ts.isCaseClause(c)) return [];
       const l = c.expression;
-      const test = subjectType === 'Any?' || this.typeOf(l) === 'Any?' ? `jsStrictEquals(${subject}, ${this.coerce(l, 'Any?')})` : `${subject} == ${this.expr(l)}`;
+      const test = subjectType === 'Any?' || this.typeOf(l) === 'Any?' ? `jsStrictEquals(${subject}, ${this.coerce(l, 'Any?')})` : `${subject} == ${this.coerce(l, subjectType)}`;
       return [`if ${this.tryPrefix(l)}${test} { ${start} = ${k} }`];
     });
     lines.push(`${i}    ${tests.join(' else ')}`);
@@ -2688,6 +2688,13 @@ export class Translator implements AsyncTranslator {
     }
     // A number where Swift has a native enum or option set (`UIMenuOptions.A | UIMenuOptions.B`).
     if (source === 'Double' && target !== 'Double' && this.native.isEnumType(target.replace(/\?$/, ''))) return this.native.enumFromNumber(this.expr(e), target);
+    // A native enum or option set where a number is wanted: its raw value; a missing one is undefined, NaN as a number.
+    const enumBase = source.replace(/[?!]$/, '');
+    if ((target === 'Double' || target === 'Double?') && enumBase !== 'Double' && this.native.isEnumType(enumBase)) {
+      const code = this.expr(e);
+      if (source === enumBase) return `Double(${code}.rawValue)`;
+      return target === 'Double?' ? `(${code}).map { Double($0.rawValue) }` : `((${code}).map { Double($0.rawValue) } ?? .nan)`;
+    }
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (`map.get(k)` after `has(k)`).
     if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target);
     if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(source.replace(/^\((.*)\)\?$/, '$1')) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) return this.convert(this.expr(e), source, target);
