@@ -573,6 +573,10 @@ export class NativeAPI {
     if (bridged) return bridged;
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
+    // A dispatch queue, which TypeScript types as NSObject: the queue, cast.
+    if (base(source) === 'NSObject' && (b === 'DispatchQueue' || base(this.unalias(b)) === 'DispatchQueue')) {
+      return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
+    }
     // An ArrayBuffer or a typed array where Swift takes bytes: a copy of them, or their address, as the iOS runtime passes them.
     if (b === 'Data' && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) return `jsNativeData(${t.expr(e)})`;
     if (/^Unsafe(Mutable)?RawPointer$/.test(b) && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) {
