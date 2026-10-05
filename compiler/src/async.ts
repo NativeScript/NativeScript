@@ -279,7 +279,7 @@ export class AsyncLowering {
       }
       const js = t.jsIteration(s.expression);
       if (js) return this.linearize([s.expression], ctx, () => [`${i}${x.tryStatement(x.constant(it, null, js))}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression, kind: 'js' })]);
-      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression)}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
+      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression) || (t.isAny(s.expression) ? 'try ' : '')}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
     }
     if (ts.isTryStatement(s)) return this.tryStatement(s, ctx);
     if (ts.isLabeledStatement(s)) throw t.error(s, 'a labeled statement that awaits');

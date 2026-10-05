@@ -3656,9 +3656,10 @@ export class Translator implements AsyncTranslator {
     const make = !(ts.isObjectLiteralExpression(bare) && this.literalClassOf(bare)) ? this.shapeToClass(source.replace(/[?!]$/, ''), target.replace(/[?!]$/, '')) : null;
     if (make) return source.endsWith('?') ? `(${this.expr(e)}).map(${make})` : `${make}(${this.expr(e)})`;
     // An array of such objects where an array of the class is taken: each made so.
-    const elements = /^JSArray<(Object_\w+)>$/.exec(source)?.[1];
+    const elements = /^JSArray<(Object_\w+)>\??$/.exec(source)?.[1];
     const each = elements && this.shapeToClass(elements, /^JSArray<(\w+)>\??$/.exec(target)?.[1] ?? '');
-    if (each) return `${this.expr(e)}.map(${each})`;
+    const missing = isOptional(source) || (this.lenient && ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some(isNullish));
+    if (each) return missing ? `(${this.expr(e)})?.map(${each})` : `${this.expr(e)}.map(${each})`;
     // Library mode: a class where a subclass is declared (`this` of ViewCommon where core's declarations say View).
     if (this.library && this.isSubclassOf(target.replace(/[?!]$/, ''), source.replace(/[?!]$/, ''))) return `(${this.expr(e)} as${target.endsWith('?') || source.endsWith('?') ? '?' : '!'} ${target.replace(/[?!]$/, '')})`;
     return this.expr(e);
@@ -3930,7 +3931,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isConditionalExpression(e)) {
       let t = this.typeOf(e);
       // Lenient code choosing an object or null: an optional, as the variable holding it is.
-      if (this.lenient && [e.whenTrue, e.whenFalse].some(isNullish) && this.zero(t) === null && !isFunctionType(t) && t !== 'Any?' && !t.endsWith('!') && !this.native.isStructType(t)) t = optionalType(t);
+      if (this.lenient && [e.whenTrue, e.whenFalse].some(isNullish) && !['String', 'Double', 'Bool'].includes(t) && !isFunctionType(t) && t !== 'Any?' && !t.endsWith('!') && !this.native.isStructType(t)) t = optionalType(t);
       // Branches of different types are untyped values alike.
       const branch = (x: ts.Expression) => (t === 'Any?' && !['Any?', 'Void'].includes(this.typeOf(x)) && x.kind !== ts.SyntaxKind.NullKeyword ? `(${this.coerce(x, t)} as Any?)` : this.coerce(x, t));
       return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
