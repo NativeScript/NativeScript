@@ -214,3 +214,25 @@ const padded = new Padded();
 console.log(padded.effectivePadding);
 padded.effectivePadding = 0;
 console.log(padded.effectivePadding);
+
+// A list a record holds once created: missing until then, as core's observers are.
+class Listeners {
+  private _observers: { [eventName: string]: Array<string> } = {};
+  public add(eventName: string, name: string) {
+    let list = this._observers[eventName];
+    if (!list) {
+      list = [];
+      this._observers[eventName] = list;
+    }
+    list.push(name);
+  }
+  public count(eventName: string): number {
+    const list = this._observers[eventName];
+    return list ? list.length : -1;
+  }
+}
+const listeners = new Listeners();
+console.log(listeners.count('tap'));
+listeners.add('tap', 'a');
+listeners.add('tap', 'b');
+console.log(listeners.count('tap'), listeners.count('swipe'));

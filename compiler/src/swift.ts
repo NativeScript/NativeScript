@@ -4671,6 +4671,8 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       if (isWriteTarget(e)) return read;
       if (isOptional(t)) return `(${read} ?? nil)`;
+      // Lenient code: a missing object is undefined, which the code tests for (`if (!list) …`).
+      if (this.lenient && this.lenientRef(t) !== t) return `jsImplicit(${read})`;
       const z = isFunctionType(t) ? null : this.zero(t);
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
@@ -4767,6 +4769,8 @@ export class Translator implements AsyncTranslator {
       const vt = this.typeOf(e);
       if (t === 'JSRecord<Any?>' && vt !== 'Any?') return this.fromAny(`(${read} ?? nil)`, vt);
       if (isOptional(vt)) return `(${read} ?? nil)`;
+      // Lenient code: a missing object is undefined, which the code tests for (`if (!list) …`).
+      if (this.lenient && this.lenientRef(vt) !== vt) return `jsImplicit(${read})`;
       const z = isFunctionType(vt) ? null : this.zero(vt);
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
