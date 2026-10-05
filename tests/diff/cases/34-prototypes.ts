@@ -229,3 +229,14 @@ base.size = 1;
 const derived = { ...base, size: undefined };
 derived.size = 5;
 console.log(describeInfo(derived), describeInfo(base));
+
+class Source {
+  constructor(public url: string, public size: number) {}
+}
+class FileSource extends Source {
+  constructor(path: string, bytes: number) {
+    super(path, bytes);
+  }
+}
+const loose = new Source(undefined, null);
+console.log(!loose.url, !loose.size, new FileSource('a.css', 3).url);

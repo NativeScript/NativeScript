@@ -547,6 +547,11 @@ export class Translator implements AsyncTranslator {
       return inner === 'Any?' ? inner : inner.replace(/\?$/, '');
     }
     if (name === 'Object' && sym?.declarations?.every((d) => /[\\/]typescript[\\/]lib[\\/]/.test(d.getSourceFile().fileName))) return 'Any?';
+    // `typeof UIGestureRecognizer`: the native class as a value.
+    if (sym && sym.flags & ts.SymbolFlags.Class && t.getConstructSignatures().length && !t.getCallSignatures().length && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) {
+      const instance = this.native.type(c.getDeclaredTypeOfSymbol(sym));
+      if (instance) return `${instance}.Type`;
+    }
     const native = this.native.type(t);
     if (native) return native;
     // An Android class (`android.view.View`) is only ever held, never made, on iOS.
@@ -918,7 +923,7 @@ export class Translator implements AsyncTranslator {
    * as JavaScript reads it (`x?.y`, `if (x)`), so Swift declares it implicitly unwrapped.
    */
   lenientRef(t: string): string {
-    if (!this.lenient || t.endsWith('?') || t.endsWith('!') || t.endsWith('.Type') || isFunctionType(t)) return t;
+    if (!this.lenient || t.endsWith('?') || t.endsWith('!') || isFunctionType(t)) return t;
     if (['Double', 'String', 'Bool', 'Any', 'Void', 'Never', 'JSBigInt', 'JSSymbol'].includes(t) || t.startsWith('(') || t.startsWith('[') || this.native.isEnumType(t) || this.native.isStructType(t) || this.genericNames.has(t)) return t;
     return `${t}!`;
   }
@@ -2130,7 +2135,9 @@ export class Translator implements AsyncTranslator {
     const baseCtor = appBase && this.constructorOf(appBase);
     if (ctor) {
       const throws = this.throwsInfo.fn(ctor) ? ' throws' : '';
-      const sameAsBase = baseCtor ? this.params(baseCtor, false) === this.params(ctor, false) : ctor.parameters.length === 0 && (!!appBase || !!kitRoot);
+      // Swift matches an initializer by its labels and types, not its parameters' names.
+      const signature = (fn: ts.ConstructorDeclaration) => this.params(fn, false).replace(/_ [\w`]+: /g, '_: ').replace(/ = [^,]*(?=,|$)/g, '');
+      const sameAsBase = baseCtor ? signature(baseCtor) === signature(ctor) : ctor.parameters.length === 0 && (!!appBase || !!kitRoot);
       const body = this.inFunction('Void', () => {
         this.indent = '        ';
         this.lenientParams(ctor);
@@ -3158,6 +3165,8 @@ export class Translator implements AsyncTranslator {
     let bare: ts.Expression = e;
     while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare)) bare = bare.expression;
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
+    // Lenient code passing null or undefined where a string, number or boolean is declared: the type's zero, as such a slot reads it.
+    if (this.lenient && isNullish(bare) && ['String', 'Double', 'Bool'].includes(target)) return this.zero(target)!;
     // An async function where a function returning nothing is wanted (a callback typed `() => void`): its promise is dropped.
     const want = functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')), have = functionParts(this.typeOf(e).replace(/^\((.*)\)[?!]$/, '$1'));
     if (want && have && want.result === 'Void' && /^JSPromise</.test(have.result) && want.params.length === have.params.length) {

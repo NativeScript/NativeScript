@@ -362,15 +362,19 @@ export class NativeAPI {
     const name = callee.name.text;
     // `X.alloc().initWithFrame(r)`, `X.alloc().init()`
     if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc') {
-      const r = this.receiver(callee.expression.expression.expression);
+      const allocated = callee.expression.expression.expression;
+      const r = this.receiver(allocated);
       if (!r) return null;
       const cls = lookupClass(r.module, r.name)!;
-      if (name === 'init') return `${this.className(cls)}()`;
+      // A class held as a value (`typeof UIGestureRecognizer`): its own initializer, which Objective-C dispatches.
+      const classRef = !!((this.t.resolve(allocated)?.flags ?? 0) & ts.SymbolFlags.Class);
+      const made = r.isStatic || classRef ? this.className(cls) : `${this.t.expr(allocated)}.init`;
+      if (name === 'init') return `${made}()`;
       const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
       const args = [...e.arguments];
       if (init.errorParam !== undefined) args.splice(init.errorParam, 1);
-      return this.errorCall(`${this.className(cls)}(${this.argList(args, init.labels, init.params)})`, init, e);
+      return this.errorCall(`${made}(${this.argList(args, init.labels, init.params)})`, init, e);
     }
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
