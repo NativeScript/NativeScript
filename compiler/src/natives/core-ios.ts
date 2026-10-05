@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { iosTarget, nativeTable } from './symbols.ts';
 
 /**
@@ -56,6 +56,66 @@ export function loadCoreNativeTables(core: string): string[] {
     }
   }
   return modules.map((m) => m.module);
+}
+
+/** `@nativescript/core` as the app installed it (or a parent folder did). */
+export function installedCore(app: string): string | null {
+  for (let dir = app; ; dir = dirname(dir)) {
+    const core = join(dir, 'node_modules', '@nativescript', 'core');
+    if (existsSync(join(core, 'package.json'))) return core;
+    if (dirname(dir) === dir) return null;
+  }
+}
+
+export interface CoreNativeProject {
+  /** Targets of their own in project.yml's `targets:`. */
+  targets: string;
+  /** Entries of the kit target's `dependencies:`. */
+  kitDependencies: string;
+  /** Build settings of the kit and the app target: what imports the kit finds the modules the kit imports. */
+  settings: Record<string, string>;
+  /** Entries of the app target's `dependencies:` and `sources:`. */
+  appDependencies: string;
+  appSources: string;
+}
+
+/**
+ * The part of core's native code the kit's files import, in the app's Xcode
+ * project, from core as the app installed it (as Android links core's widgets
+ * AAR), copied to `Core/` in the project:
+ * - a framework is linked by the kit and embedded in the app;
+ * - the Objective-C is compiled into the app target, the kit seeing it through
+ *   its module map: a static library would lose its category-only objects at the link;
+ * - the Swift is a static library target of its module's name, compiled with the project's settings.
+ */
+export function coreNativeProject(core: string, imported: Set<string>, out: string): CoreNativeProject {
+  const dir = join(out, 'Core');
+  rmSync(dir, { recursive: true, force: true });
+  const project: CoreNativeProject = { targets: '', kitDependencies: '', settings: {}, appDependencies: '', appSources: '' };
+  const used = coreNativeModules(core).filter((m) => imported.has(m.module));
+  if (!used.length) return project;
+  mkdirSync(dir, { recursive: true });
+  for (const m of used.filter((m) => m.kind === 'framework')) {
+    const name = basename(m.path);
+    cpSync(m.path, join(dir, name), { recursive: true, verbatimSymlinks: true });
+    project.kitDependencies += `      - framework: Core/${name}\n        embed: false\n`;
+    project.appDependencies += `      - framework: Core/${name}\n        embed: true\n`;
+  }
+  const swift = used.find((m) => m.kind === 'swift');
+  const src = used.find((m) => m.kind !== 'framework')?.path;
+  if (src) {
+    // The Swift module imports the Objective-C ones (`import NativeScriptEmbedder`).
+    for (const f of readdirSync(src)) if (/\.(h|m|modulemap)$/.test(f)) cpSync(join(src, f), join(dir, 'src', f));
+    project.appSources += '      - path: Core/src\n        excludes: [module.modulemap]\n';
+    project.settings.SWIFT_INCLUDE_PATHS = '"$(inherited) $(SRCROOT)/Core/src"';
+  }
+  if (swift) {
+    for (const f of readdirSync(swift.path)) if (f.endsWith('.swift')) cpSync(join(swift.path, f), join(dir, swift.module, f));
+    project.targets += `  ${swift.module}:\n    type: library.static\n    platform: iOS\n    sources: [Core/${swift.module}]\n    settings:\n      base:\n        SWIFT_VERSION: "5"\n        SWIFT_INCLUDE_PATHS: $(SRCROOT)/Core/src\n`;
+    project.kitDependencies += `      - target: ${swift.module}\n`;
+    project.appDependencies += `      - target: ${swift.module}\n`;
+  }
+  return project;
 }
 
 /** The `ios-…-simulator` framework of an xcframework, which the tables are generated from. */
