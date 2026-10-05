@@ -2564,6 +2564,13 @@ export class Translator implements AsyncTranslator {
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
     if (symbolFields.length) conformances.push('JSSymbolKeyed');
+    // Library mode: the static members script can test for by name (`'tapEvent' in view.constructor`).
+    if (this.library && !this.inNativeClass(cls.members[0] ?? cls)) {
+      const statics = cls.members.filter((m) => m.name && isStatic(m) && !ts.isComputedPropertyName(m.name)).map((m) => m.name!.getText().replace(/^['"]|['"]$/g, ''));
+      const own = `[${[...new Set(statics)].map(swiftString).join(', ')}]`;
+      if (!appBase) { conformances.push('JSStaticKeyed'); lines.push(`    open class var jsStaticKeys: [String] { ${own} }`); }
+      else lines.push(`    open override class var jsStaticKeys: [String] { super.jsStaticKeys + ${own} }`);
+    }
     this.indent = '';
     lines.push('}');
     lines[0] = header();
@@ -4287,6 +4294,8 @@ export class Translator implements AsyncTranslator {
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
+    // `value.constructor`: its class, which script tests for static members.
+    if (name === 'constructor' && this.library && !isWriteTarget(e) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e && e.parent.name.text === 'name')) return `jsConstructor(${this.coerce(target, 'Any?')})`;
     // `value.constructor.name`: its class's name.
     if (name === 'name' && ts.isPropertyAccessExpression(target) && target.name.text === 'constructor' && !isWriteTarget(e)) return `jsConstructorName(${this.coerce(target.expression, 'Any?')})`;
     // `Function.prototype`: a function that does nothing.

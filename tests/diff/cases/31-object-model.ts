@@ -246,3 +246,16 @@ for (const p of placers) p.layout(1, 2);
 const framed = new FramedPlacer();
 framed.layout(3, 4, false);
 console.log(placers.map((p) => p.log.join()).join(' | '), framed.log.join());
+
+// Static members tested through an instance's constructor.
+class Pressable {
+  static pressEvent = 'press';
+  isEvent(name: string): boolean {
+    return this.constructor && `${name}Event` in this.constructor;
+  }
+}
+class Clickable extends Pressable {
+  static clickEvent = 'click';
+}
+const clickable = new Clickable();
+console.log(clickable.isEvent('press'), clickable.isEvent('click'), new Pressable().isEvent('click'), clickable.isEvent('tap'));
