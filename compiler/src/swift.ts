@@ -3380,7 +3380,8 @@ export class Translator implements AsyncTranslator {
     const resolvers = ts.isIdentifier(e) ? this.resolvers.get(this.resolve(e)!) : undefined;
     if (resolvers && (target === 'Any?' || functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')))) {
       const own = `(${resolvers.type === 'Void' ? '' : resolvers.type}) throws -> Void`;
-      return target === 'Any?' ? this.boxFunction(this.expr(e), own) : this.convert(this.expr(e), own, target);
+      const fn = resolvers.type === 'Void' ? `{ ${resolvers.name}.resolve() }` : this.expr(e);
+      return target === 'Any?' ? this.boxFunction(fn, own) : this.convert(fn, own, target);
     }
     // An iterable where the type names only its iteration: the kit's iterable of it.
     const iterableSlot = /^JS(Async)?Iterable<.*>\??$/.exec(target);

@@ -97,3 +97,9 @@ function readLength(path: string): Promise<number> {
   });
 }
 readLength('abcd').then((n) => console.log('read', n));
+let finish: any;
+const finished = new Promise<void>((resolve) => {
+  finish = resolve;
+});
+finished.then(() => console.log('finished'));
+finish();
