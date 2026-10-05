@@ -1582,6 +1582,11 @@ export class Translator implements AsyncTranslator {
       const wrap = `{ (__h: @escaping ${f.text}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
       return isOptional(from) ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
     }
+    // One promise where a promise of another type is wanted (`Promise.all(untyped)` returned as `Promise<void[]>`): its value converted.
+    const pf = /^JSPromise<(.*)>[?!]?$/.exec(from)?.[1], pt = /^JSPromise<(.*)>[?!]?$/.exec(to)?.[1];
+    if (pf && pt && pf !== pt) return `${code}.then({ (__v: ${pf}) throws -> ${pt} in ${pt === 'Void' ? '' : `return ${this.convert('__v', pf, pt)}`} })`;
+    // An untyped array where an array of a type is wanted: its elements converted, in a new array.
+    if (from === 'JSArray<Any?>' && /^JSArray<.+>$/.test(to)) return `jsArrayOf(${code}) { ${this.fromAny('$0', to.slice(8, -1))} }`;
     if (to === optionalType(from)) return code;
     if (from === optionalType(to)) return `${code}!`;
     // Lenient code: one class where another is declared (a base class's value where a subclass is wanted): the value as it, undefined where it is not.
@@ -3013,6 +3018,8 @@ export class Translator implements AsyncTranslator {
         const maybe = this.maybeUndefined(s.expression);
         if (maybe) return `${i}return ${this.tryPrefix(s.expression)}${maybe}`;
       }
+      // A value returned where nothing is (a Promise executor's `return promise.then(…)`): evaluated, then nothing returned.
+      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${this.tryPrefix(s.expression)}_ = ${this.expr(s.expression)}\n${i}return`;
       const missing = !s.expression || (this.lenient && isNullish(s.expression) && !this.returnType.endsWith('?') && this.returnType !== 'Any?');
       if (missing && this.lenient && this.returnType !== 'Void' && !this.returnType.endsWith('?') && this.zero(this.returnType) !== null) return `${i}return ${this.zero(this.returnType)}`;
       // A native struct has no undefined: its zero value.
@@ -4656,7 +4663,8 @@ export class Translator implements AsyncTranslator {
     if (type === 'Double') return `(${code} ?? .nan)`;
     if (type === 'String') return `(${code} ?? "undefined")`;
     if (type === 'Bool') return `(${code} ?? false)`;
-    return this.lenient ? `jsImplicit(${code})` : `${code}!`;
+    // Lenient code: undefined read as the object type wanted, which may be a subclass of the value's.
+    return this.lenient ? (/^[A-Z][\w.]*$/.test(type) && !this.native.isStructType(type) ? `jsImplicit(${code} as? ${type})` : `jsImplicit(${code})`) : `${code}!`;
   }
 
   args(e: ts.CallExpression | ts.NewExpression, count?: number): string[] {
@@ -5350,8 +5358,13 @@ export class Translator implements AsyncTranslator {
         if (['all', 'allSettled', 'race', 'any'].includes(method)) {
           const src = arg(0);
           if (ts.isArrayLiteralExpression(src)) return this.promiseCombinator(method, src, t);
-          const inner = this.typeOf(src).replace(/^JSArray<JSPromise<(.*)>>$/, '$1');
-          return `JSPromise<${inner}>.${method}(${this.expr(src)})`;
+          const st = this.typeOf(src);
+          const typed = /^JSArray<JSPromise<(.*)>>$/.exec(st);
+          if (typed) return `JSPromise<${typed[1]}>.${method}(${this.expr(src)})`;
+          // An untyped array of promises and values, its result read as the type the call has.
+          const untyped = `JSPromise<Any?>.${method}(${this.coerce(src, 'JSArray<Any?>')})`;
+          const made = method === 'all' ? 'JSPromise<JSArray<Any?>>' : method === 'allSettled' ? null : 'JSPromise<Any?>';
+          return made && t !== made && t.startsWith('JSPromise<') ? this.convert(untyped, made, t) : untyped;
         }
         break;
       }
