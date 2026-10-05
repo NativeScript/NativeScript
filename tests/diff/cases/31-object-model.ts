@@ -228,3 +228,34 @@ const tinted = new Tinted();
 tinted.text = 'four';
 tinted[textProperty.setNative]('five');
 console.log(tinted.native);
+
+// An override taking a parameter its base does not: calls through either pass it on.
+class Placer {
+  log: string[] = [];
+  layout(l: number, t: number): void {
+    this.log.push(`base ${l},${t}`);
+  }
+}
+class FramedPlacer extends Placer {
+  layout(l: number, t: number, setFrame = true): void {
+    this.log.push(`framed ${l},${t},${setFrame}`);
+  }
+}
+const placers: Placer[] = [new Placer(), new FramedPlacer()];
+for (const p of placers) p.layout(1, 2);
+const framed = new FramedPlacer();
+framed.layout(3, 4, false);
+console.log(placers.map((p) => p.log.join()).join(' | '), framed.log.join());
+
+// Static members tested through an instance's constructor.
+class Pressable {
+  static pressEvent = 'press';
+  isEvent(name: string): boolean {
+    return this.constructor && `${name}Event` in this.constructor;
+  }
+}
+class Clickable extends Pressable {
+  static clickEvent = 'click';
+}
+const clickable = new Clickable();
+console.log(clickable.isEvent('press'), clickable.isEvent('click'), new Pressable().isEvent('click'), clickable.isEvent('tap'));

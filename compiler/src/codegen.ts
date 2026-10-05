@@ -85,7 +85,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
   /** Puts a view into its container or region at the point its framework inserts it. */
   const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
-    const text = parent ? (options.slots ? `${parent}.addTemplateChild(${v})` : `${parent}.addChild(${v})`) : region ? `${region}.attach(${v})` : null;
+    const text = parent ? (options.slots ? `${parent}.kitAddTemplateChild(${v})` : `${parent}.kitAddChild(${v})`) : region ? `${region}.attach(${v})` : null;
     if (!text) return;
     if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
     if ((insertion === 'created') === (at === 'created')) say(depth, text);
@@ -99,14 +99,14 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     }
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${swiftString(a.value)}`);
-      else say(depth, `${v}.set(${swiftString(a.name)}, ${swiftString(a.value)})`);
+      else say(depth, `${v}.kitSet(${swiftString(a.name)}, ${swiftString(a.value)})`);
     } else if (options.zone) {
-      binding(depth, `Check({ ${checked(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = $0` : `${v}.set(${swiftString(a.name)}, $0)`} }`);
+      binding(depth, `Check({ ${checked(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = $0` : `${v}.kitSet(${swiftString(a.name)}, $0)`} }`);
     } else if (a.name === 'class') {
       const value = options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops);
       binding(depth, `Effect { ${reported(a.method, `${v}.className = ${value}`)} }`);
     } else {
-      binding(depth, `Effect { ${reported(a.method, `${v}.set(${swiftString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)})`)} }`);
+      binding(depth, `Effect { ${reported(a.method, `${v}.kitSet(${swiftString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)})`)} }`);
     }
   };
 
@@ -120,13 +120,13 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           say(depth, `let ${v} = Router.shared.outlet(${name && 'value' in name && name.value !== 'true' ? swiftString(name.value) : ''})`);
           attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
-          say(depth, `let ${v} = ${node.tag}()`);
+          say(depth, `let ${v} = try! ${node.tag}()`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
-              const listen = `${v}.on(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
+              const listen = `${v}.kitOn(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if jsTruthy(${throws(e.when) ? `(try? ${call(e.when, loops).replace(/^try /, '')})` : call(e.when, loops)}) { ${listen} }` : listen;
               listener(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
             }
@@ -162,7 +162,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
               say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: nil, value: value)`]))} }`);
             }
-            say(depth, `${c0}.render(into: ${parent}.addRegion())`);
+            say(depth, `${c0}.render(into: ${parent}.kitAddRegion())`);
             continue;
           }
           for (const p of info.props) {
@@ -174,7 +174,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
             if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
-            else say(depth, `${v}.on(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`);
+            else say(depth, `${v}.kitOn(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
         }
@@ -191,11 +191,11 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const live = insertion !== 'built' && !nestedBody ? `r${n++}` : null;
       if (live && insertion === 'mounted' && templates.length) {
         say(depth, `let ${live} = Region(host: nil)`);
-        templates.at(-1)!.inserts.push({ depth, text: `${parent}.addRegion(${live})` });
-      } else if (live) say(depth, `let ${live} = ${parent}.addRegion()`);
+        templates.at(-1)!.inserts.push({ depth, text: `${parent}.kitAddRegion(${live})` });
+      } else if (live) say(depth, `let ${live} = ${parent}.kitAddRegion()`);
       // A branch or row with an if/for of its own (where views attach once built) returns a fragment holding the regions nested in this one.
       const fragmented = !live && nestedBody;
-      let host = live ?? `${parent}.addRegion()`;
+      let host = live ?? `${parent}.kitAddRegion()`;
       if (fragmented) {
         const r = `r${n++}`;
         say(depth, `let ${r} = ${host}`);

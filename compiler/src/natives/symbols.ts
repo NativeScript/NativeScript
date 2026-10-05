@@ -687,6 +687,12 @@ function homeOf(module: string, js: string): string | null {
   return null;
 }
 
+/** Whether a class, or a class it extends, conforms to a protocol (by their JavaScript names). */
+export function conformsTo(module: string, jsClass: string, jsProtocol: string): boolean {
+  for (const [js] of hierarchy(module, jsClass)) if (js === jsProtocol) return true;
+  return false;
+}
+
 /** A class's entries by JavaScript name, breadth first: itself (with its categories from other modules), then its superclasses and protocols. */
 function* hierarchy(module: string, jsClass: string): Generator<[string, NativeClass]> {
   const seen = new Set<string>();
