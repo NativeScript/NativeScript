@@ -30,8 +30,10 @@ function coreBarrels(root: string): Map<string, string> {
   return names;
 }
 
+/** A declaration of core's TypeScript API; the typings of its own native code (`objc!NativeScriptUtils.d.ts`) are native declarations. */
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
-  return !!decl && KIT_PACKAGES.test(decl.getSourceFile().fileName);
+  const file = decl?.getSourceFile().fileName;
+  return !!file && KIT_PACKAGES.test(file) && !/[\\/]objc![^\\/]+\.d\.ts$/.test(file);
 }
 
 /** A member core's declarations mark as a view property (`@nsProperty`). */

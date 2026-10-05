@@ -117,8 +117,17 @@ export function nativeTable(module: string, options: TableOptions = {}): NativeT
     writeFileSync(file, JSON.stringify(table));
   }
   tables.set(module, table);
+  for (const c of Object.values(table.classes)) {
+    if (!c.extension) continue;
+    for (const m of [...Object.values(c.instance), ...Object.values(c.static), ...Object.values(c.inits)]) categoryModules.set(m, module);
+  }
   return table;
 }
+
+const categoryModules = new WeakMap<object, string>();
+
+/** The module adding a member to a class another module declares (`UIView.setPassThroughParent` is TNSWidgets'), which code calling it imports. */
+export const categoryModule = (m: NativeMethod | NativeProperty): string | null => categoryModules.get(m) ?? null;
 
 /** The iOS simulator SDK and target the tables are generated for, for building a module to extract. */
 export const iosTarget = () => ({ target: TARGET, sdk: sdk().path });
@@ -669,7 +678,13 @@ function* hierarchy(module: string, jsClass: string): Generator<[string, NativeC
 /** An initializer found on a superclass creates the receiving class. */
 function rehome<T extends NativeMethod | NativeProperty>(m: T, found: NativeClass, receiver: NativeClass | null): T {
   if (m.kind !== 'init' || !receiver || found.swift === receiver.swift) return m;
-  return { ...m, returns: receiver.swift + (/[?!]$/.exec(m.returns)?.[0] ?? '') };
+  return sameModule({ ...m, returns: receiver.swift + (/[?!]$/.exec(m.returns)?.[0] ?? '') }, m);
+}
+
+function sameModule<T extends object>(copy: T, of: object): T {
+  const module = categoryModules.get(of);
+  if (module) categoryModules.set(copy, module);
+  return copy;
 }
 
 type SwiftInit = NonNullable<NativeClass['swiftInits']>[number];
@@ -720,7 +735,7 @@ export function lookupMember(module: string, jsClass: string, jsMember: string, 
   for (const [js] of hierarchy(module, jsClass)) {
     if (!js.endsWith(upperFirst(factory[1]))) continue;
     const init = lookupInit(module, jsClass, 'init' + (factory[2] ?? ''));
-    return init && { ...init, selector: init.selector || jsMember };
+    return init && sameModule({ ...init, selector: init.selector || jsMember }, init);
   }
   return null;
 }

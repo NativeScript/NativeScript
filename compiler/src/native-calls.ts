@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { CF_CLASSES, optionalType, type Translator } from './swift.ts';
 import {
-  lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
+  categoryModule, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
@@ -54,12 +54,27 @@ export class NativeAPI {
   private symbolModule(sym: ts.Symbol | undefined): { module: string; name: string } | null {
     const decl = sym?.declarations?.[0];
     const module = this.module(decl);
-    if (module) this.modules.add(module);
+    if (module) this.uses(module);
     return module && sym ? { module, name: sym.name } : null;
+  }
+
+  private uses(module: string) {
+    this.modules.add(module);
+    this.used.add(module);
+  }
+
+  /** A member found in a table: the module of a category adding it is used too. */
+  private found<T extends NativeMethod | NativeProperty | null>(m: T): T {
+    const category = m && categoryModule(m);
+    if (category) this.uses(category);
+    return m;
   }
 
   /** Modules the program's native declarations come from: where enum types are looked up by their Swift name. */
   private modules = new Set<string>();
+
+  /** The modules used since this was last cleared: those a file of the translation imports. */
+  readonly used = new Set<string>();
 
   /** The SDK frameworks among them, as Swift imports them. */
   sdkModules(): string[] {
@@ -86,8 +101,11 @@ export class NativeAPI {
 
   /** A native class's Swift name, qualified by its module where the kit declares a type of that name (`Foundation.Progress`). */
   private className(cls: { swift: string; module?: string }): string {
-    return cls.module && this.t.isKitType(cls.swift) ? `${cls.module}.${cls.swift}` : cls.swift;
+    return cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift)) ? `${cls.module}.${cls.swift}` : cls.swift;
   }
+
+  /** The kit's internal types, which shadow native types of their names in code compiled into the kit. */
+  internalTypes = new Set<string>();
 
   /** The kit's types among `names` that a module the app's code imports also declares: the app's module names them as the kit's. */
   kitClashes(names: Iterable<string>): string[] {
@@ -172,7 +190,7 @@ export class NativeAPI {
     }
     const collection = !r.isStatic ? this.collectionMember(e.expression, e.name.text, null) : null;
     if (collection) return collection;
-    const m = lookupMember(r.module, r.name, e.name.text, r.isStatic);
+    const m = this.found(lookupMember(r.module, r.name, e.name.text, r.isStatic));
     if (!m) throw this.t.error(e, `${r.name}.${e.name.text} (no Swift counterpart in ${r.module})`);
     this.checkAvailable(m, e, `${r.name}.${e.name.text}`);
     if ((e.questionDotToken || ts.isOptionalChain(e)) && !r.isStatic && m.kind === 'property') return this.chainEnd(e, isolated(`${this.chainHead(e.expression)}${m.swift}`, m), m.type);
@@ -297,7 +315,7 @@ export class NativeAPI {
       if (!field) throw this.t.error(left, `${r.name}.${left.name.text} (not a field of ${struct.swift})`);
       return `${this.t.expr(left.expression)}.${left.name.text} = ${this.toSwift(value, field)}`;
     }
-    const m = lookupMember(r.module, r.name, left.name.text, r.isStatic);
+    const m = this.found(lookupMember(r.module, r.name, left.name.text, r.isStatic));
     if (!m || m.kind !== 'property') throw this.t.error(left, `${r.name}.${left.name.text} (no settable Swift property)`);
     if (m.readonly) throw this.t.error(left, `${r.name}.${left.name.text} (read-only)`);
     this.checkAvailable(m, left, `${r.name}.${left.name.text}`);
@@ -337,7 +355,7 @@ export class NativeAPI {
       if (!r) return null;
       const cls = lookupClass(r.module, r.name)!;
       if (name === 'init') return `${this.className(cls)}()`;
-      const init = lookupInit(r.module, r.name, name);
+      const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
       return this.fromSwift(`${this.className(cls)}(${this.argList([...e.arguments], init.labels, init.params)})`, init.returns, e);
     }
@@ -357,11 +375,11 @@ export class NativeAPI {
     if (r.isStatic && name === 'alloc') throw this.t.error(e, `${r.name}.alloc() without an init`);
     if (!r.isStatic && name === 'objectForKeyedSubscript') return this.fromSwift(`${this.t.expr(callee.expression)}[${this.t.expr(e.arguments[0])}]`, 'Any?', e);
     if (!r.isStatic && name === 'setObjectForKeyedSubscript') return `${this.t.expr(callee.expression)}[${this.t.expr(e.arguments[1])}] = ${this.t.expr(e.arguments[0])}`;
-    const m = lookupMember(r.module, r.name, name, r.isStatic);
+    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic));
     if (!m) {
       // `o.setX(v)` for a property `x` the d.ts also lists as a method.
       const setter = /^set([A-Z]\w*)$/.exec(name);
-      const prop = setter && e.arguments.length === 1 ? lookupMember(r.module, r.name, setter[1][0].toLowerCase() + setter[1].slice(1), r.isStatic) : null;
+      const prop = setter && e.arguments.length === 1 ? this.found(lookupMember(r.module, r.name, setter[1][0].toLowerCase() + setter[1].slice(1), r.isStatic)) : null;
       if (prop && prop.kind === 'property') return `${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.t.expr(callee.expression)}.${prop.swift} = ${this.toSwift(e.arguments[0], prop.type)}`;
       throw this.t.error(e, `${r.name}.${name}() (no Swift counterpart in ${r.module})`);
     }
@@ -389,7 +407,7 @@ export class NativeAPI {
     const o = args[0];
     if (args.length !== 1 || !ts.isObjectLiteralExpression(o)) throw this.t.error(e, `new ${r.name} with arguments other than one object literal`);
     const keys = o.properties.map((p) => p.name!.getText());
-    const init = lookupConstructor(r.module, r.name, keys);
+    const init = this.found(lookupConstructor(r.module, r.name, keys));
     if (!init) throw this.t.error(e, `new ${r.name}({ ${keys.join(', ')} }) (no Swift initializer)`);
     const values = keys.map((k) => {
       const p = o.properties.find((x) => x.name!.getText() === k)!;
