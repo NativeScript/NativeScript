@@ -55,6 +55,16 @@ func jsHasObjCProperty(_ cls: AnyClass, _ name: String) -> Bool {
     return false
 }
 
+/// A native object read and written by a computed key (`view[property]`), as the runtime marshals its properties.
+public struct JSNativeKeyed {
+    let object: NSObject
+    public init(_ object: NSObject) { self.object = object }
+    public subscript(jsKey key: String) -> Any? {
+        get { jsNativeGet(object, key) }
+        nonmutating set { jsNativeSet(object, key, newValue) }
+    }
+}
+
 /// A native-property decorator's getter: the native object's getter method if it has one, else the fallback.
 public func jsNativePropertyGet(_ native: Any?, _ getter: String, fallback: Any?) -> Any? {
     guard let object = jsFlat(native) as? NSObject, object.responds(to: NSSelectorFromString(getter)) else { return fallback }

@@ -86,6 +86,13 @@ export class NativeAPI {
   }
 
   /** The Swift type for a native TypeScript type (a class, protocol, struct or enum), or null. */
+  /** Whether a type is an Objective-C class (not a protocol, struct or enum) of the native declarations. */
+  isClassType(t: ts.Type): boolean {
+    const native = this.symbolModule(t.getSymbol());
+    const cls = native && lookupClass(native.module, native.name);
+    return !!cls && cls.kind === 'class';
+  }
+
   type(t: ts.Type): string | null {
     const sym = t.aliasSymbol ?? t.getSymbol();
     const native = this.symbolModule(sym);

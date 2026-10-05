@@ -3348,6 +3348,13 @@ export class Translator implements AsyncTranslator {
     // `x[Symbol.toStringTag]` on a class declaring it (a field or a getter).
     const tag = ts.isPropertyAccessExpression(key) && key.name.text === 'toStringTag' && ts.isIdentifier(key.expression) && key.expression.text === 'Symbol' && this.isLibGlobal(key.expression);
     if (tag && !isWriteTarget(e) && this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperties().some((p) => wellKnownMember(p.escapedName.toString()) === 'jsToStringTag')) return `${target}${q}.jsToStringTag`;
+    // A computed key on a native object (`view[property]`): its Objective-C property by name, as the runtime reads and writes it.
+    const receiverType = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
+    if (!ts.isStringLiteral(key) && ['String', 'Any?'].includes(this.typeOf(key)) && this.native.isClassType(receiverType)) {
+      const code = `JSNativeKeyed(${target}${/[?!]$/.test(this.typeOf(e.expression)) ? '!' : ''})[jsKey: ${this.propertyKey(key)}]`;
+      const rt = this.typeOf(e);
+      return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, rt, true);
+    }
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
       const code = `${target}${q}[jsKey: ${this.propertyKey(key)}]`;
