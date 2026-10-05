@@ -4286,6 +4286,18 @@ export class Translator implements AsyncTranslator {
       const key = ts.isPropertyAccessExpression(e) ? swiftString(e.name.text) : this.str(e.argumentExpression);
       return `${this.expr(e.expression)}[${key}]`;
     }
+    // `a || undefined`, `a && null`: the left operand or undefined, which a value type cannot hold.
+    if (ts.isBinaryExpression(e) && [ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(e.operatorToken.kind) && isNullish(e.right)) {
+      const t = this.typeOf(e);
+      const left = this.maybeUndefined(e.left);
+      const lt = left ? optionalType(this.typeOf(e.left)) : this.typeOf(e.left);
+      if (!isOptional(t) && t !== 'Any?' && t !== 'Void' && (lt === t || lt === optionalType(t))) {
+        const v = this.fresh('__v');
+        const tr = this.tryPrefix(e.left);
+        const [truthy, falsy] = e.operatorToken.kind === ts.SyntaxKind.BarBarToken ? [v, 'nil'] : ['nil', v];
+        return `({ () ${tr ? 'throws ' : ''}-> ${optionalType(t)} in let ${v}: ${optionalType(t)} = ${tr}${left ?? this.expr(e.left)}; return jsTruthy(${v} as Any?) ? ${truthy} : ${falsy} }())`;
+      }
+    }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSUint8Array') {
       return `${this.expr(e.expression)}${e.questionDotToken || this.continuesOptional(e.expression) ? '?' : ''}[jsIndex: ${this.toNumber(e.argumentExpression)}]`;
     }
@@ -5583,6 +5595,8 @@ export class Translator implements AsyncTranslator {
       }
       case K.AmpersandAmpersandToken: case K.BarBarToken: {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
+        const orUndefined = isNullish(e.right) ? this.maybeUndefined(e) : null;
+        if (orUndefined) return this.undefinedAs(orUndefined, this.typeOf(e));
         if (this.isBool(e.left) && this.isBool(e.right)) return `${l()} ${sym} ${r()}`;
         // JavaScript returns an operand, not a Bool.
         const t = this.typeOf(e);
@@ -5597,7 +5611,7 @@ export class Translator implements AsyncTranslator {
         const chain = op === K.BarBarToken && ts.isPropertyAccessExpression(inner) && !!inner.questionDotToken;
         if (chain) this.optionalReads.set(inner, false);
         // A call that may give undefined (lenient code): the operand is the optional itself, falsy when missing.
-        const missing = (ts.isCallExpression(inner) || ts.isElementAccessExpression(inner)) && !isOptional(this.typeOf(e.left)) ? this.maybeUndefined(inner) : null;
+        const missing = (ts.isCallExpression(inner) || ts.isElementAccessExpression(inner) || ts.isIdentifier(inner)) && !isOptional(this.typeOf(e.left)) ? this.maybeUndefined(inner) : null;
         const leftCode = missing ?? this.expr(e.left);
         const leftType = missing || this.optionalReads.get(inner) ? optionalType(this.typeOf(e.left)) : this.typeOf(e.left);
         this.optionalReads.delete(inner);

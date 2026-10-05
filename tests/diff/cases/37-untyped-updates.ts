@@ -66,3 +66,10 @@ function twice(text: string) {
   return first + '/' + (m ? m[1] : '');
 }
 console.log(twice('alpha beta'), twice('!'));
+
+function listen(name: string, once?: boolean): string {
+  once = once || undefined;
+  const flag = once && null;
+  return `${name} ${once} ${flag}`;
+}
+console.log(listen('a'), listen('b', false), listen('c', true));
