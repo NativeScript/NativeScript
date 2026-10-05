@@ -2486,7 +2486,7 @@ export class Translator implements AsyncTranslator {
     for (const d of ts.getDecorators(cls) ?? []) {
       if (ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) continue;
       if (this.library && ts.isSourceFile(cls.parent)) continue;
-      if (!/^(CSSType|NativeClass)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
+      if (!/^(CSSType|NativeClass|ObjCClass)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
     }
     const symbolMethods: { key: string; method: string; params: string[]; ret: string; throws: boolean }[] = [];
     // `[fooProperty.setNative](value)`: the class's native setter for that registered property.
@@ -2792,7 +2792,7 @@ export class Translator implements AsyncTranslator {
       });
       lines.push(...entries);
     }
-    const decorators = (ts.getDecorators(cls) ?? []).filter((d) => !(ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) && !/^(CSSType|NativeClass)\b/.test(d.expression.getText()));
+    const decorators = (ts.getDecorators(cls) ?? []).filter((d) => !(ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) && !/^(CSSType|NativeClass|ObjCClass)\b/.test(d.expression.getText()));
     if (decorators.length) lines.push(`${i}try jsDecorate(${name}.self, [${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}])`);
     return lines.join('\n');
   }

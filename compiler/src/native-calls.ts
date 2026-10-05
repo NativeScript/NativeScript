@@ -844,6 +844,8 @@ export class NativeAPI {
     };
     for (const i of cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addProtocol(i.expression);
     const statics = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
+    // `@ObjCClass(UIScrollViewDelegate)`: protocols the class adopts, as ObjCProtocols lists them.
+    for (const d of ts.getDecorators(cls) ?? []) if (ts.isCallExpression(d.expression) && d.expression.expression.getText() === 'ObjCClass') d.expression.arguments.forEach(addProtocol);
     const listed = statics.find((m) => m.name.getText() === 'ObjCProtocols');
     if (listed && ts.isArrayLiteralExpression(listed.initializer!)) for (const e of listed.initializer.elements) addProtocol(e);
     const exposedSpec = statics.find((m) => m.name.getText() === 'ObjCExposedMethods');
