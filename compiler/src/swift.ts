@@ -422,13 +422,14 @@ export class Translator implements AsyncTranslator {
 
   /** Translates a function's body: no async region or loop of the enclosing function reaches into it. */
   private inFunction<T>(returnType: string, body: () => T): T {
-    const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets] as const;
+    const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets, this.pendingReturn] as const;
+    this.pendingReturn = null;
     this.asyncCtx = null;
     this.plainBreak = 0;
     this.plainContinue = 0;
     this.returnType = returnType;
     this.breakTargets = [];
-    try { return body(); } finally { [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets] = saved; }
+    try { return body(); } finally { [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets, this.pendingReturn] = saved; }
   }
 
   // ---- Types -----------------------------------------------------------------------------
@@ -2738,7 +2739,16 @@ export class Translator implements AsyncTranslator {
   }
 
   private stmtChecked(s: ts.Statement): string {
-    const code = this.statementCode(s);
+    let code = this.statementCode(s);
+    // A return inside a try whose finally throws: recorded, and the finally runs before it is made.
+    const pending = this.pendingReturn;
+    if (pending && ts.isReturnStatement(s) && !this.asyncCtx) {
+      const lines = code.split('\n');
+      const m = /^(\s*)return(?: (.*))?$/.exec(lines.at(-1)!);
+      if (!m) throw this.error(s, 'a return in a try whose finally block throws');
+      lines[lines.length - 1] = `${m[1]}${m[2] !== undefined && pending.value ? `${pending.value} = ${m[2]}; ` : ''}${pending.flag} = true; break ${pending.label}`;
+      code = lines.join('\n');
+    }
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
 
@@ -3196,9 +3206,46 @@ export class Translator implements AsyncTranslator {
     if (!s.finallyBlock) return code;
     if (containsJump(s.finallyBlock, ts.SyntaxKind.ReturnStatement) || containsJump(s.finallyBlock, ts.SyntaxKind.ThrowStatement)) throw this.error(s.finallyBlock, 'return or throw in a finally block');
     const fin = this.nested(() => this.block(s.finallyBlock!));
-    const inner = this.nested(() => this.tryStatement(ts.factory.updateTryStatement(s, s.tryBlock, s.catchClause, undefined)));
-    return `${i}do {\n${i}    defer ${fin}\n${inner}\n${i}}`;
+    if (!this.throwsInfo.expr(s.finallyBlock) || this.asyncCtx) {
+      const inner = this.nested(() => this.tryStatement(ts.factory.updateTryStatement(s, s.tryBlock, s.catchClause, undefined)));
+      return `${i}do {\n${i}    defer ${fin}\n${inner}\n${i}}`;
+    }
+    // A finally that throws, which a Swift `defer` cannot: the try's completion (an error, a return) is
+    // recorded, the finally runs, and the completion is resumed after it, unless the finally throws first.
+    const guarded = [s.tryBlock, s.catchClause?.block].filter((b): b is ts.Block => !!b);
+    if (guarded.some((b) => containsJump(b, ts.SyntaxKind.BreakStatement) || containsJump(b, ts.SyntaxKind.ContinueStatement))) throw this.error(s, 'break or continue in a try whose finally block throws');
+    const label = this.fresh('__try'), error = this.fresh('__error'), flag = this.fresh('__returned');
+    const value = this.returnType && this.returnType !== 'Void' ? this.fresh('__value') : null;
+    const saved = this.pendingReturn;
+    this.pendingReturn = { label, flag, value };
+    let inner: string;
+    try { inner = this.nested(() => this.nested(() => this.tryStatement(ts.factory.updateTryStatement(s, s.tryBlock, s.catchClause, undefined)))); } finally { this.pendingReturn = saved; }
+    const returns = guarded.some((b) => containsJump(b, ts.SyntaxKind.ReturnStatement));
+    const made = value ? `${value}${isOptional(this.returnType) ? '' : '!'}` : '';
+    // The function's last statement, whose end the checker finds unreachable: every completion that gets past the finally is a return.
+    const fn = ts.findAncestor(s.parent, ts.isFunctionLike);
+    const body = fn && 'body' in fn && fn.body && ts.isBlock(fn.body) ? fn.body : undefined;
+    const ends = !!body && body.statements.at(-1) === s && !(fn!.flags & ts.NodeFlags.HasImplicitReturn);
+    // Inside another such try, the return goes on to that one's finally.
+    const resume = saved ? `${saved.value && value ? `${saved.value} = ${made}; ` : ''}${saved.flag} = true; break ${saved.label}` : `return${made ? ` ${made}` : ''}`;
+    return [
+      `${i}do {`,
+      `${i}    var ${error}: Error? = nil`,
+      ...(returns ? [`${i}    var ${flag} = false`, ...(value ? [`${i}    var ${value}: ${optionalType(this.returnType)} = nil`] : [])] : []),
+      `${i}    ${label}: do {`,
+      inner,
+      `${i}    } catch {`,
+      `${i}        ${error} = error`,
+      `${i}    }`,
+      `${i}    do ${fin.trimStart()}`,
+      `${i}    if let ${error} { throw ${error} }`,
+      ...(returns ? [ends && !saved ? `${i}    ${resume}` : `${i}    if ${flag} { ${resume} }`] : []),
+      `${i}}`,
+    ].join('\n');
   }
+
+  /** The return a `try` whose finally throws turns into: the flag and value it records, the block it leaves. */
+  private pendingReturn: { label: string; flag: string; value: string | null } | null = null;
 
   exprStatement(e: ts.Expression): string {
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isArrayLiteralExpression(e.left)) {
