@@ -22,14 +22,10 @@ export class Throws {
   /** Whether a value is untyped in Swift (`Any?`): reading its members goes through `jsGet`, which throws. */
   private untyped: (n: ts.Node) => boolean;
 
-  /** A member the translation reaches by name (`jsGet`), which throws as an untyped read does. */
-  private byName: (n: ts.PropertyAccessExpression) => boolean;
-
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, byName: (n: ts.PropertyAccessExpression) => boolean = () => false) {
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean) {
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
-    this.byName = byName;
     const fns: Fn[] = [];
     const collect = (n: ts.Node) => {
       if (ts.isFunctionLike(n) && (n as Fn).body) fns.push(n as Fn);
@@ -111,7 +107,7 @@ export class Throws {
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.
-      if (this.untyped(n.expression) || (ts.isPropertyAccessExpression(n) && this.byName(n))) return true;
+      if (this.untyped(n.expression)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];

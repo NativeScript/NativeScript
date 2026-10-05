@@ -220,13 +220,6 @@ export class Translator implements AsyncTranslator {
   }
 
   private compiledSymbols = new Map<ts.Symbol, ts.Symbol | null>();
-  /** Library mode: a member a compiled class's published declaration gives it that the class does not declare (an optional method its subclasses implement): reached by name. */
-  private undeclaredMember(e: ts.PropertyAccessExpression): boolean {
-    const decl = this.library?.sourceOf ? this.checker.getSymbolAtLocation(e.name)?.declarations?.[0] : undefined;
-    if (!decl?.getSourceFile().isDeclarationFile || !(ts.isClassLike(decl.parent) || ts.isInterfaceDeclaration(decl.parent)) || !decl.parent.name) return false;
-    const compiled = this.compiledCounterpart(this.checker.getSymbolAtLocation(decl.parent.name));
-    return !!compiled && !!(compiled.flags & ts.SymbolFlags.Class) && !this.checker.getDeclaredTypeOfSymbol(compiled).getProperty(e.name.text);
-  }
   /**
    * Library mode: what a name core's published declarations give (`import { ActionItem } from '.'`) is
    * in the program, when the module those declarations describe is compiled with it: its export of that name.
@@ -262,7 +255,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (n) => this.undeclaredMember(n));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } });
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -1677,8 +1670,6 @@ export class Translator implements AsyncTranslator {
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
     const witnesses: string[] = [];
     const implemented = (cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
-      // A class's published declaration (`implements ActionBarDefinition`) only checks its shape.
-      .filter((i) => !(this.library && (this.checker.getTypeAtLocation(i).getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class))
       // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
       .filter((i) => !this.baseImplements(cls, i.expression.getText()) && this.protocolWitnesses(cls, i, witnesses))
       .map((i) => i.expression.getText());
@@ -3282,11 +3273,6 @@ export class Translator implements AsyncTranslator {
     }
     const maybeChain = e.questionDotToken ? this.maybeUndefined(e) : null;
     if (maybeChain) return this.undefinedAs(maybeChain, this.typeOf(e));
-    if (this.undeclaredMember(e)) {
-      const t = this.typeOf(e);
-      const code = `jsGet(${this.expr(target)}, ${swiftString(name)})`;
-      return t === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, t, true);
-    }
     const core = this.core.property(e);
     if (core) return core;
     if (this.isExpando(e)) {
@@ -3649,11 +3635,6 @@ export class Translator implements AsyncTranslator {
       }
       if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
-      if (this.undeclaredMember(callee)) {
-        const t = this.typeOf(e);
-        const code = `jsCallMethod(${this.expr(target)}, ${swiftString(method)}${this.untypedArgs(e.arguments)})`;
-        return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
-      }
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
       if (this.isAny(target)) {
