@@ -117,6 +117,8 @@ export function nativeTable(module: string, options: TableOptions = {}): NativeT
     writeFileSync(file, JSON.stringify(table));
   }
   tables.set(module, table);
+  // Memberwise idioms need only the table's structs: a table cached before one was added gets it here.
+  for (const [js, spec] of Object.entries(IDIOMS[module] ?? {})) if (spec && !table.functions[js] && MEMBERWISE.test(spec)) memberwiseIdiom(table, js, spec);
   for (const c of Object.values(table.classes)) {
     if (!c.extension) continue;
     for (const m of [...Object.values(c.instance), ...Object.values(c.static), ...Object.values(c.inits)]) categoryModules.set(m, module);
@@ -592,7 +594,20 @@ const IDIOMS: Record<string, Record<string, string | null>> = {
   Foundation: {
     NSMakeRange: 'NSRange(location:length:)',
   },
+  QuartzCore: {
+    CAFrameRateRangeMake: 'CAFrameRateRange(minimum:maximum:preferred:)',
+  },
 };
+
+const MEMBERWISE = /^(?:(\w+):)?(\w+)\((.*)\)$/;
+
+function memberwiseIdiom(table: NativeTable, js: string, spec: string, introduced?: string) {
+  const [, home, struct, labelList] = MEMBERWISE.exec(spec)!;
+  const fields = (home ? nativeTable(home) : table).structs[struct]?.fields;
+  const labels = labelList.split(':').slice(0, -1);
+  if (!fields || labels.some((l) => !fields[l])) return;
+  table.functions[js] = { kind: 'init', owner: struct, swift: 'init', labels, params: labels.map((l) => fields[l]), returns: struct, introduced };
+}
 
 function addIdioms(table: NativeTable, symbols: Map<string, Sym>, idioms: Record<string, string | null>) {
   const byPath = new Map<string, Sym[]>();
@@ -609,13 +624,8 @@ function addIdioms(table: NativeTable, symbols: Map<string, Sym>, idioms: Record
       delete table.functions[js];
       continue;
     }
-    const memberwise = /^(?:(\w+):)?(\w+)\((.*)\)$/.exec(spec);
-    if (memberwise) {
-      const [, home, struct, labelList] = memberwise;
-      const fields = (home ? nativeTable(home) : table).structs[struct]?.fields;
-      const labels = labelList.split(':').slice(0, -1);
-      if (!fields || labels.some((l) => !fields[l])) continue;
-      table.functions[js] = { kind: 'init', owner: struct, swift: 'init', labels, params: labels.map((l) => fields[l]), returns: struct, introduced };
+    if (MEMBERWISE.test(spec)) {
+      memberwiseIdiom(table, js, spec, introduced);
       continue;
     }
     const [path, firstType] = spec.split('#');

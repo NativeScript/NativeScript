@@ -17,10 +17,12 @@ const BRIDGED: Record<string, string> = {
 /** `code` of Objective-C class or Swift value type `from` as `to`, the other one of a bridged pair; null when they are not one. */
 function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   const f = base(from), b = base(to);
-  if (BRIDGED[f] !== b && BRIDGED[b] !== f) return null;
+  // `NSSet` and Swift's `Set<T>`: toward the typed set the cast checks the elements.
+  const typedSet = /^NS(Mutable)?Set$/.test(f) && /^Set<.+>$/.test(b);
+  if (BRIDGED[f] !== b && BRIDGED[b] !== f && !typedSet && !(/^Set<.+>$/.test(f) && b === 'NSSet')) return null;
   const want = b === 'any Error' ? '(any Error)' : b;
-  if (optional(to)) return `(${code} as ${want}?)`;
-  return `(${code}${optional(from) ? '!' : ''} as ${want})`;
+  if (optional(to)) return `(${code} as${typedSet ? '?' : ''} ${want}${typedSet ? '' : '?'})`;
+  return `(${code}${optional(from) ? '!' : ''} as${typedSet ? '!' : ''} ${want})`;
 }
 /**
  * A member a Swift module isolates to the main actor, reached from the
@@ -28,6 +30,8 @@ function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
  * thread, as NativeScript's does.
  */
 const isolated = (code: string, m: { mainActor?: boolean }) => (m.mainActor ? `${/\btry\b/.test(code) ? 'try ' : ''}MainActor.assumeIsolated { ${code} }` : code);
+/** Classes NativeScript's typings rename where TypeScript's DOM library declares the name. */
+const RENAMED: Record<string, string> = { _UIEvent: 'UIEvent' };
 /** The iOS version the app targets: newer APIs need `if #available` the translation cannot add. */
 const DEPLOYMENT = 17;
 
@@ -55,7 +59,7 @@ export class NativeAPI {
     const decl = sym?.declarations?.[0];
     const module = this.module(decl);
     if (module) this.uses(module);
-    return module && sym ? { module, name: sym.name } : null;
+    return module && sym ? { module, name: RENAMED[sym.name] ?? sym.name } : null;
   }
 
   private uses(module: string) {
@@ -375,6 +379,9 @@ export class NativeAPI {
     if (r.isStatic && name === 'alloc') throw this.t.error(e, `${r.name}.alloc() without an init`);
     if (!r.isStatic && name === 'objectForKeyedSubscript') return this.fromSwift(`${this.t.expr(callee.expression)}[${this.t.expr(e.arguments[0])}]`, 'Any?', e);
     if (!r.isStatic && name === 'setObjectForKeyedSubscript') return `${this.t.expr(callee.expression)}[${this.t.expr(e.arguments[1])}] = ${this.t.expr(e.arguments[0])}`;
+    // A native enum's value is a number in JavaScript.
+    const en = !r.isStatic && name === 'toString' && !e.arguments.length ? lookupEnum(r.module, r.name) : null;
+    if (en) return `String(${this.unwrapped(callee.expression)}${en.swift ? '.rawValue' : ''})`;
     const m = this.found(lookupMember(r.module, r.name, name, r.isStatic));
     if (!m) {
       // `o.setX(v)` for a property `x` the d.ts also lists as a method.
@@ -386,7 +393,8 @@ export class NativeAPI {
     this.checkAvailable(m, e, `${r.name}.${name}()`);
     // An Objective-C method Swift imports as a property.
     const chained = ts.isPropertyAccessExpression(callee) && !!callee.questionDotToken;
-    const recv = r.isStatic ? '' : chained ? `${this.t.expr(callee.expression)}${this.t.typeOf(callee.expression).endsWith('?') ? '?' : ''}` : this.unwrapped(callee.expression);
+    const recv = r.isStatic ? '' : !chained ? this.unwrapped(callee.expression)
+      : this.t.typeOf(callee.expression).endsWith('?') ? `${this.t.expr(callee.expression)}?` : this.chainHead(callee.expression).slice(0, -1);
     if (m.kind === 'property') return this.fromSwift(isolated(`${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : recv}.${m.swift}`, m), m.type, e);
     const args = [...e.arguments];
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
@@ -464,6 +472,9 @@ export class NativeAPI {
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return optional(target) || !b.startsWith('[') ? 'nil' : b.includes(':') ? '[:]' : '[]';
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.block(e, target);
     const source = t.typeOf(e);
+    // A value Swift holds as optional though TypeScript types it present (a nullable parameter passed on): nil stays nil.
+    const maybe = optional(target) && base(source) === b ? t.maybeUndefined(e) : null;
+    if (maybe) return maybe;
     const bridged = bridge(t.expr(e), source, target);
     if (bridged) return bridged;
     // A script Date where Swift takes a Foundation Date: the same instant.
@@ -521,7 +532,8 @@ export class NativeAPI {
 
   /** A Swift API's value as TypeScript reads it: numbers are Double, an implicitly unwrapped or optional object is the object. */
   fromSwift(code: string, swiftType: SwiftType, e: ts.Expression): string {
-    if (this.keepOptional.has(e)) return code;
+    // A result nothing reads: a nil one is no error.
+    if (this.keepOptional.has(e) || ts.isExpressionStatement(e.parent)) return code;
     const tsType = this.t.typeOf(e);
     const b = base(swiftType);
     const bridged = bridge(code, swiftType, tsType);
@@ -548,7 +560,13 @@ export class NativeAPI {
     const params = fnType.params;
     const names = fn.parameters.map((p, k) => (ts.isIdentifier(p.name) ? p.name.text : `__p${k}`));
     const swiftParams = params.map((p, k) => `__b${k}: ${p}`);
-    const binds = params.map((p, k) => (names[k] ? `let ${names[k]}: ${t.typeOf(fn.parameters[k].name)} = ${this.blockParam(`__b${k}`, p, t.typeOf(fn.parameters[k].name))}` : '')).filter(Boolean);
+    const binds = params.map((p, k) => {
+      if (!names[k]) return '';
+      const param = fn.parameters[k], type = t.typeOf(param.name);
+      // A nil object argument reaches a closure that takes it implicitly unwrapped (core's `(image) => { if (image) … }`).
+      if (optional(p) && base(p) === type && t.mayBeNull(param)) return `let ${names[k]}: ${type}? = __b${k}`;
+      return `let ${names[k]}: ${type} = ${this.blockParam(`__b${k}`, p, type)}`;
+    }).filter(Boolean);
     const body = t.closure(fn);
     const throws = t.throwsInfo.fn(fn);
     const call = `(${body})(${names.map((n) => n).join(', ')})`;
