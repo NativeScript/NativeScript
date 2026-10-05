@@ -2477,7 +2477,14 @@ export class Translator implements AsyncTranslator {
       // A function value taking fewer parameters than the slot passes (JavaScript ignores the rest).
       const f = functionTypeParts(source.replace(/^\((.*)\)\?$/, '$1'));
       const g = functionTypeParts(target.replace(/^\((.*)\)\?$/, '$1'));
-      if (f && g && (f.params.length < g.params.length || f.params.some((p, k) => p !== g.params[k] && this.convert('x', g.params[k], p) !== 'x')) && f.params.length <= g.params.length && (g.ret === 'Unit' || g.ret === f.ret)) {
+      // A declared function where one of fewer parameters is wanted: called by name, so the rest take their defaults.
+      const decl = f && g && f.params.length > g.params.length && ts.isIdentifier(e) ? this.resolve(e)?.valueDeclaration : undefined;
+      if (decl && ts.isFunctionDeclaration(decl) && decl.body && !decl.getSourceFile().isDeclarationFile && decl.parameters.slice(g!.params.length).every((p) => (p.questionToken || p.initializer) && !p.dotDotDotToken)) {
+        const names = g!.params.map((_, k) => `__a${k}`);
+        const call = `${ident((e as ts.Identifier).text)}(${names.map((n, k) => this.convert(n, g!.params[k], f!.params[k])).join(', ')})`;
+        return `{ ${g!.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${g!.ret === 'Unit' ? `${call}; Unit` : call} }`;
+      }
+      if (f && g && f.params.length <= g.params.length && (f.params.length < g.params.length || f.params.some((p, k) => p !== g.params[k] && this.convert('x', g.params[k], p) !== 'x')) && f.params.length <= g.params.length && (g.ret === 'Unit' || g.ret === f.ret)) {
         const names = g.params.map((_, k) => `__a${k}`);
         const fn = this.functionValue(e);
         const call = `${fn.includes('::') ? `(${fn})` : fn}(${names.slice(0, f.params.length).map((n, k) => this.convert(n, g.params[k], f.params[k])).join(', ')})`;

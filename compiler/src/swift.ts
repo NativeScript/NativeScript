@@ -3084,7 +3084,7 @@ export class Translator implements AsyncTranslator {
     }
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (`map.get(k)` after `has(k)`).
     if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target);
-    const spread = source !== target ? this.restFunction(e, source, target) : null;
+    const spread = source !== target ? this.restFunction(e, source, target) ?? this.defaultedFunction(e, source, target) : null;
     if (spread) return spread;
     if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(source.replace(/^\((.*)\)\?$/, '$1')) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) return this.convert(this.expr(e), source, target);
     if (source === 'Any?' && target !== 'Void') {
@@ -3112,6 +3112,21 @@ export class Translator implements AsyncTranslator {
     const call = `try __h(${args.join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
     return `{ (__h: @escaping ${have.text}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
+  }
+
+  /** A declared function where a function of fewer parameters is wanted: called by name, so the rest take their defaults. */
+  private defaultedFunction(e: ts.Expression, source: string, target: string): string | null {
+    if (!ts.isIdentifier(e) && !ts.isPropertyAccessExpression(e)) return null;
+    const decl = this.resolve(ts.isPropertyAccessExpression(e) ? e.name : e)?.valueDeclaration;
+    if (!decl || !(ts.isFunctionDeclaration(decl) || ts.isMethodDeclaration(decl)) || !decl.body || decl.getSourceFile().isDeclarationFile) return null;
+    const have = functionParts(source), want = functionParts(target);
+    if (!have || !want || want.params.length >= have.params.length || want.params.length >= decl.parameters.length) return null;
+    if (!decl.parameters.slice(want.params.length).every((p) => (p.questionToken || p.initializer) && !p.dotDotDotToken)) return null;
+    const p = (t: string) => t.replace(/^@escaping /, '');
+    const params = want.params.map((t, k) => `__q${k}: ${p(t)}`);
+    const call = `try ${this.expr(e)}(${want.params.map((t, k) => this.convert(`__q${k}`, p(t), p(have.params[k]))).join(', ')})`;
+    const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
+    return `{ (${params.join(', ')}) throws -> ${want.result} in ${body} }`;
   }
 
   private classesByName: Map<string, ts.ClassLikeDeclaration> | null = null;

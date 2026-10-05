@@ -30,3 +30,10 @@ function noted(s: string): any {
   return note(s);
 }
 console.log(untypedNote('a'), noted('b'), logged.join(''));
+function retried(attempt = 0, label?: string): void {
+  console.log('retried', attempt, label === undefined);
+}
+function runLater(callback: () => void) {
+  callback();
+}
+runLater(retried);

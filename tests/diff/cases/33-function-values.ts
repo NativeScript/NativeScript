@@ -121,3 +121,11 @@ try {
 } catch (e) {
   console.log(e instanceof TypeError);
 }
+
+function retry(attempt = 0, label?: string): void {
+  console.log('retry', attempt, label === undefined);
+}
+function later(callback: () => void) {
+  callback();
+}
+later(retry);
