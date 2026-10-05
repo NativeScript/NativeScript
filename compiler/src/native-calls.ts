@@ -104,7 +104,8 @@ export class NativeAPI {
   private receiver(e: ts.Expression): { module: string; name: string; isStatic: boolean } | null {
     const c = this.t.checker;
     const sym = this.t.resolve(e);
-    if (sym && sym.flags & ts.SymbolFlags.Class) {
+    // `super` resolves to the base class, and is it only in a static member.
+    if (sym && sym.flags & ts.SymbolFlags.Class && (e.kind !== ts.SyntaxKind.SuperKeyword || inStaticMember(e))) {
       const native = this.symbolModule(sym);
       if (native) return { ...native, isStatic: true };
     }
@@ -759,6 +760,13 @@ export class NativeAPI {
     }
     return this.enumTypes.get(swift) ?? null;
   }
+}
+
+function inStaticMember(n: ts.Node): boolean {
+  for (let p = n.parent; p?.parent; p = p.parent) {
+    if (ts.isClassLike(p.parent) && ts.isClassElement(p)) return ts.getModifiers(p as ts.ClassElement & ts.HasModifiers)?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword) ?? false;
+  }
+  return false;
 }
 
 function splitTypes(text: string): string[] {
