@@ -100,8 +100,11 @@ export class NativeAPI {
     const native = this.symbolModule(sym);
     if (!native) return null;
     const enumOfLiteral = sym!.flags & ts.SymbolFlags.EnumMember ? this.symbolModule((sym as any).parent) : null;
-    if (enumOfLiteral) return lookupEnum(enumOfLiteral.module, enumOfLiteral.name)?.swift ?? null;
-    if (t.flags & ts.TypeFlags.EnumLike || sym!.flags & ts.SymbolFlags.Enum) return lookupEnum(native.module, native.name)?.swift ?? null;
+    const en = enumOfLiteral ? lookupEnum(enumOfLiteral.module, enumOfLiteral.name) : t.flags & ts.TypeFlags.EnumLike || sym!.flags & ts.SymbolFlags.Enum ? lookupEnum(native.module, native.name) : undefined;
+    if (en !== undefined) {
+      this.typeAvailable(en);
+      return en?.swift ?? null;
+    }
     // Mutable ones stay classes: script mutates them in place.
     if (native.name === 'NSArray') return '[Any]';
     if (native.name === 'NSDictionary') return '[AnyHashable: Any]';
@@ -112,8 +115,14 @@ export class NativeAPI {
     return null;
   }
 
+  /** A native type newer than the deployment target, named in a function: the function's body runs only where the OS has it. */
+  private typeAvailable(t: { introduced?: string } | null | undefined) {
+    if (t?.introduced && parseFloat(t.introduced) > DEPLOYMENT) this.t.requireTypeAvailability(parseFloat(t.introduced));
+  }
+
   /** A native class's Swift name, qualified by its module where the kit declares a type of that name (`Foundation.Progress`). */
-  private className(cls: { swift: string; module?: string }): string {
+  private className(cls: { swift: string; module?: string; introduced?: string }): string {
+    this.typeAvailable(cls);
     return cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift)) ? `${cls.module}.${cls.swift}` : cls.swift;
   }
 
@@ -354,6 +363,7 @@ export class NativeAPI {
     // An option set's zero member has no Swift case: it is the empty set.
     if (en && !c && en.kind === 'options' && this.t.checker.getConstantValue(e) === 0) return `${en.swift}([])`;
     if (!en || !c) throw this.t.error(e, `${native.name}.${e.name.text} (no Swift counterpart)`);
+    this.typeAvailable(en);
     if (!en.swift) return c.swift;
     return `${en.swift}.${c.swift}`;
   }
@@ -582,6 +592,18 @@ export class NativeAPI {
     if (held) return held;
     // An object where a protocol is taken (`recognizer.delegate = navigationController`): Objective-C asks the object whether it conforms.
     if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`;
+    // An untyped value where Swift takes a BOOL: its truthiness, as the runtime marshals it.
+    if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
+    // A dispatch queue, which TypeScript types as NSObject: the queue, cast.
+    if (base(source) === 'NSObject' && (b === 'DispatchQueue' || base(this.unalias(b)) === 'DispatchQueue')) {
+      return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
+    }
+    // An ArrayBuffer or a typed array where Swift takes bytes: a copy of them, or their address, as the iOS runtime passes them.
+    if (b === 'Data' && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) return `jsNativeData(${t.expr(e)})`;
+    if (/^Unsafe(Mutable)?RawPointer$/.test(b) && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) {
+      const bytes = b === 'UnsafeRawPointer' ? `jsNativeBytes(${t.expr(e)})` : `jsNativeBytes(${t.expr(e)}).map { UnsafeMutableRawPointer(mutating: $0) }`;
+      return `${bytes}${optional(target) ? '' : '!'}`;
+    }
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
     // An out-parameter: the cell's storage of the pointee's type, written back.
@@ -879,7 +901,7 @@ export class NativeAPI {
     const swiftParams = target.params.map((type, k) => {
       const label = target.labels[k];
       const inner = `__a${k}`;
-      return `${label ?? '_'} ${inner}: ${type}`;
+      return `${label ?? '_'} ${inner}: ${target.escaping?.includes(k) ? '@escaping ' : ''}${type}`;
     });
     const ownRet = t.returnTypeOf(m);
     // A parameter the body never reads is not bound: a non-escaping block could not be.

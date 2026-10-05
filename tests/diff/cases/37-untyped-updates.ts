@@ -66,3 +66,54 @@ function twice(text: string) {
   return first + '/' + (m ? m[1] : '');
 }
 console.log(twice('alpha beta'), twice('!'));
+
+function listen(name: string, once?: boolean): string {
+  once = once || undefined;
+  const flag = once && null;
+  return `${name} ${once} ${flag}`;
+}
+console.log(listen('a'), listen('b', false), listen('c', true));
+
+const sizes = new Map<string, number>([['small', 0.85]]);
+function scaled(size: number): number {
+  return size * 2;
+}
+console.log(scaled(sizes.get('small')), scaled(sizes.get('huge')), sizes.get('huge') === undefined, sizes.get('small') || 1);
+
+function memberName(key: any, prefix: string): string {
+  const name: string = prefix + key?.toString();
+  return `${name} ${key?.toString() === undefined}`;
+}
+console.log(memberName('size', 'View.'), memberName(undefined, 'View.'));
+
+const loader: any = {
+  load(path: string, done: any) {
+    done(path.length);
+  },
+};
+function readLength(path: string): Promise<number> {
+  return new Promise<number>((resolve) => {
+    loader.load(path, resolve);
+  });
+}
+readLength('abcd').then((n) => console.log('read', n));
+let finish: any;
+const finished = new Promise<void>((resolve) => {
+  finish = resolve;
+});
+finished.then(() => console.log('finished'));
+finish();
+
+function serialize(data: any): any {
+  return Object.fromEntries(
+    Object.entries(data)
+      .map(([key, value]) => [key, typeof value === 'number' ? value * 10 : null])
+      .filter(([, value]) => value !== null),
+  );
+}
+console.log(JSON.stringify(serialize({ a: 1, b: 'x', c: 2 })));
+function firstPair(pairs: any): string {
+  const [[firstKey, firstValue]] = pairs;
+  return `${firstKey} ${firstValue}`;
+}
+console.log(firstPair([['k', 1]]));
