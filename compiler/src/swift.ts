@@ -1592,11 +1592,11 @@ export class Translator implements AsyncTranslator {
     const f = functionParts(from.replace(/^\((.*)\)\?$/, '$1'));
     const g = functionParts(to.replace(/^\((.*)\)\?$/, '$1'));
     if (f && g && f.params.length <= g.params.length) {
-      const params = g.params.map((p, k) => { const q = p.replace(/^@escaping /, ''); return `__q${k}: ${isFunctionType(q) ? `@escaping ${q}` : q}`; });
+      const params = g.params.map((p, k) => `__q${k}: ${escapingParam(p)}`);
       const args = f.params.map((p, k) => this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, '')));
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, f.result, g.result)}`;
-      const wrap = `{ (__h: @escaping ${f.text}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
+      const wrap = `{ (__h: @escaping ${escapingFunction(f)}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
       return isOptional(from) ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
     }
     // One promise where a promise of another type is wanted (`Promise.all(untyped)` returned as `Promise<void[]>`): its value converted.
@@ -3799,7 +3799,7 @@ export class Translator implements AsyncTranslator {
       `JSArray<${element}>([${want.params.slice(fixed).map((t, k) => this.convert(`__q${fixed + k}`, p(t), element)).join(', ')}])`];
     const call = `try __h(${args.join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
-    return `{ (__h: @escaping ${have.text}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
+    return `{ (__h: @escaping ${escapingFunction(have)}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
   }
 
   /** A declared function where a function of fewer parameters is wanted: called by name, so the rest take their defaults. */
@@ -6785,6 +6785,17 @@ function functionParts(type: string): FunctionParts | null {
   const inner = t.slice(1, close).trim();
   const params = inner ? splitTopLevel(inner) : [];
   return { text: `(${params.join(', ')}) throws -> ${rest[1]}`, params, result: rest[1] };
+}
+
+/** A parameter's type, escaping if it is a function: the closure may keep it. */
+function escapingParam(type: string): string {
+  const t = type.replace(/^@escaping /, '');
+  return isFunctionType(t) ? `@escaping ${t}` : t;
+}
+
+/** A function type whose function parameters are escaping, which a function of the same type with non-escaping ones converts to. */
+function escapingFunction(fn: FunctionParts): string {
+  return `(${fn.params.map(escapingParam).join(', ')}) throws -> ${fn.result}`;
 }
 
 /** Whether `node` names `sym`. */
