@@ -594,6 +594,8 @@ export class NativeAPI {
     if (bridged) return bridged;
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
+    // An untyped value where Swift takes a string: a missing one reads as empty, as Objective-C reads nil; anything else as its string.
+    if (source === 'Any?' && b === 'String') return optional(target) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${t.expr(e)})` : `{ (__s: Any?) -> String in jsIsNullish(__s) ? "" : jsToString(__s) }(${t.expr(e)})`;
     // An untyped value where Swift takes a BOOL: its truthiness, as the runtime marshals it.
     if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
     // A dispatch queue, which TypeScript types as NSObject: the queue, cast.
