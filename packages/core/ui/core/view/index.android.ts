@@ -2,6 +2,7 @@ import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
+import { OverflowEdgeIgnore, OverflowEdgeNone, parseEdges } from './overflow-edges.android';
 import { directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -225,6 +226,7 @@ function initializeDialogFragment() {
 		private _animated: boolean;
 		private _stretched: boolean;
 		private _cancelable: boolean;
+		private _nightMode: number;
 		private _shownCallback: () => void;
 		private _dismissCallback: () => void;
 		private activity: WeakRef<android.app.Activity>;
@@ -263,6 +265,7 @@ function initializeDialogFragment() {
 			const dialog = new DialogImpl(this, this.getActivity(), theme);
 
 			if (this._fullscreen) {
+				this._nightMode = this.getNightMode();
 				Utils.android.enableEdgeToEdge(this.getActivity(), dialog.getWindow());
 			}
 
@@ -323,6 +326,33 @@ function initializeDialogFragment() {
 			}
 
 			this._shownCallback();
+		}
+
+		private getNightMode(): number {
+			return this.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+		}
+
+		public onConfigurationChanged(newConfig: android.content.res.Configuration): void {
+			super.onConfigurationChanged(newConfig);
+
+			if (!this._fullscreen) {
+				return;
+			}
+
+			// A fullscreen modal styles its own window, which the activity-level refresh
+			// never reaches, so without this the bar icons stay on whichever theme was
+			// active when the modal opened.
+			const nightMode = newConfig.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+			if (this._nightMode === nightMode) {
+				return;
+			}
+			this._nightMode = nightMode;
+
+			const activity = this.getActivity();
+			const window = this.getDialog()?.getWindow();
+			if (activity && window) {
+				Utils.android.enableEdgeToEdge(activity, window);
+			}
 		}
 
 		public onDismiss(dialog: android.content.DialogInterface): void {
@@ -395,22 +425,6 @@ const INSET_CUTOUT_LEFT_CONSUMED = 56;
 const INSET_CUTOUT_TOP_CONSUMED = 60;
 const INSET_CUTOUT_RIGHT_CONSUMED = 64;
 const INSET_CUTOUT_BOTTOM_CONSUMED = 68;
-
-const OverflowEdgeIgnore = -1;
-const OverflowEdgeNone: number = 0;
-const OverflowEdgeLeft: number = 1 << 1;
-const OverflowEdgeTop: number = 1 << 2;
-const OverflowEdgeRight: number = 1 << 3;
-const OverflowEdgeBottom: number = 1 << 4;
-const OverflowEdgeDontApply: number = 1 << 5;
-const OverflowEdgeLeftDontConsume: number = 1 << 6;
-const OverflowEdgeTopDontConsume: number = 1 << 7;
-const OverflowEdgeRightDontConsume: number = 1 << 8;
-const OverflowEdgeBottomDontConsume: number = 1 << 9;
-const OverflowEdgeAllButLeft: number = 1 << 10;
-const OverflowEdgeAllButTop: number = 1 << 11;
-const OverflowEdgeAllButRight: number = 1 << 12;
-const OverflowEdgeAllButBottom: number = 1 << 13;
 
 class Inset {
 	private view: DataView;
@@ -565,7 +579,14 @@ class Inset {
 	}
 
 	toString() {
-		return `Inset: left=${this.left}, top=${this.top}, right=${this.right}, bottom=${this.bottom}, ` + `leftConsumed=${this.leftConsumed}, topConsumed=${this.topConsumed}, ` + `rightConsumed=${this.rightConsumed}, bottomConsumed=${this.bottomConsumed}, ` + `cutoutLeft=${this.cutoutLeft}, cutoutTop=${this.cutoutTop}, cutoutRight=${this.cutoutRight}, cutoutBottom=${this.cutoutBottom}, ` + `cutoutLeftConsumed=${this.cutoutLeftConsumed}, cutoutTopConsumed=${this.cutoutTopConsumed}, ` + `cutoutRightConsumed=${this.cutoutRightConsumed}, cutoutBottomConsumed=${this.cutoutBottomConsumed}`;
+		return (
+			`Inset: left=${this.left}, top=${this.top}, right=${this.right}, bottom=${this.bottom}, imeBottom=${this.imeBottom}, ` +
+			`leftConsumed=${this.leftConsumed}, topConsumed=${this.topConsumed}, ` +
+			`rightConsumed=${this.rightConsumed}, bottomConsumed=${this.bottomConsumed}, imeBottomConsumed=${this.imeBottomConsumed}, ` +
+			`cutoutLeft=${this.cutoutLeft}, cutoutTop=${this.cutoutTop}, cutoutRight=${this.cutoutRight}, cutoutBottom=${this.cutoutBottom}, ` +
+			`cutoutLeftConsumed=${this.cutoutLeftConsumed}, cutoutTopConsumed=${this.cutoutTopConsumed}, ` +
+			`cutoutRightConsumed=${this.cutoutRightConsumed}, cutoutBottomConsumed=${this.cutoutBottomConsumed}`
+		);
 	}
 
 	toJSON() {
@@ -574,10 +595,12 @@ class Inset {
 			top: this.top,
 			right: this.right,
 			bottom: this.bottom,
+			imeBottom: this.imeBottom,
 			leftConsumed: this.leftConsumed,
 			topConsumed: this.topConsumed,
 			rightConsumed: this.rightConsumed,
 			bottomConsumed: this.bottomConsumed,
+			imeBottomConsumed: this.imeBottomConsumed,
 			cutoutLeft: this.cutoutLeft,
 			cutoutTop: this.cutoutTop,
 			cutoutRight: this.cutoutRight,
@@ -601,7 +624,6 @@ export class View extends ViewCommon {
 	private layoutChangeListener: android.view.View.OnLayoutChangeListener;
 	private _rootManager: androidx.fragment.app.FragmentManager;
 	private insetListenerIsSet: boolean;
-	private needsInsetListener: boolean;
 
 	nativeViewProtected: android.view.View;
 
@@ -640,9 +662,10 @@ export class View extends ViewCommon {
 
 		const isInsetEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.androidOverflowInsetEvent) !== -1 : false;
 
-		if (this.insetListenerIsSet && isInsetEvent && this.nativeViewProtected && (this.nativeViewProtected as any).setInsetListener) {
-			(this.nativeViewProtected as any).setInsetListener(null);
-			this.insetListenerIsSet = false;
+		// Same rule as the layout-changed listener above: one subscriber leaving must not
+		// silence the native listener while others are still subscribed.
+		if (this.insetListenerIsSet && isInsetEvent && !this.needsInsetListener()) {
+			this.clearInsetListener();
 		}
 	}
 
@@ -670,10 +693,19 @@ export class View extends ViewCommon {
 				);
 				this.insetListenerIsSet = true;
 			}
-			this.needsInsetListener = false;
-		} else {
-			this.needsInsetListener = true;
 		}
+	}
+
+	private clearInsetListener() {
+		this.insetListenerIsSet = false;
+		const nativeView = this.nativeViewProtected as any;
+		if (nativeView?.setInsetListener) {
+			nativeView.setInsetListener(null);
+		}
+	}
+
+	private needsInsetListener() {
+		return this.hasListeners(ViewCommon.androidOverflowInsetEvent);
 	}
 
 	public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
@@ -837,7 +869,7 @@ export class View extends ViewCommon {
 			this.setOnLayoutChangeListener();
 		}
 
-		if (!this.insetListenerIsSet && this.needsInsetListener) {
+		if (!this.insetListenerIsSet && this.needsInsetListener()) {
 			this.setInsetListener();
 		}
 	}
@@ -859,6 +891,9 @@ export class View extends ViewCommon {
 				this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 				this.layoutChangeListener = null;
 			}
+		}
+		if (this.insetListenerIsSet) {
+			this.clearInsetListener();
 		}
 		super.disposeNativeView();
 	}
@@ -1771,36 +1806,6 @@ export class View extends ViewCommon {
 			androidAccessibilityEvent: AndroidAccessibilityEvent.WINDOW_STATE_CHANGED,
 		});
 	}
-}
-
-const edgeMap: Record<string, number> = {
-	none: OverflowEdgeNone,
-	left: OverflowEdgeLeft,
-	top: OverflowEdgeTop,
-	right: OverflowEdgeRight,
-	bottom: OverflowEdgeBottom,
-	'dont-apply': OverflowEdgeDontApply,
-	'left-dont-consume': OverflowEdgeLeftDontConsume,
-	'top-dont-consume': OverflowEdgeTopDontConsume,
-	'right-dont-consume': OverflowEdgeRightDontConsume,
-	'bottom-dont-consume': OverflowEdgeBottomDontConsume,
-	'all-but-left': OverflowEdgeAllButLeft,
-	'all-but-top': OverflowEdgeAllButTop,
-	'all-but-right': OverflowEdgeAllButRight,
-	'all-but-bottom': OverflowEdgeAllButBottom,
-};
-
-function parseEdges(edges: string): number | null {
-	let result = 0;
-	const values = edges.split(',');
-	for (const raw of values) {
-		const value = edgeMap[raw.trim()];
-		if (value === undefined) continue;
-		// dont-apply overrides everything else
-		if (value === OverflowEdgeDontApply) return value;
-		result |= value;
-	}
-	return result === 0 ? null : result;
 }
 
 export class ContainerView extends View {

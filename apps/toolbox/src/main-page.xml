@@ -8,6 +8,7 @@
       <!-- experiment with calc and colormix with classes: calc-padding colormix -->
       <StackLayout class="p-20" paddingBottom="40" iosOverflowSafeArea="false">
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="action-items" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="datepicker" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
@@ -22,6 +23,8 @@
         <Button text="list-page-sticky" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="list-page-sticky-templates" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="multiple-scenes" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="nested-tab-frame" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="nested-tab-frame-4tabs" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="scroll-view" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="sliders" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
@@ -36,6 +39,7 @@
         <Button text="webview" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="winter-tc" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="ete" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="ete/hub" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
       </StackLayout>
     </ScrollView>
   </StackLayout>

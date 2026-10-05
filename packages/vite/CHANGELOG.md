@@ -1,3 +1,13 @@
+## 8.0.18 (2026-10-05)
+
+### 🩹 Fixes
+
+- **vite:** serve worker re-exports per module, not from the deps bundle ([#11504](https://github.com/NativeScript/NativeScript/pull/11504))
+
+### ❤️ Thank You
+
+- Osei Fortune @triniwiz
+
 ## 8.0.17 (2026-09-30)
 
 ### 🩹 Fixes

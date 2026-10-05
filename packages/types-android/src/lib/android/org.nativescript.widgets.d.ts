@@ -251,6 +251,7 @@
             }
 
             export class LayoutBase extends android.view.ViewGroup {
+                public static OverflowEdgeIgnore: number;
                 public static OverflowEdgeNone: number;
                 public static OverflowEdgeLeft: number;
                 public static OverflowEdgeTop: number;
@@ -265,9 +266,13 @@
                 public static OverflowEdgeAllButTop: number;
                 public static OverflowEdgeAllButRight: number;
                 public static OverflowEdgeAllButBottom: number;
+                public static OverflowEdgeCutout: number;
                 constructor(context: android.content.Context);
                 public getOverflowEdge(): number;
                 public setOverflowEdge(value: number): void;
+                public getEdgeInsets(): androidx.core.graphics.Insets;
+                public getImeInsets(): androidx.core.graphics.Insets;
+                public setInsetListener(listener: org.nativescript.widgets.LayoutBase.WindowInsetListener): void;
                 public getPassThroughParent(): boolean;
                 public setPassThroughParent(value: boolean): void;
             }

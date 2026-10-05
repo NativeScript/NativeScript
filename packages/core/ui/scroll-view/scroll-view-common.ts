@@ -1,6 +1,6 @@
 ﻿import { ContentView } from '../content-view';
 import { Property, makeParser, makeValidator } from '../core/properties';
-import { CSSType } from '../core/view';
+import { CSSType, type View } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { EventData } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
@@ -18,8 +18,17 @@ export abstract class ScrollViewBase extends ContentView {
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 	public iosContentInsetAdjustmentBehavior: 'never' | 'automatic' | 'scrollableAxes' | 'always';
+	public iosScrollEdgeEffect: CoreTypes.ScrollEdgeEffectType;
 
 	private _addedScrollEvent = false;
+
+	public addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void {
+		// iOS 26+ only; see the iOS implementation.
+	}
+
+	public removeScrollEdgeContainer(view: View): void {
+		// iOS 26+ only; see the iOS implementation.
+	}
 
 	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
@@ -128,3 +137,11 @@ export const iosContentInsetAdjustmentBehaviorProperty = new Property<ScrollView
 	valueConverter: insetAdjustmentConverter,
 });
 iosContentInsetAdjustmentBehaviorProperty.register(ScrollViewBase);
+
+const scrollEdgeEffectConverter = makeParser<CoreTypes.ScrollEdgeEffectType>(makeValidator<CoreTypes.ScrollEdgeEffectType>('automatic', 'soft', 'hard', 'none'));
+export const iosScrollEdgeEffectProperty = new Property<ScrollViewBase, CoreTypes.ScrollEdgeEffectType>({
+	name: 'iosScrollEdgeEffect',
+	defaultValue: 'automatic',
+	valueConverter: scrollEdgeEffectConverter,
+});
+iosScrollEdgeEffectProperty.register(ScrollViewBase);

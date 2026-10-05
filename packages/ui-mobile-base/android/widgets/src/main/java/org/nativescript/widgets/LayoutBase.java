@@ -39,6 +39,12 @@ public abstract class LayoutBase extends ViewGroup {
 	public static final int OverflowEdgeAllButTop = 1 << 11;
 	public static final int OverflowEdgeAllButRight = 1 << 12;
 	public static final int OverflowEdgeAllButBottom = 1 << 13;
+	/**
+	 * Not an edge: a modifier that folds the display cutout into the insets being
+	 * distributed. Type.systemBars() leaves the cutout out, which only shows up once
+	 * the device is rotated and the camera moves to an edge that has no bar.
+	 */
+	public static final int OverflowEdgeCutout = 1 << 14;
 
 	// Layout (bytes):
 	// 0  - left inset (int)
@@ -232,7 +238,10 @@ public abstract class LayoutBase extends ViewGroup {
 			appliedLeft += edgeInsets.left;
 			appliedTop += edgeInsets.top;
 			appliedRight += edgeInsets.right;
-			appliedBottom += edgeInsets.bottom;
+			// The inset pass applies max(navigation bar, ime) at the bottom, so re-adding only
+			// edgeInsets.bottom here would drop the keyboard gap on any setPadding() while the
+			// keyboard is open.
+			appliedBottom += Math.max(edgeInsets.bottom, imeInsets.bottom);
 		}
 		super.setPadding(appliedLeft, appliedTop, appliedRight, appliedBottom);
 	}
@@ -246,12 +255,42 @@ public abstract class LayoutBase extends ViewGroup {
 	}
 
 	private void resetInset() {
-		getInsetBuffer().position(0);
-		getInsetBuffer().put(EMPTY_INSETS, 0, EMPTY_INSETS.length);
+		ByteBuffer buffer = getInsetBuffer();
+		buffer.position(0);
+		buffer.put(EMPTY_INSETS, 0, EMPTY_INSETS.length);
+		buffer.position(0);
+	}
+
+	/**
+	 * Drops the insets this view baked into its padding and restores the padding the
+	 * owner asked for. Used when the view stops taking part in inset distribution, or
+	 * when a pass reports no insets at all.
+	 */
+	private void clearEdgeInsets() {
+		if (edgeInsets == Insets.NONE && imeInsets == Insets.NONE) {
+			return;
+		}
+
+		edgeInsets = Insets.NONE;
+		imeInsets = Insets.NONE;
+
+		applyingEdges = true;
+		setPadding(mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom);
+		applyingEdges = false;
 	}
 
 	public void setOverflowEdge(int value) {
+		int previous = overflowEdge;
 		overflowEdge = value;
+
+		if (value == OverflowEdgeIgnore) {
+			// The listener stays installed but returns insets untouched from here on, so
+			// nothing would ever give back the padding an earlier pass applied.
+			if (previous != OverflowEdgeIgnore) {
+				clearEdgeInsets();
+			}
+			return;
+		}
 
 		if (windowInsetsListener == null) {
 			windowInsetsListener = new androidx.core.view.OnApplyWindowInsetsListener() {
@@ -261,20 +300,33 @@ public abstract class LayoutBase extends ViewGroup {
 					@NonNull View v,
 					@NonNull WindowInsetsCompat insets
 				) {
-					if (insets.isConsumed() || overflowEdge == OverflowEdgeIgnore) {
-						return insets;
-					}
-
 					if (!(v instanceof LayoutBase)) return insets;
 					LayoutBase base = (LayoutBase) v;
 
-					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+					if (overflowEdge == OverflowEdgeIgnore) {
+						return insets;
+					}
+
+					if (insets.isConsumed()) {
+						// An ancestor took everything, so there is nothing left to hand out -
+						// give back the padding an earlier pass applied here.
+						base.clearEdgeInsets();
+						return insets;
+					}
+
+					boolean includeCutout = (overflowEdge & OverflowEdgeCutout) != 0;
+					// OverflowEdgeCutout is a modifier rather than an edge, so it is masked off
+					// before anything below asks which edges were requested.
+					int edges = overflowEdge & ~OverflowEdgeCutout;
+
+					int barTypes = WindowInsetsCompat.Type.systemBars();
+					if (includeCutout) {
+						barTypes |= WindowInsetsCompat.Type.displayCutout();
+					}
+
+					Insets systemBars = insets.getInsets(barTypes);
 					Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 					Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
-
-					if (systemBars == Insets.NONE && ime == Insets.NONE) {
-						return WindowInsetsCompat.CONSUMED;
-					}
 
 					int insetLeft = systemBars.left;
 					int insetRight = systemBars.right;
@@ -282,7 +334,7 @@ public abstract class LayoutBase extends ViewGroup {
 					int insetNavBottom = systemBars.bottom;
 					int insetImeBottom = ime.bottom;
 
-					if (overflowEdge == OverflowEdgeNone) {
+					if (edges == OverflowEdgeNone) {
 						int bottom = mPaddingBottom + Math.max(insetNavBottom, insetImeBottom);
 
 						base.applyingEdges = true;
@@ -297,10 +349,15 @@ public abstract class LayoutBase extends ViewGroup {
 						edgeInsets = Insets.of(insetLeft, insetTop, insetRight, insetNavBottom);
 						imeInsets = Insets.of(0, 0, 0, insetImeBottom);
 
-						return new WindowInsetsCompat.Builder(insets)
+						WindowInsetsCompat.Builder noneBuilder = new WindowInsetsCompat.Builder(insets)
 							.setInsets(WindowInsetsCompat.Type.systemBars(), Insets.NONE)
-							.setInsets(WindowInsetsCompat.Type.ime(), Insets.NONE)
-							.build();
+							.setInsets(WindowInsetsCompat.Type.ime(), Insets.NONE);
+
+						if (includeCutout) {
+							noneBuilder.setInsets(WindowInsetsCompat.Type.displayCutout(), Insets.NONE);
+						}
+
+						return noneBuilder.build();
 					}
 
 					boolean[] apply = new boolean[4];   // L T R B
@@ -308,18 +365,18 @@ public abstract class LayoutBase extends ViewGroup {
 					boolean[] defaultConsume = new boolean[4];
 					defaultConsume[0] = defaultConsume[1] = defaultConsume[2] = defaultConsume[3] = true;
 
-					consume[0] = (overflowEdge & OverflowEdgeLeft) != 0;
-					consume[1] = (overflowEdge & OverflowEdgeTop) != 0;
-					consume[2] = (overflowEdge & OverflowEdgeRight) != 0;
-					consume[3] = (overflowEdge & OverflowEdgeBottom) != 0;
+					consume[0] = (edges & OverflowEdgeLeft) != 0;
+					consume[1] = (edges & OverflowEdgeTop) != 0;
+					consume[2] = (edges & OverflowEdgeRight) != 0;
+					consume[3] = (edges & OverflowEdgeBottom) != 0;
 
-					if ((overflowEdge & OverflowEdgeLeftDontConsume) != 0)
+					if ((edges & OverflowEdgeLeftDontConsume) != 0)
 						defaultConsume[0] = consume[0] = false;
-					if ((overflowEdge & OverflowEdgeTopDontConsume) != 0)
+					if ((edges & OverflowEdgeTopDontConsume) != 0)
 						defaultConsume[1] = consume[1] = false;
-					if ((overflowEdge & OverflowEdgeRightDontConsume) != 0)
+					if ((edges & OverflowEdgeRightDontConsume) != 0)
 						defaultConsume[2] = consume[2] = false;
-					if ((overflowEdge & OverflowEdgeBottomDontConsume) != 0)
+					if ((edges & OverflowEdgeBottomDontConsume) != 0)
 						defaultConsume[3] = consume[3] = false;
 
 					apply[0] = !consume[0];
@@ -327,7 +384,7 @@ public abstract class LayoutBase extends ViewGroup {
 					apply[2] = !consume[2];
 					apply[3] = !consume[3];
 
-					if ((overflowEdge & OverflowEdgeAllButLeft) != 0) {
+					if ((edges & OverflowEdgeAllButLeft) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
 							apply[i] = false;
@@ -336,7 +393,7 @@ public abstract class LayoutBase extends ViewGroup {
 						apply[0] = true;
 					}
 
-					if ((overflowEdge & OverflowEdgeAllButTop) != 0) {
+					if ((edges & OverflowEdgeAllButTop) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
 							apply[i] = false;
@@ -345,7 +402,7 @@ public abstract class LayoutBase extends ViewGroup {
 						apply[1] = true;
 					}
 
-					if ((overflowEdge & OverflowEdgeAllButRight) != 0) {
+					if ((edges & OverflowEdgeAllButRight) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
 							apply[i] = false;
@@ -354,7 +411,7 @@ public abstract class LayoutBase extends ViewGroup {
 						apply[2] = true;
 					}
 
-					if ((overflowEdge & OverflowEdgeAllButBottom) != 0) {
+					if ((edges & OverflowEdgeAllButBottom) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
 							apply[i] = false;
@@ -365,7 +422,7 @@ public abstract class LayoutBase extends ViewGroup {
 
 					boolean consumeIme = consume[3];
 
-					if (overflowEdge == OverflowEdgeDontApply) {
+					if (edges == OverflowEdgeDontApply) {
 						resetInset();
 
 						putInset(BufferOffset.INSET_LEFT, insetLeft);
@@ -451,10 +508,23 @@ public abstract class LayoutBase extends ViewGroup {
 						consumeIme ? Insets.NONE
 							: Insets.of(0, 0, 0, insetImeBottom);
 
-					return new WindowInsetsCompat.Builder(insets)
+					WindowInsetsCompat.Builder builder = new WindowInsetsCompat.Builder(insets)
 						.setInsets(WindowInsetsCompat.Type.systemBars(), remainingSystemBars)
-						.setInsets(WindowInsetsCompat.Type.ime(), remainingIme)
-						.build();
+						.setInsets(WindowInsetsCompat.Type.ime(), remainingIme);
+
+					if (includeCutout) {
+						// The cutout was folded into the values above, so whatever was consumed
+						// of it is gone for children too - otherwise a nested view that also
+						// asked for the cutout would apply it a second time.
+						builder.setInsets(WindowInsetsCompat.Type.displayCutout(), Insets.of(
+							defaultConsume[0] ? 0 : cutout.left,
+							defaultConsume[1] ? 0 : cutout.top,
+							defaultConsume[2] ? 0 : cutout.right,
+							defaultConsume[3] ? 0 : cutout.bottom
+						));
+					}
+
+					return builder.build();
 				}
 			};
 

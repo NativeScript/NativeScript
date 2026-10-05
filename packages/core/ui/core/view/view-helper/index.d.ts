@@ -1,4 +1,5 @@
 import { Position, View } from '..';
+import { CoreTypes } from '../../../../core-types';
 
 export class ViewHelper {
 	/**
@@ -70,6 +71,21 @@ export namespace IOSHelper {
 	 * @param view The view form which to start the search.
 	 */
 	export function getParentWithViewController(view: View): View;
+	/**
+	 * iOS 26+: styles the scroll edge effect on every edge of a native scroll
+	 * view, or hides them all for `none`. No-op before iOS 26.
+	 */
+	export function setScrollEdgeEffect(scrollView: any /* UIScrollView */, effect: CoreTypes.ScrollEdgeEffectType): void;
+	/**
+	 * Whether the view's native view is a direct subview of its nearest NativeScript ancestor's
+	 * native view, rather than placed by a UIKit container controller.
+	 */
+	export function isHostedInView(view: View): boolean;
+	/**
+	 * Moves the frame's edges that lie on the container's safe-area edges out to the container's
+	 * bounds, for controller-backed views that inset their own content.
+	 */
+	export function extendUnderContainerSafeArea(nativeView: any /* UIView */, frame: any /* CGRect */): any; /* CGRect */
 	export function invalidateStatusBarAppearance(controller?: any /* UIViewController */, reason?: string): void;
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
@@ -94,4 +110,19 @@ export namespace IOSHelper {
 	export class UIPopoverPresentationControllerDelegateImp {
 		public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp;
 	}
+}
+
+/**
+ * iOS 26+: bars a scroll view's content passes beneath, registered with UIKit
+ * so the scroll view's edge effect covers them and follows them as they move.
+ */
+export class ScrollEdgeContainers {
+	constructor(owner: { nativeViewProtected: any /* UIScrollView */ });
+	/** Registers `view` at `edge`; completes once both native views exist. */
+	add(view: View, edge: CoreTypes.ScrollEdgeType): void;
+	remove(view: View): void;
+	/** Registers every entry whose native views exist. */
+	attach(): void;
+	/** Unregisters every entry; they register again on the next attach. */
+	detach(): void;
 }
