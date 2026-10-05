@@ -38,9 +38,9 @@ export interface EnsureNativeScriptModuleBindingsOptions {
 	 * shim's fallback to the native `require()` fails for every vendor
 	 * package (observed with `@nativescript/zip` in a zip worker on a fresh
 	 * install — the first boot's DB unzip was the first code path to ever
-	 * exercise a vendor require inside a worker). The HTTP form gives the
-	 * worker its own realm-local copy via the deps-bundle bridge — the same
-	 * isolation semantics webpack's per-worker bundles had.
+	 * exercise a vendor require inside a worker). The `?ns_worker=1` HTTP form
+	 * gives the worker its own per-module copy, bypassing the deps bundle —
+	 * the same isolation semantics webpack's per-worker bundles had.
 	 */
 	vendorImportsAsHttp?: boolean;
 }

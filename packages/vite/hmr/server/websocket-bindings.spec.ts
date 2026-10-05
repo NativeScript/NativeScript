@@ -205,9 +205,6 @@ describe('ensureNativeScriptModuleBindings — package metadata NativeScript det
 	});
 
 	it('routes node_modules re-exports to the /ns/m worker form with vendorImportsAsHttp, even without imports', () => {
-		// Left bare, a package's own `export * from './sub'` resolves through the
-		// import map to the deps-bundle shim, so the worker evaluates the bundle
-		// as well and holds two copies of the package.
 		const input = [`export * from "/node_modules/@nativescript/canvas/Canvas2D/Path2D/index.js?v=1a2b";`, `export { Helpers } from "/node_modules/@nativescript/canvas/helpers.js";`, `export * from "/node_modules/@nativescript/core/index.js";`, `export { local } from "./local";`].join('\n');
 
 		const worker = ensureNativeScriptModuleBindings(input, { vendorImportsAsHttp: true });
