@@ -103,3 +103,26 @@ const root = new Leaf();
 root.label = 'root';
 leaf.parent = root;
 console.log(findParent(leaf) === undefined, climb(leaf), (<Leaf>(<any>leaf))?.parent?.label);
+
+// Object fields and accessors that may be set to undefined; untyped weak targets; Function.prototype.
+class Owner {
+  items: string[] = ['a'];
+  private _peer: Leaf;
+  get peer(): Leaf {
+    return this._peer;
+  }
+  set peer(value: Leaf) {
+    this._peer = value;
+  }
+  ref: WeakRef<any>;
+}
+const owner = new Owner();
+owner.peer = leaf;
+console.log(owner.peer.label, owner.items.length);
+owner.peer = null;
+owner.items = null;
+console.log(owner.peer == null, owner.items == null);
+owner.ref = new WeakRef(root as any);
+console.log(owner.ref.deref() === root);
+const noop: any = Function.prototype;
+console.log(noop() === undefined);

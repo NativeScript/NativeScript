@@ -489,7 +489,8 @@ export class Translator implements AsyncTranslator {
       case 'RegExp': return 'JSRegExp';
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
-      case 'WeakRef': return `JSWeakRef<${arg(0)}>`;
+      // A weak reference holds an object: an untyped target is any object.
+      case 'WeakRef': { const target = arg(0); return `JSWeakRef<${target === 'Any?' ? 'AnyObject' : target.replace(/[?!]$/, '')}>`; }
       case 'TemplateStringsArray': return 'JSArray<String>';
       case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
       case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
@@ -907,6 +908,12 @@ export class Translator implements AsyncTranslator {
   deferredType(t: string): string { return this.deferred(t); }
   deferredDeclaration(name: string, t: string): string { return `var ${name}: ${this.deferred(t)}`; }
   isPromiseType(t: string): boolean { return t.startsWith('JSPromise<'); }
+  /** A field's type and initial value before its initializer runs: lenient code's object fields hold undefined too. */
+  private fieldType(t: string): string {
+    if (this.lenientRef(t) === t) return this.deferred(t);
+    const z = this.zero(t);
+    return z ? `${t}! = ${z}` : `${t}!`;
+  }
   private deferred(t: string): string {
     const z = this.zero(t);
     return z ? `${t} = ${z}` : isFunctionType(t) ? `(${t})!` : `${t}!`;
@@ -2072,9 +2079,9 @@ export class Translator implements AsyncTranslator {
       }
       fields.push({ name: n, type: t });
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
-      if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.deferred(t)}`); continue; }
-      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${t} = ${this.coerce(m.initializer, t)}`); continue; }
-      lines.push(`    var ${ident(n)}: ${this.deferred(t)}`);
+      if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); continue; }
+      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.coerce(m.initializer, t)}`); continue; }
+      lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`);
       if (m.initializer) {
         this.indent = '        ';
         fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -2111,7 +2118,8 @@ export class Translator implements AsyncTranslator {
       this.indent = '    ';
       lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
     } else if (fieldInits.length) {
-      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)}) {`, `        super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
+      const baseThrows = !!baseCtor && this.throwsInfo.fn(baseCtor);
+      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init() {`, ...(appBase || kitRoot ? ['        super.init()'] : []), ...fieldInits, '    }');
     }
     // Accessors pair into one property.
@@ -2132,6 +2140,7 @@ export class Translator implements AsyncTranslator {
       // An override that narrows its type (`get ios(): UIColor` over `get ios(): any`) keeps the type it overrides, as Swift requires.
       const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));
       const mods = `${a.get && isStatic(a.get) ? 'static ' : ''}${inherited.has(n) ? 'override ' : ''}`;
+      const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
       const parts: string[] = [];
       // Library mode: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
       const reported = !!this.library && !!a.set && ((!!a.get && this.throwsInfo.fn(a.get)) || this.throwsInfo.fn(a.set));
@@ -2144,11 +2153,12 @@ export class Translator implements AsyncTranslator {
         if (this.throwsInfo.fn(a.set) && !reported) throw this.error(a.set, 'a setter that throws');
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Void', '        ');
+        const value = declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
         parts.push(this.throwsInfo.fn(a.set)
-          ? `        set {\n            let ${ident(p.text)} = newValue${a.get ? '' : '!'}\n            jsReport ${body.trimStart()}\n        }`
-          : `        set {\n            let ${ident(p.text)} = newValue${a.get ? '' : '!'}${body.slice(1)}`);
+          ? `        set {\n            ${value}\n            jsReport ${body.trimStart()}\n        }`
+          : `        set {\n            ${value}${body.slice(1)}`);
       }
-      lines.push(`    ${mods}var ${ident(n)}: ${t} {`, ...parts, '    }');
+      lines.push(`    ${mods}var ${ident(n)}: ${declared} {`, ...parts, '    }');
     }
     // A view class's type selector: its `@CSSType` name, else its class name, as core's `cssType` falls back to `typeName`.
     if (isView) {
@@ -3633,6 +3643,8 @@ export class Translator implements AsyncTranslator {
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
+    // `Function.prototype`: a function that does nothing.
+    if (name === 'prototype' && ts.isIdentifier(target) && target.text === 'Function' && isLibDeclaration(this.resolve(target)?.declarations?.[0])) return '({ (_: [Any?]) throws -> Any? in nil } as JSFunction)';
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
@@ -4839,7 +4851,7 @@ export class Translator implements AsyncTranslator {
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
     const intl = intlConstructor(callee, this.checker);
     if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
-    if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
+    if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${t === 'JSWeakRef<AnyObject>' ? `(${this.coerce(args[0], 'Any?')} as AnyObject)` : this.expr(args[0])})`;
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     if (t === 'InteropReference') return `InteropReference(${args[0] ? this.coerce(args[0], 'Any?') : ''})`;
     // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
