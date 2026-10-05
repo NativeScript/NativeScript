@@ -25,7 +25,8 @@ export interface KitOptions {
    * Functions the kit implements instead: core file → function → the Swift that replaces it (a class's
    * method or accessor as `Class.member`, the Swift called with the object and the arguments); or, for
    * an npm package core imports, `npm:<package>` → imported name (`*` for the namespace) → a value of the kit's;
-   * or, for a moot module, `moot:<file>` → imported name → a value of the kit's.
+   * or, for a moot module, `moot:<file>` → imported name → a value of the kit's; or, for a file of the
+   * app's (`~/package.json`), its specifier → imported name → the value the kit holds for the app.
    */
   counterparts?: Record<string, Record<string, string>>;
   /**
@@ -183,7 +184,7 @@ export function generateKit(o: KitOptions): KitResult {
   // The kit as it is without what is being generated: a hand-ported class of a compiled one's name is a clash, not a base.
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
   const kitInternal = internalTypes(KIT, o.replaces);
-  const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : f.startsWith('moot:') ? MOOT + f.slice(5).replace(/\.ts$/, '.d.ts') : join(core, f), m]));
+  const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : f.startsWith('moot:') ? MOOT + f.slice(5).replace(/\.ts$/, '.d.ts') : f.startsWith('~/') ? f : join(core, f), m]));
   let translator: Translator;
   try {
     translator = new Translator(checker, new Map(), files, {
@@ -209,7 +210,8 @@ export function generateKit(o: KitOptions): KitResult {
   const errors: string[] = [];
   if (o.report) translator.errors = [];
 
-  const order = evaluationOrder(program, [...compiled], (c, s) => resolutions.get(`${c}\0${s}`));
+  // An app imports core's index, which evaluates core's modules in the order it imports them.
+  const order = evaluationOrder(program, [...compiled], (c, s) => resolutions.get(`${c}\0${s}`), [join(core, 'index.ts')]);
   const out: KitFile[] = [];
   const paths = new Map<KitFile, string>();
   const imports = new Map<KitFile, string[]>();

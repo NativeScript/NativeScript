@@ -369,7 +369,7 @@ if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree
 // Set before the module initializers run: they may make views.
 const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
 // Core's modules first, as the app's bundle evaluates @nativescript/core before its own code.
-const start = switches + `        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
+const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);
@@ -383,7 +383,7 @@ for (const f of readdirSync(join(out, 'Sources'))) {
 // A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.
 const clashes = translator.native.kitClashes(translator.kitTypes());
 if (clashes.length) writeFileSync(join(out, 'Sources', '__KitNames.swift'), `// Compiled by ns-native: the kit's types whose names the SDK also declares.\nimport NativeScriptKit\n\n${clashes.map((n) => `typealias ${n} = NativeScriptKit.${n}\n`).join('')}`);
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n`);
+writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project. The kit is a static library target rather than its
@@ -495,6 +495,12 @@ function kitFilesUnreached(dir: string, appSwift: string, linked: string[]): str
     }
   }
   return pending.map((p) => p.path).sort();
+}
+
+/** The app's package.json as its bundle has it, or an empty object. */
+function appPackageJSON(app: string): string {
+  const file = join(app, 'package.json');
+  return existsSync(file) ? readFileSync(file, 'utf8').trim() : '{}';
 }
 
 /** The modules among `modules` that the kit's files the app links import (core's own native code). */

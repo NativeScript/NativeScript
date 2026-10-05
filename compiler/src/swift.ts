@@ -1057,7 +1057,9 @@ export class Translator implements AsyncTranslator {
    * as JavaScript reads it (`x?.y`, `if (x)`), so Swift declares it implicitly unwrapped.
    */
   lenientRef(t: string): string {
-    if (!this.lenient || t.endsWith('?') || t.endsWith('!') || isFunctionType(t)) return t;
+    if (!this.lenient) return t;
+    if (isFunctionType(t)) return `(${t})!`;
+    if (t.endsWith('?') || t.endsWith('!')) return t;
     if (t.startsWith('any ')) return `(${t})!`;
     if (['Double', 'String', 'Bool', 'Any', 'Void', 'Never', 'JSBigInt', 'JSSymbol'].includes(t) || t.startsWith('(') || t.startsWith('[') || this.native.isEnumType(t) || this.native.isStructType(t) || this.genericNames.has(t)) return t;
     return `${t}!`;
@@ -1599,7 +1601,8 @@ export class Translator implements AsyncTranslator {
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
     if (this.genericNames.has(base)) return type.endsWith('?') ? `jsCast(${code}, to: ${base}.self)` : `jsCast(${code}, to: ${base}.self)!`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
-    // Lenient code: an untyped value read as an object may be undefined.
+    // Lenient code: an untyped value read as an object may be undefined; read as a string, number or boolean, undefined is the type's zero.
+    if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `((${code} as? ${type}) ?? ${this.zero(type)})`;
     return this.lenientRef(type) !== type ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
   }
 
@@ -1645,7 +1648,8 @@ export class Translator implements AsyncTranslator {
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, f.result, g.result)}`;
       const wrap = `{ (__h: @escaping ${escapingFunction(f)}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
-      return isOptional(from) ? `(${code}).map(${wrap})` : `${wrap}(${code})`;
+      if (!isOptional(from)) return `${wrap}(${code})`;
+      return isOptional(to) || to.endsWith('!') ? `(${code}).map(${wrap})` : `jsImplicit((${code}).map(${wrap}))`;
     }
     // One promise where a promise of another type is wanted (`Promise.all(untyped)` returned as `Promise<void[]>`): its value converted.
     const pf = /^JSPromise<(.*)>[?!]?$/.exec(from)?.[1], pt = /^JSPromise<(.*)>[?!]?$/.exec(to)?.[1];
@@ -1998,6 +2002,11 @@ export class Translator implements AsyncTranslator {
           const last = fn.body.statements.at(-1);
           if (!['Void', 'Never'].includes(ret) && last && ts.isSwitchStatement(last)) lines.push(ret.endsWith('?') ? `${this.indent}return nil` : `${this.indent}fatalError("unreachable: every case returns")`);
           else if (ret === 'Any?' && this.returnTypeOf(fn) === 'Void' && !(last && (ts.isReturnStatement(last) || ts.isThrowStatement(last)))) lines.push(`${this.indent}return nil`);
+          // Lenient code: a function returning on some paths only gives undefined past them, read as its type reads undefined.
+          else if (this.lenient && !['Void', 'Never'].includes(ret) && last && !ts.isReturnStatement(last) && !ts.isThrowStatement(last)) {
+            const none = isOptional(ret) || ret === 'Any?' || ret.endsWith('!') ? 'nil' : this.zero(ret) ?? (this.native.isStructType(ret) ? `${ret}()` : null);
+            lines.push(`${this.indent}${none ? `return ${none}` : 'fatalError("undefined where a value is declared")'}`);
+          }
         }
         else {
           const e = fn.body as ts.Expression;
@@ -2437,7 +2446,9 @@ export class Translator implements AsyncTranslator {
     for (const p of paramProps) {
       const n = (p.name as ts.Identifier).text;
       const t = this.typeOf(p.name);
-      lines.push(`    var ${ident(n)}: ${this.deferred(t)}`);
+      // An optional parameter's property holds undefined: lenient code reads it as its type.
+      const omitted = !!p.questionToken && !isOptional(t) && t !== 'Any?';
+      lines.push(`    var ${ident(n)}: ${omitted ? (this.lenient ? this.fieldType(t) : optionalType(t)) : this.deferred(t)}`);
       fields.push({ name: n, type: t });
     }
     const symbolFields: { key: string; member: string; type: string }[] = [];
@@ -4109,6 +4120,8 @@ export class Translator implements AsyncTranslator {
         const shaped = !!target && !!(target.flags & ts.SymbolFlags.Interface) && !(target.flags & ts.SymbolFlags.Class) && !to.endsWith('?') && /^[A-Z]\w*$/.test(to)
           && !target.declarations?.some((d) => d.getSourceFile().isDeclarationFile);
         if (shaped) return `{ (__o: Any?) -> ${to} in (__o as? ${to}) ?? ${to}(jsObject: __o) }(${this.expr(e.expression)})`;
+        // Lenient code: an assertion of undefined (`getWindowById(id) as IOSNativeWindow`) is undefined.
+        if (this.lenient && this.lenientRef(to) !== to) return `jsImplicit(${this.expr(e.expression)} as? ${to})`;
         return `(${this.expr(e.expression)} as! ${to})`;
       }
       return this.expr(e.expression);
@@ -4234,6 +4247,13 @@ export class Translator implements AsyncTranslator {
     if (this.library && name === 'global' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsGlobalThis';
     // The runtime gives the bundled app's module its folder in the app bundle.
     if (this.library && name === '__dirname' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsAppDirectory';
+    // Library mode: an import of what only the app has (`import appConfig from '~/package.json'`): the kit's counterpart, given by the app.
+    const appImport = this.library && !libDecl ? ts.findAncestor(this.checker.getSymbolAtLocation(e)?.declarations?.[0], ts.isImportDeclaration) : undefined;
+    if (appImport && ts.isStringLiteral(appImport.moduleSpecifier)) {
+      const d = this.checker.getSymbolAtLocation(e)!.declarations![0];
+      const found = this.library!.counterpart?.(appImport.moduleSpecifier.text, ts.isImportSpecifier(d) ? (d.propertyName ?? d.name).text : ts.isNamespaceImport(d) ? '*' : 'default');
+      if (found) return found;
+    }
     if (this.library && (!libDecl || /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
     // Library mode: a global a module declares itself (`declare let __startCPUProfiler: any`) is the global object's, set by whatever provides it.
     if (this.library && libDecl && ts.isVariableDeclaration(libDecl) && !libDecl.getSourceFile().isDeclarationFile && hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword)) {
@@ -4261,7 +4281,11 @@ export class Translator implements AsyncTranslator {
       if (decl && ts.isClassDeclaration(decl) && (ts.getDecorators(decl) ?? []).some((d) => /^Component\(/.test(d.expression.getText()))) {
         return `ComponentFactory { ${this.initThrows(ident(this.declaredName(e))) ? 'try! ' : ''}${ident(this.declaredName(e))}().render() }`;
       }
-      return `${identPath(this.declaredName(e))}.self`;
+      const name = identPath(this.declaredName(e));
+      // A class read inside a class with a member of its name (`static UILayoutViewController = UILayoutViewController`): the module's.
+      const cls = ts.findAncestor(e, ts.isClassLike);
+      const shadowed = this.appModule && cls && cls.members.some((m) => m.name && ts.isIdentifier(m.name) && m.name.text === e.text);
+      return `${shadowed ? `${this.appModule}.` : ''}${name}.self`;
     }
     if (this.isNamespace(e)) return `${this.refName(e)}.self`;
     return this.narrowed(e, this.globalAlias(e) ?? this.refName(e));
@@ -6124,7 +6148,10 @@ export class Translator implements AsyncTranslator {
     const held = ts.isIdentifier(e.expression) ? this.resolve(e.expression) : undefined;
     if (maybe && held && this.undefinedVars.get(held) === 'Any?') return `jsTypeof(${maybe})`;
     if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
-    return t.endsWith('?') ? `(${this.expr(e.expression)} == nil ? "undefined" : ${swiftString(known)})` : swiftString(known);
+    if (t.endsWith('?')) return `(${this.expr(e.expression)} == nil ? "undefined" : ${swiftString(known)})`;
+    // Lenient code holds an object implicitly unwrapped: undefined until assigned.
+    if (this.lenient && known === 'object') return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : ${swiftString(known)})`;
+    return swiftString(known);
   }
 
   private prefix(e: ts.PrefixUnaryExpression): string {
@@ -6852,7 +6879,7 @@ function withoutDefault(text: string): string {
   return text;
 }
 
-function splitTopLevel(text: string): string[] {
+export function splitTopLevel(text: string): string[] {
   const out: string[] = [];
   let depth = 0, start = 0;
   for (let i = 0; i < text.length; i++) {

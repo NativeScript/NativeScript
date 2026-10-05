@@ -2,6 +2,14 @@ import Foundation
 
 /// What core imports from npm packages that the kit implements instead.
 public enum CorePackages {
+    /// What core imports as `~/package.json`: the app's own.
+    public static var appConfig: Any? = JSObject([])
+
+    /// The app's package.json, set before core's modules run.
+    public static func useAppConfig(_ json: String) {
+        appConfig = (try? jsJSONParse(json)) ?? JSObject([])
+    }
+
     /// @csstools/css-calc's `calc(text)`: each `calc()` folded where it resolves.
     public static let calc: JSFunction = { args in CSSCalc.evaluate((jsFlat(args.first ?? nil) as? String) ?? "") }
 
@@ -10,6 +18,10 @@ public enum CorePackages {
     public static let emojiRegex: JSFunction = { _ in
         try JSRegExp(#"\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Regional_Indicator}"#, "gu")
     }
+
+    /// module-name-resolver's `prepareAppForModuleResolver`, `clearResolverCache` and `_setResolver`:
+    /// a compiled app resolves no module names at run time, so there is nothing to prepare or clear.
+    public static let noModuleResolver: JSFunction = { _ in nil }
 
     /// ui/builder's `Builder`, which a compiled app has no XML for: views from an entry's `create`.
     public static let builder = JSObject([("createViewFromEntry", { (args: [Any?]) throws -> Any? in

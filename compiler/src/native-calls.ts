@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { CF_CLASSES, optionalType, type Translator } from './swift.ts';
+import { CF_CLASSES, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
@@ -326,7 +326,9 @@ export class NativeAPI {
     // A link the chain continues past stays Swift's; the chain's value is a number as script reads it, still optional.
     if (this.keepOptional.has(e)) return ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e ? chained : code;
     const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
-    return coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?' ? code : `(${code})!`;
+    if (coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?') return code;
+    // Lenient code: an object the chain does not reach is undefined, which an object declaration holds.
+    return this.t.lenient && this.t.lenientRef(this.t.typeOf(e)) !== this.t.typeOf(e) ? `jsImplicit(${code})` : `(${code})!`;
   }
 
   /** Native calls whose optional Swift result an optional chain reads. */
@@ -421,6 +423,8 @@ export class NativeAPI {
       if (!native) return null;
       // Swift manages Core Foundation memory: retain and release calls go away.
       if (/^CF(Retain|Release|Autorelease)$|^CG\w+(Retain|Release)$/.test(native.name)) return e.arguments[0] ? this.t.expr(e.arguments[0]) : '()';
+      // `UIApplicationMain(0, null, …)`: Swift's overlay reads the process's arguments, which the runtime passes for it.
+      if (native.name === 'UIApplicationMain' && e.arguments.length === 4) return `UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, ${this.toSwift(e.arguments[2], 'String?')}, ${this.toSwift(e.arguments[3], 'String?')})`;
       const f = lookupFunction(native.module, native.name);
       if (!f) throw this.t.error(e, `${native.name}() (no Swift counterpart in ${native.module})`);
       this.checkAvailable(f, e, `${native.name}()`);
@@ -461,6 +465,11 @@ export class NativeAPI {
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
     if (ownDecl && ts.isClassDeclaration(ownDecl) && !ownDecl.getSourceFile().isDeclarationFile && name === 'new' && this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(own!))) return `${this.t.topName(ownDecl, ownDecl.name!.text)}()`;
+    // `super.new()` or `this.new()` in a static member of the class: an instance of that class, as the runtime makes one.
+    if (name === 'new' && !e.arguments.length && (callee.expression.kind === ts.SyntaxKind.SuperKeyword || callee.expression.kind === ts.SyntaxKind.ThisKeyword) && inStaticMember(callee.expression)) {
+      const cls = ts.findAncestor(callee.expression, ts.isClassDeclaration);
+      if (cls?.name && !cls.getSourceFile().isDeclarationFile && this.nativeBase(this.t.checker.getTypeAtLocation(cls))) return `${this.t.topName(cls, cls.name.text)}()`;
+    }
     if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc' && name === 'init') {
       const allocated = this.t.resolve(callee.expression.expression.expression)?.valueDeclaration;
       if (allocated && ts.isClassDeclaration(allocated) && !allocated.getSourceFile().isDeclarationFile) return `${this.t.topName(allocated, allocated.name!.text)}()`;
@@ -835,6 +844,21 @@ export class NativeAPI {
 
   // ---- Subclasses of native classes ----------------------------------------------------------
 
+  /**
+   * The selector Objective-C calls for an exposed method that throws (a throwing `@objc` method's
+   * selector takes an error out-parameter): the method, what it throws reported as script reports
+   * what nothing catches.
+   */
+  private exposedEntry(method: string, jsName: string): string {
+    const m = /func \w+\((.*)\)(?: throws)?(?: -> (.+?))? \{/.exec(method.split('\n')[0]);
+    if (!m) throw new Error(`${jsName}: no signature to expose`);
+    const params = m[1] ? splitTopLevel(m[1]).map((p, k) => `_ __a${k}: ${p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim()}`) : [];
+    const call = `try self.${jsName}(${params.map((_, k) => `__a${k}`).join(', ')})`;
+    const ret = m[2];
+    const body = ret ? `jsReported { ${call} }${/[?!]$/.test(ret) ? ' ?? nil' : '!'}` : `jsReport { ${call} }`;
+    return `    @objc(${jsName}${':'.repeat(params.length)}) public func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${body} }`;
+  }
+
   /** Exposed method name → its parameter count, from every `static ObjCExposedMethods` in the program. */
   private exposed: Map<string, number> | null = null;
 
@@ -923,9 +947,11 @@ export class NativeAPI {
       const native = fromBase?.kind === 'property' ? fromBase : protocols.map((p) => lookupMember(p.module, p.name, n, false)).find((m) => m?.kind === 'property') ?? fromBase;
       const viaProtocol = native !== fromBase;
       if (native && native.kind === 'property' && a.get) {
-        const own = t.returnTypeOf(a.get);
+        // Lenient code: an object the getter gives may be undefined, which an optional native property takes as nil.
+        const declared = t.returnTypeOf(a.get);
+        const own = optional(native.type) && t.lenientRef(declared) !== declared ? optionalType(declared) : declared;
         const body = t.functionBody(a.get, own, '            ');
-        const value = t.throwsInfo.fn(a.get) ? `jsReported { () throws -> ${own} in${body.slice(1)}` : `{ () -> ${own} in${body.slice(1)}()`;
+        const value = t.throwsInfo.fn(a.get) ? `jsReported { () throws -> ${own} in${body.slice(1)}${own.endsWith('?') && own !== 'Any?' ? ' ?? nil' : ''}` : `{ () -> ${own} in${body.slice(1)}()`;
         const fallback = own.endsWith('?') || own === 'Any?' || optional(native.type) ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : '!';
         const get = `        get {\n            let __value: ${t.throwsInfo.fn(a.get) ? optionalType(own) : own} = ${value}\n            return ${this.toSwiftValue(`__value${t.throwsInfo.fn(a.get) ? fallback : ''}`, own, native.type)}\n        }`;
         const parts = [get];
@@ -969,6 +995,10 @@ export class NativeAPI {
       const target = fromProtocol ?? fromBase;
       if (target && target.kind === 'method') {
         lines.push(this.nativeMethod(m, target, !!fromBase && fromBase.kind === 'method' && (!fromProtocol || fromBase.swift === fromProtocol.swift)));
+        continue;
+      }
+      if (exposed.has(jsName) && t.throwsInfo.fn(m)) {
+        lines.push('    ' + t.func(m, jsName), this.exposedEntry(t.func(m, jsName), jsName));
         continue;
       }
       lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
