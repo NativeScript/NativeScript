@@ -563,6 +563,12 @@ export class NativeAPI {
     if (bridged) return bridged;
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
+    // An ArrayBuffer or a typed array where Swift takes bytes: a copy of them, or their address, as the iOS runtime passes them.
+    if (b === 'Data' && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) return `jsNativeData(${t.expr(e)})`;
+    if (/^Unsafe(Mutable)?RawPointer$/.test(b) && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) {
+      const bytes = b === 'UnsafeRawPointer' ? `jsNativeBytes(${t.expr(e)})` : `jsNativeBytes(${t.expr(e)}).map { UnsafeMutableRawPointer(mutating: $0) }`;
+      return `${bytes}${optional(target) ? '' : '!'}`;
+    }
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
     // An out-parameter: the cell's storage of the pointee's type, written back.

@@ -167,6 +167,8 @@ export class Throws {
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
+    // A buffer or a view of an invalid length is a RangeError.
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && ['ArrayBuffer', 'Uint8Array'].includes(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak reference to an untyped value refuses a primitive.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'WeakRef' && args[0] && this.untyped(args[0])) return true;
     // Intl's constructors reject options out of range; BigInt() a value with no integer.

@@ -266,6 +266,17 @@ private final class JSInspectContext {
             braces = ("[", "]")
             extrasType = .array
             formatter = { self.formatList(elements, $0) }
+        } else if let view = value as? JSUint8Array {
+            let elements = view.values
+            let prefix = "Uint8Array(\(elements.count)) "
+            if elements.isEmpty { return prefix + "[]" }
+            name = "Uint8Array"
+            braces = (prefix + "[", "]")
+            extrasType = .array
+            formatter = { self.formatList(elements, $0) }
+        } else if let buffer = value as? JSArrayBuffer {
+            let hex = (0..<buffer.count).map { String(format: "%02x", buffer.bytes.load(fromByteOffset: $0, as: UInt8.self)) }.joined(separator: " ")
+            return "ArrayBuffer { [Uint8Contents]: <\(hex)>, [byteLength]: \(buffer.count) }"
         } else if let set = value as? JSSetProtocol {
             let values = set.jsAnyValues
             let prefix = "Set(\(values.count)) "
