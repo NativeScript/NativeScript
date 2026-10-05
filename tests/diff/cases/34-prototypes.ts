@@ -165,3 +165,39 @@ function wrap(fn: Function): any {
 }
 const add = wrap((a: number, b: number) => a + b);
 console.log(add(2, 3), calls.at(-1));
+
+const clock = ((globalThis as any).__time || Date.now) as () => number;
+const metaDir: string = (import.meta as any).dirname;
+console.log(typeof clock(), clock() > 1.6e12, typeof metaDir, metaDir.length > 0);
+
+function relay(callback: (a: any, b: any) => void, ...rest: any[]) {
+  callback.apply(undefined, rest);
+}
+relay((a, b) => calls.push(`relay ${a} ${b}`), 7);
+relay((a, b) => calls.push(`relay ${a} ${b}`), 7, 8, 9);
+console.log(calls.slice(-2).join(', '));
+
+class Info {
+  name: string;
+  size: number;
+  curve: any = 'ease';
+}
+const info = <Info>{};
+info.name = 'a';
+const copy: Info = { ...info, size: 2 };
+console.log(info.name, info.curve === undefined, info.size || 0, copy.name, copy.size, new Info().curve);
+
+class Match {
+  selectors: string[];
+  changes = new Map<string, number>();
+  describe(): string {
+    return `class ${this.selectors.length} ${this.count()}`;
+  }
+  count(): number {
+    return this.selectors.length;
+  }
+}
+const emptyMatch: Readonly<Match> = { selectors: [], changes: new Map(), describe: () => 'literal', count: null };
+const full = new Match();
+full.selectors = ['a', 'b'];
+console.log(emptyMatch.describe(), emptyMatch.selectors.length, emptyMatch.changes.size, full.describe());
