@@ -23,7 +23,8 @@ export interface KitOptions {
   modules: string[];
   /**
    * Functions the kit implements instead: core file → function → the Swift that replaces it; or, for
-   * an npm package core imports, `npm:<package>` → imported name (`*` for the namespace) → a value of the kit's.
+   * an npm package core imports, `npm:<package>` → imported name (`*` for the namespace) → a value of the kit's;
+   * or, for a moot module, `moot:<file>` → imported name → a value of the kit's.
    */
   counterparts?: Record<string, Record<string, string>>;
   /**
@@ -178,7 +179,7 @@ export function generateKit(o: KitOptions): KitResult {
   // The kit as it is without what is being generated: a hand-ported class of a compiled one's name is a clash, not a base.
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
   const kitInternal = internalTypes(KIT, o.replaces);
-  const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : join(core, f), m]));
+  const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : f.startsWith('moot:') ? MOOT + f.slice(5).replace(/\.ts$/, '.d.ts') : join(core, f), m]));
   let translator: Translator;
   try {
     translator = new Translator(checker, new Map(), files, {
