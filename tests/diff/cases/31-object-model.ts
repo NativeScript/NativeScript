@@ -154,3 +154,56 @@ console.log(holder.describe(), holder.label());
 const loose: any = {};
 const missing: Named = loose.named;
 console.log(missing === undefined, missing?.name);
+console.log(holder.constructor.name, new Named('x').constructor.name);
+
+// Functions declaring `this`, given as accessors.
+function defineTagged(cls: { prototype: any }, name: string) {
+  const key = Symbol(name);
+  function getTagged(this: any): string {
+    return this[key] ?? 'none';
+  }
+  function setTagged(this: any, value: string): void {
+    this[key] = `<${value}>`;
+  }
+  Object.defineProperty(cls.prototype, name, { get: getTagged, set: setTagged, enumerable: true, configurable: true });
+}
+class TagHost extends Observable {}
+defineTagged(TagHost, 'tag');
+const host: any = new TagHost();
+console.log(host.tag);
+host.tag = 'b';
+console.log(host.tag);
+
+// Static accessors of a subclass over its base's static field.
+class FrameLike {
+  static animated = true;
+}
+class IOSFrameLike extends FrameLike {
+  static get animated(): boolean {
+    return FrameLike.animated;
+  }
+  static set animated(value: boolean) {
+    FrameLike.animated = value;
+  }
+}
+IOSFrameLike.animated = false;
+console.log(FrameLike.animated, IOSFrameLike.animated);
+
+// Methods of a generic class, which library mode erases.
+class Bag<T> {
+  private items: T[] = [];
+  add(item: T): void {
+    this.items.push(item);
+  }
+  getItem(i: number): T {
+    return this.items[i];
+  }
+  each(fn: (value: T, index: number) => void): void {
+    this.items.forEach((v, i) => fn(v, i));
+  }
+}
+const bag = new Bag<Named>();
+bag.add(new Named('n2'));
+let bagNames = '';
+bag.each((v: Named, i: number) => (bagNames += `${i}:${v.name}`));
+console.log(bag.getItem(0).name, bagNames);

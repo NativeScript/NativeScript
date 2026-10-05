@@ -411,6 +411,29 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     }
 }
 
+/// A function value that may be missing, about to be called: undefined is not a function.
+public func jsCallee<F>(_ function: F?) throws -> F {
+    guard let function else { throw JSException(JSTypeError("undefined is not a function")) }
+    return function
+}
+
+/// `object[key] op= value` on a dynamic value: the member read once, then written with what
+/// `update` makes of it. The new value.
+@discardableResult
+public func jsUpdate(_ object: Any?, _ key: String, _ update: (Any?) throws -> Any?) throws -> Any? {
+    let value = try update(jsGet(object, key))
+    try jsSet(object, key, value)
+    return value
+}
+
+/// `object[key]++` and `object[key]--` on a dynamic value: the old value, as a number.
+@discardableResult
+public func jsPostUpdate(_ object: Any?, _ key: String, _ step: Double) throws -> Double {
+    let old = jsToNumber(try jsGet(object, key))
+    try jsSet(object, key, old + step)
+    return old
+}
+
 /// `object[key] = value` on a dynamic value. Writing to undefined or null throws a TypeError;
 /// writes to other primitives are ignored.
 public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
@@ -709,3 +732,18 @@ public let jsGlobalThis = JSObject([])
 /// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
 @inline(__always)
 public func jsImplicit<T>(_ value: T?) -> T! { value }
+
+/// `value.constructor.name`: the name of the class that made the value.
+public func jsConstructorName(_ value: Any?) -> String {
+    let v = jsFlat(value)
+    if let dynamic = v as? JSDynamic, let name = dynamic.jsClassName { return name }
+    switch v {
+    case is String: return "String"
+    case is Double: return "Number"
+    case is Bool: return "Boolean"
+    case nil: return ""
+    default:
+        let name = String(describing: type(of: v!))
+        return name.split(separator: "__").first.map(String.init) ?? name
+    }
+}

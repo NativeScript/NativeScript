@@ -673,7 +673,12 @@ export class Translator implements AsyncTranslator {
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, sf.fileName, st.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, sf.fileName, st.type.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
-      if (ts.isEnumDeclaration(st)) { out.push(this.enumDecl(st)); continue; }
+      if (ts.isEnumDeclaration(st)) {
+        // A namespace merged into the enum: members of its object.
+        const merged = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+        out.push(this.enumDecl(st, merged));
+        continue;
+      }
       if (ts.isModuleDeclaration(st) && this.mergedClass(st)) continue;
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) out.push(this.func(st, ident(this.topName(st, st.name.text)))); continue; }
@@ -777,7 +782,7 @@ export class Translator implements AsyncTranslator {
   private mergedStatics: string[] = [];
   /** Whether a namespace merges into a class of its name in its file. */
   private mergedClass(md: ts.ModuleDeclaration): boolean {
-    return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => ts.isClassDeclaration(d) && d.getSourceFile() === md.getSourceFile());
+    return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => (ts.isClassDeclaration(d) || ts.isEnumDeclaration(d)) && d.getSourceFile() === md.getSourceFile());
   }
 
   /** The Kotlin path of a namespace declaration (`CoreTypes.AnimationCurve`). */
@@ -826,8 +831,8 @@ export class Translator implements AsyncTranslator {
     const member = this.checker.getSymbolAtLocation(e.name);
     const target = member && member.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(member) : member;
     const decl = target?.valueDeclaration;
-    // A class's static member, where a namespace merges into the class.
-    if (!decl || ts.isClassElement(decl)) return null;
+    // A class's static member or an enum's member, where a namespace merges into the class or enum.
+    if (!decl || ts.isClassElement(decl) || ts.isEnumMember(decl)) return null;
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     if (ts.isClassDeclaration(decl)) return this.className(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
@@ -852,7 +857,7 @@ export class Translator implements AsyncTranslator {
     // A spread reads what the array holds when it runs.
     if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => (ts.isSpreadElement(x) ? ts.isArrayLiteralExpression(x.expression) && this.pure(x.expression) : this.pure(x)));
     if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => (ts.isPropertyAssignment(p) ? this.pure(p.initializer) && (!ts.isComputedPropertyName(p.name) || this.pure(p.name.expression)) : ts.isShorthandPropertyAssignment(p) ? this.pure(p.name) : ts.isMethodDeclaration(p)));
-    if (ts.isPrefixUnaryExpression(e)) return this.pure(e.operand);
+    if (ts.isPrefixUnaryExpression(e)) return e.operator !== ts.SyntaxKind.PlusPlusToken && e.operator !== ts.SyntaxKind.MinusMinusToken && this.pure(e.operand);
     if (ts.isBinaryExpression(e)) return e.operatorToken.kind !== ts.SyntaxKind.EqualsToken && this.pure(e.left) && this.pure(e.right);
     if (ts.isPropertyAccessExpression(e)) return this.pure(e.expression) && !(ts.isIdentifier(e.expression) && this.isLibGlobal(e.expression) && !LIB_CONSTANTS[`${e.expression.text}.${e.name.text}`]);
     if (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && ['ref', '$ref', '$signal', 'signal', 'writable', '$writable', 'computed'].includes(e.expression.text)) return e.arguments.every((a) => this.pure(a));
@@ -1045,7 +1050,7 @@ export class Translator implements AsyncTranslator {
     return `(${code} as ${type})`;
   }
 
-  private enumDecl(e: ts.EnumDeclaration): string {
+  private enumDecl(e: ts.EnumDeclaration, merged: string[] = []): string {
     const lines = [`object ${ident(e.name.text)} {`];
     for (const m of e.members) {
       const v = this.checker.getConstantValue(m);
@@ -1059,6 +1064,7 @@ export class Translator implements AsyncTranslator {
       return typeof v === 'number' ? [pair, `Pair<String, Any?>(${kotlinString(String(v))}, ${kotlinString(n)})`] : [pair];
     });
     lines.push(`    val jsEnumObject: JSObject by lazy { JSObject(listOf<Pair<String, Any?>>(${entries.join(', ')})) }`);
+    lines.push(...merged.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')));
     lines.push('}');
     return lines.join('\n');
   }
@@ -2042,9 +2048,30 @@ export class Translator implements AsyncTranslator {
 
   // ---- Statements --------------------------------------------------------------------------------
 
+  /** Variables a function declared before them reads: declared first, assigned where they are declared. */
+  private forwardDeclared = new Set<ts.VariableDeclaration>();
+
   statements(list: ts.Statement[]): string[] {
     const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
-    return [...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean);
+    const forward: string[] = [];
+    list.forEach((st, k) => {
+      if (!ts.isVariableStatement(st)) return;
+      for (const d of st.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        let early = false;
+        const visit = (n: ts.Node, inFn: boolean) => {
+          if (early) return;
+          if (inFn && ts.isIdentifier(n) && n !== d.name && this.checker.getSymbolAtLocation(n) === sym) { early = true; return; }
+          ts.forEachChild(n, (c) => visit(c, inFn || ts.isFunctionLike(c)));
+        };
+        list.forEach((other, j) => { if (j < k || hoisted.includes(other)) visit(other, ts.isFunctionLike(other)); });
+        if (!early) continue;
+        this.forwardDeclared.add(d);
+        forward.push(`${this.indent}${this.deferredDeclaration(ident(d.name.text), this.typeOf(d.name))}`);
+      }
+    });
+    return [...forward, ...[...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
   }
 
   block(b: ts.Statement, base = this.indent): string {
@@ -2201,6 +2228,9 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
+      if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.coerce(d.initializer!, t)}`;
+      // `var m` again in the same block: the same variable, assigned.
+      if (redeclaredVar(d, this.checker)) return d.initializer ? `${i}${name} = ${this.coerce(d.initializer, t)}` : '';
       const nullInit = !!d.initializer && (d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined'));
       if ((nullInit || (!d.initializer && !lowered)) && this.pluginFiles.has(d.getSourceFile().fileName) && !t.endsWith('?') && this.isObjectType(t)) {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
@@ -2289,6 +2319,8 @@ export class Translator implements AsyncTranslator {
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
     if (t === 'JSMatch') return `${this.expr(e)}.values`;
     if (t.startsWith('Pair<') || t.startsWith('Triple<')) return `jsTupleList(${this.expr(e)})`;
+    // An untyped value: whatever its iteration gives, a TypeError where it has none.
+    if (this.typeOf(e) === 'Any?') return `jsIteratorOf(${this.expr(e)}).jsCollect()`;
     return this.expr(e);
   }
 
@@ -2516,7 +2548,14 @@ export class Translator implements AsyncTranslator {
       // A function value taking fewer parameters than the slot passes (JavaScript ignores the rest).
       const f = functionTypeParts(source.replace(/^\((.*)\)\?$/, '$1'));
       const g = functionTypeParts(target.replace(/^\((.*)\)\?$/, '$1'));
-      if (f && g && (f.params.length < g.params.length || f.params.some((p, k) => p !== g.params[k] && this.convert('x', g.params[k], p) !== 'x')) && f.params.length <= g.params.length && (g.ret === 'Unit' || g.ret === f.ret)) {
+      // A declared function where one of fewer parameters is wanted: called by name, so the rest take their defaults.
+      const decl = f && g && f.params.length > g.params.length && ts.isIdentifier(e) ? this.resolve(e)?.valueDeclaration : undefined;
+      if (decl && ts.isFunctionDeclaration(decl) && decl.body && !decl.getSourceFile().isDeclarationFile && decl.parameters.slice(g!.params.length).every((p) => (p.questionToken || p.initializer) && !p.dotDotDotToken)) {
+        const names = g!.params.map((_, k) => `__a${k}`);
+        const call = `${ident((e as ts.Identifier).text)}(${names.map((n, k) => this.convert(n, g!.params[k], f!.params[k])).join(', ')})`;
+        return `{ ${g!.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${g!.ret === 'Unit' ? `${call}; Unit` : call} }`;
+      }
+      if (f && g && f.params.length <= g.params.length && (f.params.length < g.params.length || f.params.some((p, k) => p !== g.params[k] && this.convert('x', g.params[k], p) !== 'x')) && f.params.length <= g.params.length && (g.ret === 'Unit' || g.ret === f.ret)) {
         const names = g.params.map((_, k) => `__a${k}`);
         const fn = this.functionValue(e);
         const call = `${fn.includes('::') ? `(${fn})` : fn}(${names.slice(0, f.params.length).map((n, k) => this.convert(n, g.params[k], f.params[k])).join(', ')})`;
@@ -4529,4 +4568,12 @@ function chainedThrough(cls: ts.ClassDeclaration, name: string): boolean {
   };
   visit(cls);
   return found;
+}
+
+/** A `var` declaring a variable an earlier `var` of the same block declared. */
+function redeclaredVar(d: ts.VariableDeclaration, checker: ts.TypeChecker): boolean {
+  if (d.parent.flags & (ts.NodeFlags.Let | ts.NodeFlags.Const) || !ts.isVariableStatement(d.parent.parent)) return false;
+  const block = d.parent.parent.parent;
+  const earlier = checker.getSymbolAtLocation(d.name)?.declarations?.filter((x) => x.pos < d.pos);
+  return !!earlier?.some((x) => ts.isVariableDeclaration(x) && ts.isVariableStatement(x.parent.parent) && x.parent.parent.parent === block);
 }

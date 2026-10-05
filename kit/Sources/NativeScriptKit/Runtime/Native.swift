@@ -65,6 +65,12 @@ public struct JSNativeKeyed {
     }
 }
 
+/// The iOS runtime's `__collect()`: nothing to collect where reference counting frees objects.
+public func __collect() {}
+
+/// The iOS runtime's `__releaseNativeCounterpart(object)`: no script wrapper holds the object here.
+public func __releaseNativeCounterpart(_ object: NSObject?) {}
+
 /// A native-property decorator's getter: the native object's getter method if it has one, else the fallback.
 public func jsNativePropertyGet(_ native: Any?, _ getter: String, fallback: Any?) -> Any? {
     guard let object = jsFlat(native) as? NSObject, object.responds(to: NSSelectorFromString(getter)) else { return fallback }
@@ -199,6 +205,16 @@ public func jsToNativeDictionary(_ value: Any?) -> [AnyHashable: Any] {
         return out
     default: return [:]
     }
+}
+
+/// A dictionary Swift keys by a string-backed type (`[NSAttributedString.Key: Any]`): script's
+/// object or a Foundation dictionary, its string keys as that type.
+public func jsNativeKeyed<K: RawRepresentable & Hashable>(_ value: Any?, _: K.Type) -> [K: Any] where K.RawValue == String {
+    var out: [K: Any] = [:]
+    for (key, v) in jsToNativeDictionary(value) {
+        if let typed = key as? K { out[typed] = v } else if let name = key as? String, let typed = K(rawValue: name) { out[typed] = v }
+    }
+    return out
 }
 
 /// `array[i]` on a native array: undefined unless `i` is an index in range.

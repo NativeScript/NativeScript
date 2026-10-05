@@ -60,3 +60,33 @@ function converter(values: any) {
 }
 const toRole = converter(Role);
 console.log(toRole('BUTTON'), toRole('Header'), toRole('none'), JSON.stringify(Level), Object.keys(Role).join(','));
+const roleName = 'Header';
+const levelKey: string = 'High';
+console.log(Role[roleName], Level[levelKey], Level[Level.High], Role['Missing' as string]);
+
+class Emitter {
+  static scope(): string {
+    return this.name === 'Emitter' ? '*' : this.name;
+  }
+  kind(): string {
+    return this.constructor.name;
+  }
+}
+class ButtonEmitter extends Emitter {}
+console.log(Emitter.scope(), ButtonEmitter.scope(), new ButtonEmitter().kind(), new Emitter().kind(), Emitter.name);
+
+class Screenish {
+  private ready = true;
+  get width(): number {
+    if (!this.ready) throw new Error('not ready');
+    return 320;
+  }
+  get height(): number {
+    return 640;
+  }
+}
+function measure(screen: Screenish): string {
+  const { width, height } = screen;
+  return `${width}x${height}`;
+}
+console.log(measure(new Screenish()));

@@ -126,3 +126,32 @@ owner.ref = new WeakRef(root as any);
 console.log(owner.ref.deref() === root);
 const noop: any = Function.prototype;
 console.log(noop() === undefined);
+
+// Iterating untyped values.
+const bag: any = { list: ['p', 'q'], text: 'hi' };
+let seen = '';
+for (const v of bag.list) seen += v;
+for (const ch of bag.text) seen += ch.toUpperCase();
+try {
+  for (const v of bag.none) seen += v;
+} catch (e) {
+  seen += ':' + (e instanceof TypeError);
+}
+console.log(seen);
+
+// `a && a.b` of another type than a; wrapper constructors.
+class Scope {
+  css = 'x { }';
+  owner: Leaf;
+}
+function cssOf(scope: Scope): string {
+  return scope && scope.css;
+}
+function ownerOf(scope: Scope): Leaf {
+  return scope && scope.owner;
+}
+const scope = new Scope();
+scope.owner = leaf;
+console.log(cssOf(scope), !cssOf(null), ownerOf(scope).label, ownerOf(null) == null);
+const wrapped: any = new Number('4');
+console.log(wrapped + 1, new Boolean(0) == false, new String(12) + '!');

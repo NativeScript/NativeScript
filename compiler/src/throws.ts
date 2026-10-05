@@ -25,7 +25,11 @@ export class Throws {
   /** Whether a call throws for what its declaration does not show: a native method Swift imports as `throws`, a method an instance can hold a value in place of. */
   private nativeThrows: (call: ts.CallExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false) {
+  /** A declaration file's method or constructor whose compiled implementation is in the program (library mode). */
+  private implementation: (decl: ts.Declaration) => ts.Declaration | null;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null) {
+    this.implementation = implementation;
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
@@ -48,6 +52,13 @@ export class Throws {
   /** Whether calling `fn` (a declaration with a body) can throw. */
   fn(fn: ts.Node): boolean {
     if (this.throwing.has(fn)) return true;
+    // Swift initializers override as methods do: a class's constructor throws if one in its hierarchy does.
+    if (ts.isConstructorDeclaration(fn) && ts.isClassLike(fn.parent)) {
+      for (const other of [...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
+        const c = other.members.find((x) => ts.isConstructorDeclaration(x) && x !== fn);
+        if (c && this.throwing.has(c)) return true;
+      }
+    }
     // Swift overrides share `throws`: a method throws if any method of its name in the hierarchy does.
     if ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && ts.isClassLike(fn.parent) && fn.name) {
       const name = fn.name.getText();
@@ -107,6 +118,11 @@ export class Throws {
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && this.untyped(n.initializer)) return true;
+    // Destructuring runs the getters of the members it reads.
+    if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
+      const t = c.getNonNullableType(c.getTypeAtLocation(n.initializer));
+      if (n.name.elements.some((el) => !el.dotDotDotToken && (t.getProperty((el.propertyName ?? el.name).getText())?.declarations ?? []).some((d) => ts.isGetAccessorDeclaration(d) && !!d.body && this.fn(d)))) return true;
+    }
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
@@ -127,8 +143,7 @@ export class Throws {
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);
       const base = cls && this.ancestors(cls)[1];
-      const ctor = base?.members.find(ts.isConstructorDeclaration);
-      return ctor ? this.fn(ctor) : false;
+      return base ? this.initThrows(base) : false;
     }
     // A call through a variable, parameter, property or getter holding a function: Swift function types throw.
     const callee = ts.isPropertyAccessExpression(call.expression) ? call.expression.name : call.expression;
@@ -150,6 +165,8 @@ export class Throws {
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
+    // A weak reference to an untyped value refuses a primitive.
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'WeakRef' && args[0] && this.untyped(args[0])) return true;
     // Intl's constructors reject options out of range; BigInt() a value with no integer.
     if (intlConstructor(call.expression, c)) return true;
     if (ts.isIdentifier(call.expression) && call.expression.text === 'BigInt' && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
@@ -166,6 +183,8 @@ export class Throws {
         : ((ts.isMethodDeclaration(decl) ? decl.parent.members : (decl.parent as ts.SourceFile).statements) as ts.NodeArray<ts.Node>).find((m) => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === decl.name?.getText());
       if (impl) return this.fn(impl);
     }
+    const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
+    if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
       const owner = builtinName(decl);
       // `s.match(x)` makes a RegExp of anything else, which can be a SyntaxError.
@@ -195,12 +214,17 @@ export class Throws {
   private implicitConstructorThrows(call: ts.NewExpression): boolean {
     const decl = this.checker.getTypeAtLocation(call.expression).getSymbol()?.valueDeclaration;
     if (!decl || !ts.isClassLike(decl) || decl.getSourceFile().isDeclarationFile) return false;
+    return this.initThrows(decl);
+  }
+
+  /** Whether making an instance of a class throws: its own constructor's or its base's, or (Swift initializers sharing `throws`) one a subclass declares. */
+  initThrows(decl: ts.ClassLikeDeclaration): boolean {
     for (const cls of this.ancestors(decl)) {
       if (cls.members.some((m) => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m) && this.expr(m.initializer))) return true;
       const ctor = cls.members.find(ts.isConstructorDeclaration);
       if (ctor) return this.fn(ctor);
     }
-    return false;
+    return this.descendants(decl).some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
   }
 
   /** The class and the app classes it extends, nearest first. */

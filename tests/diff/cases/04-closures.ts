@@ -51,3 +51,11 @@ console.log(sum(1, 2, 3), greet('Ann'), greet('Bo', 'Yo', '?'));
 
 const compose = (f: (x: number) => number, g: (x: number) => number) => (x: number) => f(g(x));
 console.log(compose((x) => x + 1, (x) => x * 2)(5));
+
+// A closure reading a constant declared after it, run once the constant is set.
+function laterConst(): number {
+  const read = () => factor * 2;
+  const factor = 21;
+  return read();
+}
+console.log(laterConst());
