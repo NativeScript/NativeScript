@@ -259,3 +259,11 @@ class Checked {
   }
 }
 console.log(String(new Checked(['a', 'b'])), `${new Checked(['c'])}`);
+
+function sourceUrl(source: Source): string {
+  const url: string = source && source.url;
+  return url;
+}
+console.log(sourceUrl(new Source('s.css', 1)));
+const picked: Source = loose && new Source('and', 2);
+console.log(picked.url);

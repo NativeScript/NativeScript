@@ -5242,7 +5242,9 @@ export class Translator implements AsyncTranslator {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
         if (this.isBool(e.left) && this.isBool(e.right)) return `${l()} ${sym} ${r()}`;
         // JavaScript returns an operand, not a Bool.
-        const t = this.typeOf(e);
+        let t = this.typeOf(e);
+        // Lenient code: `source && source.ios`, an object or the missing left operand: optional.
+        if (this.lenient && op === K.AmpersandAmpersandToken && this.zero(t) === null && !isFunctionType(t) && t !== 'Any?' && !t.endsWith('!') && this.typeOf(e.left).replace(/[?!]$/, '') !== t && this.isObjectRef(e.left)) t = optionalType(t);
         const v = this.fresh('__v');
         const right = this.coerce(e.right, t);
         const lt = this.tryPrefix(e.left) ? 'try ' : '';
@@ -5261,7 +5263,7 @@ export class Translator implements AsyncTranslator {
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
         const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
-          : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil' : v;
+          : t.endsWith('?') && op === K.AmpersandAmpersandToken && (leftType.endsWith('?') || (this.lenient && isOptional(t) && leftType.replace(/!$/, '') !== t.replace(/\?$/, ''))) ? 'nil' : v;
         return op === K.BarBarToken
           ? `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }())`
           : `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : ${leftValue} }())`;
