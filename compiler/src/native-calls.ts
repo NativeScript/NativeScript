@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { CF_CLASSES, optionalType, type Translator } from './swift.ts';
 import {
-  categoryModule, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
+  categoryModule, conformsTo, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
@@ -140,7 +140,8 @@ export class NativeAPI {
       const native = this.symbolModule(sym);
       if (native) return { ...native, isStatic: true };
     }
-    const type = c.getNonNullableType(c.getTypeAtLocation(e));
+    // `this` in an app class extending a native one is the class.
+    const type = c.getApparentType(c.getNonNullableType(c.getTypeAtLocation(e)));
     const native = this.symbolModule(type.getSymbol()) ?? this.nativeBase(type);
     return native ? { ...native, isStatic: false } : null;
   }
@@ -159,7 +160,9 @@ export class NativeAPI {
   }
 
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
-  private nativeBase(type: ts.Type): { module: string; name: string } | null {
+  private nativeBase(of: ts.Type): { module: string; name: string } | null {
+    // A class's own `this` is a reference to the class.
+    const type = (of as ts.TypeReference).target ?? of;
     if (typeof type.isClassOrInterface !== 'function' || !type.isClassOrInterface()) return null;
     for (const b of this.t.checker.getBaseTypes(type)) {
       const found = this.symbolModule(b.getSymbol()) ?? this.nativeBase(b);
@@ -577,6 +580,8 @@ export class NativeAPI {
     if (bridged) return bridged;
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
+    // An object where a protocol is taken (`recognizer.delegate = navigationController`): Objective-C asks the object whether it conforms.
+    if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`;
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
     // An out-parameter: the cell's storage of the pointee's type, written back.
@@ -584,6 +589,12 @@ export class NativeAPI {
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
     // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
     if (b === 'Selector' && ts.isStringLiteralLike(e)) return `NSSelectorFromString(${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))})`;
+    // A constant naming a method (`GestureEvents.touchDown`): its value, as a literal is; any other string as it is when it runs.
+    if (b === 'Selector' && /^String\??$/.test(source)) {
+      const literal = this.t.checker.getTypeAtLocation(e);
+      if (literal.isStringLiteral()) return `NSSelectorFromString(${JSON.stringify(literal.value + ':'.repeat(this.exposedArity(literal.value)))})`;
+      return `NSSelectorFromString(${t.expr(e)})`;
+    }
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
       // An untyped value: the number the runtime marshals it as.
@@ -664,6 +675,11 @@ export class NativeAPI {
     const b = base(swiftType);
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
+    // A member the code has narrowed (`layer.mask instanceof CAShapeLayer`): the subclass it tested for.
+    const declared = ts.isPropertyAccessExpression(e) ? this.t.checker.getSymbolAtLocation(e.name) : undefined;
+    const narrowedTo = base(tsType);
+    if (declared && /^[A-Z]\w*$/.test(narrowedTo) && narrowedTo !== b && /^[A-Z]\w*$/.test(b) && !this.isEnumType(narrowedTo) && !this.isStructType(narrowedTo)
+        && base(this.t.type(this.t.checker.getTypeOfSymbol(declared), e)) === b) return `(${code} as${optional(tsType) ? '?' : '!'} ${narrowedTo})`;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
     if (NUMBERS.has(b) && tsType.replace(/\?$/, '') === 'Double') {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;
@@ -787,7 +803,8 @@ export class NativeAPI {
     const exposedSpec = statics.find((m) => m.name.getText() === 'ObjCExposedMethods');
     const exposed = new Set(exposedSpec && ts.isObjectLiteralExpression(exposedSpec.initializer!) ? exposedSpec.initializer.properties.map((p) => p.name!.getText()) : []);
 
-    const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.map((p) => p.swift)].join(', ')} {`];
+    // A protocol the native base conforms to already is its conformance.
+    const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.filter((p) => !conformsTo(base.module, base.name, p.name)).map((p) => p.swift)].join(', ')} {`];
     t.indent = '    ';
     t.inNativeClassBody = true;
     for (const m of cls.members) {
@@ -844,7 +861,7 @@ export class NativeAPI {
       const fromBase = lookupMember(base.module, base.name, jsName, false);
       const target = fromProtocol ?? fromBase;
       if (target && target.kind === 'method') {
-        lines.push(this.nativeMethod(m, target, !fromProtocol && !!fromBase));
+        lines.push(this.nativeMethod(m, target, !!fromBase && fromBase.kind === 'method' && (!fromProtocol || fromBase.swift === fromProtocol.swift)));
         continue;
       }
       lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
@@ -869,7 +886,9 @@ export class NativeAPI {
     const read = (k: number) => {
       const sym = this.t.checker.getSymbolAtLocation(m.parameters[k].name);
       let found = false;
-      const visit = (n: ts.Node): void => { if (!found && ts.isIdentifier(n) && this.t.checker.getSymbolAtLocation(n) === sym) found = true; else if (!found) ts.forEachChild(n, visit); };
+      // `{ transitionContext }` reads the parameter through the shorthand's value.
+      const reads = (n: ts.Identifier) => this.t.checker.getSymbolAtLocation(n) === sym || (ts.isShorthandPropertyAssignment(n.parent) && this.t.checker.getShorthandAssignmentValueSymbol(n.parent) === sym);
+      const visit = (n: ts.Node): void => { if (!found && ts.isIdentifier(n) && reads(n)) found = true; else if (!found) ts.forEachChild(n, visit); };
       if (sym && m.body) visit(m.body);
       return found;
     };

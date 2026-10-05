@@ -267,3 +267,45 @@ function sourceUrl(source: Source): string {
 console.log(sourceUrl(new Source('s.css', 1)));
 const picked: Source = loose && new Source('and', 2);
 console.log(picked.url);
+
+class BaseFace {
+  static fallback = undefined;
+  static describe() {
+    return `base ${this.fallback}`;
+  }
+}
+class Face extends BaseFace {
+  static fallback = new Face('serif');
+  static rename(name: string) {
+    this.fallback = new Face(name);
+  }
+  constructor(public family: string) {
+    super();
+  }
+}
+console.log(BaseFace.fallback === undefined, Face.fallback.family);
+Face.rename('mono');
+Face.fallback.family += '!';
+console.log(Face.fallback.family, BaseFace.fallback === undefined);
+
+interface Shaped {
+  shape: string;
+}
+class Circle implements Shaped {
+  private _shape = 'circle';
+  get shape(): string {
+    return this._shape;
+  }
+}
+const vars = new Map<string, string>([['a', '1']]);
+function lookup(key: string): string {
+  return vars.get(key);
+}
+function early(flag: boolean): void {
+  if (flag) return undefined;
+  calls.push('late');
+}
+early(true);
+early(false);
+const shaped: Shaped = new Circle();
+console.log(shaped.shape, lookup('a'), !lookup('b'), calls.at(-1));

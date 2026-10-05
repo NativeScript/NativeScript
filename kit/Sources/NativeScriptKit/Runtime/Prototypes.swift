@@ -46,10 +46,10 @@ public enum JSPrototypes {
     }
 
     /// The accessors a class declares (`get text()`, `set text(v)`): its prototype's own properties.
-    public static func declare(_ cls: AnyClass, _ accessors: [(String, ((Any?) throws -> Any?)?, ((Any?, Any?) throws -> Void)?)]) {
-        let list = accessors.map { ($0.0, JSPropertyDescriptor(get: $0.1, set: $0.2, enumerable: false, configurable: true)) }
-        declared[ObjectIdentifier(cls)] = list
-        if let p = table[ObjectIdentifier(cls)] { for (key, d) in list { try? p.defineProperty(key, d) } }
+    public static func declare(_ cls: AnyClass, _ key: String, get: ((Any?) throws -> Any?)?, set: ((Any?, Any?) throws -> Void)?) {
+        let d = JSPropertyDescriptor(get: get, set: set, enumerable: false, configurable: true)
+        declared[ObjectIdentifier(cls), default: []].append((key, d))
+        if let p = table[ObjectIdentifier(cls)] { try? p.defineProperty(key, d) }
     }
 
     /// The prototype a built-in kind of value has (`Array.prototype`), its own object.
