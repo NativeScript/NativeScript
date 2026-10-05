@@ -173,3 +173,21 @@ function useOptions(o: Options1): string {
   return o.select(bag, 0);
 }
 console.log(useOptions({ changed: (t) => console.log('changed', t.label), select: (item) => item['key'] }));
+
+function finish(done: (ok: boolean) => void, ok: boolean) {
+  done?.(ok);
+}
+finish((ok) => console.log('finished', ok), true);
+class Base7 {
+  get(): any {
+    return 'base';
+  }
+}
+class Sub7 extends Base7 {
+  get(): string {
+    return 'sub';
+  }
+}
+const sub7 = new Sub7();
+const bound7: any = sub7.get.bind(sub7);
+console.log(bound7());

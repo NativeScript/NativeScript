@@ -4827,7 +4827,10 @@ export class Translator implements AsyncTranslator {
         return `({ () throws -> ${t} in if let ${own} = jsOwnProperty(${this.coerce(callee.expression, 'Any?')}, ${swiftString(callee.name.text)}) { return ${t === 'Any?' ? ownCall : this.fromAnyCode(`(${ownCall})`, t, true)} }; return ${this.tryPrefix(e)}${this.call(e)} }())`;
       } finally { this.ownCalls.delete(e); }
     }
-    if (e.questionDotToken && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
+    // `callback?.(x)` of a parameter declared present: Swift has it as non-optional, and the call is a plain one.
+    const param = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;
+    const presentParam = !!param && ts.isParameter(param) && !param.questionToken && !param.initializer && !this.mayBeNull(param) && !nullableTypeNode(param.type) && isFunctionType(this.typeOf(callee));
+    if (e.questionDotToken && !presentParam && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
@@ -5038,7 +5041,9 @@ export class Translator implements AsyncTranslator {
       if (!receiver || !thisArg || receiver.getText() !== thisArg.getText() || !plain(thisArg)) throw this.error(e, `${method} with a receiver other than the method's object`);
     } else if (ts.isFunctionExpression(held) && thisNodes(held).length) throw this.error(e, `${method} of a function that reads this`);
     if (thisArg && !plain(thisArg)) throw this.error(thisArg, `${method} with a receiver that has side effects`);
-    const type = this.typeOf(target);
+    // A method of the program's own is referred to with the signature Swift emits it with (an override's is its root's).
+    const own = decl && ts.isMethodDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && ts.isClassLike(decl.parent) ? this.emittedSignature(decl) : null;
+    const type = own ? `(${own.params.map((p) => (isFunctionType(p.type) && !p.type.startsWith('@escaping') ? `@escaping ${p.type}` : p.type)).join(', ')}) throws -> ${own.ret}` : this.typeOf(target);
     const fn = functionParts(type.replace(/^\((.*)\)[?!]$/, '$1'))!;
     const optional = isOptional(type) || type.endsWith('!');
     let items: readonly ts.Expression[] = rest;
