@@ -287,3 +287,25 @@ console.log(BaseFace.fallback === undefined, Face.fallback.family);
 Face.rename('mono');
 Face.fallback.family += '!';
 console.log(Face.fallback.family, BaseFace.fallback === undefined);
+
+interface Shaped {
+  shape: string;
+}
+class Circle implements Shaped {
+  private _shape = 'circle';
+  get shape(): string {
+    return this._shape;
+  }
+}
+const vars = new Map<string, string>([['a', '1']]);
+function lookup(key: string): string {
+  return vars.get(key);
+}
+function early(flag: boolean): void {
+  if (flag) return undefined;
+  calls.push('late');
+}
+early(true);
+early(false);
+const shaped: Shaped = new Circle();
+console.log(shaped.shape, lookup('a'), !lookup('b'), calls.at(-1));

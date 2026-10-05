@@ -156,7 +156,9 @@ export class NativeAPI {
   extendsNative(type: ts.Type): boolean { return !!this.nativeBase(this.t.checker.getApparentType(type)); }
 
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
-  private nativeBase(type: ts.Type): { module: string; name: string } | null {
+  private nativeBase(of: ts.Type): { module: string; name: string } | null {
+    // A class's own `this` is a reference to the class.
+    const type = (of as ts.TypeReference).target ?? of;
     if (typeof type.isClassOrInterface !== 'function' || !type.isClassOrInterface()) return null;
     for (const b of this.t.checker.getBaseTypes(type)) {
       const found = this.symbolModule(b.getSymbol()) ?? this.nativeBase(b);
@@ -574,6 +576,8 @@ export class NativeAPI {
     if (bridged) return bridged;
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
+    // An object where a protocol is taken (`recognizer.delegate = navigationController`): Objective-C asks the object whether it conforms.
+    if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`;
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
     // An out-parameter: the cell's storage of the pointee's type, written back.

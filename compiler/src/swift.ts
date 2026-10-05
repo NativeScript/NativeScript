@@ -1257,10 +1257,26 @@ export class Translator implements AsyncTranslator {
   }
 
   /** An interface classes implement: a protocol, and `<Name>Object` for the object literals of its type. */
+  private implementedReadOnly(iface: string, field: string): boolean {
+    let found = false;
+    const visit = (n: ts.Node) => {
+      if (found) return;
+      if (ts.isClassDeclaration(n) && n.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => x.expression.getText() === iface))) {
+        const accessors = n.members.filter((x): x is ts.AccessorDeclaration => ts.isAccessor(x) && x.name.getText() === field);
+        if (accessors.length && accessors.every(ts.isGetAccessorDeclaration)) found = true;
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+    return found;
+  }
+
   private protocolCode(name: string, members: ts.NodeArray<ts.TypeElement>): string {
     const fields = members.filter(ts.isPropertySignature).map((m) => {
       const t = this.typeOf(m);
-      return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t, readonly: hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) };
+      // A field a class implementing the interface has only a getter for is read-only through it.
+      const own = (m.name as ts.Identifier).text;
+      return { name: own, type: m.questionToken ? optionalType(t) : t, readonly: hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) || this.implementedReadOnly(name, own) };
     });
     const methods = members.filter(ts.isMethodSignature).map((m) => {
       const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name) }));
@@ -1683,6 +1699,10 @@ export class Translator implements AsyncTranslator {
       if (ts.isReturnStatement(n)) {
         const e = n.expression;
         const local = e && ts.isIdentifier(e) ? this.checker.getSymbolAtLocation(e)?.valueDeclaration : undefined;
+        // A library call that may give undefined (`map.get(key)`), which the lenient checker reads as its value type.
+        const sig = e && ts.isCallExpression(e) ? this.checker.getResolvedSignature(e)?.getDeclaration() : undefined;
+        const declared = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
+        if (declared && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(declared) && declared.types.some((y) => y.kind === ts.SyntaxKind.UndefinedKeyword)) found = true;
         // An optional parameter, or a local declared without a value, may still be undefined.
         if (!e || isNullish(e) || (ts.isCallExpression(e) && this.typeOf(e) === 'Void') || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && !local.initializer && ts.findAncestor(local, (n) => n === fn))) found = true;
       }
@@ -2816,6 +2836,13 @@ export class Translator implements AsyncTranslator {
       if (missing && this.lenient && this.returnType !== 'Void' && !this.returnType.endsWith('?') && this.zero(this.returnType) !== null) return `${i}return ${this.zero(this.returnType)}`;
       // A native struct has no undefined: its zero value.
       if (missing && this.lenient && this.native.isStructType(this.returnType)) return `${i}return ${this.returnType}()`;
+      // `return undefined` from a function returning nothing.
+      if (this.returnType === 'Void' && s.expression && isNullish(s.expression)) return `${i}return`;
+      // A library call that may give undefined (`map.get(key)`) returned where a value type is declared: as such a slot reads undefined.
+      if (s.expression && !isOptional(this.returnType) && this.returnType !== 'Any?' && this.returnType !== 'Void' && ts.isCallExpression(s.expression)) {
+        const maybe = this.maybeUndefined(s.expression);
+        if (maybe) return `${i}return ${this.tryPrefix(s.expression)}${this.undefinedAs(maybe, this.returnType)}`;
+      }
       return i + (s.expression ? `return ${this.tryPrefix(s.expression)}${this.coerce(s.expression, this.returnType)}` : this.returnType?.endsWith('?') ? 'return nil' : 'return');
     }
     if (ts.isIfStatement(s)) {
