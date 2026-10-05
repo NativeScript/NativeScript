@@ -5800,6 +5800,10 @@ export class Translator implements AsyncTranslator {
       const lt = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
       return `${target()} = ${this.native.isEnumType(lt.replace(/\?$/, '')) ? this.native.enumFromNumber(value, lt) : value}`;
     }
+    // A number variable lenient code may read before it is assigned (held optional): the operation on what it holds, NaN when undefined.
+    const arithmetic: Partial<Record<ts.SyntaxKind, string>> = { [K.PlusEqualsToken]: '+', [K.MinusEqualsToken]: '-', [K.AsteriskEqualsToken]: '*', [K.SlashEqualsToken]: '/' };
+    const held = ts.isIdentifier(e.left) ? this.resolve(e.left) : undefined;
+    if (arithmetic[op] && held && this.undefinedVars.get(held) === 'Double?' && !this.isString(e.right)) return `${target()} = (${target()} ?? .nan) ${arithmetic[op]} ${this.toNumber(e.right)}`;
     switch (op) {
       case K.EqualsToken: return this.assignment(e);
       // An untyped variable holds whatever the operation gives: a string, or a number.
