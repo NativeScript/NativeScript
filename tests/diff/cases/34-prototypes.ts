@@ -309,3 +309,30 @@ early(true);
 early(false);
 const shaped: Shaped = new Circle();
 console.log(shaped.shape, lookup('a'), !lookup('b'), calls.at(-1));
+
+abstract class Part {
+  kind = 'part';
+}
+class Plain extends Part {}
+class Checked2 extends Part {
+  constructor(public n: number) {
+    super();
+    if (n < 0) throw new Error('negative');
+  }
+}
+console.log(new Plain().kind, new Checked2(1).n);
+try {
+  new Checked2(-1);
+} catch (e) {
+  console.log((e as Error).message);
+}
+function maybeSource(flag: boolean): Source {
+  if (!flag) return null;
+  return new Source('m', 1);
+}
+const makers: { make: (flag: boolean) => Source } = { make: maybeSource };
+const timed: string[] = [];
+setTimeout(async () => {
+  timed.push('async');
+  console.log(timed.join(), makers.make(true).url, makers.make(false) === null || makers.make(false) === undefined);
+}, 0);

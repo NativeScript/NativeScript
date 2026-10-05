@@ -610,6 +610,8 @@ export class NativeAPI {
     }
     // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
     if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
+    // A BOOL the runtime marshals from any value: its truthiness.
+    if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
     // A dictionary where Swift keys one by a string-backed type (`[NSAttributedString.Key: Any]`).
     const keyed = /^\[([\w.]+): Any\]$/.exec(b)?.[1];
     if (keyed && keyed !== 'String' && keyed !== 'AnyHashable' && source.replace(/[?!]$/, '') !== b && this.isStringConstants(keyed)) {
@@ -932,6 +934,8 @@ export class NativeAPI {
     if (tsType === 'Any?' && swiftType !== 'Any?' && swiftType !== 'Any') {
       if (b === 'Bool' || b === 'ObjCBool') return `jsTruthy(${code})`;
       if (NUMBERS.has(b)) return b === 'Double' ? `jsToNumber(${code})` : `${b}(jsToNumber(${code}))`;
+      // A BOOL the runtime marshals from any value: its truthiness.
+      if (b === 'Bool' && !optional(swiftType)) return `jsTruthy(${code})`;
       return optional(swiftType) ? `(jsToNative(${code}) as? ${b})` : `(jsToNative(${code}) as! ${b})`;
     }
     if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return `${b}(${code})`;

@@ -1918,6 +1918,8 @@ export class Translator implements AsyncTranslator {
   callback(e: ts.Expression): string {
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
       const code = this.closure(e);
+      // An async callback's promise is dropped; its rejection is the promise's.
+      if (isAsync(e)) return `{ _ = (${code})() }`;
       return this.throwsInfo.fn(e) ? `{ jsReport(${code}) }` : code;
     }
     // A Promise executor's resolve passed as the callback (`setTimeout(resolve, ms)`) resolves with undefined.
@@ -3399,6 +3401,12 @@ export class Translator implements AsyncTranslator {
     if (/^NSMutable(Array|Dictionary)[?!]?$/.test(source) && /^\[.*\]$/.test(target)) return `(${this.expr(e)} as! ${target})`;
     const spread = source !== target ? this.restFunction(e, source, target) ?? this.defaultedFunction(e, source, target) : null;
     if (spread) return spread;
+    // A function declaration giving undefined where its type says a value (lenient code): its Swift result is optional.
+    const fnDecl = ts.isIdentifier(bare) ? this.resolve(bare)?.valueDeclaration : undefined;
+    if (fnDecl && ts.isFunctionDeclaration(fnDecl) && this.mayReturnUndefined(fnDecl) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) {
+      const actual = `(${fnDecl.parameters.map((p) => this.paramType(p)).join(', ')}) throws -> ${this.returnTypeOf(fnDecl)}`;
+      if (actual !== target) return this.convert(this.expr(e), actual, target);
+    }
     if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(source.replace(/^\((.*)\)\?$/, '$1')) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) return this.convert(this.expr(e), source, target);
     if (source === 'Any?' && target !== 'Void') {
       if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.expr(e);
@@ -5774,7 +5782,14 @@ export class Translator implements AsyncTranslator {
           const body = this.withThis(p, '__this', false, () => this.functionBody(p, 'Void', this.indent));
           given.set(`__set_${key}`, `{ (__this: ${target}, ${ident(v.text)}: ${f.accessor.value}) -> Void in${body.slice(1)}`);
         }
-      } else if (ts.isShorthandPropertyAssignment(p)) given.set(p.name.text, this.narrowed(p.name, ident(p.name.text)));
+      } else if (ts.isShorthandPropertyAssignment(p)) {
+        const code = this.narrowed(p.name, ident(p.name.text));
+        // A function declaration giving undefined where its type says a value: its Swift result is optional (see `coerce`).
+        const fn = this.checker.getShorthandAssignmentValueSymbol(p)?.valueDeclaration;
+        const want = order.find((f) => f.name === p.name.text)?.type;
+        const actual = fn && ts.isFunctionDeclaration(fn) && this.mayReturnUndefined(fn) ? `(${fn.parameters.map((q) => this.paramType(q)).join(', ')}) throws -> ${this.returnTypeOf(fn)}` : null;
+        given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : code);
+      }
       else if (ts.isSpreadAssignment(p)) {
         const src = this.expr(p.expression);
         if (this.isAny(p.expression)) {
