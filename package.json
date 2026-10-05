@@ -1,5 +1,5 @@
 {
-  "name": "@nativescript/native-release",
+  "name": "@nativescript/compiler",
   "version": "0.1.0",
   "description": "Compiles a NativeScript app written with Vue, Angular, Svelte, React, Solid or Octane into a native iOS or Android app with no JavaScript runtime.",
   "type": "module",
