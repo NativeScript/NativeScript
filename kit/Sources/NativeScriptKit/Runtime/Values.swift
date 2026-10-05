@@ -707,3 +707,18 @@ public let jsGlobalThis = JSObject([])
 /// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
 @inline(__always)
 public func jsImplicit<T>(_ value: T?) -> T! { value }
+
+/// `value.constructor.name`: the name of the class that made the value.
+public func jsConstructorName(_ value: Any?) -> String {
+    let v = jsFlat(value)
+    if let dynamic = v as? JSDynamic, let name = dynamic.jsClassName { return name }
+    switch v {
+    case is String: return "String"
+    case is Double: return "Number"
+    case is Bool: return "Boolean"
+    case nil: return ""
+    default:
+        let name = String(describing: type(of: v!))
+        return name.split(separator: "__").first.map(String.init) ?? name
+    }
+}

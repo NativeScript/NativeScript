@@ -907,6 +907,7 @@ export class Translator implements AsyncTranslator {
    */
   lenientRef(t: string): string {
     if (!this.lenient || t.endsWith('?') || t.endsWith('!') || t.endsWith('.Type') || isFunctionType(t)) return t;
+    if (t.startsWith('any ')) return `(${t})!`;
     if (['Double', 'String', 'Bool', 'Any', 'Void', 'Never', 'JSBigInt', 'JSSymbol'].includes(t) || t.startsWith('(') || t.startsWith('[') || this.native.isEnumType(t) || this.native.isStructType(t) || this.genericNames.has(t)) return t;
     return `${t}!`;
   }
@@ -924,9 +925,10 @@ export class Translator implements AsyncTranslator {
   isPromiseType(t: string): boolean { return t.startsWith('JSPromise<'); }
   /** A field's type and initial value before its initializer runs: lenient code's object fields hold undefined too. */
   private fieldType(t: string): string {
-    if (this.lenientRef(t) === t) return this.deferred(t);
+    const declared = this.lenientRef(t);
+    if (declared === t) return this.deferred(t);
     const z = this.zero(t);
-    return z ? `${t}! = ${z}` : `${t}!`;
+    return z ? `${declared} = ${z}` : declared;
   }
   private deferred(t: string): string {
     const z = this.zero(t);
@@ -1014,7 +1016,7 @@ export class Translator implements AsyncTranslator {
       const name = declName(d);
       const target = ref(d);
       const t = this.typeOf(d.name);
-      if (!d.initializer) { emit(`${modifiers}var ${name}: ${this.deferred(t)}`); continue; }
+      if (!d.initializer) { emit(`${modifiers}var ${name}: ${this.fieldType(t)}`); continue; }
       // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
       const fn = ts.isCallExpression(d.initializer) && this.calleeName(d.initializer) === 'computed' ? d.initializer.arguments[0] : undefined;
       if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
@@ -1030,8 +1032,8 @@ export class Translator implements AsyncTranslator {
         later(() => `    ${target} = ${maybe}`);
         continue;
       }
-      if (this.pure(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`); continue; }
-      emit(`${modifiers}var ${name}: ${this.deferred(t)}`);
+      if (this.pure(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.coerce(d.initializer, t)}`); continue; }
+      emit(`${modifiers}var ${name}: ${this.fieldType(t)}`);
       later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
     }
   }
@@ -1064,8 +1066,8 @@ export class Translator implements AsyncTranslator {
       later(() => this.stmt(st));
     }
     if (!values) return '';
-    // A namespace merged into a class of its name: the class's static members.
-    const merged = (this.checker.getSymbolAtLocation(md.name)?.flags ?? 0) & ts.SymbolFlags.Class;
+    // A namespace merged into a class or enum of its name: the type's static members.
+    const merged = (this.checker.getSymbolAtLocation(md.name)?.flags ?? 0) & (ts.SymbolFlags.Class | ts.SymbolFlags.Enum);
     return [`${merged ? 'extension' : 'enum'} ${ident(name)} {`, ...lines.map((l) => indented(l)), '}'].join('\n');
   }
 
@@ -1127,8 +1129,8 @@ export class Translator implements AsyncTranslator {
     const member = this.checker.getSymbolAtLocation(e.name);
     const target = member && member.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(member) : member;
     const decl = target?.valueDeclaration;
-    // A class's static member, where a namespace merges into the class.
-    if (!decl || ts.isClassElement(decl)) return null;
+    // A class's static member or an enum's member, where a namespace merges into the class or enum.
+    if (!decl || ts.isClassElement(decl) || ts.isEnumMember(decl)) return null;
     if (ts.isClassDeclaration(decl) || ts.isEnumDeclaration(decl)) return identPath(this.topName(decl, target!.name));
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
@@ -2163,7 +2165,8 @@ export class Translator implements AsyncTranslator {
       // A property with only a setter reads as undefined in JavaScript.
       // An override that narrows its type (`get ios(): UIColor` over `get ios(): any`) keeps the type it overrides, as Swift requires.
       const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));
-      const mods = `${a.get && isStatic(a.get) ? 'static ' : ''}${inherited.has(n) ? 'override ' : ''}`;
+      // Library mode: a class's static accessors are `class` ones, which a subclass's can override.
+      const mods = `${a.get && isStatic(a.get) ? (this.library ? 'class ' : 'static ') : ''}${inherited.has(n) ? 'override ' : ''}`;
       const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
       const parts: string[] = [];
       // Library mode: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
@@ -3761,6 +3764,8 @@ export class Translator implements AsyncTranslator {
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
+    // `value.constructor.name`: its class's name.
+    if (name === 'name' && ts.isPropertyAccessExpression(target) && target.name.text === 'constructor' && !isWriteTarget(e)) return `jsConstructorName(${this.coerce(target.expression, 'Any?')})`;
     // `Function.prototype`: a function that does nothing.
     if (name === 'prototype' && ts.isIdentifier(target) && target.text === 'Function' && isLibDeclaration(this.resolve(target)?.declarations?.[0])) return '({ (_: [Any?]) throws -> Any? in nil } as JSFunction)';
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {

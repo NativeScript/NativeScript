@@ -154,3 +154,4 @@ console.log(holder.describe(), holder.label());
 const loose: any = {};
 const missing: Named = loose.named;
 console.log(missing === undefined, missing?.name);
+console.log(holder.constructor.name, new Named('x').constructor.name);

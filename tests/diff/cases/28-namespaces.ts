@@ -78,3 +78,15 @@ namespace Flex {
   export const unit = 3;
 }
 console.log(new Flex().total(5), Flex.baseline(1), Flex.unit, Flex.grow(4));
+
+// A namespace merged into an enum.
+enum Suspend {
+  Loaded = 1 << 20,
+  Native = 1 << 21,
+}
+namespace Suspend {
+  export function describe(type: Suspend): string {
+    return `loaded:${!!(type & Suspend.Loaded)} native:${!!(type & Suspend.Native)}`;
+  }
+}
+console.log(Suspend.describe(Suspend.Loaded), Suspend.describe(Suspend.Loaded | Suspend.Native));

@@ -48,6 +48,13 @@ export class Throws {
   /** Whether calling `fn` (a declaration with a body) can throw. */
   fn(fn: ts.Node): boolean {
     if (this.throwing.has(fn)) return true;
+    // Swift initializers override as methods do: a class's constructor throws if one in its hierarchy does.
+    if (ts.isConstructorDeclaration(fn) && ts.isClassLike(fn.parent)) {
+      for (const other of [...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
+        const c = other.members.find((x) => ts.isConstructorDeclaration(x) && x !== fn);
+        if (c && this.throwing.has(c)) return true;
+      }
+    }
     // Swift overrides share `throws`: a method throws if any method of its name in the hierarchy does.
     if ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && ts.isClassLike(fn.parent) && fn.name) {
       const name = fn.name.getText();

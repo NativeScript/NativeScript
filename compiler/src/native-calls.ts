@@ -759,7 +759,7 @@ export class NativeAPI {
       const inner = `__a${k}`;
       return `${label ?? '_'} ${inner}: ${type}`;
     });
-    const tsRet = t.returnTypeOf(m);
+    const ownRet = t.returnTypeOf(m);
     // A parameter the body never reads is not bound: a non-escaping block could not be.
     const read = (k: number) => {
       const sym = this.t.checker.getSymbolAtLocation(m.parameters[k].name);
@@ -778,9 +778,11 @@ export class NativeAPI {
       }
       return `        let ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
     }).filter(Boolean);
+    const ret = target.returns;
+    // A result Objective-C declares nullable: the body may give undefined.
+    const tsRet = optional(ret) && ownRet !== 'Void' && !ownRet.endsWith('?') && ownRet !== 'Any?' ? optionalType(ownRet) : ownRet;
     const body = t.functionBody(m, tsRet, '        ');
     const throws = t.throwsInfo.fn(m);
-    const ret = target.returns;
     const call = `{ () ${throws ? 'throws ' : ''}-> ${tsRet} in${body.slice(1)}()`;
     // A Void method's body is the method's own (its returns return from it); a value goes through a closure to be converted.
     const result = ret === 'Void'
@@ -796,6 +798,11 @@ export class NativeAPI {
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
+    // A native enum is a number in JavaScript.
+    if (tsType === 'Double' && this.isEnumType(b)) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
+    // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
+    const own = tsType.replace(/[?!]$/, '');
+    if (own !== b && /^[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
     return code;
   }

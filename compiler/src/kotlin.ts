@@ -673,7 +673,12 @@ export class Translator implements AsyncTranslator {
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, sf.fileName, st.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, sf.fileName, st.type.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
-      if (ts.isEnumDeclaration(st)) { out.push(this.enumDecl(st)); continue; }
+      if (ts.isEnumDeclaration(st)) {
+        // A namespace merged into the enum: members of its object.
+        const merged = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+        out.push(this.enumDecl(st, merged));
+        continue;
+      }
       if (ts.isModuleDeclaration(st) && this.mergedClass(st)) continue;
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) out.push(this.func(st, ident(this.topName(st, st.name.text)))); continue; }
@@ -777,7 +782,7 @@ export class Translator implements AsyncTranslator {
   private mergedStatics: string[] = [];
   /** Whether a namespace merges into a class of its name in its file. */
   private mergedClass(md: ts.ModuleDeclaration): boolean {
-    return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => ts.isClassDeclaration(d) && d.getSourceFile() === md.getSourceFile());
+    return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => (ts.isClassDeclaration(d) || ts.isEnumDeclaration(d)) && d.getSourceFile() === md.getSourceFile());
   }
 
   /** The Kotlin path of a namespace declaration (`CoreTypes.AnimationCurve`). */
@@ -826,8 +831,8 @@ export class Translator implements AsyncTranslator {
     const member = this.checker.getSymbolAtLocation(e.name);
     const target = member && member.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(member) : member;
     const decl = target?.valueDeclaration;
-    // A class's static member, where a namespace merges into the class.
-    if (!decl || ts.isClassElement(decl)) return null;
+    // A class's static member or an enum's member, where a namespace merges into the class or enum.
+    if (!decl || ts.isClassElement(decl) || ts.isEnumMember(decl)) return null;
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     if (ts.isClassDeclaration(decl)) return this.className(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
@@ -1045,7 +1050,7 @@ export class Translator implements AsyncTranslator {
     return `(${code} as ${type})`;
   }
 
-  private enumDecl(e: ts.EnumDeclaration): string {
+  private enumDecl(e: ts.EnumDeclaration, merged: string[] = []): string {
     const lines = [`object ${ident(e.name.text)} {`];
     for (const m of e.members) {
       const v = this.checker.getConstantValue(m);
@@ -1059,6 +1064,7 @@ export class Translator implements AsyncTranslator {
       return typeof v === 'number' ? [pair, `Pair<String, Any?>(${kotlinString(String(v))}, ${kotlinString(n)})`] : [pair];
     });
     lines.push(`    val jsEnumObject: JSObject by lazy { JSObject(listOf<Pair<String, Any?>>(${entries.join(', ')})) }`);
+    lines.push(...merged.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')));
     lines.push('}');
     return lines.join('\n');
   }
