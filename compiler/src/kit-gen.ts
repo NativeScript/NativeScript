@@ -164,7 +164,10 @@ export function generateKit(o: KitOptions): KitResult {
     if (r.resolvedModule) resolutions.set(`${containing}\0${m}`, r.resolvedModule.resolvedFileName);
     return r;
   });
-  const roots = [...compiled, join(modules, '@nativescript/types-ios/index.d.ts'), join(o.declarations, 'global-types.d.ts'),
+  // The iOS typings core references beyond types-ios' common set (Symbols, CoreText…), as types-ios publishes them.
+  const references = join(core, 'references.d.ts');
+  const referenced = existsSync(references) ? [...readFileSync(references, 'utf8').matchAll(/types-ios\/src\/(lib\/ios\/[^"]+\.d\.ts)/g)].map((m) => join(modules, '@nativescript/types-ios', m[1])).filter(existsSync) : [];
+  const roots = [...compiled, join(modules, '@nativescript/types-ios/index.d.ts'), ...referenced, join(o.declarations, 'global-types.d.ts'),
     ...['objc!NativeScriptUtils.d.ts', 'objc!MaterialComponents.d.ts'].map((t) => join(o.declarations, 'platforms/ios/typings', t)).filter(existsSync)];
   const program = ts.createProgram(roots, options, host);
   // Core's own native code (TNSWidgets, NativeScriptUtils…), as installed with the declarations: what the kit links.
