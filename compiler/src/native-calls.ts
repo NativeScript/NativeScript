@@ -300,6 +300,8 @@ export class NativeAPI {
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
+      // By Foundation's own lookup: isEqual:, and NSNotFound where the array lacks the object.
+      if (args && name === 'indexOfObject' && args.length === 1 && !recv.endsWith('?')) return `Double((${recv} as NSArray).index(of: ${this.t.coerce(args[0], 'Any?')} as Any))`;
     }
     if (isDict) {
       if (args === null && name === 'count') return count;
