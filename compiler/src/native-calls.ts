@@ -517,6 +517,8 @@ export class NativeAPI {
     if (maybe) return maybe;
     const bridged = bridge(t.expr(e), source, target);
     if (bridged) return bridged;
+    const held = this.heldBlock(t.expr(e), source, target);
+    if (held) return held;
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
     // An out-parameter: the cell's storage of the pointee's type, written back.
@@ -564,6 +566,8 @@ export class NativeAPI {
     const native = ts.isIdentifier(e) ? this.symbolModule(this.t.resolve(e)) : null;
     const constant = native && lookupConstant(native.module, native.name);
     if (constant && base(constant.type) === b) return constant.swift;
+    // A constant of a typed-constants struct (`CFRunLoopMode`) where Swift takes any object: its raw value.
+    if (constant && /^(CFTypeRef|AnyObject|Any)$/.test(b) && this.isTypedConstants(base(constant.type))) return `(${constant.swift}.rawValue as CFTypeRef)`;
     if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !native) {
       return source.endsWith('?') ? `{ (__s: String?) -> ${b}? in __s.map { ${b}(rawValue: $0) } }(${t.expr(e)})` : `${b}(rawValue: ${t.expr(e)})`;
     }
@@ -620,6 +624,18 @@ export class NativeAPI {
     const ret = sig[2].trim();
     const inner = ret === 'Void' ? (throws ? `jsReport { try ${call} }` : `${call}`) : `${throws ? 'try! ' : ''}${call}`;
     return `{ (${swiftParams.join(', ')}) -> ${ret} in ${binds.join('; ')}${binds.length ? '; ' : ''}${ret === 'Void' ? inner : `return ${inner}`} }`;
+  }
+
+  /** A function value (Swift's are `throws`) where Swift takes a block returning nothing: called through one, what it throws reported. */
+  private heldBlock(code: string, source: string, target: SwiftType): string | null {
+    const unwrapped = /^\(.*\)\?$/.test(source) && blockType(source.slice(1, -2)) ? source.slice(1, -2) : source;
+    const fn = /\bthrows\b/.test(unwrapped) ? blockType(unwrapped) : null;
+    const want = blockType(this.unalias(target));
+    if (!fn || !want || want.result !== 'Void' || fn.params.length > want.params.length) return null;
+    const args = fn.params.map((p, k) => this.blockParam(`__b${k}`, want.params[k], p.replace(/^@escaping /, '')));
+    const wrap = `{ (__f: @escaping ${unwrapped}) -> ${want.text} in { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in jsReport { try __f(${args.join(', ')}) } } }`;
+    if (unwrapped === source) return `${wrap}(${code})`;
+    return `(${code}).map(${wrap})${optional(target) ? '' : '!'}`;
   }
 
   private blockParam(code: string, swiftType: SwiftType, tsType: string): string {
@@ -810,6 +826,12 @@ export class NativeAPI {
   enumFromNumber(code: string, swiftType: string): string {
     const b = swiftType.replace(/[?!]$/, '');
     return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
+  }
+
+  /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */
+  private isTypedConstants(swift: string): boolean {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
+    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants'));
   }
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
