@@ -3176,6 +3176,12 @@ export class Translator implements AsyncTranslator {
     const write = (key: string, value: ts.Expression): string => {
       const decl = type.getProperty(key)?.valueDeclaration;
       if (decl && ts.isPropertyDeclaration(decl) && !isStatic(decl)) return `${o}.${ident(key)} = ${this.tryPrefix(value)}${this.coerce(value, this.typeOf(decl.name))}`;
+      // A function for a method takes the method's parameters, as its callers pass them.
+      if (decl && ts.isMethodDeclaration(decl) && (ts.isArrowFunction(value) || ts.isFunctionExpression(value))) {
+        const slot = this.slotOf(value)?.getParameters() ?? [];
+        const params = [...value.parameters.map((q) => this.typeOf(q.name)), ...slot.slice(value.parameters.length).map((q) => this.type(this.checker.getTypeOfSymbolAtLocation(q, value), value))];
+        return `jsExpandoSet(${o}, ${swiftString(key)}, ${this.boxFunction(this.expr(value), `(${params.join(', ')}) throws -> ${this.closureReturn(value)}`)})`;
+      }
       return `jsExpandoSet(${o}, ${swiftString(key)}, ${this.tryPrefix(value)}${this.coerce(value, 'Any?')})`;
     };
     const steps = e.properties.flatMap((p) => {
