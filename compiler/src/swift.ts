@@ -875,10 +875,19 @@ export class Translator implements AsyncTranslator {
 
   private registerInterface(name: string, file: string, members: ts.NodeArray<ts.TypeElement>) {
     if (this.protocols.has(name)) { this.interfaces.set(name, { file, code: () => this.protocolCode(name, members) }); return; }
-    this.interfaces.set(name, { file, code: () => this.objectClass(name, members.filter(ts.isPropertySignature).map((m) => {
+    this.interfaces.set(name, { file, code: () => this.objectClass(name, this.interfaceFields(members), null) });
+  }
+
+  /** An object type's fields: its properties, and its methods as fields holding functions. */
+  private interfaceFields(members: ts.NodeArray<ts.TypeElement>): { name: string; type: string }[] {
+    const out: { name: string; type: string }[] = [];
+    for (const m of members) {
+      if (!(ts.isPropertySignature(m) || ts.isMethodSignature(m)) || !(ts.isIdentifier(m.name) || ts.isStringLiteral(m.name))) continue;
+      if (out.some((f) => f.name === (m.name as ts.Identifier).text)) continue;
       const t = this.typeOf(m);
-      return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t };
-    }), null) });
+      out.push({ name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t });
+    }
+    return out;
   }
 
   /** An interface classes implement: a protocol, and `<Name>Object` for the object literals of its type. */
@@ -1619,6 +1628,12 @@ export class Translator implements AsyncTranslator {
           fieldInits.push(`        self.${keyed.member} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
           this.indent = '    ';
         }
+        continue;
+      }
+      // `[Symbol.toStringTag] = 'TextDecoder'`: what Object.prototype.toString reports.
+      if (keyed?.member === 'jsToStringTag' && !isStatic(m) && m.initializer) {
+        conformances.push('JSToStringTag');
+        lines.push(`    var jsToStringTag: String = ${this.coerce(m.initializer, 'String')}`);
         continue;
       }
       if (keyed) throw this.error(m.name, 'a field named by this symbol');
@@ -3245,6 +3260,9 @@ export class Translator implements AsyncTranslator {
       return !!n && ts.isComputedPropertyName(n) && this.resolve(n.expression) === this.resolve(key);
     }) : undefined;
     if (keyed) return `${target}${q}.__symbol_${(key as ts.Identifier).text}`;
+    // `x[Symbol.toStringTag]` on a class declaring it (a field or a getter).
+    const tag = ts.isPropertyAccessExpression(key) && key.name.text === 'toStringTag' && ts.isIdentifier(key.expression) && key.expression.text === 'Symbol' && this.isLibGlobal(key.expression);
+    if (tag && !isWriteTarget(e) && this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperties().some((p) => wellKnownMember(p.escapedName.toString()) === 'jsToStringTag')) return `${target}${q}.jsToStringTag`;
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
       const code = `${target}${q}[jsKey: ${this.propertyKey(key)}]`;
@@ -4510,9 +4528,8 @@ export class Translator implements AsyncTranslator {
         ...decl.members.filter(ts.isMethodSignature).map((m) => ({ name: m.name.getText(), type: this.typeOf(m), label: `_${m.name.getText()}` })),
       ];
     } else if (shape) order = shape.fields;
-    else if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl))) {
-      order = decl.members.filter(ts.isPropertySignature).map((m) => ({ name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m) }));
-    } else throw this.error(e, `an object literal of type ${name}`);
+    else if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl))) order = this.interfaceFields(decl.members);
+    else throw this.error(e, `an object literal of type ${name}`);
     const given = new Map<string, string>();
     const spreadTemps: string[] = [];
     // Methods that read `this` see the object through a weak reference the literal sets once it exists.

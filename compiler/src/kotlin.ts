@@ -1352,6 +1352,12 @@ export class Translator implements AsyncTranslator {
         lines.push(`    var ${keyed.member}: ${t} = ${m.initializer ? this.coerce(m.initializer, t) : this.zero(t) ?? 'null'}`);
         continue;
       }
+      // `[Symbol.toStringTag] = 'TextDecoder'`: what Object.prototype.toString reports.
+      if (keyed?.member === 'jsToStringTag' && !isStatic(m) && m.initializer) {
+        supertypes.push('JSToStringTag');
+        lines.push(`    override var jsToStringTag: String = ${this.coerce(m.initializer, 'String')}`);
+        continue;
+      }
       if (keyed) throw this.error(m.name, 'a field named by this symbol');
       const n = m.name.getText();
       const t = this.typeOf(m.name);
@@ -2768,8 +2774,17 @@ export class Translator implements AsyncTranslator {
     // A method used as a value is a bound reference.
     const symbol = this.checker.getSymbolAtLocation(e.name);
     const called = ts.isCallExpression(e.parent) && e.parent.expression === e;
-    if (symbol && symbol.flags & ts.SymbolFlags.Method && !called) return `${recv()}::${ident(name)}`;
+    if (symbol && symbol.flags & ts.SymbolFlags.Method && !called && !this.isFunctionField(symbol)) return `${recv()}::${ident(name)}`;
     return this.narrowed(e, `${recv()}${dot}${ident(name)}`);
+  }
+
+  /** A method an object type declares, which its class for object literals holds as a function-typed field. */
+  private isFunctionField(symbol: ts.Symbol): boolean {
+    return !!symbol.declarations?.length && symbol.declarations.every((d) => {
+      if (!ts.isMethodSignature(d)) return false;
+      const owner = ts.isInterfaceDeclaration(d.parent) ? d.parent.name.text : ts.isTypeLiteralNode(d.parent) && ts.isTypeAliasDeclaration(d.parent.parent) ? d.parent.parent.name.text : null;
+      return !!owner && this.interfaces.has(owner) && !this.protocols.has(owner);
+    });
   }
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
@@ -2816,6 +2831,9 @@ export class Translator implements AsyncTranslator {
       return !!n && ts.isComputedPropertyName(n) && this.resolve(n.expression) === this.resolve(key);
     }) : undefined;
     if (keyed) return `${target}${q}.__symbol_${(key as ts.Identifier).text}`;
+    // `x[Symbol.toStringTag]` on a class declaring it (a field or a getter).
+    const tag = ts.isPropertyAccessExpression(key) && key.name.text === 'toStringTag' && ts.isIdentifier(key.expression) && key.expression.text === 'Symbol' && this.isLibGlobal(key.expression);
+    if (tag && !isWriteTarget(e) && this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperties().some((p) => wellKnownMember(p.escapedName.toString()) === 'jsToStringTag')) return `${target}${q}.jsToStringTag`;
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
       const code = `jsGet(${target}, ${this.propertyKey(key)})`;
