@@ -60,3 +60,6 @@ function converter(values: any) {
 }
 const toRole = converter(Role);
 console.log(toRole('BUTTON'), toRole('Header'), toRole('none'), JSON.stringify(Level), Object.keys(Role).join(','));
+const roleName = 'Header';
+const levelKey: string = 'High';
+console.log(Role[roleName], Level[levelKey], Level[Level.High], Role['Missing' as string]);
