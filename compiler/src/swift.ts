@@ -737,7 +737,8 @@ export class Translator implements AsyncTranslator {
     if (known !== undefined) return known;
     this.methodCarried.set(n, false);
     let found = false;
-    if (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) {
+    if (ts.isIdentifier(n) && this.thisFunction(n)) found = true;
+    else if (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) {
       const decl = ts.isVariableDeclaration(n) ? n : this.resolve(n)?.valueDeclaration;
       found = !!decl && ts.isVariableDeclaration(decl) && !decl.type && !!decl.initializer && this.carriesMethod(decl.initializer);
     } else if (ts.isCallExpression(n)) {
@@ -754,6 +755,14 @@ export class Translator implements AsyncTranslator {
     if (decl && ts.isFunctionDeclaration(decl)) return decl;
     const init = decl && ts.isVariableDeclaration(decl) ? decl.initializer : undefined;
     return init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init)) ? init : null;
+  }
+
+  /** Library mode: a function declaration with a `this` parameter, named as a value rather than called. */
+  private thisFunction(e: ts.Identifier): ts.FunctionDeclaration | null {
+    if (!this.library || (ts.isCallExpression(e.parent) && e.parent.expression === e)) return null;
+    const decl = this.resolve(e)?.valueDeclaration;
+    const first = decl && ts.isFunctionDeclaration(decl) && decl.body ? decl.parameters[0] : undefined;
+    return first && ts.isIdentifier(first.name) && first.name.text === 'this' ? decl as ts.FunctionDeclaration : null;
   }
 
   /** Whether a function returns method values. */
@@ -1701,7 +1710,12 @@ export class Translator implements AsyncTranslator {
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? ' throws' : '';
     const params = [this.params(fn, false), ...extraParams].filter(Boolean).join(', ');
     const declared = this.inNativeClass(fn) ? ret : this.lenientRef(ret);
-    return `${modifiers}func ${name}${this.generics(fn)}(${params})${throws}${ret === 'Void' ? '' : ` -> ${declared}`} ${this.functionBody(fn, ret, this.indent)}`;
+    // A function declaring `this` reads it as its first parameter.
+    const first = fn.parameters[0];
+    const body = ts.isFunctionDeclaration(fn) && first && ts.isIdentifier(first.name) && first.name.text === 'this'
+      ? this.withThis(fn, ident('this'), true, () => this.functionBody(fn, ret, this.indent))
+      : this.functionBody(fn, ret, this.indent);
+    return `${modifiers}func ${name}${this.generics(fn)}(${params})${throws}${ret === 'Void' ? '' : ` -> ${declared}`} ${body}`;
   }
 
   /** The nearest method of the same name a source base class declares. */
@@ -2598,12 +2612,33 @@ export class Translator implements AsyncTranslator {
   // ---- Statements --------------------------------------------------------------------------------
 
   /** A list of statements at the current indent, function declarations hoisted as JavaScript hoists them. */
+  /** Variables a function declared before them reads: declared first, assigned where they are declared. */
+  private forwardDeclared = new Set<ts.VariableDeclaration>();
+
   statements(list: ts.Statement[]): string[] {
     const fns = list.filter(ts.isFunctionDeclaration);
+    const forward: string[] = [];
+    list.forEach((st, k) => {
+      if (!ts.isVariableStatement(st)) return;
+      for (const d of st.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        let early = false;
+        const visit = (n: ts.Node, inFn: boolean) => {
+          if (early) return;
+          if (inFn && ts.isIdentifier(n) && n !== d.name && this.checker.getSymbolAtLocation(n) === sym) { early = true; return; }
+          ts.forEachChild(n, (c) => visit(c, inFn || ts.isFunctionLike(c)));
+        };
+        list.forEach((other, j) => { if (j < k || ts.isFunctionDeclaration(other)) visit(other, ts.isFunctionLike(other)); });
+        if (!early) continue;
+        this.forwardDeclared.add(d);
+        forward.push(`${this.indent}var ${ident(d.name.text)}: ${this.deferred(this.typeOf(d.name))}`);
+      }
+    });
     // What follows a read of a null receiver never runs.
     const throwsAt = list.findIndex((s) => !ts.isFunctionDeclaration(s) && leadingNeverRead(s, this.checker));
     const rest = list.filter((s, k) => !ts.isFunctionDeclaration(s) && (throwsAt < 0 || k < throwsAt));
-    const out = [...fns, ...rest].map((s) => this.stmt(s)).filter(Boolean);
+    const out = [...forward, ...[...fns, ...rest].map((s) => this.stmt(s)).filter(Boolean)];
     if (throwsAt >= 0) {
       const read = leadingNeverRead(list[throwsAt], this.checker)!;
       out.push(`${this.indent}throw JSException(JSTypeError(${swiftString(`Cannot read properties of undefined (reading '${read.name.text}')`)}))`);
@@ -2825,6 +2860,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
+      if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`;
       // Lenient code may read it before any assignment (`let result: string; if (!result) …`): undefined until assigned.
       if (!d.initializer && this.lenient && !lowered && !t.endsWith('?') && t !== 'Any?' && this.zero(t) !== null) {
         const sym = this.resolve(d.name);
@@ -3445,6 +3481,15 @@ export class Translator implements AsyncTranslator {
 
   private identifier(e: ts.Identifier): string {
     const name = e.text;
+    // A function declaring `this`, as a value: a method value calling it with the receiver it is given.
+    const thisFn = this.thisFunction(e);
+    if (thisFn) {
+      const params = thisFn.parameters.slice(1);
+      const args = params.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true));
+      const call = `${this.throwsInfo.fn(thisFn) ? 'try ' : ''}${this.refName(e)}(${['__this', ...args].join(', ')})`;
+      const ret = this.returnTypeOf(thisFn);
+      return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} } as JSMethod)`;
+    }
     if (this.isArguments(e)) {
       const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;
       if (!fn || !this.readsArguments(fn) || (ts.isFunctionExpression(fn) && !this.library)) throw this.error(e, '`arguments` of a function expression');

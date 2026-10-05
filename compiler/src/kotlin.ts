@@ -2046,9 +2046,30 @@ export class Translator implements AsyncTranslator {
 
   // ---- Statements --------------------------------------------------------------------------------
 
+  /** Variables a function declared before them reads: declared first, assigned where they are declared. */
+  private forwardDeclared = new Set<ts.VariableDeclaration>();
+
   statements(list: ts.Statement[]): string[] {
     const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
-    return [...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean);
+    const forward: string[] = [];
+    list.forEach((st, k) => {
+      if (!ts.isVariableStatement(st)) return;
+      for (const d of st.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        let early = false;
+        const visit = (n: ts.Node, inFn: boolean) => {
+          if (early) return;
+          if (inFn && ts.isIdentifier(n) && n !== d.name && this.checker.getSymbolAtLocation(n) === sym) { early = true; return; }
+          ts.forEachChild(n, (c) => visit(c, inFn || ts.isFunctionLike(c)));
+        };
+        list.forEach((other, j) => { if (j < k || hoisted.includes(other)) visit(other, ts.isFunctionLike(other)); });
+        if (!early) continue;
+        this.forwardDeclared.add(d);
+        forward.push(`${this.indent}${this.deferredDeclaration(ident(d.name.text), this.typeOf(d.name))}`);
+      }
+    });
+    return [...forward, ...[...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
   }
 
   block(b: ts.Statement, base = this.indent): string {
@@ -2205,6 +2226,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
+      if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.coerce(d.initializer!, t)}`;
       const nullInit = !!d.initializer && (d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined'));
       if ((nullInit || (!d.initializer && !lowered)) && this.pluginFiles.has(d.getSourceFile().fileName) && !t.endsWith('?') && this.isObjectType(t)) {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
