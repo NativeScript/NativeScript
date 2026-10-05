@@ -73,3 +73,9 @@ function listen(name: string, once?: boolean): string {
   return `${name} ${once} ${flag}`;
 }
 console.log(listen('a'), listen('b', false), listen('c', true));
+
+const sizes = new Map<string, number>([['small', 0.85]]);
+function scaled(size: number): number {
+  return size * 2;
+}
+console.log(scaled(sizes.get('small')), scaled(sizes.get('huge')), sizes.get('huge') === undefined, sizes.get('small') || 1);

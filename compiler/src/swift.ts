@@ -1730,10 +1730,20 @@ export class Translator implements AsyncTranslator {
   private rawOptional = new Set<ts.Node>();
 
   /** A call of a function that may return undefined, read where its declared type is wanted: as JavaScript converts undefined there. */
+  /** Checked without strictNullChecks, a library call's `T | undefined` (`map.get(k)`) reads as `T`; Swift still says it may be missing. */
+  private libMayBeUndefined(e: ts.CallExpression): boolean {
+    if (!this.lenient || isOptional(this.typeOf(e)) || this.typeOf(e) === 'Any?') return false;
+    const sig = this.checker.getResolvedSignature(e)?.getDeclaration();
+    const t = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
+    return !!t && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
+  }
+
   private undefinedResult(e: ts.CallExpression, code: string): string {
     if (this.rawOptional.has(e)) return code;
     // A receiver (`f().x`): the member read unwraps it, as for any call that may give undefined.
     if ((ts.isPropertyAccessExpression(e.parent) || ts.isElementAccessExpression(e.parent)) && e.parent.expression === e) return code;
+    // A map's value read where a value of its type is wanted: a missing one as the type reads undefined.
+    if (this.libMayBeUndefined(e) && ts.isPropertyAccessExpression(e.expression) && /^JS(Map|WeakMap)</.test(this.typeOf(e.expression.expression).replace(/[?!]$/, ''))) return this.undefinedAs(code, this.typeOf(e));
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
     if (!decl || ts.isJSDocSignature(decl) || !this.mayReturnUndefined(decl) || !this.returnTypeOf(decl).endsWith('?')) return code;
     const t = this.typeOf(e);
@@ -4270,11 +4280,9 @@ export class Translator implements AsyncTranslator {
         try { return this.expr(e); } finally { this.rawOptional.delete(e); }
       }
     }
-    // Checked without strictNullChecks, a library call's `T | null` reads as `T`; Swift still says it may be missing.
-    if (this.lenient && ts.isCallExpression(e) && !this.typeOf(e).endsWith('?') && this.typeOf(e) !== 'Any?') {
-      const sig = this.checker.getResolvedSignature(e)?.getDeclaration();
-      const t = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
-      if (t && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword))) return this.expr(e);
+    if (ts.isCallExpression(e) && this.libMayBeUndefined(e)) {
+      this.rawOptional.add(e);
+      try { return this.expr(e); } finally { this.rawOptional.delete(e); }
     }
     // `a?.b() as T`: undefined where the chain stops, whatever the assertion says.
     if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && !this.typeOf(e).endsWith('?') && this.isObjectRef(e)) {
