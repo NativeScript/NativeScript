@@ -152,7 +152,11 @@ export class NativeAPI {
   }
 
   /** Whether a type is an app class extending a native one. */
-  extendsNative(type: ts.Type): boolean { return !!this.nativeBase(this.t.checker.getApparentType(type)); }
+  extendsNative(type: ts.Type): boolean {
+    const c = this.t.checker;
+    if (typeof type.isTypeParameter !== 'function') return false;
+    return !!this.nativeBase(type.isTypeParameter() ? c.getBaseConstraintOfType(type) ?? type : c.getApparentType(type));
+  }
 
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
   private nativeBase(type: ts.Type): { module: string; name: string } | null {
@@ -610,6 +614,8 @@ export class NativeAPI {
       if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
       return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `(jsFlat(${t.expr(e)}) as! ${b})`;
     }
+    // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
+    if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
     if (/^NSMutable(Array|Dictionary)\??$/.test(source) && b.startsWith('[')) return `(${t.expr(e)}${source.endsWith('?') && !optional(target) ? '!' : ''} as${b === '[Any]' || b === '[AnyHashable: Any]' ? '' : '!'} ${b})`;
     if (source.startsWith('JSArray<') && b.startsWith('[') && !b.includes(':')) {
       if (ts.isArrayLiteralExpression(e) && !e.elements.length) return '[]';

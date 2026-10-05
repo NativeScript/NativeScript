@@ -3666,8 +3666,12 @@ export class Translator implements AsyncTranslator {
     // `parseInt`, `parseFloat` as values (`valueConverter: parseInt`): functions of the string they are given.
     if ((name === 'parseInt' || name === 'parseFloat') && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && isLibDeclaration(this.resolve(e)?.declarations?.[0])) {
       // The closure takes the parameters its slot gives (`map` passes an index, which parseInt reads as the radix).
-      const slot = this.checker.getContextualType(e) && this.checker.getNonNullableType(this.checker.getContextualType(e)!).getCallSignatures()[0];
-      const types = (slot?.getParameters() ?? []).map((p) => this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
+      // Without a slot (`static parse = parseInt`), the function's own parameters.
+      const slot = (this.checker.getContextualType(e) && this.checker.getNonNullableType(this.checker.getContextualType(e)!).getCallSignatures()[0]) ?? this.checker.getTypeAtLocation(e).getCallSignatures()[0];
+      const types = (slot?.getParameters() ?? []).map((p) => {
+        const t = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+        return p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.questionToken ? optionalType(t) : t;
+      });
       const params = types.map((t, k) => `__p${k}: ${k === 0 ? 'String' : t}`);
       const radix = types.length > 1 ? (types[1].endsWith('?') ? '__p1' : 'Optional(__p1)') : 'nil';
       const body = name === 'parseInt' ? `jsParseInt(__p0, ${radix})` : 'jsParseFloat(__p0)';
