@@ -76,7 +76,7 @@ export const ios = {
 	],
 	/**
 	 * What the kit implements instead: a core file's function, an npm package's export
-	 * (`npm:<package>`, `*` for the namespace), or a moot module's export (`moot:<file>`),
+	 * (`npm:<package>`, `*` for the namespace), a moot module's export (`moot:<file>`), or a file of the app's (`~/package.json`),
 	 * to the kit's Swift.
 	 */
 	counterparts: {
@@ -90,7 +90,13 @@ export const ios = {
 		'application/scene-delegate-bridge.ts': { getLegacyMethod: 'ApplicationDelegateClass.getLegacyMethod' },
 		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
+		'~/package.json': { default: 'CorePackages.appConfig' },
 		'moot:ui/builder/index.ts': { Builder: 'CorePackages.builder' },
+		'moot:module-name-resolver/helpers.ts': {
+			prepareAppForModuleResolver: 'CorePackages.noModuleResolver',
+			clearResolverCache: 'CorePackages.noModuleResolver',
+			_setResolver: 'CorePackages.noModuleResolver',
+		},
 	},
 	/** Modules a compiled app has no use for (the XML builder, the inspector, runtime module loading, the JavaScript network stack): what core reads from them is untyped, and using it throws. */
 	moot: ['debugger/', 'ui/builder/', 'module-name-resolver/', 'http/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
