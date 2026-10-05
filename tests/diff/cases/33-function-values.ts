@@ -91,3 +91,8 @@ console.log(addTen(5), add.call(undefined, 1, 2));
 const untyped: any = hub;
 const untypedNotify = untyped.notify.bind(untyped, 'tap');
 console.log(untypedNotify('z'), untyped.notify.call(untyped, 'none'));
+
+const total = [1, 2, 3].reduce((sum: number, v: number, i: number, a: number[]) => sum + v * a.length + i, 0);
+const right = [1, 2, 3].reduceRight((acc: number, v: number, i: number, a: number[]) => acc * 10 + v + a.length - i);
+const nested = [[1], [2, 3]].flatMap((v, i, a) => [v.length, a.length]);
+console.log(total, right, nested.join(','));

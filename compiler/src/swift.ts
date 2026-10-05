@@ -4110,9 +4110,9 @@ export class Translator implements AsyncTranslator {
           const result = this.checker.getTypeAtLocation(callback).getCallSignatures()[0]?.getReturnType();
           // A predicate returning any value (`labels.find((l) => GROUPS[l])`) decides by its truthiness.
           if (['filter', 'find', 'findIndex', 'findLast', 'findLastIndex', 'some', 'every'].includes(name) && result && !(result.flags & ts.TypeFlags.BooleanLike)) {
-            const arity = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? Math.min(2, callback.parameters.length) : 1;
-            const params = ['__e', '__i'].slice(0, Math.max(1, arity));
-            const types = [el, 'Double'];
+            const arity = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? Math.min(3, callback.parameters.length) : 1;
+            const params = ['__e', '__i', '__a'].slice(0, Math.max(1, arity));
+            const types = [el, 'Double', `JSArray<${el}>`];
             const throwing = !(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback)) || this.throwsInfo.fn(callback);
             return `${t}.${name}({ (${params.map((p, k) => `${p}: ${types[k]}`).join(', ')}) ${throwing ? 'throws ' : ''}-> Bool in jsTruthy(${throwing ? 'try ' : ''}(${this.fn(callback)})(${params.join(', ')})) })`;
           }
