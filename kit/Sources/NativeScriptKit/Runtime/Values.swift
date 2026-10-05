@@ -411,6 +411,23 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     }
 }
 
+/// `object[key] op= value` on a dynamic value: the member read once, then written with what
+/// `update` makes of it. The new value.
+@discardableResult
+public func jsUpdate(_ object: Any?, _ key: String, _ update: (Any?) throws -> Any?) throws -> Any? {
+    let value = try update(jsGet(object, key))
+    try jsSet(object, key, value)
+    return value
+}
+
+/// `object[key]++` and `object[key]--` on a dynamic value: the old value, as a number.
+@discardableResult
+public func jsPostUpdate(_ object: Any?, _ key: String, _ step: Double) throws -> Double {
+    let old = jsToNumber(try jsGet(object, key))
+    try jsSet(object, key, old + step)
+    return old
+}
+
 /// `object[key] = value` on a dynamic value. Writing to undefined or null throws a TypeError;
 /// writes to other primitives are ignored.
 public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {

@@ -2635,6 +2635,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) {
       const step = e.operator === ts.SyntaxKind.PlusPlusToken ? '+' : e.operator === ts.SyntaxKind.MinusMinusToken ? '-' : null;
       // An untyped variable counts as a number (`let i; … i++`).
+      const member = step ? this.untypedMember(e.operand) : null;
+      if (member) return `jsPostUpdate(${member.object}, ${member.key}, ${step}1)`;
       if (step && (this.isAny(e.operand) || this.declaredTypeOf(e.operand) === 'Any?')) return `${this.lvalue(e.operand)} = jsToNumber(${this.expr(e.operand)}) ${step} 1`;
       if (step) return `${this.lvalue(e.operand)} ${step}= 1`;
     }
@@ -2836,6 +2838,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isBinaryExpression(e)) return this.binary(e);
     if (ts.isPrefixUnaryExpression(e)) return this.prefix(e);
     if (ts.isPostfixUnaryExpression(e)) {
+      const member = this.untypedMember(e.operand);
+      if (member) return `jsPostUpdate(${member.object}, ${member.key}, ${e.operator === ts.SyntaxKind.PlusPlusToken ? '1' : '-1'})`;
       const fn = e.operator === ts.SyntaxKind.PlusPlusToken ? 'jsPostIncrement' : 'jsPostDecrement';
       return `${fn}(&${this.lvalue(e.operand)})`;
     }
@@ -4420,10 +4424,27 @@ export class Translator implements AsyncTranslator {
         return ts.isNumericLiteral(e.operand) ? (Number(e.operand.text) === 0 ? '-0.0' : `-${this.expr(e.operand)}`) : `-${this.toNumber(e.operand)}`;
       case K.PlusToken: return this.toNumber(e.operand);
       case K.TildeToken: return this.typeOf(e.operand) === 'JSBigInt' ? `(~${this.expr(e.operand)})` : `jsBitNot(${this.toNumber(e.operand)})`;
-      case K.PlusPlusToken: return `jsPreIncrement(&${this.lvalue(e.operand)})`;
-      case K.MinusMinusToken: return `jsPreDecrement(&${this.lvalue(e.operand)})`;
+      case K.PlusPlusToken: case K.MinusMinusToken: {
+        const member = this.untypedMember(e.operand);
+        const step = e.operator === K.PlusPlusToken ? '+' : '-';
+        if (member) return `jsToNumber(${this.untypedUpdate(member, `jsToNumber(__old) ${step} 1`)})`;
+        return `${step === '+' ? 'jsPreIncrement' : 'jsPreDecrement'}(&${this.lvalue(e.operand)})`;
+      }
     }
     throw this.error(e, 'prefix operator');
+  }
+
+  /** A member of an untyped object as an update's target: the object and the key, each evaluated once. */
+  private untypedMember(x: ts.Expression): { object: string; key: string } | null {
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    if (ts.isPropertyAccessExpression(x) && (this.isAny(x.expression) || this.isExpando(x))) return { object: this.expr(x.expression), key: swiftString(x.name.text) };
+    if (ts.isElementAccessExpression(x) && this.isAny(x.expression)) return { object: this.expr(x.expression), key: this.propertyKey(x.argumentExpression) };
+    return null;
+  }
+
+  /** `o.k op= v` on an untyped object: `value` makes the new value of the old one (`__old`). */
+  private untypedUpdate(member: { object: string; key: string }, value: string): string {
+    return `jsUpdate(${member.object}, ${member.key}) { (__old: Any?) throws -> Any? in ${value} }`;
   }
 
   /** `left = right` (also the assignment `??=` and `||=` make). */
@@ -4459,6 +4480,21 @@ export class Translator implements AsyncTranslator {
     const big = this.bigIntBinary(e);
     if (big) return big;
     if (bit[op]) return `${bit[op]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
+    const member = this.untypedMember(e.left);
+    if (member) {
+      const n = (x: string) => `jsToNumber(${x})`;
+      const arithmetic: Partial<Record<ts.SyntaxKind, (old: string, v: string) => string>> = {
+        [K.PlusEqualsToken]: (o) => `jsAdd(${o}, ${this.coerce(e.right, 'Any?')})`,
+        [K.MinusEqualsToken]: (o, v) => `${n(o)} - ${v}`, [K.AsteriskEqualsToken]: (o, v) => `${n(o)} * ${v}`, [K.SlashEqualsToken]: (o, v) => `${n(o)} / ${v}`,
+        [K.PercentEqualsToken]: (o, v) => `jsMod(${n(o)}, ${v})`, [K.AsteriskAsteriskEqualsToken]: (o, v) => `jsPow(${n(o)}, ${v})`,
+      };
+      for (const [k, b] of Object.entries(compound)) arithmetic[+k as ts.SyntaxKind] = (o, v) => `${bit[b!]}(${n(o)}, ${v})`;
+      const make = arithmetic[op];
+      if (make) return this.untypedUpdate(member, make('__old', op === K.PlusEqualsToken ? '' : this.toNumber(e.right)));
+      if (op === K.BarBarEqualsToken || op === K.AmpersandAmpersandEqualsToken) {
+        return `if ${op === K.BarBarEqualsToken ? '!' : ''}jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`;
+      }
+    }
     if (compound[op]) {
       const value = `${bit[compound[op]!]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
       // `options |= UIMenuOptions.Destructive` on a native option set: the set of the combined raw value.
