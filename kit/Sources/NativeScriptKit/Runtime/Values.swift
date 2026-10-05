@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // Values as translated TypeScript holds them: `any`/`unknown` is `Any?`, an empty
 // `Any?` is `undefined`, `jsNull` is `null`, numbers are `Double`, objects are
@@ -409,11 +412,38 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         return key == "size" ? Double(map.jsSize) : jsMapMethod(map, key)
     case let set as JSSetProtocol:
         return key == "size" ? Double(set.jsSize) : jsSetMethod(set, key)
+    // A Swift struct casts to NSObject too (boxed): a geometry struct is read by its fields first.
+    case let value? where jsIsStruct(value):
+        return jsStructMember(value, key)
     case let native as NSObject:
         return jsNativeGet(native, key)
     default:
         return nil
     }
+}
+
+func jsIsStruct(_ value: Any) -> Bool {
+    #if canImport(UIKit)
+    return value is CGPoint || value is CGSize || value is CGRect || value is UIEdgeInsets
+    #else
+    return false
+    #endif
+}
+
+/// A member of a geometry struct held untyped (`view.sizeThatFits(…)` read as `{ width, height }`), as the runtime gives its fields.
+func jsStructMember(_ value: Any?, _ key: String) -> Any? {
+    #if canImport(UIKit)
+    switch value {
+    case let p as CGPoint: return key == "x" ? Double(p.x) : key == "y" ? Double(p.y) : nil
+    case let z as CGSize: return key == "width" ? Double(z.width) : key == "height" ? Double(z.height) : nil
+    case let r as CGRect: return key == "origin" ? r.origin : key == "size" ? r.size : nil
+    case let i as UIEdgeInsets:
+        switch key { case "top": return Double(i.top); case "left": return Double(i.left); case "bottom": return Double(i.bottom); case "right": return Double(i.right); default: return nil }
+    default: return nil
+    }
+    #else
+    return nil
+    #endif
 }
 
 /// A function value that may be missing, about to be called: undefined is not a function.
