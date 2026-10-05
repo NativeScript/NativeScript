@@ -414,7 +414,8 @@ export class Translator implements AsyncTranslator {
       });
       return `(${params.join(', ')}) throws -> ${this.type(s.getReturnType(), where)}`;
     }
-    const extended = sym && sym.flags & ts.SymbolFlags.Interface ? this.extendedClass(t) : null;
+    // An interface extending one class is that class; one merged into a class of its name is the class.
+    const extended = sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) ? this.extendedClass(t) : null;
     if (extended) return this.type(extended, where);
     if (sym && this.isDynamicShape(sym)) return 'Any?';
     if (this.isEventData(t)) return 'EventData';

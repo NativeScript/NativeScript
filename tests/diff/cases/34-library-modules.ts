@@ -20,3 +20,24 @@ console.log('after Registry', Registry.first, Registry.second, Registry.count);
 
 (globalThis as any).__provided = (x: number) => x * 2;
 console.log(__provided(21), typeof __missing, typeof __provided);
+
+class Listing {
+  kind(): string {
+    return 'listing';
+  }
+}
+class Items<T> extends Listing {
+  items: T[] = [];
+  slice(start: number): Items<T> {
+    const out = new Items<T>();
+    out.items = this.items.slice(start);
+    return out;
+  }
+}
+interface Items<T> {
+  kind(): string;
+}
+const items = new Items<number>();
+items.items.push(1, 2, 3);
+const rest = items.slice(1);
+console.log(rest.items.length, rest.kind(), rest instanceof Items);
