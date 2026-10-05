@@ -126,3 +126,15 @@ owner.ref = new WeakRef(root as any);
 console.log(owner.ref.deref() === root);
 const noop: any = Function.prototype;
 console.log(noop() === undefined);
+
+// Iterating untyped values.
+const bag: any = { list: ['p', 'q'], text: 'hi' };
+let seen = '';
+for (const v of bag.list) seen += v;
+for (const ch of bag.text) seen += ch.toUpperCase();
+try {
+  for (const v of bag.none) seen += v;
+} catch (e) {
+  seen += ':' + (e instanceof TypeError);
+}
+console.log(seen);

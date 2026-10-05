@@ -338,6 +338,17 @@ export class Translator implements AsyncTranslator {
     this.compiledSymbols.set(sym, found);
     return found;
   }
+  /** Library mode: the compiled method or constructor a published declaration's class member stands for. */
+  private compiledMember(decl: ts.Declaration): ts.Declaration | null {
+    const cls = decl.parent;
+    if (!this.library || !cls || !ts.isClassDeclaration(cls) || !cls.name) return null;
+    const compiled = this.compiledCounterpart(this.checker.getSymbolAtLocation(cls.name))?.declarations?.find((d): d is ts.ClassDeclaration => ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile);
+    if (!compiled) return null;
+    if (ts.isConstructorDeclaration(decl)) return compiled.members.find((m) => ts.isConstructorDeclaration(m) && !!m.body) ?? null;
+    const name = (decl as ts.NamedDeclaration).name?.getText();
+    const member = name ? this.checker.getTypeAtLocation(compiled).getProperty(name) : undefined;
+    return member?.declarations?.find((d) => (ts.isMethodDeclaration(d) || ts.isGetAccessorDeclaration(d)) && !!d.body) ?? null;
+  }
   /** Library mode: generated classes whose names the hand-ported kit also declares. */
   readonly kitClashes: string[] = [];
 
@@ -354,7 +365,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c), (d) => this.compiledMember(d));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -2281,7 +2292,10 @@ export class Translator implements AsyncTranslator {
       lines.push('    ' + this.func(m, ident(n), `${isStatic(m) ? 'static ' : ''}${inherited.has(n) && !isStatic(m) ? 'override ' : ''}`, extra));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
       if (this.pluginFiles.has(cls.getSourceFile().fileName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length) {
-        dynMethods.push({ name: n, type: `(${m.parameters.map((p) => { const t = this.paramType(p); return isFunctionType(t) ? `@escaping ${t}` : t; }).join(', ')}) throws -> ${this.returnTypeOf(m)}` });
+        // The signature Swift has for the method: an override's is its root's.
+        const sig = this.emittedSignature(m);
+        const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
+        dynMethods.push({ name: n, type: `(${sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type))).join(', ')}) throws -> ${plain(sig.ret)}` });
       }
     }
     if (isView) {
@@ -2673,6 +2687,8 @@ export class Translator implements AsyncTranslator {
       }
       const missing = !s.expression || (this.lenient && isNullish(s.expression) && !this.returnType.endsWith('?') && this.returnType !== 'Any?');
       if (missing && this.lenient && this.returnType !== 'Void' && !this.returnType.endsWith('?') && this.zero(this.returnType) !== null) return `${i}return ${this.zero(this.returnType)}`;
+      // A native struct has no undefined: its zero value.
+      if (missing && this.lenient && this.native.isStructType(this.returnType)) return `${i}return ${this.returnType}()`;
       return i + (s.expression ? `return ${this.tryPrefix(s.expression)}${this.coerce(s.expression, this.returnType)}` : this.returnType?.endsWith('?') ? 'return nil' : 'return');
     }
     if (ts.isIfStatement(s)) {
@@ -2905,6 +2921,8 @@ export class Translator implements AsyncTranslator {
     if (t === 'String') return `jsCodePoints(${this.expr(e)})`;
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
     if (t === 'JSMatch') return `${this.expr(e)}.values`;
+    // An untyped value: whatever its iteration gives, a TypeError where it has none.
+    if (t === 'Any?') return `(try jsIteratorOf(${this.expr(e)}))`;
     return this.expr(e);
   }
 

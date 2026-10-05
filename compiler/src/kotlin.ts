@@ -2292,6 +2292,8 @@ export class Translator implements AsyncTranslator {
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
     if (t === 'JSMatch') return `${this.expr(e)}.values`;
     if (t.startsWith('Pair<') || t.startsWith('Triple<')) return `jsTupleList(${this.expr(e)})`;
+    // An untyped value: whatever its iteration gives, a TypeError where it has none.
+    if (this.typeOf(e) === 'Any?') return `jsIteratorOf(${this.expr(e)}).jsCollect()`;
     return this.expr(e);
   }
 

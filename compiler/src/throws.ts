@@ -25,7 +25,11 @@ export class Throws {
   /** Whether a call throws for what its declaration does not show: a native method Swift imports as `throws`, a method an instance can hold a value in place of. */
   private nativeThrows: (call: ts.CallExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false) {
+  /** A declaration file's method or constructor whose compiled implementation is in the program (library mode). */
+  private implementation: (decl: ts.Declaration) => ts.Declaration | null;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null) {
+    this.implementation = implementation;
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
@@ -110,6 +114,8 @@ export class Throws {
       && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;
     // Iterating a generator or a script's iterator runs its code.
     if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && iterationThrows(c.getTypeAtLocation(n.expression), c)) return true;
+    // Iterating an untyped value throws where it is not iterable.
+    if (ts.isForOfStatement(n) && this.untyped(n.expression)) return true;
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
@@ -173,6 +179,8 @@ export class Throws {
         : ((ts.isMethodDeclaration(decl) ? decl.parent.members : (decl.parent as ts.SourceFile).statements) as ts.NodeArray<ts.Node>).find((m) => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === decl.name?.getText());
       if (impl) return this.fn(impl);
     }
+    const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
+    if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
       const owner = builtinName(decl);
       // `s.match(x)` makes a RegExp of anything else, which can be a SyntaxError.
