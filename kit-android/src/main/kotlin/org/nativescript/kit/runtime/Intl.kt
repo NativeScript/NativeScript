@@ -572,6 +572,22 @@ class JSDateTimeFormat(locales: Any? = null, options: Any? = null, required: Str
     override val jsClassName: String? get() = "DateTimeFormat"
 }
 
+/** `array.toLocaleString()`: each element's `toLocaleString()`, undefined and null as "". */
+fun JSArray<*>.toLocaleString(): String = jsToLocaleString(this)
+
+/** An element's `toLocaleString()` (an object's default is its string form). */
+private fun jsToLocaleString(value: Any?): String = when (value) {
+    null, JSNull, Unit -> ""
+    is Double -> jsNumberToLocaleString(value)
+    is JSBigInt -> jsBigIntToLocaleString(value)
+    is JSDate -> value.toLocaleString()
+    is JSArray<*> -> if (jsJoinGuard.any { it === value }) "" else {
+        jsJoinGuard.add(value)
+        try { value.storage.joinToString(",") { jsToLocaleString(it) } } finally { jsJoinGuard.removeAt(jsJoinGuard.size - 1) }
+    }
+    else -> jsToString(value)
+}
+
 /** `date.toLocaleString(locales, options)`: date and time. */
 fun JSDate.toLocaleString(locales: Any? = null, options: Any? = null): String =
     if (time.isNaN()) "Invalid Date" else JSDateTimeFormat(locales, options, "any", "all").formatTime(time)

@@ -238,6 +238,12 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
     /// the end); JavaScript's explicit `undefined` (delete nothing) must be passed as 0.
     @discardableResult
     public func splice(_ start: Double, _ deleteCount: Double? = nil, _ items: Element...) -> JSArray<Element> {
+        splice(start, deleteCount, contentsOf: items)
+    }
+
+    /// `array.splice(start, deleteCount, ...items)` with the items spread from one array.
+    @discardableResult
+    public func splice(_ start: Double, _ deleteCount: Double?, contentsOf items: [Element]) -> JSArray<Element> {
         let length = storage.count
         let s = jsRelativeIndex(start, length)
         let count: Int

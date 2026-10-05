@@ -155,6 +155,12 @@ public func jsMatch(_ s: String, _ re: JSRegExp) -> JSMatch? {
     return out.isEmpty ? nil : JSMatch(all: out, input: s)
 }
 
+/// What `s.match(x)` searches with: a RegExp as it is, anything else as `new RegExp(x)`.
+public func jsRegExpFrom(_ value: Any?) throws -> JSRegExp {
+    if let re = jsFlat(value) as? JSRegExp { return re }
+    return try JSRegExp(jsFlat(value) == nil ? "(?:)" : jsToString(value))
+}
+
 /// A regular expression literal: TypeScript accepted its syntax; ICU must too.
 public func jsRegExpLiteral(_ source: String, _ flags: String) -> JSRegExp {
     do { return try JSRegExp(source, flags) } catch { fatalError("/\(source)/\(flags) is not a pattern NSRegularExpression accepts: \(jsToString(jsCaught(error)))") }
