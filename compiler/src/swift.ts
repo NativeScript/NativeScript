@@ -495,6 +495,9 @@ export class Translator implements AsyncTranslator {
     }
     // `UIView & { nsView?: … }`, `ScrollView & { … }`: the class; the members the literal adds are read by name.
     if (t.isIntersection()) {
+      // `UIApplicationDelegate & { prototype: UIApplicationDelegate }`: a native class object, as the iOS typings write one.
+      const prototype = (u: ts.Type) => { const p = !this.native.type(u) && u.getProperty('prototype'); return !!p && !!this.native.type(c.getTypeOfSymbol(p)); };
+      if (t.types.some(prototype) && t.types.some((u) => this.native.type(u))) return 'AnyClass';
       // Two classes (`value: UIColor` narrowed by `instanceof Color`): the one the test found, which comes last.
       const cls = [...t.types].reverse().find((u) => this.native.type(u) || (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class);
       if (cls) return this.type(cls, where);
@@ -1906,6 +1909,12 @@ export class Translator implements AsyncTranslator {
   }
 
   functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
+    const counterpart = this.memberCounterpart(fn);
+    if (counterpart) {
+      const args = ['self', ...fn.parameters.map((p) => ident((p.name as ts.Identifier).text))];
+      const call = `${this.throwsInfo.fn(fn) ? 'try ' : ''}${counterpart}(${args.join(', ')})`;
+      return `{\n${base}    ${ret === 'Void' ? call : `return ${call}`}\n${base}}`;
+    }
     this.lenientParams(fn);
     this.availability.push(0);
     let needs = 0;
@@ -1914,6 +1923,12 @@ export class Translator implements AsyncTranslator {
     if (!needs) return body;
     const inner = body.slice(2, body.length - base.length - 2);
     return `{\n${this.availableOnly(needs, inner, base + '    ')}\n${base}}`;
+  }
+
+  /** The kit's implementation of a class's method or accessor (`iOSApplication.addDelegateHandler`), which its body calls with the object. */
+  private memberCounterpart(fn: ts.FunctionLikeDeclaration): string | null {
+    if (!this.library?.counterpart || !(ts.isMethodDeclaration(fn) || ts.isAccessor(fn)) || !ts.isClassDeclaration(fn.parent) || !fn.parent.name || isStatic(fn)) return null;
+    return this.library.counterpart(fn.getSourceFile().fileName, `${fn.parent.name.text}.${fn.name.getText()}`);
   }
 
   private functionBodyLines(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
@@ -2547,8 +2562,10 @@ export class Translator implements AsyncTranslator {
       // Library mode: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
       const reported = !!this.library && !!a.set && ((!!a.get && this.throwsInfo.fn(a.get)) || this.throwsInfo.fn(a.set));
       if (a.get && reported && this.throwsInfo.fn(a.get)) {
-        const fallback = t.endsWith('?') ? 'nil' : this.zero(t) ?? null;
-        parts.push(`        get { jsReported { () throws -> ${t} in${this.functionBody(a.get, t, '        ').slice(1)}${fallback ? ` ?? ${fallback}` : '!'} }`);
+        // An implicitly unwrapped property's getter gives nothing where it throws, or where it gives nothing.
+        const got = declared.endsWith('!') ? declared.replace(/!$/, '?') : t;
+        const fallback = got.endsWith('?') ? 'nil' : this.zero(t) ?? null;
+        parts.push(`        get { jsReported { () throws -> ${got} in${this.functionBody(a.get, got, '        ').slice(1)}${fallback ? ` ?? ${fallback}` : '!'} }`);
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
       if (a.set) {
