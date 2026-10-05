@@ -4169,6 +4169,11 @@ export class Translator implements AsyncTranslator {
   private propertyRead(e: ts.PropertyAccessExpression): string {
     const name = e.name.text;
     const target = e.expression;
+    if (this.isNativeExpando(e)) {
+      const t = this.typeOf(e);
+      const read = `jsNativeExpando(${this.expr(target)}, ${swiftString(name)})`;
+      return t === 'Any?' ? read : this.lenientRef(t) !== t ? `jsImplicit(${read} as? ${t})` : this.fromAnyCode(read, t, true);
+    }
     // A dynamic object (an allSettled result, a lookup table): its field read by name, as its type says.
     if (this.typeOf(target).replace(/[?!]$/, '') === 'JSObject' && !e.questionDotToken) return this.fromAnyCode(`jsField(${this.expr(target)}, ${swiftString(name)})`, this.typeOf(e), true);
     if (this.isSelf(target) && this.props.has(name)) return `self.${ident(name)}.value`;
@@ -4527,6 +4532,16 @@ export class Translator implements AsyncTranslator {
     const base = this.checker.getTypeAtLocation(heritage.expression).getSymbol()?.valueDeclaration;
     if (base && ts.isClassLike(base) && !base.getSourceFile().isDeclarationFile) return this.errorBased(base);
     return !!ERRORS[heritage.expression.getText()];
+  }
+
+  /**
+   * A member the program's own interface adds to a native class (`interface NSUINavigationBar extends
+   * UINavigationBar { gradientLayer?: … }`): kept with the native object, as the runtime keeps what script adds.
+   */
+  private isNativeExpando(e: ts.PropertyAccessExpression): boolean {
+    const d = this.resolve(e.name)?.valueDeclaration;
+    if (!d || d.getSourceFile().isDeclarationFile || !(ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) || !ts.isInterfaceDeclaration(d.parent)) return false;
+    return (d.parent.heritageClauses ?? []).some((h) => h.types.some((x) => this.native.isClassType(this.checker.getTypeAtLocation(x))));
   }
 
   /** A program class as a value whose `name` the class declares (`Cls`, `this` in a static member, `this.constructor`), as Swift's metatype; null for anything else. */
@@ -5643,6 +5658,7 @@ export class Translator implements AsyncTranslator {
     const left = e.left, right = e.right;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
+    if (ts.isPropertyAccessExpression(left) && this.isNativeExpando(left)) return `jsSetNativeExpando(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left)) {
       const special = this.core.assign(left, right) ?? this.native.assign(left, right);
