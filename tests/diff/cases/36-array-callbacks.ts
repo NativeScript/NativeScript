@@ -43,3 +43,9 @@ function changed(sizes: Set<number>): string {
   return `${populated !== sizes.size > 0} ${populated === sizes.size >= 0} ${1 < 2 === true}`;
 }
 console.log(changed(new Set([1])));
+function redeclared(n: number): number {
+  var total = n;
+  var total = total * 2;
+  return total;
+}
+console.log(redeclared(4));

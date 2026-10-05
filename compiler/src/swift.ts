@@ -2709,6 +2709,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
+      // `var m` again in the same block: the same variable, assigned.
+      if (this.redeclaredVar(d)) return d.initializer ? `${i}${name} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}` : '';
       // Lenient code may read it before any assignment (`let result: string; if (!result) …`): undefined until assigned.
       if (!d.initializer && this.lenient && !lowered && !t.endsWith('?') && t !== 'Any?' && this.zero(t) !== null) {
         const sym = this.resolve(d.name);
@@ -2732,6 +2734,14 @@ export class Translator implements AsyncTranslator {
     }
     const tmp = this.fresh('__d');
     return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, ts.isArrayBindingPattern(d.name) && this.jsIteration(d.initializer!) ? 'iterated' : this.typeOf(d.initializer!), !constant)}`;
+  }
+
+  /** A `var` declaring a variable an earlier `var` of the same block declared. */
+  private redeclaredVar(d: ts.VariableDeclaration): boolean {
+    if (d.parent.flags & (ts.NodeFlags.Let | ts.NodeFlags.Const) || !ts.isVariableStatement(d.parent.parent)) return false;
+    const block = d.parent.parent.parent;
+    const earlier = this.checker.getSymbolAtLocation(d.name)?.declarations?.filter((x) => x.pos < d.pos);
+    return !!earlier?.some((x) => ts.isVariableDeclaration(x) && ts.isVariableStatement(x.parent.parent) && x.parent.parent.parent === block);
   }
 
   /** The type and value a destructuring pattern reads from: an iterator yields only as many values as an array pattern names. */

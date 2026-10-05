@@ -57,3 +57,12 @@ try {
 } catch (e) {
   console.log('weak', e instanceof TypeError);
 }
+
+function twice(text: string) {
+  var m = /^(\w+)/.exec(text);
+  if (!m) return 'none';
+  var first = m[1];
+  var m = /(\w+)$/.exec(text);
+  return first + '/' + (m ? m[1] : '');
+}
+console.log(twice('alpha beta'), twice('!'));
