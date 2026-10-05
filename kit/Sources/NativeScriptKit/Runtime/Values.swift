@@ -411,6 +411,12 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     }
 }
 
+/// A function value that may be missing, about to be called: undefined is not a function.
+public func jsCallee<F>(_ function: F?) throws -> F {
+    guard let function else { throw JSException(JSTypeError("undefined is not a function")) }
+    return function
+}
+
 /// `object[key] op= value` on a dynamic value: the member read once, then written with what
 /// `update` makes of it. The new value.
 @discardableResult

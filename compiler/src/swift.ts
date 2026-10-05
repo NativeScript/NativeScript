@@ -3084,6 +3084,8 @@ export class Translator implements AsyncTranslator {
     }
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (`map.get(k)` after `has(k)`).
     if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target);
+    const spread = source !== target ? this.restFunction(e, source, target) : null;
+    if (spread) return spread;
     if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(source.replace(/^\((.*)\)\?$/, '$1')) && functionParts(target.replace(/^\((.*)\)\?$/, '$1'))) return this.convert(this.expr(e), source, target);
     if (source === 'Any?' && target !== 'Void') {
       if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.expr(e);
@@ -3092,6 +3094,24 @@ export class Translator implements AsyncTranslator {
     // Library mode: a class where a subclass is declared (`this` of ViewCommon where core's declarations say View).
     if (this.library && this.isSubclassOf(target.replace(/[?!]$/, ''), source.replace(/[?!]$/, ''))) return `(${this.expr(e)} as${target.endsWith('?') || source.endsWith('?') ? '?' : '!'} ${target.replace(/[?!]$/, '')})`;
     return this.expr(e);
+  }
+
+  /** A function taking a rest parameter (`(...args) => void`) where a function of fixed parameters is wanted: those past the rest's start packed into its array. */
+  private restFunction(e: ts.Expression, source: string, target: string): string | null {
+    const sig = this.checker.getTypeAtLocation(e).getCallSignatures()[0];
+    const last = sig?.getParameters().at(-1)?.valueDeclaration;
+    if (!last || !ts.isParameter(last) || !last.dotDotDotToken) return null;
+    const have = functionParts(source), want = functionParts(target);
+    const fixed = (have?.params.length ?? 0) - 1;
+    const element = have && /^JSArray<(.*)>$/.exec(have.params[fixed] ?? '')?.[1];
+    if (!have || !want || !element || want.params.length < fixed) return null;
+    const p = (t: string) => t.replace(/^@escaping /, '');
+    const params = want.params.map((t, k) => `__q${k}: ${p(t)}`);
+    const args = [...want.params.slice(0, fixed).map((t, k) => this.convert(`__q${k}`, p(t), p(have.params[k]))),
+      `JSArray<${element}>([${want.params.slice(fixed).map((t, k) => this.convert(`__q${fixed + k}`, p(t), element)).join(', ')}])`];
+    const call = `try __h(${args.join(', ')})`;
+    const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
+    return `{ (__h: @escaping ${have.text}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
   }
 
   private classesByName: Map<string, ts.ClassLikeDeclaration> | null = null;
@@ -4115,7 +4135,11 @@ export class Translator implements AsyncTranslator {
     if (this.library && ts.isElementAccessExpression(callee) && (this.isAny(callee.expression) || this.typeOf(callee) === 'Any?')) {
       return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.propertyKey(callee.argumentExpression)}${this.untypedArgs(e.arguments)})`;
     }
-    if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
+    if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) {
+      // A function that may be missing (`handlers.get(key)()`): undefined is not a function.
+      const maybe = !isOptional(this.typeOf(callee)) ? this.maybeUndefined(callee) : null;
+      return `${maybe ? `jsCallee(${maybe})` : this.expr(callee)}(${this.args(e).join(', ')})`;
+    }
     throw this.error(e, 'call');
   }
 
