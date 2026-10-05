@@ -96,3 +96,12 @@ const total = [1, 2, 3].reduce((sum: number, v: number, i: number, a: number[]) 
 const right = [1, 2, 3].reduceRight((acc: number, v: number, i: number, a: number[]) => acc * 10 + v + a.length - i);
 const nested = [[1], [2, 3]].flatMap((v, i, a) => [v.length, a.length]);
 console.log(total, right, nested.join(','));
+
+const lookups: any = { win: { name: 'main' } };
+function windowOf(state: string): string {
+  const read = (k: string) => lookups[k];
+  if (state === 'attached' && read('win')) return 'has window';
+  if (state === 'missing' || read('none')) return 'never';
+  return 'none';
+}
+console.log(windowOf('attached'), windowOf('detached'));

@@ -2752,8 +2752,7 @@ export class Translator implements AsyncTranslator {
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsTruthy(${maybe} as Any?)`;
     // `a && b` as a condition is whether both are truthy, whatever values the operands have.
-    if (ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind) && !this.throwsInfo.expr(e.right)
-        && !(this.isBool(e.left) && this.isBool(e.right))) {
+    if (ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind) && !(this.isBool(e.left) && this.isBool(e.right))) {
       return `(${this.cond(e.left)} ${e.operatorToken.getText()} ${this.cond(e.right)})`;
     }
     if (this.isBool(e)) return this.expr(e);
