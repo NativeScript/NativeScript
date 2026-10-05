@@ -2311,7 +2311,7 @@ export class Translator implements AsyncTranslator {
     lines.push(...witnesses);
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando));
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
-    if (this.library && !isError) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
+    if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
     if (symbolFields.length) conformances.push('JSSymbolKeyed');
     this.indent = '';
     lines.push('}');
@@ -4158,9 +4158,18 @@ export class Translator implements AsyncTranslator {
   /** The assignments of a module-level class's static fields whose initializers throw, run in the module's order. */
   private staticInits: string[] | null = null;
 
+  /** Whether a class extends one of the library's error classes, directly or through the program's. */
+  private errorBased(cls: ts.ClassLikeDeclaration): boolean {
+    const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (!heritage) return false;
+    const base = this.checker.getTypeAtLocation(heritage.expression).getSymbol()?.valueDeclaration;
+    if (base && ts.isClassLike(base) && !base.getSourceFile().isDeclarationFile) return this.errorBased(base);
+    return !!ERRORS[heritage.expression.getText()];
+  }
+
   /** A program class as a value whose `name` the class declares (`Cls`, `this` in a static member, `this.constructor`), as Swift's metatype; null for anything else. */
   private classValueOf(x: ts.Expression): string | null {
-    const generated = (d: ts.Node | undefined) => !!d && ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && !this.native.extendsNative(d as ts.ClassDeclaration) && !!this.library?.moduleName(d.getSourceFile().fileName);
+    const generated = (d: ts.Node | undefined) => !!d && ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && !this.native.extendsNative(d as ts.ClassDeclaration) && !this.errorBased(d as ts.ClassDeclaration) && !!this.library?.moduleName(d.getSourceFile().fileName);
     if (x.kind === ts.SyntaxKind.ThisKeyword) {
       const container = ts.getThisContainer(x, false, false);
       return isStatic(container) && generated(container.parent) ? 'self' : null;
