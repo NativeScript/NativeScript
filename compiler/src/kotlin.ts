@@ -1052,6 +1052,13 @@ export class Translator implements AsyncTranslator {
       if (v === undefined) throw this.error(m, 'an enum member without a constant value');
       lines.push(`    const val ${ident(m.name.getText())}: ${typeof v === 'string' ? 'String' : 'Double'} = ${typeof v === 'string' ? kotlinString(v) : numberLiteral(String(v))}`);
     }
+    // The object JavaScript makes of the enum: each name to its value, and each number back to its name.
+    const entries = e.members.flatMap((m) => {
+      const v = this.checker.getConstantValue(m)!, n = m.name.getText();
+      const pair = `Pair<String, Any?>(${kotlinString(n)}, ${typeof v === 'string' ? kotlinString(v) : numberLiteral(String(v))})`;
+      return typeof v === 'number' ? [pair, `Pair<String, Any?>(${kotlinString(String(v))}, ${kotlinString(n)})`] : [pair];
+    });
+    lines.push(`    val jsEnumObject: JSObject by lazy { JSObject(listOf<Pair<String, Any?>>(${entries.join(', ')})) }`);
     lines.push('}');
     return lines.join('\n');
   }
@@ -2868,8 +2875,15 @@ export class Translator implements AsyncTranslator {
   }
 
   private elementAccess(e: ts.ElementAccessExpression): string {
-    const target = this.expr(e.expression);
     const key = e.argumentExpression;
+    // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
+    const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+      const rt = this.typeOf(e);
+      const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(key)})`;
+      return rt === 'Any?' ? code : this.fromAny(code, rt);
+    }
+    const target = this.expr(e.expression);
     const t = this.typeOf(e.expression).replace(/\?$/, '');
     const q = e.questionDotToken ? '?' : '';
     if (t === 'String') return `jsCharAt(${target}, ${this.toNumber(key)})`;

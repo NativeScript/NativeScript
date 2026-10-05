@@ -374,10 +374,10 @@ export class NativeAPI {
     }
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
-    if (ownDecl && ts.isClassDeclaration(ownDecl) && !ownDecl.getSourceFile().isDeclarationFile && name === 'new' && this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(own!))) return `${ownDecl.name!.text}()`;
+    if (ownDecl && ts.isClassDeclaration(ownDecl) && !ownDecl.getSourceFile().isDeclarationFile && name === 'new' && this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(own!))) return `${this.t.topName(ownDecl, ownDecl.name!.text)}()`;
     if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc' && name === 'init') {
       const allocated = this.t.resolve(callee.expression.expression.expression)?.valueDeclaration;
-      if (allocated && ts.isClassDeclaration(allocated) && !allocated.getSourceFile().isDeclarationFile) return `${allocated.name!.text}()`;
+      if (allocated && ts.isClassDeclaration(allocated) && !allocated.getSourceFile().isDeclarationFile) return `${this.t.topName(allocated, allocated.name!.text)}()`;
     }
     const r = this.receiver(callee.expression);
     if (!r) return null;
@@ -700,7 +700,7 @@ export class NativeAPI {
     if (!base) return null;
     const baseCls = lookupClass(base.module, base.name);
     if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
-    const name = cls.name!.text;
+    const name = t.topName(cls, cls.name!.text);
     const protocols: { module: string; name: string; swift: string }[] = [];
     const addProtocol = (e: ts.Expression) => {
       const p = this.symbolModule(t.resolve(e));

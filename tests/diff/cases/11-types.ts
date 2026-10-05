@@ -74,3 +74,16 @@ function measure<T>(v: T): string {
   return 'other';
 }
 console.log(measure('ab'), measure(2.5), measure(true));
+
+// An enum read by a computed key: its value by name, its name by value.
+enum Tier {
+  Low = 1,
+  High = 5,
+}
+function tierName(v: number): string {
+  return Tier[v];
+}
+function tierValue(name: string): number {
+  return Tier[name as keyof typeof Tier];
+}
+console.log(tierName(5), tierName(1), tierValue('High'));

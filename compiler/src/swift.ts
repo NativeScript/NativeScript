@@ -44,6 +44,9 @@ function implementationOf(d: ts.SignatureDeclaration | ts.JSDocSignature): ts.Fu
   return null;
 }
 
+/** The ES library's decorator and property descriptor interfaces: plain objects in library mode. */
+const DESCRIPTORS = new Set(['PropertyDescriptor', 'TypedPropertyDescriptor', 'PropertyDescriptorMap', 'ClassDecorator', 'MethodDecorator', 'PropertyDecorator', 'ParameterDecorator']);
+
 /** A function type `(…) throws -> R` returning `Any?` instead. */
 function returningAny(type: string): string {
   let depth = 0;
@@ -566,7 +569,7 @@ export class Translator implements AsyncTranslator {
     if (mixin) return mixin;
     if (name && name !== '__type' && name !== '__object') {
       // Library mode: an interface only a declaration file has (the DOM's `MediaQueryListEvent`, core's `AddChildFromBuilder`) has no Swift type.
-      if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && ((isLibDeclaration(d) && /lib\.dom/.test(d.getSourceFile().fileName)) || isCoreDeclaration(d)))) return 'Any?';
+      if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && ((isLibDeclaration(d) && (/lib\.dom/.test(d.getSourceFile().fileName) || DESCRIPTORS.has(name))) || isCoreDeclaration(d)))) return 'Any?';
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
       return name;
     }
@@ -1702,7 +1705,10 @@ export class Translator implements AsyncTranslator {
     const binds = fn.parameters.map((p, k) => {
       if (!ts.isIdentifier(p.name)) return '';
       const t = own.params[k].type;
-      const value = base.params[k] ? this.convert(`__b${k}`, plain(base.params[k].type), plain(t)) : (this.zero(t) ?? 'nil');
+      const from = base.params[k] ? plain(base.params[k].type) : null, to = plain(t);
+      const converted = from ? this.convert(`__b${k}`, from, to) : (this.zero(t) ?? 'nil');
+      // A parameter narrowed to a subclass: the argument as that class, undefined where it is not one.
+      const value = from && converted === `__b${k}` && from !== to && this.lenientRef(to.replace(/\?$/, '')) !== to.replace(/\?$/, '') ? `(__b${k} as? ${to.replace(/\?$/, '')})` : converted;
       return `${pad}let ${ident(p.name.text)}: ${t} = ${value}`;
     }).filter(Boolean);
     const params = base.params.map((p, k) => `_ __b${k}: ${p.decl.slice(p.decl.indexOf(':') + 1).trim()}`).join(', ');
@@ -1948,6 +1954,8 @@ export class Translator implements AsyncTranslator {
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
     const witnesses: string[] = [];
     const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
+      // Library mode: an interface only a declaration file has is no Swift protocol.
+      .filter((i) => !this.library || !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
       // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
       .filter((i) => !this.baseImplements(cls, i.expression.getText()) && this.protocolWitnesses(cls, i, witnesses))
       .map((i) => i.expression.getText());
@@ -3383,7 +3391,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A module-level function or variable's Swift name. */
-  private topName(decl: ts.Node, name: string): string {
+  topName(decl: ts.Node, name: string): string {
     return this.topNames().get(decl) ?? name;
   }
 
@@ -3738,6 +3746,13 @@ export class Translator implements AsyncTranslator {
       if (isOptional(vt)) return `(${read} ?? nil)`;
       const z = isFunctionType(vt) ? null : this.zero(vt);
       return z ? `(${read} ?? ${z})` : `${read}!`;
+    }
+    // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
+    const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+      const rt = this.typeOf(e);
+      const code = `${identPath(this.declaredName(e.expression as ts.Identifier))}.jsEnumObject[jsKey: ${this.propertyKey(key)}]`;
+      return rt === 'Any?' ? code : this.fromAny(code, rt);
     }
     if (this.typeOf(e.expression) === 'Any?') {
       const code = `jsGet(${target}, ${this.propertyKey(key)})`;
