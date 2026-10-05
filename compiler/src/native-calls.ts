@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { CF_CLASSES, optionalType, type Translator } from './swift.ts';
 import {
-  categoryModule, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
+  categoryModule, conformsTo, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
@@ -140,7 +140,8 @@ export class NativeAPI {
       const native = this.symbolModule(sym);
       if (native) return { ...native, isStatic: true };
     }
-    const type = c.getNonNullableType(c.getTypeAtLocation(e));
+    // `this` in an app class extending a native one is the class.
+    const type = c.getApparentType(c.getNonNullableType(c.getTypeAtLocation(e)));
     const native = this.symbolModule(type.getSymbol()) ?? this.nativeBase(type);
     return native ? { ...native, isStatic: false } : null;
   }
@@ -792,7 +793,8 @@ export class NativeAPI {
     const exposedSpec = statics.find((m) => m.name.getText() === 'ObjCExposedMethods');
     const exposed = new Set(exposedSpec && ts.isObjectLiteralExpression(exposedSpec.initializer!) ? exposedSpec.initializer.properties.map((p) => p.name!.getText()) : []);
 
-    const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.map((p) => p.swift)].join(', ')} {`];
+    // A protocol the native base conforms to already is its conformance.
+    const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.filter((p) => !conformsTo(base.module, base.name, p.name)).map((p) => p.swift)].join(', ')} {`];
     t.indent = '    ';
     t.inNativeClassBody = true;
     for (const m of cls.members) {
@@ -849,7 +851,7 @@ export class NativeAPI {
       const fromBase = lookupMember(base.module, base.name, jsName, false);
       const target = fromProtocol ?? fromBase;
       if (target && target.kind === 'method') {
-        lines.push(this.nativeMethod(m, target, !fromProtocol && !!fromBase));
+        lines.push(this.nativeMethod(m, target, !!fromBase && fromBase.kind === 'method' && (!fromProtocol || fromBase.swift === fromProtocol.swift)));
         continue;
       }
       lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
@@ -874,7 +876,9 @@ export class NativeAPI {
     const read = (k: number) => {
       const sym = this.t.checker.getSymbolAtLocation(m.parameters[k].name);
       let found = false;
-      const visit = (n: ts.Node): void => { if (!found && ts.isIdentifier(n) && this.t.checker.getSymbolAtLocation(n) === sym) found = true; else if (!found) ts.forEachChild(n, visit); };
+      // `{ transitionContext }` reads the parameter through the shorthand's value.
+      const reads = (n: ts.Identifier) => this.t.checker.getSymbolAtLocation(n) === sym || (ts.isShorthandPropertyAssignment(n.parent) && this.t.checker.getShorthandAssignmentValueSymbol(n.parent) === sym);
+      const visit = (n: ts.Node): void => { if (!found && ts.isIdentifier(n) && reads(n)) found = true; else if (!found) ts.forEachChild(n, visit); };
       if (sym && m.body) visit(m.body);
       return found;
     };
