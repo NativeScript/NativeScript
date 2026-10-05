@@ -1,14 +1,14 @@
 /**
- * Generates NativeScriptKit's Swift from core's TypeScript with the native
- * release compiler, one Swift file per core file, plus a manifest of the
+ * Generates NativeScriptKit's Swift from core's TypeScript with the
+ * NativeScript compiler, one Swift file per core file, plus a manifest of the
  * sources each was generated from.
  *
  *   node tools/native-kit/generate.mts --out <kit>/Sources/NativeScriptKit/Core [--check] [--report]
- *     [--compiler <native-release/compiler>] [--declarations <published @nativescript/core>]
+ *     [--compiler <@nativescript/compiler's compiler folder>] [--declarations <published @nativescript/core>]
  *
  * --check exits non-zero when the files in --out differ from what core generates (CI).
  * --report lists every construct the compiler does not translate yet, and writes nothing.
- * The compiler is $NS_NATIVE_COMPILER or the installed @nativescript/native-release; the
+ * The compiler is $NS_NATIVE_COMPILER or the installed @nativescript/compiler; the
  * declarations are core as built (dist/packages/core) unless given.
  */
 import { execFileSync } from 'node:child_process';
@@ -26,10 +26,10 @@ const option = (name: string, fallback?: string) => {
 const out = option('--out');
 const check = args.includes('--check');
 const report = args.includes('--report');
-const compiler = resolve(option('--compiler', process.env.NS_NATIVE_COMPILER ?? join(root, 'node_modules/@nativescript/native-release/compiler')));
+const compiler = resolve(option('--compiler', process.env.NS_NATIVE_COMPILER ?? join(root, 'node_modules/@nativescript/compiler/compiler')));
 const declarations = resolve(option('--declarations', join(root, 'dist/packages/core')));
 if (!out && !report) throw new Error('--out <kit>/Sources/NativeScriptKit/Core is required');
-if (!existsSync(join(compiler, 'src/kit-gen.ts'))) throw new Error(`${compiler}: not the native release compiler (--compiler or NS_NATIVE_COMPILER)`);
+if (!existsSync(join(compiler, 'src/kit-gen.ts'))) throw new Error(`${compiler}: not the NativeScript compiler (--compiler or NS_NATIVE_COMPILER)`);
 if (!existsSync(join(declarations, 'index.d.ts'))) throw new Error(`${declarations}: no core declarations (build core, or --declarations)`);
 
 const { generateKit } = await import(join(compiler, 'src/kit-gen.ts'));
