@@ -734,7 +734,8 @@ export function lookupClass(module: string, jsClass: string): NativeClass | null
 export function lookupMember(module: string, jsClass: string, jsMember: string, isStatic: boolean): NativeMethod | NativeProperty | null {
   const receiver = lookupClass(module, jsClass);
   for (const [, c] of hierarchy(module, jsClass)) {
-    const m = (isStatic ? c.static : c.instance)[jsMember];
+    const members = isStatic ? c.static : c.instance;
+    const m = Object.hasOwn(members, jsMember) ? members[jsMember] : null;
     if (m) return rehome(m, c, receiver);
   }
   if (!isStatic) return jsMember.startsWith('init') ? lookupInit(module, jsClass, jsMember) : null;
@@ -784,7 +785,7 @@ export function lookupEnum(module: string, jsEnum: string): NativeEnum | null {
 }
 
 function lookupIn<K extends 'functions' | 'constants' | 'structs'>(module: string, kind: K, js: string): NativeTable[K][string] | null {
-  for (const t of allTables(module)) if (t[kind][js]) return t[kind][js];
+  for (const t of allTables(module)) if (Object.hasOwn(t[kind], js)) return t[kind][js];
   return null;
 }
 

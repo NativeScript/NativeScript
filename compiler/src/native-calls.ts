@@ -382,6 +382,8 @@ export class NativeAPI {
     // A native enum's value is a number in JavaScript.
     const en = !r.isStatic && name === 'toString' && !e.arguments.length ? lookupEnum(r.module, r.name) : null;
     if (en) return `String(${this.unwrapped(callee.expression)}${en.swift ? '.rawValue' : ''})`;
+    // The runtime's wrapper of a native object converts to its `description`.
+    if (!r.isStatic && name === 'toString' && !e.arguments.length && cls?.kind === 'class') return this.fromSwift(`${this.unwrapped(callee.expression)}.description`, 'String', e);
     const m = this.found(lookupMember(r.module, r.name, name, r.isStatic));
     if (!m) {
       // `o.setX(v)` for a property `x` the d.ts also lists as a method.
