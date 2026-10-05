@@ -2997,7 +2997,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isIfStatement(s)) {
       // A condition the parameters' constant values decide: only the branch that runs.
-      const fixed = this.reach?.constant(s.expression);
+      const fixed = this.reach?.constant(s.expression) ?? this.staticTypeof(s.expression);
       if (fixed !== undefined) {
         const live = fixed ? s.thenStatement : s.elseStatement;
         return live ? `${i}do ${this.block(live)}` : '';
@@ -5634,6 +5634,8 @@ export class Translator implements AsyncTranslator {
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
     const intl = intlConstructor(callee, this.checker);
     if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
+    // `new Object()`: an empty object.
+    if (name === 'Object' && this.isLibGlobal(callee as ts.Identifier) && !args.length) return 'JSObject()';
     // `new Number(x)`, `new Boolean(x)`, `new String(x)`: a compiled program makes no wrapper objects; the primitive.
     if (['Number', 'Boolean', 'String'].includes(name) && this.isLibGlobal(callee as ts.Identifier)) {
       const value = args[0] ? this.coerce(args[0], 'Any?') : 'nil';
@@ -5702,6 +5704,18 @@ export class Translator implements AsyncTranslator {
     const [first, second] = name === 'AggregateError' ? [args[1], args[0]] : [args[0]];
     const errors = name === 'AggregateError' ? [`errors: ${second ? this.coerce(second, 'JSArray<Any?>') : 'JSArray<Any?>()'}`] : [];
     return `${ERRORS[name]}(${[...errors, ...(first ? [this.str(first)] : [])].join(', ')})`;
+  }
+
+  /** `typeof x === 'number'` where Swift knows x's type: decided now (a branch TypeScript narrows to never never runs). */
+  private staticTypeof(e: ts.Expression): boolean | undefined {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (!ts.isBinaryExpression(e) || ![ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken].includes(e.operatorToken.kind)) return undefined;
+    const [t, lit] = ts.isTypeOfExpression(e.left) ? [e.left, e.right] : ts.isTypeOfExpression(e.right) ? [e.right, e.left] : [null, null];
+    if (!t || !lit || !ts.isStringLiteral(lit)) return undefined;
+    const known = /^"(\w+)"$/.exec(this.typeofExpr(t))?.[1];
+    if (!known || this.maybeUndefined(t.expression)) return undefined;
+    const same = known === lit.text;
+    return e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken || e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ? same : !same;
   }
 
   private typeofExpr(e: ts.TypeOfExpression): string {
