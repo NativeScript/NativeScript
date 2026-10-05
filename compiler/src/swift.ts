@@ -1446,6 +1446,8 @@ export class Translator implements AsyncTranslator {
   /** Swift code of type `from` where Swift needs `to`: functions are adapted parameter by parameter. */
   convert(code: string, from: string, to: string): string {
     if (from === to) return code;
+    // Library mode: an object literal of an event type (`{ eventName, object, value }`) is core's EventData over it, its other keys read by name.
+    if (this.library && from === 'JSObject' && to.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${code})`;
     if (to === 'Any?') {
       const opt = isOptional(from);
       const fn = functionParts(opt ? from.replace(/^\((.*)\)\?$/, '$1') : from);
@@ -1467,6 +1469,9 @@ export class Translator implements AsyncTranslator {
     }
     if (to === optionalType(from)) return code;
     if (from === optionalType(to)) return `${code}!`;
+    // Lenient code: one class where another is declared (a base class's value where a subclass is wanted): the value as it, undefined where it is not.
+    const fb = from.replace(/[?!]$/, ''), tb = to.replace(/[?!]$/, '');
+    if (fb !== tb && /^[A-Z]\w*$/.test(fb) && /^[A-Z]\w*$/.test(tb) && this.lenientRef(fb) !== fb && this.lenientRef(tb) !== tb && !['JSObject', 'EventData'].includes(fb)) return `jsImplicit(${code} as? ${tb})`;
     return code;
   }
 
@@ -3913,7 +3918,7 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e).replace(/\?$/, '');
       if (!['Observable', 'Any'].includes(t) && this.isObjectRef(e)) return `(${this.expr(target)}.object as! ${t})`;
     }
-    if (base === 'EventData' && !['value', 'item', 'eventName', 'object', 'index', 'view', 'type', 'state', 'deltaX', 'deltaY', 'scale', 'rotation', 'direction', 'action', 'scrollX', 'scrollY', 'newValue'].includes(name)) {
+    if (base === 'EventData' && !(this.library ? ['eventName', 'object'] : ['value', 'item', 'eventName', 'object', 'index', 'view', 'type', 'state', 'deltaX', 'deltaY', 'scale', 'rotation', 'direction', 'action', 'scrollX', 'scrollY', 'newValue']).includes(name)) {
       const t = this.typeOf(e);
       const code = `${this.expr(target)}[jsKey: ${swiftString(name)}]`;
       return t === 'Any?' ? code : this.fromAnyCode(code, t, true);
