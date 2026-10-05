@@ -1,12 +1,96 @@
 /**
  * The core modules compiled into NativeScriptKit, the native code a native
- * release links instead of a JavaScript runtime. Imports of the modules not
- * listed reach the kit's hand-written counterparts until they are listed.
+ * release links instead of a JavaScript runtime. A view not listed here is not
+ * in the kit: an app using it stops at the compiler's property guard.
  */
 export const ios = {
-	compile: ['application-settings/', 'color/', 'core-types/', 'trace/', 'utils/layout-helper/', 'utils/types.ts'],
-	/** Functions the kit implements instead, where core calls an npm package: file, function, the kit's Swift. */
+	compile: [
+		'accessibility/',
+		'application/',
+		'color/',
+		'core-types/',
+		'css-mediaquery/',
+		'css-value/',
+		'css/',
+		'data/observable-array/',
+		'data/observable/',
+		'file-system/',
+		'globals/global-utils.ts',
+		'image-asset/',
+		'image-source/',
+		'matrix/',
+		'media-query-list/',
+		'native-window/',
+		'platform/',
+		'profiling/',
+		'text/',
+		'trace/',
+		'ui/action-bar/',
+		'ui/animation/',
+		'ui/button/',
+		'ui/content-view/',
+		'ui/core/',
+		'ui/date-picker/',
+		'ui/editable-text-base/',
+		'ui/embedding/',
+		'ui/enums/',
+		'ui/frame/',
+		'ui/gestures/',
+		'ui/html-view/',
+		'ui/image/',
+		'ui/label/',
+		'ui/layouts/absolute-layout/',
+		'ui/layouts/dock-layout/',
+		'ui/layouts/flexbox-layout/',
+		'ui/layouts/grid-layout/',
+		'ui/layouts/index.ts',
+		'ui/layouts/layout-base-common.ts',
+		'ui/layouts/layout-base.ios.ts',
+		'ui/layouts/root-layout/',
+		'ui/layouts/stack-layout/',
+		'ui/layouts/wrap-layout/',
+		'ui/list-picker/',
+		'ui/list-view/',
+		'ui/page/',
+		'ui/placeholder/',
+		'ui/progress/',
+		'ui/scroll-view/',
+		'ui/search-bar/',
+		'ui/segmented-bar/',
+		'ui/slider/',
+		'ui/styling/',
+		'ui/switch/',
+		'ui/tab-view/',
+		'ui/text-base/',
+		'ui/text-field/',
+		'ui/text-view/',
+		'ui/time-picker/',
+		'ui/transition/',
+		'ui/utils.ios.ts',
+		'ui/web-view/',
+		'utils/',
+	],
+	/**
+	 * What the kit implements instead: a core file's function, an npm package's export
+	 * (`npm:<package>`, `*` for the namespace), or a moot module's export (`moot:<file>`),
+	 * to the kit's Swift.
+	 */
 	counterparts: {
 		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },
+		'application/application.ios.ts': {
+			installSceneDelegateDefaults: 'ApplicationDelegateClass.installSceneDelegateDefaults',
+			warnAboutDelegateClass: 'ApplicationDelegateClass.warnAboutDelegateClass',
+		},
+		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
+		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
+		'moot:ui/builder/index.ts': { Builder: 'CorePackages.builder' },
+	},
+	/** Modules a compiled app has no use for (the XML builder, the inspector, runtime module loading, the JavaScript network stack): what core reads from them is untyped, and using it throws. */
+	moot: ['debugger/', 'ui/builder/', 'module-name-resolver/', 'http/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
+	/** Functions that give back what they are given and, as decorators, leave what they decorate as it is. */
+	identities: ['profile'],
+	/** npm packages compiled with core from the TypeScript they publish (relative to the package; the first is its entry). */
+	packages: {
+		'css-what': ['src/index.ts', 'src/parse.ts', 'src/types.ts', 'src/stringify.ts'],
 	},
 };
