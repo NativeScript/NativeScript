@@ -235,6 +235,27 @@ public func jsNativeElement<T>(_ array: [T]?, _ i: Double) -> Any? {
     return a[k]
 }
 
+/// A struct where Objective-C takes a pointer to one (`CGPathAddArc(path, transform, ...)`): a copy that
+/// stays valid until the current autorelease pool drains, as the iOS runtime passes it. Undefined is null.
+public func jsStructPointer<T>(_ value: Any?, _: T.Type) -> UnsafePointer<T>? {
+    guard let v = jsFlat(value) as? T else { return nil }
+    let held = JSStructCopy(v)
+    _ = Unmanaged.passRetained(held).autorelease()
+    return UnsafePointer(held.pointer)
+}
+
+private final class JSStructCopy<T>: NSObject {
+    let pointer: UnsafeMutablePointer<T>
+    init(_ value: T) {
+        pointer = .allocate(capacity: 1)
+        pointer.initialize(to: value)
+    }
+    deinit {
+        pointer.deinitialize(count: 1)
+        pointer.deallocate()
+    }
+}
+
 /// The folder of the app's bundled script in the app bundle: what NativeScript's runtime gives it as `__dirname`.
 public let jsAppDirectory: String = Bundle.main.bundlePath + "/app"
 

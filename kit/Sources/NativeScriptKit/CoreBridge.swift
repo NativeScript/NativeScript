@@ -101,7 +101,7 @@ extension ViewBase {
 
     /// A listener for a template's event binding.
     public func kitOn(_ eventName: String, _ handler: @escaping (EventData) -> Void) {
-        jsReport { try self.on(eventName, { handler($0) }) }
+        jsReport { try self.on(eventName, { (data: EventData?) in if let data { handler(data) } }) }
     }
 }
 
@@ -131,6 +131,81 @@ public enum NativeScriptApplication {
         jsReport {
             if !css.isEmpty { try app.addCss(css) }
             try app.run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
+        }
+    }
+}
+
+// MARK: List templates
+
+/// A row's item and index as its template's bindings read them. A recycled
+/// cell keeps its views; writing the next item re-runs only its bindings.
+public final class ListRow<Item> {
+    public let item: Signal<Item>
+    public let index: Signal<Double>
+
+    init(_ item: Item, _ index: Double) {
+        self.item = Signal(item)
+        self.index = Signal(index)
+    }
+}
+
+/// nativescript-vue's item context, what its `itemTemplateSelector` receives.
+public struct ListItem<T> {
+    public let item: T
+    public let index: Double
+    public let even: Bool
+    public let odd: Bool
+
+    public init(item: T, index: Double, even: Bool, odd: Bool) {
+        self.item = item
+        self.index = index
+        self.even = even
+        self.odd = odd
+    }
+}
+
+private let listRowKey = JSSymbol("NativeScriptKit:listRow")
+
+extension ListView {
+    /// A ListView's items and the templates that render them, as nativescript-vue
+    /// gives them to core: `itemTemplates` whose views it makes, the selector
+    /// choosing a row's template, and each row's item written as core prepares
+    /// the cell (`itemLoading`).
+    public func bind<Item>(items: @escaping () -> [Item], templates: [String] = ["default"], selector: ((Item, Double) -> String)? = nil,
+                           render: ((String, ListRow<Item>) -> View)? = nil) {
+        var current: [Item] = []
+        let listOwner = Owner.current
+        if let render {
+            let made = templates.map { key in
+                JSObject([("key", key), ("createView", { (_: [Any?]) throws -> Any? in
+                    guard let first = current.first else { return nil }
+                    let row = ListRow(first, 0)
+                    // Each cell's bindings live as long as the list's.
+                    let view = Owner(parent: listOwner).run { render(key, row) }
+                    view[jsKey: listRowKey.key] = row
+                    return view
+                } as JSFunction)]) as Any?
+            }
+            kitSet("itemTemplates", JSArray<Any?>(made))
+        }
+        if let selector {
+            kitSet("itemTemplateSelector", { (args: [Any?]) throws -> Any? in
+                let index = jsToNumber(args.count > 1 ? args[1] : nil)
+                guard index >= 0, Int(index) < current.count else { return templates.first }
+                return selector(current[Int(index)], index)
+            } as JSFunction)
+        }
+        kitOn("itemLoading") { data in
+            guard let view = data[jsKey: "view"] as? ViewBase, let row = view[jsKey: listRowKey.key] as? ListRow<Item> else { return }
+            let index = jsToNumber(data[jsKey: "index"])
+            guard index >= 0, Int(index) < current.count else { return }
+            row.item.value = current[Int(index)]
+            row.index.value = index
+        }
+        Effect { [weak self] in
+            current = items()
+            let list = JSArray<Any?>(current.map { $0 as Any? })
+            untrack { self?.kitSet("items", list) }
         }
     }
 }
