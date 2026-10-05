@@ -3368,7 +3368,9 @@ export class Translator implements AsyncTranslator {
     const decl = local?.declarations?.[0];
     const imported = decl && ts.findAncestor(decl, ts.isImportDeclaration);
     const module = imported && this.checker.getSymbolAtLocation(imported.moduleSpecifier)?.valueDeclaration;
-    return module && this.library.isMoot(module.getSourceFile().fileName) ? `jsMoot(${swiftString(e.text)})` : null;
+    if (!module || !this.library.isMoot(module.getSourceFile().fileName)) return null;
+    const name = ts.isImportSpecifier(decl) ? (decl.propertyName ?? decl.name).text : ts.isNamespaceImport(decl) ? '*' : 'default';
+    return this.library.counterpart?.(module.getSourceFile().fileName, name) ?? `jsMoot(${swiftString(e.text)})`;
   }
 
   /** Whether an expression names a namespace the program declares (its enum, used as a value). */

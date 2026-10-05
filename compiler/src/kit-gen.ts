@@ -21,7 +21,10 @@ export interface KitOptions {
   declarations: string;
   /** Core's files to compile, relative to `core`: a file, or a folder ending in `/` for everything in it. */
   modules: string[];
-  /** Functions the kit implements instead (an npm dependency core calls): file → function → the Swift that replaces it. */
+  /**
+   * Functions the kit implements instead: core file → function → the Swift that replaces it; or, for
+   * an npm package core imports, `npm:<package>` → imported name (`*` for the namespace) → a value of the kit's.
+   */
   counterparts?: Record<string, Record<string, string>>;
   /**
    * Folders of modules a compiled app has no use for (the XML builder, the inspector, runtime
@@ -126,6 +129,8 @@ export function generateKit(o: KitOptions): KitResult {
       const self = (m === '.' || m === './index') && source === containing;
       file = source && isMoot(source) ? MOOT + relative(core, source).replace(/\.ts$/, '.d.ts') : source && compiled.has(source) && !self ? source : declarationOf(source ?? base);
     }
+    // An npm package core depends on: untyped, its functions the kit's counterparts or moot.
+    if (!file && containing.startsWith(core + '/') && /^[@a-z]/i.test(m) && !m.startsWith('@nativescript/')) file = `${MOOT}npm/${m}.d.ts`;
     if (file) {
       resolutions.set(`${containing}\0${m}`, file);
       return { resolvedModule: { resolvedFileName: file, extension: file.endsWith('.d.ts') ? ts.Extension.Dts : ts.Extension.Ts } };
@@ -150,7 +155,7 @@ export function generateKit(o: KitOptions): KitResult {
   // The kit as it is without what is being generated: a hand-ported class of a compiled one's name is a clash, not a base.
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
   const kitInternal = internalTypes(KIT, o.replaces);
-  const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [join(core, f), m]));
+  const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : join(core, f), m]));
   let translator: Translator;
   try {
     translator = new Translator(checker, new Map(), files, {
