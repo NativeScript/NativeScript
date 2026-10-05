@@ -12,11 +12,13 @@ const optional = (t: SwiftType) => /[?!]$/.test(t);
 const BRIDGED: Record<string, string> = {
   NSURL: 'URL', NSDate: 'Date', NSData: 'Data', NSIndexPath: 'IndexPath', NSNotification: 'Notification', NSUUID: 'UUID', NSLocale: 'Locale',
   NSTimeZone: 'TimeZone', NSCalendar: 'Calendar', NSURLRequest: 'URLRequest', NSDateComponents: 'DateComponents', NSCharacterSet: 'CharacterSet',
-  NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error',
+  NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error', CFString: 'String',
 };
 /** `code` of Objective-C class or Swift value type `from` as `to`, the other one of a bridged pair; null when they are not one. */
 function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   const f = base(from), b = base(to);
+  // A Core Foundation array is an NSArray, which Swift reads as an array of its elements.
+  if (f === 'CFArray' && /^\[[^:]*\]$/.test(b)) return optional(to) ? `(${code}).map { $0 as NSArray as! ${b} }` : `(${code}${optional(from) ? '!' : ''} as NSArray as! ${b})`;
   // `NSSet` and Swift's `Set<T>`: toward the typed set the cast checks the elements.
   const typedSet = /^NS(Mutable)?Set$/.test(f) && /^Set<.+>$/.test(b);
   if (BRIDGED[f] !== b && BRIDGED[b] !== f && !typedSet && !(/^Set<.+>$/.test(f) && b === 'NSSet')) return null;
@@ -288,7 +290,8 @@ export class NativeAPI {
     const recv = this.unwrapped(target);
     const result = (code: string) => code;
     if (isArray) {
-      if (args === null && name === 'count') return `Double(${recv}.count)`;
+      // `xs?.count`: undefined, read as a number, where the array is missing.
+      if (args === null && name === 'count') return recv.endsWith('?') ? `((${recv}.count).map { Double($0) } ?? .nan)` : `Double(${recv}.count)`;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
