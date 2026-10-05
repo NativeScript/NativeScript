@@ -793,7 +793,8 @@ export class NativeAPI {
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;
-    if (swiftType.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
+    // Lenient code: a native object that may be nil is held as script holds null, unwrapped only where used.
+    if (swiftType.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') return this.t.lenient && this.t.lenientRef(tsType) !== tsType ? `jsImplicit(${code})` : `${code}!`;
     return code;
   }
 

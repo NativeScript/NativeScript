@@ -1604,6 +1604,8 @@ export class Translator implements AsyncTranslator {
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) return type.endsWith('?') ? `(${code}).map { $0 as! ${base} }` : `(${code} as! ${base})`;
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
     if (this.genericNames.has(base)) return type.endsWith('?') ? `jsCast(${code}, to: ${base}.self)` : `jsCast(${code}, to: ${base}.self)!`;
+    // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
+    if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStruct(${code}, ${base}.self)!`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
     // Lenient code: an untyped value read as an object may be undefined; read as a string, number or boolean, undefined is the type's zero.
     if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `((${code} as? ${type}) ?? ${this.zero(type)})`;
@@ -1831,7 +1833,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
-    if (!this.lenient || !(ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) || !fn.body || fn.getSourceFile().isDeclarationFile) return false;
+    if (!this.lenient || !(ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && (isStatic(fn) || this.soleStructMethod(fn)))) || !fn.body || fn.getSourceFile().isDeclarationFile) return false;
     let found = this.undefinedReturns.get(fn);
     if (found !== undefined) return found;
     found = false;
@@ -1853,6 +1855,14 @@ export class Translator implements AsyncTranslator {
     visit(fn.body);
     this.undefinedReturns.set(fn, found);
     return found;
+  }
+
+  /** An instance method giving a native struct (`applySafeAreaInsets(): CGRect`) that nothing overrides and that overrides nothing: its result may be null, which a struct cannot hold. */
+  private soleStructMethod(fn: ts.MethodDeclaration): boolean {
+    const sig = this.checker.getSignatureFromDeclaration(fn);
+    if (!sig || !this.native.isStructType(this.type(sig.getReturnType(), fn)) || this.baseMethod(fn)) return false;
+    this.hierarchyExtras(fn);
+    return !this.methodFamilies?.get(fn)?.length;
   }
 
   /** A generic function compiled with its type parameters erased (`makeParser<T>`): its result as this call instantiates it. */

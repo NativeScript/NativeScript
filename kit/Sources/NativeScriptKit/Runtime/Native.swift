@@ -38,7 +38,117 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if object.responds(to: one) {
         return { (args: [Any?]) throws -> Any? in jsFromNative(object.perform(one, with: jsToNative(jsArg(args, 0)))?.takeUnretainedValue()) } as JSFunction
     }
+    if let method = jsNativeMethod(object, key) { return method }
     return jsExpandos(object)?[key]
+}
+
+/// A method script names as the runtime does, its selector's parts joined
+/// (`nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight`
+/// for `nativeScriptSetTextDecorationAndTransform:textDecoration:letterSpacing:lineHeight:`),
+/// callable with objects and numbers and giving an object, a number or nothing.
+private func jsNativeMethod(_ object: NSObject, _ key: String) -> JSFunction? {
+    #if arch(arm64) && canImport(UIKit)
+    guard let selector = jsSelector(type(of: object), key), let method = class_getInstanceMethod(type(of: object), selector) else { return nil }
+    let count = Int(method_getNumberOfArguments(method)) - 2
+    let argumentTypes = (0..<count).map { i -> String in
+        guard let p = method_copyArgumentType(method, UInt32(i + 2)) else { return "?" }
+        defer { free(p) }
+        return String(cString: p)
+    }
+    let fullReturnType: String = {
+        let p = method_copyReturnType(method)
+        defer { free(p) }
+        return String(cString: p)
+    }()
+    let returnType = fullReturnType.first ?? "v"
+    return { args in
+        // Arm64 passes integers and pointers in x registers and floating point in v registers, each in order.
+        var ints: [UInt] = [], doubles: [Double] = [], kept: [AnyObject] = []
+        for (i, full) in argumentTypes.enumerated() {
+            let value = jsArg(args, i)
+            // Structs of floating point members (`CGPoint`, `CGRect`) travel in v registers, member by member.
+            if full.hasPrefix("{CGPoint"), let p = jsNativeStruct(value, CGPoint.self) { doubles += [Double(p.x), Double(p.y)]; continue }
+            if full.hasPrefix("{CGSize"), let z = jsNativeStruct(value, CGSize.self) { doubles += [Double(z.width), Double(z.height)]; continue }
+            if full.hasPrefix("{CGRect"), let r = jsNativeStruct(value, CGRect.self) { doubles += [Double(r.origin.x), Double(r.origin.y), Double(r.width), Double(r.height)]; continue }
+            let t = full.first ?? "?"
+            switch t {
+            case "@", "#":
+                let native = jsToNative(value).map { $0 as AnyObject }
+                if let native { kept.append(native) }
+                ints.append(native.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0)
+            case "d": doubles.append(jsToNumber(value))
+            case "f": doubles.append(Double(bitPattern: UInt64(Float(jsToNumber(value)).bitPattern)))
+            case "B", "c", "C": ints.append(jsTruthy(value) ? 1 : 0)
+            case "q", "Q", "i", "I", "l", "L", "s", "S": ints.append(UInt(bitPattern: Int(jsToNumber(value))))
+            default: throw JSException(JSTypeError("\(key): an argument of type \(t) is not supported"))
+            }
+        }
+        guard ints.count <= 6, doubles.count <= 8 else { throw JSException(JSTypeError("\(key): too many arguments")) }
+        while ints.count < 6 { ints.append(0) }
+        while doubles.count < 8 { doubles.append(0) }
+        let send = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "objc_msgSend")!
+        let receiver = UInt(bitPattern: Unmanaged.passUnretained(object).toOpaque())
+        let sel = unsafeBitCast(selector, to: UInt.self)
+        let result: Any?
+        if fullReturnType.hasPrefix("{CGPoint") || fullReturnType.hasPrefix("{CGSize") || fullReturnType.hasPrefix("{CGRect") {
+            typealias G = @convention(c) (UInt, UInt, UInt, UInt, UInt, UInt, UInt, UInt, Double, Double, Double, Double, Double, Double, Double, Double) -> CGRect
+            let r = unsafeBitCast(send, to: G.self)(receiver, sel, ints[0], ints[1], ints[2], ints[3], ints[4], ints[5], doubles[0], doubles[1], doubles[2], doubles[3], doubles[4], doubles[5], doubles[6], doubles[7])
+            // A smaller struct of doubles comes back in the first of the same registers.
+            if fullReturnType.hasPrefix("{CGPoint") { result = jsFromNative(NSValue(cgPoint: r.origin)) }
+            else if fullReturnType.hasPrefix("{CGSize") { result = jsFromNative(NSValue(cgSize: CGSize(width: r.origin.x, height: r.origin.y))) }
+            else { result = jsFromNative(NSValue(cgRect: r)) }
+            withExtendedLifetime(kept) {}
+            return result
+        }
+        switch returnType {
+        case "d", "f":
+            typealias F = @convention(c) (UInt, UInt, UInt, UInt, UInt, UInt, UInt, UInt, Double, Double, Double, Double, Double, Double, Double, Double) -> Double
+            let r = unsafeBitCast(send, to: F.self)(receiver, sel, ints[0], ints[1], ints[2], ints[3], ints[4], ints[5], doubles[0], doubles[1], doubles[2], doubles[3], doubles[4], doubles[5], doubles[6], doubles[7])
+            result = returnType == "f" ? Double(Float(bitPattern: UInt32(truncatingIfNeeded: r.bitPattern))) : r
+        default:
+            typealias F = @convention(c) (UInt, UInt, UInt, UInt, UInt, UInt, UInt, UInt, Double, Double, Double, Double, Double, Double, Double, Double) -> UInt
+            let r = unsafeBitCast(send, to: F.self)(receiver, sel, ints[0], ints[1], ints[2], ints[3], ints[4], ints[5], doubles[0], doubles[1], doubles[2], doubles[3], doubles[4], doubles[5], doubles[6], doubles[7])
+            switch returnType {
+            case "@": result = r == 0 ? nil : jsFromNative(Unmanaged<AnyObject>.fromOpaque(UnsafeRawPointer(bitPattern: r)!).takeUnretainedValue())
+            case "B", "c", "C": result = (r & 0xff) != 0
+            case "q", "i", "l", "s": result = Double(Int(bitPattern: r))
+            case "Q", "I", "L", "S": result = Double(r)
+            default: result = nil
+            }
+        }
+        withExtendedLifetime(kept) {}
+        return result
+    }
+    #else
+    return nil
+    #endif
+}
+
+nonisolated(unsafe) private var jsSelectors: [ObjectIdentifier: [String: ObjectiveC.Selector]] = [:]
+
+/// The selector of the class or one it extends that script names `key`.
+private func jsSelector(_ cls: AnyClass, _ key: String) -> ObjectiveC.Selector? {
+    let id = ObjectIdentifier(cls)
+    if jsSelectors[id] == nil {
+        var names: [String: ObjectiveC.Selector] = [:]
+        var c: AnyClass? = cls
+        while let current = c {
+            var count: UInt32 = 0
+            if let list = class_copyMethodList(current, &count) {
+                for i in 0..<Int(count) {
+                    let selector = method_getName(list[i])
+                    let parts = NSStringFromSelector(selector).split(separator: ":", omittingEmptySubsequences: true).map(String.init)
+                    guard let first = parts.first else { continue }
+                    let name = first + parts.dropFirst().map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined()
+                    if names[name] == nil { names[name] = selector }
+                }
+                free(list)
+            }
+            c = class_getSuperclass(current)
+        }
+        jsSelectors[id] = names
+    }
+    return jsSelectors[id]?[key]
 }
 
 /// Properties script added to a native object, kept with the object (an associated object).
