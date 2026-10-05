@@ -59,6 +59,8 @@ public func jsNullishCoalesce(_ a: Any?, _ b: @autoclosure () throws -> Any?) re
 
 /// An untyped value read as an array whose elements convert with `element`.
 public func jsArrayOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSArray<T> {
+    // An array of the type already is the same array: what is written through either is in both.
+    if let same = jsFlat(value) as? JSArray<T> { return same }
     guard let array = value as? JSArrayProtocol else { return JSArray<T>() }
     return JSArray(array.jsAnyElements.map(element))
 }
