@@ -234,8 +234,8 @@ export class Background {
 		}
 
 		let isImageEqual = false;
-		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
-			isImageEqual = LinearGradient.equals(value1, value2);
+		if (value1.image instanceof LinearGradient && value2.image instanceof LinearGradient) {
+			isImageEqual = LinearGradient.equals(value1.image, value2.image);
 		} else {
 			isImageEqual = value1.image === value2.image;
 		}
