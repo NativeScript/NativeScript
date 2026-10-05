@@ -165,3 +165,7 @@ function wrap(fn: Function): any {
 }
 const add = wrap((a: number, b: number) => a + b);
 console.log(add(2, 3), calls.at(-1));
+
+const clock = ((globalThis as any).__time || Date.now) as () => number;
+const metaDir: string = (import.meta as any).dirname;
+console.log(typeof clock(), clock() > 1.6e12, typeof metaDir, metaDir.length > 0);

@@ -190,3 +190,15 @@ public func jsToNativeDictionary(_ value: Any?) -> [AnyHashable: Any] {
     default: return [:]
     }
 }
+
+/// `array[i]` on a native array: undefined unless `i` is an index in range.
+public func jsNativeElement<T>(_ array: [T]?, _ i: Double) -> Any? {
+    guard let a = array, let k = Int(exactly: i), k >= 0, k < a.count else { return nil }
+    return a[k]
+}
+
+/// The folder of the app's bundled script in the app bundle: what NativeScript's runtime gives it as `__dirname`.
+public let jsAppDirectory: String = Bundle.main.bundlePath + "/app"
+
+/// `import.meta` of the app's bundled script.
+public let jsImportMeta: JSObject = JSObject([("dirname", jsAppDirectory), ("filename", jsAppDirectory + "/bundle.mjs"), ("url", "file://" + jsAppDirectory + "/bundle.mjs")])

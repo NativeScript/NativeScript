@@ -591,7 +591,7 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
-    if (this.isPrototypeRef(n) || this.isPrototypeMember(n)) return 'Any?';
+    if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword)) return 'Any?';
     if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n))) return 'Any?';
     if (this.library && this.holdsMethods(n)) return 'Any?';
     // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
@@ -788,6 +788,7 @@ export class Translator implements AsyncTranslator {
   /** A module's declarations, and the statements that run when it is first imported. */
   module(sf: ts.SourceFile): { code: string; init: string[] } {
     this.props = new Set();
+    this.hoisted = [];
     const out: string[] = [];
     const init: string[] = [];
     // Library mode: the module's functions and variables are an enum's static members.
@@ -839,6 +840,7 @@ export class Translator implements AsyncTranslator {
       later(() => this.stmt(st));
     }
     if (library && members.length) out.push([`enum ${library} {`, ...members.map((m) => indented(m)), '}'].join('\n'));
+    out.push(...this.hoisted.splice(0));
     return { code: out.join('\n\n') + '\n', init };
   }
 
@@ -2472,10 +2474,39 @@ export class Translator implements AsyncTranslator {
       return this.stmt(s.statement);
     }
     if (ts.isClassDeclaration(s) || ts.isInterfaceDeclaration(s) || ts.isTypeAliasDeclaration(s)) {
-      if (ts.isClassDeclaration(s)) throw this.error(s, 'a class declared inside a function');
+      if (ts.isClassDeclaration(s)) {
+        // A native class (`@NativeClass class Impl extends NSObject`) that uses nothing of the function around it is the module's.
+        if (!this.capturesLocals(s)) {
+          const saved = this.indent;
+          this.indent = '';
+          try {
+            const native = this.native.classDecl(s);
+            if (native) { this.hoisted.push(native); return ''; }
+          } finally { this.indent = saved; }
+        }
+        throw this.error(s, 'a class declared inside a function');
+      }
       return '';
     }
     throw this.error(s, 'statement');
+  }
+
+  /** Classes declared inside functions that the module declares instead. */
+  private hoisted: string[] = [];
+
+  /** Whether a declaration refers to anything a function around it declares. */
+  private capturesLocals(decl: ts.Node): boolean {
+    let found = false;
+    const visit = (n: ts.Node) => {
+      if (found) return;
+      if (ts.isIdentifier(n)) {
+        const d = this.resolve(n)?.declarations?.[0];
+        if (d && d.getSourceFile() === decl.getSourceFile() && !(d.pos >= decl.pos && d.end <= decl.end) && ts.findAncestor(d, (x) => ts.isFunctionLike(x) && x.pos <= decl.pos && x.end >= decl.end)) found = true;
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(decl);
+    return found;
   }
 
   /** The label of the loop being translated (`outer:`), placed on the Swift loop that implements it. */
@@ -3021,6 +3052,8 @@ export class Translator implements AsyncTranslator {
       throw this.error(e, 'delete of this member');
     }
     if (ts.isVoidExpression(e)) return `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
+    // `import.meta` of the bundled app's module, in the app bundle.
+    if (ts.isMetaProperty(e) && e.keywordToken === ts.SyntaxKind.ImportKeyword) return 'jsImportMeta';
     if (ts.isRegularExpressionLiteral(e)) {
       const text = e.text;
       const end = text.lastIndexOf('/');
@@ -3074,6 +3107,8 @@ export class Translator implements AsyncTranslator {
     // Library mode: core's `global` is the program's global object; the Android SDK's namespaces exist only there.
     // A name nothing declares for iOS (`android`, `java`, Node's `__dirname`) is a value whose use throws.
     if (this.library && name === 'global' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsGlobalThis';
+    // The runtime gives the bundled app's module its folder in the app bundle.
+    if (this.library && name === '__dirname' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsAppDirectory';
     if (this.library && (!libDecl || /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
     // `if (!console)`: a compiled program always has its console.
@@ -3478,6 +3513,22 @@ export class Translator implements AsyncTranslator {
     }
     if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
     if (t.startsWith('(') && ts.isNumericLiteral(key)) return `${target}.${key.text}`;
+    // A tuple at a computed index (`pool[next++ % 5]`): its elements as an array, undefined past them.
+    if (t.startsWith('(') && this.checker.isTupleType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression))) && !isWriteTarget(e)) {
+      const parts = splitTopLevel(t.slice(1, -1));
+      const el = parts.every((x) => x === parts[0]) ? parts[0] : 'Any?';
+      const tuple = this.fresh('__tuple');
+      const read = `{ (${tuple}: ${t}) -> ${optionalType(el)} in JSArray<${el}>([${parts.map((_, k) => `${tuple}.${k}`).join(', ')}]).element(${this.toNumber(key)}) }(${target})`;
+      const rt = this.typeOf(e);
+      return el === 'Any?' && rt !== 'Any?' ? this.fromAny(`(${read} ?? nil)`, rt) : this.undefinedAs(read, rt);
+    }
+    // A native array (`view.subviews[0]`): undefined past its end.
+    if (/^\[[^:]*\]$/.test(t) && !isWriteTarget(e)) {
+      const read = `jsNativeElement(${target}, ${this.toNumber(key)})`;
+      const rt = this.typeOf(e);
+      if (['String', 'Double', 'Bool'].includes(rt)) return this.undefinedAs(`(${read} as? ${rt})`, rt);
+      return rt === 'Any?' ? read : this.fromAny(read, rt);
+    }
     if (t.startsWith('JSRecord<')) {
       // A missing key is undefined in JavaScript; its declared type here is the value type.
       const read = `${target}${this.typeOf(e.expression).endsWith('?') ? '?' : ''}[${this.str(key)}]`;
@@ -4513,6 +4564,9 @@ export class Translator implements AsyncTranslator {
     if (core) return core;
     // `new UIEdgeInsets({ top, left, bottom, right })`: the struct from its fields.
     if (this.native.isStructType(t) && args.length === 1 && ts.isObjectLiteralExpression(args[0])) return this.coerce(args[0], t);
+    // `new CATransform3D(CATransform3DIdentity)`: a copy of the struct, which a Swift value is.
+    if (this.native.isStructType(t) && args.length === 1 && this.typeOf(args[0]) === t) return this.expr(args[0]);
+    if (this.native.isStructType(t) && !args.length) return `${t}()`;
     // An untyped constructor (a moot module's class): constructed as script would, which a moot value refuses.
     if (this.typeOf(callee) === 'Any?') return t === 'Any?' ? `(try jsConstruct(${this.expr(callee)}${this.untypedArgs(args)}))` : this.fromAny(`(try jsConstruct(${this.expr(callee)}${this.untypedArgs(args)}))`, t);
     // `new Trace.Writer()`: a namespace's class.
@@ -5035,6 +5089,7 @@ const LIB_CONSTANTS: Record<string, string> = {
   'Number.NEGATIVE_INFINITY': '-Double.infinity', 'Number.NaN': 'Double.nan',
   'Symbol.iterator': 'JSSymbol.iterator', 'Symbol.asyncIterator': 'JSSymbol.asyncIterator', 'Symbol.toPrimitive': 'JSSymbol.toPrimitive',
   'Symbol.toStringTag': 'JSSymbol.toStringTag', 'Symbol.hasInstance': 'JSSymbol.hasInstance', 'Object.prototype': 'JSPrototypes.objectPrototype',
+  'Date.now': '({ () throws -> Double in JSDate.now() } as () throws -> Double)',
 };
 
 /** A field of an object literal's class; an accessor runs closures the literal gives. */
