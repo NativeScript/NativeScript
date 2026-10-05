@@ -541,6 +541,7 @@ export class NativeAPI {
       if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : `${b}(jsToNumber(${t.expr(e)}))`;
       return t.expr(e);
     }
+    if (source === 'Double' && this.isNumericConstants(b)) return `${b}(rawValue: ${this.typedConstantsRaw(b)}(${t.expr(e)}))`;
     if (source === 'Double' && this.isEnumType(b)) {
       // A number where Swift takes an enum or option set: its raw value.
       const raw = this.rawTypeOf(b);
@@ -601,7 +602,7 @@ export class NativeAPI {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
-    if (this.isEnumType(b) && tsType === 'Double') return `Double(${code}.rawValue)`;
+    if ((this.isEnumType(b) || this.isNumericConstants(b)) && tsType === 'Double') return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
@@ -839,8 +840,23 @@ export class NativeAPI {
 
   /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */
   private isTypedConstants(swift: string): boolean {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
-    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants'));
+    return this.typedConstantsRaw(swift) !== null;
+  }
+
+  /** The raw type of a type of named constants (`UIAccessibilityTraits` holds a UInt64), or null. */
+  private typedConstantsRaw(swift: string): string | null {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    for (const m of this.searchModules()) {
+      const e = Object.values(nativeTable(m).enums).find((x) => x.swift === swift && x.kind === 'typedConstants');
+      if (e) return e.raw;
+    }
+    return null;
+  }
+
+  /** A type of named numbers (`UIAccessibilityTraits`), which script reads as numbers. */
+  private isNumericConstants(swift: string): boolean {
+    const raw = this.typedConstantsRaw(swift);
+    return !!raw && NUMBERS.has(raw);
   }
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
