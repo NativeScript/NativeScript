@@ -456,6 +456,7 @@ public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
 @discardableResult
 public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
+    if let method = jsFlat(function) as? JSMethod { return try method(nil, arguments) }
     if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
 }
@@ -695,8 +696,7 @@ public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any
 @discardableResult
 public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
     if jsIsNullish(function) { return nil }
-    if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
-    throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
+    return try jsCall(function, spread: arguments)
 }
 
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not

@@ -108,7 +108,9 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         if let method = f as? JSMethod { return try method(this, rest) }
         return try (f as! JSFunction)(rest)
     }
-    let f = try jsGet(object, key)
+    var f = try jsGet(object, key)
+    // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
+    if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
@@ -126,6 +128,9 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
     case let o as JSObject: try o.defineProperty(key, d)
+    case let expando as JSExpando:
+        if expando.jsExpando == nil { expando.jsExpando = JSObject() }
+        try expando.jsExpando!.defineProperty(key, d)
     case let dynamic as JSDynamic:
         if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on a typed object: \(key)")) }
         if case .some(let v) = d.value { dynamic[jsKey: key] = v }
