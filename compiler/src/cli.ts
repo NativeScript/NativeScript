@@ -367,7 +367,8 @@ if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patc
 if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
 // Set before the module initializers run: they may make views.
 const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
-const start = switches + `        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
+// Core's modules first, as the app's bundle evaluates @nativescript/core before its own code.
+const start = switches + `        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.css = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);

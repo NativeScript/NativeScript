@@ -259,7 +259,7 @@ open class SegmentedBar: View {
 
     private func setSelectedTextColor() {
         guard let control else { return }
-        let color = toColor(applied["selectedTextColor"]) ?? toColor(applied["color"]) ?? Color("#000000")?.ios
+        let color = toColor(applied["selectedTextColor"]) ?? toColor(applied["color"]) ?? Color.parse("#000000")?.uiColor
         var attributes = control.titleTextAttributes(for: .selected) ?? [:]
         attributes[.foregroundColor] = color
         control.setTitleTextAttributes(attributes, for: .selected)

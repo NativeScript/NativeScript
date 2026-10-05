@@ -168,7 +168,7 @@ open class TextBase: View {
             if applied["color"] == nil { setColor(.label) }
             if let stroke = toText(applied["textStroke"]).flatMap(CSSShadow.shorthand) {
                 let width = stroke.values.first?.toDevicePixels(auto: 0) ?? 0
-                textView?.nativeScriptSetFormattedTextStroke(width, Color(stroke.color)?.ios)
+                textView?.nativeScriptSetFormattedTextStroke(width, Color.parse(stroke.color)?.uiColor)
             }
         }
     }

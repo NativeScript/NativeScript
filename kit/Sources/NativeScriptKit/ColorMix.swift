@@ -11,6 +11,9 @@ enum ColorMix {
         return serializeRGB(color)
     }
 
+    /// core's `argbFromColorMix`, which the generated color module calls: -1 where csstools does not parse the value.
+    static func argbFromColorMix(_ value: String) -> Double { argb(value).map { Double($0) } ?? -1 }
+
     enum Notation: Equatable { case hex, rgb, srgb, linearSRGB, hsl, hwb, lab, lch, oklab, oklch, xyzD50, xyzD65 }
 
     struct ColorData {

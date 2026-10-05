@@ -37,7 +37,7 @@ public final class ImageSource {
     public static func fromFontIconCodeSync(_ source: String, _ font: CoreFont, _ color: Color?) -> ImageSource {
         let uiFont = font.uiFont
         var attributes: [NSAttributedString.Key: Any] = [.font: uiFont]
-        if let color { attributes[.foregroundColor] = color.ios }
+        if let color { attributes[.foregroundColor] = color.uiColor }
         let text = source as NSString
         let size = text.size(withAttributes: attributes)
         let image = UIGraphicsImageRenderer(size: size).image { _ in text.draw(at: .zero, withAttributes: attributes) }

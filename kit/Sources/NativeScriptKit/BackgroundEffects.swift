@@ -200,7 +200,7 @@ struct LinearGradient: Equatable {
                 if tail.hasSuffix("%"), let value = Double(tail.dropLast()) { offset = value / 100 }
             }
         }
-        guard let color = Color(colorText)?.ios else { return nil }
+        guard let color = Color.parse(colorText)?.uiColor else { return nil }
         return (color, offset)
     }
 

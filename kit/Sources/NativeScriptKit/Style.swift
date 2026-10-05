@@ -136,11 +136,38 @@ func toBool(_ value: Any?) -> Bool? {
     }
 }
 
+/// JavaScript `parseFloat`: the longest numeric prefix, or nil.
+func parseFloat(_ text: String) -> Double? {
+    let s = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    var end = s.startIndex
+    var seenDigit = false, seenDot = false, seenExp = false
+    var i = s.startIndex
+    if i < s.endIndex, s[i] == "-" || s[i] == "+" { i = s.index(after: i) }
+    while i < s.endIndex {
+        let c = s[i]
+        if c.isASCII && c.isNumber {
+            seenDigit = true
+            end = s.index(after: i)
+        } else if c == "." && !seenDot && !seenExp {
+            seenDot = true
+        } else if (c == "e" || c == "E") && seenDigit && !seenExp {
+            seenExp = true
+            let next = s.index(after: i)
+            if next < s.endIndex, s[next] == "-" || s[next] == "+" { i = next }
+        } else {
+            break
+        }
+        i = s.index(after: i)
+    }
+    guard seenDigit else { return nil }
+    return Double(s[s.startIndex..<end])
+}
+
 func toColor(_ value: Any?) -> UIColor? {
     switch value {
     case let c as UIColor: return c
-    case let c as Color: return c.ios
-    case let s as String: return Color(s)?.ios
+    case let c as Color: return c.uiColor
+    case let s as String: return Color.parse(s)?.uiColor
     default: return nil
     }
 }

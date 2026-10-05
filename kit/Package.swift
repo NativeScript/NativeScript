@@ -8,5 +8,5 @@ let package = Package(
     name: "NativeScriptKit",
     platforms: [.iOS(.v17)],
     products: [.library(name: "NativeScriptKit", targets: ["NativeScriptKit"])],
-    targets: [.target(name: "NativeScriptKit")]
+    targets: [.target(name: "NativeScriptKit", exclude: ["Core/manifest.json"])]
 )

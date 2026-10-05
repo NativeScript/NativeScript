@@ -1,48 +1,8 @@
 import UIKit
 
-// @nativescript/core's measure/layout arithmetic (utils/layout-helper and
-// ui/core/view/view-helper). Everything is in device pixels, as NativeScript
-// measures, and rounded where NativeScript rounds, so frames land on the
-// same pixels.
-
-/// `layout` from utils/layout-helper: Android-style measure specs.
-public enum LayoutHelper {
-    static let modeShift = 30
-    static let modeMask = 0x3 << modeShift
-    static let unspecified = 0 << modeShift
-    static let exactly = 1 << modeShift
-    static let atMost = 2 << modeShift
-    static let measuredStateTooSmall = 0x0100_0000
-    static let measuredStateMask = 0xff00_0000
-    static let measuredSizeMask = 0x00ff_ffff
-
-    static let scale: CGFloat = UIScreen.main.scale
-
-    static func mode(_ spec: Int) -> Int { spec & modeMask }
-    static func size(_ spec: Int) -> Int { spec & ~modeMask }
-
-    static func makeMeasureSpec(_ size: Double, _ mode: Int) -> Int {
-        (Int(jsRound(max(0, size))) & ~modeMask) | (mode & modeMask)
-    }
-
-    static func toDevicePixels(_ value: Double) -> Double { value * Double(scale) }
-    static func toDeviceIndependentPixels(_ value: Double) -> Double { value / Double(scale) }
-
-    /// `layout.round`: Math.round, but never rounds a non-zero value to zero.
-    static func round(_ value: Double) -> Double {
-        let res = (value + 0.5).rounded(.down)
-        if res != 0 { return res }
-        if value == 0 { return 0 }
-        return value > 0 ? 1 : -1
-    }
-
-    static func measureNativeView(_ view: UIView, _ width: Int, _ widthMode: Int, _ height: Int, _ heightMode: Int) -> CGSize {
-        let size = view.sizeThatFits(CGSize(
-            width: widthMode == unspecified ? .infinity : toDeviceIndependentPixels(Double(width)),
-            height: heightMode == unspecified ? .infinity : toDeviceIndependentPixels(Double(height))))
-        return CGSize(width: round(toDevicePixels(size.width)), height: round(toDevicePixels(size.height)))
-    }
-}
+// @nativescript/core's measure/layout arithmetic (ui/core/view/view-helper).
+// Everything is in device pixels, as NativeScript measures, and rounded where
+// NativeScript rounds, so frames land on the same pixels.
 
 /// JavaScript's `x | 0` on a measured size: the fraction is dropped.
 private func int32(_ value: Double) -> Int { Int(Int32(truncatingIfNeeded: Int(value.rounded(.towardZero)))) }

@@ -12,8 +12,8 @@ struct CSSShadow {
         guard let data = CSSShadow.shorthand(value) else { return nil }
         func at(_ i: Int) -> Length { i < data.values.count ? data.values[i] : .zero }
         offsetX = at(0); offsetY = at(1); blurRadius = at(2); spreadRadius = at(3)
-        let color = Color(data.color)
-        self.color = color?.ios
+        let color = Color.parse(data.color)
+        self.color = color?.uiColor
         colorAlpha = color.map { Double($0.a) }
         inset = data.inset
     }

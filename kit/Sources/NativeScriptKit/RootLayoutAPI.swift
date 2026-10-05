@@ -162,7 +162,7 @@ extension RootLayout {
             let color = (field(options, "color") as? String) ?? "#000000"
             let opacity = field(options, "opacity") as? Double ?? 0
             UIView.animate(withDuration: duration / 1000, animations: {
-                if let ui = Color(color)?.ios { cover.nativeView?.backgroundColor = ui }
+                if let ui = Color.parse(color)?.uiColor { cover.nativeView?.backgroundColor = ui }
                 var state = Transition(opacity: opacity)
                 state.duration = duration
                 self.applyShadeProperties(cover, state)

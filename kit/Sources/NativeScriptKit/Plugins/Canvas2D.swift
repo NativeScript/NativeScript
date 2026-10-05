@@ -83,8 +83,8 @@ public final class CanvasGradient {
     fileprivate init(_ kind: Kind) { self.kind = kind }
 
     public func addColorStop(_ offset: Double, _ color: String) {
-        guard offset >= 0, offset <= 1, let c = Color(color) else { return }
-        stops.append((offset, c.ios))
+        guard offset >= 0, offset <= 1, let c = Color.parse(color) else { return }
+        stops.append((offset, c.uiColor))
         stops.sort { $0.0 < $1.0 }
     }
 
@@ -124,7 +124,7 @@ public final class CanvasRenderingContext2D {
     public var fillStyle: Any? {
         get { fill }
         set {
-            if newValue is CanvasGradient || (jsFlat(newValue) as? String).flatMap(Color.init) != nil { fill = jsFlat(newValue) }
+            if newValue is CanvasGradient || (jsFlat(newValue) as? String).flatMap(Color.parse) != nil { fill = jsFlat(newValue) }
         }
     }
 
@@ -159,8 +159,8 @@ public final class CanvasRenderingContext2D {
                 case let .linear(p0, p1): bitmap.drawLinearGradient(cg, start: p0, end: p1, options: options)
                 }
             }
-        } else if let color = (fill as? String).flatMap(Color.init) {
-            bitmap.setFillColor(color.ios.cgColor)
+        } else if let color = (fill as? String).flatMap(Color.parse) {
+            bitmap.setFillColor(color.uiColor.cgColor)
             bitmap.fillPath(using: rule == "evenodd" ? .evenOdd : .winding)
         }
         bitmap.restoreGState()

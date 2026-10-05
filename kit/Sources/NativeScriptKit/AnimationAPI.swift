@@ -1,14 +1,5 @@
 import UIKit
 
-/// `CubicBezierAnimationCurve`, what `CoreTypes.AnimationCurve.cubicBezier()` returns.
-public final class CubicBezierAnimationCurve {
-    public var x1: Double, y1: Double, x2: Double, y2: Double
-
-    public init(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) {
-        (self.x1, self.y1, self.x2, self.y2) = (x1, y1, x2, y2)
-    }
-}
-
 // Animations from script: definitions are script objects, read as
 // animation-common's `_createPropertyAnimations` reads them, and `play()`
 // returns the promise `AnimationBase.play` does.
@@ -75,8 +66,8 @@ extension AnimationDefinition {
               let iterations = number("iterations"), let translate = pair("translate"), let scale = pair("scale") else { return nil }
         (self.opacity, self.duration, self.delay, self.iterations, self.translate, self.scale) = (opacity, duration, delay, iterations, translate, scale)
         if let color = field("backgroundColor") {
-            if let c = color as? Color { backgroundColor = c.ios }
-            else if let s = color as? String, let c = Color(s) { backgroundColor = c.ios }
+            if let c = color as? Color { backgroundColor = c.uiColor }
+            else if let s = color as? String, let c = Color.parse(s) { backgroundColor = c.uiColor }
             else {
                 jsError("Property backgroundColor must be valid color. Value: \(jsToString(color))")
                 return nil

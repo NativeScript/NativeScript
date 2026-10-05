@@ -41,22 +41,8 @@ public enum Utils {
 
     public static func isMainThread() -> Bool { Thread.isMainThread }
 
-    public enum layout {
-        public static let EXACTLY: Double = Double(LayoutHelper.exactly)
-        public static let AT_MOST: Double = Double(LayoutHelper.atMost)
-        public static let UNSPECIFIED: Double = Double(LayoutHelper.unspecified)
-        public static let MODE_MASK: Double = Double(LayoutHelper.modeMask)
-
-        public static func toDevicePixels(_ value: Double) -> Double { LayoutHelper.toDevicePixels(value) }
-        public static func toDeviceIndependentPixels(_ value: Double) -> Double { LayoutHelper.toDeviceIndependentPixels(value) }
-        public static func round(_ value: Double) -> Double { LayoutHelper.round(value) }
-        public static func makeMeasureSpec(_ size: Double, _ mode: Double) -> Double {
-            Double(LayoutHelper.makeMeasureSpec(size, Int(mode)))
-        }
-        public static func getMeasureSpecSize(_ spec: Double) -> Double { Double(LayoutHelper.size(Int(spec))) }
-        public static func getMeasureSpecMode(_ spec: Double) -> Double { Double(LayoutHelper.mode(Int(spec))) }
-        public static func getDisplayDensity() -> Double { Double(LayoutHelper.scale) }
-    }
+    /// `Utils.layout`: core's layout-helper, generated from core.
+    public typealias layout = NativeScriptKit.layout
 
     public enum ios {
         /// The window NativeScript drives.
@@ -68,6 +54,9 @@ public enum Utils {
             while let presented = controller?.presentedViewController { controller = presented }
             return controller
         }
+
+        /// `getMainScreen()`: the window's screen, else the main screen.
+        public static func getMainScreen() -> UIScreen { getWindow()?.screen ?? UIScreen.main }
 
         public static func getVisibleViewController(_ root: UIViewController?) -> UIViewController? {
             var controller = root

@@ -30,9 +30,12 @@ export interface KitType {
  * something the kit lacks stops with the file and line instead of failing
  * in the Swift compiler.
  */
+/** Kit sources the index leaves out: while the kit is generated from core, the code generated before. */
+export const kitIndexOptions: { exclude: RegExp | null } = { exclude: null };
+
 export function kitIndex(kitSources: string): Map<string, KitType> {
   const types = new Map<string, KitType>();
-  const files = (readdirSync(kitSources, { recursive: true }) as string[]).filter((f) => f.endsWith('.swift'));
+  const files = (readdirSync(kitSources, { recursive: true }) as string[]).filter((f) => f.endsWith('.swift') && !kitIndexOptions.exclude?.test(f));
   // Shorthands (`borderRadius`, `margin`) any view takes, expanded by a top-level function.
   const shorthands = new Set<string>();
   for (const f of files) {
@@ -42,6 +45,7 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
     const body = text.slice(at, text.indexOf('\n}\n', at));
     for (const m of body.matchAll(/^\s*case\s+((?:"\w+"(?:,\s*)?)+):/gm)) for (const n of m[1].matchAll(/"(\w+)"/g)) shorthands.add(n[1]);
   }
+  const aliases: [string, string][] = [];
   // A top-level function handling names for the classes that call it (`applyTextInputTrait`).
   const functionProps = new Map<string, Set<string>>();
   const calls = new Map<KitType, Set<string>>();
@@ -68,6 +72,10 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
         if (type && base) type.base = base;
         if (type && isPublic && decl[1] !== 'extension') type.declared = true;
         stack.push({ type: isPublic ? type : null, depth });
+      } else if (/^\s*(?:public\s+)?typealias\s+(\w+)\s*=\s*([\w.]+)/.test(line) && stack.at(-1)?.type) {
+        // A type's alias of another type (`Utils.layout` for the generated `layout`): the other type under this name too.
+        const m = /typealias\s+(\w+)\s*=\s*([\w.]+)/.exec(line)!;
+        aliases.push([`${stack.at(-1)!.type!.name}.${m[1]}`, m[2].replace(/^NativeScriptKit\./, '')]);
       } else {
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
@@ -105,6 +113,10 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
         }
       }
     }
+  }
+  for (const [alias, target] of aliases) {
+    const type = types.get(target);
+    if (type) types.set(alias, type);
   }
   for (const [type, called] of calls) for (const fn of called) for (const n of functionProps.get(fn) ?? []) type.props.add(n);
   for (const n of shorthands) types.get('View')?.props.add(n);

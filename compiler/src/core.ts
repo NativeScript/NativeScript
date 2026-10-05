@@ -1,5 +1,7 @@
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import type { Translator } from './swift.ts';
 
@@ -15,6 +17,18 @@ const NATIVE_MEMBERS = new Set(['ios', 'nativeView', 'nativeViewProtected']);
 export const KIT_NAMES: Record<string, string> = { Font: 'CoreFont', ViewBase: 'View', ViewCommon: 'View', EditableTextBase: 'TextBase', LayoutBaseCommon: 'LayoutBase' };
 /** View methods whose arguments core reads as plain script objects. */
 const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
+
+const barrels = new Map<string, Map<string, string>>();
+/** `export * as Utils from './utils'` in core's index: folder → public name. */
+function coreBarrels(root: string): Map<string, string> {
+  let names = barrels.get(root);
+  if (names) return names;
+  names = new Map();
+  const index = join(root, 'index.d.ts');
+  if (existsSync(index)) for (const m of readFileSync(index, 'utf8').matchAll(/^export \* as (\w+) from '\.\/([^'/]+)[^']*';/gm)) names.set(m[2], m[1]);
+  barrels.set(root, names);
+  return names;
+}
 
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   return !!decl && KIT_PACKAGES.test(decl.getSourceFile().fileName);
@@ -112,6 +126,8 @@ export class CoreAPI {
       }
     }
     if (ts.isIdentifier(e)) {
+      const module = this.moduleOwner(e);
+      if (module) return { name: module, isStatic: true };
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];
       if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable))) {
@@ -137,6 +153,25 @@ export class CoreAPI {
     // Core's event data types are the kit's one EventData, whose members the translator reads directly.
     if (this.t.type(type, e) === 'EventData') return null;
     return { name: Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name, isStatic: false };
+  }
+
+  /**
+   * A core module or namespace imported under any name (`import * as utils from
+   * '../utils'`, `import { ios as iosUtils } from './native-helper'`): the kit
+   * type of its public path, `Utils` or `Utils.ios`, as core's index exports it.
+   */
+  private moduleOwner(e: ts.Identifier): string | null {
+    const local = this.t.checker.getSymbolAtLocation(e);
+    const target = local && local.flags & ts.SymbolFlags.Alias ? this.t.checker.getAliasedSymbol(local) : local;
+    const decl = target?.valueDeclaration ?? target?.declarations?.[0];
+    // A module or namespace, or a module's constant object of functions (`export const ios = { … }`).
+    const constant = !!target && !!(target.flags & ts.SymbolFlags.Variable) && !!decl && ts.isVariableDeclaration(decl) && ts.isSourceFile(decl.parent.parent.parent);
+    if (!target || !(target.flags & ts.SymbolFlags.ValueModule || constant) || !decl || !isCoreDeclaration(decl)) return null;
+    const file = decl.getSourceFile().fileName;
+    const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1];
+    const barrel = root ? coreBarrels(root).get(file.slice(root.length + 1).split(/[\\/]/)[0]) : undefined;
+    const candidates = ts.isSourceFile(decl) ? [barrel] : [barrel && `${barrel}.${target.name}`, constant ? undefined : target.name];
+    return candidates.find((c): c is string => !!c && this.index.has(c)) ?? null;
   }
 
   private member(owner: string, name: string, e: ts.Node): KitMember {
@@ -283,10 +318,10 @@ export class CoreAPI {
     const args = e.arguments ?? ts.factory.createNodeArray();
     const kitName = Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name;
     if (!this.index.has(kitName)) throw t.error(e, `new ${sym.name} (NativeScriptKit has no such class)`);
+    // Core's constructor takes its arguments as a rest parameter; numbers never make it throw.
     if (sym.name === 'Color') {
-      if (args.length === 1 && t.typeOf(args[0]) === 'String') return `Color(js: ${t.expr(args[0])})`;
-      if (args.length === 1) return `Color(argb: UInt32(truncatingIfNeeded: Int64(${t.expr(args[0])})))`;
-      return `Color(${args.slice(0, 4).map((a) => t.expr(a)).join(', ')})`;
+      if (args.length === 1 && t.typeOf(args[0]) === 'String') return `Color.fromJS(${t.expr(args[0])})`;
+      return `(try! Color(JSArray<Any?>([${args.map((a) => t.coerce(a, 'Any?')).join(', ')}])))`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
     return `${kitName}(${t.args(e).join(', ')})`;
@@ -327,6 +362,7 @@ export class CoreAPI {
   /** A kit value as the TypeScript type reads it: kit integers and CGFloats are Doubles. */
   private fromKit(code: string, kitType: string, tsType: string): string {
     const k = kitType.trim();
+    if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return `jsArrayOf(${code}) { ${this.t.fromAny('$0', tsType.slice(8, -1))} }`;
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}.map { Double($0) }` : `Double(${code})`;
     // A member the kit types as a base class (`EventData.object` is an Observable) that TypeScript types as a subclass.

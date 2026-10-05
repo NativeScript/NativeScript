@@ -64,7 +64,7 @@ open class LiquidGlass: GridLayout {
             let glass = UIGlassEffect(style: variant == "regular" ? .regular : .clear)
             if let config {
                 glass.isInteractive = jsTruthy(config[jsKey: "interactive"])
-                if let tint = config[jsKey: "tint"] { glass.tintColor = (jsFlat(tint) as? String).flatMap { Color($0)?.ios } ?? (jsFlat(tint) as? UIColor) }
+                if let tint = config[jsKey: "tint"] { glass.tintColor = (jsFlat(tint) as? String).flatMap { Color.parse($0)?.uiColor } ?? (jsFlat(tint) as? UIColor) }
             }
             effect = glass
         }

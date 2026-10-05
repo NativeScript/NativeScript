@@ -83,8 +83,8 @@ open class HtmlView: View {
         let argb: UInt32
         switch value {
         case let s as String:
-            guard let color = Color(s) else { return nil }
-            argb = color.argb
+            guard let color = Color.parse(s) else { return nil }
+            argb = UInt32(color.argb)
         case let c as UIColor:
             var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
             c.getRed(&r, green: &g, blue: &b, alpha: &a)
