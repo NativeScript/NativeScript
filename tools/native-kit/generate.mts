@@ -8,6 +8,7 @@
  *
  * --check exits non-zero when the files in --out differ from what core generates (CI).
  * --report lists every construct the compiler does not translate yet, and writes nothing.
+ * --partial writes what translates, leaving out each construct --report would list (listed on stderr).
  * The compiler is $NS_NATIVE_COMPILER or the installed @nativescript/compiler; the
  * declarations are core as built (dist/packages/core) unless given.
  */
@@ -26,6 +27,7 @@ const option = (name: string, fallback?: string) => {
 const out = option('--out');
 const check = args.includes('--check');
 const report = args.includes('--report');
+const partial = args.includes('--partial');
 const compiler = resolve(option('--compiler', process.env.NS_NATIVE_COMPILER ?? join(root, 'node_modules/@nativescript/compiler/compiler')));
 const declarations = resolve(option('--declarations', join(root, 'dist/packages/core')));
 if (!out && !report) throw new Error('--out <kit>/Sources/NativeScriptKit/Core is required');
@@ -33,7 +35,8 @@ if (!existsSync(join(compiler, 'src/kit-gen.ts'))) throw new Error(`${compiler}:
 if (!existsSync(join(declarations, 'index.d.ts'))) throw new Error(`${declarations}: no core declarations (build core, or --declarations)`);
 
 const { generateKit } = await import(join(compiler, 'src/kit-gen.ts'));
-const result = generateKit({ core, declarations, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, report });
+const result = generateKit({ core, declarations, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, report: report || partial });
+if (partial && result.errors.length) console.error(result.errors.join('\n'));
 if (report) {
 	console.log(result.errors.join('\n') || 'every listed module translates');
 	process.exit(0);
