@@ -4,7 +4,7 @@ import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from '.
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
+const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
   'Number.toLocaleString', 'BigInt.toLocaleString', 'Function.apply', 'CallableFunction.apply', 'Object.defineProperties', 'Object.getPrototypeOf', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
 
@@ -99,7 +99,7 @@ export class Throws {
     for (const p of fn.parameters) {
       if (p.initializer) visit(p.initializer);
       // Destructuring an untyped argument reads its members, which throws on undefined and null.
-      if (ts.isObjectBindingPattern(p.name) && this.untyped(p.name)) found = true;
+      if ((ts.isObjectBindingPattern(p.name) || ts.isArrayBindingPattern(p.name)) && this.untyped(p.name)) found = true;
     }
     if (ts.isConstructorDeclaration(fn)) {
       for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m)) visit(m.initializer);
@@ -119,7 +119,7 @@ export class Throws {
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
-    if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && this.untyped(n.initializer)) return true;
+    if (ts.isVariableDeclaration(n) && (ts.isObjectBindingPattern(n.name) || ts.isArrayBindingPattern(n.name)) && n.initializer && this.untyped(n.initializer)) return true;
     // Destructuring runs the getters of the members it reads.
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
       const t = c.getNonNullableType(c.getTypeAtLocation(n.initializer));

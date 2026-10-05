@@ -3072,6 +3072,7 @@ export class Translator implements AsyncTranslator {
       } else if (/^JSMatch[?!]?$/.test(_type)) read = this.undefinedAs(`(${value}.values.element(${k}) ?? nil)`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : 'Any?');
       else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
       // Past the end is undefined.
+      else if (this.isAny(name)) read = `(try jsGet(${value}, "${k}"))`;
       else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : `${value}[${k}]`;
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {

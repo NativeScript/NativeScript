@@ -103,3 +103,17 @@ const finished = new Promise<void>((resolve) => {
 });
 finished.then(() => console.log('finished'));
 finish();
+
+function serialize(data: any): any {
+  return Object.fromEntries(
+    Object.entries(data)
+      .map(([key, value]) => [key, typeof value === 'number' ? value * 10 : null])
+      .filter(([, value]) => value !== null),
+  );
+}
+console.log(JSON.stringify(serialize({ a: 1, b: 'x', c: 2 })));
+function firstPair(pairs: any): string {
+  const [[firstKey, firstValue]] = pairs;
+  return `${firstKey} ${firstValue}`;
+}
+console.log(firstPair([['k', 1]]));
