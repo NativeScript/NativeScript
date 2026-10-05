@@ -473,20 +473,28 @@ if (args.includes('--build')) {
  * Core's own native modules (`linked`) are part of the kit as Foundation is.
  */
 function kitFilesUnreached(dir: string, appSwift: string, linked: string[]): string[] {
-  const unreached: string[] = [];
-  const visit = (d: string) => {
-    for (const f of readdirSync(d)) {
-      const p = join(d, f);
-      if (statSync(p).isDirectory()) { visit(p); continue; }
-      if (!f.endsWith('.swift')) continue;
-      const text = readFileSync(p, 'utf8');
-      if ([...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC', ...linked].includes(m[1]))) continue;
-      const types = [...text.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)].map((m) => m[1]);
-      if (!types.some((t) => new RegExp(`\\b${t}\\b`).test(appSwift))) unreached.push(relative(dir, p));
+  const names = new Set<string>();
+  const read = (text: string) => { for (const m of text.matchAll(/\b[A-Za-z_]\w*\b/g)) names.add(m[0]); };
+  read(appSwift);
+  // A file importing only what every app links stays, and what it names is reached; the others stay when something that stays names one of their types.
+  const pending: { path: string; text: string; types: string[] }[] = [];
+  for (const f of readdirSync(dir, { recursive: true }) as string[]) {
+    if (!f.endsWith('.swift')) continue;
+    const text = readFileSync(join(dir, f), 'utf8');
+    // Core's modules are one program: each one's initializer runs at launch, as core's index imports them all.
+    if (f.startsWith('Core/') || [...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC', ...linked].includes(m[1]))) { read(text); continue; }
+    pending.push({ path: f, text, types: [...text.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)].map((m) => m[1]) });
+  }
+  for (let more = true; more; ) {
+    more = false;
+    for (let k = pending.length - 1; k >= 0; k--) {
+      if (!pending[k].types.some((t) => names.has(t))) continue;
+      read(pending[k].text);
+      pending.splice(k, 1);
+      more = true;
     }
-  };
-  visit(dir);
-  return unreached;
+  }
+  return pending.map((p) => p.path).sort();
 }
 
 /** The modules among `modules` that the kit's files the app links import (core's own native code). */
