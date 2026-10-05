@@ -874,6 +874,12 @@ export class NativeAPI {
         lines.push('    ' + t.func(m, jsName, 'static '));
         continue;
       }
+      const init = /^init/.test(jsName) ? lookupInit(base.module, base.name, jsName) : null;
+      if (init) {
+        lines.push(this.nativeInit(m, init));
+        if (!lines.some((l) => /init\?\(coder/.test(l))) lines.push('    required init?(coder: NSCoder) { super.init(coder: coder) }');
+        continue;
+      }
       const fromProtocol = protocols.map((p) => lookupMember(p.module, p.name, jsName, false)).find(Boolean);
       const fromBase = lookupMember(base.module, base.name, jsName, false);
       const target = fromProtocol ?? fromBase;
@@ -924,10 +930,56 @@ export class NativeAPI {
     const throws = t.throwsInfo.fn(m);
     const call = `{ () ${throws ? 'throws ' : ''}-> ${tsRet} in${body.slice(1)}()`;
     // A Void method's body is the method's own (its returns return from it); a value goes through a closure to be converted.
+    // A value the TypeScript method returns where Objective-C returns nothing is dropped.
     const result = ret === 'Void'
-      ? (throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
+      ? (tsRet !== 'Void' ? `        ${throws ? 'jsReport { _ = try ' : '_ = '}${call}${throws ? ' }' : ''}` : throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
       : `        let __result: ${tsRet} = ${throws ? 'try! ' : ''}${call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
     return [`    ${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
+  }
+
+  /**
+   * An override of a native initializer (`initWithStyleReuseIdentifier`), written as NativeScript has it:
+   * `const cell = super.initWith…(…)`, statements on the cell, `return cell`. In Swift the initializer
+   * itself, the cell being `self`.
+   */
+  private nativeInit(m: ts.MethodDeclaration, init: NativeMethod): string {
+    const t = this.t;
+    const stmts = [...(m.body?.statements ?? [])];
+    const first = stmts[0], last = stmts.at(-1);
+    const decl = first && ts.isVariableStatement(first) && first.declarationList.declarations.length === 1 ? first.declarationList.declarations[0] : undefined;
+    let value = decl?.initializer;
+    while (value && (ts.isParenthesizedExpression(value) || ts.isAsExpression(value) || ts.isTypeAssertionExpression(value))) value = value.expression;
+    const superCall = value && ts.isCallExpression(value) && ts.isPropertyAccessExpression(value.expression) && value.expression.expression.kind === ts.SyntaxKind.SuperKeyword && value.expression.name.text === m.name.getText() ? value : undefined;
+    const sym = decl && ts.isIdentifier(decl.name) ? t.checker.getSymbolAtLocation(decl.name) : undefined;
+    if (!superCall || !sym || !last || !ts.isReturnStatement(last) || !last.expression || !ts.isIdentifier(last.expression) || t.checker.getSymbolAtLocation(last.expression) !== sym) {
+      throw t.error(m, `an initializer override not of the form \`const x = super.${m.name.getText()}(…); …; return x\``);
+    }
+    const swiftParams = init.params.map((type, k) => `${init.labels[k] ?? '_'} __a${k}: ${init.escaping?.includes(k) ? '@escaping ' : ''}${type}`);
+    const middle = stmts.slice(1, -1);
+    // Parameters the body reads, bound as TypeScript types them; ones passed straight on to super, as Swift has them.
+    const readIn = (sym: ts.Symbol | undefined, nodes: ts.Node[]) => {
+      let found = false;
+      const visit = (n: ts.Node): void => { if (!found && ts.isIdentifier(n) && t.checker.getSymbolAtLocation(n) === sym) found = true; else if (!found) ts.forEachChild(n, visit); };
+      nodes.forEach(visit);
+      return found;
+    };
+    const params = m.parameters.map((p) => (ts.isIdentifier(p.name) ? t.checker.getSymbolAtLocation(p.name) : undefined));
+    const binds = m.parameters.map((p, k) => (ts.isIdentifier(p.name) && init.params[k] && readIn(params[k], middle) ? `        let ${p.name.text}: ${t.typeOf(p.name)} = ${this.fromSwiftValue(`__a${k}`, init.params[k], t.typeOf(p.name))}` : '')).filter(Boolean);
+    const passed = superCall.arguments.map((a, k) => {
+      const at = ts.isIdentifier(a) ? params.indexOf(t.checker.getSymbolAtLocation(a)) : -1;
+      return at >= 0 && init.params[k] === init.params[at] ? `__a${at}` : this.toSwift(a, init.params[k]);
+    });
+    const refs: ts.Node[] = [];
+    const visit = (n: ts.Node) => { if (ts.isIdentifier(n) && t.checker.getSymbolAtLocation(n) === sym) refs.push(n); ts.forEachChild(n, visit); };
+    middle.forEach(visit);
+    for (const r of refs) t.subst.set(r, 'self');
+    t.indent = '        ';
+    let body: string[];
+    try { body = t.statements(middle); } finally { for (const r of refs) t.subst.delete(r); t.indent = '    '; }
+    const throws = middle.some((x) => t.throwsInfo.expr(x));
+    return [`    override init${init.failable ? '?' : ''}(${swiftParams.join(', ')}) {`, ...binds,
+      `        super.init(${passed.map((a, k) => (init.labels[k] ? `${init.labels[k]}: ${a}` : a)).join(', ')})`,
+      ...(throws ? ['        jsReport {', ...body.map((l) => '    ' + l), '        }'] : body), '    }'].join('\n');
   }
 
   /** A Swift parameter value as the TypeScript body reads it. */
