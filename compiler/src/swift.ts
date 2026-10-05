@@ -1764,7 +1764,8 @@ export class Translator implements AsyncTranslator {
     }
     const ret = this.returnTypeOf(fn);
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? ' throws' : '';
-    const params = [this.params(fn, false), ...extraParams].filter(Boolean).join(', ');
+    const widened = ts.isMethodDeclaration(fn) && !base ? this.hierarchyExtras(fn).map((p) => p.decl) : [];
+    const params = [this.params(fn, false), ...extraParams, ...widened].filter(Boolean).join(', ');
     const declared = this.inNativeClass(fn) ? ret : this.lenientRef(ret);
     // A function declaring `this` reads it as its first parameter.
     const first = fn.parameters[0];
@@ -1789,7 +1790,50 @@ export class Translator implements AsyncTranslator {
   /** The Swift signature a method is emitted with: its root's, which every override in Swift matches. */
   private emittedSignature(m: ts.MethodDeclaration): { params: { decl: string; type: string }[]; ret: string } {
     const base = this.baseMethod(m);
-    return base ? this.emittedSignature(base) : this.signatureOf(m);
+    if (base) return this.emittedSignature(base);
+    const own = this.signatureOf(m);
+    return { params: [...own.params, ...this.hierarchyExtras(m)], ret: own.ret };
+  }
+
+  private methodFamilies: Map<ts.MethodDeclaration, ts.MethodDeclaration[]> | null = null;
+  /**
+   * Library mode: the parameters overrides add past their root method's
+   * (`layout(l, t, r, b, setFrame)` over `layout(l, t, r, b)`), which the root
+   * takes too, optional, so every override has one Swift signature and a call
+   * passing them reaches the override that reads them.
+   */
+  private hierarchyExtras(root: ts.MethodDeclaration): { decl: string; type: string }[] {
+    if (!this.library || !ts.isClassLike(root.parent)) return [];
+    if (!this.methodFamilies) {
+      this.methodFamilies = new Map();
+      const visit = (n: ts.Node) => {
+        if (ts.isClassLike(n)) {
+          for (const m of n.members) {
+            if (!ts.isMethodDeclaration(m) || isStatic(m) || (!m.body && !hasModifier(m, ts.SyntaxKind.AbstractKeyword))) continue;
+            let top: ts.MethodDeclaration = m;
+            for (let b = this.baseMethod(top); b; b = this.baseMethod(top)) top = b;
+            if (top !== m) this.methodFamilies.set(top, [...(this.methodFamilies.get(top) ?? []), m]);
+          }
+        }
+        ts.forEachChild(n, visit);
+      };
+      for (const f of this.sourceFiles) visit(f);
+    }
+    const n = root.parameters.length;
+    if (root.parameters.some((p) => p.dotDotDotToken)) return [];
+    const extras: { decl: string; type: string }[] = [];
+    for (const m of this.methodFamilies.get(root) ?? []) {
+      for (let k = n; k < m.parameters.length; k++) {
+        const p = m.parameters[k];
+        if (p.dotDotDotToken || !ts.isIdentifier(p.name)) break;
+        if (extras[k - n]) continue;
+        const t = optionalType(this.typeOf(p.name).replace(/!$/, ''));
+        extras[k - n] = { decl: `_ __extra${k - n}: ${t} = nil`, type: t };
+      }
+    }
+    const dense: { decl: string; type: string }[] = [];
+    for (const e of extras) { if (!e) break; dense.push(e); }
+    return dense;
   }
 
   /** A method's Swift signature as declared: each parameter's type, and the result. */
@@ -1820,6 +1864,8 @@ export class Translator implements AsyncTranslator {
         return `${pad}let ${ident(p.name.text)}: ${t} = ${t}([${rest.join(', ')}])`;
       }
       const from = base.params[k] ? plain(base.params[k].type) : null, to = plain(t);
+      // An argument the base takes as optional, for a parameter with a default: the default when it is missing.
+      if (from && p.initializer && from.endsWith('?') && !to.endsWith('?')) return `${pad}let ${ident(p.name.text)}: ${t} = ${this.convert(`__b${k}`, from, optionalType(to))} ?? ${this.coerce(p.initializer, to)}`;
       const converted = from ? this.convert(`__b${k}`, from, to) : (this.zero(t) ?? 'nil');
       // A parameter narrowed to a subclass: the argument as that class, undefined where it is not one.
       const value = from && converted === `__b${k}` && from !== to && this.lenientRef(to.replace(/\?$/, '')) !== to.replace(/\?$/, '') ? `(__b${k} as? ${to.replace(/\?$/, '')})` : converted;
