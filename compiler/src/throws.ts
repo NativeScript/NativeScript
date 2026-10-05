@@ -205,7 +205,7 @@ export class Throws {
       return false;
     }
     // A function value (an arrow stored in a variable or an object) has a Swift function type, which throws.
-    if (ts.isArrowFunction(decl) || ts.isFunctionExpression(decl)) return true;
+    if (ts.isArrowFunction(decl) || ts.isFunctionExpression(decl) || (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent))) return true;
     if ((decl as Fn).body) return this.fn(decl);
     // A signature without a body (an interface method, a function-typed member) is a function type.
     return !ts.isConstructorDeclaration(decl) && !ts.isClassLike(decl);
