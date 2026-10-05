@@ -1416,7 +1416,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -1428,7 +1428,9 @@ export class Translator implements AsyncTranslator {
       '            switch key {',
       ...fields.map((f) => `            case ${swiftString(f.name)}: return ${this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
       ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
-      ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
+      ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => m.available
+        ? `            case ${swiftString(m.name)}: if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
+        : `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
       `            default: return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : 'nil'}`,
       '            }',
       '        }',
@@ -1838,10 +1840,14 @@ export class Translator implements AsyncTranslator {
       const b = this.emittedSignature(base), own = this.signatureOf(fn);
       if (b.ret !== own.ret || b.params.length !== own.params.length || b.params.some((p, k) => p.type !== own.params[k].type)) return this.adaptedOverride(fn, name, modifiers, b);
     }
+    // A signature naming a native type newer than the deployment target: the function exists only where the OS has it.
+    this.availability.push(0);
     const ret = this.returnTypeOf(fn);
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? ' throws' : '';
     const params = [this.params(fn, false), ...extraParams].filter(Boolean).join(', ');
     const declared = this.inNativeClass(fn) ? ret : this.lenientRef(ret);
+    const needs = this.availability.pop()!;
+    if (needs) { this.gatedFunctions.set(fn, needs); modifiers = `@available(iOS ${needs}, *) ${modifiers}`; }
     // A function declaring `this` reads it as its first parameter.
     const first = fn.parameters[0];
     const body = ts.isFunctionDeclaration(fn) && first && ts.isIdentifier(first.name) && first.name.text === 'this' && first.type?.kind !== ts.SyntaxKind.VoidKeyword
@@ -1849,6 +1855,9 @@ export class Translator implements AsyncTranslator {
       : this.functionBody(fn, ret, this.indent);
     return `${modifiers}func ${name}${this.generics(fn)}(${params})${throws}${ret === 'Void' ? '' : ` -> ${declared}`} ${body}`;
   }
+
+  /** Functions whose signatures name native types newer than the deployment target: the iOS version they need. */
+  private gatedFunctions = new Map<ts.Node, number>();
 
   /** The nearest method of the same name a source base class declares. */
   private baseMethod(m: ts.MethodDeclaration): ts.MethodDeclaration | null {
@@ -2429,7 +2438,7 @@ export class Translator implements AsyncTranslator {
       }
       lines.push('        default: super.setProperty(name, value)', '        }', '    }');
     }
-    const dynMethods: { name: string; type: string }[] = [];
+    const dynMethods: { name: string; type: string; available?: number }[] = [];
     for (const m of cls.members) {
       if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name)) continue;
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
@@ -2455,7 +2464,7 @@ export class Translator implements AsyncTranslator {
         // The signature Swift has for the method: an override's is its root's.
         const sig = this.emittedSignature(m);
         const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
-        dynMethods.push({ name: n, type: `(${sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type))).join(', ')}) throws -> ${plain(sig.ret)}` });
+        dynMethods.push({ name: n, type: `(${sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type))).join(', ')}) throws -> ${plain(sig.ret)}`, available: this.gatedFunctions.get(m) });
       }
     }
     if (isView) {
