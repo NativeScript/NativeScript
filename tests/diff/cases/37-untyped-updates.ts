@@ -151,3 +151,15 @@ function pick(flag: boolean): string {
   return `${chosen || 'none'} ${count} ${!chosen} ${count === undefined}`;
 }
 console.log(pick(true), pick(false));
+
+const FONT_KEY: string = 'font';
+function styled(color: any): string {
+  const attributes = {
+    [FONT_KEY]: 'Helvetica',
+  };
+  if (color) {
+    attributes['color'] = color;
+  }
+  return JSON.stringify(attributes);
+}
+console.log(styled({ r: 1 }), styled(null));
