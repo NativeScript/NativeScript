@@ -673,14 +673,24 @@ export class Translator implements AsyncTranslator {
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, sf.fileName, st.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, sf.fileName, st.type.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
-      if (ts.isEnumDeclaration(st)) { out.push(this.enumDecl(st)); continue; }
+      if (ts.isEnumDeclaration(st)) {
+        // A namespace merged into the enum: members of its object.
+        const merged = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+        out.push(this.enumDecl(st, merged));
+        continue;
+      }
+      if (ts.isModuleDeclaration(st) && this.mergedClass(st)) continue;
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) out.push(this.func(st, ident(this.topName(st, st.name.text)))); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
         const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component'));
-        if (!component && st.name) out.push(this.classDecl(st));
+        if (!component && st.name) {
+          // A namespace merged into the class: its companion's members.
+          this.mergedStatics = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+          try { out.push(this.classDecl(st)); } finally { this.mergedStatics = []; }
+        }
         continue;
       }
       if (ts.isVariableStatement(st)) {
@@ -730,6 +740,13 @@ export class Translator implements AsyncTranslator {
    * A namespace that declares only types has no value and no object.
    */
   private namespaceDecl(md: ts.ModuleDeclaration, name: string, later: (code: () => string) => void): string {
+    const lines = this.namespaceMembers(md, later);
+    if (!lines) return '';
+    return [`object ${ident(name)} {`, ...lines.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n');
+  }
+
+  /** A namespace's members as an object's (or, merged into a class, its companion's); null when it has no values. */
+  private namespaceMembers(md: ts.ModuleDeclaration, later: (code: () => string) => void): string[] | null {
     if (!md.body || !ts.isModuleBlock(md.body)) throw this.error(md, 'a dotted namespace');
     const path = this.namespacePath(md)!;
     const lines: string[] = [];
@@ -759,8 +776,13 @@ export class Translator implements AsyncTranslator {
       if (ts.isClassDeclaration(st)) { lines.push(this.classDecl(st)); continue; }
       later(() => this.stmt(st));
     }
-    if (!values) return '';
-    return [`object ${ident(name)} {`, ...lines.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n');
+    return values ? lines : null;
+  }
+
+  private mergedStatics: string[] = [];
+  /** Whether a namespace merges into a class of its name in its file. */
+  private mergedClass(md: ts.ModuleDeclaration): boolean {
+    return (this.checker.getSymbolAtLocation(md.name)?.declarations ?? []).some((d) => (ts.isClassDeclaration(d) || ts.isEnumDeclaration(d)) && d.getSourceFile() === md.getSourceFile());
   }
 
   /** The Kotlin path of a namespace declaration (`CoreTypes.AnimationCurve`). */
@@ -809,7 +831,8 @@ export class Translator implements AsyncTranslator {
     const member = this.checker.getSymbolAtLocation(e.name);
     const target = member && member.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(member) : member;
     const decl = target?.valueDeclaration;
-    if (!decl) return null;
+    // A class's static member or an enum's member, where a namespace merges into the class or enum.
+    if (!decl || ts.isClassElement(decl) || ts.isEnumMember(decl)) return null;
     if (ts.isModuleDeclaration(decl)) return this.namespacePath(decl);
     if (ts.isClassDeclaration(decl)) return this.className(decl);
     return this.qualifiedDecl(decl, target!.name) ?? this.unshadowed(e, decl, ident(this.topName(decl, target!.name)));
@@ -1027,13 +1050,21 @@ export class Translator implements AsyncTranslator {
     return `(${code} as ${type})`;
   }
 
-  private enumDecl(e: ts.EnumDeclaration): string {
+  private enumDecl(e: ts.EnumDeclaration, merged: string[] = []): string {
     const lines = [`object ${ident(e.name.text)} {`];
     for (const m of e.members) {
       const v = this.checker.getConstantValue(m);
       if (v === undefined) throw this.error(m, 'an enum member without a constant value');
       lines.push(`    const val ${ident(m.name.getText())}: ${typeof v === 'string' ? 'String' : 'Double'} = ${typeof v === 'string' ? kotlinString(v) : numberLiteral(String(v))}`);
     }
+    // The object JavaScript makes of the enum: each name to its value, and each number back to its name.
+    const entries = e.members.flatMap((m) => {
+      const v = this.checker.getConstantValue(m)!, n = m.name.getText();
+      const pair = `Pair<String, Any?>(${kotlinString(n)}, ${typeof v === 'string' ? kotlinString(v) : numberLiteral(String(v))})`;
+      return typeof v === 'number' ? [pair, `Pair<String, Any?>(${kotlinString(String(v))}, ${kotlinString(n)})`] : [pair];
+    });
+    lines.push(`    val jsEnumObject: JSObject by lazy { JSObject(listOf<Pair<String, Any?>>(${entries.join(', ')})) }`);
+    lines.push(...merged.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')));
     lines.push('}');
     return lines.join('\n');
   }
@@ -1558,6 +1589,8 @@ export class Translator implements AsyncTranslator {
     lines.push(...witnesses);
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, 'null', '', symbolFields, dynMethods));
     if (symbolFields.length) supertypes.push('JSSymbolKeyed');
+    statics.push(...this.mergedStatics.map((l) => l.split('\n').map((x) => (x ? '        ' + x : x)).join('\n')));
+    this.mergedStatics = [];
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
     this.indent = '';
     const head = `${abstract ? 'abstract ' : open ? 'open ' : ''}class ${ident(name)}${this.generics(cls)}`;
@@ -2261,6 +2294,8 @@ export class Translator implements AsyncTranslator {
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
     if (t === 'JSMatch') return `${this.expr(e)}.values`;
     if (t.startsWith('Pair<') || t.startsWith('Triple<')) return `jsTupleList(${this.expr(e)})`;
+    // An untyped value: whatever its iteration gives, a TypeError where it has none.
+    if (this.typeOf(e) === 'Any?') return `jsIteratorOf(${this.expr(e)}).jsCollect()`;
     return this.expr(e);
   }
 
@@ -2857,8 +2892,15 @@ export class Translator implements AsyncTranslator {
   }
 
   private elementAccess(e: ts.ElementAccessExpression): string {
-    const target = this.expr(e.expression);
     const key = e.argumentExpression;
+    // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
+    const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+      const rt = this.typeOf(e);
+      const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(key)})`;
+      return rt === 'Any?' ? code : this.fromAny(code, rt);
+    }
+    const target = this.expr(e.expression);
     const t = this.typeOf(e.expression).replace(/\?$/, '');
     const q = e.questionDotToken ? '?' : '';
     if (t === 'String') return `jsCharAt(${target}, ${this.toNumber(key)})`;

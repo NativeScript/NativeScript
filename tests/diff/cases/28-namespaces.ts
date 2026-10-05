@@ -61,3 +61,32 @@ const curve: Curve = Curve.easeIn;
 console.log(curve, Curve.all.join(','), size.width * size.height);
 const fn = layout.toDevicePixels;
 console.log(fn(2));
+
+// A namespace merged into a class: the class's static members, beside its own.
+class Flex {
+  static grow(n: number): number {
+    return n * 2;
+  }
+  total(n: number): number {
+    return Flex.grow(n) + Flex.baseline(n);
+  }
+}
+namespace Flex {
+  export function baseline(n: number): number {
+    return n + 1;
+  }
+  export const unit = 3;
+}
+console.log(new Flex().total(5), Flex.baseline(1), Flex.unit, Flex.grow(4));
+
+// A namespace merged into an enum.
+enum Suspend {
+  Loaded = 1 << 20,
+  Native = 1 << 21,
+}
+namespace Suspend {
+  export function describe(type: Suspend): string {
+    return `loaded:${!!(type & Suspend.Loaded)} native:${!!(type & Suspend.Native)}`;
+  }
+}
+console.log(Suspend.describe(Suspend.Loaded), Suspend.describe(Suspend.Loaded | Suspend.Native));

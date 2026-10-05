@@ -40,3 +40,10 @@ console.log(byLength.join(' '), words.indexOf('charlie'), words.at(-1), words.sl
 const counts: Record<string, number> = {};
 for (const w of words) counts[w[0]] = (counts[w[0]] ?? 0) + 1;
 console.log(JSON.stringify(counts));
+
+// Iterating untyped values.
+const anyBag: any = { list: ['p', 'q'], text: 'hi' };
+let anySeen = '';
+for (const v of anyBag.list) anySeen += v;
+for (const ch of anyBag.text) anySeen += ch.toUpperCase();
+console.log(anySeen);

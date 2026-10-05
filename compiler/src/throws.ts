@@ -22,10 +22,14 @@ export class Throws {
   /** Whether a value is untyped in Swift (`Any?`): reading its members goes through `jsGet`, which throws. */
   private untyped: (n: ts.Node) => boolean;
 
-  /** Whether a call is of a native method Swift imports as `throws`, the iOS runtime throwing its error. */
+  /** Whether a call throws for what its declaration does not show: a native method Swift imports as `throws`, a method an instance can hold a value in place of. */
   private nativeThrows: (call: ts.CallExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false) {
+  /** A declaration file's method or constructor whose compiled implementation is in the program (library mode). */
+  private implementation: (decl: ts.Declaration) => ts.Declaration | null;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null) {
+    this.implementation = implementation;
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
@@ -48,6 +52,13 @@ export class Throws {
   /** Whether calling `fn` (a declaration with a body) can throw. */
   fn(fn: ts.Node): boolean {
     if (this.throwing.has(fn)) return true;
+    // Swift initializers override as methods do: a class's constructor throws if one in its hierarchy does.
+    if (ts.isConstructorDeclaration(fn) && ts.isClassLike(fn.parent)) {
+      for (const other of [...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
+        const c = other.members.find((x) => ts.isConstructorDeclaration(x) && x !== fn);
+        if (c && this.throwing.has(c)) return true;
+      }
+    }
     // Swift overrides share `throws`: a method throws if any method of its name in the hierarchy does.
     if ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && ts.isClassLike(fn.parent) && fn.name) {
       const name = fn.name.getText();
@@ -103,6 +114,8 @@ export class Throws {
       && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;
     // Iterating a generator or a script's iterator runs its code.
     if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && iterationThrows(c.getTypeAtLocation(n.expression), c)) return true;
+    // Iterating an untyped value throws where it is not iterable.
+    if (ts.isForOfStatement(n) && this.untyped(n.expression)) return true;
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
@@ -127,6 +140,7 @@ export class Throws {
 
   private callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
     const c = this.checker;
+    if (ts.isCallExpression(call) && this.nativeThrows(call)) return true;
     if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);
@@ -172,8 +186,9 @@ export class Throws {
         : ((ts.isMethodDeclaration(decl) ? decl.parent.members : (decl.parent as ts.SourceFile).statements) as ts.NodeArray<ts.Node>).find((m) => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === decl.name?.getText());
       if (impl) return this.fn(impl);
     }
+    const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
+    if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
-      if (ts.isCallExpression(call) && this.nativeThrows(call)) return true;
       const owner = builtinName(decl);
       // `s.match(x)` makes a RegExp of anything else, which can be a SyntaxError.
       if (owner === 'String.match') return !args[0] || c.getTypeAtLocation(args[0]).getSymbol()?.name !== 'RegExp';

@@ -65,3 +65,12 @@ console.log(JSON.stringify(fromArray.items), JSON.stringify(fromItems.items), em
 
 const [m1, m2, m3, m4] = [...parts];
 console.log(m1 + m2 + m3, m4 || 0);
+
+class Slot {
+  constructor(public value: number) {}
+}
+const pool = [new Slot(1), new Slot(2), new Slot(3), new Slot(4), new Slot(5)] as const;
+let nextSlot = 0;
+const picked: number[] = [];
+for (let k = 0; k < 7; k++) picked.push(pool[nextSlot++ % 5].value);
+console.log(picked.join(','));

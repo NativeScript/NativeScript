@@ -130,3 +130,28 @@ t1['label'] = 'x';
 console.log(t1['label'], t1.log.join());
 tagged.setTagged.call(t1, 'y');
 console.log(t1['label']);
+
+// A field a subclass redeclares narrower is the base's, and untyped values read as objects may be undefined.
+class Holder {
+  native: any;
+  label(): string {
+    return this.native ? 'set' : 'unset';
+  }
+}
+class Named {
+  constructor(public name: string) {}
+}
+class NamedHolder extends Holder {
+  native: Named;
+  describe(): string {
+    return this.native ? this.native.name : 'none';
+  }
+}
+const holder = new NamedHolder();
+console.log(holder.describe(), holder.label());
+holder.native = new Named('n1');
+console.log(holder.describe(), holder.label());
+const loose: any = {};
+const missing: Named = loose.named;
+console.log(missing === undefined, missing?.name);
+console.log(holder.constructor.name, new Named('x').constructor.name);
