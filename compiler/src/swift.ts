@@ -5166,7 +5166,9 @@ export class Translator implements AsyncTranslator {
     for (const x of e.elements) {
       if (ts.isSpreadElement(x)) {
         if (run.length) { parts.push(`[${run.join(', ')}]`); run = []; }
-        parts.push(`Array(${this.iterable(x.expression)})`);
+        // The spread's elements as this array's (`[name, ...untyped]` into a `string[]`).
+        const from = this.elementTypeOf(x.expression);
+        parts.push(from !== el && from === 'Any?' ? `Array(${this.iterable(x.expression)}).map { ${this.fromAny('$0', el)} }` : `Array(${this.iterable(x.expression)})`);
       } else if (ts.isOmittedExpression(x)) throw this.error(x, 'an array hole');
       else run.push(this.coerce(x, el));
     }

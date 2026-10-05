@@ -41,3 +41,10 @@ function parse(text: string) {
 }
 const anyResult = (): any => report('any');
 console.log(parse('a,b'), parse(''), parse('!') === undefined, anyResult(), problems.join(' '));
+
+const extras = [];
+extras.push('b', 'c');
+function classNames(): string[] {
+  return ['a', ...extras];
+}
+console.log(classNames().join(' '), classNames().length);
