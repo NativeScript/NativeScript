@@ -217,6 +217,11 @@ public func jsNativeKeyed<K: RawRepresentable & Hashable>(_ value: Any?, _: K.Ty
     return out
 }
 
+/// An untyped value where Objective-C takes a nullable string: its string, nil for undefined or null.
+public func jsNativeString(_ value: Any?) -> String? {
+    jsIsNullish(value) ? nil : jsToString(value)
+}
+
 /// `array[i]` on a native array: undefined unless `i` is an index in range.
 public func jsNativeElement<T>(_ array: [T]?, _ i: Double) -> Any? {
     guard let a = array, let k = Int(exactly: i), k >= 0, k < a.count else { return nil }

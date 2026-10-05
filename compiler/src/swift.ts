@@ -3631,6 +3631,17 @@ export class Translator implements AsyncTranslator {
     if (ts.isConditionalExpression(bare) && tuples && arity > 1 && this.typeOf(bare) !== target && ![bare.whenTrue, bare.whenFalse].some(isNullish)) {
       return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, target)} : ${this.coerce(bare.whenFalse, target)})`;
     }
+    // A literal of another shape than where it goes (`{ spans: [] }` held as `{ spans: any[] }`): made as that shape.
+    const wanted = target.replace(/[?!]$/, '');
+    const wantedShape = ts.isObjectLiteralExpression(bare) && /^Object_\w+$/.test(wanted) && wanted !== this.typeOf(bare).replace(/[?!]$/, '') ? [...this.shapes.values()].find((x) => x.name === wanted) : undefined;
+    if (wantedShape && (bare as ts.ObjectLiteralExpression).properties.every((p) => (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) && wantedShape.fields.some((f) => f.name === (literalKey(p.name, this.checker) ?? p.name.getText())))) {
+      return this.object(bare as ts.ObjectLiteralExpression, wanted);
+    }
+    // `new WeakRef(button)` where a reference to its base class is taken: a reference of that type.
+    const weak = /^JSWeakRef<(.+)>[?!]?$/.exec(target)?.[1];
+    if (weak && ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'WeakRef' && bare.arguments?.length === 1 && this.typeOf(bare) !== target.replace(/[?!]$/, '')) {
+      return `JSWeakRef<${weak}>(${this.coerce(bare.arguments[0], weak)})`;
+    }
     // `new Array<Base>()` where an array of a subclass is wanted: an empty array of it.
     if (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length && /^JSArray<.*>[?!]?$/.test(target)) return `${target.replace(/[?!]$/, '')}()`;
     // Lenient code passing null or undefined where a string, number or boolean is declared: the type's zero, as such a slot reads it.
@@ -4877,6 +4888,11 @@ export class Translator implements AsyncTranslator {
 
   private call(e: ts.CallExpression): string {
     const callee = e.expression;
+    // `Cls.class()` of a class extending a native one: the class itself, which Swift names `Cls.self`.
+    if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'class' && !e.arguments.length && (this.resolve(callee.expression)?.flags ?? 0) & ts.SymbolFlags.Class && this.native.extendsNative(this.checker.getDeclaredTypeOfSymbol(this.resolve(callee.expression)!))) {
+      const cls = this.expr(callee.expression);
+      return cls.endsWith('.self') ? cls : `${cls}.self`;
+    }
     // Reading a callable signal (Angular, Solid) (`count()`, an input, a computed field).
     if (!e.arguments.length && ['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(callee))) {
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
@@ -6209,7 +6225,7 @@ export class Translator implements AsyncTranslator {
     return `${t}(${parts.join(' + ')})`;
   }
 
-  private object(e: ts.ObjectLiteralExpression): string {
+  private object(e: ts.ObjectLiteralExpression, want?: string): string {
     const contextual = this.checker.getContextualType(e);
     // `{ … } as unknown as T`: an object script reads and extends untyped.
     if (contextual && contextual.flags & ts.TypeFlags.Unknown) return this.dynamicObject(e);
@@ -6220,7 +6236,7 @@ export class Translator implements AsyncTranslator {
     if (struct) return struct;
     const literalClass = this.library ? this.literalClassOf(e) : null;
     if (literalClass) return this.classLiteral(e, literalClass);
-    const name = this.type(this.checker.getNonNullableType(type), e).replace(/\?$/, '');
+    const name = want ?? this.type(this.checker.getNonNullableType(type), e).replace(/\?$/, '');
     if (name.startsWith('JSRecord<')) {
       const v = name.replace(/^JSRecord<(.*)>$/, '$1');
       const entries = e.properties.map((p) => {
