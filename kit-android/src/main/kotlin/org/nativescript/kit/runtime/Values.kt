@@ -472,7 +472,7 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
     else -> jsNumeric(v) ?: jsNumberFromString(jsToString(v))
 }
 
-private val joining = ArrayList<Any>()
+internal val jsJoinGuard = ArrayList<Any>()
 
 /** `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message". */
 fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
@@ -498,8 +498,8 @@ fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
 }
 
 internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String {
-    if (joining.any { it === owner }) return ""
-    joining.add(owner)
+    if (jsJoinGuard.any { it === owner }) return ""
+    jsJoinGuard.add(owner)
     try {
         val out = StringBuilder()
         elements.forEachIndexed { i, e ->
@@ -508,7 +508,7 @@ internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String
         }
         return out.toString()
     } finally {
-        joining.removeAt(joining.size - 1)
+        jsJoinGuard.removeAt(jsJoinGuard.size - 1)
     }
 }
 

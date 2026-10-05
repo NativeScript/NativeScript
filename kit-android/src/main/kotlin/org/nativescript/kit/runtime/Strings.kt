@@ -43,6 +43,13 @@ fun jsSubstring(s: String, start: Double, end: Double? = null): String {
     return s.substring(a, b)
 }
 
+/** `s.substr(start, length)`: a negative start counts from the end. */
+fun jsSubstr(s: String, start: Double, length: Double? = null): String {
+    val a = jsRelativeIndex(start, s.length)
+    val n = if (length == null) s.length - a else maxOf(0.0, minOf(jsToIntegerOrInfinity(length), (s.length - a).toDouble())).toInt()
+    return s.substring(a, a + n)
+}
+
 fun jsCharAt(s: String, index: Double): String {
     val i = jsToIntegerOrInfinity(index)
     return if (i >= 0 && i < s.length) s[i.toInt()].toString() else ""
@@ -193,6 +200,7 @@ fun jsRound(value: Double): Double {
 
 fun jsSign(x: Double): Double = if (x.isNaN()) Double.NaN else if (x > 0) 1.0 else if (x < 0) -1.0 else x
 fun jsFround(x: Double): Double = x.toFloat().toDouble()
+fun jsClz32(x: Double): Double = Integer.numberOfLeadingZeros(jsToInt32(x)).toDouble()
 fun jsTrunc(x: Double): Double = if (x < 0) Math.ceil(x) else Math.floor(x)
 
 fun jsHypot(vararg values: Double): Double {

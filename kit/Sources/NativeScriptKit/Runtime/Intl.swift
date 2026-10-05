@@ -655,6 +655,28 @@ public final class JSDateTimeFormat: JSDynamic {
     public var jsClassName: String? { "DateTimeFormat" }
 }
 
+extension JSArray {
+    /// `array.toLocaleString()`: each element's `toLocaleString()`, undefined and null as "".
+    public func toLocaleString() throws -> String { try jsToLocaleString(self) }
+}
+
+/// An element's `toLocaleString()` (an object's default is its string form).
+private func jsToLocaleString(_ value: Any?) throws -> String {
+    switch jsFlat(value) {
+    case nil, is JSNull: return ""
+    case let n as Double: return try jsNumberToLocaleString(n)
+    case let b as JSBigInt: return try jsBigIntToLocaleString(b)
+    case let d as JSDate: return try d.toLocaleString()
+    case let a as JSArrayProtocol:
+        let id = ObjectIdentifier(a)
+        if JSJoinGuard.active.contains(id) { return "" }
+        JSJoinGuard.active.append(id)
+        defer { JSJoinGuard.active.removeLast() }
+        return try a.jsAnyElements.map(jsToLocaleString).joined(separator: ",")
+    case let v: return jsToString(v)
+    }
+}
+
 extension JSDate {
     /// `date.toLocaleString(locales, options)`: date and time.
     public func toLocaleString(_ locales: Any? = nil, _ options: Any? = nil) throws -> String {

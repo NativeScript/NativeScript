@@ -862,7 +862,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isLiteralExpression(e) || ts.isNoSubstitutionTemplateLiteral(e) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(e.kind)) return true;
     if (ts.isIdentifier(e) || ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return true;
     if (ts.isTemplateExpression(e)) return e.templateSpans.every((s) => this.pure(s.expression));
-    if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => this.pure(ts.isSpreadElement(x) ? x.expression : x));
+    // A spread reads what the array holds when it runs.
+    if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => (ts.isSpreadElement(x) ? ts.isArrayLiteralExpression(x.expression) && this.pure(x.expression) : this.pure(x)));
     if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => (ts.isPropertyAssignment(p) ? this.pure(p.initializer) : ts.isShorthandPropertyAssignment(p) || ts.isMethodDeclaration(p)));
     if (ts.isPrefixUnaryExpression(e)) return this.pure(e.operand);
     if (ts.isBinaryExpression(e)) return e.operatorToken.kind !== ts.SyntaxKind.EqualsToken && this.pure(e.left) && this.pure(e.right);
@@ -3747,6 +3748,7 @@ export class Translator implements AsyncTranslator {
       case 'Math': return this.math(method, e);
       case 'console': {
         const fn = ['warn', 'error'].includes(method) ? 'jsError' : 'jsLog';
+        if (e.arguments.some(ts.isSpreadElement)) return `${fn}(spread: ${this.packed(e.arguments, 'JSArray<Any?>')}.storage)`;
         return `${fn}(${e.arguments.map((x) => this.coerce(x, 'Any?')).join(', ')})`;
       }
       case 'JSON':
@@ -3907,7 +3909,7 @@ export class Translator implements AsyncTranslator {
       floor: 'Foundation.floor', ceil: 'Foundation.ceil', abs: 'Swift.abs', sqrt: 'Foundation.sqrt', cbrt: 'Foundation.cbrt', trunc: 'Foundation.trunc',
       sin: 'Foundation.sin', cos: 'Foundation.cos', tan: 'Foundation.tan', asin: 'Foundation.asin', acos: 'Foundation.acos', atan: 'Foundation.atan',
       exp: 'Foundation.exp', log: 'Foundation.log', log2: 'Foundation.log2', log10: 'Foundation.log10', log1p: 'Foundation.log1p', expm1: 'Foundation.expm1',
-      sinh: 'Foundation.sinh', cosh: 'Foundation.cosh', tanh: 'Foundation.tanh', sign: 'jsSign', round: 'jsRound', fround: 'jsFround',
+      sinh: 'Foundation.sinh', cosh: 'Foundation.cosh', tanh: 'Foundation.tanh', sign: 'jsSign', round: 'jsRound', fround: 'jsFround', clz32: 'jsClz32',
     };
     if (one[name]) return `${one[name]}(${a[0]})`;
     switch (name) {
@@ -3935,7 +3937,10 @@ export class Translator implements AsyncTranslator {
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}(contentsOf: ${this.packed(e.arguments, `JSArray<${el}>`)})`;
         return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, el)).join(', ')})`;
       case 'pop': case 'shift': case 'reverse': case 'toString': case 'keys': case 'entries': case 'values': case 'flat': return `${t}.${name}()`;
-      case 'splice': return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
+      case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
+      case 'splice':
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.coerce(x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`)}.storage)`;
+        return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
       case 'fill': return `${t}.fill(${a().join(', ')})`;
       case 'slice': case 'indexOf': case 'lastIndexOf': case 'includes': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
@@ -3984,6 +3989,8 @@ export class Translator implements AsyncTranslator {
       case 'lastIndexOf': return `jsLastIndexOf(${t}, ${a[0]})`;
       case 'slice': return `jsSlice(${t}, ${a.join(', ')})`;
       case 'substring': return `jsSubstring(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
+      case 'substr': return `jsSubstr(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
+      case 'match': return `jsMatch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'nil'}))`;
       case 'replace': return `jsReplace(${t}, ${a[0]}, ${a[1]})`;
       case 'replaceAll': return `jsReplaceAll(${t}, ${a[0]}, ${a[1]})`;
       case 'charAt': return `jsCharAt(${t}, ${a[0] ?? '0'})`;

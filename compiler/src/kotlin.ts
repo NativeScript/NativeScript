@@ -826,7 +826,8 @@ export class Translator implements AsyncTranslator {
       return decl.getSourceFile() === e.getSourceFile() && !!decl.initializer && ts.isSourceFile(decl.parent.parent.parent) && this.pure(decl.initializer);
     }
     if (ts.isTemplateExpression(e)) return e.templateSpans.every((s) => this.pure(s.expression));
-    if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => this.pure(ts.isSpreadElement(x) ? x.expression : x));
+    // A spread reads what the array holds when it runs.
+    if (ts.isArrayLiteralExpression(e)) return e.elements.every((x) => (ts.isSpreadElement(x) ? ts.isArrayLiteralExpression(x.expression) && this.pure(x.expression) : this.pure(x)));
     if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => (ts.isPropertyAssignment(p) ? this.pure(p.initializer) && (!ts.isComputedPropertyName(p.name) || this.pure(p.name.expression)) : ts.isShorthandPropertyAssignment(p) ? this.pure(p.name) : ts.isMethodDeclaration(p)));
     if (ts.isPrefixUnaryExpression(e)) return this.pure(e.operand);
     if (ts.isBinaryExpression(e)) return e.operatorToken.kind !== ts.SyntaxKind.EqualsToken && this.pure(e.left) && this.pure(e.right);
@@ -2914,9 +2915,12 @@ export class Translator implements AsyncTranslator {
     const parts: string[] = [];
     let run: string[] = [];
     for (const x of items) {
-      if (ts.isSpreadElement(x)) {
+      if (ts.isSpreadElement(x) && ts.isArrayLiteralExpression(x.expression) && !x.expression.elements.some(ts.isSpreadElement)) run.push(...x.expression.elements.map((y) => this.coerce(y, el)));
+      else if (ts.isSpreadElement(x)) {
         if (run.length) { parts.push(`listOf<${el}>(${run.join(', ')})`); run = []; }
-        parts.push(`(${this.iterable(x.expression)}).toList()`);
+        const list = `(${this.iterable(x.expression)}).toList()`;
+        // A tuple's elements are untyped in Kotlin.
+        parts.push(/^(Pair|Triple)</.test(this.typeOf(x.expression)) ? `(${list} as List<${el}>)` : list);
       } else run.push(this.coerce(x, el));
     }
     if (run.length) parts.push(`listOf<${el}>(${run.join(', ')})`);
@@ -3197,6 +3201,7 @@ export class Translator implements AsyncTranslator {
       case 'Math': return this.math(method, e);
       case 'console': {
         const fn = ['warn', 'error'].includes(method) ? 'jsError' : 'jsLog';
+        if (e.arguments.some(ts.isSpreadElement)) return `${fn}(*${this.packed(e.arguments, 'JSArray<Any?>')}.storage.toTypedArray())`;
         return `${fn}(${e.arguments.map((x) => this.coerce(x, 'Any?')).join(', ')})`;
       }
       case 'JSON':
@@ -3383,7 +3388,7 @@ export class Translator implements AsyncTranslator {
       floor: 'Math.floor', ceil: 'Math.ceil', abs: 'Math.abs', sqrt: 'Math.sqrt', cbrt: 'Math.cbrt', trunc: 'jsTrunc',
       sin: 'Math.sin', cos: 'Math.cos', tan: 'Math.tan', asin: 'Math.asin', acos: 'Math.acos', atan: 'Math.atan',
       exp: 'Math.exp', log: 'Math.log', log2: 'jsLog2', log10: 'Math.log10', log1p: 'Math.log1p', expm1: 'Math.expm1',
-      sinh: 'Math.sinh', cosh: 'Math.cosh', tanh: 'Math.tanh', sign: 'jsSign', round: 'jsRound', fround: 'jsFround',
+      sinh: 'Math.sinh', cosh: 'Math.cosh', tanh: 'Math.tanh', sign: 'jsSign', round: 'jsRound', fround: 'jsFround', clz32: 'jsClz32',
     };
     if (one[name]) return `${one[name]}(${a[0]})`;
     switch (name) {
@@ -3413,9 +3418,11 @@ export class Translator implements AsyncTranslator {
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}All(${this.packed(e.arguments, `JSArray<${element}>`)})`;
         return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, element)).join(', ')})`;
       case 'pop': case 'shift': case 'reverse': case 'keys': case 'entries': case 'values': return `${t}.${name}()`;
+      case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
       case 'toString': return `${t}.join()`;
       case 'flat': return e.arguments.length || !/^JSArray<JSArray</.test(this.typeOf(target)) ? `${t}.flatAny(${e.arguments[0] ? this.toNumber(e.arguments[0]) : ''})` : `${t}.flat()`;
       case 'splice': {
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.spliceAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`)}.storage)`;
         const parts = [...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.coerce(x, element))];
         return `${t}.splice(${parts.join(', ')})`;
       }
@@ -3475,6 +3482,8 @@ export class Translator implements AsyncTranslator {
       case 'lastIndexOf': return `jsLastIndexOf(${t}, ${s(0)})`;
       case 'slice': return `jsSlice(${t}${e.arguments.map((_, k) => `, ${n(k)}`).join('')})`;
       case 'substring': return `jsSubstring(${t}, ${first ? n(0) : '0.0'}${opt(1)})`;
+      case 'substr': return `jsSubstr(${t}, ${first ? n(0) : '0.0'}${opt(1)})`;
+      case 'match': return `jsMatch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'null'}))`;
       case 'replace': return `jsReplace(${t}, ${s(0)}, ${s(1)})`;
       case 'replaceAll': return `jsReplaceAll(${t}, ${s(0)}, ${s(1)})`;
       case 'charAt': return `jsCharAt(${t}, ${first ? n(0) : '0.0'})`;

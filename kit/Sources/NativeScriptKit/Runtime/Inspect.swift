@@ -25,6 +25,16 @@ public func jsWarn(_ arguments: Any?...) {
     jsWriteStandardError(jsFormatLogLine(arguments) + "\n")
 }
 
+/// `console.log(...values)`: the arguments spread from one array.
+public func jsLog(spread arguments: [Any?]) {
+    jsWriteStandardOutput(jsFormatLogLine(arguments) + "\n")
+}
+
+/// `console.error(...values)`.
+public func jsError(spread arguments: [Any?]) {
+    jsWriteStandardError(jsFormatLogLine(arguments) + "\n")
+}
+
 func jsWriteStandardOutput(_ text: String) {
     FileHandle.standardOutput.write(Data(text.utf8))
 }

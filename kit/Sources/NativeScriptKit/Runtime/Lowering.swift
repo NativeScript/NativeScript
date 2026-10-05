@@ -150,6 +150,14 @@ public func jsSubstring(_ s: String, _ start: Double, _ end: Double? = nil) -> S
     return string(u[a..<b])
 }
 
+/// `s.substr(start, length)`: a negative start counts from the end.
+public func jsSubstr(_ s: String, _ start: Double, _ length: Double? = nil) -> String {
+    let u = units(s)
+    let a = jsRelativeIndex(start, u.count)
+    let n = length.map { Int(max(0, min(jsToIntegerOrInfinity($0), Double(u.count - a)))) } ?? u.count - a
+    return string(u[a..<(a + n)])
+}
+
 /// `s.split(separator, limit)` with a string separator.
 public func jsSplit(_ s: String, _ separator: String?, _ limit: Double? = nil) -> JSArray<String> {
     let max = limit.map { Int(jsToUint32Bits($0)) } ?? Int.max
@@ -288,6 +296,7 @@ extension JSArray {
 
 public func jsSign(_ x: Double) -> Double { x.isNaN ? .nan : x > 0 ? 1 : x < 0 ? -1 : x }
 public func jsFround(_ x: Double) -> Double { Double(Float(x)) }
+public func jsClz32(_ x: Double) -> Double { Double(UInt32(bitPattern: jsToInt32(x)).leadingZeroBitCount) }
 public func jsHypot(_ values: Double...) -> Double {
     if values.contains(where: { $0.isInfinite }) { return .infinity }
     if values.contains(where: { $0.isNaN }) { return .nan }

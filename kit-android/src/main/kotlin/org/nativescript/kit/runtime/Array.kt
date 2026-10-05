@@ -159,14 +159,18 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     }
 
     /** `a.splice(start, deleteCount, ...items)`; a missing deleteCount removes to the end. */
-    fun splice(start: Double, deleteCount: Double? = null, vararg items: T): JSArray<T> {
+    fun splice(start: Double, deleteCount: Double? = null, vararg items: T): JSArray<T> = spliceAll(start, deleteCount, items.asList())
+
+    /** `a.splice(start, deleteCount, ...items)` with the items spread from one list. */
+    fun spliceAll(start: Double, deleteCount: Double?, items: Iterable<T>): JSArray<T> {
         val n = storage.size
         val s = jsRelativeIndex(start, n)
         val d = if (deleteCount == null) n - s else maxOf(0, minOf(jsToIntegerOrInfinity(deleteCount).clampToInt(), n - s))
         val removed = ArrayList(storage.subList(s, s + d))
         storage.subList(s, s + d).clear()
-        storage.addAll(s, items.toList())
-        if (d > 0 || items.isNotEmpty()) trigger()
+        val added = items.toList()
+        storage.addAll(s, added)
+        if (d > 0 || added.isNotEmpty()) trigger()
         return JSArray(removed)
     }
 

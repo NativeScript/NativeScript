@@ -240,6 +240,9 @@ class JSMatchIndices internal constructor(val values: JSArray<Any?>, val groups:
     override val jsClassName: String? get() = "Array"
 }
 
+/** What `s.match(x)` searches with: a RegExp as it is, anything else as `new RegExp(x)`. */
+fun jsRegExpFrom(value: Any?): JSRegExp = value as? JSRegExp ?: JSRegExp(if (value == null || value === Unit) "(?:)" else jsToString(value))
+
 /** A regular expression literal. */
 fun jsRegExpLiteral(source: String, flags: String): JSRegExp = JSRegExp(source, flags)
 
