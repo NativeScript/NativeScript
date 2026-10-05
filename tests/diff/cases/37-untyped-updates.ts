@@ -117,3 +117,31 @@ function firstPair(pairs: any): string {
   return `${firstKey} ${firstValue}`;
 }
 console.log(firstPair([['k', 1]]));
+
+function closeAll(count: number): Promise<void[]> {
+  const toClose = [];
+  for (let i = 0; i < count; i++) toClose.push(Promise.resolve());
+  return Promise.all(toClose);
+}
+closeAll(3).then((done) => console.log('closed', done.length));
+const mixed = [];
+mixed.push(Promise.resolve(1), 2);
+Promise.all(mixed).then((values) => console.log('mixed', values.join(',')));
+function settleLater(): Promise<void> {
+  return new Promise((resolve) => {
+    if (problems.length >= 0) {
+      return Promise.resolve(1).then(() => {
+        console.log('then ran');
+        resolve();
+      });
+    }
+    resolve();
+  });
+}
+settleLater().then(() => console.log('settled'));
+type Maker = () => string;
+function runTemplate(template: string | Maker): string {
+  const isFn = (x: any): boolean => typeof x === 'function';
+  return isFn(template) ? (<Maker>template)() + (template as Maker)() : 'text';
+}
+console.log(runTemplate(() => 'made'), runTemplate('text'));

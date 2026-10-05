@@ -129,3 +129,14 @@ function later(callback: () => void) {
   callback();
 }
 later(retry);
+
+class Counter3 {
+  n = 0;
+  add(k: number): number {
+    this.n += k;
+    return this.n;
+  }
+}
+const counter3 = new Counter3();
+const add3 = counter3.add;
+console.log(add3.call(counter3, 2), add3.apply(counter3, [3]));

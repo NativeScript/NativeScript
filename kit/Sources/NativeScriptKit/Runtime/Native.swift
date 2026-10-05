@@ -65,6 +65,18 @@ public struct JSNativeKeyed {
     }
 }
 
+/// A property script added to a native object, kept with the object; undefined on a missing object.
+public func jsNativeExpando(_ object: NSObject?, _ key: String) -> Any? {
+    guard let object else { return nil }
+    return jsExpandos(object)?[key]
+}
+
+/// `object.key = value` for a property script adds to a native object.
+public func jsSetNativeExpando(_ object: NSObject?, _ key: String, _ value: Any?) {
+    guard let object else { return }
+    jsExpandos(object, create: true)?[key] = value
+}
+
 /// The iOS runtime's `__collect()`: nothing to collect where reference counting frees objects.
 public func __collect() {}
 
