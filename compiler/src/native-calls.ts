@@ -316,7 +316,9 @@ export class NativeAPI {
   /** The value an optional chain ending in a native member of Swift type `type` reads, as TypeScript types it. */
   private chainEnd(e: ts.PropertyAccessExpression, chained: string, type: SwiftType): string {
     const b = base(type);
-    const code = NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
+    // A Swift collection TypeScript reads as its Foundation class (`Set<NSUserActivity>` as `NSSet`).
+    const bridged = bridge(chained, optionalType(type), optionalType(this.t.typeOf(e).replace(/[?!]$/, '')));
+    const code = bridged ?? (NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained);
     // A link the chain continues past stays Swift's; the chain's value is a number as script reads it, still optional.
     if (this.keepOptional.has(e)) return ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e ? chained : code;
     const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
