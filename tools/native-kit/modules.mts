@@ -92,6 +92,7 @@ export const ios = {
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
 		'~/package.json': { default: 'CorePackages.appConfig' },
 		'moot:ui/builder/index.ts': { Builder: 'CorePackages.builder' },
+		'moot:module-name-resolver/index.ts': { resolveModuleName: 'CorePackages.resolveModuleName' },
 		'moot:module-name-resolver/helpers.ts': {
 			prepareAppForModuleResolver: 'CorePackages.noModuleResolver',
 			clearResolverCache: 'CorePackages.noModuleResolver',
