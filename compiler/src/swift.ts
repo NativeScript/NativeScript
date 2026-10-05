@@ -5515,6 +5515,13 @@ export class Translator implements AsyncTranslator {
           }
           return `${t}.${name}(${this.fn(callback)})`;
         };
+        // A type-guard filter (`(s): s is UIWindowScene => …`): its elements as the guard narrows them.
+        const narrowed = name === 'filter' ? /^JSArray<(\w+)>$/.exec(this.typeOf(e))?.[1] : undefined;
+        if (narrowed && narrowed !== el && /^\w+$/.test(el)) return `JSArray<${narrowed}>(${this.ignoringThisArg(e, target, call())}.storage.map { $0 as! ${narrowed} })`;
+        if (name === 'find' && /^\w+$/.test(el)) {
+          const found = this.typeOf(e).replace(/[?!]$/, '');
+          if (/^\w+$/.test(found) && found !== el && found !== 'Any') return `(${this.ignoringThisArg(e, target, call())}.map { $0 as! ${found} })`;
+        }
         return this.ignoringThisArg(e, target, call());
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0])})` : `${t}.sort()`;

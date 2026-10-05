@@ -3708,7 +3708,12 @@ export class Translator implements AsyncTranslator {
         const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
         const ret = name === 'forEach' ? 'Unit' : ['map', 'flatMap'].includes(name) ? null : 'Boolean';
         const slot = ret ? `(${[element, 'Double', `JSArray<${element}>`].slice(0, Math.min(3, arity)).join(', ')}) -> ${ret}` : undefined;
-        return this.ignoringThisArg(e, target, `${t}.${name}(${this.fn(f, slot)})`);
+        const code = this.ignoringThisArg(e, target, `${t}.${name}(${this.fn(f, slot)})`);
+        // A type-guard filter or find (`(s): s is Circle => …`): its elements as the guard narrows them.
+        const own = this.typeOf(e);
+        if (name === 'filter' && /^JSArray<\w+>$/.test(own) && own !== `JSArray<${element}>`) return `(${code} as ${own})`;
+        if (name === 'find' && /^\w+\??$/.test(own) && own.replace(/\?$/, '') !== element.replace(/\?$/, '') && own !== 'Any?') return `(${code} as ${own.endsWith('?') ? own : own + '?'})`;
+        return code;
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.sort()`;
       case 'toSorted': return e.arguments[0] ? `${t}.toSorted(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.toSorted()`;
