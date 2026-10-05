@@ -1461,7 +1461,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>()): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -1471,7 +1471,7 @@ export class Translator implements AsyncTranslator {
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
+      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
       ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
       `            default: return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : 'nil'}`,
@@ -1479,7 +1479,7 @@ export class Translator implements AsyncTranslator {
       '        }',
       '        set {',
       '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`),
+      ...fields.map((f) => `            case ${swiftString(f.name)}: ${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}`),
       ...symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`),
       `            default: ${override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : 'break'}`,
       '            }',
@@ -2339,7 +2339,9 @@ export class Translator implements AsyncTranslator {
         }
         continue;
       }
-      const keys = this.library && !m.initializer && !this.properties?.isRegistered(cls, n) ? this.prototypeKeys() : null;
+      // Library mode: a field under a name some class registers a property as (`col`, registered on View, declared on ViewBase) reads through the prototype chain.
+      const registeredName = !!this.library && (!!this.properties?.isRegistered(cls, n) || !!this.properties?.isRegisteredAnywhere(n));
+      const keys = this.library && !m.initializer && !registeredName ? this.prototypeKeys() : null;
       if (keys?.data.has(n) && !keys.accessors.has(n)) {
         // A field `Cls.prototype.name = v` writes: the instance's own value once it has one, else its prototype chain's.
         if (this.baseDeclares(appBase, n)) continue;
@@ -2353,7 +2355,7 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       if (keys?.accessors.has(n) && this.baseDeclares(appBase, n)) continue;
-      if (this.library && (this.properties?.isRegistered(cls, n) || keys?.accessors.has(n))) {
+      if (this.library && (registeredName || keys?.accessors.has(n))) {
         // A field under a registered property's name is the accessor `register` defines on the prototype.
         const unset = !t.endsWith('?') && !t.endsWith('!') && this.zero(t) === null && !isFunctionType(t);
         const vt = unset ? optionalType(t) : t;
@@ -2587,7 +2589,9 @@ export class Translator implements AsyncTranslator {
     })));
     if (protocol && !appBase && !kitRoot) { conformances.push(protocol.conformance); lines.push(...protocol.lines); }
     lines.push(...witnesses);
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando));
+    // Library mode: a registered property's value reaches its accessor as it is, which converts it (`col = "1"`).
+    const raw = new Set(this.library ? fields.filter((f) => this.properties?.isRegistered(cls, f.name) || this.properties?.isRegisteredAnywhere(f.name)).map((f) => f.name) : []);
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw));
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
     if (symbolFields.length) conformances.push('JSSymbolKeyed');
