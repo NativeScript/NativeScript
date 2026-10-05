@@ -287,14 +287,16 @@ export class NativeAPI {
     if (!isArray && !isDict) return null;
     const recv = this.unwrapped(target);
     const result = (code: string) => code;
+    // `xs?.count`: the chain's count, when there is one.
+    const count = recv.endsWith('?') ? `(${recv}.count).map { Double($0) }` : `Double(${recv}.count)`;
     if (isArray) {
-      if (args === null && name === 'count') return `Double(${recv}.count)`;
+      if (args === null && name === 'count') return count;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
     }
     if (isDict) {
-      if (args === null && name === 'count') return `Double(${recv}.count)`;
+      if (args === null && name === 'count') return count;
       if (args === null && name === 'allKeys') return `${recv}.keys.map { $0 as Any }`;
       if (args && (name === 'objectForKey' || name === 'valueForKey')) return `(${recv}[${this.t.expr(args[0])}] as Any?)`;
     }
@@ -584,6 +586,8 @@ export class NativeAPI {
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
+    // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
+    if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
     return t.expr(e);
@@ -603,6 +607,8 @@ export class NativeAPI {
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
     if ((this.isEnumType(b) || this.isNumericConstants(b)) && tsType === 'Double') return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
+    // A Core Foundation string (`kUTTypePlainText`), a string to TypeScript.
+    if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? `(${code} as String?)${tsType.endsWith('?') ? '' : '!'}` : `(${code} as String)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
