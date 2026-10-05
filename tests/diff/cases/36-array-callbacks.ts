@@ -21,3 +21,12 @@ let made = 0;
 const first = ++made;
 const second = ++made;
 console.log(made, first, second);
+const logged: string[] = [];
+const note = (s: string): void => {
+  logged.push(s);
+};
+const untypedNote = (s: string): any => note(s);
+function noted(s: string): any {
+  return note(s);
+}
+console.log(untypedNote('a'), noted('b'), logged.join(''));

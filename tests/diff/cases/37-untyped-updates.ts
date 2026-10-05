@@ -29,3 +29,15 @@ counters.misses ||= 7;
 counters.hits &&= counters.hits * 2;
 counters.flags |= 4;
 console.log(n, JSON.stringify(counters));
+
+const problems: string[] = [];
+function report(message: string) {
+  problems.push(message);
+}
+function parse(text: string) {
+  if (!text) return report('empty');
+  if (text === '!') return report('bang');
+  return text.split(',');
+}
+const anyResult = (): any => report('any');
+console.log(parse('a,b'), parse(''), parse('!') === undefined, anyResult(), problems.join(' '));

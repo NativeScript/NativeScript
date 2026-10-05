@@ -1539,7 +1539,7 @@ export class Translator implements AsyncTranslator {
         const e = n.expression;
         const local = e && ts.isIdentifier(e) ? this.checker.getSymbolAtLocation(e)?.valueDeclaration : undefined;
         // An optional parameter, or a local declared without a value, may still be undefined.
-        if (!e || isNullish(e) || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && !local.initializer && ts.findAncestor(local, (n) => n === fn))) found = true;
+        if (!e || isNullish(e) || this.typeOf(e) === 'Void' || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && !local.initializer && ts.findAncestor(local, (n) => n === fn))) found = true;
       }
       ts.forEachChild(n, visit);
     };
@@ -1621,7 +1621,9 @@ export class Translator implements AsyncTranslator {
         }
         else {
           const e = fn.body as ts.Expression;
-          lines = [...this.paramPrelude(fn), ret === 'Void' ? this.indent + this.tryPrefix(e) + this.exprStatement(e) : `${this.indent}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`];
+          const none = this.typeOf(e) === 'Void' && ret !== 'Void' && !ts.isVoidExpression(e) ? (isOptional(ret) || ret === 'Any?' ? 'nil' : this.zero(ret)) : null;
+          lines = [...this.paramPrelude(fn), ret === 'Void' || none ? this.indent + this.tryPrefix(e) + this.exprStatement(e) : `${this.indent}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`];
+          if (none) lines.push(`${this.indent}return ${none}`);
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
       } finally { this.indent = saved; }
@@ -2586,6 +2588,11 @@ export class Translator implements AsyncTranslator {
         if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
         const isPromise = this.typeOf(e).startsWith('JSPromise<');
         return `${i}${this.tryPrefix(e)}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
+      }
+      // `return log(x)` of a function returning nothing: the call, then undefined.
+      if (s.expression && this.returnType && this.returnType !== 'Void' && this.typeOf(s.expression) === 'Void' && !ts.isVoidExpression(s.expression)) {
+        const none = isOptional(this.returnType) || this.returnType === 'Any?' ? 'nil' : this.zero(this.returnType);
+        if (none) return `${i}${this.tryPrefix(s.expression)}${this.exprStatement(s.expression)}\n${i}return ${none}`;
       }
       // Code checked without strictNullChecks returns undefined from a function of a value type: read as the type's zero, as its fields are.
       if (s.expression && this.returnType.endsWith('?') && this.returnType !== 'Any?') {
