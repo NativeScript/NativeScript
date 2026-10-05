@@ -385,11 +385,7 @@ export class ActionBar extends ActionBarBase {
 		super._addViewToNativeVisualTree(child);
 
 		if (this.nativeViewProtected && child.nativeViewProtected) {
-			if (atIndex >= this.nativeViewProtected.getChildCount()) {
-				this.nativeViewProtected.addView(child.nativeViewProtected);
-			} else {
-				this.nativeViewProtected.addView(child.nativeViewProtected, atIndex);
-			}
+			AndroidHelper.insertNativeSubview(this.nativeViewProtected, child.nativeViewProtected, atIndex);
 
 			return true;
 		}

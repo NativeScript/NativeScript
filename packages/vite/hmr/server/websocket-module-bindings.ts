@@ -39,9 +39,9 @@ export interface EnsureNativeScriptModuleBindingsOptions {
 	 * shim's fallback to the native `require()` fails for every vendor
 	 * package (observed with `@nativescript/zip` in a zip worker on a fresh
 	 * install — the first boot's DB unzip was the first code path to ever
-	 * exercise a vendor require inside a worker). The HTTP form gives the
-	 * worker its own realm-local copy via the deps-bundle bridge — the same
-	 * isolation semantics webpack's per-worker bundles had.
+	 * exercise a vendor require inside a worker). The `?ns_worker=1` HTTP form
+	 * gives the worker its own per-module copy, bypassing the deps bundle —
+	 * the same isolation semantics webpack's per-worker bundles had.
 	 */
 	vendorImportsAsHttp?: boolean;
 }
@@ -105,6 +105,65 @@ function collectTopLevelImportRecords(code: string): TopLevelImportRecord[] {
 	}
 }
 
+/** Value re-exports (`export * from 'x'`, `export { a } from 'x'`), as the positions of their source literals. */
+function collectTopLevelReExportSources(code: string): Array<{ start: number; end: number; source: string }> {
+	try {
+		const ast = babelParse(code, {
+			sourceType: 'module',
+			plugins: [...MODULE_IMPORT_ANALYSIS_PLUGINS],
+		}) as any;
+		const body = ast?.program?.body;
+		if (!Array.isArray(body)) {
+			return [];
+		}
+
+		return body
+			.filter((node: any) => (node?.type === 'ExportAllDeclaration' || node?.type === 'ExportNamedDeclaration') && node.exportKind !== 'type' && typeof node.source?.value === 'string')
+			.map((node: any) => ({
+				start: node.source.start as number,
+				end: node.source.end as number,
+				source: node.source.value as string,
+			}));
+	} catch {
+		return [];
+	}
+}
+
+/**
+ * The worker serve's URL for a node_modules module Vite already resolved
+ * (`/node_modules/<pkg>/<file>`, `/@fs/.../node_modules/<pkg>/<file>`), or
+ * null when the specifier is not one. A worker realm has no vendor registry
+ * and must not reach the deps-bundle bridge, so its imports and re-exports
+ * both name the resolved file: one URL per module, as on the web. The
+ * authored spelling (`getPreservedImportSpecifier`) is for the main realm's
+ * import map; a re-export never carries it, so a worker using it for imports
+ * would load a module once per spelling.
+ */
+function getWorkerNodeModulesSpecifier(specifier: string): string | null {
+	const nodeModulesSpecifier = normalizeNodeModulesSpecifier(specifier);
+	if (!nodeModulesSpecifier || /^@nativescript\/core(\b|\/)/i.test(nodeModulesSpecifier) || isEsmFrameworkPackageSpecifier(specifier)) {
+		return null;
+	}
+	return `/ns/m/node_modules/${nodeModulesSpecifier}?ns_worker=1`;
+}
+
+/**
+ * Left alone, `rewriteImports` hands a package's own `export * from './sub'`
+ * to the import map as a bare specifier, which routes it to the deps-bundle
+ * shim: the worker then evaluates the bundle too, and with it a second copy
+ * of the package it already loaded per module.
+ */
+function rewriteWorkerReExportSpecifiers(code: string): string {
+	const records = collectTopLevelReExportSources(code);
+	for (const record of [...records].sort((left, right) => right.start - left.start)) {
+		const workerSpecifier = getWorkerNodeModulesSpecifier(record.source.replace(PAT.QUERY_PATTERN, ''));
+		if (workerSpecifier) {
+			code = code.slice(0, record.start) + JSON.stringify(workerSpecifier) + code.slice(record.end);
+		}
+	}
+	return code;
+}
+
 function stripTopLevelImportRecords(code: string, records: TopLevelImportRecord[]): string {
 	let stripped = code;
 	for (const record of [...records].sort((left, right) => right.start - left.start)) {
@@ -114,6 +173,9 @@ function stripTopLevelImportRecords(code: string, records: TopLevelImportRecord[
 }
 
 export function ensureNativeScriptModuleBindings(code: string, options?: EnsureNativeScriptModuleBindingsOptions): string {
+	if (options?.vendorImportsAsHttp) {
+		code = rewriteWorkerReExportSpecifiers(code);
+	}
 	const importRecords = collectTopLevelImportRecords(code);
 	if (!importRecords.length) {
 		return code;
@@ -167,6 +229,11 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 
 		const rawSpec = record.source;
 		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
+		const workerSpecifier = options?.vendorImportsAsHttp ? getWorkerNodeModulesSpecifier(specifier) : null;
+		if (workerSpecifier) {
+			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, workerSpecifier));
+			continue;
+		}
 		const preservedSpecifier = getPreservedImportSpecifier(specifier, options);
 
 		if (!record.clause) {

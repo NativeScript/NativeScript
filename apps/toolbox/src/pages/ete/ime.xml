@@ -1,0 +1,25 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <GridLayout id="probe" backgroundColor="#166534" androidOverflowEdge="none" rows="*, auto">
+    <ScrollView row="0" backgroundColor="#1d4ed8">
+      <StackLayout padding="12">
+        <Label text="Keyboard insets" color="#ffffff" fontWeight="bold" fontSize="17" />
+        <Label text="Focus the field. The probe pads by max(navigation bar, keyboard), so the blue panel should sit directly on top of the keyboard with no green showing through." color="#bfdbfe" fontSize="13" textWrap="true" />
+        <Label text="probe padding" color="#ffffff" fontWeight="bold" marginTop="10" />
+        <Label text="{{ padding }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+        <Label text="getEdgeInsets / getImeInsets" color="#ffffff" fontWeight="bold" marginTop="10" />
+        <Label text="{{ edgeInsets }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+        <Label text="{{ imeInsets }}" color="#bfdbfe" fontFamily="monospace" fontSize="13" textWrap="true" />
+        <Label text="{{ verdict }}" color="#fde68a" fontSize="14" fontWeight="bold" textWrap="true" marginTop="12" />
+      </StackLayout>
+    </ScrollView>
+
+    <StackLayout row="1" backgroundColor="#b45309" padding="10">
+      <TextField id="field" hint="tap to raise the keyboard" color="#ffffff" backgroundColor="#7c2d12" padding="10" />
+      <GridLayout columns="*, *, *" marginTop="6">
+        <Button col="0" text="setPadding 24" tap="{{ bumpPadding }}" color="#ffffff" backgroundColor="#7c2d12" />
+        <Button col="1" text="dismiss" tap="{{ dismiss }}" color="#ffffff" backgroundColor="#7c2d12" />
+        <Button col="2" text="back" tap="{{ back }}" color="#ffffff" backgroundColor="#7c2d12" />
+      </GridLayout>
+    </StackLayout>
+  </GridLayout>
+</Page>

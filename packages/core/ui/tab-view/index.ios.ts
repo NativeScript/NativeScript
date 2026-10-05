@@ -390,12 +390,15 @@ export class TabView extends TabViewBase {
 		return this._ios;
 	}
 
-	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		//
+	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+		// UIKit lays out the controller's view inside a container controller, but not inside a NativeScript view.
+		if (IOSHelper.isHostedInView(this)) {
+			super._setNativeViewFrame(nativeView, frame);
+		}
 	}
 
-	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
-		//
+	protected applySafeAreaInsets(frame: CGRect): CGRect {
+		return IOSHelper.extendUnderContainerSafeArea(this.nativeViewProtected, frame);
 	}
 
 	public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
@@ -715,6 +718,12 @@ export class TabView extends TabViewBase {
 	[itemsProperty.setNative](value: TabViewItem[]) {
 		this.setViewControllers(value);
 		selectedIndexProperty.coerce(this);
+
+		// Items added to a loaded TabView were loaded before their controllers existed.
+		const selectedItem = value?.[this.selectedIndex];
+		if (selectedItem) {
+			selectedItem.loadView(selectedItem.view);
+		}
 	}
 
 	[tabTextFontSizeProperty.getDefault](): number {

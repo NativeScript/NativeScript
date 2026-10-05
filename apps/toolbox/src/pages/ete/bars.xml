@@ -1,0 +1,32 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12" statusBarStyle="{{ statusBarStyle }}">
+  <GridLayout id="probe" backgroundColor="#166534" androidOverflowEdge="top,bottom">
+    <GridLayout backgroundColor="{{ contentColor }}" rows="auto, auto, *">
+      <StackLayout row="0" padding="12" marginTop="48">
+        <Label text="System bars" color="#ffffff" fontWeight="bold" fontSize="17" />
+        <Label text="The probe overflows top and bottom, so the content colour runs under both bars - that is the only way to tell whether the bar icons are still readable." color="#e5e7eb" fontSize="13" textWrap="true" />
+      </StackLayout>
+
+      <StackLayout row="1" padding="8">
+        <GridLayout columns="*, *">
+          <Button col="0" text="statusBarStyle" tap="{{ toggleStyle }}" color="#ffffff" backgroundColor="#111827" />
+          <Button col="1" text="content colour" tap="{{ toggleContent }}" color="#ffffff" backgroundColor="#111827" />
+        </GridLayout>
+        <GridLayout columns="*, *" marginTop="4">
+          <Button col="0" text="bar colours" tap="{{ toggleBarColors }}" color="#ffffff" backgroundColor="#111827" />
+          <Button col="1" text="back" tap="{{ back }}" color="#ffffff" backgroundColor="#111827" />
+        </GridLayout>
+      </StackLayout>
+
+      <ScrollView row="2">
+        <StackLayout padding="12">
+          <Label text="{{ statusBarLine }}" color="#ffffff" fontFamily="monospace" fontSize="14" />
+          <Label text="{{ appearanceLine }}" color="#ffffff" fontFamily="monospace" fontSize="14" marginTop="4" />
+          <Label text="{{ ignoreOlderLine }}" color="#ffffff" fontFamily="monospace" fontSize="14" marginTop="4" />
+          <Label text="{{ device }}" color="#e5e7eb" fontSize="13" textWrap="true" marginTop="8" />
+          <Label text="Switch the system theme while this page is open: the bar icons have to flip with it, not stay on the old theme." color="#fde68a" fontSize="13" textWrap="true" marginTop="12" />
+        </StackLayout>
+      </ScrollView>
+
+    </GridLayout>
+  </GridLayout>
+</Page>

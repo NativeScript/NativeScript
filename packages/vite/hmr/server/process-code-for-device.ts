@@ -299,12 +299,10 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		resolvedSpecifierOverrides,
 		// Worker entries evaluate in their own realm, where the main realm's
 		// vendor registry / __nsRequire never exist — route their vendor
-		// imports to the /ns/m/node_modules HTTP ESM form instead (realm-local
-		// copy via the deps-bundle bridge, matching webpack's per-worker
-		// bundling semantics). Entry-level detection by the `.worker` filename
-		// convention; a worker's TRANSITIVE imports share URLs with the main
-		// realm and cannot be forked per-realm, so plugins consumed by worker
-		// code should be imported from the worker entry itself.
+		// imports to the per-module /ns/m/node_modules HTTP ESM form instead,
+		// matching webpack's per-worker bundling semantics. The entry is
+		// detected by the `.worker` filename convention; its transitive
+		// imports by the `?ns_worker=1` marker the /ns/m route propagates.
 		vendorImportsAsHttp: options?.workerRealm || isWorkerEntryModuleId(sourceId),
 	};
 

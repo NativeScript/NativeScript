@@ -57,6 +57,10 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 			}
 			if (pathStyle && pathStyle !== '/' && !pathParam) {
 				if (!pathStyle.startsWith('/')) pathStyle = '/' + pathStyle;
+				// URL.pathname stays percent-encoded; decode before the query is appended.
+				try {
+					pathStyle = decodeURI(pathStyle);
+				} catch {}
 				// Include endpoint query for variant-style requests (e.g. /ns/sfc/Comp.vue?vue&type=template)
 				pathParam = pathStyle + (urlObj.search || '');
 			}

@@ -53,7 +53,7 @@ export class ActionBar extends View {
 	/**
 	 * Gets the native iOS [UINavigationBar](https://developer.apple.com/documentation/uikit/uinavigationbar) that represents the user interface for this component. Valid only when running on iOS.
 	 */
-	ios: any /* UITabBarController */;
+	ios: any; /* UITabBarController */
 
 	/**
 	 * Gets or set the UIImageRenderingMode of the action bar icons in iOS. Defaults to "alwaysOriginal"
@@ -264,6 +264,18 @@ export interface IOSActionItemSettings {
 	 * 23: PageCurl
 	 */
 	systemIcon: number;
+
+	/**
+	 * Gets or sets how long the item stays in the bar when space is constrained (iOS 27.1+).
+	 * https://developer.apple.com/documentation/uikit/uibarbuttonitem/visibilitypriority
+	 */
+	visibilityPriority?: 'high' | 'standard' | 'low' | number;
+
+	/**
+	 * Gets or sets which bar axes the item supports (iOS 27.1+).
+	 * https://developer.apple.com/documentation/uikit/uibarbuttonitem/axisbehavior-swift.property
+	 */
+	axisBehavior?: 'automatic' | 'horizontalOnly' | 'verticalPreferred';
 }
 
 /**
