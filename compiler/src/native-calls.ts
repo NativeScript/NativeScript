@@ -143,6 +143,12 @@ export class NativeAPI {
     return native ? { ...native, isStatic: false } : null;
   }
 
+  /** Whether a program class extends a native class, directly or through others. */
+  extendsNative(cls: ts.ClassLikeDeclaration): boolean {
+    const sym = cls.name && this.t.checker.getSymbolAtLocation(cls.name);
+    return !!sym && !!this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(sym));
+  }
+
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
   private nativeBase(type: ts.Type): { module: string; name: string } | null {
     if (!type.isClassOrInterface()) return null;
@@ -262,6 +268,17 @@ export class NativeAPI {
     return `(${this.t.expr(x)} as ${optionalType(t)})?.`;
   }
 
+  /** `x?.prop` of a native property on a receiver Swift holds as optional (`receiver`): its Swift name, a number as script reads it; null for anything else. */
+  chainedProperty(e: ts.PropertyAccessExpression, receiver: string): string | null {
+    const type = this.memberType(e);
+    if (type === null || this.receiver(e.expression)?.isStatic) return null;
+    const r = this.receiver(e.expression)!;
+    const m = lookupMember(r.module, r.name, e.name.text, false);
+    const chained = `${receiver}?.${m && m.kind === 'property' ? m.swift : e.name.text}`;
+    const b = base(type);
+    return NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
+  }
+
   /** The Swift type of a native property or struct field `x.name`, or null for anything else. */
   private memberType(e: ts.PropertyAccessExpression): SwiftType | null {
     if (this.appMember(e.name)) return null;
@@ -275,9 +292,10 @@ export class NativeAPI {
 
   /** The value an optional chain ending in a native member of Swift type `type` reads, as TypeScript types it. */
   private chainEnd(e: ts.PropertyAccessExpression, chained: string, type: SwiftType): string {
-    if (this.keepOptional.has(e)) return chained;
     const b = base(type);
     const code = NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
+    // A link the chain continues past stays Swift's; the chain's value is a number as script reads it, still optional.
+    if (this.keepOptional.has(e)) return ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e ? chained : code;
     const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
     return coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?' ? code : `(${code})!`;
   }
@@ -295,14 +313,18 @@ export class NativeAPI {
     if (!isArray && !isDict) return null;
     const recv = this.unwrapped(target);
     const result = (code: string) => code;
+    // `xs?.count`: the chain's count, when there is one.
+    const count = recv.endsWith('?') ? `(${recv}.count).map { Double($0) }` : `Double(${recv}.count)`;
     if (isArray) {
-      if (args === null && name === 'count') return `Double(${recv}.count)`;
+      if (args === null && name === 'count') return count;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
+      // By Foundation's own lookup: isEqual:, and NSNotFound where the array lacks the object.
+      if (args && name === 'indexOfObject' && args.length === 1 && !recv.endsWith('?')) return `Double((${recv} as NSArray).index(of: ${this.t.coerce(args[0], 'Any?')} as Any))`;
     }
     if (isDict) {
-      if (args === null && name === 'count') return `Double(${recv}.count)`;
+      if (args === null && name === 'count') return count;
       if (args === null && name === 'allKeys') return `${recv}.keys.map { $0 as Any }`;
       if (args && (name === 'objectForKey' || name === 'valueForKey')) return `(${recv}[${this.t.expr(args[0])}] as Any?)`;
     }
@@ -554,10 +576,23 @@ export class NativeAPI {
       if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : `${b}(jsToNumber(${t.expr(e)}))`;
       return t.expr(e);
     }
+    if (this.isNumericConstants(b) && ['Double', 'Double?', 'Any?'].includes(source)) {
+      const raw = this.typedConstantsRaw(b)!;
+      if (source === 'Double') return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
+      if (source === 'Any?') return `${b}(rawValue: ${raw}(jsToNumber(${t.expr(e)})))`;
+      return `(${t.expr(e)}).map { ${b}(rawValue: ${raw}($0)) }${optional(target) ? '' : '!'}`;
+    }
     if (source === 'Double' && this.isEnumType(b)) {
       // A number where Swift takes an enum or option set: its raw value.
       const raw = this.rawTypeOf(b);
       return `${b}(rawValue: ${raw}(${t.expr(e)}))${this.isOptionSet(b) ? '' : '!'}`;
+    }
+    // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
+    if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
+    // A dictionary where Swift keys one by a string-backed type (`[NSAttributedString.Key: Any]`).
+    const keyed = /^\[([\w.]+): Any\]$/.exec(b)?.[1];
+    if (keyed && keyed !== 'String' && keyed !== 'AnyHashable' && source.replace(/[?!]$/, '') !== b && this.isStringConstants(keyed)) {
+      return optional(target) ? `{ (__d: Any?) -> ${b}? in jsIsNullish(__d) ? nil : jsNativeKeyed(__d, ${keyed}.self) }(${t.expr(e)})` : `jsNativeKeyed(${t.expr(e)}, ${keyed}.self)`;
     }
     // An untyped value where Swift takes a native object (or one conforming to a protocol: `any UIInteraction`).
     const cls = b.replace(/^any /, '');
@@ -596,6 +631,8 @@ export class NativeAPI {
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
+    // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
+    if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
     return t.expr(e);
@@ -614,7 +651,9 @@ export class NativeAPI {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
-    if (this.isEnumType(b) && tsType === 'Double') return `Double(${code}.rawValue)`;
+    if ((this.isEnumType(b) || this.isNumericConstants(b)) && tsType === 'Double') return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
+    // A Core Foundation string (`kUTTypePlainText`), a string to TypeScript.
+    if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? `(${code} as String?)${tsType.endsWith('?') ? '' : '!'}` : `(${code} as String)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
@@ -878,8 +917,23 @@ export class NativeAPI {
 
   /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */
   private isTypedConstants(swift: string): boolean {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
-    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants'));
+    return this.typedConstantsRaw(swift) !== null;
+  }
+
+  /** The raw type of a type of named constants (`UIAccessibilityTraits` holds a UInt64), or null. */
+  private typedConstantsRaw(swift: string): string | null {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    for (const m of this.searchModules()) {
+      const e = Object.values(nativeTable(m).enums).find((x) => x.swift === swift && x.kind === 'typedConstants');
+      if (e) return e.raw;
+    }
+    return null;
+  }
+
+  /** A type of named numbers (`UIAccessibilityTraits`), which script reads as numbers. */
+  private isNumericConstants(swift: string): boolean {
+    const raw = this.typedConstantsRaw(swift);
+    return !!raw && NUMBERS.has(raw);
   }
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */

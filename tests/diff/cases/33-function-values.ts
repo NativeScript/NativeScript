@@ -105,3 +105,27 @@ function windowOf(state: string): string {
   return 'none';
 }
 console.log(windowOf('attached'), windowOf('detached'));
+
+function wrap(fn: Function) {
+  return function (...args) {
+    return fn(...args);
+  };
+}
+const queued = new Map<number, () => void>();
+queued.set(1, wrap(() => console.log('queued ran')));
+queued.get(1)();
+const pair: (a: string, b: string) => void = wrap((a: string, b: string) => console.log('pair', a, b));
+pair('x', 'y');
+try {
+  queued.get(2)();
+} catch (e) {
+  console.log(e instanceof TypeError);
+}
+
+function retry(attempt = 0, label?: string): void {
+  console.log('retry', attempt, label === undefined);
+}
+function later(callback: () => void) {
+  callback();
+}
+later(retry);
