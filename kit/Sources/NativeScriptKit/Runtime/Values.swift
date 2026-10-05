@@ -691,3 +691,8 @@ public func jsCallOptional(_ function: Any?, _ arguments: Any?...) throws -> Any
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
 /// in a native app, so reading one gives undefined.
 public let jsGlobalThis = JSObject([])
+
+/// Lenient code: a value that may be undefined where its type says an object, read as
+/// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
+@inline(__always)
+public func jsImplicit<T>(_ value: T?) -> T! { value }
