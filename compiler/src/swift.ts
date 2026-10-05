@@ -657,9 +657,17 @@ export class Translator implements AsyncTranslator {
   private isExpando(e: ts.PropertyAccessExpression): boolean {
     if (this.declaredOnly(e)) return true;
     const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
-    if (!decl || !(ts.isPropertySignature(decl) && ts.isTypeLiteralNode(decl.parent))) return false;
     const target = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
+    if (!decl || !(ts.isPropertySignature(decl) && ts.isTypeLiteralNode(decl.parent))) return false;
     return [target, ...(target.isIntersection() ? target.types : [])].some((t) => !!this.native.type(t));
+  }
+
+  /** `type ItemView = View & ViewItemIndex`: what the program's interface adds to a class's objects, kept as script adds it. */
+  private isAddedMember(e: ts.PropertyAccessExpression): boolean {
+    const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
+    const target = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
+    if (!decl || !ts.isPropertySignature(decl) || !ts.isInterfaceDeclaration(decl.parent) || decl.getSourceFile().isDeclarationFile || !target.isIntersection()) return false;
+    return target.types.some((t) => !!(t.getSymbol()?.flags! & ts.SymbolFlags.Class) && !t.getProperty(e.name.text));
   }
 
   private compiledClasses: Map<string, ts.ClassDeclaration[]> | null = null;
@@ -4225,6 +4233,11 @@ export class Translator implements AsyncTranslator {
     if (maybeChain) return this.undefinedAs(maybeChain, this.typeOf(e));
     const core = this.core.property(e);
     if (core) return core;
+    if (this.isAddedMember(e)) {
+      const t = this.typeOf(e);
+      const code = `jsField(${this.expr(target)}, ${swiftString(name)})`;
+      return t === 'Any?' ? code : this.undefinedAs(this.fromAny(code, optionalType(t)), t);
+    }
     if (this.isExpando(e)) {
       const t = this.typeOf(e);
       const code = `jsGet(${this.expr(target)}, ${swiftString(name)})`;
@@ -4394,6 +4407,10 @@ export class Translator implements AsyncTranslator {
         this.rawOptional.add(e);
         try { return this.expr(e); } finally { this.rawOptional.delete(e); }
       }
+    }
+    if (ts.isPropertyAccessExpression(e) && !isWriteTarget(e) && this.isAddedMember(e)) {
+      const t = this.typeOf(e);
+      if (t !== 'Any?' && !isOptional(t)) return this.fromAny(`jsField(${this.expr(e.expression)}, ${swiftString(e.name.text)})`, optionalType(t));
     }
     // `x?.m()` on an untyped value: undefined where x is, whatever its declared result.
     if (ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken && this.isAny(e.expression.expression)) {
@@ -5700,6 +5717,7 @@ export class Translator implements AsyncTranslator {
     const left = e.left, right = e.right;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
+    if (ts.isPropertyAccessExpression(left) && this.isAddedMember(left)) return `(${this.expr(left.expression)} as JSDynamic)[jsKey: ${swiftString(left.name.text)}] = ${this.coerce(right, 'Any?')}`;
     if (ts.isPropertyAccessExpression(left) && this.isNativeExpando(left)) return `jsSetNativeExpando(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left)) {
