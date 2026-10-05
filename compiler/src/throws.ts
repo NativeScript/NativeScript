@@ -22,10 +22,14 @@ export class Throws {
   /** Whether a value is untyped in Swift (`Any?`): reading its members goes through `jsGet`, which throws. */
   private untyped: (n: ts.Node) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean) {
+  /** Whether a call is of a native method Swift imports as `throws`, the iOS runtime throwing its error. */
+  private nativeThrows: (call: ts.CallExpression) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false) {
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
+    this.nativeThrows = nativeThrows;
     const fns: Fn[] = [];
     const collect = (n: ts.Node) => {
       if (ts.isFunctionLike(n) && (n as Fn).body) fns.push(n as Fn);
@@ -162,9 +166,12 @@ export class Throws {
       if (impl) return this.fn(impl);
     }
     if (file.isDeclarationFile) {
+      if (ts.isCallExpression(call) && this.nativeThrows(call)) return true;
       const owner = builtinName(decl);
       // `s.match(x)` makes a RegExp of anything else, which can be a SyntaxError.
       if (owner === 'String.match') return !args[0] || c.getTypeAtLocation(args[0]).getSymbol()?.name !== 'RegExp';
+      // `f.call(…)` and `f.apply(…)` run f, whose Swift function type throws.
+      if (owner && /^(Callable|Newable)?Function\.(call|apply)$/.test(owner)) return true;
       if (owner && THROWING_BUILTINS.has(owner)) return owner === 'Array.reduce' || owner === 'Array.reduceRight' ? args.length < 2 || callbackThrows() : true;
       // The library runs callbacks synchronously (map, forEach, sort, find): it rethrows. A promise's callbacks reject instead.
       if (/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName) && !/^Promise/.test(owner ?? '')) return callbackThrows();

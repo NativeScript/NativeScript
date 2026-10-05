@@ -149,6 +149,7 @@ export function generateKit(o: KitOptions): KitResult {
 
   // The kit as it is without what is being generated: a hand-ported class of a compiled one's name is a clash, not a base.
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
+  const kitInternal = internalTypes(KIT, o.replaces);
   const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [join(core, f), m]));
   let translator: Translator;
   try {
@@ -159,11 +160,12 @@ export function generateKit(o: KitOptions): KitResult {
         isMoot: (file) => file.startsWith(MOOT),
         identities: new Set(o.identities ?? []),
         counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
+        internalTypes: kitInternal,
       },
     });
   } finally { kitIndexOptions.exclude = null; }
   translator.appModule = 'NativeScriptKit';
-  translator.native.internalTypes = internalTypes(KIT);
+  translator.native.internalTypes = kitInternal;
   const errors: string[] = [];
   if (o.report) translator.errors = [];
 
@@ -209,11 +211,11 @@ export function generateKit(o: KitOptions): KitResult {
   return { files: out, errors: [...new Set(errors)] };
 }
 
-/** The top-level types the hand-written kit declares without making them public (`TNSLabel`); `Core/` is what is generated. */
-function internalTypes(dir: string): Set<string> {
+/** The top-level types the hand-written kit declares without making them public (`TNSLabel`), in the files the generated modules do not replace; `Core/` is what is generated. */
+function internalTypes(dir: string, replaces?: RegExp): Set<string> {
   const names = new Set<string>();
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
-    if (!f.endsWith('.swift') || f.startsWith('Core/')) continue;
+    if (!f.endsWith('.swift') || f.startsWith('Core/') || replaces?.test(f)) continue;
     for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:final|internal|indirect)\s+)*(?:class|struct|enum|protocol|typealias|actor)\s+(\w+)/gm)) names.add(m[1]);
   }
   return names;

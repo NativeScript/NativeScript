@@ -86,6 +86,13 @@ export class NativeAPI {
   }
 
   /** The Swift type for a native TypeScript type (a class, protocol, struct or enum), or null. */
+  /** Whether a type is an Objective-C class (not a protocol, struct or enum) of the native declarations. */
+  isClassType(t: ts.Type): boolean {
+    const native = this.symbolModule(t.getSymbol());
+    const cls = native && lookupClass(native.module, native.name);
+    return !!cls && cls.kind === 'class';
+  }
+
   type(t: ts.Type): string | null {
     const sym = t.aliasSymbol ?? t.getSymbol();
     const native = this.symbolModule(sym);
@@ -361,7 +368,9 @@ export class NativeAPI {
       if (name === 'init') return `${this.className(cls)}()`;
       const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
-      return this.fromSwift(`${this.className(cls)}(${this.argList([...e.arguments], init.labels, init.params)})`, init.returns, e);
+      const args = [...e.arguments];
+      if (init.errorParam !== undefined) args.splice(init.errorParam, 1);
+      return this.errorCall(`${this.className(cls)}(${this.argList(args, init.labels, init.params)})`, init, e);
     }
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
@@ -401,7 +410,45 @@ export class NativeAPI {
     const list = this.argList(args, m.labels, m.params);
     const target = r.isStatic ? this.className(cls!) : recv;
     const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
-    return this.fromSwift(code, m.returns, e);
+    return this.errorCall(code, m, e);
+  }
+
+  /**
+   * A method Swift imports as `throws` (an Objective-C NSError out-parameter). Left out, the
+   * error argument makes the iOS runtime throw the error; passed as null, the call returns
+   * false or null instead.
+   */
+  private errorCall(code: string, m: NativeMethod, e: ts.CallExpression): string {
+    if (!m.throws) return this.fromSwift(code, m.returns, e);
+    const at = m.errorParam!;
+    if (e.arguments.length > at) {
+      const arg = e.arguments[at];
+      if (arg.kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg) && arg.text === 'undefined')) throw this.t.error(arg, 'an NSError out-parameter');
+      return m.returns === 'Void' ? `((try? ${code}) != nil)` : this.fromSwift(`(try? ${code})`, optional(m.returns) ? m.returns : `${m.returns}?`, e);
+    }
+    return m.returns === 'Void' ? `({ () throws -> Bool in try ${code}; return true }())` : this.fromSwift(`(try ${code})`, m.returns, e);
+  }
+
+  /** Whether a call is of a method Swift imports as `throws`, with the error argument left out: the iOS runtime throws the error. */
+  throwingCall(e: ts.CallExpression): boolean {
+    try {
+      const m = this.calledMethod(e);
+      return !!m?.throws && e.arguments.length <= m.errorParam!;
+    } catch { return false; }
+  }
+
+  /** The native method or initializer a call runs, as `call` finds it; null for anything else. */
+  private calledMethod(e: ts.CallExpression): NativeMethod | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee) || this.appMember(callee.name)) return null;
+    const name = callee.name.text;
+    if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc') {
+      const r = this.receiver(callee.expression.expression.expression);
+      return r ? lookupInit(r.module, r.name, name) : null;
+    }
+    const r = this.receiver(callee.expression);
+    const m = r ? lookupMember(r.module, r.name, name, r.isStatic) : null;
+    return m && m.kind !== 'property' ? m : null;
   }
 
   /** `new UIView()`, `new UIView({ frame })`. */
@@ -477,14 +524,19 @@ export class NativeAPI {
     if (maybe) return maybe;
     const bridged = bridge(t.expr(e), source, target);
     if (bridged) return bridged;
+    const held = this.heldBlock(t.expr(e), source, target);
+    if (held) return held;
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
     // An out-parameter: the cell's storage of the pointee's type, written back.
     const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
-    if (b === 'Selector' && ts.isStringLiteralLike(e)) return `Selector((${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))}))`;
+    // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
+    if (b === 'Selector' && ts.isStringLiteralLike(e)) return `NSSelectorFromString(${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))})`;
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
+      // An untyped value: the number the runtime marshals it as.
+      if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : `${b}(jsToNumber(${t.expr(e)}))`;
       return t.expr(e);
     }
     if (source === 'Double' && this.isEnumType(b)) {
@@ -517,9 +569,13 @@ export class NativeAPI {
     if (!optional(target) && source.endsWith('?') && this.isOptionSet(b)) return `(${t.expr(e)} ?? [])`;
     // A possibly missing string where Swift takes one: Objective-C would receive nil, which reads as empty.
     if (b === 'String' && !optional(target) && source === 'String?') return `(${t.expr(e)} ?? "")`;
-    // A string where Swift has a string-backed type (`UIMenu.Identifier`).
-    const nativeConstant = ts.isIdentifier(e) && !!this.symbolModule(this.t.resolve(e));
-    if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !nativeConstant) {
+    // A string where Swift has a string-backed type (`UIMenu.Identifier`); a constant of that type as Swift declares it.
+    const native = ts.isIdentifier(e) ? this.symbolModule(this.t.resolve(e)) : null;
+    const constant = native && lookupConstant(native.module, native.name);
+    if (constant && base(constant.type) === b) return constant.swift;
+    // A constant of a typed-constants struct (`CFRunLoopMode`) where Swift takes any object: its raw value.
+    if (constant && /^(CFTypeRef|AnyObject|Any)$/.test(b) && this.isTypedConstants(base(constant.type))) return `(${constant.swift}.rawValue as CFTypeRef)`;
+    if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !native) {
       return source.endsWith('?') ? `{ (__s: String?) -> ${b}? in __s.map { ${b}(rawValue: $0) } }(${t.expr(e)})` : `${b}(rawValue: ${t.expr(e)})`;
     }
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
@@ -544,6 +600,8 @@ export class NativeAPI {
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
     if (this.isEnumType(b) && tsType === 'Double') return `Double(${code}.rawValue)`;
+    // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
+    if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;
@@ -573,6 +631,18 @@ export class NativeAPI {
     const ret = sig[2].trim();
     const inner = ret === 'Void' ? (throws ? `jsReport { try ${call} }` : `${call}`) : `${throws ? 'try! ' : ''}${call}`;
     return `{ (${swiftParams.join(', ')}) -> ${ret} in ${binds.join('; ')}${binds.length ? '; ' : ''}${ret === 'Void' ? inner : `return ${inner}`} }`;
+  }
+
+  /** A function value (Swift's are `throws`) where Swift takes a block returning nothing: called through one, what it throws reported. */
+  private heldBlock(code: string, source: string, target: SwiftType): string | null {
+    const unwrapped = /^\(.*\)\?$/.test(source) && blockType(source.slice(1, -2)) ? source.slice(1, -2) : source;
+    const fn = /\bthrows\b/.test(unwrapped) ? blockType(unwrapped) : null;
+    const want = blockType(this.unalias(target));
+    if (!fn || !want || want.result !== 'Void' || fn.params.length > want.params.length) return null;
+    const args = fn.params.map((p, k) => this.blockParam(`__b${k}`, want.params[k], p.replace(/^@escaping /, '')));
+    const wrap = `{ (__f: @escaping ${unwrapped}) -> ${want.text} in { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in jsReport { try __f(${args.join(', ')}) } } }`;
+    if (unwrapped === source) return `${wrap}(${code})`;
+    return `(${code}).map(${wrap})${optional(target) ? '' : '!'}`;
   }
 
   private blockParam(code: string, swiftType: SwiftType, tsType: string): string {
@@ -763,6 +833,12 @@ export class NativeAPI {
   enumFromNumber(code: string, swiftType: string): string {
     const b = swiftType.replace(/[?!]$/, '');
     return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
+  }
+
+  /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */
+  private isTypedConstants(swift: string): boolean {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
+    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants'));
   }
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
