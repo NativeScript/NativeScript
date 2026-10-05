@@ -155,3 +155,19 @@ scope.owner = leaf;
 console.log(cssOf(scope), !cssOf(null), ownerOf(scope).label, ownerOf(null) == null);
 const wrapped: any = new Number('4');
 console.log(wrapped + 1, new Boolean(0) == false, new String(12) + '!');
+
+// A number assigned in a switch, then updated.
+function placed(align: string): number {
+  let top: number;
+  switch (align) {
+    case 'top':
+      top = 1;
+      break;
+    default:
+      top = 5;
+  }
+  top += 2;
+  top *= 3;
+  return top;
+}
+console.log(placed('top'), placed('bottom'));

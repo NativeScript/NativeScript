@@ -82,6 +82,7 @@ public func jsKeysOf(_ value: Any?) -> [String] {
 /// `key in object`.
 public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
     if let plain = jsFlat(object) as? JSObject { return plain.has(key) }
+    if let cls = jsFlat(object) as? JSStaticKeyed.Type { return cls.jsStaticKeys.contains(key) }
     if let expando = jsFlat(object) as? JSExpando { return expando.jsKeys.contains(key) || jsExpandoHas(expando, key) }
     if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }
     if let dynamic = object as? JSDynamic { return dynamic.jsKeys.contains(key) }
@@ -379,4 +380,37 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
     case "toString", "valueOf": return { _, _ in s }
     default: return nil
     }
+}
+
+/// `String.fromCharCode.apply(_, codes)`: the codes of an array-like, as numbers.
+public func jsFromCharCodeList(_ list: Any?) throws -> String {
+    string(try jsListNumbers(list).map { UInt16(truncatingIfNeeded: Int64(jsToUint32Bits($0))) }[...])
+}
+
+/// `Math.max.apply(_, xs)`.
+public func jsMathMaxList(_ list: Any?) throws -> Double {
+    try jsListNumbers(list).reduce(-Double.infinity) { $0.isNaN || $1.isNaN ? .nan : Swift.max($0, $1) }
+}
+
+/// `Math.min.apply(_, xs)`.
+public func jsMathMinList(_ list: Any?) throws -> Double {
+    try jsListNumbers(list).reduce(Double.infinity) { $0.isNaN || $1.isNaN ? .nan : Swift.min($0, $1) }
+}
+
+/// The elements of an array-like as numbers, as `apply` spreads them.
+func jsListNumbers(_ list: Any?) throws -> [Double] {
+    if jsIsNullish(list) { return [] }
+    guard let array = jsFlat(list) as? JSArrayProtocol else { throw JSException(JSTypeError("CreateListFromArrayLike called on non-object")) }
+    return array.jsAnyElements.map(jsToNumber)
+}
+
+/// A class whose static members script names (`'tapEvent' in view.constructor`): its own and its bases'.
+public protocol JSStaticKeyed: AnyObject {
+    static var jsStaticKeys: [String] { get }
+}
+
+/// `value.constructor`: the class of the object.
+public func jsConstructor(_ value: Any?) -> Any? {
+    guard let object = jsFlat(value) else { return nil }
+    return type(of: object) as Any
 }

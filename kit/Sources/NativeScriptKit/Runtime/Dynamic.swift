@@ -232,6 +232,16 @@ public func jsObjectFromEntries<S: Sequence, V>(_ entries: S) -> JSRecord<V> whe
     return record
 }
 
+/// `Object.fromEntries(entries)` of untyped entries: each one's `0` the key, its `1` the value.
+public func jsObjectFromEntries<S: Sequence>(_ entries: S) throws -> JSRecord<Any?> {
+    let record = JSRecord<Any?>()
+    for entry in entries {
+        guard jsFlat(entry) != nil, !(jsFlat(entry) is JSNull) else { throw JSException(JSTypeError("Iterator value \(jsToString(entry)) is not an entry object")) }
+        record[jsToString(try jsGet(entry, "0"))] = try jsGet(entry, "1")
+    }
+    return record
+}
+
 /// An object that can lose an own property (`delete o.x`).
 public protocol JSDeletable: AnyObject {
     func jsDeleteOwn(_ key: String) -> Bool

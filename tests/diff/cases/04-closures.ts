@@ -59,3 +59,4 @@ function laterConst(): number {
   return read();
 }
 console.log(laterConst());
+

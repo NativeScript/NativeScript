@@ -4,7 +4,7 @@ import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from '.
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'WeakMap.set', 'WeakSet.add',
+const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
   'Number.toLocaleString', 'BigInt.toLocaleString', 'Function.apply', 'CallableFunction.apply', 'Object.defineProperties', 'Object.getPrototypeOf', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
 
@@ -28,8 +28,12 @@ export class Throws {
   /** A declaration file's method or constructor whose compiled implementation is in the program (library mode). */
   private implementation: (decl: ts.Declaration) => ts.Declaration | null;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null) {
+  /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
+  private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false) {
     this.implementation = implementation;
+    this.dynamicMember = dynamicMember;
     this.checker = checker;
     this.files = files;
     this.untyped = untyped;
@@ -99,7 +103,7 @@ export class Throws {
     for (const p of fn.parameters) {
       if (p.initializer) visit(p.initializer);
       // Destructuring an untyped argument reads its members, which throws on undefined and null.
-      if (ts.isObjectBindingPattern(p.name) && this.untyped(p.name)) found = true;
+      if ((ts.isObjectBindingPattern(p.name) || ts.isArrayBindingPattern(p.name)) && this.untyped(p.name)) found = true;
     }
     if (ts.isConstructorDeclaration(fn)) {
       for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m)) visit(m.initializer);
@@ -117,7 +121,7 @@ export class Throws {
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
-    if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && this.untyped(n.initializer)) return true;
+    if (ts.isVariableDeclaration(n) && (ts.isObjectBindingPattern(n.name) || ts.isArrayBindingPattern(n.name)) && n.initializer && this.untyped(n.initializer)) return true;
     // Destructuring runs the getters of the members it reads.
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
       const t = c.getNonNullableType(c.getTypeAtLocation(n.initializer));
@@ -128,6 +132,7 @@ export class Throws {
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
       // Reading a member of an untyped value throws on undefined and null.
       if (this.untyped(n.expression)) return true;
+      if (ts.isPropertyAccessExpression(n) && this.dynamicMember(n)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
@@ -139,6 +144,7 @@ export class Throws {
   private callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
     const c = this.checker;
     if (ts.isCallExpression(call) && this.nativeThrows(call)) return true;
+    if (ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression) && this.dynamicMember(call.expression)) return true;
     if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);
@@ -165,6 +171,8 @@ export class Throws {
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
+    // A buffer or a view of an invalid length is a RangeError.
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && ['ArrayBuffer', 'Uint8Array'].includes(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak reference to an untyped value refuses a primitive.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'WeakRef' && args[0] && this.untyped(args[0])) return true;
     // Intl's constructors reject options out of range; BigInt() a value with no integer.
@@ -225,8 +233,9 @@ export class Throws {
       const ctor = cls.members.find(ts.isConstructorDeclaration);
       if (ctor) return this.fn(ctor);
     }
-    // The initializer a class inherits is its root's, which throws where one of the root's descendants' does.
-    return this.descendants(chain.at(-1)!).some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
+    // An inherited initializer throws if any constructor of the hierarchy it comes from does.
+    const root = this.ancestors(decl).at(-1)!;
+    return [root, ...this.descendants(root)].some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
   }
 
   /** The class and the app classes it extends, nearest first. */

@@ -10,12 +10,12 @@ public final class Region: RegionHost {
 
     public init(host: RegionHost?) { self.host = host }
 
-    public var views: [View] { parts.flatMap(\.views) }
+    public var views: [ViewBase] { parts.flatMap(\.views) }
 
     /// Set by `Choose` while it renders a branch: the branch's first `attach` replaces the old views.
     var replacing = false
 
-    public func set(_ views: [View]) {
+    public func set(_ views: [ViewBase]) {
         replacing = false
         parts = views.map { .view($0) }
         host?.regionChanged(self)
@@ -29,7 +29,7 @@ public final class Region: RegionHost {
 
     /// Puts a view of the content being rendered in place now, for frameworks
     /// that insert views top-down; the render's result settles their order.
-    public func attach(_ view: View) {
+    public func attach(_ view: ViewBase) {
         if replacing { parts = [] }
         replacing = false
         parts.append(.view(view))
@@ -41,10 +41,10 @@ public final class Region: RegionHost {
 }
 
 public enum RegionPart {
-    case view(View)
+    case view(ViewBase)
     case region(Region)
 
-    var views: [View] {
+    var views: [ViewBase] {
         switch self {
         case .view(let view): return [view]
         case .region(let region): return region.views
@@ -59,8 +59,8 @@ public final class RegionFragment {
 
     public init(_ owner: Region) { self.owner = owner }
 
-    public func addChild(_ view: View) { parts.append(.view(view)) }
-    public func addTemplateChild(_ view: View) { addChild(view) }
+    public func addChild(_ view: ViewBase) { parts.append(.view(view)) }
+    public func addTemplateChild(_ view: ViewBase) { addChild(view) }
 
     public func addRegion() -> Region {
         let region = Region(host: owner)
@@ -76,7 +76,7 @@ public protocol RegionHost: AnyObject {
 
 /// `v-if`/`v-else-if`/`v-else`, `@if`/`@else`, `{#if}`, `<Show>`, `cond && <X/>`:
 /// the views of the branch `which` selects, rebuilt only when the selection changes.
-public func Choose(_ region: Region, _ which: @escaping () -> Int, render: @escaping (Int) -> [View]) {
+public func Choose(_ region: Region, _ which: @escaping () -> Int, render: @escaping (Int) -> [ViewBase]) {
     ChooseParts(region, which) { branch in render(branch).map { .view($0) } }
 }
 
@@ -102,21 +102,21 @@ private func ChooseParts(_ region: Region, _ which: @escaping () -> Int, render:
     }
 }
 
-public func If(_ region: Region, _ condition: @escaping () -> Bool, then: @escaping () -> [View], else otherwise: (() -> [View])? = nil) {
+public func If(_ region: Region, _ condition: @escaping () -> Bool, then: @escaping () -> [ViewBase], else otherwise: (() -> [ViewBase])? = nil) {
     Choose(region, { condition() ? 0 : 1 }) { $0 == 0 ? then() : (otherwise?() ?? []) }
 }
 
 /// `v-for`, `@for`, `{#each}`, `<For>`, `.map()`: one set of views per item,
 /// kept by key across changes, so a row that stays keeps its views and state.
-public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> [View]) {
-    var rows: [String: (views: [View], owner: Owner)] = [:]
+public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> [ViewBase]) {
+    var rows: [String: (views: [ViewBase], owner: Owner)] = [:]
     var order: [String]?
     Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
     Effect {
         let list = items()
         untrack {
-            var next: [String: (views: [View], owner: Owner)] = [:]
-            var views: [View] = []
+            var next: [String: (views: [ViewBase], owner: Owner)] = [:]
+            var views: [ViewBase] = []
             var keys: [String] = []
             for (index, item) in list.enumerated() {
                 var k = key(item, Double(index))
@@ -183,7 +183,7 @@ public final class ForRow<Item> {
     }
 }
 
-public func ForEach<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (ForRow<Item>) -> [View]) {
+public func ForEach<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (ForRow<Item>) -> [ViewBase]) {
     ForEachParts(region, items, key: key) { row in render(row).map { .view($0) } }
 }
 
