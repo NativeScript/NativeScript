@@ -215,3 +215,7 @@ console.log(infos.map((i) => i.propertyNameToAnimate).join());
 // parseInt and parseFloat as values.
 const parsers: Array<(s: string) => number> = [parseInt, parseFloat];
 console.log(parsers.map((p) => p('42.5px')).join(','), ['1', '2', '3'].map(parseFloat).join('|'));
+
+// A library function applied to a list.
+const codes = [72, 105, 33];
+console.log(String.fromCharCode.apply(null, codes), Math.max.apply(null, [3, 9, 4]));

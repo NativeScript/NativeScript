@@ -44,6 +44,9 @@ function implementationOf(d: ts.SignatureDeclaration | ts.JSDocSignature): ts.Fu
   return null;
 }
 
+/** Library functions applied to a list (`f.apply(null, list)`): the runtime's function of an array-like. */
+const LIST_APPLIED: Record<string, string> = { 'String.fromCharCode': 'jsFromCharCodeList', 'Math.max': 'jsMathMaxList', 'Math.min': 'jsMathMinList' };
+
 /** The ES library's decorator and property descriptor interfaces: plain objects in library mode. */
 const DESCRIPTORS = new Set(['PropertyDescriptor', 'TypedPropertyDescriptor', 'PropertyDescriptorMap', 'ClassDecorator', 'MethodDecorator', 'PropertyDecorator', 'ParameterDecorator']);
 
@@ -1775,7 +1778,9 @@ export class Translator implements AsyncTranslator {
   private baseMethod(m: ts.MethodDeclaration): ts.MethodDeclaration | null {
     const name = m.name.getText();
     for (let c = this.sourceBase(m.parent as ts.ClassLikeDeclaration); c; c = this.sourceBase(c)) {
-      const b = c.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && x.name.getText() === name && !isStatic(x));
+      const named = c.members.filter((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && x.name.getText() === name && !isStatic(x));
+      // An overloaded method's implementation is the one Swift has.
+      const b = named.find((x) => !!x.body) ?? named.find((x) => hasModifier(x, ts.SyntaxKind.AbstractKeyword));
       if (b) return b;
     }
     return null;
@@ -1808,6 +1813,12 @@ export class Translator implements AsyncTranslator {
     const binds = fn.parameters.map((p, k) => {
       if (!ts.isIdentifier(p.name)) return '';
       const t = own.params[k].type;
+      // A rest parameter over the base's: the arguments from here on, as one array.
+      if (p.dotDotDotToken) {
+        const el = t.replace(/^JSArray<(.*)>$/, '$1');
+        const rest = base.params.slice(k).map((b, j) => this.convert(`__b${k + j}`, plain(b.type), el));
+        return `${pad}let ${ident(p.name.text)}: ${t} = ${t}([${rest.join(', ')}])`;
+      }
       const from = base.params[k] ? plain(base.params[k].type) : null, to = plain(t);
       const converted = from ? this.convert(`__b${k}`, from, to) : (this.zero(t) ?? 'nil');
       // A parameter narrowed to a subclass: the argument as that class, undefined where it is not one.
@@ -2187,7 +2198,8 @@ export class Translator implements AsyncTranslator {
     // Members whose names a base class declares too.
     const inherited = new Set<string>();
     for (let b = appBase; b; ) {
-      for (const m of b.members) if (m.name) inherited.add(m.name.getText());
+      // What the base emits: not an overload's signature, a bodiless declaration or a static member.
+      for (const m of b.members) if (m.name && !(ts.isMethodDeclaration(m) && !m.body && !hasModifier(m, ts.SyntaxKind.AbstractKeyword)) && !isStatic(m)) inherited.add(m.name.getText());
       const h = b.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
       const d = h && c.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
@@ -2354,7 +2366,7 @@ export class Translator implements AsyncTranslator {
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const n = m.name.getText();
       // A class's toString is what JavaScript's string conversion calls, named or not.
-      if (this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && n !== 'toString') continue;
+      if (!this.library && this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && n !== 'toString') continue;
       const kit = kitRoot && !isStatic(m) && !inherited.has(n) ? this.core.kitMember(kitRoot, n) : null;
       if (kit && kit.kind === 'func') { lines.push(this.kitOverride(m, kit)); continue; }
       // An override declaring fewer parameters than the method it overrides takes the rest unused, as Swift matches signatures.
@@ -4490,6 +4502,11 @@ export class Translator implements AsyncTranslator {
       }
       if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
+      // `String.fromCharCode.apply(_, codes)`, `Math.max.apply(_, xs)`: the library function of the list's elements.
+      if (method === 'apply' && e.arguments.length === 2 && this.pure(e.arguments[0]) && ts.isPropertyAccessExpression(target) && ts.isIdentifier(target.expression) && this.isLibGlobal(target.expression)) {
+        const listed = LIST_APPLIED[`${target.expression.text}.${target.name.text}`];
+        if (listed) return `${listed}(${this.coerce(e.arguments[1], 'Any?')})`;
+      }
       if (['call', 'apply', 'bind'].includes(method) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration()) && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(method, target, e);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
