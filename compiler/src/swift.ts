@@ -3137,6 +3137,8 @@ export class Translator implements AsyncTranslator {
 
   /** What `for…of` iterates in Swift: arrays, sets and iterators as they are, a map's entries, a string's code points. */
   iterable(e: ts.Expression): string {
+    // A Foundation collection Swift bridges (`NSArray` as `[Any]`): its elements, as the runtime iterates them.
+    if (/^\[[^:]*\][?!]?$/.test(this.typeOf(e))) return /[?!]$/.test(this.typeOf(e)) ? `(${this.expr(e)} ?? [])` : this.expr(e);
     const js = this.jsIteration(e);
     if (js) return `${js}.jsCollect()`;
     const t = this.typeOf(e);
