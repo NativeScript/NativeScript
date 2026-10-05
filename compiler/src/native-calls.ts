@@ -580,6 +580,12 @@ export class NativeAPI {
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
     // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
     if (b === 'Selector' && ts.isStringLiteralLike(e)) return `NSSelectorFromString(${JSON.stringify(e.text + ':'.repeat(this.exposedArity(e.text)))})`;
+    // A constant naming a method (`GestureEvents.touchDown`): its value, as a literal is; any other string as it is when it runs.
+    if (b === 'Selector' && /^String\??$/.test(source)) {
+      const literal = this.t.checker.getTypeAtLocation(e);
+      if (literal.isStringLiteral()) return `NSSelectorFromString(${JSON.stringify(literal.value + ':'.repeat(this.exposedArity(literal.value)))})`;
+      return `NSSelectorFromString(${t.expr(e)})`;
+    }
     if (NUMBERS.has(b)) {
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
       // An untyped value: the number the runtime marshals it as.
@@ -658,6 +664,11 @@ export class NativeAPI {
     const b = base(swiftType);
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
+    // A member the code has narrowed (`layer.mask instanceof CAShapeLayer`): the subclass it tested for.
+    const declared = ts.isPropertyAccessExpression(e) ? this.t.checker.getSymbolAtLocation(e.name) : undefined;
+    const narrowedTo = base(tsType);
+    if (declared && /^[A-Z]\w*$/.test(narrowedTo) && narrowedTo !== b && /^[A-Z]\w*$/.test(b) && !this.isEnumType(narrowedTo) && !this.isStructType(narrowedTo)
+        && base(this.t.type(this.t.checker.getTypeOfSymbol(declared), e)) === b) return `(${code} as${optional(tsType) ? '?' : '!'} ${narrowedTo})`;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
     if (NUMBERS.has(b) && tsType.replace(/\?$/, '') === 'Double') {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;

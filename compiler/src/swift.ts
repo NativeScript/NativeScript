@@ -270,33 +270,40 @@ export class Translator implements AsyncTranslator {
   private ownCalls = new Set<ts.Node>();
   /** A call of a method an instance can replace (see `instanceKeys`): through the instance's own value, which may throw. */
   private replaceableCall(e: ts.CallExpression): boolean {
-    return !!this.library && ts.isPropertyAccessExpression(e.expression) && this.instanceKeys().has(e.expression.name.text)
+    return !!this.library && ts.isPropertyAccessExpression(e.expression) && this.instanceKeys().has(this.methodDecl(e.expression.name) as ts.Node)
       && !!this.resolve(e.expression.name)?.declarations?.some((d) => ts.isMethodDeclaration(d) && !!d.body);
   }
-  private ownKeys: Set<string> | null = null;
-  /** Names the program gives instances with `Object.defineProperty(this, 'name', …)` or `Object.defineProperties(this, { name: … })`. */
-  private instanceKeys(): Set<string> {
+  private ownKeys: Set<ts.Node> | null = null;
+  /** The method a member name resolves to, through a mapped type (`Readonly<Match>`) too. */
+  private methodDecl(name: ts.MemberName): ts.Declaration | undefined {
+    const sym = this.resolve(name);
+    return sym?.valueDeclaration ?? sym?.declarations?.find(ts.isMethodDeclaration);
+  }
+  /** Methods an instance may hold a value in place of: given by `Object.defineProperty(this, …)` or `Object.defineProperties(this, …)` in their class, or by an object literal of their class. */
+  private instanceKeys(): Set<ts.Node> {
     if (this.ownKeys) return this.ownKeys;
-    const keys = new Set<string>();
+    const methods = new Set<ts.Node>();
+    const methodOf = (cls: ts.ClassLikeDeclaration | undefined, key: string) => {
+      const sym = cls?.name && this.checker.getSymbolAtLocation(cls.name);
+      const d = sym && this.checker.getDeclaredTypeOfSymbol(sym).getProperty(key)?.valueDeclaration;
+      if (d && ts.isMethodDeclaration(d)) methods.add(d);
+    };
     const visit = (n: ts.Node) => {
       if (ts.isCallExpression(n) && n.arguments[0]?.kind === ts.SyntaxKind.ThisKeyword) {
         const callee = n.expression.getText();
-        if (callee === 'Object.defineProperty' && n.arguments[1] && ts.isStringLiteralLike(n.arguments[1])) keys.add(n.arguments[1].text);
-        if (callee === 'Object.defineProperties' && n.arguments[1] && ts.isObjectLiteralExpression(n.arguments[1])) for (const p of n.arguments[1].properties) if (p.name && !ts.isComputedPropertyName(p.name)) keys.add(literalKey(p.name, this.checker) ?? p.name.getText());
+        const cls = ts.findAncestor(n, ts.isClassLike);
+        if (callee === 'Object.defineProperty' && n.arguments[1] && ts.isStringLiteralLike(n.arguments[1])) methodOf(cls, n.arguments[1].text);
+        if (callee === 'Object.defineProperties' && n.arguments[1] && ts.isObjectLiteralExpression(n.arguments[1])) for (const p of n.arguments[1].properties) if (p.name && !ts.isComputedPropertyName(p.name)) methodOf(cls, literalKey(p.name, this.checker) ?? p.name.getText());
+      }
+      // A method an object literal of its class gives a value for.
+      if (ts.isObjectLiteralExpression(n)) {
+        const cls = this.literalClassOf(n);
+        if (cls) for (const p of n.properties) if (p.name && !ts.isComputedPropertyName(p.name)) methodOf(cls, p.name.getText());
       }
       ts.forEachChild(n, visit);
     };
     for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
-    // A method an object literal of its class gives a value for.
-    for (const cls of this.literalClasses()) {
-      const methods = new Set(cls.members.filter(ts.isMethodDeclaration).map((m) => m.name.getText()));
-      const visitLiterals = (n: ts.Node) => {
-        if (ts.isObjectLiteralExpression(n) && this.literalClassOf(n) === cls) for (const p of n.properties) if (p.name && methods.has(p.name.getText())) keys.add(p.name.getText());
-        ts.forEachChild(n, visitLiterals);
-      };
-      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visitLiterals(sf);
-    }
-    return (this.ownKeys = keys);
+    return (this.ownKeys = methods);
   }
 
   private protoKeys: { data: Set<string>; accessors: Set<string> } | null = null;
@@ -2594,9 +2601,9 @@ export class Translator implements AsyncTranslator {
         const self = `guard let __o = __this as? ${name} else { throw JSException(JSTypeError("Illegal invocation")) }`;
         const get = a.get ? `{ (__this: Any?) throws -> Any? in ${self}; return ${this.convert(`${this.throwsInfo.fn(a.get) ? 'try ' : ''}__o.${ident(n)}`, t, 'Any?')} }` : 'nil';
         const set = a.set ? `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; __o.${ident(n)} = ${this.fromAny('__v', t)} }` : 'nil';
-        return `(${swiftString(n)}, ${get}, ${set})`;
+        return `${i}JSPrototypes.declare(${name}.self, ${swiftString(n)}, get: ${get}, set: ${set})`;
       });
-      lines.push(`${i}JSPrototypes.declare(${name}.self, [${entries.join(', ')}])`);
+      lines.push(...entries);
     }
     const decorators = (ts.getDecorators(cls) ?? []).filter((d) => !(ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) && !/^(CSSType|NativeClass)\b/.test(d.expression.getText()));
     if (decorators.length) lines.push(`${i}try jsDecorate(${name}.self, [${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}])`);
@@ -3869,6 +3876,9 @@ export class Translator implements AsyncTranslator {
       const p = e.parent;
       if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === e && p.questionDotToken) return code;
       const actual = this.typeOf(e);
+      // Narrowed by a test (`value instanceof LinearGradient`): what the test found.
+      const held = this.undefinedVars.get(sym)!.replace(/[?!]$/, '');
+      if (held !== actual.replace(/[?!]$/, '') && actual !== 'Any?' && this.isObjectRef(e) && /^[A-Z][\w.]*$/.test(held)) return `(${code} as! ${actual.replace(/[?!]$/, '')})`;
       return isOptional(actual) ? code : this.undefinedAs(code, actual);
     }
     const declared = this.declaredTypeOf(e);
@@ -4445,7 +4455,7 @@ export class Translator implements AsyncTranslator {
     const declaredMethod = ts.isPropertyAccessExpression(callee) && this.resolve(callee.name)?.declarations?.some((d) => ((ts.isMethodDeclaration(d) || ts.isMethodSignature(d)) && d.getSourceFile().isDeclarationFile)
       || (ts.isMethodDeclaration(d) && ts.isClassLike(d.parent) && !d.questionToken));
     // A method an instance may be given a property in place of (`Object.defineProperty(this, 'm', …)`): the instance's, when it has one.
-    if (this.library && ts.isPropertyAccessExpression(callee) && !this.ownCalls.has(e) && this.instanceKeys().has(callee.name.text) && this.resolve(callee.name)?.declarations?.some((d) => ts.isMethodDeclaration(d) && !!d.body)) {
+    if (this.library && ts.isPropertyAccessExpression(callee) && !this.ownCalls.has(e) && this.instanceKeys().has(this.methodDecl(callee.name) as ts.Node)) {
       if (!this.pure(callee.expression) && callee.expression.kind !== ts.SyntaxKind.ThisKeyword) throw this.error(callee, 'a method an instance can replace, on an object with effects');
       const t = this.typeOf(e);
       this.ownCalls.add(e);
