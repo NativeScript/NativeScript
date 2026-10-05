@@ -457,7 +457,7 @@ export class TextBase extends TextBaseCommon {
 			// clear the text shadow
 			layer.shadowOpacity = 0;
 			layer.shadowRadius = 0;
-			layer.shadowColor = UIColor.clearColor;
+			layer.shadowColor = UIColor.clearColor.CGColor;
 			layer.shadowOffset = CGSizeMake(0, 0);
 			return;
 		}
