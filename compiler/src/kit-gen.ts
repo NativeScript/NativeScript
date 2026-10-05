@@ -108,7 +108,7 @@ export function generateKit(o: KitOptions): KitResult {
     if (name.startsWith(MOOT)) return ts.createSourceFile(name, 'declare const moot: any;\nexport = moot;\n', version, true);
     if (!compiled.has(name)) return readLib(name, version, onError);
     if (!sources.has(name)) sources.set(name, read(name));
-    return ts.createSourceFile(name, foldPlatform(sources.get(name)!, name, 'ios'), version, true);
+    return ts.createSourceFile(name, foldPlatform(withCoreDefines(sources.get(name)!), name, 'ios'), version, true);
   };
   /** The published declarations of a core file: `utils/index.ios.ts` and `../utils` both as `utils/index.d.ts`. */
   const declarationOf = (abs: string): string | undefined => {
@@ -303,4 +303,16 @@ function stripLiterals(line: string): string {
     if (c === '{' || c === '}') out += c;
   }
   return out;
+}
+
+/**
+ * What the bundler defines for core, as a release build's: no external
+ * renderer, and CSS given as text at run time parsed by core's own parser
+ * (css-tree is not compiled).
+ */
+const CORE_DEFINES: Record<string, string> = { __UI_USE_EXTERNAL_RENDERER__: 'false', __UI_USE_XML_PARSER__: 'true', __CSS_PARSER__: "'nativescript'" };
+
+function withCoreDefines(text: string): string {
+  for (const [key, value] of Object.entries(CORE_DEFINES)) text = text.replace(new RegExp(`(?<![\\w$.])${key}(?![\\w$])`, 'g'), (m) => `(${value})`.padEnd(m.length, ' '));
+  return text;
 }

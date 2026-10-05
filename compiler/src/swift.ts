@@ -478,10 +478,36 @@ export class Translator implements AsyncTranslator {
 
   /** A member script adds to a native object (`nativeView.nsView`): declared by the code itself, not by the SDK. */
   private isExpando(e: ts.PropertyAccessExpression): boolean {
+    if (this.declaredOnly(e)) return true;
     const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
     if (!decl || !(ts.isPropertySignature(decl) && ts.isTypeLiteralNode(decl.parent))) return false;
     const target = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
     return [target, ...(target.isIntersection() ? target.types : [])].some((t) => !!this.native.type(t));
+  }
+
+  private compiledClasses: Map<string, ts.ClassDeclaration[]> | null = null;
+  /**
+   * Library mode: a member a core declaration file declares on a class whose
+   * compiled implementation does not (`Transition.sharedElements`): what script
+   * keeps on the instance, read by name.
+   */
+  private declaredOnly(e: ts.PropertyAccessExpression): boolean {
+    if (!this.library) return false;
+    const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
+    let name: string | undefined;
+    if (!decl) name = this.typeOf(e.expression).replace(/[?!]$/, '');
+    else {
+      const cls = decl.parent;
+      if (!ts.isClassDeclaration(cls) || !cls.name || !decl.getSourceFile().isDeclarationFile || isLibDeclaration(decl) || /[\\/]objc![^\\/]+\.d\.ts$/.test(decl.getSourceFile().fileName)) return false;
+      name = cls.name.text;
+    }
+    if (!this.compiledClasses) {
+      this.compiledClasses = new Map();
+      for (const f of this.sourceFiles) for (const st of f.statements) if (ts.isClassDeclaration(st) && st.name) this.compiledClasses.set(st.name.text, [...(this.compiledClasses.get(st.name.text) ?? []), st]);
+    }
+    const impls = this.compiledClasses.get(name);
+    if (!impls?.length) return false;
+    return impls.every((c) => !this.checker.getTypeAtLocation(c).getProperty(e.name.text));
   }
 
   /** The class an interface extends, when it extends exactly one and adds nothing Swift could not read by name. */
@@ -1459,11 +1485,63 @@ export class Translator implements AsyncTranslator {
   }
 
   func(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers = '', extraParams: string[] = []): string {
+    const base = ts.isMethodDeclaration(fn) && /\boverride\b/.test(modifiers) ? this.baseMethod(fn) : null;
+    if (base && ts.isMethodDeclaration(fn)) {
+      const b = this.emittedSignature(base), own = this.signatureOf(fn);
+      if (b.ret !== own.ret || b.params.length !== own.params.length || b.params.some((p, k) => p.type !== own.params[k].type)) return this.adaptedOverride(fn, name, modifiers, b);
+    }
     const ret = this.returnTypeOf(fn);
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? ' throws' : '';
     const params = [this.params(fn, false), ...extraParams].filter(Boolean).join(', ');
     const declared = this.inNativeClass(fn) ? ret : this.lenientRef(ret);
     return `${modifiers}func ${name}${this.generics(fn)}(${params})${throws}${ret === 'Void' ? '' : ` -> ${declared}`} ${this.functionBody(fn, ret, this.indent)}`;
+  }
+
+  /** The nearest method of the same name a source base class declares. */
+  private baseMethod(m: ts.MethodDeclaration): ts.MethodDeclaration | null {
+    const name = m.name.getText();
+    for (let c = this.sourceBase(m.parent as ts.ClassLikeDeclaration); c; c = this.sourceBase(c)) {
+      const b = c.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && x.name.getText() === name && !isStatic(x));
+      if (b) return b;
+    }
+    return null;
+  }
+
+  /** The Swift signature a method is emitted with: its root's, which every override in Swift matches. */
+  private emittedSignature(m: ts.MethodDeclaration): { params: { decl: string; type: string }[]; ret: string } {
+    const base = this.baseMethod(m);
+    return base ? this.emittedSignature(base) : this.signatureOf(m);
+  }
+
+  /** A method's Swift signature as declared: each parameter's type, and the result. */
+  private signatureOf(m: ts.MethodDeclaration): { params: { decl: string; type: string }[]; ret: string } {
+    const params = m.parameters.length ? splitTopLevel(this.params(m, false)).map((decl) => ({ decl: withoutDefault(decl).trim(), type: withoutDefault(decl.slice(decl.indexOf(':') + 1)).trim().replace(/^@escaping /, '') })) : [];
+    const ret = !m.body && !m.type ? 'Void' : this.returnTypeOf(m);
+    return { params, ret: ret === 'Void' || this.inNativeClass(m) ? ret : this.lenientRef(ret) };
+  }
+
+  /**
+   * A method overriding one whose Swift signature differs (a narrower result, a
+   * parameter typed otherwise): Swift's override takes the base's signature, and
+   * the method's own parameters and result are converted to and from it.
+   */
+  private adaptedOverride(fn: ts.MethodDeclaration, name: string, modifiers: string, base: { params: { decl: string; type: string }[]; ret: string }): string {
+    const plain = (t: string) => t.replace(/!$/, '?');
+    const own = this.signatureOf(fn);
+    const ret = this.returnTypeOf(fn);
+    const throws = !isAsync(fn) && this.throwsInfo.fn(fn);
+    const pad = this.indent + '    ';
+    const binds = fn.parameters.map((p, k) => {
+      if (!ts.isIdentifier(p.name)) return '';
+      const t = own.params[k].type;
+      const value = base.params[k] ? this.convert(`__b${k}`, plain(base.params[k].type), plain(t)) : (this.zero(t) ?? 'nil');
+      return `${pad}let ${ident(p.name.text)}: ${t} = ${value}`;
+    }).filter(Boolean);
+    const params = base.params.map((p, k) => `_ __b${k}: ${p.decl.slice(p.decl.indexOf(':') + 1).trim()}`).join(', ');
+    const body = this.functionBody(fn, ret, pad);
+    const call = `${throws ? 'try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${ret} in${body.slice(1)}()`;
+    const result = base.ret === 'Void' ? `${pad}_ = ${call}` : `${pad}let __result: ${ret} = ${call}\n${pad}return ${this.convert('__result', plain(ret), plain(base.ret))}`;
+    return `${modifiers}func ${name}(${params})${throws ? ' throws' : ''}${base.ret === 'Void' ? '' : ` -> ${base.ret}`} {\n${[...binds, result].join('\n')}\n${this.indent}}`;
   }
 
   /** `(r) => r.id` as a Swift closure with explicit types. */
@@ -1939,7 +2017,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
         // An abstract method: subclasses override it.
         // Without a declared type (implicitly any) it returns nothing, as overrides declared for effect do: Swift overrides match exactly.
-        const ret = m.type ? this.returnTypeOf(m) : 'Void';
+        const ret = this.signatureOf(m).ret;
         lines.push(`    func ${ident(m.name.getText())}(${this.params(m, false)})${this.throwsInfo.fn(m) ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} { fatalError("abstract method ${name}.${m.name.getText()}") }`);
         continue;
       }
@@ -3601,6 +3679,13 @@ export class Translator implements AsyncTranslator {
     const declaredFunction = (x: ts.Expression) => ts.isIdentifier(x) && !!this.resolve(x)?.declarations?.some(ts.isFunctionDeclaration);
     if (ts.isExpressionWithTypeArguments(callee) && (!e.questionDotToken || declaredFunction(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, callee.typeArguments, e.arguments));
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${[this.expr(callee), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    if (ts.isPropertyAccessExpression(callee) && this.declaredOnly(callee)) {
+      const o = this.fresh('__o'), key = swiftString(callee.name.text);
+      const call = `try jsCallMethod(${[o, key, ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+      const value = `({ () throws -> Any? in let ${o}: Any? = ${this.coerce(callee.expression, 'Any?')}; return ${e.questionDotToken || callee.questionDotToken ? `jsIsNullish(${callee.questionDotToken ? o : `jsGet(${o}, ${key})`}) ? nil : ` : ''}${call} }())`;
+      const t = this.typeOf(e);
+      return t === 'Void' || t === 'Any?' || statementLevel(e) ? value : this.fromAnyCode(value, t, true);
+    }
     // `obj.method?.(…)` on a method a declaration file declares: the method is always there, so the call is a plain one.
     const declaredMethod = ts.isPropertyAccessExpression(callee) && this.resolve(callee.name)?.declarations?.some((d) => (ts.isMethodDeclaration(d) || ts.isMethodSignature(d)) && d.getSourceFile().isDeclarationFile);
     if (e.questionDotToken && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
@@ -3716,7 +3801,14 @@ export class Translator implements AsyncTranslator {
         const rt = this.typeOf(e);
         return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) ? code : this.undefinedAs(`(${code})`, rt);
       }
-      return `${checked ?? `${this.expr(target)}${q}`}.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+      const plain = `${checked ?? `${this.expr(target)}${q}`}.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+      // An override emitted with its base's signature gives what the base's result type holds.
+      const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+      if (decl && ts.isMethodDeclaration(decl) && decl.body && !decl.getSourceFile().isDeclarationFile && !isStatic(decl) && this.baseMethod(decl)) {
+        const emitted = this.emittedSignature(decl).ret, own = this.typeOf(e);
+        if (emitted !== 'Void' && emitted.replace(/!$/, '') !== own.replace(/!$/, '') && !q) return this.convert(plain, emitted.replace(/!$/, '?'), own);
+      }
+      return plain;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
     if (ts.isElementAccessExpression(callee)) {
