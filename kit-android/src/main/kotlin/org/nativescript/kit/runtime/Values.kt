@@ -314,6 +314,9 @@ fun jsCall(function: Any?, vararg args: Any?): Any? {
     return jsBox(result)
 }
 
+/** A function read where it may be missing (a record's value): calling undefined throws a TypeError. */
+fun <T : Function<*>> jsCallable(function: T?): T = function ?: throw JSException(JSTypeError("undefined is not a function"))
+
 /** `f?.(args)` on an untyped value: undefined when `f` is undefined or null. */
 fun jsCallOptional(function: Any?, vararg args: Any?): Any? = if (jsIsNullish(function)) null else jsCall(function, *args)
 

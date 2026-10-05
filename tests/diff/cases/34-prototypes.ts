@@ -201,3 +201,69 @@ const emptyMatch: Readonly<Match> = { selectors: [], changes: new Map(), describ
 const full = new Match();
 full.selectors = ['a', 'b'];
 console.log(emptyMatch.describe(), emptyMatch.selectors.length, emptyMatch.changes.size, full.describe());
+
+class Runner {
+  private _resolve;
+  public _sequential: boolean;
+  public done: Promise<void>;
+  constructor(sequential?: boolean) {
+    this._sequential = sequential;
+    this.done = new Promise<void>((resolve) => {
+      this._resolve = resolve;
+    });
+  }
+  finish() {
+    this._resolve();
+  }
+}
+const runner = new Runner();
+runner.done.then(() => console.log('resolved', runner._sequential === true));
+runner.finish();
+
+function describeInfo(i: Info): string {
+  return `${i.name}:${i.size}`;
+}
+const base = <Info>{};
+base.name = 'base';
+base.size = 1;
+const derived = { ...base, size: undefined };
+derived.size = 5;
+console.log(describeInfo(derived), describeInfo(base));
+
+class Source {
+  constructor(public url: string, public size: number) {}
+}
+class FileSource extends Source {
+  constructor(path: string, bytes: number) {
+    super(path, bytes);
+  }
+}
+const loose = new Source(undefined, null);
+console.log(!loose.url, !loose.size, new FileSource('a.css', 3).url);
+
+let stack: number[] = [];
+stack.push(4, 9);
+const found9 = stack?.findIndex((n) => n === 9);
+let scope: Source = null;
+function pickSource(flag: boolean): Source {
+  const made: Source = flag ? new Source('picked', 1) : null;
+  return made;
+}
+scope = pickSource(true);
+console.log(found9, scope.url, pickSource(false) === null || pickSource(false) === undefined);
+
+class Checked {
+  constructor(private parts: string[]) {}
+  toString(): string {
+    return this.parts.reduce((a, b) => a + '|' + b);
+  }
+}
+console.log(String(new Checked(['a', 'b'])), `${new Checked(['c'])}`);
+
+function sourceUrl(source: Source): string {
+  const url: string = source && source.url;
+  return url;
+}
+console.log(sourceUrl(new Source('s.css', 1)));
+const picked: Source = loose && new Source('and', 2);
+console.log(picked.url);

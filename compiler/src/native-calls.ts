@@ -12,11 +12,13 @@ const optional = (t: SwiftType) => /[?!]$/.test(t);
 const BRIDGED: Record<string, string> = {
   NSURL: 'URL', NSDate: 'Date', NSData: 'Data', NSIndexPath: 'IndexPath', NSNotification: 'Notification', NSUUID: 'UUID', NSLocale: 'Locale',
   NSTimeZone: 'TimeZone', NSCalendar: 'Calendar', NSURLRequest: 'URLRequest', NSDateComponents: 'DateComponents', NSCharacterSet: 'CharacterSet',
-  NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error',
+  NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error', CFString: 'String',
 };
 /** `code` of Objective-C class or Swift value type `from` as `to`, the other one of a bridged pair; null when they are not one. */
 function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   const f = base(from), b = base(to);
+  // A Core Foundation array is an NSArray, which Swift reads as an array of its elements.
+  if (f === 'CFArray' && /^\[[^:]*\]$/.test(b)) return optional(to) ? `(${code}).map { $0 as NSArray as! ${b} }` : `(${code}${optional(from) ? '!' : ''} as NSArray as! ${b})`;
   // `NSSet` and Swift's `Set<T>`: toward the typed set the cast checks the elements.
   const typedSet = /^NS(Mutable)?Set$/.test(f) && /^Set<.+>$/.test(b);
   if (BRIDGED[f] !== b && BRIDGED[b] !== f && !typedSet && !(/^Set<.+>$/.test(f) && b === 'NSSet')) return null;
@@ -319,7 +321,8 @@ export class NativeAPI {
     // `xs?.count`: the chain's count, when there is one.
     const count = recv.endsWith('?') ? `(${recv}.count).map { Double($0) }` : `Double(${recv}.count)`;
     if (isArray) {
-      if (args === null && name === 'count') return count;
+      // `xs?.count`: undefined, read as a number, where the array is missing.
+      if (args === null && name === 'count') return recv.endsWith('?') ? `(${count} ?? .nan)` : count;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
@@ -402,7 +405,9 @@ export class NativeAPI {
       const r = ownBase ? { ...ownBase, isStatic: true } : this.receiver(allocated);
       if (!r) return null;
       const cls = lookupClass(r.module, r.name)!;
-      const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : this.className(cls);
+      // A class held as a value (`typeof UIGestureRecognizer`): its own initializer, which Objective-C dispatches.
+      const classRef = !!((this.t.resolve(allocated)?.flags ?? 0) & ts.SymbolFlags.Class);
+      const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : r.isStatic || classRef ? this.className(cls) : `${this.t.expr(allocated)}.init`;
       if (name === 'init') return `${made}()`;
       const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
@@ -636,6 +641,8 @@ export class NativeAPI {
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
+    const raw = source === 'Double' ? this.constantsRaw(b) : null;
+    if (raw && NUMBERS.has(raw)) return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
     // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
     if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
@@ -660,6 +667,8 @@ export class NativeAPI {
     // A Core Foundation string (`kUTTypePlainText`), a string to TypeScript.
     if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? `(${code} as String?)${tsType.endsWith('?') ? '' : '!'}` : `(${code} as String)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
+    // A number-backed constant (`UIFontWeightBold`), a number to TypeScript.
+    if (tsType === 'Double' && NUMBERS.has(this.constantsRaw(b) ?? '')) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
@@ -957,8 +966,14 @@ export class NativeAPI {
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
   private isStringConstants(swift: string): boolean {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
-    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants' && x.raw === 'String'));
+    return this.constantsRaw(swift) === 'String';
+  }
+
+  /** The raw type of a typed-constants struct (`UIFont.Weight` holds a CGFloat), or null. */
+  private constantsRaw(swift: string): string | null {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    for (const m of this.searchModules()) for (const x of Object.values(nativeTable(m).enums)) if (x.swift === swift && x.kind === 'typedConstants' && x.raw) return x.raw;
+    return null;
   }
 
   isEnumType(swift: string): boolean {
