@@ -57,6 +57,14 @@
 			},
 			"dependsOn": ["^build"]
 		},
+		"native-kit": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["build"],
+			"options": {
+				"command": "node tools/native-kit/generate.mts",
+				"forwardAllArgs": true
+			}
+		},
 		"test": {
 			"executor": "@nx/vitest:test",
 			"outputs": ["{options.reportsDirectory}"],
