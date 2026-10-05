@@ -11,6 +11,8 @@ import { Translator } from './swift.ts';
 import { collectProperties } from './properties.ts';
 import { evaluationOrder } from './modules.ts';
 import { kitIndexOptions } from './kit-index.ts';
+import { loadCoreNativeTables } from './natives/core-ios.ts';
+import { nativeTable } from './natives/symbols.ts';
 
 export interface KitOptions {
   /** `packages/core` of the NativeScript repository. */
@@ -51,7 +53,7 @@ export interface KitResult {
 }
 
 const KIT = resolve(import.meta.dirname, '../../kit/Sources/NativeScriptKit');
-const HEADER = '// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\nimport Foundation\nimport UIKit\n\n';
+const header = (imports: Iterable<string> = []) => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\nimport Foundation\nimport UIKit\n${[...imports].sort().map((m) => `import ${m}\n`).join('')}\n`;
 
 /** The iOS files of a module list: a platform's file over the shared one, no tests, no other platform. */
 export function coreFiles(core: string, modules: string[]): string[] {
@@ -135,6 +137,13 @@ export function generateKit(o: KitOptions): KitResult {
   const roots = [...compiled, join(modules, '@nativescript/types-ios/index.d.ts'), join(o.declarations, 'global-types.d.ts'),
     ...['objc!NativeScriptUtils.d.ts', 'objc!MaterialComponents.d.ts'].map((t) => join(o.declarations, 'platforms/ios/typings', t)).filter(existsSync)];
   const program = ts.createProgram(roots, options, host);
+  // Core's own native code (TNSWidgets, NativeScriptUtils…), as installed with the declarations: what the kit links.
+  const coreNative = new Set(loadCoreNativeTables(o.declarations));
+  const coreTypes = new Map<string, string>();
+  for (const m of coreNative) for (const c of Object.values(nativeTable(m).classes)) if (!c.extension) coreTypes.set(c.swift, m);
+  /** The modules of core's native code a generated file imports: those of the types it names, and of the categories it calls (`used`). */
+  const importsOf = (code: string, used: Iterable<string> = []) =>
+    new Set([...[...used].filter((m) => coreNative.has(m)), ...[...code.matchAll(/\b[A-Za-z_]\w*/g)].flatMap((x) => coreTypes.get(x[0]) ?? [])]);
   const checker = program.getTypeChecker();
   const files = program.getSourceFiles().filter((f) => compiled.has(f.fileName));
 
@@ -154,11 +163,13 @@ export function generateKit(o: KitOptions): KitResult {
     });
   } finally { kitIndexOptions.exclude = null; }
   translator.appModule = 'NativeScriptKit';
+  translator.native.internalTypes = internalTypes(KIT);
   const errors: string[] = [];
   if (o.report) translator.errors = [];
 
   const order = evaluationOrder(program, [...compiled], (c, s) => resolutions.get(`${c}\0${s}`));
   const out: KitFile[] = [];
+  const imports = new Map<KitFile, string[]>();
   const inits: string[] = [];
   const hash = (text: string) => createHash('sha1').update(text).digest('hex').slice(0, 12);
   for (const file of order) {
@@ -167,6 +178,7 @@ export function generateKit(o: KitOptions): KitResult {
     const init = `__init_${enumName(rel, barrels)}`;
     let result: { code: string; init: string[] } | null = null;
     for (let attempt = 0; attempt < 1000 && !result; attempt++) {
+      translator.native.used.clear();
       try { result = translator.module(sf); } catch (e) {
         if (!o.report) throw e;
         errors.push(located(e, sf, core));
@@ -177,20 +189,34 @@ export function generateKit(o: KitOptions): KitResult {
     if (!result) continue;
     const code = result.code + (result.init.length ? `\nfunc ${init}() {\n${result.init.some((l) => /\btry\b/.test(l)) ? `    jsReport {\n${result.init.map((l) => '    ' + l).join('\n')}\n    }` : result.init.join('\n')}\n}\n` : '');
     if (result.init.length) inits.push(init);
-    out.push({ name: rel.replace(/\.ts$/, '').replace(/\//g, '.') + '.swift', code, sources: { [rel]: hash(sources.get(file) ?? '') } });
+    const kitFile = { name: rel.replace(/\.ts$/, '').replace(/\//g, '.') + '.swift', code, sources: { [rel]: hash(sources.get(file) ?? '') } };
+    out.push(kitFile);
+    imports.set(kitFile, [...translator.native.used]);
   }
   for (const name of new Set(translator.kitClashes)) errors.push(`${name}: generated from core and hand-ported in the kit; remove the hand port`);
   if (translator.errors?.length) errors.push(...translator.errors.map((e) => e.replaceAll(core + '/', '')));
-  // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file.
-  const imports = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m)).map((m) => `import ${m}\n`).join('');
-  const header = HEADER + imports + (imports ? '\n' : '');
-  for (const f of out) f.code = header + publicize((translator.interfacesOf(join(core, Object.keys(f.sources)[0])) + f.code).trim()) + '\n';
+  // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file; core's own modules where used.
+  const sdk = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m) && !coreNative.has(m));
+  for (const f of out) {
+    const code = (translator.interfacesOf(join(core, Object.keys(f.sources)[0])) + f.code).trim();
+    f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
+  }
   const shapes = translator.shapesCode().trim();
-  if (shapes) out.push({ name: '__Objects.swift', code: header + publicize(shapes) + '\n', sources: {} });
+  if (shapes) out.push({ name: '__Objects.swift', code: header(new Set([...sdk, ...importsOf(shapes)])) + publicize(shapes) + '\n', sources: {} });
   // Core's modules run their top level once, in the order JavaScript evaluates them, before the app's.
-  out.push({ name: '__Modules.swift', sources: {}, code: `${HEADER}public enum CoreModules {\n    private static var initialized = false\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
+  out.push({ name: '__Modules.swift', sources: {}, code: `${header()}public enum CoreModules {\n    private static var initialized = false\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
   return { files: out, errors: [...new Set(errors)] };
+}
+
+/** The top-level types the hand-written kit declares without making them public (`TNSLabel`); `Core/` is what is generated. */
+function internalTypes(dir: string): Set<string> {
+  const names = new Set<string>();
+  for (const f of readdirSync(dir, { recursive: true }) as string[]) {
+    if (!f.endsWith('.swift') || f.startsWith('Core/')) continue;
+    for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:final|internal|indirect)\s+)*(?:class|struct|enum|protocol|typealias|actor)\s+(\w+)/gm)) names.add(m[1]);
+  }
+  return names;
 }
 
 /** A translation error as `file:line: what`, relative to core. */

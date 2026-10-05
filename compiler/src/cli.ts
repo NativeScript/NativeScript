@@ -37,6 +37,7 @@ import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
+import { coreNativeModules, coreNativeProject, installedCore } from './natives/core-ios.ts';
 import { collectProperties } from './properties.ts';
 import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
@@ -399,7 +400,10 @@ say(`${components.length} components and ${modules.length} modules from ${framew
 const bundle = opt('--bundle', `org.nativescript.${name.toLowerCase()}.native`)!;
 const pluginLines = xcodegenLines(native, out);
 const kitSources = join(kit, 'Sources', 'NativeScriptKit');
-const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'));
+const core = installedCore(app);
+const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
+const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'), coreModules);
+const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
 const signing: Record<string, string> = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { CODE_SIGNING_ALLOWED: 'NO' };
@@ -408,7 +412,7 @@ if (pods) writeFileSync(join(out, 'Podfile'), pods);
 else removePods(out, name);
 const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
 const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
-const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...signing };
+const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...coreNative.settings, ...signing };
 // Virtual function and witness elimination hold only when every Swift module in the link is compiled
 // for them: code from pods and packages, built without, would call methods they removed or thunks they need.
 const wholeProgram = !pods && !packages.length && !pluginLines.packages;
@@ -429,17 +433,17 @@ ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}$
     platform: iOS
     sources:
       - path: ${relative(out, kitSources)}
-${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}    settings:
+${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}${coreNative.kitDependencies ? `    dependencies:\n${coreNative.kitDependencies}` : ''}    settings:
       base:
         SWIFT_VERSION: "5.9"
-${pluginLines.targets}${extensions.targets}  ${name}:
+${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
     sources:
       - path: Sources
-${pluginLines.sources}${resources.sources}    dependencies:
+${coreNative.appSources}${pluginLines.sources}${resources.sources}    dependencies:
       - target: NativeScriptKit
-${pluginLines.dependencies}${productLines(packages)}${extensions.dependencies}${resources.configFiles ? `    configFiles:\n      Debug: ${resources.configFiles.Debug}\n      Release: ${resources.configFiles.Release}\n` : ''}    settings:
+${coreNative.appDependencies}${pluginLines.dependencies}${productLines(packages)}${extensions.dependencies}${resources.configFiles ? `    configFiles:\n      Debug: ${resources.configFiles.Debug}\n      Release: ${resources.configFiles.Release}\n` : ''}    settings:
       base:
 ${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`);
 
@@ -466,8 +470,9 @@ if (args.includes('--build')) {
  * the app's Swift does not name: an app links what the kit imports, and a
  * linked framework is loaded at launch with everything it links (WebKit, some
  * fifty images) whether or not the app reaches the code that uses it.
+ * Core's own native modules (`linked`) are part of the kit as Foundation is.
  */
-function kitFilesUnreached(dir: string, appSwift: string): string[] {
+function kitFilesUnreached(dir: string, appSwift: string, linked: string[]): string[] {
   const unreached: string[] = [];
   const visit = (d: string) => {
     for (const f of readdirSync(d)) {
@@ -475,13 +480,23 @@ function kitFilesUnreached(dir: string, appSwift: string): string[] {
       if (statSync(p).isDirectory()) { visit(p); continue; }
       if (!f.endsWith('.swift')) continue;
       const text = readFileSync(p, 'utf8');
-      if ([...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC'].includes(m[1]))) continue;
+      if ([...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC', ...linked].includes(m[1]))) continue;
       const types = [...text.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)].map((m) => m[1]);
       if (!types.some((t) => new RegExp(`\\b${t}\\b`).test(appSwift))) unreached.push(relative(dir, p));
     }
   };
   visit(dir);
   return unreached;
+}
+
+/** The modules among `modules` that the kit's files the app links import (core's own native code). */
+function kitImports(dir: string, excluded: string[], modules: string[]): Set<string> {
+  const found = new Set<string>();
+  for (const f of readdirSync(dir, { recursive: true }) as string[]) {
+    if (!f.endsWith('.swift') || excluded.includes(f)) continue;
+    for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^import (\w+)/gm)) if (modules.includes(m[1])) found.add(m[1]);
+  }
+  return found;
 }
 
 /** A route tree as the kit's `RouteConfig`s. */

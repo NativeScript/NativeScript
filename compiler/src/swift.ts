@@ -1182,7 +1182,7 @@ export class Translator implements AsyncTranslator {
    * `valueChanged(target, oldValue, newValue)` starts from undefined), so
    * Swift takes it as an implicitly unwrapped optional.
    */
-  private mayBeNull(p: ts.ParameterDeclaration): boolean {
+  mayBeNull(p: ts.ParameterDeclaration): boolean {
     if (!this.pluginFiles.has(p.getSourceFile().fileName) || p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
     const t = this.typeOf(p.name);
     return !t.endsWith('?') && !t.endsWith('!') && !['Double', 'String', 'Bool', 'Void', 'Never'].includes(t) && !hasTopLevelArrow(t) && !t.startsWith('(')
@@ -3319,7 +3319,7 @@ export class Translator implements AsyncTranslator {
    * An expression that may be undefined though TypeScript types it as its element
    * (`xs[i]` past the end, or a variable holding one), as a Swift optional; null otherwise.
    */
-  private maybeUndefined(e: ts.Expression): string | null {
+  maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     if (ts.isCallExpression(e) && !this.typeOf(e).endsWith('?')) {
       const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
