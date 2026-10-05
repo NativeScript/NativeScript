@@ -4066,7 +4066,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isPropertyAccessExpression(e) && e.questionDotToken && !this.typeOf(e.expression).endsWith('?')) {
       const target = this.maybeUndefined(e.expression);
-      if (target) return `${target}?.${ident(e.name.text)}`;
+      if (target) return this.native.chainedProperty(e, target) ?? `${target}?.${ident(e.name.text)}`;
     }
     // `this[side + 'Drawer']`: a member by computed key, missing when the object has none.
     let access: ts.Expression = e;

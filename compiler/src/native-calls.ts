@@ -260,6 +260,17 @@ export class NativeAPI {
     return `(${this.t.expr(x)} as ${optionalType(t)})?.`;
   }
 
+  /** `x?.prop` of a native property on a receiver Swift holds as optional (`receiver`): its Swift name, a number as script reads it; null for anything else. */
+  chainedProperty(e: ts.PropertyAccessExpression, receiver: string): string | null {
+    const type = this.memberType(e);
+    if (type === null || this.receiver(e.expression)?.isStatic) return null;
+    const r = this.receiver(e.expression)!;
+    const m = lookupMember(r.module, r.name, e.name.text, false);
+    const chained = `${receiver}?.${m && m.kind === 'property' ? m.swift : e.name.text}`;
+    const b = base(type);
+    return NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
+  }
+
   /** The Swift type of a native property or struct field `x.name`, or null for anything else. */
   private memberType(e: ts.PropertyAccessExpression): SwiftType | null {
     if (this.appMember(e.name)) return null;
@@ -273,9 +284,10 @@ export class NativeAPI {
 
   /** The value an optional chain ending in a native member of Swift type `type` reads, as TypeScript types it. */
   private chainEnd(e: ts.PropertyAccessExpression, chained: string, type: SwiftType): string {
-    if (this.keepOptional.has(e)) return chained;
     const b = base(type);
     const code = NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
+    // A link the chain continues past stays Swift's; the chain's value is a number as script reads it, still optional.
+    if (this.keepOptional.has(e)) return ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e ? chained : code;
     const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
     return coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?' ? code : `(${code})!`;
   }
