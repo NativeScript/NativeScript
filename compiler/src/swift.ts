@@ -1163,6 +1163,15 @@ export class Translator implements AsyncTranslator {
       if (v === undefined) throw this.error(m, 'an enum member without a constant value');
       lines.push(`    static let ${ident(m.name.getText())}: ${typeof v === 'string' ? 'String' : 'Double'} = ${typeof v === 'string' ? swiftString(v) : String(v)}`);
     }
+    // The object JavaScript makes of the enum, for its use as a value: a numeric member maps back to its name too.
+    if (!hasModifier(e, ts.SyntaxKind.ConstKeyword)) {
+      const entries = e.members.flatMap((m) => {
+        const v = this.checker.getConstantValue(m)!;
+        const key = swiftString(m.name.getText().replace(/^['"](.*)['"]$/, '$1'));
+        return typeof v === 'string' ? [`(${key}, ${swiftString(v)} as Any?)`] : [`(${key}, Double(${v}) as Any?)`, `(${swiftString(String(v))}, ${key} as Any?)`];
+      });
+      lines.push(`    static let jsEnumObject = JSObject([${entries.join(', ')}])`);
+    }
     lines.push('}');
     return lines.join('\n');
   }
@@ -2918,6 +2927,11 @@ export class Translator implements AsyncTranslator {
     if (required) return `${required}.self`;
     const p = e.parent;
     if (name === 'Application' && sym?.declarations?.some((d) => isCoreDeclaration(d)) && ts.isAsExpression(p)) return 'ApplicationValue.shared';
+    // An enum as a value (`Object.entries(Role)`): the object JavaScript makes of it.
+    const enumDecl = sym?.valueDeclaration;
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === e)) {
+      return `${identPath(this.declaredName(e))}.jsEnumObject`;
+    }
     if (sym && sym.flags & ts.SymbolFlags.Class && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !(ts.isNewExpression(p) && p.expression === e)
         && !(ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && p.right === e) && !ts.isHeritageClause(p.parent ?? p)) {
       // An Angular component as a value (`dialog.open(Sheet)`): what creating and rendering it gives.

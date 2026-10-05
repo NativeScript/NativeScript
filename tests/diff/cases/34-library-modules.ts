@@ -41,3 +41,22 @@ const items = new Items<number>();
 items.items.push(1, 2, 3);
 const rest = items.slice(1);
 console.log(rest.items.length, rest.kind(), rest instanceof Items);
+
+enum Role {
+  Button = 'button',
+  Header = 'header',
+}
+enum Level {
+  Low,
+  High = 10,
+}
+function converter(values: any) {
+  return (value: string): any => {
+    for (const [key, v] of Object.entries<string>(values)) {
+      if (key === value || `${v}`.toLowerCase() === value.toLowerCase()) return v;
+    }
+    return null;
+  };
+}
+const toRole = converter(Role);
+console.log(toRole('BUTTON'), toRole('Header'), toRole('none'), JSON.stringify(Level), Object.keys(Role).join(','));
