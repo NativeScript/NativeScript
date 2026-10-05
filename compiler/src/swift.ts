@@ -469,7 +469,8 @@ export class Translator implements AsyncTranslator {
       case 'RegExp': return 'JSRegExp';
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
-      case 'WeakRef': return `JSWeakRef<${arg(0)}>`;
+      // A weak reference to any value holds an object: script makes one of nothing else.
+      case 'WeakRef': return `JSWeakRef<${arg(0) === 'Any?' ? 'AnyObject' : arg(0)}>`;
       case 'TemplateStringsArray': return 'JSArray<String>';
       case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
       case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
@@ -4842,7 +4843,12 @@ export class Translator implements AsyncTranslator {
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
     const intl = intlConstructor(callee, this.checker);
     if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
-    if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])})`;
+    if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) {
+      // Where a weak reference to any object is declared (`instance: WeakRef<any>`), made as one.
+      const context = this.checker.getContextualType(e);
+      const ref = context && /^JSWeakRef<AnyObject>\??$/.test(this.type(context, e)) ? 'JSWeakRef<AnyObject>' : t;
+      return ref === 'JSWeakRef<AnyObject>' && this.isAny(args[0]) ? `${ref}(try jsWeakTarget(${this.expr(args[0])}))` : `${ref}(${this.expr(args[0])})`;
+    }
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     if (t === 'InteropReference') return `InteropReference(${args[0] ? this.coerce(args[0], 'Any?') : ''})`;
     // `new Array(n)` of a type holding undefined: n holes, each read as undefined.

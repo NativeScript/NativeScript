@@ -48,3 +48,12 @@ function classNames(): string[] {
   return ['a', ...extras];
 }
 console.log(classNames().join(' '), classNames().length);
+
+const held: { instance: WeakRef<any>; property: string } = { instance: new WeakRef(timers), property: 'a' };
+console.log(held.instance.deref() === timers, held.property);
+const primitive: any = 5;
+try {
+  new WeakRef(primitive);
+} catch (e) {
+  console.log('weak', e instanceof TypeError);
+}

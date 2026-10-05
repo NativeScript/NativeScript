@@ -104,3 +104,9 @@ public final class JSWeakSet<Element>: JSDynamic, JSWeakCollection {
     public var jsKeys: [String] { [] }
     public var jsClassName: String? { "WeakSet" }
 }
+
+/// `new WeakRef(value)` of an untyped value: only an object can be held weakly.
+public func jsWeakTarget(_ value: Any?) throws -> AnyObject {
+    guard let v = jsFlat(value), type(of: v) is AnyClass else { throw JSException(JSTypeError("WeakRef: invalid target")) }
+    return v as AnyObject
+}
