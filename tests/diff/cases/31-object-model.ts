@@ -207,3 +207,24 @@ bag.add(new Named('n2'));
 let bagNames = '';
 bag.each((v: Named, i: number) => (bagNames += `${i}:${v.name}`));
 console.log(bag.getItem(0).name, bagNames);
+
+// `this: void` functions, and a function declaring `this` called plainly.
+function area(this: void, w: number, h: number): number {
+  return w * h;
+}
+function described(this: any, label: string): string {
+  return `${label}:${this === undefined}`;
+}
+console.log(area(2, 3), described('plain'));
+
+// A symbol-named method calling its base's.
+class Tinted extends Base {
+  [textProperty.setNative](value: string) {
+    super[textProperty.setNative](value);
+    this.native += '+tint';
+  }
+}
+const tinted = new Tinted();
+tinted.text = 'four';
+tinted[textProperty.setNative]('five');
+console.log(tinted.native);

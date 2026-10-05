@@ -318,3 +318,19 @@ internal fun jsStringMethod(s: String, key: String): JSMethod? {
         else -> null
     }
 }
+
+/** `String.fromCharCode.apply(_, codes)`: the codes of an array-like, as numbers. */
+fun jsFromCharCodeList(list: Any?): String = jsFromCharCode(*jsListNumbers(list).toDoubleArray())
+
+/** `Math.max.apply(_, xs)`. */
+fun jsMathMaxList(list: Any?): Double = jsListNumbers(list).fold(Double.NEGATIVE_INFINITY) { a, b -> if (a.isNaN() || b.isNaN()) Double.NaN else maxOf(a, b) }
+
+/** `Math.min.apply(_, xs)`. */
+fun jsMathMinList(list: Any?): Double = jsListNumbers(list).fold(Double.POSITIVE_INFINITY) { a, b -> if (a.isNaN() || b.isNaN()) Double.NaN else minOf(a, b) }
+
+/** The elements of an array-like as numbers, as `apply` spreads them. */
+fun jsListNumbers(list: Any?): List<Double> {
+    if (jsIsNullish(list)) return emptyList()
+    val array = jsBox(list) as? JSArray<*> ?: throw JSException(JSTypeError("CreateListFromArrayLike called on non-object"))
+    return array.storage.map { jsToNumber(it) }
+}

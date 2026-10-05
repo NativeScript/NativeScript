@@ -53,9 +53,21 @@ export class PropertyGuard {
   private checker: ts.TypeChecker;
   private coreDir: string | null = null;
 
+  /** Classes and CSS names of the modules compiled from core into the kit (`Core/`): core's own, which apply what core declares. */
+  private compiled = { classes: new Set<string>(), css: new Set<string>() };
+
   constructor(checker: ts.TypeChecker, program: ts.Program, kit: Kit) {
     this.kit = kit;
     this.checker = checker;
+    const generated = join(kit.sources, 'Core');
+    if (existsSync(generated)) {
+      for (const f of readdirSync(generated)) {
+        if (!f.endsWith('.swift')) continue;
+        const text = readFileSync(join(generated, f), 'utf8');
+        for (const m of text.matchAll(/^(?:open|public)(?: final)? class (\w+)/gm)) this.compiled.classes.add(m[1]);
+        for (const m of text.matchAll(/\("cssName", "([\w-]+)"\)|\["cssName"\] = "([\w-]+)"/g)) this.compiled.css.add(m[1] ?? m[2]);
+      }
+    }
     const entries = program.getSourceFiles()
       .map((sf) => ({ sf, pkg: /[\\/]node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)[\\/]index\.d\.ts$/.exec(sf.fileName)?.[1].replace(/\\/g, '/') }))
       .filter((e) => e.pkg === '@nativescript/core' || KIT_PLUGINS.includes(e.pkg!))
@@ -129,7 +141,7 @@ export class PropertyGuard {
             if (d.type !== 'declaration' || !d.property) continue;
             const css = d.property.toLowerCase();
             const name = core.get(css);
-            if (!name || name.startsWith('_') || this.otherPlatform(name)) continue;
+            if (!name || name.startsWith('_') || this.otherPlatform(name) || this.compiled.css.has(css)) continue;
             const read = kitName(css);
             if (read === name && this.anyView.has(name)) continue;
             out.push({ file: sheet.file, line: cssLine(source, rule.selectors[0], css), view: rule.selectors.join(', '), property: css, css: true, ...(read !== name ? { names: { core: name, kit: read } } : {}) });
@@ -144,10 +156,18 @@ export class PropertyGuard {
   /** Whether setting `name` on a `tag` view does what core's does: true for anything core does not declare on it. */
   applies(tag: string, name: string): boolean {
     const cls = this.classes.get(tag);
+    if (this.compiled.classes.has(tag)) return true;
+    // A core view neither compiled into the kit nor implemented by it: nothing it is given applies.
+    if (cls && this.compiled.classes.size && !this.kit.index.has(tag) && this.isView(cls)) return false;
     if (!cls || !this.kit.index.has(tag) || name.includes(':') || this.otherPlatform(name)) return true;
     if (!this.properties(cls).has(name)) return true;
     for (let t = this.kit.index.get(tag); t; t = t.base ? this.kit.index.get(t.base.replace(/\(.*$/, '')) : undefined) if (t.props.has(name)) return true;
     return this.style.has(name) && this.anyView.has(name);
+  }
+
+  private isView(cls: ts.Symbol): boolean {
+    const type = this.checker.getDeclaredTypeOfSymbol(cls);
+    return !!type.getProperty('nativeViewProtected') || !!type.getProperty('createNativeView');
   }
 
   /** Core's `@nsProperty` members of a class and its bases; a kit plugin's own writable fields. */

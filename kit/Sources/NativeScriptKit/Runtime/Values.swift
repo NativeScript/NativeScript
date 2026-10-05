@@ -670,8 +670,9 @@ public func jsToString(_ value: Any?) -> String {
     case let b as Bool: return b ? "true" : "false"
     case is JSNull: return "null"
     case let v as JSToPrimitive: return jsToString(jsUserPrimitive(v, "string") ?? nil)
-    // What a throwing toString() throws is not seen by a conversion that cannot throw: the default conversion.
-    case let v as JSStringConvertible: return (try? v.toString()) ?? "[object Object]"
+    case let v as JSStringConvertible:
+        // What the conversion throws is reported, as for a `[Symbol.toPrimitive]` method.
+        do { return try v.toString() } catch { jsReportUncaught(jsCaught(error)); return "undefined" }
     case let symbol as JSSymbol: return symbol.toString()
     case let big as JSBigInt: return big.toString()
     case let tagged as JSToStringTag: return "[object \(tagged.jsToStringTag)]"
@@ -745,4 +746,11 @@ public func jsConstructorName(_ value: Any?) -> String {
         let name = String(describing: type(of: v!))
         return name.split(separator: "__").first.map(String.init) ?? name
     }
+}
+
+/// `f === g` on function values: the same closure (its code and context), as held and passed on.
+/// A method read twice makes two closures, which compare unequal where JavaScript's are one function.
+public func jsSameFunction<A, B>(_ a: A, _ b: B) -> Bool {
+    guard MemoryLayout<A>.size == MemoryLayout<B>.size else { return false }
+    return withUnsafeBytes(of: a) { x in withUnsafeBytes(of: b) { y in x.elementsEqual(y) } }
 }

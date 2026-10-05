@@ -113,9 +113,7 @@ export class Throws {
     if (ts.isBinaryExpression(n) && [ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken, ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.SlashEqualsToken, ts.SyntaxKind.PercentEqualsToken, ts.SyntaxKind.AsteriskAsteriskEqualsToken].includes(n.operatorToken.kind)
       && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;
     // Iterating a generator or a script's iterator runs its code.
-    if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && iterationThrows(c.getTypeAtLocation(n.expression), c)) return true;
-    // Iterating an untyped value throws where it is not iterable.
-    if (ts.isForOfStatement(n) && this.untyped(n.expression)) return true;
+    if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && (iterationThrows(c.getTypeAtLocation(n.expression), c) || this.untyped(n.expression))) return true;
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;

@@ -10,4 +10,15 @@ public enum CorePackages {
     public static let emojiRegex: JSFunction = { _ in
         try JSRegExp(#"\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Regional_Indicator}"#, "gu")
     }
+
+    /// ui/builder's `Builder`, which a compiled app has no XML for: views from an entry's `create`.
+    public static let builder = JSObject([("createViewFromEntry", { (args: [Any?]) throws -> Any? in
+        let entry = args.first ?? nil
+        guard !jsIsNullish(try jsGet(entry, "create")) else {
+            throw JSException(value: JSError("Failed to load page XML file for module: \(jsToString(try jsGet(entry, "moduleName")))"))
+        }
+        let view = try jsCallMethod(entry, "create")
+        if jsIsNullish(view) { throw JSException(value: JSError("Failed to create View with entry.create() function.")) }
+        return view
+    } as JSFunction)])
 }

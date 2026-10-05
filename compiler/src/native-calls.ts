@@ -12,11 +12,13 @@ const optional = (t: SwiftType) => /[?!]$/.test(t);
 const BRIDGED: Record<string, string> = {
   NSURL: 'URL', NSDate: 'Date', NSData: 'Data', NSIndexPath: 'IndexPath', NSNotification: 'Notification', NSUUID: 'UUID', NSLocale: 'Locale',
   NSTimeZone: 'TimeZone', NSCalendar: 'Calendar', NSURLRequest: 'URLRequest', NSDateComponents: 'DateComponents', NSCharacterSet: 'CharacterSet',
-  NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error',
+  NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error', CFString: 'String',
 };
 /** `code` of Objective-C class or Swift value type `from` as `to`, the other one of a bridged pair; null when they are not one. */
 function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   const f = base(from), b = base(to);
+  // A Core Foundation array is an NSArray, which Swift reads as an array of its elements.
+  if (f === 'CFArray' && /^\[[^:]*\]$/.test(b)) return optional(to) ? `(${code}).map { $0 as NSArray as! ${b} }` : `(${code}${optional(from) ? '!' : ''} as NSArray as! ${b})`;
   // `NSSet` and Swift's `Set<T>`: toward the typed set the cast checks the elements.
   const typedSet = /^NS(Mutable)?Set$/.test(f) && /^Set<.+>$/.test(b);
   if (BRIDGED[f] !== b && BRIDGED[b] !== f && !typedSet && !(/^Set<.+>$/.test(f) && b === 'NSSet')) return null;
@@ -158,9 +160,16 @@ export class NativeAPI {
     return !!sym && !!this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(sym));
   }
 
+  /** Whether a type is an app class extending a native one. */
+  extendsNative(type: ts.Type): boolean {
+    const c = this.t.checker;
+    if (typeof type.isTypeParameter !== 'function') return false;
+    return !!this.nativeBase(type.isTypeParameter() ? c.getBaseConstraintOfType(type) ?? type : c.getApparentType(type));
+  }
+
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
   private nativeBase(type: ts.Type): { module: string; name: string } | null {
-    if (!type.isClassOrInterface()) return null;
+    if (typeof type.isClassOrInterface !== 'function' || !type.isClassOrInterface()) return null;
     for (const b of this.t.checker.getBaseTypes(type)) {
       const found = this.symbolModule(b.getSymbol()) ?? this.nativeBase(b);
       if (found) return found;
@@ -325,7 +334,8 @@ export class NativeAPI {
     // `xs?.count`: the chain's count, when there is one.
     const count = recv.endsWith('?') ? `(${recv}.count).map { Double($0) }` : `Double(${recv}.count)`;
     if (isArray) {
-      if (args === null && name === 'count') return count;
+      // `xs?.count`: undefined, read as a number, where the array is missing.
+      if (args === null && name === 'count') return recv.endsWith('?') ? `(${count} ?? .nan)` : count;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
       if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
@@ -409,7 +419,9 @@ export class NativeAPI {
       const r = ownBase ? { ...ownBase, isStatic: true } : this.receiver(allocated);
       if (!r) return null;
       const cls = lookupClass(r.module, r.name)!;
-      const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : this.className(cls);
+      // A class held as a value (`typeof UIGestureRecognizer`): its own initializer, which Objective-C dispatches.
+      const classRef = !!((this.t.resolve(allocated)?.flags ?? 0) & ts.SymbolFlags.Class);
+      const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : r.isStatic || classRef ? this.className(cls) : `${this.t.expr(allocated)}.init`;
       if (name === 'init') return `${made}()`;
       const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
@@ -563,6 +575,8 @@ export class NativeAPI {
     while ((ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && ['any', 'unknown', 'never'].includes(e.type.getText())) e = e.expression;
     const b = base(target);
     // null for a collection Swift marks nonnull: the empty one, as Objective-C reads nil.
+    // null for a struct: its zero value, as the runtime marshals it.
+    if ((e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) && !optional(target) && this.isStructType(b)) return `${b}()`;
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return optional(target) || !b.startsWith('[') ? 'nil' : b.includes(':') ? '[:]' : '[]';
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.block(e, target);
     const source = t.typeOf(e);
@@ -622,6 +636,8 @@ export class NativeAPI {
       if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
       return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `(jsFlat(${t.expr(e)}) as! ${b})`;
     }
+    // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
+    if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
     if (/^NSMutable(Array|Dictionary)\??$/.test(source) && b.startsWith('[')) return `(${t.expr(e)}${source.endsWith('?') && !optional(target) ? '!' : ''} as${b === '[Any]' || b === '[AnyHashable: Any]' ? '' : '!'} ${b})`;
     if (source.startsWith('JSArray<') && b.startsWith('[') && !b.includes(':')) {
       if (ts.isArrayLiteralExpression(e) && !e.elements.length) return '[]';
@@ -653,6 +669,8 @@ export class NativeAPI {
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
+    const raw = source === 'Double' ? this.constantsRaw(b) : null;
+    if (raw && NUMBERS.has(raw)) return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
     // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
     if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
@@ -677,6 +695,8 @@ export class NativeAPI {
     // A Core Foundation string (`kUTTypePlainText`), a string to TypeScript.
     if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? `(${code} as String?)${tsType.endsWith('?') ? '' : '!'}` : `(${code} as String)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
+    // A number-backed constant (`UIFontWeightBold`), a number to TypeScript.
+    if (tsType === 'Double' && NUMBERS.has(this.constantsRaw(b) ?? '')) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
@@ -791,6 +811,7 @@ export class NativeAPI {
 
     const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.map((p) => p.swift)].join(', ')} {`];
     t.indent = '    ';
+    t.inNativeClassBody = true;
     for (const m of cls.members) {
       if (!ts.isPropertyDeclaration(m) || m === listed || m === exposedSpec) continue;
       const n = m.name.getText();
@@ -812,6 +833,18 @@ export class NativeAPI {
       accessors.set(m.name.getText(), a);
     }
     for (const [n, a] of accessors) {
+      // A property the native base declares (`preferredStatusBarStyle`): its Swift override, the body's value converted, what it throws reported.
+      const native = this.found(lookupMember(base.module, base.name, n, false));
+      if (native && native.kind === 'property' && a.get) {
+        const own = t.returnTypeOf(a.get);
+        const body = t.functionBody(a.get, own, '            ');
+        const value = t.throwsInfo.fn(a.get) ? `jsReported { () throws -> ${own} in${body.slice(1)}` : `{ () -> ${own} in${body.slice(1)}()`;
+        const fallback = own.endsWith('?') || own === 'Any?' ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : '!';
+        const get = `        get {\n            let __value: ${t.throwsInfo.fn(a.get) ? optionalType(own) : own} = ${value}\n            return ${this.toSwiftValue(`__value${t.throwsInfo.fn(a.get) ? fallback : ''}`, own, native.type)}\n        }`;
+        if (a.set) throw t.error(a.set, `a setter of ${base.name}.${n}`);
+        lines.push(`    override var ${native.swift}: ${native.type} {`, get, '    }');
+        continue;
+      }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
       const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, type, '        ')}` : '        get { nil }'];
       if (a.set) {
@@ -839,6 +872,7 @@ export class NativeAPI {
       lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
     }
     t.indent = '';
+    t.inNativeClassBody = false;
     lines.push('}');
     return lines.join('\n');
   }
@@ -888,14 +922,14 @@ export class NativeAPI {
   private fromSwiftValue(code: string, swiftType: SwiftType, tsType: string): string {
     const b = base(swiftType);
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : optional(swiftType) ? `Double(${code}!)` : `Double(${code})`;
+    // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
+    const own = tsType.replace(/[?!]$/, '');
+    if (own !== b && /^(\w+\.)?[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
     // A native enum is a number in JavaScript.
     if (tsType === 'Double' && this.isEnumType(b)) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
-    // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
-    const own = tsType.replace(/[?!]$/, '');
-    if (own !== b && /^[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
     return code;
   }
@@ -960,8 +994,14 @@ export class NativeAPI {
 
   /** A string-valued type of named constants (`UIMenu.Identifier`, `NSAttributedString.Key`). */
   private isStringConstants(swift: string): boolean {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return false;
-    return this.searchModules().some((m) => Object.values(nativeTable(m).enums).some((x) => x.swift === swift && x.kind === 'typedConstants' && x.raw === 'String'));
+    return this.constantsRaw(swift) === 'String';
+  }
+
+  /** The raw type of a typed-constants struct (`UIFont.Weight` holds a CGFloat), or null. */
+  private constantsRaw(swift: string): string | null {
+    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    for (const m of this.searchModules()) for (const x of Object.values(nativeTable(m).enums)) if (x.swift === swift && x.kind === 'typedConstants' && x.raw) return x.raw;
+    return null;
   }
 
   isEnumType(swift: string): boolean {

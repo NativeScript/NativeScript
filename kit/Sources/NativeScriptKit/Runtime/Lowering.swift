@@ -366,3 +366,25 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
     default: return nil
     }
 }
+
+/// `String.fromCharCode.apply(_, codes)`: the codes of an array-like, as numbers.
+public func jsFromCharCodeList(_ list: Any?) throws -> String {
+    string(try jsListNumbers(list).map { UInt16(truncatingIfNeeded: Int64(jsToUint32Bits($0))) }[...])
+}
+
+/// `Math.max.apply(_, xs)`.
+public func jsMathMaxList(_ list: Any?) throws -> Double {
+    try jsListNumbers(list).reduce(-Double.infinity) { $0.isNaN || $1.isNaN ? .nan : Swift.max($0, $1) }
+}
+
+/// `Math.min.apply(_, xs)`.
+public func jsMathMinList(_ list: Any?) throws -> Double {
+    try jsListNumbers(list).reduce(Double.infinity) { $0.isNaN || $1.isNaN ? .nan : Swift.min($0, $1) }
+}
+
+/// The elements of an array-like as numbers, as `apply` spreads them.
+func jsListNumbers(_ list: Any?) throws -> [Double] {
+    if jsIsNullish(list) { return [] }
+    guard let array = jsFlat(list) as? JSArrayProtocol else { throw JSException(JSTypeError("CreateListFromArrayLike called on non-object")) }
+    return array.jsAnyElements.map(jsToNumber)
+}

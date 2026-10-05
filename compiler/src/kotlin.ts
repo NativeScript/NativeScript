@@ -1179,7 +1179,9 @@ export class Translator implements AsyncTranslator {
         const sym = this.checker.getSymbolAtLocation(p.name);
         lines.push(`${i}var ${name}${sym && this.nullableDecls.has(sym) ? '' : `: ${this.typeOf(p.name)}`} = ${name}`);
       }
-      if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', false));
+      // A destructured parameter the body assigns binds variables.
+      const body = (fn as ts.FunctionLikeDeclaration).body;
+      if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', !!body && boundNames(p.name).some((b) => assignsTo(body, this.checker.getSymbolAtLocation(b), this.checker))));
     });
     return lines;
   }
@@ -2363,6 +2365,7 @@ export class Translator implements AsyncTranslator {
   iterable(e: ts.Expression): string {
     const js = this.jsIteration(e);
     if (js) return `${js}.jsCollect()`;
+    if (this.typeOf(e) === 'Any?') return `jsIteratorOf(${this.expr(e)}).jsCollect()`;
     const t = this.typeOf(e).replace(/\?$/, '');
     if (t === 'String') return `jsCodePoints(${this.expr(e)})`;
     if (t.startsWith('JSMap<')) return `${this.expr(e)}.entries()`;
@@ -2549,6 +2552,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isParenthesizedExpression(e)) return this.exprStatement(e.expression);
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.CommaToken) return `${this.exprStatement(e.left)}; ${this.exprStatement(e.right)}`;
     if (ts.isVoidExpression(e)) return this.exprStatement(e.expression);
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !this.subst.has(e)) return this.binary(e);
     return this.expr(e);
   }
 
@@ -2663,6 +2667,16 @@ export class Translator implements AsyncTranslator {
     // `return (s += x)`: a compound assignment's value is its target after it (Kotlin's assignment has none).
     if (ts.isBinaryExpression(e) && e.operatorToken.kind >= ts.SyntaxKind.FirstCompoundAssignment && e.operatorToken.kind <= ts.SyntaxKind.LastCompoundAssignment && !statementLevel(e)) {
       return `run { ${this.binary(e)}; ${this.expr(e.left)} }`;
+    }
+    // `(info.name = v)` as a value: the value assigned, evaluated once (Kotlin's assignment has none).
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !statementLevel(e) && !ts.isArrayLiteralExpression(e.left) && !this.subst.has(e.right)) {
+      const t = this.typeOf(e.right) === 'Unit' ? 'Any?' : this.typeOf(e.right);
+      const v = this.fresh('__assigned');
+      const value = this.coerce(e.right, t);
+      this.subst.set(e.right, v);
+      try {
+        return `run { val ${v}: ${t} = ${value}; ${this.binary(e)}; ${v} }`;
+      } finally { this.subst.delete(e.right); }
     }
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
     if (ts.isBigIntLiteral(e)) return `JSBigInt.literal(${kotlinString(e.text.replace(/n$/, ''))})`;
@@ -2799,6 +2813,18 @@ export class Translator implements AsyncTranslator {
   }
 
   private identifier(e: ts.Identifier): string {
+    // `parseInt`, `parseFloat` as values: functions taking the parameters their slot gives (`map` passes an index, parseInt's radix).
+    if ((e.text === 'parseInt' || e.text === 'parseFloat') && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && this.resolve(e)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) {
+      const context = this.checker.getContextualType(e);
+      const slot = (context && this.checker.getNonNullableType(context).getCallSignatures()[0]) ?? this.checker.getTypeAtLocation(e).getCallSignatures()[0];
+      const types = (slot?.getParameters() ?? []).map((p) => {
+        const t = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+        return p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.questionToken ? optionalType(t) : t;
+      });
+      const params = (types.length ? types : ['String']).map((t, k) => `__p${k}: ${k === 0 ? 'String' : t}`);
+      const radix = types.length > 1 ? '__p1' : 'null';
+      return `{ ${params.join(', ')} -> ${e.text === 'parseInt' ? `jsParseInt(__p0, ${radix})` : 'jsParseFloat(__p0)'} }`;
+    }
     const name = e.text;
     if (this.isArguments(e)) {
       const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;
@@ -3204,6 +3230,11 @@ export class Translator implements AsyncTranslator {
         return `${this.expr(target)}.value = ${this.coerce(a, signalValue())}`;
       }
       if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
+      // `String.fromCharCode.apply(_, codes)`, `Math.max.apply(_, xs)`: the library function of the list's elements.
+      if (method === 'apply' && e.arguments.length === 2 && this.pure(e.arguments[0]) && ts.isPropertyAccessExpression(target) && ts.isIdentifier(target.expression) && this.isLibGlobal(target.expression)) {
+        const listed = ({ 'String.fromCharCode': 'jsFromCharCodeList', 'Math.max': 'jsMathMaxList', 'Math.min': 'jsMathMinList' } as Record<string, string>)[`${target.expression.text}.${target.name.text}`];
+        if (listed) return `${listed}(${this.coerce(e.arguments[1], 'Any?')})`;
+      }
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
       const core = this.core?.call(e) ?? this.native?.call(e);
       if (core) return core;
@@ -3273,6 +3304,8 @@ export class Translator implements AsyncTranslator {
     // `(value as F)(…)`: the value read as the function type, called (the factory would parenthesize the cast again).
     if (ts.isParenthesizedExpression(callee) && (ts.isAsExpression(callee.expression) || ts.isTypeAssertionExpression(callee.expression) || ts.isSatisfiesExpression(callee.expression))) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     if (ts.isParenthesizedExpression(callee)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
+    // A function read from a record may be missing: calling it then throws, as calling undefined does.
+    if (ts.isElementAccessExpression(callee) && /^JSRecord</.test(this.typeOf(callee.expression))) return `jsCallable(${this.expr(callee)})(${this.args(e).join(', ')})`;
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
   }
