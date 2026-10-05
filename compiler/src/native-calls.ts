@@ -361,7 +361,9 @@ export class NativeAPI {
       if (name === 'init') return `${this.className(cls)}()`;
       const init = this.found(lookupInit(r.module, r.name, name));
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
-      return this.fromSwift(`${this.className(cls)}(${this.argList([...e.arguments], init.labels, init.params)})`, init.returns, e);
+      const args = [...e.arguments];
+      if (init.errorParam !== undefined) args.splice(init.errorParam, 1);
+      return this.errorCall(`${this.className(cls)}(${this.argList(args, init.labels, init.params)})`, init, e);
     }
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
@@ -401,7 +403,45 @@ export class NativeAPI {
     const list = this.argList(args, m.labels, m.params);
     const target = r.isStatic ? this.className(cls!) : recv;
     const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
-    return this.fromSwift(code, m.returns, e);
+    return this.errorCall(code, m, e);
+  }
+
+  /**
+   * A method Swift imports as `throws` (an Objective-C NSError out-parameter). Left out, the
+   * error argument makes the iOS runtime throw the error; passed as null, the call returns
+   * false or null instead.
+   */
+  private errorCall(code: string, m: NativeMethod, e: ts.CallExpression): string {
+    if (!m.throws) return this.fromSwift(code, m.returns, e);
+    const at = m.errorParam!;
+    if (e.arguments.length > at) {
+      const arg = e.arguments[at];
+      if (arg.kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg) && arg.text === 'undefined')) throw this.t.error(arg, 'an NSError out-parameter');
+      return m.returns === 'Void' ? `((try? ${code}) != nil)` : this.fromSwift(`(try? ${code})`, optional(m.returns) ? m.returns : `${m.returns}?`, e);
+    }
+    return m.returns === 'Void' ? `({ () throws -> Bool in try ${code}; return true }())` : this.fromSwift(`(try ${code})`, m.returns, e);
+  }
+
+  /** Whether a call is of a method Swift imports as `throws`, with the error argument left out: the iOS runtime throws the error. */
+  throwingCall(e: ts.CallExpression): boolean {
+    try {
+      const m = this.calledMethod(e);
+      return !!m?.throws && e.arguments.length <= m.errorParam!;
+    } catch { return false; }
+  }
+
+  /** The native method or initializer a call runs, as `call` finds it; null for anything else. */
+  private calledMethod(e: ts.CallExpression): NativeMethod | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee) || this.appMember(callee.name)) return null;
+    const name = callee.name.text;
+    if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc') {
+      const r = this.receiver(callee.expression.expression.expression);
+      return r ? lookupInit(r.module, r.name, name) : null;
+    }
+    const r = this.receiver(callee.expression);
+    const m = r ? lookupMember(r.module, r.name, name, r.isStatic) : null;
+    return m && m.kind !== 'property' ? m : null;
   }
 
   /** `new UIView()`, `new UIView({ frame })`. */
