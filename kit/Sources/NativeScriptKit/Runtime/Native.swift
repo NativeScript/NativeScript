@@ -210,20 +210,24 @@ public func getClass(_ value: Any?) -> String {
 }
 
 /// An untyped object where a native API takes a dictionary: each key's value
-/// marshalled as the runtime does (numbers as NSNumber, arrays as NSArray).
+/// marshalled as the runtime does (numbers as NSNumber, arrays as NSArray, objects as dictionaries, at any depth).
 public func jsToNativeDictionary(_ value: Any?) -> [AnyHashable: Any] {
     switch jsFlat(value) {
     case let dictionary as [AnyHashable: Any]: return dictionary
     case let dictionary as NSDictionary: return dictionary as? [AnyHashable: Any] ?? [:]
     case let object as JSDynamic:
         var out: [AnyHashable: Any] = [:]
-        for key in object.jsKeys {
-            let v = object[jsKey: key]
-            if let nested = jsFlat(v) as? JSDynamic, !(nested is JSArrayProtocol) { out[key] = jsToNativeDictionary(nested) as NSDictionary }
-            else if let native = jsToNative(v) { out[key] = native }
-        }
+        for key in object.jsKeys { if let native = jsToNativeMember(object[jsKey: key]) { out[key] = native } }
         return out
     default: return [:]
+    }
+}
+
+private func jsToNativeMember(_ value: Any?) -> Any? {
+    switch jsFlat(value) {
+    case let array as JSArrayProtocol: return array.jsAnyElements.map { jsToNativeMember($0) ?? NSNull() }
+    case let object as JSDynamic: return jsToNativeDictionary(object) as NSDictionary
+    default: return jsToNative(value)
     }
 }
 
