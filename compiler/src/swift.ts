@@ -2218,6 +2218,8 @@ export class Translator implements AsyncTranslator {
     if (protocol && !appBase && !kitRoot) { conformances.push(protocol.conformance); lines.push(...protocol.lines); }
     lines.push(...witnesses);
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando));
+    // Library mode: the class's `name`, which a static method reads of the class it is called on.
+    if (this.library && !isError) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
     if (symbolFields.length) conformances.push('JSSymbolKeyed');
     this.indent = '';
     lines.push('}');
@@ -3647,6 +3649,11 @@ export class Translator implements AsyncTranslator {
     if (this.isSelf(target) && this.props.has(name)) return `self.${ident(name)}.value`;
     if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (name === 'description' && this.typeOf(target) === 'JSSymbol') return `${this.expr(target)}.jsDescription`;
+    // `Cls.name`, `this.name` in a static member and `this.constructor.name` (library mode): the class's name, of the class the code runs for.
+    if (name === 'name' && this.library) {
+      const cls = this.classValueOf(target);
+      if (cls) return `${cls}.jsName`;
+    }
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
@@ -3927,6 +3934,24 @@ export class Translator implements AsyncTranslator {
 
   /** The assignments of a module-level class's static fields whose initializers throw, run in the module's order. */
   private staticInits: string[] | null = null;
+
+  /** A program class as a value whose `name` the class declares (`Cls`, `this` in a static member, `this.constructor`), as Swift's metatype; null for anything else. */
+  private classValueOf(x: ts.Expression): string | null {
+    const generated = (d: ts.Node | undefined) => !!d && ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && !this.native.extendsNative(d as ts.ClassDeclaration) && !!this.library?.moduleName(d.getSourceFile().fileName);
+    if (x.kind === ts.SyntaxKind.ThisKeyword) {
+      const container = ts.getThisContainer(x, false, false);
+      return isStatic(container) && generated(container.parent) ? 'self' : null;
+    }
+    if (ts.isIdentifier(x)) {
+      const sym = this.resolve(x);
+      return sym && sym.flags & ts.SymbolFlags.Class && generated(sym.valueDeclaration) ? this.expr(x).replace(/\.self$/, '') : null;
+    }
+    if (ts.isPropertyAccessExpression(x) && x.name.text === 'constructor' && x.expression.kind === ts.SyntaxKind.ThisKeyword) {
+      const container = ts.getThisContainer(x.expression, false, false);
+      return !isStatic(container) && ts.isClassLike(container.parent) && generated(container.parent) ? 'type(of: self)' : null;
+    }
+    return null;
+  }
 
   /** A rest parameter's array type; one typed `any` (`...args: any`) holds an array of anything. */
   private restType(p: ts.Symbol): string {

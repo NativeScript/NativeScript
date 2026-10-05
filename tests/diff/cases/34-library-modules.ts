@@ -63,3 +63,14 @@ console.log(toRole('BUTTON'), toRole('Header'), toRole('none'), JSON.stringify(L
 const roleName = 'Header';
 const levelKey: string = 'High';
 console.log(Role[roleName], Level[levelKey], Level[Level.High], Role['Missing' as string]);
+
+class Emitter {
+  static scope(): string {
+    return this.name === 'Emitter' ? '*' : this.name;
+  }
+  kind(): string {
+    return this.constructor.name;
+  }
+}
+class ButtonEmitter extends Emitter {}
+console.log(Emitter.scope(), ButtonEmitter.scope(), new ButtonEmitter().kind(), new Emitter().kind(), Emitter.name);

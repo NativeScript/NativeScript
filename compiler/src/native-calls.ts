@@ -143,6 +143,12 @@ export class NativeAPI {
     return native ? { ...native, isStatic: false } : null;
   }
 
+  /** Whether a program class extends a native class, directly or through others. */
+  extendsNative(cls: ts.ClassLikeDeclaration): boolean {
+    const sym = cls.name && this.t.checker.getSymbolAtLocation(cls.name);
+    return !!sym && !!this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(sym));
+  }
+
   /** The nearest native class an app class extends (`class Sparkline extends UIView`). */
   private nativeBase(type: ts.Type): { module: string; name: string } | null {
     if (!type.isClassOrInterface()) return null;
