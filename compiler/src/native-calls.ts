@@ -549,11 +549,23 @@ export class NativeAPI {
       if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : `${b}(jsToNumber(${t.expr(e)}))`;
       return t.expr(e);
     }
-    if (source === 'Double' && this.isNumericConstants(b)) return `${b}(rawValue: ${this.typedConstantsRaw(b)}(${t.expr(e)}))`;
+    if (this.isNumericConstants(b) && ['Double', 'Double?', 'Any?'].includes(source)) {
+      const raw = this.typedConstantsRaw(b)!;
+      if (source === 'Double') return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
+      if (source === 'Any?') return `${b}(rawValue: ${raw}(jsToNumber(${t.expr(e)})))`;
+      return `(${t.expr(e)}).map { ${b}(rawValue: ${raw}($0)) }${optional(target) ? '' : '!'}`;
+    }
     if (source === 'Double' && this.isEnumType(b)) {
       // A number where Swift takes an enum or option set: its raw value.
       const raw = this.rawTypeOf(b);
       return `${b}(rawValue: ${raw}(${t.expr(e)}))${this.isOptionSet(b) ? '' : '!'}`;
+    }
+    // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
+    if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
+    // A dictionary where Swift keys one by a string-backed type (`[NSAttributedString.Key: Any]`).
+    const keyed = /^\[([\w.]+): Any\]$/.exec(b)?.[1];
+    if (keyed && keyed !== 'String' && keyed !== 'AnyHashable' && source.replace(/[?!]$/, '') !== b && this.isStringConstants(keyed)) {
+      return optional(target) ? `{ (__d: Any?) -> ${b}? in jsIsNullish(__d) ? nil : jsNativeKeyed(__d, ${keyed}.self) }(${t.expr(e)})` : `jsNativeKeyed(${t.expr(e)}, ${keyed}.self)`;
     }
     // An untyped value where Swift takes a native object (or one conforming to a protocol: `any UIInteraction`).
     const cls = b.replace(/^any /, '');

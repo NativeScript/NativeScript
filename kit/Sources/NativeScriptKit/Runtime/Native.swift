@@ -207,6 +207,16 @@ public func jsToNativeDictionary(_ value: Any?) -> [AnyHashable: Any] {
     }
 }
 
+/// A dictionary Swift keys by a string-backed type (`[NSAttributedString.Key: Any]`): script's
+/// object or a Foundation dictionary, its string keys as that type.
+public func jsNativeKeyed<K: RawRepresentable & Hashable>(_ value: Any?, _: K.Type) -> [K: Any] where K.RawValue == String {
+    var out: [K: Any] = [:]
+    for (key, v) in jsToNativeDictionary(value) {
+        if let typed = key as? K { out[typed] = v } else if let name = key as? String, let typed = K(rawValue: name) { out[typed] = v }
+    }
+    return out
+}
+
 /// `array[i]` on a native array: undefined unless `i` is an index in range.
 public func jsNativeElement<T>(_ array: [T]?, _ i: Double) -> Any? {
     guard let a = array, let k = Int(exactly: i), k >= 0, k < a.count else { return nil }
