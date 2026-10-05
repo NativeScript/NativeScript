@@ -563,6 +563,8 @@ export class Translator implements AsyncTranslator {
       case 'WeakRef': { const target = arg(0); return `JSWeakRef<${target === 'Any?' ? 'AnyObject' : target.replace(/[?!]$/, '')}>`; }
       case 'TemplateStringsArray': return 'JSArray<String>';
       case 'ArrayBuffer': case 'Uint8Array': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
+      // The views the runtime has are bytes.
+      case 'ArrayBufferView': if (isLibDeclaration(sym?.declarations?.[0])) return 'JSUint8Array'; break;
       case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
       case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
         if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
@@ -4334,6 +4336,8 @@ export class Translator implements AsyncTranslator {
       const cls = this.classValueOf(target);
       if (cls) return `${cls}.jsName`;
     }
+    // `ArrayBuffer.prototype`: an object of the class's tag, all a program reads of it.
+    if (name === 'prototype' && ts.isIdentifier(target) && ['ArrayBuffer', 'Uint8Array'].includes(target.text) && this.isLibGlobal(target)) return `JS${target.text}.jsPrototype`;
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
@@ -5016,6 +5020,14 @@ export class Translator implements AsyncTranslator {
    */
   private functionMethod(method: string, target: ts.Expression, e: ts.CallExpression): string {
     const [thisArg, ...rest] = e.arguments;
+    // `const toString = {}.toString; toString.call(x)`: Object.prototype.toString of x.
+    const init = ts.isIdentifier(target) ? this.resolve(target)?.valueDeclaration : undefined;
+    const source = init && ts.isVariableDeclaration(init) && init.parent.flags & ts.NodeFlags.Const ? init.initializer : undefined;
+    if (method === 'call' && source && ts.isPropertyAccessExpression(source) && source.name.text === 'toString' && ((ts.isObjectLiteralExpression(source.expression) && !source.expression.properties.length) || source.expression.getText() === 'Object.prototype')) {
+      return `jsObjectToString(${thisArg ? this.coerce(thisArg, 'Any?') : 'nil'})`;
+    }
+    // A function taken from an object (`const f = obj.method`) reads the receiver it is called with, which a Swift closure cannot take.
+    if (source && ts.isPropertyAccessExpression(source)) throw this.error(e, `${method} of a method taken from its object`);
     const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
     let held: ts.Expression = target;
     while (ts.isParenthesizedExpression(held) || ts.isNonNullExpression(held)) held = held.expression;
@@ -5746,15 +5758,15 @@ export class Translator implements AsyncTranslator {
       const value = args.length > 1 ? args[1] : args[0] && !isType(args[0]) ? args[0] : undefined;
       return `InteropReference(${value ? this.coerce(value, 'Any?') : ''})`;
     }
-    if (name === 'ArrayBuffer' && this.isLibGlobal(callee as ts.Identifier)) return `try JSArrayBuffer(${args[0] ? this.toNumber(args[0]) : ''})`;
+    if (name === 'ArrayBuffer' && this.isLibGlobal(callee as ts.Identifier)) return `JSArrayBuffer(${args[0] ? this.toNumber(args[0]) : ''})`;
     if (name === 'Uint8Array' && this.isLibGlobal(callee as ts.Identifier)) {
       const a = args[0];
-      if (!a) return 'try JSUint8Array(length: 0)';
-      const at = this.typeOf(a);
-      if (at === 'Double') return `try JSUint8Array(length: ${this.expr(a)})`;
-      if (at === 'JSArrayBuffer') return `try JSUint8Array(buffer: ${[this.expr(a), ...args.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
-      if (/^JSArray<.*>$/.test(at)) return `try JSUint8Array(${this.coerce(a, 'JSArray<Any?>')}.storage)`;
-      return `try JSUint8Array.from(${this.coerce(a, 'Any?')})`;
+      if (!a) return 'JSUint8Array(length: 0)';
+      const at = this.typeOf(a).replace(/[?!]$/, '');
+      if (at === 'Double') return `JSUint8Array(length: ${this.expr(a)})`;
+      if (at === 'JSArrayBuffer') return `JSUint8Array(buffer: ${[this.expr(a), ...args.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      if (/^JSArray<.*>$/.test(at)) return `JSUint8Array(${this.coerce(a, 'JSArray<Any?>')}.storage)`;
+      return `JSUint8Array.from(${this.coerce(a, 'Any?')})`;
     }
     // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
     if (name === 'Array' && args.length === 1 && !this.isString(args[0]) && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;

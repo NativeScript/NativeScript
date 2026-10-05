@@ -35,6 +35,9 @@ public final class JSArrayBuffer: JSDynamic, JSToStringTag {
         return copy
     }
 
+    /// `ArrayBuffer.prototype`, as far as a program reads it: its tag.
+    public static let jsPrototype: JSArrayBuffer = try! JSArrayBuffer(0)
+
     /// `ArrayBuffer.isView(value)`.
     public static func isView(_ value: Any?) -> Bool { jsFlat(value) is JSUint8Array }
 
@@ -53,6 +56,9 @@ public final class JSUint8Array: JSDynamic, JSToStringTag {
     public let buffer: JSArrayBuffer
     let offset: Int
     let count: Int
+
+    /// `Uint8Array.prototype`, as far as a program reads it: its tag.
+    public static let jsPrototype: JSUint8Array = try! JSUint8Array(length: 0)
 
     /// `new Uint8Array(length)`.
     public init(length: Double) throws {
