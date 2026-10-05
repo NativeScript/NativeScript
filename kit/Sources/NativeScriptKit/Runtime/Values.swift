@@ -789,3 +789,14 @@ public func jsSameFunction<A, B>(_ a: A, _ b: B) -> Bool {
     guard MemoryLayout<A>.size == MemoryLayout<B>.size else { return false }
     return withUnsafeBytes(of: a) { x in withUnsafeBytes(of: b) { y in x.elementsEqual(y) } }
 }
+
+/// An object of another type where code checked as core is passes it for a class
+/// (`rule.declarations` as `KeyframeDeclaration[]`): the value itself where it is
+/// one, else a new instance holding the value's members of the class's names.
+public func jsShaped<T: AnyObject>(_ value: Any?, _ make: () throws -> T) -> T? {
+    guard let v = jsFlat(value), !(v is JSNull) else { return nil }
+    if let same = v as? T { return same }
+    guard let made = try? make(), let keyed = made as? JSDynamic else { return nil }
+    for key in keyed.jsKeys { keyed[jsKey: key] = (try? jsGet(v, key)) ?? nil }
+    return made
+}

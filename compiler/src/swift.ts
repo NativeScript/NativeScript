@@ -1609,7 +1609,23 @@ export class Translator implements AsyncTranslator {
     if (type.endsWith('?')) return `(${code} as? ${base})`;
     // Lenient code: an untyped value read as an object may be undefined; read as a string, number or boolean, undefined is the type's zero.
     if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `((${code} as? ${type}) ?? ${this.zero(type)})`;
+    // Lenient code: an object of another type passed for a class made without arguments, as JavaScript lets structurally.
+    const plain = this.lenient ? this.plainClass(type) : null;
+    if (plain) return `jsImplicit(jsShaped(${code}) { try ${type}.init() })`;
     return this.lenientRef(type) !== type ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
+  }
+
+  /** A class the program declares that `new T()` makes, not a native subclass: whether making one throws; null for any other type. */
+  private plainClass(type: string): { throws: boolean } | null {
+    if (!/^[A-Z]\w*$/.test(type)) return null;
+    const cls = this.classNamed(type);
+    // A class of data alone: no base, so making one has no effects.
+    if (!cls || !ts.isClassDeclaration(cls) || cls.typeParameters?.length || hasModifier(cls, ts.SyntaxKind.AbstractKeyword) || cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword)) return null;
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = this.sourceBase(c)) {
+      const ctor = c.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+      if (ctor) { if (ctor.parameters.some((p) => !p.questionToken && !p.initializer)) return null; break; }
+    }
+    return { throws: this.initThrows(type) };
   }
 
   /** A typed function value as an untyped JavaScript function, callable through `jsCall`. */
@@ -4051,6 +4067,11 @@ export class Translator implements AsyncTranslator {
   /** Whether one class the program declares extends another, by their Swift names. */
   private isSubclassOf(sub: string, base: string): boolean {
     if (sub === base || !/^[A-Za-z_][\w.]*$/.test(sub) || !/^[A-Za-z_][\w.]*$/.test(base)) return false;
+    for (let c = this.classNamed(sub); c; c = this.sourceBase(c)) if (this.className(c) === base && c !== this.classNamed(sub)) return true;
+    return false;
+  }
+  /** The program's class Swift names `name`. */
+  private classNamed(name: string): ts.ClassLikeDeclaration | undefined {
     if (!this.classesByName) {
       this.classesByName = new Map();
       for (const sf of this.sourceFiles) {
@@ -4059,8 +4080,7 @@ export class Translator implements AsyncTranslator {
         visit(sf);
       }
     }
-    for (let c = this.classesByName.get(sub); c; c = this.sourceBase(c)) if (this.className(c) === base && c !== this.classesByName.get(sub)) return true;
-    return false;
+    return this.classesByName.get(name);
   }
 
   /** A condition: Swift needs a Bool where JavaScript tests truthiness. */
