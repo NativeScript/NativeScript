@@ -568,10 +568,23 @@ export class NativeAPI {
   identifier(e: ts.Identifier): string | null {
     const sym = this.t.resolve(e);
     const native = this.symbolModule(sym);
+    if (native && sym!.flags & ts.SymbolFlags.Function) return this.functionValue(e, native);
     if (!native || !(sym!.flags & ts.SymbolFlags.Variable)) return null;
     const k = lookupConstant(native.module, native.name);
     if (!k) throw this.t.error(e, `${native.name} (no Swift counterpart in ${native.module})`);
     return this.fromSwift(k.swift, k.type, e);
+  }
+
+  /** A native function of no arguments as a value (`isRunning = UIAccessibilityIsVoiceOverRunning`): a closure calling it, as Swift may have it as a property. */
+  private functionValue(e: ts.Identifier, native: { module: string; name: string }): string | null {
+    const f = lookupFunction(native.module, native.name);
+    if (!f || f.params.length || !['function', 'staticMethod', 'staticProperty'].includes(f.kind)) return null;
+    this.checkAvailable(f, e, native.name);
+    const sig = this.t.checker.getTypeAtLocation(e).getCallSignatures()[0];
+    const ret = sig ? this.t.type(sig.getReturnType(), e) : null;
+    if (ret !== f.returns) return null;
+    const call = f.kind === 'staticProperty' ? `${f.owner}.${f.swift}` : f.kind === 'staticMethod' ? `${f.owner}.${f.swift}()` : `${f.swift}()`;
+    return `{ () throws -> ${ret} in ${call} }`;
   }
 
   /** An object literal for a native struct (`{ origin: { x: 0, y: 0 }, size }` as a CGRect). */
