@@ -2785,7 +2785,7 @@ export class Translator implements AsyncTranslator {
         const record = /^JSRecord<(.*)>$/.exec(this.typeOf(name).replace(/\?$/, ''));
         read = this.isAny(name) ? `(try jsGet(${value}, ${swiftString(key)}))`
           : record ? this.undefinedAs(`${value}[${swiftString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1])
-          : `${value}.${ident(key)}`;
+          : `${this.getterThrows(source, key) ? 'try ' : ''}${value}.${ident(key)}`;
       } else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
       // Past the end is undefined.
       else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : `${value}[${k}]`;
@@ -2800,6 +2800,12 @@ export class Translator implements AsyncTranslator {
       }
     });
     return lines.join('\n');
+  }
+
+  /** Whether reading a member of a type runs a getter that throws. */
+  private getterThrows(type: ts.Type, key: string): boolean {
+    const decls = this.checker.getNonNullableType(type).getProperty(key)?.declarations ?? [];
+    return decls.some((d) => ts.isGetAccessorDeclaration(d) && !!d.body && this.throwsInfo.fn(d));
   }
 
   /** What `for…of` iterates in Swift: arrays, sets and iterators as they are, a map's entries, a string's code points. */

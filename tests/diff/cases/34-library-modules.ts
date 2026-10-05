@@ -74,3 +74,19 @@ class Emitter {
 }
 class ButtonEmitter extends Emitter {}
 console.log(Emitter.scope(), ButtonEmitter.scope(), new ButtonEmitter().kind(), new Emitter().kind(), Emitter.name);
+
+class Screenish {
+  private ready = true;
+  get width(): number {
+    if (!this.ready) throw new Error('not ready');
+    return 320;
+  }
+  get height(): number {
+    return 640;
+  }
+}
+function measure(screen: Screenish): string {
+  const { width, height } = screen;
+  return `${width}x${height}`;
+}
+console.log(measure(new Screenish()));
