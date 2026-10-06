@@ -85,7 +85,9 @@ declare const enum MACaptionAppearanceDomain {
 
 	kMACaptionAppearanceDomainDefault = 0,
 
-	kMACaptionAppearanceDomainUser = 1
+	kMACaptionAppearanceDomainUser = 1,
+
+	kMACaptionAppearanceDomainVideoConferencing = 2
 }
 
 /**

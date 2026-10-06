@@ -891,6 +891,11 @@ declare var kCVImageBufferFieldDetailTemporalTopFirst: string;
 declare var kCVImageBufferGammaLevelKey: string;
 
 /**
+ * @since 17.0
+ */
+declare var kCVImageBufferHorizontalDisparityAdjustmentKey: string;
+
+/**
  * @since 4.0
  */
 declare var kCVImageBufferICCProfileKey: string;

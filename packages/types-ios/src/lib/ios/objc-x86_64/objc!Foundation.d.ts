@@ -964,11 +964,13 @@ declare class NSBundle extends NSObject {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 27.0
 	 */
 	preservationPriorityForTag(tag: string): number;
 
 	/**
 	 * @since 9.0
+	 * @deprecated 27.0
 	 */
 	setPreservationPriorityForTags(priority: number, tags: NSSet<string>): void;
 
@@ -999,6 +1001,7 @@ declare const NSBundleOnDemandResourceOutOfSpaceError: number;
 
 /**
  * @since 9.0
+ * @deprecated 27.0
  */
 declare class NSBundleResourceRequest extends NSObject implements NSProgressReporting {
 
@@ -1065,11 +1068,13 @@ declare class NSBundleResourceRequest extends NSObject implements NSProgressRepo
 
 /**
  * @since 9.0
+ * @deprecated 27.0
  */
 declare var NSBundleResourceRequestLoadingPriorityUrgent: number;
 
 /**
  * @since 9.0
+ * @deprecated 27.0
  */
 declare var NSBundleResourceRequestLowDiskSpaceNotification: string;
 
@@ -4324,6 +4329,7 @@ declare class NSExtensionContext extends NSObject {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	completeRequestWithBroadcastURLSetupInfo(broadcastURL: NSURL, setupInfo: NSDictionary<string, NSObject & NSCoding> | null): void;
 
@@ -4337,6 +4343,10 @@ declare class NSExtensionContext extends NSObject {
 	 */
 	interfaceParametersDescription(): string;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 27.0
+	 */
 	loadBroadcastingApplicationInfoWithCompletion(handler: (p1: string, p2: string, p3: UIImage | null) => void): void;
 
 	/**
@@ -6778,6 +6788,10 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	 */
 	constructor(o: { contentsOfURL: NSURL; contentType: UTType | null; openInPlace: boolean; coordinated: boolean; visibility: NSItemProviderRepresentationVisibility; });
 
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	constructor(o: { item: NSSecureCoding | null; typeIdentifier: string | null; });
 
 	/**
@@ -6806,6 +6820,10 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	 */
 	initWithContentsOfURLContentTypeOpenInPlaceCoordinatedVisibility(fileURL: NSURL, contentType: UTType | null, openInPlace: boolean, coordinated: boolean, visibility: NSItemProviderRepresentationVisibility): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	initWithItemTypeIdentifier(item: NSSecureCoding | null, typeIdentifier: string | null): this;
 
 	/**
@@ -6838,6 +6856,10 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	 */
 	loadInPlaceFileRepresentationForTypeIdentifierCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSURL | null, p2: boolean, p3: NSError | null) => void): NSProgress;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	loadItemForTypeIdentifierOptionsCompletionHandler(typeIdentifier: string, options: NSDictionary<any, any> | null, completionHandler: (p1: NSSecureCoding | null, p2: NSError) => void | null): void;
 
 	/**
@@ -6880,6 +6902,10 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	 */
 	registerFileRepresentationForTypeIdentifierFileOptionsVisibilityLoadHandler(typeIdentifier: string, fileOptions: NSItemProviderFileOptions, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSURL | null, p2: boolean, p3: NSError | null) => void) => NSProgress | null): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	registerItemForTypeIdentifierLoadHandler(typeIdentifier: string, loadHandler: (p1: (p1: NSSecureCoding | null, p2: NSError) => void, p2: typeof NSObject, p3: NSDictionary<any, any>) => void): void;
 
 	/**

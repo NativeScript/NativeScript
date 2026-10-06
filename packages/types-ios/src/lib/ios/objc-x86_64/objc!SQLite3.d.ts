@@ -150,6 +150,16 @@ declare function sqlite3_busy_timeout(p1: interop.Pointer | interop.Reference<an
  */
 declare function sqlite3_cancel_auto_extension(xEntryPoint: interop.FunctionReference<() => void>): number;
 
+/**
+ * @since 27.0
+ */
+declare function sqlite3_carray_bind(pStmt: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, i: number, aData: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, nData: number, mFlags: number, xDel: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): number;
+
+/**
+ * @since 27.0
+ */
+declare function sqlite3_carray_bind_v2(pStmt: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, i: number, aData: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, nData: number, mFlags: number, xDel: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>, pDel: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
 declare function sqlite3_changes(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
@@ -299,6 +309,8 @@ declare function sqlite3_db_release_memory(p1: interop.Pointer | interop.Referen
 
 declare function sqlite3_db_status(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, op: number, pCur: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, pHiwtr: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, resetFlg: number): number;
 
+declare function sqlite3_db_status64(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p5: number): number;
+
 declare function sqlite3_declare_vtab(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, zSQL: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
@@ -396,6 +408,11 @@ declare function sqlite3_get_table(db: interop.Pointer | interop.Reference<any> 
  * @deprecated 3.0
  */
 declare function sqlite3_global_recover(): number;
+
+/**
+ * @since 27.0
+ */
+declare function sqlite3_incomplete(sql: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 interface sqlite3_index_constraint {
 	iColumn: number;
@@ -720,7 +737,7 @@ declare function sqlite3_result_text16be(p1: interop.Pointer | interop.Reference
 
 declare function sqlite3_result_text16le(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): void;
 
-declare function sqlite3_result_text64(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>, encoding: number): void;
+declare function sqlite3_result_text64(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, z: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, n: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>, encoding: number): void;
 
 declare function sqlite3_result_value(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
 
@@ -785,6 +802,11 @@ declare function sqlite3_set_auxdata(p1: interop.Pointer | interop.Reference<any
  * @since 26.0
  */
 declare function sqlite3_set_clientdata(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): number;
+
+/**
+ * @since 27.0
+ */
+declare function sqlite3_set_errmsg(db: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, errcode: number, zErrMsg: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function sqlite3_set_last_insert_rowid(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): void;
 
@@ -914,6 +936,11 @@ declare function sqlite3_str_errcode(p1: interop.Pointer | interop.Reference<any
 declare function sqlite3_str_finish(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 /**
+ * @since 27.0
+ */
+declare function sqlite3_str_free(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
+
+/**
  * @since 12.0
  */
 declare function sqlite3_str_length(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
@@ -927,6 +954,11 @@ declare function sqlite3_str_new(p1: interop.Pointer | interop.Reference<any> | 
  * @since 12.0
  */
 declare function sqlite3_str_reset(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): void;
+
+/**
+ * @since 27.0
+ */
+declare function sqlite3_str_truncate(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, N: number): void;
 
 /**
  * @since 12.0

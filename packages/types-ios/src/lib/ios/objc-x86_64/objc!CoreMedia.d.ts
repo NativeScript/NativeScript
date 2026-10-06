@@ -379,6 +379,11 @@ declare function CMClockGetAnchorTime(clock: any, clockTimeOut: interop.Pointer 
 declare function CMClockGetHostTimeClock(): any;
 
 /**
+ * @since 27.0
+ */
+declare function CMClockGetPreferredStartTimePattern(clock: any, outClockStartTime: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView | null, outHostClockStartTime: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView | null, outDeltaBetweenPreferredStartTimes: interop.Pointer | interop.Reference<CMTime> | ArrayBufferLike | ArrayBufferView | null): number;
+
+/**
  * @since 6.0
  */
 declare function CMClockGetTime(clock: any): CMTime;
@@ -387,6 +392,11 @@ declare function CMClockGetTime(clock: any): CMTime;
  * @since 6.0
  */
 declare function CMClockGetTypeID(): number;
+
+/**
+ * @since 27.0
+ */
+declare function CMClockImplementsGetPreferredStartTimePattern(clock: any): boolean;
 
 /**
  * @since 6.0
@@ -2200,6 +2210,8 @@ declare const kCMClockError_InvalidParameter: number;
 
 declare const kCMClockError_MissingRequiredParameter: number;
 
+declare const kCMClockError_PreferredStartTimeNotAvailable: number;
+
 declare const kCMClockError_UnsupportedOperation: number;
 
 declare const kCMClosedCaptionFormatType_ATSC: number;
@@ -2734,6 +2746,11 @@ declare var kCMFormatDescriptionKey_PixelAspectRatioVerticalSpacing: string;
 declare var kCMFormatDescriptionLogTransferFunction_AppleLog: string;
 
 /**
+ * @since 27
+ */
+declare var kCMFormatDescriptionLogTransferFunction_AppleLog2: string;
+
+/**
  * @since 26.0
  */
 declare var kCMFormatDescriptionProjectionKind_AppleImmersiveVideo: string;
@@ -3034,6 +3051,11 @@ declare var kCMMetadataBaseDataType_Float64: string;
 declare var kCMMetadataBaseDataType_GIF: string;
 
 /**
+ * @since 27.0
+ */
+declare var kCMMetadataBaseDataType_ISOLatin1: string;
+
+/**
  * @since 8.0
  */
 declare var kCMMetadataBaseDataType_JPEG: string;
@@ -3042,6 +3064,11 @@ declare var kCMMetadataBaseDataType_JPEG: string;
  * @since 9.0
  */
 declare var kCMMetadataBaseDataType_JSON: string;
+
+/**
+ * @since 27.0
+ */
+declare var kCMMetadataBaseDataType_MacRoman: string;
 
 /**
  * @since 8.0
@@ -3161,6 +3188,11 @@ declare var kCMMetadataDataType_QuickTimeMetadataLocation_ISO6709: string;
 declare var kCMMetadataDataType_QuickTimeMetadataMilliLux: string;
 
 /**
+ * @since 27.0
+ */
+declare var kCMMetadataDataType_QuickTimeMetadataSMPTE2094_50: string;
+
+/**
  * @since 18.0
  */
 declare var kCMMetadataDataType_QuickTimeMetadataUUID: string;
@@ -3179,6 +3211,11 @@ declare var kCMMetadataFormatDescriptionKey_DataType: string;
  * @since 8.0
  */
 declare var kCMMetadataFormatDescriptionKey_DataTypeNamespace: string;
+
+/**
+ * @since 27.0
+ */
+declare var kCMMetadataFormatDescriptionKey_HumanReadableString: string;
 
 /**
  * @since 8.0
@@ -3219,6 +3256,11 @@ declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_DataType: strin
  * @since 8.0
  */
 declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_ExtendedLanguageTag: string;
+
+/**
+ * @since 27.0
+ */
+declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_HumanReadableString: string;
 
 /**
  * @since 8.0
@@ -3265,6 +3307,11 @@ declare const kCMMetadataIdentifierError_BadNumberKey: number;
 declare const kCMMetadataIdentifierError_NoKeyValueAvailable: number;
 
 declare const kCMMetadataIdentifierError_RequiredParameterMissing: number;
+
+/**
+ * @since 27.0
+ */
+declare var kCMMetadataIdentifier_ITUT_T35MetadataSMPTE2094_50: string;
 
 /**
  * @since 8.0

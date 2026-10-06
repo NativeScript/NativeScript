@@ -223,6 +223,15 @@ declare class BGTaskScheduler extends NSObject {
 
 	registerForTaskWithIdentifierUsingQueueLaunchHandler(identifier: string, queue: NSObject & OS_dispatch_queue | null, launchHandler: (p1: BGTask) => void): boolean;
 
+	/**
+	 * @since 27.0
+	 */
+	submitTaskRequestCompletionHandler(taskRequest: BGTaskRequest, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 13.0
+	 * @deprecated 27.0
+	 */
 	submitTaskRequestError(taskRequest: BGTaskRequest, error?: interop.Reference<NSError>): boolean;
 }
 

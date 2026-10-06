@@ -1,6 +1,7 @@
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENActivityFlags {
 
@@ -19,6 +20,7 @@ declare const ENAttenuationMin: number;
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENAuthorizationStatus {
 
@@ -33,6 +35,7 @@ declare const enum ENAuthorizationStatus {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENCalibrationConfidence {
 
@@ -53,6 +56,7 @@ declare var ENDaysSinceOnsetOfSymptomsUnknown: number;
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENDiagnosisReportType {
 
@@ -71,6 +75,7 @@ declare const enum ENDiagnosisReportType {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENErrorCode {
 
@@ -111,11 +116,13 @@ declare const enum ENErrorCode {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare var ENErrorDomain: string;
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENExposureConfiguration extends NSObject {
 
@@ -133,6 +140,7 @@ declare class ENExposureConfiguration extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	daysSinceLastExposureThreshold: number;
 
@@ -144,26 +152,31 @@ declare class ENExposureConfiguration extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	immediateDurationWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	infectiousnessForDaysSinceOnsetOfSymptoms: NSDictionary<number, number> | null;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	infectiousnessHighWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	infectiousnessStandardWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	mediumDurationWeight: number;
 
@@ -175,36 +188,43 @@ declare class ENExposureConfiguration extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	nearDurationWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	otherDurationWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	reportTypeConfirmedClinicalDiagnosisWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	reportTypeConfirmedTestWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	reportTypeNoneMap: ENDiagnosisReportType;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	reportTypeRecursiveWeight: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	reportTypeSelfReportedWeight: number;
 
@@ -215,6 +235,7 @@ declare class ENExposureConfiguration extends NSObject {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENExposureDaySummary extends NSObject {
 
@@ -237,6 +258,7 @@ declare class ENExposureDaySummary extends NSObject {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENExposureDetectionSummary extends NSObject {
 
@@ -248,6 +270,7 @@ declare class ENExposureDetectionSummary extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	readonly daySummaries: NSArray<ENExposureDaySummary>;
 
@@ -266,6 +289,7 @@ declare class ENExposureDetectionSummary extends NSObject {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENExposureInfo extends NSObject {
 
@@ -281,11 +305,13 @@ declare class ENExposureInfo extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	readonly daysSinceOnsetOfSymptoms: number;
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	readonly diagnosisReportType: ENDiagnosisReportType;
 
@@ -302,6 +328,7 @@ declare class ENExposureInfo extends NSObject {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENExposureSummaryItem extends NSObject {
 
@@ -318,6 +345,7 @@ declare class ENExposureSummaryItem extends NSObject {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENExposureWindow extends NSObject {
 
@@ -337,12 +365,14 @@ declare class ENExposureWindow extends NSObject {
 
 	/**
 	 * @since 15.2
+	 * @deprecated 27.0
 	 */
 	readonly variantOfConcernType: ENVariantOfConcernType;
 }
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENInfectiousness {
 
@@ -355,6 +385,7 @@ declare const enum ENInfectiousness {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENManager extends NSObject {
 
@@ -364,11 +395,13 @@ declare class ENManager extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	activityHandler: (p1: ENActivityFlags) => void | null;
 
 	/**
 	 * @since 14.4
+	 * @deprecated 27.0
 	 */
 	diagnosisKeysAvailableHandler: (p1: NSArray<ENTemporaryExposureKey>) => void | null;
 
@@ -386,6 +419,7 @@ declare class ENManager extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	detectExposuresWithConfigurationCompletionHandler(configuration: ENExposureConfiguration, completionHandler: (p1: ENExposureDetectionSummary | null, p2: NSError | null) => void): NSProgress;
 
@@ -401,6 +435,7 @@ declare class ENManager extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	getExposureWindowsFromSummaryCompletionHandler(summary: ENExposureDetectionSummary, completionHandler: (p1: NSArray<ENExposureWindow> | null, p2: NSError | null) => void): NSProgress;
 
@@ -408,6 +443,7 @@ declare class ENManager extends NSObject {
 
 	/**
 	 * @since 12.5
+	 * @deprecated 27.0
 	 */
 	getUserTraveledWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
@@ -415,11 +451,13 @@ declare class ENManager extends NSObject {
 
 	/**
 	 * @since 14.4
+	 * @deprecated 27.0
 	 */
 	preAuthorizeDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	/**
 	 * @since 14.4
+	 * @deprecated 27.0
 	 */
 	requestPreAuthorizedDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
@@ -450,6 +488,7 @@ declare const ENRiskWeightMin: number;
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENScanInstance extends NSObject {
 
@@ -466,6 +505,7 @@ declare class ENScanInstance extends NSObject {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare const enum ENStatus {
 
@@ -486,6 +526,7 @@ declare const enum ENStatus {
 
 /**
  * @since 12.5
+ * @deprecated 27.0
  */
 declare class ENTemporaryExposureKey extends NSObject {
 
@@ -504,6 +545,7 @@ declare class ENTemporaryExposureKey extends NSObject {
 
 /**
  * @since 15.2
+ * @deprecated 27.0
  */
 declare const enum ENVariantOfConcernType {
 

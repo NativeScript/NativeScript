@@ -57,6 +57,8 @@ declare const enum TKErrorCode {
 
 	CodeAuthenticationNeeded = -9,
 
+	CodeInvalidatedDeviceKey = -10,
+
 	AuthenticationFailed = -5,
 
 	ObjectNotFound = -6,

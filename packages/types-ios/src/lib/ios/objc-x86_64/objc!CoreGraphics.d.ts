@@ -287,7 +287,7 @@ declare function CGColorConversionInfoCreate(src: any | null, dst: any | null): 
 /**
  * @since 18.0
  */
-declare function CGColorConversionInfoCreateForToneMapping(from: any, source_headroom: number, to: any, target_headroom: number, method: CGToneMapping, options: NSDictionary<any, any> | null, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
+declare function CGColorConversionInfoCreateForToneMapping(source: any, source_headroom: number, target: any, target_headroom: number, method: CGToneMapping, options: NSDictionary<any, any> | null, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
 
 /**
  * @since 13
@@ -2179,6 +2179,26 @@ declare function CGPDFContextAddDestinationAtPoint(context: any | null, name: st
 declare function CGPDFContextAddDocumentMetadata(context: any | null, metadata: NSData | null): void;
 
 /**
+ * @since 27.0
+ */
+declare function CGPDFContextAddStructureTreeRootChild(context: any, structureElement: any): number;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFContextBeginMarkedContentSequence(context: any, tagType: CGPDFTagType): any | null;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFContextBeginNonStructuralMarkedContentSequence(context: any, tagType: CGPDFTagType): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFContextBeginObjectReference(context: any): any | null;
+
+/**
  * @since 2.0
  */
 declare function CGPDFContextBeginPage(context: any | null, pageInfo: NSDictionary<any, any> | null): void;
@@ -2202,6 +2222,16 @@ declare function CGPDFContextCreate(consumer: any | null, mediaBox: interop.Poin
  * @since 2.0
  */
 declare function CGPDFContextCreateWithURL(url: NSURL | null, mediaBox: interop.Pointer | interop.Reference<CGRect> | ArrayBufferLike | ArrayBufferView | null, auxiliaryInfo: NSDictionary<any, any> | null): any | null;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFContextEndMarkedContentSequence(context: any): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFContextEndObjectReference(context: any): void;
 
 /**
  * @since 2.0
@@ -2392,6 +2422,16 @@ declare function CGPDFDocumentRetain(document: any | null): any | null;
  * @since 2.0
  */
 declare function CGPDFDocumentUnlockWithPassword(document: any | null, password: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFMarkedContentItemRelease(markedContentItem: any | null): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFMarkedContentItemRetain(markedContentItem: any | null): interop.Unmanaged<any | null>;
 
 /**
  * @since 2.0
@@ -2592,6 +2632,56 @@ declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Referen
 declare function CGPDFStringGetLength(string: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 /**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementAddMarkedContentItem(structureElement: any, markedContentItem: any): number;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementAddStructureElement(structureElement: any, childStructureElement: any): number;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementCreate(type: CGPDFTagType): any;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementRelease(structureElemnt: any | null): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementRetain(structureElemnt: any | null): interop.Unmanaged<any | null>;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementSetActualText(structureElement: any, actualText: string): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementSetAlternativeText(structureElement: any, alternativeText: string): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementSetExpansionText(structureElement: any, expansionText: string): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementSetLanguageIdentifier(structureElement: any, languageID: string): void;
+
+/**
+ * @since 27.0
+ */
+declare function CGPDFStructureElementSetTitle(structureElement: any, title: string): void;
+
+/**
  * @since 13.0
  */
 declare const enum CGPDFTagType {
@@ -2694,7 +2784,9 @@ declare const enum CGPDFTagType {
 
 	Form = 702,
 
-	Object = 800
+	Object = 800,
+
+	Artifact = 900
 }
 
 /**
@@ -3304,6 +3396,8 @@ declare const enum CGToneMapping {
 	kCGToneMappingDefault = 0,
 
 	kCGToneMappingImageSpecificLumaScaling = 1,
+
+	kCGToneMappingHeadroomAdaptiveGainCurve = 6,
 
 	kCGToneMappingReferenceWhiteBased = 2,
 

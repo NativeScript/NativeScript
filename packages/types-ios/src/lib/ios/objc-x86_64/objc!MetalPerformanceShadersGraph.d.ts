@@ -999,6 +999,11 @@ declare class MPSGraph extends MPSGraphObject {
 	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeSamplingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, samplingMode: MPSGraphResizeMode, constantValue: number, name: string | null): MPSGraphTensor;
 
 	/**
+	 * @since 27.0
+	 */
+	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorDescriptorName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, descriptor: MPSGraphSDPADescriptor, name: string | null): MPSGraphTensor;
+
+	/**
 	 * @since 18.0
 	 */
 	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorMaskTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, maskTensor: MPSGraphTensor | null, scale: number, name: string | null): MPSGraphTensor;
@@ -1361,10 +1366,16 @@ declare class MPSGraphCompilationDescriptor extends MPSGraphObject implements NS
 
 	/**
 	 * @since 26.4
+	 * @deprecated 27.0
 	 */
 	convertLayoutToNHWC(): void;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	/**
+	 * @since 27.0
+	 */
+	disableAutoLayoutConversion(): void;
 
 	disableTypeInference(): void;
 }
@@ -2167,6 +2178,26 @@ declare const enum MPSGraphResizeNearestRoundingMode {
 	RoundToEven = 4,
 
 	RoundToOdd = 5
+}
+
+/**
+ * @since 27.0
+ */
+declare class MPSGraphSDPADescriptor extends MPSGraphObject {
+
+	static alloc(): MPSGraphSDPADescriptor; // inherited from NSObject
+
+	static descriptorWithScale(scale: number): MPSGraphSDPADescriptor;
+
+	static new(): MPSGraphSDPADescriptor; // inherited from NSObject
+
+	isCausal: boolean;
+
+	maskTensor: MPSGraphTensor | null;
+
+	scale: number;
+
+	sinksTensor: MPSGraphTensor | null;
 }
 
 declare const enum MPSGraphScatterMode {

@@ -1,6 +1,7 @@
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXAnimationMetric extends MXMetric {
 
@@ -18,6 +19,7 @@ declare class MXAnimationMetric extends MXMetric {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXAppExitMetric extends MXMetric {
 
@@ -32,6 +34,7 @@ declare class MXAppExitMetric extends MXMetric {
 
 /**
  * @since 16.0
+ * @deprecated 100000
  */
 declare class MXAppLaunchDiagnostic extends MXDiagnostic {
 
@@ -46,6 +49,7 @@ declare class MXAppLaunchDiagnostic extends MXDiagnostic {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXAppLaunchMetric extends MXMetric {
 
@@ -70,6 +74,7 @@ declare class MXAppLaunchMetric extends MXMetric {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXAppResponsivenessMetric extends MXMetric {
 
@@ -82,6 +87,7 @@ declare class MXAppResponsivenessMetric extends MXMetric {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXAppRunTimeMetric extends MXMetric {
 
@@ -100,6 +106,7 @@ declare class MXAppRunTimeMetric extends MXMetric {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXAverage<UnitType> extends NSObject implements NSSecureCoding {
 
@@ -124,6 +131,7 @@ declare class MXAverage<UnitType> extends NSObject implements NSSecureCoding {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXBackgroundExitData extends NSObject implements NSSecureCoding {
 
@@ -162,6 +170,7 @@ declare class MXBackgroundExitData extends NSObject implements NSSecureCoding {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXCPUExceptionDiagnostic extends MXDiagnostic {
 
@@ -178,6 +187,7 @@ declare class MXCPUExceptionDiagnostic extends MXDiagnostic {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXCPUMetric extends MXMetric {
 
@@ -195,6 +205,7 @@ declare class MXCPUMetric extends MXMetric {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXCallStackTree extends NSObject implements NSSecureCoding {
 
@@ -215,6 +226,7 @@ declare class MXCallStackTree extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXCellularConditionMetric extends MXMetric {
 
@@ -227,6 +239,7 @@ declare class MXCellularConditionMetric extends MXMetric {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXCrashDiagnostic extends MXDiagnostic {
 
@@ -254,6 +267,7 @@ declare class MXCrashDiagnostic extends MXDiagnostic {
 
 /**
  * @since 17.0
+ * @deprecated 100000
  */
 declare class MXCrashDiagnosticObjectiveCExceptionReason extends NSObject implements NSSecureCoding {
 
@@ -288,6 +302,7 @@ declare class MXCrashDiagnosticObjectiveCExceptionReason extends NSObject implem
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXDiagnostic extends NSObject implements NSSecureCoding {
 
@@ -308,8 +323,16 @@ declare class MXDiagnostic extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 14.0
+	 * @deprecated 100000
+	 */
 	JSONRepresentation(): NSData;
 
+	/**
+	 * @since 14.0
+	 * @deprecated 100000
+	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -319,6 +342,7 @@ declare class MXDiagnostic extends NSObject implements NSSecureCoding {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXDiagnosticPayload extends NSObject implements NSSecureCoding {
 
@@ -347,8 +371,16 @@ declare class MXDiagnosticPayload extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 14.0
+	 * @deprecated 100000
+	 */
 	JSONRepresentation(): NSData;
 
+	/**
+	 * @since 14.0
+	 * @deprecated 100000
+	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -358,6 +390,7 @@ declare class MXDiagnosticPayload extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXDiskIOMetric extends MXMetric {
 
@@ -370,6 +403,7 @@ declare class MXDiskIOMetric extends MXMetric {
 
 /**
  * @since 26.0
+ * @deprecated 100000
  */
 declare class MXDiskSpaceUsageMetric extends MXMetric {
 
@@ -396,6 +430,7 @@ declare class MXDiskSpaceUsageMetric extends MXMetric {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXDiskWriteExceptionDiagnostic extends MXDiagnostic {
 
@@ -410,6 +445,7 @@ declare class MXDiskWriteExceptionDiagnostic extends MXDiagnostic {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXDisplayMetric extends MXMetric {
 
@@ -422,6 +458,7 @@ declare class MXDisplayMetric extends MXMetric {
 
 /**
  * @since 16.0
+ * @deprecated 100000
  */
 declare const enum MXErrorCode {
 
@@ -440,11 +477,13 @@ declare const enum MXErrorCode {
 
 /**
  * @since 16.0
+ * @deprecated 100000
  */
 declare var MXErrorDomain: string;
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXForegroundExitData extends NSObject implements NSSecureCoding {
 
@@ -475,6 +514,7 @@ declare class MXForegroundExitData extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXGPUMetric extends MXMetric {
 
@@ -487,6 +527,7 @@ declare class MXGPUMetric extends MXMetric {
 
 /**
  * @since 14.0
+ * @deprecated 100000
  */
 declare class MXHangDiagnostic extends MXDiagnostic {
 
@@ -501,6 +542,7 @@ declare class MXHangDiagnostic extends MXDiagnostic {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXHistogram<UnitType> extends NSObject implements NSSecureCoding {
 
@@ -523,6 +565,7 @@ declare class MXHistogram<UnitType> extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXHistogramBucket<UnitType> extends NSObject implements NSSecureCoding {
 
@@ -547,6 +590,7 @@ declare class MXHistogramBucket<UnitType> extends NSObject implements NSSecureCo
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXLocationActivityMetric extends MXMetric {
 
@@ -569,6 +613,7 @@ declare class MXLocationActivityMetric extends MXMetric {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXMemoryMetric extends MXMetric {
 
@@ -583,6 +628,7 @@ declare class MXMemoryMetric extends MXMetric {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXMetaData extends NSObject implements NSSecureCoding {
 
@@ -633,10 +679,15 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 	 */
 	DictionaryRepresentation(): NSDictionary<any, any>;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	JSONRepresentation(): NSData;
 
 	/**
 	 * @since 13.0
+	 * @deprecated 100000
 	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
@@ -647,6 +698,7 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXMetric extends NSObject implements NSSecureCoding {
 
@@ -664,10 +716,15 @@ declare class MXMetric extends NSObject implements NSSecureCoding {
 	 */
 	DictionaryRepresentation(): NSDictionary<any, any>;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	JSONRepresentation(): NSData;
 
 	/**
 	 * @since 13.0
+	 * @deprecated 100000
 	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
@@ -678,6 +735,7 @@ declare class MXMetric extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXMetricManager extends NSObject {
 
@@ -685,14 +743,20 @@ declare class MXMetricManager extends NSObject {
 
 	/**
 	 * @since 16.0
+	 * @deprecated 100000
 	 */
 	static extendLaunchMeasurementForTaskIDError(taskID: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.0
+	 * @deprecated 100000
 	 */
 	static finishExtendedLaunchMeasurementForTaskIDError(taskID: string, error?: interop.Reference<NSError>): boolean;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	static makeLogHandleWithCategory(category: string): NSObject & OS_os_log;
 
 	static new(): MXMetricManager; // inherited from NSObject
@@ -704,23 +768,41 @@ declare class MXMetricManager extends NSObject {
 
 	readonly pastPayloads: NSArray<MXMetricPayload>;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	static readonly sharedManager: MXMetricManager;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	addSubscriber(subscriber: MXMetricManagerSubscriber): void;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	removeSubscriber(subscriber: MXMetricManagerSubscriber): void;
 }
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 interface MXMetricManagerSubscriber extends NSObjectProtocol {
 
 	/**
 	 * @since 14.0
+	 * @deprecated 100000
 	 */
 	didReceiveDiagnosticPayloads?(payloads: NSArray<MXDiagnosticPayload> | MXDiagnosticPayload[]): void;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	didReceiveMetricPayloads?(payloads: NSArray<MXMetricPayload> | MXMetricPayload[]): void;
 }
 declare var MXMetricManagerSubscriber: {
@@ -730,6 +812,7 @@ declare var MXMetricManagerSubscriber: {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 
@@ -796,10 +879,15 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 	 */
 	DictionaryRepresentation(): NSDictionary<any, any>;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	JSONRepresentation(): NSData;
 
 	/**
 	 * @since 13.0
+	 * @deprecated 100000
 	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
@@ -810,6 +898,7 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXNetworkTransferMetric extends MXMetric {
 
@@ -828,6 +917,7 @@ declare class MXNetworkTransferMetric extends MXMetric {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXSignpostIntervalData extends NSObject implements NSSecureCoding {
 
@@ -859,6 +949,7 @@ declare class MXSignpostIntervalData extends NSObject implements NSSecureCoding 
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXSignpostMetric extends MXMetric {
 
@@ -877,6 +968,7 @@ declare class MXSignpostMetric extends MXMetric {
 
 /**
  * @since 17.0
+ * @deprecated 100000
  */
 declare class MXSignpostRecord extends NSObject implements NSSecureCoding {
 
@@ -902,8 +994,16 @@ declare class MXSignpostRecord extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 17.0
+	 * @deprecated 100000
+	 */
 	JSONRepresentation(): NSData;
 
+	/**
+	 * @since 17.0
+	 * @deprecated 100000
+	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -913,6 +1013,7 @@ declare class MXSignpostRecord extends NSObject implements NSSecureCoding {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXUnitAveragePixelLuminance extends NSDimension {
 
@@ -927,6 +1028,7 @@ declare class MXUnitAveragePixelLuminance extends NSDimension {
 
 /**
  * @since 13.0
+ * @deprecated 100000
  */
 declare class MXUnitSignalBars extends NSDimension {
 

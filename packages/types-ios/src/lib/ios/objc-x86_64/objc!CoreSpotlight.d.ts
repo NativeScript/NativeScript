@@ -184,6 +184,11 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 	searchableItemsDidUpdate(items: NSArray<CSSearchableItem> | CSSearchableItem[]): void;
 
 	/**
+	 * @since 27.0
+	 */
+	searchableItemsForIdentifiersProtectionClassSearchableItemsHandler(identifiers: NSArray<string> | string[], protectionClass: string, searchableItemsHandler: (p1: NSArray<CSSearchableItem>) => void): void;
+
+	/**
 	 * @since 18.4
 	 */
 	searchableItemsForIdentifiersSearchableItemsHandler(identifiers: NSArray<string> | string[], searchableItemsHandler: (p1: NSArray<CSSearchableItem>) => void): void;
@@ -341,7 +346,7 @@ declare class CSSearchQuery extends NSObject {
 }
 
 /**
- * @since 10.0
+ * @since 16.0
  */
 declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -354,8 +359,6 @@ declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecu
 	filterQueries: NSArray<string>;
 
 	keyboardLanguage: string | null;
-
-	sourceOptions: CSSearchQuerySourceOptions;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -387,13 +390,6 @@ declare const enum CSSearchQueryErrorCode {
  */
 declare var CSSearchQueryErrorDomain: string;
 
-declare const enum CSSearchQuerySourceOptions {
-
-	Default = 0,
-
-	AllowMail = 1
-}
-
 /**
  * @since 10.0
  */
@@ -414,6 +410,11 @@ declare class CSSearchableIndex extends NSObject {
 
 	indexDelegate: CSSearchableIndexDelegate | null;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly protectionClass: string;
+
 	constructor(o: { name: string; });
 
 	constructor(o: { name: string; protectionClass: string | null; });
@@ -432,8 +433,6 @@ declare class CSSearchableIndex extends NSObject {
 	 * @since 18.0
 	 */
 	endIndexBatchWithExpectedClientStateNewClientStateCompletionHandler(expectedClientState: NSData | null, newClientState: NSData, completionHandler: (p1: NSError | null) => void | null): void;
-
-	fetchDataForBundleIdentifierItemIdentifierContentTypeCompletionHandler(bundleIdentifier: string, itemIdentifier: string, contentType: UTType, completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
 	fetchLastClientStateWithCompletionHandler(completionHandler: (p1: NSData | null, p2: NSError | null) => void): void;
 
@@ -473,6 +472,11 @@ interface CSSearchableIndexDelegate extends NSObjectProtocol {
 	searchableItemsDidUpdate?(items: NSArray<CSSearchableItem> | CSSearchableItem[]): void;
 
 	/**
+	 * @since 27.0
+	 */
+	searchableItemsForIdentifiersProtectionClassSearchableItemsHandler?(identifiers: NSArray<string> | string[], protectionClass: string, searchableItemsHandler: (p1: NSArray<CSSearchableItem>) => void): void;
+
+	/**
 	 * @since 18.4
 	 */
 	searchableItemsForIdentifiersSearchableItemsHandler?(identifiers: NSArray<string> | string[], searchableItemsHandler: (p1: NSArray<CSSearchableItem>) => void): void;
@@ -481,6 +485,28 @@ declare var CSSearchableIndexDelegate: {
 
 	prototype: CSSearchableIndexDelegate;
 };
+
+/**
+ * @since 27.0
+ */
+declare class CSSearchableIndexDescription extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CSSearchableIndexDescription; // inherited from NSObject
+
+	static new(): CSSearchableIndexDescription; // inherited from NSObject
+
+	readonly protectionClass: string | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
 
 /**
  * @since 9.0
@@ -497,9 +523,6 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	expirationDate: Date;
 
-	/**
-	 * @since 9.0
-	 */
 	isUpdate: boolean;
 
 	uniqueIdentifier: string;
@@ -685,6 +708,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	creator: string | null;
 
+	/**
+	 * @since 15.0
+	 */
 	darkThumbnailURL: NSURL | null;
 
 	deliveryType: number | null;
@@ -734,6 +760,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	fontNames: NSArray<string> | null;
 
+	/**
+	 * @since 10.0
+	 */
 	fullyFormattedAddress: string | null;
 
 	generalMIDISequence: number | null;
@@ -835,6 +864,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	playCount: number | null;
 
+	/**
+	 * @since 10.0
+	 */
 	postalCode: string | null;
 
 	primaryRecipients: NSArray<CSPerson> | null;
@@ -906,6 +938,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	streamable: number | null;
 
+	/**
+	 * @since 10.0
+	 */
 	subThoroughfare: string | null;
 
 	subject: string | null;
@@ -925,6 +960,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	theme: string | null;
 
+	/**
+	 * @since 10.0
+	 */
 	thoroughfare: string | null;
 
 	thumbnailData: NSData | null;

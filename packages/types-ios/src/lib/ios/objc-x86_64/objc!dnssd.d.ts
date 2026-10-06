@@ -121,6 +121,8 @@ declare var kDNSServiceAttributeAAAAFallback: void;
 
 declare const kDNSServiceClass_IN: number;
 
+declare const kDNSServiceErr_AWDLTimeout: number;
+
 declare const kDNSServiceErr_AlreadyRegistered: number;
 
 declare const kDNSServiceErr_BadFlags: number;

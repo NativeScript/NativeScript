@@ -9,6 +9,10 @@ declare function AXAnimatedImagesEnabled(): boolean;
  */
 declare var AXAnimatedImagesEnabledDidChangeNotification: string;
 
+declare function AXApplicationAccessibilityEnabled(): boolean;
+
+declare var AXApplicationAccessibilityEnabledDidChangeNotification: string;
+
 /**
  * @since 18.0
  */
@@ -919,6 +923,8 @@ declare function AXShowBordersEnabled(): boolean;
  * @since 26.1
  */
 declare var AXShowBordersEnabledStatusDidChangeNotification: string;
+
+declare var AXSpeechAttributeSSML: string;
 
 /**
  * @since 15.0
