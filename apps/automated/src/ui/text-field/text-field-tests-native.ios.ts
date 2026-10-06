@@ -55,6 +55,15 @@ export function typeTextNatively(textField: textFieldModule.TextField, text: str
 	textField.ios.delegate.textFieldDidEndEditing(textField.ios);
 }
 
+/** One keystroke as UIKit delivers it: the delegate is asked first, and the field changes only if it agrees. */
+export function typeCharacterNatively(textField: textFieldModule.TextField, character: string): void {
+	const native: UITextField = textField.ios;
+	const range: NSRange = { location: native.text.length, length: 0 };
+	if (native.delegate.textFieldShouldChangeCharactersInRangeReplacementString(native, range, character)) {
+		native.text = NSString.stringWithString(native.text).stringByReplacingCharactersInRangeWithString(range, character);
+	}
+}
+
 export function typeTextNativelyWithReturn(textField: textFieldModule.TextField, text: string): void {
 	textField.nativeView.becomeFirstResponder();
 
