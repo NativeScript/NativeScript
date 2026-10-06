@@ -319,6 +319,44 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		TKUnit.assertEqual(actualNewIndex, expectedNewIndex, 'expectedNewIndex');
 	};
 
+	public test_SearchRoleTabIsProminent = function () {
+		const tabView = this.testView;
+		const items = this._createItems(3);
+		items[2].role = 'search';
+		tabView.items = items;
+		this.waitUntilTestElementIsLoaded();
+
+		const actual = tabViewTestsNative.getNativeProminentTabIdentifier(tabView);
+		if (actual !== undefined) {
+			TKUnit.assertEqual(actual, '2', 'search tab should be prominent');
+		}
+	};
+
+	public test_ProminentRoleTakesPrecedenceOverSearchRole = function () {
+		const tabView = this.testView;
+		const items = this._createItems(3);
+		items[0].role = 'search';
+		items[1].role = 'prominent';
+		tabView.items = items;
+		this.waitUntilTestElementIsLoaded();
+
+		const actual = tabViewTestsNative.getNativeProminentTabIdentifier(tabView);
+		if (actual !== undefined) {
+			TKUnit.assertEqual(actual, '1', 'prominent tab should win over search tab');
+		}
+	};
+
+	public test_NoProminentTabWithoutRoles = function () {
+		const tabView = this.testView;
+		tabView.items = this._createItems(3);
+		this.waitUntilTestElementIsLoaded();
+
+		const actual = tabViewTestsNative.getNativeProminentTabIdentifier(tabView);
+		if (actual !== undefined) {
+			TKUnit.assertNull(actual, 'no tab should be prominent');
+		}
+	};
+
 	// public test_FontIsReappliedWhenTabItemsChange = function () {
 	// 	const assertFontsAreEqual = (actual: any, expected: any, message?: string) => {
 	// 		if (this.testView.ios) {
