@@ -407,6 +407,11 @@ declare class HMAccessorySetupManager extends NSObject {
 	static new(): HMAccessorySetupManager; // inherited from NSObject
 
 	/**
+	 * @since 27.0
+	 */
+	static readonly supported: boolean;
+
+	/**
 	 * @since 15.4
 	 */
 	performAccessorySetupUsingRequestCompletionHandler(request: HMAccessorySetupRequest, completion: (p1: HMAccessorySetupResult | null, p2: NSError | null) => void): void;
@@ -4024,6 +4029,7 @@ declare class HMUser extends NSObject {
 
 /**
  * @since 8.0
+ * @deprecated 27.0
  */
 declare var HMUserFailedAccessoriesKey: string;
 

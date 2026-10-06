@@ -263,6 +263,11 @@ declare class NEAppPushManager extends NSObject {
 	matchEthernet: boolean;
 
 	/**
+	 * @since 27.0
+	 */
+	matchMissionCriticalService: boolean;
+
+	/**
 	 * @since 15.0
 	 */
 	matchPrivateLTENetworks: NSArray<NEPrivateLTENetwork>;
@@ -3505,7 +3510,9 @@ declare const enum NEVPNIKEv2TLSVersion {
 
 	Version1_1 = 2,
 
-	Version1_2 = 3
+	Version1_2 = 3,
+
+	Version1_3 = 4
 }
 
 /**

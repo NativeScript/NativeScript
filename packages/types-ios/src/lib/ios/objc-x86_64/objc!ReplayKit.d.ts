@@ -1,11 +1,13 @@
 
 /**
  * @since 11.2
+ * @deprecated 27.0
  */
 declare var RPApplicationInfoBundleIdentifierKey: string;
 
 /**
  * @since 10.0
+ * @deprecated 27.0
  */
 declare class RPBroadcastActivityViewController extends UIViewController {
 
@@ -15,6 +17,7 @@ declare class RPBroadcastActivityViewController extends UIViewController {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	static loadBroadcastActivityViewControllerWithPreferredExtensionHandler(preferredExtension: string | null, handler: (p1: RPBroadcastActivityViewController | null, p2: NSError | null) => void): void;
 
@@ -25,11 +28,13 @@ declare class RPBroadcastActivityViewController extends UIViewController {
 
 /**
  * @since 10.0
+ * @deprecated 27.0
  */
 interface RPBroadcastActivityViewControllerDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 10.0
+	 * @deprecated 27.0
 	 */
 	broadcastActivityViewControllerDidFinishWithBroadcastControllerError(broadcastActivityViewController: RPBroadcastActivityViewController, broadcastController: RPBroadcastController | null, error: NSError | null): void;
 }
@@ -63,6 +68,7 @@ declare class RPBroadcastConfiguration extends NSObject implements NSCoding, NSS
 
 /**
  * @since 10.0
+ * @deprecated 27.0
  */
 declare class RPBroadcastController extends NSObject {
 
@@ -97,6 +103,7 @@ declare class RPBroadcastController extends NSObject {
 
 /**
  * @since 10.0
+ * @deprecated 27.0
  */
 interface RPBroadcastControllerDelegate extends NSObjectProtocol {
 
@@ -104,6 +111,7 @@ interface RPBroadcastControllerDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	broadcastControllerDidUpdateBroadcastURL?(broadcastController: RPBroadcastController, broadcastURL: NSURL): void;
 
@@ -116,6 +124,7 @@ declare var RPBroadcastControllerDelegate: {
 
 /**
  * @since 10.0
+ * @deprecated 27.0
  */
 declare class RPBroadcastHandler extends NSObject implements NSExtensionRequestHandling {
 
@@ -184,6 +193,7 @@ declare class RPBroadcastMP4ClipHandler extends RPBroadcastHandler {
 
 /**
  * @since 10.0
+ * @deprecated 27.0
  */
 declare class RPBroadcastSampleHandler extends RPBroadcastHandler {
 
@@ -216,6 +226,10 @@ declare const enum RPCameraPosition {
 	Back = 2
 }
 
+/**
+ * @since 9.0
+ * @deprecated 27.0
+ */
 declare class RPPreviewViewController extends UIViewController {
 
 	static alloc(): RPPreviewViewController; // inherited from NSObject
@@ -225,6 +239,10 @@ declare class RPPreviewViewController extends UIViewController {
 	previewControllerDelegate: RPPreviewViewControllerDelegate | null;
 }
 
+/**
+ * @since 9.0
+ * @deprecated 27.0
+ */
 interface RPPreviewViewControllerDelegate extends NSObjectProtocol {
 
 	previewControllerDidFinish?(previewController: RPPreviewViewController): void;
@@ -315,6 +333,10 @@ declare const enum RPRecordingErrorCode {
 	CodeSuccessful = 0
 }
 
+/**
+ * @since 9.0
+ * @deprecated 27.0
+ */
 declare var RPRecordingErrorDomain: string;
 
 declare const enum RPSampleBufferType {
@@ -326,56 +348,91 @@ declare const enum RPSampleBufferType {
 	AudioMic = 3
 }
 
+/**
+ * @since 9.0
+ * @deprecated 27.0
+ */
 declare class RPScreenRecorder extends NSObject {
 
 	static alloc(): RPScreenRecorder; // inherited from NSObject
 
 	static new(): RPScreenRecorder; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	static sharedRecorder(): RPScreenRecorder;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	readonly available: boolean;
 
 	/**
 	 * @since 10.0
+	 * @deprecated 27.0
 	 */
 	cameraEnabled: boolean;
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	cameraPosition: RPCameraPosition;
 
 	/**
 	 * @since 10.0
+	 * @deprecated 27.0
 	 */
 	readonly cameraPreviewView: UIView | null;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	delegate: RPScreenRecorderDelegate | null;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	microphoneEnabled: boolean;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	readonly recording: boolean;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	discardRecordingWithHandler(handler: () => void): void;
 
 	/**
 	 * @since 15.0
+	 * @deprecated 27.0
 	 */
 	exportClipToURLDurationCompletionHandler(url: NSURL, duration: number, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	startCaptureWithHandlerCompletionHandler(captureHandler: (p1: any, p2: RPSampleBufferType, p3: NSError | null) => void | null, completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 15.0
+	 * @deprecated 27.0
 	 */
 	startClipBufferingWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 10.0
+	 * @deprecated 27.0
 	 */
 	startRecordingWithHandler(handler: (p1: NSError | null) => void | null): void;
 
@@ -387,27 +444,39 @@ declare class RPScreenRecorder extends NSObject {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	stopCaptureWithHandler(handler: (p1: NSError | null) => void | null): void;
 
 	/**
 	 * @since 15.0
+	 * @deprecated 27.0
 	 */
 	stopClipBufferingWithCompletionHandler(completionHandler: (p1: NSError | null) => void | null): void;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	stopRecordingWithHandler(handler: (p1: RPPreviewViewController | null, p2: NSError | null) => void | null): void;
 
 	/**
 	 * @since 14.0
+	 * @deprecated 27.0
 	 */
 	stopRecordingWithOutputURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError | null) => void | null): void;
 }
 
 /**
  * @since 9.0
+ * @deprecated 27.0
  */
 interface RPScreenRecorderDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 9.0
+	 * @deprecated 27.0
+	 */
 	screenRecorderDidChangeAvailability?(screenRecorder: RPScreenRecorder): void;
 
 	/**
@@ -418,6 +487,7 @@ interface RPScreenRecorderDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	screenRecorderDidStopRecordingWithPreviewViewControllerError?(screenRecorder: RPScreenRecorder, previewViewController: RPPreviewViewController | null, error: NSError | null): void;
 }
@@ -428,6 +498,7 @@ declare var RPScreenRecorderDelegate: {
 
 /**
  * @since 12.0
+ * @deprecated 27.0
  */
 declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 
@@ -477,6 +548,7 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare var RPVideoSampleOrientationKey: string;
 

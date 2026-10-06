@@ -3971,6 +3971,11 @@ declare var kCGImageProviderPreferredTileHeight: string;
 declare var kCGImageProviderPreferredTileWidth: string;
 
 /**
+ * @since 27.0
+ */
+declare var kCGImageSourceAllowableTypes: string;
+
+/**
  * @since 4.0
  */
 declare var kCGImageSourceCreateThumbnailFromImageAlways: string;
@@ -4009,6 +4014,11 @@ declare var kCGImageSourceDecodeToSDR: string;
  * @since 18.0
  */
 declare var kCGImageSourceGenerateImageSpecificLumaScaling: string;
+
+/**
+ * @since 27.0
+ */
+declare var kCGImageSourcePrioritizeQuality: string;
 
 /**
  * @since 4.0

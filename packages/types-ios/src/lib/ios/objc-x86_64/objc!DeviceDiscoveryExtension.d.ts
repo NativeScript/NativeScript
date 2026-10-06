@@ -31,10 +31,22 @@ declare class DDDevice extends NSObject {
 
 	identifier: string;
 
+	/**
+	 * @since 16.0
+	 * @deprecated 27.0
+	 */
 	mediaContentSubtitle: string | null;
 
+	/**
+	 * @since 16.0
+	 * @deprecated 27.0
+	 */
 	mediaContentTitle: string | null;
 
+	/**
+	 * @since 16.0
+	 * @deprecated 27.0
+	 */
 	mediaPlaybackState: DDDeviceMediaPlaybackState;
 
 	networkEndpoint: NSObject & OS_nw_endpoint | null;

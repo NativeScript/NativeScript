@@ -2046,6 +2046,11 @@ declare class MTLCompileOptions extends NSObject implements NSCopying {
 	fastMathEnabled: boolean;
 
 	/**
+	 * @since 27.0
+	 */
+	floatingPointConversionRoundingMode: MTLFloatingPointConversionRoundingMode;
+
+	/**
 	 * @since 14.0
 	 */
 	installName: string | null;
@@ -2350,6 +2355,16 @@ declare class MTLComputePipelineDescriptor extends NSObject implements NSCopying
 	computeFunction: MTLFunction | null;
 
 	/**
+	 * @since 27.0
+	 */
+	contentionRelief: MTLContentionRelief;
+
+	/**
+	 * @since 27.0
+	 */
+	forwardProgressUsage: MTLForwardProgressUsage;
+
+	/**
 	 * @since 14.0
 	 * @deprecated 15.0
 	 */
@@ -2371,6 +2386,11 @@ declare class MTLComputePipelineDescriptor extends NSObject implements NSCopying
 	 * @since 12.0
 	 */
 	maxTotalThreadsPerThreadgroup: number;
+
+	/**
+	 * @since 27.0
+	 */
+	optimizeForPersistentKernel: boolean;
 
 	/**
 	 * @since 15.0
@@ -2433,6 +2453,11 @@ interface MTLComputePipelineState extends MTLAllocation, NSObjectProtocol {
 	device: MTLDevice;
 
 	/**
+	 * @since 27.0
+	 */
+	forwardProgressUsage: MTLForwardProgressUsage;
+
+	/**
 	 * @since 11.0
 	 */
 	label: string | null;
@@ -2490,11 +2515,26 @@ interface MTLComputePipelineState extends MTLAllocation, NSObjectProtocol {
 	 * @since 14.0
 	 */
 	newVisibleFunctionTableWithDescriptor(descriptor: MTLVisibleFunctionTableDescriptor): MTLVisibleFunctionTable | null;
+
+	/**
+	 * @since 27.0
+	 */
+	recommendedPersistentThreadgroupsPerGridForThreadsPerThreadgroup(threadsPerThreadgroup: MTLSize): number;
 }
 declare var MTLComputePipelineState: {
 
 	prototype: MTLComputePipelineState;
 };
+
+/**
+ * @since 27.0
+ */
+declare const enum MTLContentionRelief {
+
+	Automatic = 0,
+
+	None = 1
+}
 
 /**
  * @since 18.0
@@ -3630,6 +3670,25 @@ declare var MTLFence: {
 	prototype: MTLFence;
 };
 
+declare const enum MTLFloatingPointConversionRoundingMode {
+
+	ToNearestEven = 0,
+
+	TowardZero = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum MTLForwardProgressUsage {
+
+	Automatic = 0,
+
+	Weak = 1,
+
+	SIMDGroupParallel = 2
+}
+
 /**
  * @since 8.0
  */
@@ -4069,6 +4128,8 @@ declare const enum MTLGPUFamily {
 	Apple9 = 1009,
 
 	Apple10 = 1010,
+
+	Apple11 = 1011,
 
 	Mac1 = 2001,
 
@@ -4686,7 +4747,9 @@ declare const enum MTLLanguageVersion {
 
 	Version3_2 = 196610,
 
-	Version4_0 = 262144
+	Version4_0 = 262144,
+
+	Version4_1 = 262145
 }
 
 /**
@@ -5128,6 +5191,7 @@ interface MTLParallelRenderCommandEncoder extends MTLCommandEncoder {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	setColorStoreActionOptionsAtIndex(storeActionOptions: MTLStoreActionOptions, colorAttachmentIndex: number): void;
 
@@ -5138,6 +5202,7 @@ interface MTLParallelRenderCommandEncoder extends MTLCommandEncoder {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	setDepthStoreActionOptions(storeActionOptions: MTLStoreActionOptions): void;
 
@@ -5148,6 +5213,7 @@ interface MTLParallelRenderCommandEncoder extends MTLCommandEncoder {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	setStencilStoreActionOptions(storeActionOptions: MTLStoreActionOptions): void;
 }
@@ -5260,6 +5326,14 @@ declare const enum MTLPixelFormat {
 
 	BGR5A1Unorm = 43,
 
+	RGB8Unorm = 45,
+
+	RGB8Snorm = 46,
+
+	RGB8Uint = 47,
+
+	RGB8Sint = 48,
+
 	R32Uint = 53,
 
 	R32Sint = 54,
@@ -5304,6 +5378,16 @@ declare const enum MTLPixelFormat {
 
 	BGR10_XR_sRGB = 555,
 
+	RGB16Unorm = 95,
+
+	RGB16Snorm = 96,
+
+	RGB16Uint = 97,
+
+	RGB16Sint = 98,
+
+	RGB16Float = 99,
+
 	RG32Uint = 103,
 
 	RG32Sint = 104,
@@ -5323,6 +5407,12 @@ declare const enum MTLPixelFormat {
 	BGRA10_XR = 552,
 
 	BGRA10_XR_sRGB = 553,
+
+	RGB32Uint = 120,
+
+	RGB32Sint = 121,
+
+	RGB32Float = 122,
 
 	RGBA32Uint = 123,
 
@@ -5882,6 +5972,7 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	setColorStoreActionOptionsAtIndex(storeActionOptions: MTLStoreActionOptions, colorAttachmentIndex: number): void;
 
@@ -5903,6 +5994,7 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	setDepthStoreActionOptions(storeActionOptions: MTLStoreActionOptions): void;
 
@@ -6092,6 +6184,7 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	setStencilStoreActionOptions(storeActionOptions: MTLStoreActionOptions): void;
 
@@ -6360,6 +6453,7 @@ declare class MTLRenderPassAttachmentDescriptor extends NSObject implements NSCo
 
 	/**
 	 * @since 11.0
+	 * @deprecated 27.0
 	 */
 	storeActionOptions: MTLStoreActionOptions;
 
@@ -7665,6 +7759,7 @@ declare const enum MTLStoreAction {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum MTLStoreActionOptions {
 

@@ -111,6 +111,11 @@ declare class WKContentWorld extends NSObject {
 
 	static new(): WKContentWorld; // inherited from NSObject
 
+	/**
+	 * @since 27.0
+	 */
+	static worldWithConfiguration(configuration: WKContentWorldConfiguration): WKContentWorld;
+
 	static worldWithName(name: string): WKContentWorld;
 
 	readonly name: string | null;
@@ -118,6 +123,40 @@ declare class WKContentWorld extends NSObject {
 	static readonly defaultClientWorld: WKContentWorld;
 
 	static readonly pageWorld: WKContentWorld;
+}
+
+/**
+ * @since 27.0
+ */
+declare class WKContentWorldConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): WKContentWorldConfiguration; // inherited from NSObject
+
+	static new(): WKContentWorldConfiguration; // inherited from NSObject
+
+	allowAccessingClosedShadowRoots: boolean;
+
+	autofillScriptingEnabled: boolean;
+
+	elementUserInfoEnabled: boolean;
+
+	inspectable: boolean;
+
+	jsHandleCreationEnabled: boolean;
+
+	legacyBuiltinOverridesEnabled: boolean;
+
+	nodeSnapshotCreationEnabled: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 /**
@@ -140,6 +179,16 @@ declare const enum WKCookiePolicy {
 	Allow = 0,
 
 	Disallow = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare class WKDOMNodeSnapshot extends NSObject {
+
+	static alloc(): WKDOMNodeSnapshot; // inherited from NSObject
+
+	static new(): WKDOMNodeSnapshot; // inherited from NSObject
 }
 
 /**
@@ -374,6 +423,26 @@ declare class WKFindResult extends NSObject implements NSCopying {
 }
 
 /**
+ * @since 27.0
+ */
+declare class WKFormInfo extends NSObject {
+
+	static alloc(): WKFormInfo; // inherited from NSObject
+
+	static new(): WKFormInfo; // inherited from NSObject
+
+	readonly formValues: NSDictionary<string, string>;
+
+	readonly httpMethod: string;
+
+	readonly sourceFrame: WKFrameInfo;
+
+	readonly submissionURL: NSURL;
+
+	readonly targetFrame: WKFrameInfo;
+}
+
+/**
  * @since 8.0
  */
 declare class WKFrameInfo extends NSObject implements NSCopying {
@@ -433,6 +502,11 @@ declare class WKHTTPCookieStore extends NSObject {
 	 */
 	getCookiePolicy(completionHandler: (p1: WKCookiePolicy) => void): void;
 
+	/**
+	 * @since 27.0
+	 */
+	getCookiesForURLCompletionHandler(url: NSURL, completionHandler: (p1: NSArray<NSHTTPCookie>) => void): void;
+
 	removeObserver(observer: WKHTTPCookieStoreObserver): void;
 
 	setCookieCompletionHandler(cookie: NSHTTPCookie, completionHandler: () => void | null): void;
@@ -470,6 +544,24 @@ declare const enum WKInactiveSchedulingPolicy {
 	Throttle = 1,
 
 	None = 2
+}
+
+/**
+ * @since 27.0
+ */
+declare class WKJSHandle extends NSObject implements NSCopying {
+
+	static alloc(): WKJSHandle; // inherited from NSObject
+
+	static new(): WKJSHandle; // inherited from NSObject
+
+	readonly contentWorld: WKContentWorld | null;
+
+	readonly sourceFrame: WKFrameInfo;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	getWindowProxyFrameWithCompletionHandler(completionHandler: (p1: WKFrameInfo | null) => void): void;
 }
 
 /**
@@ -543,6 +635,11 @@ declare class WKNavigationAction extends NSObject {
 	 * @since 26.0
 	 */
 	readonly isContentRuleListRedirect: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly mainFrameNavigation: WKNavigation | null;
 
 	/**
 	 * @since 18.4
@@ -624,6 +721,11 @@ interface WKNavigationDelegate extends NSObjectProtocol {
 	 * @since 9.0
 	 */
 	webViewWebContentProcessDidTerminate?(webView: WKWebView): void;
+
+	/**
+	 * @since 27.0
+	 */
+	webViewWillSubmitFormSubmissionHandler?(webView: WKWebView, formInfo: WKFormInfo, submissionHandler: () => void): void;
 }
 declare var WKNavigationDelegate: {
 
@@ -642,6 +744,11 @@ declare class WKNavigationResponse extends NSObject {
 	readonly canShowMIMEType: boolean;
 
 	readonly forMainFrame: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly mainFrameNavigation: WKNavigation | null;
 
 	readonly response: NSURLResponse;
 }
@@ -914,7 +1021,7 @@ declare class WKSecurityOrigin extends NSObject {
 }
 
 /**
- * @since 26.5
+ * @since 26.4
  */
 declare const enum WKSecurityRestrictionMode {
 
@@ -1009,6 +1116,11 @@ interface WKUIDelegate extends NSObjectProtocol {
 	webViewRequestDeviceOrientationAndMotionPermissionForOriginInitiatedByFrameDecisionHandler?(webView: WKWebView, origin: WKSecurityOrigin, frame: WKFrameInfo, decisionHandler: (p1: WKPermissionDecision) => void): void;
 
 	/**
+	 * @since 27.0
+	 */
+	webViewRequestGeolocationPermissionForOriginInitiatedByFrameDecisionHandler?(webView: WKWebView, origin: WKSecurityOrigin, frame: WKFrameInfo, decisionHandler: (p1: WKPermissionDecision) => void): void;
+
+	/**
 	 * @since 15.0
 	 */
 	webViewRequestMediaCapturePermissionForOriginInitiatedByFrameTypeDecisionHandler?(webView: WKWebView, origin: WKSecurityOrigin, frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: (p1: WKPermissionDecision) => void): void;
@@ -1100,6 +1212,11 @@ declare class WKUserContentController extends NSObject implements NSSecureCoding
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	/**
+	 * @since 27.0
+	 */
+	addBufferNameContentWorld(buffer: NSData, name: string, world: WKContentWorld): void;
+
+	/**
 	 * @since 11.0
 	 */
 	addContentRuleList(contentRuleList: WKContentRuleList): void;
@@ -1138,6 +1255,11 @@ declare class WKUserContentController extends NSObject implements NSSecureCoding
 	removeAllScriptMessageHandlersFromContentWorld(contentWorld: WKContentWorld): void;
 
 	removeAllUserScripts(): void;
+
+	/**
+	 * @since 27.0
+	 */
+	removeBufferWithNameContentWorld(name: string, world: WKContentWorld): void;
 
 	/**
 	 * @since 11.0
@@ -2465,6 +2587,11 @@ declare class WKWebView extends UIView {
 	loadSimulatedRequestWithResponseResponseData(request: NSURLRequest, response: NSURLResponse, data: NSData): WKNavigation;
 
 	/**
+	 * @since 27.0
+	 */
+	loadURL(url: NSURL): WKNavigation | null;
+
+	/**
 	 * @since 14.5
 	 * @deprecated 15.0
 	 */
@@ -2711,9 +2838,29 @@ declare class WKWebpagePreferences extends NSObject {
 	allowsContentJavaScript: boolean;
 
 	/**
+	 * @since 27.0
+	 */
+	allowsJSHandleCreationInPageWorld: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	alternateRequest: NSURLRequest | null;
+
+	/**
+	 * @since 27.0
+	 */
+	globalPrivacyControlEnabled: boolean;
+
+	/**
 	 * @since 16.0
 	 */
 	lockdownModeEnabled: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	overrideReferrer: string | null;
 
 	/**
 	 * @since 13.0
@@ -2726,7 +2873,7 @@ declare class WKWebpagePreferences extends NSObject {
 	preferredHTTPSNavigationPolicy: WKWebpagePreferencesUpgradeToHTTPSPolicy;
 
 	/**
-	 * @since 26.5
+	 * @since 26.4
 	 */
 	securityRestrictionMode: WKSecurityRestrictionMode;
 }
