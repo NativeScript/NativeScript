@@ -1,4 +1,4 @@
-import { matchMedia, checkIfMediaQueryMatches, MediaQueryList } from '.';
+import { matchMedia, checkIfMediaQueryMatches, checkIfMediaQueryMatchesCached, invalidateMediaQueryCache, MediaQueryList } from '.';
 import { Screen } from '../platform';
 
 describe('media-query-list', () => {
@@ -11,6 +11,43 @@ describe('media-query-list', () => {
 
 		it('should return false for an incorrect match', () => {
 			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs - 1})`)).toBe(false);
+		});
+	});
+
+	describe('checkIfMediaQueryMatchesCached', () => {
+		const query = `only screen and (max-width: ${widthDIPs})`;
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		it('evaluates each query once until invalidated', async () => {
+			await Promise.resolve();
+			invalidateMediaQueryCache();
+			const evaluate = vi.spyOn(Screen.mainScreen, 'heightPixels', 'get');
+
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			const afterFirst = evaluate.mock.calls.length;
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			expect(evaluate).toHaveBeenCalledTimes(afterFirst);
+
+			invalidateMediaQueryCache();
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			expect(evaluate.mock.calls.length).toBeGreaterThan(afterFirst);
+		});
+
+		it('re-evaluates after the screen size changes without an orientation change', async () => {
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			await Promise.resolve();
+
+			const { widthPixels } = Screen.mainScreen;
+			const width = vi.spyOn(Screen.mainScreen, 'widthPixels', 'get').mockReturnValue(widthPixels * 2);
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(false);
+			width.mockRestore();
+
+			await Promise.resolve();
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
 		});
 	});
 
