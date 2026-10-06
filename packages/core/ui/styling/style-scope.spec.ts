@@ -544,3 +544,57 @@ describe('className changes restyle only the descendants that depend on them', (
 		expect(otherChange).toHaveBeenCalledTimes(1);
 	});
 });
+
+describe('className changes follow variables a restyled descendant defines', () => {
+	function nested(css: string) {
+		const scope = new StyleScope();
+		scope.css = css;
+		const root: any = new StackLayout();
+		const card: any = new StackLayout();
+		const label: any = new Label();
+		card.className = 'card';
+		card.addChild(label);
+		root.addChild(card);
+		for (const view of [root, card, label]) {
+			view._styleScope = scope;
+			Object.defineProperty(view, 'isLoaded', { value: true, configurable: true });
+			view._cssState.onLoaded();
+		}
+
+		return { root, label };
+	}
+
+	it('re-evaluates var() below a descendant that gains a variable', () => {
+		const { root, label } = nested('.dark .card { --bg: blue; } .card Label { color: var(--bg, red); }');
+
+		root.className = 'dark';
+
+		expect(label.style.color.toString()).toBe('#0000FF');
+	});
+
+	it('re-evaluates var() when the descendant gains and loses the variable', () => {
+		const { root, label } = nested('.dark StackLayout { --c: blue; } Label { color: var(--c, red); }');
+
+		root.className = 'dark';
+		expect(label.style.color.toString()).toBe('#0000FF');
+
+		root.className = '';
+		expect(label.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('re-evaluates var() below a child combinator subject', () => {
+		const { root, label } = nested('.dark > StackLayout { --c: blue; } StackLayout > Label { color: var(--c, red); }');
+
+		root.className = 'dark';
+
+		expect(label.style.color.toString()).toBe('#0000FF');
+	});
+
+	it('re-evaluates calc() over a variable a descendant defines', () => {
+		const { root, label } = nested('.dark .card { --w: 10; } Label { width: calc(var(--w, 5) * 2); }');
+
+		root.className = 'dark';
+
+		expect(label.style.width).toBe(20);
+	});
+});

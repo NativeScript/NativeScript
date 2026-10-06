@@ -226,6 +226,12 @@ export function querySelectorAll(view: ViewBase, selector: string): Array<ViewBa
  * @param view - Starting view (parent container).
  * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
  */
+function restyleDescendant(view: ViewBase): boolean {
+	view._cssState.onChange();
+
+	return true;
+}
+
 export function eachDescendant(view: ViewBase, callback: (child: ViewBase) => boolean) {
 	if (!callback || !view) {
 		return;
@@ -1512,13 +1518,23 @@ export abstract class ViewBase extends Observable {
 			return;
 		}
 
-		eachDescendant(this, (child: ViewBase) => {
-			if (!dependents || child._styleScope !== scope || isClassDependent(child, dependents)) {
-				child._cssState.onChange();
-			}
+		const visit = (view: ViewBase) => {
+			view.eachChild((child: ViewBase) => {
+				if (!dependents || child._styleScope !== scope || isClassDependent(child, dependents)) {
+					const hadVariables = child.style.hasScopedCssVariables();
+					child._cssState.onChange();
+					// Variables it defines (or defined) reach every descendant through var().
+					if (hadVariables || child.style.hasScopedCssVariables()) {
+						eachDescendant(child, restyleDescendant);
+						return true;
+					}
+				}
+				visit(child);
 
-			return true;
-		});
+				return true;
+			});
+		};
+		visit(this);
 	}
 
 	_inheritStyleScope(styleScope: StyleScope): void {
