@@ -1,7 +1,6 @@
 import { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, TranslatePair } from '../animation/animation-types';
 import { CoreTypes } from '../../core-types';
 import { PercentLength } from './length-shared';
-import { layout } from '../../utils/layout-helper';
 import { radiansToDegrees } from '../../utils/number-utils';
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { hasDuplicates } from '../../utils';
@@ -17,8 +16,8 @@ const IDENTITY_TRANSFORMATION = {
 };
 
 const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
-const TRANSFORMATIONS = Object.freeze<TransformationType[]>(['rotate', 'rotateX', 'rotateY', 'rotate3d', 'translate', 'translate3d', 'translateX', 'translateY', 'scale', 'scale3d', 'scaleX', 'scaleY']);
 const TRANSLATE_TRANSFORMATIONS = Object.freeze<TransformationType[]>(['translate', 'translate3d', 'translateX', 'translateY']);
+const TRANSFORMATIONS = Object.freeze<TransformationType[]>(['rotate', 'rotateX', 'rotateY', 'rotate3d', ...TRANSLATE_TRANSFORMATIONS, 'scale', 'scale3d', 'scaleX', 'scaleY']);
 
 const STYLE_TRANSFORMATION_MAP: TransformationStyleMap = Object.freeze<TransformationStyleMap>({
 	scale: (value: number) => ({ property: 'scale', value }),
@@ -109,30 +108,7 @@ export function transformConverter(text: string): TransformFunctionsInfo {
  * against the element's own size.
  */
 export function isPercentTranslate(value: CoreTypes.PercentLengthType): boolean {
-	return typeof value === 'object' && value !== null && value.unit === '%';
-}
-
-/**
- * Resolves a translate axis value to dips. Percentage units are resolved
- * against the given basis, which is the element's own size along that axis.
- * @param value The translate axis value as a PercentLengthType.
- * @param basis The element's size in dips along the translated axis.
- */
-export function resolveTranslate(value: CoreTypes.PercentLengthType, basis: number): CoreTypes.dip {
-	if (typeof value === 'number') {
-		return value;
-	}
-	if (typeof value !== 'object' || value === null) {
-		return 0;
-	}
-	switch (value.unit) {
-		case 'px':
-			return layout.toDeviceIndependentPixels(value.value);
-		case '%':
-			return basis * value.value;
-		default:
-			return value.value;
-	}
+	return (value as CoreTypes.LengthPercentUnit)?.unit === '%';
 }
 
 function isTransformType(propertyName: string): propertyName is TransformationType {

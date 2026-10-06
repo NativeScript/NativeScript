@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { transformConverter, resolveTranslate } from './css-transform';
+import { transformConverter, isPercentTranslate } from './css-transform';
 import { translateXProperty, translateYProperty } from './style-properties';
 
 describe('transformConverter', () => {
@@ -97,23 +97,19 @@ describe('translateX/translateY property converters', () => {
 	});
 });
 
-describe('resolveTranslate', () => {
-	it('resolves percent values against the element size', () => {
-		expect(resolveTranslate({ unit: '%', value: -0.5 }, 200)).toBe(-100);
-		expect(resolveTranslate({ unit: '%', value: 0.25 }, 200)).toBe(50);
+describe('isPercentTranslate', () => {
+	it('recognizes parsed percentages', () => {
+		expect(isPercentTranslate({ unit: '%', value: -0.5 })).toBe(true);
+		expect(isPercentTranslate({ unit: '%', value: 0 })).toBe(true);
 	});
 
-	it('resolves zero percent against an empty size', () => {
-		expect(resolveTranslate({ unit: '%', value: -0.5 }, 0)).toBe(-0);
-	});
-
-	it('passes dip values through', () => {
-		expect(resolveTranslate(10, 200)).toBe(10);
-		expect(resolveTranslate({ unit: 'dip', value: 10 }, 200)).toBe(10);
-	});
-
-	it('resolves unset values to zero', () => {
-		expect(resolveTranslate(undefined, 200)).toBe(0);
-		expect(resolveTranslate('auto', 200)).toBe(0);
+	it('returns false for other lengths and unset values', () => {
+		expect(isPercentTranslate(10)).toBe(false);
+		expect(isPercentTranslate({ unit: 'dip', value: 10 })).toBe(false);
+		expect(isPercentTranslate({ unit: 'px', value: 10 })).toBe(false);
+		expect(isPercentTranslate('auto')).toBe(false);
+		expect(isPercentTranslate('50%')).toBe(false);
+		expect(isPercentTranslate(undefined)).toBe(false);
+		expect(isPercentTranslate(null)).toBe(false);
 	});
 });

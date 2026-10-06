@@ -4,7 +4,6 @@ import { View } from '../core/view';
 import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
-import { resolveTranslate } from '../styling/css-transform';
 import { PercentLength } from '../styling/length-shared';
 import { ios as iosBackground } from '../styling/background';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
@@ -386,7 +385,7 @@ export class Animation extends AnimationBase {
 					};
 					propertyNameToAnimate = 'transform';
 					fromValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
-					toValue = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, resolveTranslate(toValue.x, nativeView.bounds.size.width), resolveTranslate(toValue.y, nativeView.bounds.size.height), 0));
+					toValue = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, PercentLength.toDeviceIndependentPixels(toValue.x, 0, nativeView.bounds.size.width), PercentLength.toDeviceIndependentPixels(toValue.y, 0, nativeView.bounds.size.height), 0));
 					break;
 				case Properties.scale:
 					if (toValue.x === 0) {
@@ -672,8 +671,8 @@ export class Animation extends AnimationBase {
 
 		if (value[Properties.translate] !== undefined) {
 			const bounds = animation.target.nativeViewProtected ? animation.target.nativeViewProtected.bounds.size : { width: 0, height: 0 };
-			const x = resolveTranslate(value[Properties.translate].x, bounds.width);
-			const y = resolveTranslate(value[Properties.translate].y, bounds.height);
+			const x = PercentLength.toDeviceIndependentPixels(value[Properties.translate].x, 0, bounds.width);
+			const y = PercentLength.toDeviceIndependentPixels(value[Properties.translate].y, 0, bounds.height);
 			result = CATransform3DTranslate(result, x, y, 0);
 		}
 
@@ -960,7 +959,7 @@ function calculateTransform(view: View): CATransform3D {
 	}
 
 	const bounds = view.nativeViewProtected ? view.nativeViewProtected.bounds.size : { width: 0, height: 0 };
-	expectedTransform = CATransform3DTranslate(expectedTransform, resolveTranslate(view.translateX, bounds.width), resolveTranslate(view.translateY, bounds.height), 0);
+	expectedTransform = CATransform3DTranslate(expectedTransform, PercentLength.toDeviceIndependentPixels(view.translateX, 0, bounds.width), PercentLength.toDeviceIndependentPixels(view.translateY, 0, bounds.height), 0);
 	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
 	expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
 

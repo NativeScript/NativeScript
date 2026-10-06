@@ -9,7 +9,8 @@ import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
-import { isPercentTranslate, resolveTranslate } from '../../styling/css-transform';
+import { isPercentTranslate } from '../../styling/css-transform';
+import { PercentLength } from '../../styling/length-shared';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -446,7 +447,7 @@ export class View extends ViewCommon {
 		}
 
 		const bounds = nativeView.bounds.size;
-		transform = CATransform3DTranslate(transform, resolveTranslate(this.translateX, bounds.width), resolveTranslate(this.translateY, bounds.height), 0);
+		transform = CATransform3DTranslate(transform, PercentLength.toDeviceIndependentPixels(this.translateX, 0, bounds.width), PercentLength.toDeviceIndependentPixels(this.translateY, 0, bounds.height), 0);
 		transform = iosUtils.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 

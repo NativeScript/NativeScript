@@ -134,6 +134,30 @@ export namespace PercentLength {
 	export const toDevicePixels: {
 		(length: CoreTypes.PercentLengthType, auto: number, parentAvailableWidth: number): number;
 	} = toDevicePixelsCommon;
+	/**
+	 * Converts a parsed PercentLengthType to device-independent pixels without rounding.
+	 * @param length The parsed length to convert.
+	 * @param auto Value to use for "auto" or unset lengths; defaults to NaN.
+	 * @param basis Percentage basis in device-independent pixels; defaults to NaN.
+	 */
+	export function toDeviceIndependentPixels(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, basis: number = Number.NaN): CoreTypes.dip {
+		if (typeof length === 'number') {
+			return length;
+		}
+		if (typeof length !== 'object' || length === null) {
+			return auto;
+		}
+
+		switch (length.unit) {
+			case 'px':
+				return layout.toDeviceIndependentPixels(length.value);
+			case '%':
+				return basis * length.value;
+			default:
+				return length.value;
+		}
+	}
+
 	export const convertToString: {
 		(length: CoreTypes.PercentLengthType): string;
 	} = convertToStringCommon;
