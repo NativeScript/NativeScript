@@ -8,7 +8,8 @@
 		"url": "https://github.com/NativeScript/NativeScript"
 	},
 	"files": [
-		"index.d.ts"
+		"index.d.ts",
+		"globals.d.ts"
 	],
 	"license": "Apache-2.0",
 	"dependencies": {
