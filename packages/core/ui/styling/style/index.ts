@@ -90,6 +90,10 @@ export class Style extends Observable {
 		this.scopedCssVariables.clear();
 	}
 
+	public hasScopedCssVariables(): boolean {
+		return this.scopedCssVariables.size > 0;
+	}
+
 	public resetUnscopedCssVariables() {
 		this.unscopedCssVariables.clear();
 	}

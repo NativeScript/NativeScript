@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 
 import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
+import { invalidateMediaQueryCache } from '../../media-query-list';
+import { unsetValue } from '../core/properties';
 
 /**
  * Counts how many times css applies a value to a style property, by wrapping the
@@ -391,5 +393,208 @@ describe('CssState.onChange subscriptions', () => {
 
 		expect(calls.added).toEqual([]);
 		expect(view.style.color.toString()).toBe('#0000FF');
+	});
+});
+
+describe('CssState skips a pass that would apply nothing', () => {
+	it('does not rebuild the property values when the same rules match again', () => {
+		const { view } = styled('label { color: red; }');
+		view._cssState.onLoaded();
+		const pass = vi.spyOn(view._cssState as any, 'setPropertyValues');
+
+		view._cssState.updateDynamicState();
+		view._cssState.updateDynamicState();
+
+		expect(pass).not.toHaveBeenCalled();
+		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('still evaluates rules whose values use css variables', () => {
+		const { view } = styled('label { --c: red; color: var(--c); }');
+		view._cssState.onLoaded();
+		const pass = vi.spyOn(view._cssState as any, 'setPropertyValues');
+
+		view._cssState.updateDynamicState();
+
+		expect(pass).toHaveBeenCalledTimes(1);
+	});
+
+	it('runs the pass again after a local value was written', () => {
+		const { view } = styled('label { color: red; }');
+		view._cssState.onLoaded();
+		const pass = vi.spyOn(view._cssState as any, 'setPropertyValues');
+
+		view.style.color = 'blue';
+		view.style.color = unsetValue;
+		view._cssState.updateDynamicState();
+
+		expect(pass).toHaveBeenCalledTimes(1);
+		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+});
+
+describe('StyleScope candidate cache', () => {
+	function twoLabels(css: string) {
+		const scope = new StyleScope();
+		scope.css = css;
+		const root = new StackLayout();
+		root._styleScope = scope;
+		const labels = [new Label(), new Label()].map((label) => {
+			root.addChild(label);
+			label._styleScope = scope;
+			label.className = 'title';
+			return label;
+		});
+
+		return { scope, labels };
+	}
+
+	it('collects candidates once for views with the same type and classes', () => {
+		const { scope, labels } = twoLabels('.title { color: red; } label { font-size: 12; }');
+		const collect = vi.spyOn((scope as any)._localSelectorScope, 'collectCandidates');
+
+		const first = scope.matchSelectors(labels[0]);
+		const second = scope.matchSelectors(labels[1]);
+
+		expect(collect).toHaveBeenCalledTimes(1);
+		expect(second.selectors).toEqual(first.selectors);
+		expect(first.selectors.length).toBe(2);
+	});
+
+	it('collects again after the scope css changes', () => {
+		const { scope, labels } = twoLabels('.title { color: red; }');
+		scope.matchSelectors(labels[0]);
+
+		scope.addCss('.title { color: blue; }');
+		const match = scope.matchSelectors(labels[1]);
+
+		expect(match.selectors.length).toBe(2);
+	});
+
+	it('collects again after media query inputs change', () => {
+		const { scope, labels } = twoLabels('.title { color: red; }');
+		scope.matchSelectors(labels[0]);
+		const collect = vi.spyOn((scope as any)._localSelectorScope, 'collectCandidates');
+
+		invalidateMediaQueryCache();
+		scope.matchSelectors(labels[1]);
+
+		expect(collect).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('className changes restyle only the descendants that depend on them', () => {
+	function tree(css: string) {
+		const scope = new StyleScope();
+		scope.css = css;
+		const root: any = new StackLayout();
+		const title: any = new Label();
+		const other: any = new Label();
+		title.className = 'title';
+		other.className = 'other';
+		root.addChild(title);
+		root.addChild(other);
+		for (const view of [root, title, other]) {
+			view._styleScope = scope;
+			Object.defineProperty(view, 'isLoaded', { value: true, configurable: true });
+			view._cssState.onLoaded();
+		}
+
+		return { root, title, other };
+	}
+
+	it('re-matches the descendants a changed ancestor class gates', () => {
+		const { root, title, other } = tree('.alt .title { color: blue; }');
+		const titleChange = vi.spyOn(title._cssState, 'onChange');
+		const otherChange = vi.spyOn(other._cssState, 'onChange');
+
+		root.className = 'alt';
+
+		expect(titleChange).toHaveBeenCalledTimes(1);
+		expect(otherChange).not.toHaveBeenCalled();
+		expect(title.style.color.toString()).toBe('#0000FF');
+	});
+
+	it('leaves descendants alone when no selector reads the class above its subject', () => {
+		const { root, title } = tree('.alt { color: blue; } .title { color: red; }');
+		const titleChange = vi.spyOn(title._cssState, 'onChange');
+
+		root.className = 'alt';
+
+		expect(titleChange).not.toHaveBeenCalled();
+		expect(title.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('re-matches every descendant when the view gains scoped css variables', () => {
+		const { root, title, other } = tree('.alt { --c: blue; } .title { color: var(--c, red); }');
+		const otherChange = vi.spyOn(other._cssState, 'onChange');
+
+		root.className = 'alt';
+
+		expect(otherChange).toHaveBeenCalledTimes(1);
+		expect(title.style.color.toString()).toBe('#0000FF');
+	});
+
+	it('re-matches every descendant when a class attribute selector reads ancestors', () => {
+		const { root, other } = tree('[className~=alt] .title { color: blue; }');
+		const otherChange = vi.spyOn(other._cssState, 'onChange');
+
+		root.className = 'alt';
+
+		expect(otherChange).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('className changes follow variables a restyled descendant defines', () => {
+	function nested(css: string) {
+		const scope = new StyleScope();
+		scope.css = css;
+		const root: any = new StackLayout();
+		const card: any = new StackLayout();
+		const label: any = new Label();
+		card.className = 'card';
+		card.addChild(label);
+		root.addChild(card);
+		for (const view of [root, card, label]) {
+			view._styleScope = scope;
+			Object.defineProperty(view, 'isLoaded', { value: true, configurable: true });
+			view._cssState.onLoaded();
+		}
+
+		return { root, label };
+	}
+
+	it('re-evaluates var() below a descendant that gains a variable', () => {
+		const { root, label } = nested('.dark .card { --bg: blue; } .card Label { color: var(--bg, red); }');
+
+		root.className = 'dark';
+
+		expect(label.style.color.toString()).toBe('#0000FF');
+	});
+
+	it('re-evaluates var() when the descendant gains and loses the variable', () => {
+		const { root, label } = nested('.dark StackLayout { --c: blue; } Label { color: var(--c, red); }');
+
+		root.className = 'dark';
+		expect(label.style.color.toString()).toBe('#0000FF');
+
+		root.className = '';
+		expect(label.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('re-evaluates var() below a child combinator subject', () => {
+		const { root, label } = nested('.dark > StackLayout { --c: blue; } StackLayout > Label { color: var(--c, red); }');
+
+		root.className = 'dark';
+
+		expect(label.style.color.toString()).toBe('#0000FF');
+	});
+
+	it('re-evaluates calc() over a variable a descendant defines', () => {
+		const { root, label } = nested('.dark .card { --w: 10; } Label { width: calc(var(--w, 5) * 2); }');
+
+		root.className = 'dark';
+
+		expect(label.style.width).toBe(20);
 	});
 });
