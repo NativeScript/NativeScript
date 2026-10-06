@@ -452,8 +452,13 @@ export class IOSHelper {
 	}
 
 	static insertNativeSubview(parentNativeView: UIView, childNativeView: UIView, atIndex?: number): void {
+		// Reading subviews copies the array, so appends skip it.
+		if (typeof atIndex !== 'number') {
+			parentNativeView.addSubview(childNativeView);
+			return;
+		}
 		const subviews = parentNativeView.subviews;
-		if (typeof atIndex !== 'number' || atIndex >= subviews.count) {
+		if (atIndex >= subviews.count) {
 			parentNativeView.addSubview(childNativeView);
 		} else {
 			// insertSubview:atIndex: also counts non-view sublayers, e.g. gradient backgrounds
