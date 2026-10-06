@@ -202,14 +202,15 @@ class CSSSource {
 		private _url: string,
 		private _file: string,
 		private _source: string,
+		private _layer?: CascadeLayer,
 	) {
 		this.parse();
 	}
 
-	public static fromDetect(cssOrAst: any, fileName?: string): CSSSource {
+	public static fromDetect(cssOrAst: any, fileName?: string, layer?: CascadeLayer): CSSSource {
 		if (typeof cssOrAst === 'string') {
 			// raw-loader
-			return CSSSource.fromSource(cssOrAst, fileName);
+			return CSSSource.fromSource(cssOrAst, fileName, layer);
 		} else if (typeof cssOrAst === 'object') {
 			if (cssOrAst.default) {
 				cssOrAst = cssOrAst.default;
@@ -217,15 +218,15 @@ class CSSSource {
 
 			if (cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
 				// css-loader
-				return CSSSource.fromAST(cssOrAst, fileName);
+				return CSSSource.fromAST(cssOrAst, fileName, layer);
 			}
 		}
 
 		// css2json-loader
-		return CSSSource.fromSource(cssOrAst.toString(), fileName);
+		return CSSSource.fromSource(cssOrAst.toString(), fileName, layer);
 	}
 
-	public static fromURI(uri: string): CSSSource {
+	public static fromURI(uri: string, layer?: CascadeLayer): CSSSource {
 		// webpack modules require all file paths to be relative to /app folder
 		const appRelativeUri = CSSSource.pathRelativeToApp(uri);
 		const sanitizedModuleName = sanitizeModuleName(appRelativeUri);
@@ -234,7 +235,7 @@ class CSSSource {
 		try {
 			const cssOrAst = global.loadModule(resolvedModuleName, true);
 			if (cssOrAst) {
-				return CSSSource.fromDetect(cssOrAst, resolvedModuleName);
+				return CSSSource.fromDetect(cssOrAst, resolvedModuleName, layer);
 			}
 		} catch (e) {
 			if (Trace.isEnabled()) {
@@ -242,7 +243,7 @@ class CSSSource {
 			}
 		}
 
-		return CSSSource.fromFile(appRelativeUri);
+		return CSSSource.fromFile(appRelativeUri, layer);
 	}
 
 	private static pathRelativeToApp(uri: string): string {
@@ -262,25 +263,25 @@ class CSSSource {
 		return relativeUri;
 	}
 
-	public static fromFile(url: string): CSSSource {
+	public static fromFile(url: string, layer?: CascadeLayer): CSSSource {
 		// .scss, .sass, etc. css files in vanilla app are usually compiled to .css so we will try to load a compiled file first.
 		const cssFileUrl = url.replace(/\..\w+$/, '.css');
 		if (cssFileUrl !== url) {
 			const cssFile = CSSSource.resolveCSSPathFromURL(cssFileUrl);
 			if (cssFile) {
-				return new CSSSource(undefined, url, cssFile, undefined);
+				return new CSSSource(undefined, url, cssFile, undefined, layer);
 			}
 		}
 
 		const file = CSSSource.resolveCSSPathFromURL(url);
 
-		return new CSSSource(undefined, url, file, undefined);
+		return new CSSSource(undefined, url, file, undefined, layer);
 	}
 
-	public static fromFileImport(url: string, importSource: string): CSSSource {
+	public static fromFileImport(url: string, importSource: string, layer?: CascadeLayer): CSSSource {
 		const file = CSSSource.resolveCSSPathFromURL(url, importSource);
 
-		return new CSSSource(undefined, url, file, undefined);
+		return new CSSSource(undefined, url, file, undefined, layer);
 	}
 
 	@profile
@@ -291,12 +292,12 @@ class CSSSource {
 		return file;
 	}
 
-	public static fromSource(source: string, url?: string): CSSSource {
-		return new CSSSource(undefined, url, undefined, source);
+	public static fromSource(source: string, url?: string, layer?: CascadeLayer): CSSSource {
+		return new CSSSource(undefined, url, undefined, source, layer);
 	}
 
-	public static fromAST(ast: ReworkCSS.SyntaxTree, url?: string): CSSSource {
-		return new CSSSource(ast, url, undefined, undefined);
+	public static fromAST(ast: ReworkCSS.SyntaxTree, url?: string, layer?: CascadeLayer): CSSSource {
+		return new CSSSource(ast, url, undefined, undefined, layer);
 	}
 
 	get selectors(): RuleSet[] {
@@ -367,8 +368,8 @@ class CSSSource {
 			const keyframes: Keyframes[] = [];
 
 			// When css2json-loader is enabled, imports are handled there and removed from AST rules
-			populateRulesFromImports(nodes, rulesets, keyframes);
-			_populateRules(nodes, rulesets, keyframes);
+			populateRulesFromImports(nodes, rulesets, keyframes, this._layer);
+			_populateRules(nodes, rulesets, keyframes, undefined, this._layer?.path, this._layer?.name);
 
 			if (rulesets && rulesets.length) {
 				rulesets.forEach((rule) => {
@@ -416,7 +417,13 @@ function layerPathFor(name: string, prefixPath: number[], prefixName: string): n
 	return path;
 }
 
-function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[]): void {
+// The cascade layer a stylesheet's rules are parsed into: its rank path and qualified name.
+interface CascadeLayer {
+	path: number[];
+	name: string;
+}
+
+function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], parentLayer?: CascadeLayer): void {
 	const imports = nodes.filter((r) => r.type === 'import');
 	if (!imports.length) {
 		return;
@@ -443,23 +450,35 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 		source: sourceFromImportObject(importObject),
 	});
 
-	const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, source) : CSSSource.fromURI(url));
+	// `@import "x.css" layer(name)` parses the sheet inside that layer, so its own
+	// layers become sublayers of it; a plain import stays in the importer's layer.
+	// The layer must be registered before the sheet is parsed to keep document order.
+	const importLayer = (layer: string | null): CascadeLayer | undefined => {
+		if (layer === null) {
+			return parentLayer;
+		}
+
+		const parentPath = parentLayer?.path ?? [];
+		const parentName = parentLayer?.name ?? '';
+		const name = layer.trim();
+		if (!name) {
+			const anonymous = `${parentName}~import-${anonymousLayerCount++}`;
+
+			return { path: [...parentPath, layerOrdinal(anonymous)], name: anonymous };
+		}
+
+		return { path: layerPathFor(name, parentPath, parentName), name: parentName ? `${parentName}.${name}` : name };
+	};
+
+	const getCssFile = ({ url, source, layer }) => (source ? CSSSource.fromFileImport(url, source, layer) : CSSSource.fromURI(url, layer));
 
 	const cssFiles = imports
 		.map((importObject) => ({ ...toUrlSourcePair(importObject), layer: layerFromImportObject(importObject) }))
 		.filter(({ url }) => !!url)
-		.map(({ url, source, layer }) => ({ cssFile: getCssFile({ url, source }), layer }));
+		.map(({ url, source, layer }) => getCssFile({ url, source, layer: importLayer(layer) }));
 
-	for (const { cssFile, layer } of cssFiles) {
+	for (const cssFile of cssFiles) {
 		if (cssFile) {
-			if (layer !== null) {
-				// @import "x.css" layer(name) — the imported sheet joins the named
-				// layer; its own layers become nested sublayers of it.
-				const importPath = [layerOrdinal(layer.trim() || `~import-${anonymousLayerCount++}`)];
-				for (const ruleset of cssFile.selectors) {
-					ruleset.layerPath = [...importPath, ...(ruleset.layerPath ?? [])];
-				}
-			}
 			rulesets.push(...cssFile.selectors);
 			keyframes.push(...cssFile.keyframes);
 		}

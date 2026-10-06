@@ -1,7 +1,11 @@
+import { vi } from 'vitest';
 import { cssTreeParse } from '../../css/css-tree-parser';
 import { parse as reworkCssParse } from '../../css/reworkcss.js';
 import { RuleSet, StyleSheetSelectorScope } from './css-selector';
-import { _populateRules } from './style-scope';
+import { _populateRules, StyleScope } from './style-scope';
+
+// Imported sheets resolve through global.loadModule, keyed by module name.
+vi.mock('../../module-name-resolver', () => ({ resolveModuleName: (name: string) => name }));
 
 describe('cascade layers', () => {
 	function createWith(parse: (css: string, source: string) => any, css: string): { rulesets: RuleSet[]; keyframes: any[]; selectorScope: StyleSheetSelectorScope<any> } {
@@ -155,9 +159,8 @@ describe('cascade layers', () => {
 	});
 
 	it('parses @layer through the legacy rework parser (build-time css2json path)', () => {
-		// webpack's css2json-loader and vite's bundled-css serializer both run the
-		// rework parser — the AST they emit must carry layer nodes through to
-		// _populateRules, which is what this exercises end to end.
+		// The rework AST shape is also what css2json-loader and vite ship at build
+		// time, so layer nodes in it must reach _populateRules.
 		const { rulesets } = createWith(
 			(css, source) => reworkCssParse(css, { source }),
 			`
@@ -169,5 +172,61 @@ describe('cascade layers', () => {
 		expect(rulesets.length).toBe(2);
 		expect(rulesets[0].layerPath).toHaveLength(1);
 		expect(rulesets[1].layerPath).toHaveLength(1);
+	});
+
+	describe('@import layer()', () => {
+		const node = { cssType: 'label', id: 'main', cssClasses: new Set(['login']) } as any;
+		let previousLoadModule: any;
+
+		beforeEach(() => {
+			previousLoadModule = (global as any).loadModule;
+		});
+
+		afterEach(() => {
+			(global as any).loadModule = previousLoadModule;
+		});
+
+		function winningImportedValue(modules: Record<string, string>, css: string) {
+			(global as any).loadModule = (name: string) => modules[name];
+			const scope = new StyleScope();
+			scope.addCss(css);
+			scope.ensureSelectors();
+			const selectors = scope.query(node);
+
+			return selectors[selectors.length - 1]?.ruleset.declarations.find((d) => d.property === 'color')?.value;
+		}
+
+		it('ranks the import layer before layers the importer declares later', () => {
+			// imp-shared inside the import is imp-vendor.imp-shared, a different layer
+			// from the importer's own imp-shared, which comes after imp-vendor.
+			const winner = winningImportedValue(
+				{ vendor: '@layer imp-shared { #main { color: red; } }' },
+				`@import url("vendor.css") layer(imp-vendor);
+@layer imp-shared { .login { color: green; } }`,
+			);
+			expect(winner).toBe('green');
+		});
+
+		it("nests the imported sheet's layers so they cannot reorder the importer's layers", () => {
+			// The imported sheet declares imp-base before imp-theme; the importer's own
+			// statement puts imp-theme first, so its imp-base rule must still win.
+			const winner = winningImportedValue(
+				{ library: '@layer imp-base { .q { color: red; } } @layer imp-theme { .q { color: red; } }' },
+				`@import url("library.css") layer(imp-library);
+				@layer imp-theme, imp-base;
+				@layer imp-theme { #main { color: blue; } }
+				@layer imp-base { .login { color: green; } }`,
+			);
+			expect(winner).toBe('green');
+		});
+
+		it('keeps a plain import nested inside a layered import in that layer', () => {
+			const winner = winningImportedValue(
+				{ outer: '@import url("inner.css");', inner: '#main { color: red; }' },
+				`@import url("outer.css") layer(imp-outer);
+@layer imp-later { .login { color: green; } }`,
+			);
+			expect(winner).toBe('green');
+		});
 	});
 });
