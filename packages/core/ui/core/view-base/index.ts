@@ -17,6 +17,7 @@ import { profile } from '../../../profiling';
 
 import { DOMNode } from '../../../debugger/dom-types';
 import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
+import { isClassDependent } from '../../styling/css-selector';
 import { booleanConverter } from './utils';
 
 export { booleanConverter } from './utils';
@@ -1497,6 +1498,29 @@ export abstract class ViewBase extends Observable {
 		});
 	}
 
+	/**
+	 * Restyles this view and only the descendants whose selectors read one of the changed classes.
+	 */
+	_onCssClassesChange(changedCssClasses: string[]): void {
+		const scope = this._styleScope;
+		const hadScopedVariables = this.style.hasScopedCssVariables();
+		this._cssState.onChange();
+
+		// Scoped variables flow to every descendant through var().
+		const dependents = !scope || hadScopedVariables || this.style.hasScopedCssVariables() ? null : scope.classChangeDependents(changedCssClasses);
+		if (dependents && !dependents.universal && !dependents.types.size && !dependents.ids.size && !dependents.classes.size) {
+			return;
+		}
+
+		eachDescendant(this, (child: ViewBase) => {
+			if (!dependents || child._styleScope !== scope || isClassDependent(child, dependents)) {
+				child._cssState.onChange();
+			}
+
+			return true;
+		});
+	}
+
 	_inheritStyleScope(styleScope: StyleScope): void {
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
@@ -1620,6 +1644,7 @@ export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
 		const cssClasses = view.cssClasses;
+		const previousCssClasses = new Set(cssClasses);
 		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
 		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
@@ -1651,7 +1676,17 @@ export const classNameProperty = new Property<ViewBase, string>({
 			}
 		}
 
-		view._onCssStateChange();
+		const changedCssClasses: string[] = [];
+		for (const cssClass of cssClasses) {
+			if (!previousCssClasses.delete(cssClass)) {
+				changedCssClasses.push(cssClass);
+			}
+		}
+		for (const cssClass of previousCssClasses) {
+			changedCssClasses.push(cssClass);
+		}
+
+		view._onCssClassesChange(changedCssClasses);
 	},
 });
 classNameProperty.register(ViewBase);

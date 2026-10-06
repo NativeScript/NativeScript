@@ -1166,6 +1166,75 @@ function appendSelectorCandidates(candidates: SelectorCore[], selectors: Selecto
 	}
 }
 
+/**
+ * The subjects of the selectors a class change can affect, by how they are indexed.
+ */
+export interface ClassDependents {
+	universal: boolean;
+	types: Set<string>;
+	ids: Set<string>;
+	classes: Set<string>;
+}
+
+export function createClassDependents(): ClassDependents {
+	return { universal: false, types: new Set(), ids: new Set(), classes: new Set() };
+}
+
+function mergeClassDependents(into: ClassDependents, from: ClassDependents): void {
+	into.universal ||= from.universal;
+	from.types.forEach((type) => into.types.add(type));
+	from.ids.forEach((id) => into.ids.add(id));
+	from.classes.forEach((cssClass) => into.classes.add(cssClass));
+}
+
+/** True when a node is the subject of one of the dependent selectors. */
+export function isClassDependent(node: Node, dependents: ClassDependents): boolean {
+	if (dependents.universal || dependents.types.has(node.cssType) || (node.id && dependents.ids.has(node.id))) {
+		return true;
+	}
+	const cssClasses = node.cssClasses;
+	if (cssClasses && dependents.classes.size) {
+		for (const cssClass of cssClasses) {
+			if (dependents.classes.has(cssClass)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Collects the classes a selector reads from nodes other than its subject (ancestors,
+ * siblings, functional pseudo-class arguments). Returns true if a class attribute selector does too.
+ */
+function collectNonSubjectClasses(sel: SelectorBase, classes: Set<string>, isSubject: boolean): boolean {
+	let readsAttributes = false;
+	if (sel instanceof ComplexSelector) {
+		const parts = sel.selectors;
+		for (let i = 0, length = parts.length; i < length; i++) {
+			readsAttributes = collectNonSubjectClasses(parts[i], classes, isSubject && i === length - 1) || readsAttributes;
+		}
+	} else if (sel instanceof SimpleSelectorSequence) {
+		for (const part of sel.selectors) {
+			readsAttributes = collectNonSubjectClasses(part, classes, isSubject) || readsAttributes;
+		}
+	} else if (sel instanceof FunctionalPseudoClassSelector) {
+		// Arguments may hold combinators, so everything inside counts.
+		for (const part of (sel as unknown as { selectors: SelectorBase[] }).selectors) {
+			readsAttributes = collectNonSubjectClasses(part, classes, false) || readsAttributes;
+		}
+	} else if (sel instanceof ClassSelector) {
+		if (!isSubject) {
+			classes.add(sel.cssClass);
+		}
+	} else if (sel instanceof AttributeSelector) {
+		readsAttributes = !isSubject && /^class/i.test(sel.attribute);
+	}
+
+	return readsAttributes;
+}
+
 export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	private id: SelectorMap = {};
 	private class: SelectorMap = {};
@@ -1183,6 +1252,31 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	 * True when any selector in the scope contains a general sibling ('~') combinator.
 	 */
 	public hasSiblingCombinatorSelectors = false;
+	/**
+	 * Classes used outside a selector's subject, mapped to the subjects of the selectors they gate.
+	 */
+	public classDependents = new Map<string, ClassDependents>();
+	/**
+	 * True when a class attribute selector sits outside a subject, so any class change can matter.
+	 */
+	public hasAttributeDependents = false;
+
+	/**
+	 * Adds the subjects a change to `changedClasses` can restyle; returns false when unknown.
+	 */
+	public collectClassDependents(changedClasses: string[], into: ClassDependents): boolean {
+		if (this.hasAttributeDependents) {
+			return false;
+		}
+		for (let i = 0, length = changedClasses.length; i < length; i++) {
+			const subjects = this.classDependents.get(changedClasses[i]);
+			if (subjects) {
+				mergeClassDependents(into, subjects);
+			}
+		}
+
+		return true;
+	}
 
 	getSelectorCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
 		const { cssClasses, id, cssType } = node;
@@ -1208,16 +1302,35 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	}
 
 	sortById(id: string, sel: SelectorCore): void {
+		this.indexClassDependents(sel, (subjects) => subjects.ids.add(id));
 		this.addToMap(this.id, id, sel);
 	}
 	sortByClass(cssClass: string, sel: SelectorCore): void {
+		this.indexClassDependents(sel, (subjects) => subjects.classes.add(cssClass));
 		this.addToMap(this.class, cssClass, sel);
 	}
 	sortByType(cssType: string, sel: SelectorCore): void {
+		this.indexClassDependents(sel, (subjects) => subjects.types.add(cssType));
 		this.addToMap(this.type, cssType, sel);
 	}
 	sortAsUniversal(sel: SelectorCore): void {
+		this.indexClassDependents(sel, (subjects) => (subjects.universal = true));
 		this.universal.push(this.makeDocSelector(sel));
+	}
+
+	private indexClassDependents(sel: SelectorCore, addSubject: (subjects: ClassDependents) => void): void {
+		const classes = new Set<string>();
+		if (collectNonSubjectClasses(sel, classes, true)) {
+			this.hasAttributeDependents = true;
+		}
+		for (const cssClass of classes) {
+			let subjects = this.classDependents.get(cssClass);
+			if (!subjects) {
+				subjects = createClassDependents();
+				this.classDependents.set(cssClass, subjects);
+			}
+			addSubject(subjects);
+		}
 	}
 
 	private addToMap(map: SelectorMap, head: string, sel: SelectorCore): void {
@@ -1267,6 +1380,21 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 
 		this.tier = tier;
 		this.lookupRulesets(rulesets);
+	}
+
+	public collectClassDependents(changedClasses: string[], into: ClassDependents): boolean {
+		if (!super.collectClassDependents(changedClasses, into)) {
+			return false;
+		}
+		if (this.mediaQuerySelectorScopes) {
+			for (const selectorScope of this.mediaQuerySelectorScopes) {
+				if (!selectorScope.collectClassDependents(changedClasses, into)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -1365,7 +1493,7 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 }
 
 /** Cascade order: specificity, then source order - (tier, position) across stylesheets. */
-function compareSelectors(a: SelectorCore, b: SelectorCore): number {
+export function compareSelectors(a: SelectorCore, b: SelectorCore): number {
 	return a.specificity - b.specificity || a.tier - b.tier || a.pos - b.pos;
 }
 
@@ -1374,7 +1502,7 @@ function compareSelectors(a: SelectorCore, b: SelectorCore): number {
  * `scopedTags` filters out rules registered on behalf of a stylesheet this scope
  * never loaded; pass it only when such rules exist - it costs a lookup per candidate.
  */
-export function matchSelectorCandidates<T extends Node>(node: T, candidates: SelectorCore[], scopedTags?: Set<string>): SelectorsMatch<T> {
+export function matchSelectorCandidates<T extends Node>(node: T, candidates: SelectorCore[], scopedTags?: Set<string>, presorted = false): SelectorsMatch<T> {
 	const selectorsMatch = new SelectorsMatch<T>();
 
 	let matched = 0;
@@ -1394,7 +1522,7 @@ export function matchSelectorCandidates<T extends Node>(node: T, candidates: Sel
 	}
 	candidates.length = matched;
 
-	selectorsMatch.selectors = candidates.sort(compareSelectors);
+	selectorsMatch.selectors = presorted ? candidates : candidates.sort(compareSelectors);
 
 	return selectorsMatch;
 }

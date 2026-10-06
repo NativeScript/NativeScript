@@ -707,6 +707,20 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 });
 backgroundImageProperty.register(Style);
 
+// Colors are immutable, so every view styled with the same text shares one (and its native color).
+const cssColors = new Map<string, Color>();
+function cssColor(value: string): Color {
+	let color = cssColors.get(value);
+	if (!color) {
+		if (cssColors.size >= 512) {
+			cssColors.clear();
+		}
+		color = new Color(value);
+		cssColors.set(value, color);
+	}
+	return color;
+}
+
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
@@ -714,7 +728,7 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: cssColor,
 });
 backgroundColorProperty.register(Style);
 
@@ -786,7 +800,7 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: cssColor,
 });
 borderTopColorProperty.register(Style);
 
@@ -797,7 +811,7 @@ export const borderRightColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: cssColor,
 });
 borderRightColorProperty.register(Style);
 
@@ -808,7 +822,7 @@ export const borderBottomColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: cssColor,
 });
 borderBottomColorProperty.register(Style);
 
@@ -819,7 +833,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: cssColor,
 });
 borderLeftColorProperty.register(Style);
 
@@ -1163,7 +1177,7 @@ export const colorProperty = new InheritedCssProperty<Style, Color>({
 	name: 'color',
 	cssName: 'color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: cssColor,
 });
 colorProperty.register(Style);
 

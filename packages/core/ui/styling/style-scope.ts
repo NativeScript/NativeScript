@@ -5,7 +5,8 @@ import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssS
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, Changes, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, Changes, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates, compareSelectors, ClassDependents, createClassDependents } from './css-selector';
+import { getMediaQueryEpoch } from '../../media-query-list';
 import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -673,6 +674,37 @@ function changeMapsEqual(applied: Readonly<ChangeMap<ViewBase>>, current: Change
 	return true;
 }
 
+// One key string per property, so each write reuses an internalized key.
+const cssKeys = new Map<string, string>();
+function cssKeyOf(property: string): string {
+	let key = cssKeys.get(property);
+	if (key === undefined) {
+		key = `css:${property}`;
+		cssKeys.set(property, key);
+	}
+	return key;
+}
+
+const computedValuesSymbol = Symbol('computedValues');
+
+/** True when a declaration's value depends on CSS variables or is resolved later. */
+function rulesetHasComputedValues(ruleset: RuleSet): boolean {
+	let computed: boolean = ruleset[computedValuesSymbol];
+	if (computed === undefined) {
+		computed = false;
+		for (const declaration of ruleset.declarations) {
+			const value = declaration.value;
+			if (_isCssPendingSubstitution(value) || (typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value)))) {
+				computed = true;
+				break;
+			}
+		}
+		ruleset[computedValuesSymbol] = computed;
+	}
+
+	return computed;
+}
+
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
 	static emptyPropertyBag: Record<string, unknown> = {};
@@ -695,6 +727,7 @@ export class CssState {
 	_match: SelectorsMatch<ViewBase>;
 	_matchInvalid: boolean;
 	_playsKeyframeAnimations: boolean;
+	private _appliedSelectors: SelectorCore[];
 
 	constructor(private viewRef: WeakRef<ViewBase>) {
 		this._onDynamicStateChangeHandler = () => this.updateDynamicState();
@@ -780,18 +813,36 @@ export class CssState {
 			}
 		}
 
-		// Ideally we should return here if there are no matching selectors, however
-		// if there are property removals, returning here would not remove them
-		// this is seen in STYLE test in automated.
-		// if (!matchingSelectors || matchingSelectors.length === 0) {
-		// 		return;
-		// }
+		if (this.isAlreadyApplied(view, matchingSelectors)) {
+			return;
+		}
 
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
 			this.setPropertyValues(matchingSelectors);
 			this.playKeyframeAnimations(matchingSelectors);
 		});
+		this._appliedSelectors = matchingSelectors;
+	}
+
+	/**
+	 * The same rules, with no var()/calc() values, animations or local writes since,
+	 * would produce the property values already applied.
+	 */
+	private isAlreadyApplied(view: ViewBase, matchingSelectors: SelectorCore[]): boolean {
+		const applied = this._appliedSelectors;
+		if (!applied || applied.length !== matchingSelectors.length || this._playsKeyframeAnimations || view.style._localValueVersion !== this._appliedLocalValueVersion) {
+			return false;
+		}
+
+		for (let i = 0, length = matchingSelectors.length; i < length; i++) {
+			const ruleset = matchingSelectors[i].ruleset;
+			if (applied[i] !== matchingSelectors[i] || !ruleset || ruleset[animationsSymbol]?.length || rulesetHasComputedValues(ruleset)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private playKeyframeAnimations(matchingSelectors: SelectorCore[]): void {
@@ -1000,7 +1051,7 @@ export class CssState {
 		// one entry cannot clear a value another one set.
 		for (const property in oldProperties) {
 			if (property in view.style) {
-				view.style[`css:${property}`] = unsetValue;
+				view.style[cssKeyOf(property)] = unsetValue;
 			} else {
 				const camelCasedProperty = property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 				view[camelCasedProperty] = unsetValue;
@@ -1011,7 +1062,7 @@ export class CssState {
 			const value = valuesToApply[property];
 			try {
 				if (property in view.style) {
-					view.style[`css:${property}`] = value;
+					view.style[cssKeyOf(property)] = value;
 				} else {
 					const camelCasedProperty = property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 					view[camelCasedProperty] = value;
@@ -1087,6 +1138,10 @@ export class StyleScope {
 
 	private _hasSelectors = false;
 	private _mergedCssKeyframes: Keyframes[];
+	// Sorted candidates per type, id and classes; valid for one selectors version and media epoch.
+	private _candidateCache = new Map<string, SelectorCore[]>();
+	private _candidateCacheSelectorsVersion = -1;
+	private _candidateCacheMediaEpoch = -1;
 
 	private _localCssSelectors: RuleSet[] = [];
 	private _localCssKeyframes: Keyframes[] = [];
@@ -1255,17 +1310,61 @@ export class StyleScope {
 			return null;
 		}
 
-		// The cascade has to see the application and local candidates as a single ordered set.
-		const candidates: SelectorCore[] = [];
-		applicationSelectorScope?.collectCandidates(view, candidates);
-		this._localSelectorScope?.collectCandidates(view, candidates);
-
-		const match = matchSelectorCandidates<ViewBase>(view, candidates, applicationSelectorsHaveScopedTags ? this._cssFiles : undefined);
+		const candidates = this.candidatesFor(view);
+		const match = matchSelectorCandidates<ViewBase>(view, candidates, applicationSelectorsHaveScopedTags ? this._cssFiles : undefined, true);
 
 		// Make sure to re-apply keyframes to matching selectors as a media query keyframe might be applicable at this point
 		this._applyKeyframesToSelectors(match.selectors);
 
 		return match;
+	}
+
+	private candidatesFor(view: ViewBase): SelectorCore[] {
+		const selectorsVersion = this.getSelectorsVersion();
+		const mediaEpoch = getMediaQueryEpoch();
+		const cache = this._candidateCache;
+		if (this._candidateCacheSelectorsVersion !== selectorsVersion || this._candidateCacheMediaEpoch !== mediaEpoch || cache.size > 2048) {
+			cache.clear();
+			this._candidateCacheSelectorsVersion = selectorsVersion;
+			this._candidateCacheMediaEpoch = mediaEpoch;
+		}
+
+		let key = `${view.cssType}|${view.id ?? ''}|`;
+		const cssClasses = view.cssClasses;
+		if (cssClasses) {
+			for (const cssClass of cssClasses) {
+				key += ` ${cssClass}`;
+			}
+		}
+
+		let candidates = cache.get(key);
+		if (!candidates) {
+			// The cascade has to see the application and local candidates as a single ordered set.
+			candidates = [];
+			applicationSelectorScope?.collectCandidates(view, candidates);
+			this._localSelectorScope?.collectCandidates(view, candidates);
+			candidates.sort(compareSelectors);
+			cache.set(key, candidates);
+		}
+
+		// Matching compacts the array in place.
+		return candidates.slice();
+	}
+
+	/**
+	 * Subjects of the descendants a change to these classes can restyle; null when any can.
+	 */
+	public classChangeDependents(changedClasses: string[]): ClassDependents | null {
+		this.ensureSelectors();
+		const dependents = createClassDependents();
+		if (applicationSelectorScope && !applicationSelectorScope.collectClassDependents(changedClasses, dependents)) {
+			return null;
+		}
+		if (this._localSelectorScope && !this._localSelectorScope.collectClassDependents(changedClasses, dependents)) {
+			return null;
+		}
+
+		return dependents;
 	}
 
 	public query(node: Node): SelectorCore[] {
