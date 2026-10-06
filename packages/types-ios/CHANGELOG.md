@@ -1,3 +1,13 @@
+## 9.1.3 (2026-10-06)
+
+### 🚀 Features
+
+- **types-ios:** iOS 27 SDK typings ([#11508](https://github.com/NativeScript/NativeScript/pull/11508))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 9.1.2 (2026-09-23)
 
 ### 🩹 Fixes
