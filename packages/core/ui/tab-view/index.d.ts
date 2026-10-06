@@ -38,7 +38,9 @@ export class TabViewItem extends ViewBase {
 	public iconSource: string;
 
 	/**
-	 * Gets or sets the role of the TabViewItem.
+	 * Gets or sets the role of the TabViewItem (iOS 18+).
+	 * - `search`: a system search tab, shown separated from the other tabs.
+	 * - `prominent`: gives the tab the separated, emphasized placement on iOS 27+ (takes precedence over `search`).
 	 */
 	public role: string;
 
@@ -150,12 +152,12 @@ export class TabView extends View {
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
-	android: any /* android.view.View */; //androidx.core.view.ViewPager;
+	android: any; /* android.view.View */ //androidx.core.view.ViewPager;
 
 	/**
 	 * Gets the native iOS [UITabBarController](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITabBarController_Class/) that represents the user interface for this component. Valid only when running on iOS.
 	 */
-	ios: any /* UITabBarController */;
+	ios: any; /* UITabBarController */
 
 	/**
 	 * Gets or set the UIImageRenderingMode of the tab icons in iOS.  Defaults to "automatic"
