@@ -27,6 +27,9 @@ const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
+// Views whose requestLayout already climbed this turn; cleared by a microtask.
+let requestedThisTurn: Set<View> | null = null;
+
 export class View extends ViewCommon {
 	// @ts-ignore
 	nativeViewProtected: UIView;
@@ -80,6 +83,10 @@ export class View extends ViewCommon {
 	}
 
 	public requestLayout(): void {
+		// A second request in the same turn finds every ancestor already flagged.
+		if (requestedThisTurn?.has(this) && this.isLayoutRequested) {
+			return;
+		}
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 		super.requestLayout();
 
@@ -91,6 +98,12 @@ export class View extends ViewCommon {
 		if (this.viewController && this.viewController.view !== nativeView) {
 			this.viewController.view.setNeedsLayout();
 		}
+
+		if (!requestedThisTurn) {
+			requestedThisTurn = new Set();
+			queueMicrotask(() => (requestedThisTurn = null));
+		}
+		requestedThisTurn.add(this);
 	}
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
