@@ -50,6 +50,28 @@ function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 	return matches;
 }
 
+// CSS matching asks the same queries for every view; inputs change only via invalidateMediaQueryCache.
+const cssQueryResults = new Map<string, boolean>();
+let mediaQueryEpoch = 0;
+
+function checkIfMediaQueryMatchesCached(mediaQueryString: string): boolean {
+	let matches = cssQueryResults.get(mediaQueryString);
+	if (matches === undefined) {
+		matches = checkIfMediaQueryMatches(mediaQueryString);
+		cssQueryResults.set(mediaQueryString, matches);
+	}
+	return matches;
+}
+
+function invalidateMediaQueryCache(): void {
+	cssQueryResults.clear();
+	mediaQueryEpoch++;
+}
+
+function getMediaQueryEpoch(): number {
+	return mediaQueryEpoch;
+}
+
 function matchMedia(mediaQueryString: string): MediaQueryListImpl {
 	isMediaInitializationEnabled = true;
 	const mediaQueryList = new MediaQueryListImpl();
@@ -202,4 +224,4 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 }
 
-export { matchMedia, MediaQueryListImpl as MediaQueryList, checkIfMediaQueryMatches };
+export { matchMedia, MediaQueryListImpl as MediaQueryList, checkIfMediaQueryMatches, checkIfMediaQueryMatchesCached, invalidateMediaQueryCache, getMediaQueryEpoch };

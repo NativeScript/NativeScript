@@ -1,4 +1,4 @@
-import { matchMedia, checkIfMediaQueryMatches, MediaQueryList } from '.';
+import { matchMedia, checkIfMediaQueryMatches, checkIfMediaQueryMatchesCached, invalidateMediaQueryCache, MediaQueryList } from '.';
 import { Screen } from '../platform';
 
 describe('media-query-list', () => {
@@ -11,6 +11,23 @@ describe('media-query-list', () => {
 
 		it('should return false for an incorrect match', () => {
 			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs - 1})`)).toBe(false);
+		});
+	});
+
+	describe('checkIfMediaQueryMatchesCached', () => {
+		it('reads the screen once per query until invalidated', () => {
+			const query = `only screen and (max-width: ${widthDIPs})`;
+			invalidateMediaQueryCache();
+			const width = vi.spyOn(Screen.mainScreen, 'widthPixels', 'get');
+
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			expect(width).toHaveBeenCalledTimes(1);
+
+			invalidateMediaQueryCache();
+			expect(checkIfMediaQueryMatchesCached(query)).toBe(true);
+			expect(width).toHaveBeenCalledTimes(2);
+			width.mockRestore();
 		});
 	});
 
