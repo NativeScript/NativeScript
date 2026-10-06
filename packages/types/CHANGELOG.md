@@ -1,3 +1,13 @@
+## 9.1.4 (2026-10-06)
+
+### 🩹 Fixes
+
+- **types:** declare runtime URL and URLSearchParams globals ([#11482](https://github.com/NativeScript/NativeScript/pull/11482))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+
 ## 9.1.3 (2026-10-06)
 
 ### 🧱 Updated Dependencies
