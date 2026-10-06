@@ -641,7 +641,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 	ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 	if (spanStyle.fontSize) {
-		ssb.setSpan(new android.text.style.AbsoluteSizeSpan(layout.toDevicePixels(spanStyle.fontSize)), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		ssb.setSpan(new android.text.style.AbsoluteSizeSpan(layout.toDevicePixels(spanStyle.fontSize * (spanStyle.fontScaleInternal ?? 1))), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
 	const color = spanStyle.color;
