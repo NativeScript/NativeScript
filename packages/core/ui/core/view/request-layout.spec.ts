@@ -41,4 +41,20 @@ describe('iOS requestLayout', () => {
 
 		expect(parentRequest).toHaveBeenCalledTimes(2);
 	});
+
+	it('climbs again when a same-turn layout pass cleared an ancestor but skipped the view', async () => {
+		const { parent, child } = await tree();
+
+		child.visibility = 'collapse';
+		child.requestLayout();
+		parent.measure(0, 0);
+		parent.layout(0, 0, 100, 100);
+		expect(parent.isLayoutRequested).toBe(false);
+		expect(child.isLayoutRequested).toBe(true);
+
+		child.visibility = 'visible';
+		child.requestLayout();
+
+		expect(parent.isLayoutRequested).toBe(true);
+	});
 });

@@ -30,6 +30,15 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 // Views whose requestLayout already climbed this turn; cleared by a microtask.
 let requestedThisTurn: Set<View> | null = null;
 
+function isAncestorChainLayoutRequested(view: View): boolean {
+	for (let parent = view.parent as View; parent; parent = parent.parent as View) {
+		if (!parent.isLayoutRequested) {
+			return false;
+		}
+	}
+	return true;
+}
+
 export class View extends ViewCommon {
 	// @ts-ignore
 	nativeViewProtected: UIView;
@@ -83,8 +92,9 @@ export class View extends ViewCommon {
 	}
 
 	public requestLayout(): void {
-		// A second request in the same turn finds every ancestor already flagged.
-		if (requestedThisTurn?.has(this) && this.isLayoutRequested) {
+		// A layout pass in the same turn (e.g. layoutIfNeeded) can clear an ancestor that
+		// skipped this view, so only a fully flagged chain lets the native climb be skipped.
+		if (requestedThisTurn?.has(this) && this.isLayoutRequested && isAncestorChainLayoutRequested(this)) {
 			return;
 		}
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
