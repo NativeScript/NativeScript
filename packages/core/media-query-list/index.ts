@@ -50,11 +50,32 @@ function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 	return matches;
 }
 
-// CSS matching asks the same queries for every view; inputs change only via invalidateMediaQueryCache.
+// CSS matching asks the same queries for every view. Orientation and appearance changes go
+// through invalidateMediaQueryCache; the screen size can change without either (a foldable's
+// display, a window moved to another screen), so it is compared once per turn instead.
 const cssQueryResults = new Map<string, boolean>();
 let mediaQueryEpoch = 0;
+let cachedScreenWidth: number;
+let cachedScreenHeight: number;
+let screenCheckedThisTurn = false;
+
+function invalidateIfScreenSizeChanged(): void {
+	if (screenCheckedThisTurn) {
+		return;
+	}
+	screenCheckedThisTurn = true;
+	queueMicrotask(() => (screenCheckedThisTurn = false));
+
+	const { widthPixels, heightPixels } = Screen.mainScreen;
+	if (widthPixels !== cachedScreenWidth || heightPixels !== cachedScreenHeight) {
+		cachedScreenWidth = widthPixels;
+		cachedScreenHeight = heightPixels;
+		invalidateMediaQueryCache();
+	}
+}
 
 function checkIfMediaQueryMatchesCached(mediaQueryString: string): boolean {
+	invalidateIfScreenSizeChanged();
 	let matches = cssQueryResults.get(mediaQueryString);
 	if (matches === undefined) {
 		matches = checkIfMediaQueryMatches(mediaQueryString);
