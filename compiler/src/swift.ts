@@ -805,7 +805,7 @@ export class Translator implements AsyncTranslator {
     if (!ts.isIdentifier(named) && !ts.isPrivateIdentifier(named)) return false;
     const d = this.checker.getSymbolAtLocation(named)?.valueDeclaration;
     if (!d || !(ts.isPropertyDeclaration(d) || ts.isVariableDeclaration(d) || ts.isParameter(d))) return false;
-    if (d.type) return ts.isUnionTypeNode(d.type) && d.type.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword);
+    if (d.type) return ts.isUnionTypeNode(d.type) && d.type.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
     if (!ts.isVariableDeclaration(d) || !d.initializer || d.initializer === n) return false;
     let init: ts.Expression = d.initializer;
     while (ts.isParenthesizedExpression(init)) init = init.expression;
@@ -1910,10 +1910,23 @@ export class Translator implements AsyncTranslator {
   }
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
-    if (!this.lenient || !fn.body || fn.getSourceFile().isDeclarationFile) return false;
+    if (!this.lenient || fn.getSourceFile().isDeclarationFile) return false;
+    if (ts.isMethodDeclaration(fn) && !isStatic(fn) && this.declaresNullableReturn(fn)) return true;
+    if (!fn.body) return false;
     if (ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) return this.returnsUndefined(fn);
     const family = ts.isMethodDeclaration(fn) ? this.structMethodFamily(fn) : null;
     return !!family?.some((m) => !!m.body && this.returnsUndefined(m));
+  }
+
+  /**
+   * A method whose root declares it may give nothing (`getCssVariable(name: string): string | null`), which the lenient
+   * checker reads as the bare type: it and every override give an optional, as overrides share one signature.
+   */
+  private declaresNullableReturn(fn: ts.MethodDeclaration): boolean {
+    let root = fn;
+    for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
+    const t = root.type;
+    return !!t && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
   }
 
   private returnsUndefined(fn: ts.FunctionDeclaration | ts.MethodDeclaration): boolean {
@@ -5031,6 +5044,15 @@ export class Translator implements AsyncTranslator {
       if (decl && !ts.isJSDocSignature(decl) && this.mayReturnUndefined(decl) && this.returnTypeOf(decl).endsWith('?')) {
         this.rawOptional.add(e);
         try { return this.expr(e); } finally { this.rawOptional.delete(e); }
+      }
+    }
+    // `c ? a : b` where a branch may give undefined: each branch as the optional it may be.
+    if (ts.isConditionalExpression(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
+      const branches = [e.whenTrue, e.whenFalse].map((b) => this.maybeUndefined(b));
+      if (branches.some(Boolean)) {
+        const t = optionalType(this.typeOf(e));
+        const [a, b] = [e.whenTrue, e.whenFalse].map((x, k) => branches[k] ?? this.coerce(x, t));
+        return `(${this.cond(e.condition)} ? ${a} : ${b})`;
       }
     }
     if (ts.isPropertyAccessExpression(e) && !isWriteTarget(e) && this.isAddedMember(e)) {

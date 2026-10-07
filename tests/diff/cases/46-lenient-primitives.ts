@@ -32,3 +32,18 @@ console.log(label.whiteSpace, label.size, label.title, label.textWrap);
 label.textWrap = '';
 label.width = 4;
 console.log(label.whiteSpace, label.size, label.textWrap);
+class Sink {
+  seen = '';
+  set flag(value: boolean) {
+    this.seen += value ? 'T' : 'F';
+  }
+  set target(value: Sink) {
+    this.seen += value ? 'S' : 'U';
+  }
+}
+const sink: any = new Sink();
+sink.flag = 'yes';
+sink.flag = undefined;
+sink.target = undefined;
+sink.target = sink;
+console.log(sink.seen, sink.flag === undefined);
