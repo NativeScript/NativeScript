@@ -44,7 +44,8 @@ if (report) {
 
 const version = JSON.parse(readFileSync(join(core, 'package.json'), 'utf8')).version;
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
-const manifest = { core: version, commit, modules: ios.compile, files: Object.fromEntries(result.files.map((f) => [f.name, f.sources])) };
+// `graph`: each file's initializer and the files it imports, from which an app's build keeps only the modules it reaches.
+const manifest = { core: version, commit, modules: ios.compile, files: Object.fromEntries(result.files.map((f) => [f.name, f.sources])), graph: result.graph };
 const files = new Map<string, string>(result.files.map((f) => [f.name, f.code]));
 files.set('manifest.json', JSON.stringify(manifest, null, '\t') + '\n');
 
