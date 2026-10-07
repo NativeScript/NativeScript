@@ -1849,7 +1849,13 @@ export class Translator implements AsyncTranslator {
   }
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
-    if (!this.lenient || !(ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && (isStatic(fn) || this.soleStructMethod(fn)))) || !fn.body || fn.getSourceFile().isDeclarationFile) return false;
+    if (!this.lenient || !fn.body || fn.getSourceFile().isDeclarationFile) return false;
+    if (ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) return this.returnsUndefined(fn);
+    const family = ts.isMethodDeclaration(fn) ? this.structMethodFamily(fn) : null;
+    return !!family?.some((m) => !!m.body && this.returnsUndefined(m));
+  }
+
+  private returnsUndefined(fn: ts.FunctionDeclaration | ts.MethodDeclaration): boolean {
     let found = this.undefinedReturns.get(fn);
     if (found !== undefined) return found;
     found = false;
@@ -1868,17 +1874,23 @@ export class Translator implements AsyncTranslator {
       }
       ts.forEachChild(n, visit);
     };
-    visit(fn.body);
+    visit(fn.body!);
     this.undefinedReturns.set(fn, found);
     return found;
   }
 
-  /** An instance method giving a native struct (`applySafeAreaInsets(): CGRect`) that nothing overrides and that overrides nothing: its result may be null, which a struct cannot hold. */
-  private soleStructMethod(fn: ts.MethodDeclaration): boolean {
+  /**
+   * An instance method giving a native struct (`applySafeAreaInsets(): CGRect`), with every
+   * override of its root: its result may be null, which a struct cannot hold, so where any
+   * of them may give undefined they all give an optional, as overrides share one signature.
+   */
+  private structMethodFamily(fn: ts.MethodDeclaration): ts.MethodDeclaration[] | null {
     const sig = this.checker.getSignatureFromDeclaration(fn);
-    if (!sig || !this.native.isStructType(this.type(sig.getReturnType(), fn)) || this.baseMethod(fn)) return false;
-    this.hierarchyExtras(fn);
-    return !this.methodFamilies?.get(fn)?.length;
+    if (!sig || !this.native.isStructType(this.type(sig.getReturnType(), fn)) || this.inNativeClass(fn)) return null;
+    let root = fn;
+    for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
+    this.hierarchyExtras(root);
+    return [root, ...(this.methodFamilies?.get(root) ?? [])];
   }
 
   /** A generic function compiled with its type parameters erased (`makeParser<T>`): its result as this call instantiates it. */
@@ -3203,6 +3215,7 @@ export class Translator implements AsyncTranslator {
         const isPromise = this.typeOf(e).startsWith('JSPromise<');
         return `${i}${this.tryPrefix(e)}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
       }
+      if (s.expression && ts.isIdentifier(s.expression) && this.holeyArrays.has(this.resolve(s.expression)!)) return `${i}return jsFilled(${this.refName(s.expression)})`;
       // A value returned where nothing is (a Promise executor's `return p.then(…)`): evaluated, then dropped.
       if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${this.tryPrefix(s.expression)}_ = ${this.expr(s.expression)}\n${i}return`;
       // `return log(x)` of a function returning nothing: the call, then undefined.
@@ -3382,6 +3395,8 @@ export class Translator implements AsyncTranslator {
       if ((ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer)) && refersTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
         return `${i}var ${name}: ${this.deferred(t)}\n${i}${name} = ${this.coerce(d.initializer, t)}`;
       }
+      const holes = this.holeyArray(d, t);
+      if (holes) return `${i}let ${name}: ${holes.type} = ${holes.type}(Array(repeating: nil, count: Int(${this.toNumber(holes.length)})))`;
       const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
       if (maybe) {
         const sym = this.resolve(d.name);
@@ -3833,9 +3848,11 @@ export class Translator implements AsyncTranslator {
     }
     // An array of a type where an array of any value is wanted: its elements, as a new array of them.
     if (target === 'JSArray<Any?>' && /^JSArray<.*>$/.test(this.typeOf(e)) && this.typeOf(e) !== 'JSArray<Any?>') return `JSArray<Any?>(${this.expr(e)}.storage.map { $0 as Any? })`;
-    // Narrowed to `never` (a branch the checker deems unreachable, which lenient code still takes): the value as declared.
+    // Narrowed to `never` (a branch the checker deems unreachable, which lenient code still takes): as declared where that is the type wanted
+    // (`typeof index !== 'number'` of an optional number), otherwise untyped, as it may hold anything.
     const narrowedOut = this.typeOf(e) === 'Never' && !ts.isCallExpression(bare) && !ts.isThrowStatement(e.parent);
-    const source = narrowedOut ? 'Any?' : this.typeOf(e);
+    const declaredOut = narrowedOut ? this.declaredTypeOf(bare) : null;
+    const source = narrowedOut ? (declaredOut && declaredOut.replace(/[?!]$/, '') === target.replace(/[?!]$/, '') ? declaredOut : 'Any?') : this.typeOf(e);
     // An untyped array where an array of a type is wanted: its elements as that type, in a new array.
     if (source === 'JSArray<Any?>' && /^JSArray<.+>$/.test(target) && target !== source && !ts.isArrayLiteralExpression(bare)) return `jsArrayOf(${this.expr(e)}) { ${this.fromAny('$0', target.slice(8, -1))} }`;
     if (target.endsWith('?') && target !== 'Any?' && !source.endsWith('?')) {
@@ -4110,7 +4127,9 @@ export class Translator implements AsyncTranslator {
     if (ts.isParenthesizedExpression(e) && ts.isBinaryExpression(e.expression) && e.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(e.expression.left)) {
       // `(match = re.exec(s)) !== null`: the assignment's value is the variable after it (Swift's assignment has none).
       const a = e.expression;
-      const t = this.declaredTypeOf(a.left) ?? this.typeOf(a.left);
+      // Lenient code holds an object variable implicitly unwrapped, which `(x = null)` leaves nil.
+      const declared = this.declaredTypeOf(a.left) ?? this.typeOf(a.left);
+      const t = this.lenientRef(declared) !== declared ? optionalType(declared) : declared;
       const tp = this.tryPrefix(a);
       return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(a)}; return ${this.expr(a.left)} }())`;
     }
@@ -4161,6 +4180,9 @@ export class Translator implements AsyncTranslator {
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
       // A typed function asserted to `any` (`<any>callback`): a script function, which any caller can call.
       if (to === 'Any?' && isFunctionType(from.replace(/^\((.*)\)[?!]$/, '$1'))) return this.convert(this.expr(e.expression), from, 'Any?');
+      // `<Array<View>>views` of a ViewBase[]: Swift's arrays of the two are distinct types, so the elements are read as the asserted one, in a copy unless the array already is one.
+      const fromArray = /^JSArray<(.+)>[?!]?$/.exec(from), toArray = /^JSArray<(.+)>[?!]?$/.exec(to);
+      if (fromArray && toArray && fromArray[1] !== toArray[1] && toArray[1] !== 'Any?') return `(jsArrayOf(${this.expr(e.expression)}, { ${this.fromAny('$0', toArray[1])} }) as JSArray<${toArray[1]}>)`;
       if (from !== to && from.replace(/[?!]$/, '') !== to.replace(/[?!]$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) {
         // An object of another shape asserted to an interface (`cur as ICalEvent`): the interface's class read from it.
         const target = this.checker.getTypeAtLocation(e).getSymbol();
@@ -4465,6 +4487,38 @@ export class Translator implements AsyncTranslator {
     return alias;
   }
 
+  /** Locals made with empty slots of an element type that cannot hold undefined (`const merged: T[] = new Array(n)`). */
+  private holeyArrays = new Set<ts.Symbol>();
+
+  /**
+   * `const merged: T[] = new Array(n)`, filled by index and returned: Swift holds the
+   * slots as optional until the return, which gives the array of the declared type.
+   * Any other use would see a hole the element type cannot hold.
+   */
+  private holeyArray(d: ts.VariableDeclaration, t: string): { type: string; length: ts.Expression } | null {
+    let init = d.initializer;
+    while (init && ts.isParenthesizedExpression(init)) init = init.expression;
+    if (!init || !ts.isNewExpression(init) || !ts.isIdentifier(init.expression) || init.expression.text !== 'Array' || !this.isLibGlobal(init.expression)) return null;
+    if (init.arguments?.length !== 1 || this.typeOf(init.arguments[0]) !== 'Double' || this.typeOf(init) !== 'JSArray<Any?>') return null;
+    const el = /^JSArray<(.*)>!?$/.exec(t)?.[1];
+    if (!el || el === 'Any?' || isOptional(el) || ['Double', 'String', 'Bool'].includes(el)) return null;
+    const sym = this.resolve(d.name as ts.Identifier);
+    const scope = ts.findAncestor(d, ts.isFunctionLike);
+    if (!sym || !scope) return null;
+    const visit = (n: ts.Node): void => {
+      if (ts.isIdentifier(n) && n !== d.name && this.resolve(n) === sym) {
+        const p = n.parent;
+        const filled = ts.isElementAccessExpression(p) && p.expression === n && isWriteTarget(p) && ts.isBinaryExpression(p.parent) && p.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken;
+        const length = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === 'length' && !isWriteTarget(p);
+        if (!filled && !length && !(ts.isReturnStatement(p) && p.expression === n)) throw this.error(n, `new Array of a length, of ${el}, used other than filled by index and returned (empty slots need an optional element type)`);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(scope);
+    this.holeyArrays.add(sym);
+    return { type: `JSArray<${optionalType(el)}>`, length: init.arguments[0] };
+  }
+
   /** A read the checker has narrowed (`if (x) x.length`, `if (e instanceof Error) e.message`): Swift needs the unwrap or cast. */
   private narrowed(e: ts.Expression, code: string): string {
     if (isWriteTarget(e)) return code;
@@ -4474,6 +4528,7 @@ export class Translator implements AsyncTranslator {
       const p = e.parent;
       if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === e && p.questionDotToken) return code;
       const actual = this.typeOf(e);
+      if (actual === 'Never') return code;
       if (this.undefinedVars.get(sym) === 'Any?') return actual === 'Any?' ? code : this.fromAny(code, actual);
       // Narrowed by a test (`value instanceof LinearGradient`): what the test found.
       const held = this.undefinedVars.get(sym)!.replace(/[?!]$/, '');
@@ -6211,9 +6266,10 @@ export class Translator implements AsyncTranslator {
     const maybe = this.maybeUndefined(e.expression);
     const held = ts.isIdentifier(e.expression) ? this.resolve(e.expression) : undefined;
     if (maybe && held && this.undefinedVars.get(held) === 'Any?') return `jsTypeof(${maybe})`;
-    if (maybe) return `(${maybe} == nil ? "undefined" : ${swiftString(known)})`;
-    if (t.endsWith('?')) return `(${this.expr(e.expression)} == nil ? "undefined" : ${swiftString(known)})`;
-    // Lenient code reads an undefined number as NaN (an omitted `atIndex`), the only value typeof can tell it by.
+    // Lenient code reads an undefined number as NaN (an omitted `atIndex`), the only value typeof can tell it by; an optional one is undefined either way.
+    const absent = (code: string) => (this.lenient && known === 'number' ? `((${code}).map { $0.isNaN } ?? true)` : `${code} == nil`);
+    if (maybe) return `(${absent(maybe)} ? "undefined" : ${swiftString(known)})`;
+    if (t.endsWith('?')) return `(${absent(this.expr(e.expression))} ? "undefined" : ${swiftString(known)})`;
     if (this.lenient && known === 'number' && ts.isIdentifier(e.expression)) return `(${this.expr(e.expression)}.isNaN ? "undefined" : "number")`;
     // Lenient code holds an object implicitly unwrapped: undefined until assigned.
     if (this.lenient && known === 'object') return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : ${swiftString(known)})`;

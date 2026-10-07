@@ -961,3 +961,12 @@ public func jsArrayConstruct(_ items: [Any?]) throws -> JSArray<Any?> {
     guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
     return JSArray(Array(repeating: nil, count: Int(length)))
 }
+
+/// An array made with empty slots (`new Array(n)`) and filled by index, as the
+/// element type it was declared with; a slot never written is a hole that type cannot hold.
+public func jsFilled<T>(_ array: JSArray<T?>) -> JSArray<T> {
+    JSArray(array.storage.enumerated().map { k, value in
+        guard let value else { fatalError("JSArray<\(T.self)>: slot \(k) of \(array.storage.count) was never written") }
+        return value
+    })
+}
