@@ -1,7 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { Label } from '../label';
 import { Color } from '../../color';
+
+function onAndroid(): void {
+	let previousApple: boolean;
+	let previousIOS: boolean;
+	let previousAndroid: boolean;
+
+	beforeEach(() => {
+		previousApple = (globalThis as any).__APPLE__;
+		previousIOS = (globalThis as any).__IOS__;
+		previousAndroid = (globalThis as any).__ANDROID__;
+		(globalThis as any).__APPLE__ = false;
+		(globalThis as any).__IOS__ = false;
+		(globalThis as any).__ANDROID__ = true;
+	});
+
+	afterEach(() => {
+		(globalThis as any).__APPLE__ = previousApple;
+		(globalThis as any).__IOS__ = previousIOS;
+		(globalThis as any).__ANDROID__ = previousAndroid;
+	});
+}
 
 describe('border-color shorthand', () => {
 	it('applies a function color with nested arguments to all sides', () => {
@@ -59,5 +80,50 @@ describe('corner-shape', () => {
 		const label = new Label();
 
 		expect(() => (label.style.cornerShape = 'bevel' as any)).toThrow();
+	});
+
+	it('accepts continuous on Apple platforms', () => {
+		const label = new Label();
+		label.style.cornerShape = 'continuous';
+
+		expect(label.style.backgroundInternal.cornerShape).toBe('continuous');
+	});
+});
+
+describe('-ios-corner-shape', () => {
+	it('sets corner-shape and reads it back', () => {
+		const label = new Label();
+		label.style.iosCornerShape = 'continuous';
+
+		expect(label.style.cornerShape).toBe('continuous');
+		expect(label.style.iosCornerShape).toBe('continuous');
+		expect(label.style.backgroundInternal.cornerShape).toBe('continuous');
+	});
+
+	it('rejects unknown keywords', () => {
+		const label = new Label();
+
+		expect(() => (label.style.iosCornerShape = 'bevel' as any)).toThrow();
+	});
+});
+
+describe('corner-shape on Android', () => {
+	onAndroid();
+
+	it('keeps the spec grammar', () => {
+		const label = new Label();
+
+		expect(() => (label.style.cornerShape = 'continuous')).toThrow();
+		label.style.cornerShape = 'squircle';
+		expect(label.style.backgroundInternal.cornerShape).toBe('squircle');
+	});
+
+	it('ignores -ios-corner-shape', () => {
+		const label = new Label();
+		label.style.iosCornerShape = 'continuous';
+
+		expect(label.style.cornerShape).toBe('round');
+		expect(label.style.iosCornerShape).toBe('round');
+		expect(label.style.backgroundInternal.cornerShape).toBe('round');
 	});
 });
