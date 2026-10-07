@@ -696,10 +696,11 @@ export class NativeAPI {
     if (NUMBERS.has(b)) {
       // An integer from a number as the runtime marshals one: NaN (an unset `maxLines`) is 0, the rest truncated and clamped.
       if (source === 'Double' && INTEGERS.has(b)) return ts.isNumericLiteral(e) ? t.expr(e) : `jsNativeInteger(${t.expr(e)}, ${b}.self)`;
-      if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
+      // A floating-point number as the runtime marshals one: undefined, which Swift holds as NaN, is 0 (an unset duration or line height).
+      if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(jsNativeNumber(${t.expr(e)}))`;
       // An untyped value: the number the runtime marshals it as.
-      if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : INTEGERS.has(b) ? `jsNativeInteger(jsToNumber(${t.expr(e)}), ${b}.self)` : `${b}(jsToNumber(${t.expr(e)}))`;
-      return t.expr(e);
+      if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsNativeNumber(jsToNumber(${t.expr(e)}))` : INTEGERS.has(b) ? `jsNativeInteger(jsToNumber(${t.expr(e)}), ${b}.self)` : `${b}(jsNativeNumber(jsToNumber(${t.expr(e)})))`;
+      return ts.isNumericLiteral(e) ? t.expr(e) : `jsNativeNumber(${t.expr(e)})`;
     }
     if (this.isNumericConstants(b) && ['Double', 'Double?', 'Any?'].includes(source)) {
       const raw = this.typedConstantsRaw(b)!;

@@ -4044,6 +4044,19 @@ export class Translator implements AsyncTranslator {
   }
 
   private coerced(e: ts.Expression, target: string): string {
+    // A member of an untyped object where any value goes: the value as it is, undefined staying undefined
+    // (`{ iterations: definition.iterations }`), not converted to the number or string TypeScript declares.
+    if (target === 'Any?' && this.lenient) {
+      let read: ts.Expression = e;
+      while (ts.isParenthesizedExpression(read)) read = read.expression;
+      if (ts.isPropertyAccessExpression(read) && !read.questionDotToken && ['Double', 'String', 'Bool'].includes(this.typeOf(read))) {
+        const code = this.expr(read);
+        const raw = /^jsLenient(?:Number|String|Bool)\(((?:try )?jsGet\(.*\))\)$/.exec(code);
+        if (raw) return raw[1].startsWith('try ') ? `(${raw[1]})` : raw[1];
+        // A number member declared optional, which a typed object holds as NaN while unset: undefined.
+        if (this.typeOf(read) === 'Double' && this.optionalMember(read)) return `{ (__n: Double) -> Any? in __n.isNaN ? nil : __n }(${code})`;
+      }
+    }
     // A Promise executor's resolve passed on as a function: a function of the promise's value type.
     const resolvers = ts.isIdentifier(e) ? this.resolvers.get(this.resolve(e)!) : undefined;
     if (resolvers && (target === 'Any?' || functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')))) {

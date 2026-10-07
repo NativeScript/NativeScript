@@ -20,6 +20,10 @@ func jsNativeBoolean(_ v: Any) -> Bool? {
     return n.boolValue
 }
 
+/// A number where native code takes a floating-point one, as the runtime marshals it: undefined is 0,
+/// and Swift holds an undefined number as NaN.
+@inline(__always) public func jsNativeNumber(_ value: Double) -> Double { value.isNaN ? 0 : value }
+
 /// A number where native code takes an integer, as the runtime marshals it: NaN and the infinities are 0,
 /// anything else truncated toward zero and clamped to the type's range.
 public func jsNativeInteger<T: FixedWidthInteger>(_ value: Double, _: T.Type) -> T {

@@ -77,6 +77,11 @@ enum Probe {
                     let native = (native as? UITextView)?.text ?? (native as? UILabel)?.text ?? (native as? UITextField)?.text ?? (native as? UIButton)?.title(for: .normal)
                     line += " text=\(jsInspect(text.text)) hint=\(jsInspect((try? jsGet(text, "hint")) ?? nil)) native=\(jsInspect(native))"
                 }
+                if #available(iOS 18.0, *), let tabs = (try? jsGet(v, "viewController")).flatMap({ $0 as? UITabBarController }) {
+                    var info = " tabs=[\(tabs.tabs.map { "\(type(of: $0)):\($0.identifier)" }.joined(separator: ","))]"
+                    if #available(iOS 27.0, *) { info += " prominent=\(tabs.value(forKey: "prominentTabIdentifier") ?? "nil")" }
+                    line += info
+                }
                 if let segments = native as? UISegmentedControl {
                     line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\((try? v.hasListeners("selectedIndexChange")) ?? false)"
                 }
