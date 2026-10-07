@@ -264,6 +264,32 @@ export class CoreAPI {
     return !!decl && ts.isClassDeclaration(decl.parent) && !!this.t.mixinOf(this.t.checker.getSymbolAtLocation(decl.parent.name!));
   }
 
+  /**
+   * A member of an event data type (core's, or a framework's such as `ListViewItemTapEvent`)
+   * that the kit's EventData does not declare (`args.state`, `args.getX()`, `args.item`): the
+   * event's own object has it, read by name.
+   */
+  eventMember(e: ts.PropertyAccessExpression): boolean {
+    const c = this.t.checker;
+    const type = c.getNonNullableType(c.getTypeAtLocation(e.expression));
+    if (this.t.type(type, e.expression) !== 'EventData') return false;
+    return !kitMember(this.index, 'EventData', e.name.text);
+  }
+
+  /** A call of a kit method, or a `new` of a kit class, that the kit declares `throws` (the kit generated from core throws as script does). */
+  throwingCall(e: ts.CallExpression | ts.NewExpression): boolean {
+    if (ts.isNewExpression(e)) {
+      const sym = ts.isIdentifier(e.expression) ? this.t.resolve(e.expression) : undefined;
+      const decl = sym?.declarations?.[0];
+      if (!sym || !(sym.flags & ts.SymbolFlags.Class) || !isCoreDeclaration(decl) || this.t.compiledCounterpart(sym)) return false;
+      const name = Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name;
+      return (this.index.get(name)?.members.get('init') ?? []).some((m) => m.throws);
+    }
+    if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
+    const owner = this.owner(e.expression.expression);
+    return !!owner && !!kitMember(this.index, owner.name, e.expression.name.text)?.throws;
+  }
+
   /** Whether `target.method` is a method the kit declares on target's class (an optional call of it is a plain call). */
   isKitMethod(callee: ts.Expression): boolean {
     if (!ts.isPropertyAccessExpression(callee)) return false;
@@ -294,7 +320,38 @@ export class CoreAPI {
       const p = kitParams[k];
       if (!listener && p && (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && !a.parameters.length && (t.checker.getContextualType(a)?.getCallSignatures()[0]?.getParameters().length ?? 0) === 0 && /->/.test(p) && !/\bthrows\b/.test(p) && /\(\s*\)\s*->/.test(p)) args[k] = t.callback(a);
     });
+    if (!listener) this.matchKitParams(e, kitParams, args);
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e));
+  }
+
+  /**
+   * Arguments as the kit's own parameters take them, where its Swift types differ from the
+   * declarations' (the kit generated from core): a function as the kit's function type
+   * (`on(event, (data) => …)` for `(EventData?) throws -> Void`), and the arguments from a
+   * rest parameter on (`closeModal('done')`) as the array the kit's rest parameter is.
+   */
+  private matchKitParams(e: ts.CallExpression, kitParams: string[], args: string[]): void {
+    const t = this.t;
+    const decl = t.checker.getResolvedSignature(e)?.getDeclaration();
+    const declared = decl && !ts.isJSDocSignature(decl) ? decl.parameters : undefined;
+    kitParams.forEach((p, k) => {
+      const type = kitParamType(p);
+      if (declared?.[k]?.dotDotDotToken && /^JSArray<Any\?>$/.test(type)) {
+        args.splice(k, args.length - k, `JSArray<Any?>([${e.arguments.slice(k).map((a) => t.coerce(a, 'Any?')).join(', ')}])`);
+        return;
+      }
+      const a = e.arguments[k];
+      if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a))) {
+        const fn = t.functionTypeParts(type);
+        if ((ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && fn) {
+          t.closureSlots.set(a, fn.params);
+          try { args[k] = t.coerce(a, type); } finally { t.closureSlots.delete(a); }
+        } else {
+          const own = t.typeOf(a);
+          args[k] = /->/.test(own) && own.replace(/^\((.*)\)$/, '$1') !== type ? t.convert(t.expr(a), own, type) : t.coerce(a, type);
+        }
+      }
+    });
   }
 
   /**
@@ -327,8 +384,9 @@ export class CoreAPI {
     if (!this.index.has(kitName)) throw t.error(e, `new ${sym.name} (NativeScriptKit has no such class)`);
     // Core's constructor takes its arguments as a rest parameter; numbers never make it throw.
     if (sym.name === 'Color') {
-      if (args.length === 1 && t.typeOf(args[0]) === 'String') return `Color.fromJS(${t.expr(args[0])})`;
-      return `(try! Color(JSArray<Any?>([${args.map((a) => t.coerce(a, 'Any?')).join(', ')}])))`;
+      const list = `JSArray<Any?>([${args.map((a) => t.coerce(a, 'Any?')).join(', ')}])`;
+      // A string may not be a color, which throws as script's constructor does.
+      return args.some((a) => t.typeOf(a) !== 'Double') ? `Color(${list})` : `(try! Color(${list}))`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
     return `${kitName}(${t.args(e).join(', ')})`;
@@ -337,11 +395,15 @@ export class CoreAPI {
   /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
   private navigate(recv: string, e: ts.CallExpression): string {
     const entry = e.arguments[0];
-    if (!entry || !ts.isObjectLiteralExpression(entry)) throw this.t.error(e, 'frame.navigate with anything but a { create } entry');
-    for (const p of entry.properties) if (p.name?.getText() !== 'create') throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
-    const create = entry.properties[0];
-    if (!create || !ts.isPropertyAssignment(create)) throw this.t.error(entry, 'a navigation entry without create');
-    return `${recv}.navigate { ${this.t.expr(create.initializer)}() }`;
+    if (!entry || !ts.isObjectLiteralExpression(entry)) throw this.t.error(e, 'frame.navigate with anything but a navigation entry object');
+    // Core reads the entry as script gives it: `create` a function it calls for the page, the rest plain values.
+    const fields = entry.properties.map((p) => {
+      if (!ts.isPropertyAssignment(p)) throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
+      const name = p.name.getText().replace(/^['"]|['"]$/g, '');
+      if (name !== 'create') return `(${JSON.stringify(name)}, ${this.scriptValue(p.initializer)})`;
+      return `("create", { (_: [Any?]) throws -> Any? in try (${this.t.expr(p.initializer)})() } as JSFunction)`;
+    });
+    return `${recv}.navigate(JSObject([${fields.join(', ')}]))`;
   }
 
   /**
@@ -369,6 +431,8 @@ export class CoreAPI {
   /** A kit value as the TypeScript type reads it: kit integers and CGFloats are Doubles. */
   private fromKit(code: string, kitType: string, tsType: string): string {
     const k = kitType.trim();
+    // What the kit generated from core gives untyped (`animate()`'s promise), read as the type the declarations give it.
+    if (k === 'Any?' && tsType !== 'Any?' && tsType !== 'Void') return this.t.fromAnyCode(code, tsType, true);
     if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return `jsArrayOf(${code}) { ${this.t.fromAny('$0', tsType.slice(8, -1))} }`;
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}.map { Double($0) }` : `Double(${code})`;
@@ -388,6 +452,19 @@ export class CoreAPI {
     const k = kitType.replace(/\?$/, '');
     return /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)$/.test(k) ? `${k}(${code})` : code;
   }
+}
+
+/** A Swift parameter's type (`_ callback: @escaping (EventData?) throws -> Void = …` gives `(EventData?) throws -> Void`). */
+function kitParamType(param: string): string {
+  let depth = 0, colon = -1, end = param.length;
+  for (let i = 0; i < param.length; i++) {
+    const ch = param[i];
+    if ('([<'.includes(ch)) depth++;
+    else if (')]>'.includes(ch) && !(ch === '>' && param[i - 1] === '-')) depth--;
+    else if (depth === 0 && ch === ':' && colon < 0) colon = i;
+    else if (depth === 0 && ch === '=' && param[i + 1] !== '=' && colon >= 0) { end = i; break; }
+  }
+  return param.slice(colon + 1, end).replace(/@escaping\s+/, '').trim();
 }
 
 /** A parameter list's parameters, split at top-level commas. */

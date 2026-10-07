@@ -175,7 +175,8 @@ export function generateKit(o: KitOptions): KitResult {
   // The iOS typings core references beyond types-ios' common set (Symbols, CoreText…), as types-ios publishes them.
   const references = join(core, 'references.d.ts');
   const referenced = existsSync(references) ? [...readFileSync(references, 'utf8').matchAll(/types-ios\/src\/(lib\/ios\/[^"]+\.d\.ts)/g)].map((m) => join(packageDir('@nativescript/types-ios'), m[1])).filter(existsSync) : [];
-  const roots = [...compiled, join(packageDir('@nativescript/types-ios'), 'index.d.ts'), ...referenced, join(o.declarations, 'global-types.d.ts'),
+  // Core's index (not compiled itself) gives the functions an app imports from `@nativescript/core`.
+  const roots = [...compiled, join(core, 'index.ts'), join(packageDir('@nativescript/types-ios'), 'index.d.ts'), ...referenced, join(o.declarations, 'global-types.d.ts'),
     ...['objc!NativeScriptUtils.d.ts', 'objc!MaterialComponents.d.ts'].map((t) => join(o.declarations, 'platforms/ios/typings', t)).filter(existsSync)];
   const program = ts.createProgram(roots, options, host);
   // Core's own native code (TNSWidgets, NativeScriptUtils…), as installed with the declarations: what the kit links.
@@ -192,6 +193,13 @@ export function generateKit(o: KitOptions): KitResult {
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
   const kitInternal = internalTypes(KIT, o.replaces);
   const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : f.startsWith('moot:') ? MOOT + f.slice(5).replace(/\.ts$/, '.d.ts') : f.startsWith('~/') ? f : join(core, f), m]));
+  // The compiled core file a published declaration (`ui/layouts/root-layout/index.d.ts`) declares.
+  const sourceOf = (dts: string): string | null => {
+    const declarations = resolve(o.declarations);
+    if (!dts.startsWith(declarations + '/')) return null;
+    const base = join(core, relative(declarations, dts).replace(/\.d\.ts$/, ''));
+    return [`${base}.ios.ts`, `${base}.ts`].find((c) => compiled.has(c)) ?? null;
+  };
   let translator: Translator;
   try {
     translator = new Translator(checker, new Map(), files, {
@@ -203,12 +211,7 @@ export function generateKit(o: KitOptions): KitResult {
         strict: (file) => packageFiles.has(file),
         counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
         internalTypes: kitInternal,
-        sourceOf: (dts) => {
-          const declarations = resolve(o.declarations);
-          if (!dts.startsWith(declarations + '/')) return null;
-          const base = join(core, relative(declarations, dts).replace(/\.d\.ts$/, ''));
-          return [`${base}.ios.ts`, `${base}.ts`].find((c) => compiled.has(c)) ?? null;
-        },
+        sourceOf,
       },
     });
   } finally { kitIndexOptions.exclude = null; }
@@ -254,12 +257,75 @@ export function generateKit(o: KitOptions): KitResult {
     const code = (translator.interfacesOf(paths.get(f)!) + f.code).trim();
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
   }
+  const exported = indexFunctions(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, out, KIT, o.replaces);
+  if (exported) out.push({ name: '__Exports.swift', code: header(new Set(sdk)) + exported, sources: {} });
   const shapes = translator.shapesCode().trim();
   if (shapes) out.push({ name: '__Objects.swift', code: header(new Set([...sdk, ...importsOf(shapes)])) + publicize(shapes) + '\n', sources: {} });
   // Core's modules run their top level once, in the order JavaScript evaluates them, before the app's.
   out.push({ name: '__Modules.swift', sources: {}, code: `${header()}public enum CoreModules {\n    private static var initialized = false\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
   return { files: out, errors: [...new Set(errors)] };
+}
+
+/**
+ * The functions core's index exports (`getRootLayout`), as an app imports them from
+ * `@nativescript/core`: top-level functions forwarding to the module enum each is compiled
+ * into, with that function's own Swift signature. Names the hand-written kit declares at the
+ * top level already are left to it.
+ */
+function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, out: KitFile[], kit: string, replaces?: RegExp): string {
+  const sf = program.getSourceFile(index);
+  const sym = sf && checker.getSymbolAtLocation(sf);
+  if (!sym) return '';
+  const taken = new Set<string>();
+  for (const f of readdirSync(kit, { recursive: true }) as string[]) {
+    if (!f.endsWith('.swift') || f.startsWith('Core/') || replaces?.test(f)) continue;
+    for (const m of readFileSync(join(kit, f), 'utf8').matchAll(/^(?:@\w+\s+)*public\s+func\s+(\w+)/gm)) taken.add(m[1]);
+  }
+  const lines: string[] = [];
+  const resolveAlias = (e: ts.Symbol) => (e.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(e) : e);
+  // A function a declaration file declares (`root-layout/index.d.ts`) is implemented by the platform file beside it.
+  const implementation = (target: ts.Symbol): ts.Symbol => {
+    const dts = target.declarations?.[0]?.getSourceFile().fileName;
+    if (!dts?.endsWith('.d.ts')) return target;
+    const file = sourceOf(dts);
+    const impl = file ? program.getSourceFile(file) : undefined;
+    const module = impl && checker.getSymbolAtLocation(impl);
+    const found = module && checker.getExportsOfModule(module).find((x) => x.name === target.name);
+    return found ? resolveAlias(found) : target;
+  };
+  for (const e of checker.getExportsOfModule(sym)) {
+    const target = implementation(resolveAlias(e));
+    const decl = target.declarations?.find((d): d is ts.FunctionDeclaration => ts.isFunctionDeclaration(d) && !!d.body);
+    if (!decl || !compiled.has(decl.getSourceFile().fileName) || taken.has(e.name)) continue;
+    const module = moduleOf(decl.getSourceFile().fileName);
+    const code = out.find((f) => f.code.includes(`enum ${module} {`))?.code;
+    // The function's Swift declaration: `public static func name<…>(…) throws -> R {`.
+    const m = code && new RegExp(`\\n\\s*public static func ${target.name}(<[^>]*>)?\\((.*)\\)( throws)?( -> ([^{]+))? \\{\\n`).exec(code);
+    if (!m) continue;
+    const [, generics = '', params, throws = '', , ret] = m;
+    const args = splitTop(params).filter(Boolean).map((p) => {
+      const [label, name] = p.trim().split(':')[0].trim().split(/\s+/);
+      const inner = name ?? label;
+      return label === '_' ? inner : `${label}: ${inner}`;
+    });
+    lines.push(`public func ${e.name}${generics}(${params})${throws}${ret ? ` -> ${ret.trim()}` : ''} {\n    ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${module}.${target.name}(${args.join(', ')})\n}`);
+  }
+  return lines.length ? `// What @nativescript/core's index exports as functions, as an app imports them.\n\n${lines.join('\n\n')}\n` : '';
+}
+
+/** A Swift parameter list split at its top-level commas. */
+function splitTop(list: string): string[] {
+  const parts: string[] = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < list.length; i++) {
+    const ch = list[i];
+    if ('([<{'.includes(ch)) depth++;
+    else if (')]>}'.includes(ch) && !(ch === '>' && list[i - 1] === '-')) depth--;
+    else if (ch === ',' && depth === 0) { parts.push(list.slice(start, i)); start = i + 1; }
+  }
+  parts.push(list.slice(start));
+  return parts;
 }
 
 /** The top-level types the hand-written kit declares without making them public (`TNSLabel`), in the files the generated modules do not replace; `Core/` is what is generated. */

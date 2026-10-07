@@ -9,6 +9,8 @@ export interface KitMember {
   type: string;
   /** A function's parameter list as written (labels and types). */
   params?: string;
+  /** A function or initializer declared `throws`. */
+  throws?: boolean;
 }
 
 export interface KitType {
@@ -100,8 +102,11 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
           else if ((m = /\bfunc\s+`?(\w+)`?\s*(?:<[^>]*>)?\(/.exec(line))) {
             const [params, rest] = parenthesized(line, m.index + m[0].length);
             const ret = /^\s*(?:throws\s*)?(?:->\s*([^{]+))?/.exec(rest)![1];
-            add(owner.type, m[1], { kind: 'func', static: isStatic, type: (ret ?? 'Void').trim(), params });
-          } else if ((m = /\binit(\??)\s*\(/.exec(line))) add(owner.type, 'init', { kind: 'init', static: true, type: m[1] ? `${owner.type.name}?` : owner.type.name, params: parenthesized(line, m.index + m[0].length)[0] });
+            add(owner.type, m[1], { kind: 'func', static: isStatic, type: (ret ?? 'Void').trim(), params, throws: /^\s*throws\b/.test(rest) });
+          } else if ((m = /\binit(\??)\s*\(/.exec(line))) {
+            const [params, rest] = parenthesized(line, m.index + m[0].length);
+            add(owner.type, 'init', { kind: 'init', static: true, type: m[1] ? `${owner.type.name}?` : owner.type.name, params, throws: /^\s*throws\b/.test(rest) });
+          }
         }
       }
       for (const ch of line) {

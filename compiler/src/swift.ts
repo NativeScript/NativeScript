@@ -423,7 +423,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e); } catch { return false; } });
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e); } catch { return false; } });
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -708,6 +708,7 @@ export class Translator implements AsyncTranslator {
   /** A member script adds to a native object (`nativeView.nsView`): declared by the code itself, not by the SDK. */
   private isExpando(e: ts.PropertyAccessExpression): boolean {
     if (this.declaredOnly(e)) return true;
+    if (!this.library && this.core.eventMember(e)) return true;
     const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
     const target = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
     if (!decl || !(ts.isPropertySignature(decl) && ts.isTypeLiteralNode(decl.parent))) return false;
@@ -1578,6 +1579,9 @@ export class Translator implements AsyncTranslator {
     }
     const m = /^JSArray<(.*)>$/.exec(type);
     if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
+    // A promise held untyped (core's `animate()` gives its AnimationPromise as `any`): itself, or one adopting it.
+    const pm = /^JSPromise<(.*)>$/.exec(type);
+    if (pm) return `jsPromiseOf(${code}) { ${pm[1] === 'Void' ? '_ in ()' : this.fromAny('$0', pm[1])} }`;
     if (type === 'JSDate') return `jsDateOf(${code})`;
     if (type === 'JSDate?') return `{ (__d: Any?) -> JSDate? in jsIsNullish(__d) ? nil : jsDateOf(__d) }(${code})`;
     const om = /^JSArray<(.*)>\?$/.exec(type);
@@ -2238,8 +2242,16 @@ export class Translator implements AsyncTranslator {
     return `{ (${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
   }
 
+  /** A Swift function type's parameters and result, or null for any other type. */
+  functionTypeParts(type: string): FunctionParts | null { return functionParts(type); }
+
+  /** Closures passed for a kit parameter of a known Swift function type: that type's parameters, which the closure takes whatever TypeScript's slot says. */
+  readonly closureSlots = new Map<ts.Node, string[]>();
+
   /** The types of the arguments a callback's slot passes past those the closure declares, which Swift closures still take. */
   private unusedParameters(fn: ts.ArrowFunction | ts.FunctionExpression): string[] {
+    const forced = this.closureSlots.get(fn);
+    if (forced) return forced.slice(fn.parameters.length).map((p) => p.replace(/^@escaping /, ''));
     const slot = this.slotOf(fn);
     const coreSlot = !!slot?.getDeclaration() && isCoreDeclaration(slot.getDeclaration() as ts.Declaration);
     // The app's own function types are Swift's as declared: every parameter, whatever the closure uses.
@@ -5224,6 +5236,12 @@ export class Translator implements AsyncTranslator {
 
   private call(e: ts.CallExpression): string {
     const callee = e.expression;
+    // A method of an event's own object (`args.getX()` of a gesture's data), by name.
+    if (ts.isPropertyAccessExpression(callee) && !this.library && this.core.eventMember(callee)) {
+      const code = `jsCallMethod(${this.expr(callee.expression)}, ${swiftString(callee.name.text)}${e.arguments.map((a) => `, ${this.coerce(a, 'Any?')}`).join('')})`;
+      const t = this.typeOf(e);
+      return t === 'Void' || t === 'Any?' ? code : this.fromAnyCode(code, t, true);
+    }
     // `Cls.class()` of a class extending a native one: the class itself, which Swift names `Cls.self`.
     if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'class' && !e.arguments.length && (this.resolve(callee.expression)?.flags ?? 0) & ts.SymbolFlags.Class && this.native.extendsNative(this.checker.getDeclaredTypeOfSymbol(this.resolve(callee.expression)!))) {
       const cls = this.expr(callee.expression);

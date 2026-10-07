@@ -418,6 +418,8 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         if key == "length" { return Double(elements.count) }
         if let index = jsArrayIndex(key) { return Int(index) < elements.count ? jsFlat(elements[Int(index)]) : nil }
         return nil
+    case let thenable as JSThenable:
+        return jsPromiseMember(thenable, key)
     // A Swift struct casts to NSObject too (boxed): a geometry struct is read by its fields first.
     case let value? where jsIsStruct(value):
         return jsStructMember(value, key)
@@ -493,6 +495,9 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
             if level == 3 { throw JSException(JSTypeError("Cannot assign to read only property '\(key)' of object '#<Object>'")) }
         }
         dynamic[jsKey: key] = value
+    // `promise.cancel = fn` on the promise an animation returns: what its `cancel()` does.
+    case let cancelable as JSCancelable where key == "cancel":
+        cancelable.canceler = { jsReport { _ = try jsCall(value) } }
     case let native as NSObject:
         jsNativeSet(native, key, value)
     case let array as JSArrayProtocol:

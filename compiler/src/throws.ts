@@ -23,7 +23,7 @@ export class Throws {
   private untyped: (n: ts.Node) => boolean;
 
   /** Whether a call throws for what its declaration does not show: a native method Swift imports as `throws`, a method an instance can hold a value in place of. */
-  private nativeThrows: (call: ts.CallExpression) => boolean;
+  private nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean;
 
   /** A declaration file's method or constructor whose compiled implementation is in the program (library mode). */
   private implementation: (decl: ts.Declaration) => ts.Declaration | null;
@@ -31,7 +31,7 @@ export class Throws {
   /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
   private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false) {
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false) {
     this.implementation = implementation;
     this.dynamicMember = dynamicMember;
     this.checker = checker;
@@ -143,7 +143,7 @@ export class Throws {
 
   private callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
     const c = this.checker;
-    if (ts.isCallExpression(call) && this.nativeThrows(call)) return true;
+    if (this.nativeThrows(call)) return true;
     if (ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression) && this.dynamicMember(call.expression)) return true;
     if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {

@@ -620,3 +620,58 @@ extension JSAsync where T == Void {
     /// `return` with no value, or the end of the body.
     public func returnValue() { returnValue(()) }
 }
+
+/// A promise a library made cancelable (core's `AnimationPromise`): `promise.cancel = fn`
+/// sets what `cancel()` does, as script adds the method to the promise it returns.
+public protocol JSCancelable: AnyObject {
+    var canceler: (() -> Void)? { get set }
+}
+
+extension JSPromise: JSCancelable {}
+
+/// A promise's members read by name (`p.then(f)` on a promise held untyped), as
+/// `Promise.prototype` has them, and a cancelable one's `cancel`.
+func jsPromiseMember(_ thenable: JSThenable, _ key: String) -> Any? {
+    /// A reaction: the handler's result settles the derived promise, a thrown error rejects it.
+    func react(_ handler: Any?, _ value: Any?, _ resolve: (Any?) -> Void, _ reject: (Any?) -> Void, passThrough: (Any?) -> Void) {
+        guard !jsIsNullish(handler) else { return passThrough(value) }
+        do { resolve(try jsCall(handler, value)) } catch { reject(jsCaught(error)) }
+    }
+    switch key {
+    case "then", "catch":
+        return { (args: [Any?]) -> Any? in
+            let onFulfilled = key == "then" ? (args.first ?? nil) : nil
+            let onRejected = key == "then" ? (args.count > 1 ? args[1] : nil) : (args.first ?? nil)
+            let (promise, resolve, reject) = JSPromise<Any?>.withResolvers()
+            thenable.jsSubscribe({ v in react(onFulfilled, v, resolve, reject, passThrough: resolve) },
+                                 { r in react(onRejected, r, resolve, reject, passThrough: reject) })
+            return promise
+        } as JSFunction
+    case "finally":
+        return { (args: [Any?]) -> Any? in
+            let onFinally = args.first ?? nil
+            let (promise, resolve, reject) = JSPromise<Any?>.withResolvers()
+            let settle = { (outcome: Any?, pass: @escaping (Any?) -> Void) in
+                do { if !jsIsNullish(onFinally) { _ = try jsCall(onFinally) }; pass(outcome) } catch { reject(jsCaught(error)) }
+            }
+            thenable.jsSubscribe({ v in settle(v, resolve) }, { r in settle(r, reject) })
+            return promise
+        } as JSFunction
+    case "cancel":
+        guard let cancelable = thenable as? JSCancelable else { return nil }
+        return { (_: [Any?]) -> Any? in cancelable.canceler?(); return nil } as JSFunction
+    default:
+        return nil
+    }
+}
+
+/// An untyped value read as a promise of a type: the promise itself where it is one of
+/// that type, else one adopting it as `Promise.resolve` adopts a thenable, a plain value
+/// resolving it, its result read as the type.
+public func jsPromiseOf<T>(_ value: Any?, _ element: @escaping (Any?) -> T) -> JSPromise<T> {
+    if let same = jsFlat(value) as? JSPromise<T> { return same }
+    let (promise, resolve, reject) = JSPromise<T>.withResolvers()
+    jsPromiseResolveAny(value).jsSubscribe({ resolve(element($0)) }, reject)
+    if let from = jsFlat(value) as? JSCancelable { promise.canceler = { from.canceler?() } }
+    return promise
+}
