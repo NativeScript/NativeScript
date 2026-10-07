@@ -16,6 +16,9 @@ open class JSError: JSDynamic, CustomStringConvertible {
     private var storedStack: String?
     private var properties: JSObject?
 
+    /// Where the error was made, when the app runs with `NS_KIT_STACK` (see `NativeStack`).
+    private let nativeFrames: String? = NativeStack.capture()
+
     public init(_ message: String = "", cause: Any? = nil) {
         self.message = message
         self.cause = cause
@@ -35,7 +38,7 @@ open class JSError: JSDynamic, CustomStringConvertible {
 
     /// V8's `error.stack`: the header line and a placeholder frame.
     open var stack: String {
-        get { storedStack ?? "\(jsErrorString)\n    at <anonymous>" }
+        get { storedStack ?? "\(jsErrorString)\n\(nativeFrames ?? "    at <anonymous>")" }
         set { storedStack = newValue }
     }
 

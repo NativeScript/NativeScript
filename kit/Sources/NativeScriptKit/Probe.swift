@@ -66,7 +66,12 @@ enum Probe {
         if let v = view as? View {
             let style = v.style!
             line += " bg=\(jsToString(style.backgroundColor)) color=\(jsToString(style.color)) font=\(jsToString(style.fontSize)) pad=\(jsToString(style.paddingTop))"
-            if let frame = (v.nativeViewProtected as? UIView)?.frame { line += " frame=\(frame)" }
+            if let native = v.nativeViewProtected as? UIView {
+                line += " frame=\(native.frame)"
+                if let recognizers = native.gestureRecognizers, !recognizers.isEmpty {
+                    line += " gestures=[\(recognizers.map { "\(type(of: $0))\($0.isEnabled ? "" : " disabled")" }.joined(separator: ","))] interactive=\(native.isUserInteractionEnabled)"
+                }
+            }
         }
         print(line)
         try? view.eachChild { child in if let child { visit(child, depth + 1) }; return true }

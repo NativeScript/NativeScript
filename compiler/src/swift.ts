@@ -3888,7 +3888,11 @@ export class Translator implements AsyncTranslator {
         return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, 'Any?')} : ${this.coerce(bare.whenFalse, 'Any?')})`;
       }
       const maybe = this.maybeUndefined(e);
-      if (maybe) return `(${maybe} as Any?)`;
+      if (maybe) {
+        // An optional function (`callback?: (args) => void`) held untyped is a script function, which `callback.call(…)` can call.
+        const held = optionalType((this.declaredTypeOf(bare) ?? source).replace(/[?!]$/, ''));
+        return functionParts(held.replace(/^\((.*)\)\?$/, '$1')) ? this.convert(maybe, held, 'Any?') : `(${maybe} as Any?)`;
+      }
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
       // A method value is untyped already.
       if (this.library && ts.isFunctionExpression(bare) && (this.carriesMethod(bare) || this.readsArguments(bare))) return this.expr(e);
