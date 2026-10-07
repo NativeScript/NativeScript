@@ -248,8 +248,8 @@ export namespace ios {
 					bottomRight: cappedRadius + spreadRadius,
 				};
 
-				innerPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
-				shadowPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadiiWithSpread, spreadRadius);
+				innerPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii, 0, background.cornerShape === CoreTypes.CornerShape.squircle);
+				shadowPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadiiWithSpread, spreadRadius, background.cornerShape === CoreTypes.CornerShape.squircle);
 			} else {
 				const outerTopLeftRadius = layout.toDeviceIndependentPixels(background.borderTopLeftRadius);
 				const outerTopRightRadius = layout.toDeviceIndependentPixels(background.borderTopRightRadius);
@@ -276,8 +276,8 @@ export namespace ios {
 					bottomRight: cappedOuterRadii.bottomRight > 0 ? cappedOuterRadii.bottomRight + spreadRadius : cappedOuterRadii.bottomRight,
 				};
 
-				innerPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
-				shadowPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadiiWithSpread, spreadRadius);
+				innerPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii, 0, background.cornerShape === CoreTypes.CornerShape.squircle);
+				shadowPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadiiWithSpread, spreadRadius, background.cornerShape === CoreTypes.CornerShape.squircle);
 			}
 		} else {
 			innerPath = CGPathCreateWithRect(bounds, null);
@@ -352,7 +352,7 @@ export namespace ios {
 		const background = view.style.backgroundInternal;
 
 		const cappedOuterRadii = calculateNonUniformBorderCappedRadii(bounds, background);
-		return generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
+		return generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii, 0, background.cornerShape === CoreTypes.CornerShape.squircle);
 	}
 
 	export function generateNonUniformMultiColorBorderRoundedPaths(view: View, bounds: CGRect): Array<any> {
@@ -728,7 +728,7 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 
 	const cappedOuterRadii = calculateNonUniformBorderCappedRadii(layerBounds, background);
 	if (nativeView.maskType === iosViewUtils.LayerMask.BORDER && layer.mask instanceof CAShapeLayer) {
-		layer.mask.path = generateNonUniformBorderOuterClipPath(layerBounds, cappedOuterRadii);
+		layer.mask.path = generateNonUniformBorderOuterClipPath(layerBounds, cappedOuterRadii, 0, background.cornerShape === CoreTypes.CornerShape.squircle);
 	}
 
 	if (background.hasBorderWidth()) {
@@ -806,15 +806,60 @@ function calculateInnerBorderClipRadius(radius: number, insetX: number, insetY: 
 	};
 }
 
+// Squircle corner curve — superellipse |x|^n + |y|^n = r^n with n=4, the
+// approximation of Apple's "continuous" corner that CSS `corner-shape:
+// squircle` specifies. Sampled as a short polyline per corner (the mask is
+// rasterized once per bounds change, so segment count doesn't matter at
+// screen scale).
+const SQUIRCLE_EXPONENT = 4;
+const SQUIRCLE_CORNER_STEPS = 12;
+
+/**
+ * Appends a straight line to the incoming tangent point, then a squircle
+ * quarter arc to the exit tangent — same semantics as CGPathAddArcToPoint.
+ *
+ * @param path
+ * @param t1x/t1y tangent point on the incoming edge
+ * @param t2x/t2y tangent point on the outgoing edge
+ * @param vx/vy corner vertex where the two edges would meet
+ */
+function addSquircleArcToPoint(path: any, t1x: number, t1y: number, t2x: number, t2y: number, vx: number, vy: number): void {
+	CGPathAddLineToPoint(path, null, t1x, t1y);
+
+	// The corner-box corner opposite the vertex is the arc's center.
+	const cx = t1x + t2x - vx;
+	const cy = t1y + t2y - vy;
+	const e = 2 / SQUIRCLE_EXPONENT;
+
+	// t1 sits on a horizontal edge when its offset from the center is
+	// vertical; parametrize θ: 0 → π/2 so the polyline always runs t1 → t2.
+	if (Math.abs(t1y - cy) >= Math.abs(t1x - cx)) {
+		const ax = t2x - cx;
+		const ay = t1y - cy;
+		for (let i = 1; i <= SQUIRCLE_CORNER_STEPS; i++) {
+			const a = (i / SQUIRCLE_CORNER_STEPS) * (Math.PI / 2);
+			CGPathAddLineToPoint(path, null, cx + ax * Math.pow(Math.sin(a), e), cy + ay * Math.pow(Math.cos(a), e));
+		}
+	} else {
+		const ax = t1x - cx;
+		const ay = t2y - cy;
+		for (let i = 1; i <= SQUIRCLE_CORNER_STEPS; i++) {
+			const a = (i / SQUIRCLE_CORNER_STEPS) * (Math.PI / 2);
+			CGPathAddLineToPoint(path, null, cx + ax * Math.pow(Math.cos(a), e), cy + ay * Math.pow(Math.sin(a), e));
+		}
+	}
+}
+
 /**
  * Generates a path that represents the rounded view area.
  *
  * @param bounds
  * @param cappedRadii
  * @param offset
+ * @param squircle draw corner arcs as squircles instead of circular arcs
  * @returns
  */
-function generateNonUniformBorderOuterClipPath(bounds: CGRect, cappedRadii: CappedOuterRadii, offset: number = 0): any {
+function generateNonUniformBorderOuterClipPath(bounds: CGRect, cappedRadii: CappedOuterRadii, offset: number = 0, squircle = false): any {
 	const { width, height } = bounds.size;
 	const { x, y } = bounds.origin;
 
@@ -826,10 +871,17 @@ function generateNonUniformBorderOuterClipPath(bounds: CGRect, cappedRadii: Capp
 	const clipPath = CGPathCreateMutable();
 
 	CGPathMoveToPoint(clipPath, null, left + cappedRadii.topLeft, top);
-	CGPathAddArcToPoint(clipPath, null, right, top, right, top + cappedRadii.topRight, cappedRadii.topRight);
-	CGPathAddArcToPoint(clipPath, null, right, bottom, right - cappedRadii.bottomRight, bottom, cappedRadii.bottomRight);
-	CGPathAddArcToPoint(clipPath, null, left, bottom, left, bottom - cappedRadii.bottomLeft, cappedRadii.bottomLeft);
-	CGPathAddArcToPoint(clipPath, null, left, top, left + cappedRadii.topLeft, top, cappedRadii.topLeft);
+	if (squircle) {
+		addSquircleArcToPoint(clipPath, right - cappedRadii.topRight, top, right, top + cappedRadii.topRight, right, top);
+		addSquircleArcToPoint(clipPath, right, bottom - cappedRadii.bottomRight, right - cappedRadii.bottomRight, bottom, right, bottom);
+		addSquircleArcToPoint(clipPath, left + cappedRadii.bottomLeft, bottom, left, bottom - cappedRadii.bottomLeft, left, bottom);
+		addSquircleArcToPoint(clipPath, left, top + cappedRadii.topLeft, left + cappedRadii.topLeft, top, left, top);
+	} else {
+		CGPathAddArcToPoint(clipPath, null, right, top, right, top + cappedRadii.topRight, cappedRadii.topRight);
+		CGPathAddArcToPoint(clipPath, null, right, bottom, right - cappedRadii.bottomRight, bottom, cappedRadii.bottomRight);
+		CGPathAddArcToPoint(clipPath, null, left, bottom, left, bottom - cappedRadii.bottomLeft, cappedRadii.bottomLeft);
+		CGPathAddArcToPoint(clipPath, null, left, top, left + cappedRadii.topLeft, top, cappedRadii.topLeft);
+	}
 	CGPathCloseSubpath(clipPath);
 
 	return clipPath;
@@ -870,6 +922,8 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 	const clipPath = CGPathCreateMutable();
 	CGPathAddRect(clipPath, null, CGRectMake(x, y, width, height));
 
+	const squircle = background.cornerShape === CoreTypes.CornerShape.squircle;
+
 	// Inner clip paths
 	if (cappedBorderTopWidth > 0 || cappedBorderLeftWidth > 0) {
 		CGPathMoveToPoint(clipPath, null, position.left + cappedOuterRadii.topLeft, position.top + cappedBorderTopWidth);
@@ -879,32 +933,48 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 
 	if (cappedBorderTopWidth > 0 || cappedBorderRightWidth > 0) {
 		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.topRight, cappedBorderRightWidth, cappedBorderTopWidth);
-		const innerTopRightTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.right - cappedBorderRightWidth - xRadius, position.top + cappedBorderTopWidth + yRadius);
-		CGPathAddArc(clipPath, innerTopRightTransform, 0, 0, maxRadius, (Math.PI * 3) / 2, 0, false);
+		if (squircle) {
+			addSquircleArcToPoint(clipPath, position.right - cappedBorderRightWidth - xRadius, position.top + cappedBorderTopWidth, position.right - cappedBorderRightWidth, position.top + cappedBorderTopWidth + yRadius, position.right - cappedBorderRightWidth, position.top + cappedBorderTopWidth);
+		} else {
+			const innerTopRightTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.right - cappedBorderRightWidth - xRadius, position.top + cappedBorderTopWidth + yRadius);
+			CGPathAddArc(clipPath, innerTopRightTransform, 0, 0, maxRadius, (Math.PI * 3) / 2, 0, false);
+		}
 	} else {
 		CGPathAddLineToPoint(clipPath, null, position.right, position.top);
 	}
 
 	if (cappedBorderBottomWidth > 0 || cappedBorderRightWidth > 0) {
 		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.bottomRight, cappedBorderRightWidth, cappedBorderBottomWidth);
-		const innerBottomRightTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.right - cappedBorderRightWidth - xRadius, position.bottom - cappedBorderBottomWidth - yRadius);
-		CGPathAddArc(clipPath, innerBottomRightTransform, 0, 0, maxRadius, 0, Math.PI / 2, false);
+		if (squircle) {
+			addSquircleArcToPoint(clipPath, position.right - cappedBorderRightWidth, position.bottom - cappedBorderBottomWidth - yRadius, position.right - cappedBorderRightWidth - xRadius, position.bottom - cappedBorderBottomWidth, position.right - cappedBorderRightWidth, position.bottom - cappedBorderBottomWidth);
+		} else {
+			const innerBottomRightTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.right - cappedBorderRightWidth - xRadius, position.bottom - cappedBorderBottomWidth - yRadius);
+			CGPathAddArc(clipPath, innerBottomRightTransform, 0, 0, maxRadius, 0, Math.PI / 2, false);
+		}
 	} else {
 		CGPathAddLineToPoint(clipPath, null, position.right, position.bottom);
 	}
 
 	if (cappedBorderBottomWidth > 0 || cappedBorderLeftWidth > 0) {
 		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.bottomLeft, cappedBorderLeftWidth, cappedBorderBottomWidth);
-		const innerBottomLeftTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.left + cappedBorderLeftWidth + xRadius, position.bottom - cappedBorderBottomWidth - yRadius);
-		CGPathAddArc(clipPath, innerBottomLeftTransform, 0, 0, maxRadius, Math.PI / 2, Math.PI, false);
+		if (squircle) {
+			addSquircleArcToPoint(clipPath, position.left + cappedBorderLeftWidth + xRadius, position.bottom - cappedBorderBottomWidth, position.left + cappedBorderLeftWidth, position.bottom - cappedBorderBottomWidth - yRadius, position.left + cappedBorderLeftWidth, position.bottom - cappedBorderBottomWidth);
+		} else {
+			const innerBottomLeftTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.left + cappedBorderLeftWidth + xRadius, position.bottom - cappedBorderBottomWidth - yRadius);
+			CGPathAddArc(clipPath, innerBottomLeftTransform, 0, 0, maxRadius, Math.PI / 2, Math.PI, false);
+		}
 	} else {
 		CGPathAddLineToPoint(clipPath, null, position.left, position.bottom);
 	}
 
 	if (cappedBorderTopWidth > 0 || cappedBorderLeftWidth > 0) {
 		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.topLeft, cappedBorderLeftWidth, cappedBorderTopWidth);
-		const innerTopLeftTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.left + cappedBorderLeftWidth + xRadius, position.top + cappedBorderTopWidth + yRadius);
-		CGPathAddArc(clipPath, innerTopLeftTransform, 0, 0, maxRadius, Math.PI, (Math.PI * 3) / 2, false);
+		if (squircle) {
+			addSquircleArcToPoint(clipPath, position.left + cappedBorderLeftWidth, position.top + cappedBorderTopWidth + yRadius, position.left + cappedBorderLeftWidth + xRadius, position.top + cappedBorderTopWidth, position.left + cappedBorderLeftWidth, position.top + cappedBorderTopWidth);
+		} else {
+			const innerTopLeftTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.left + cappedBorderLeftWidth + xRadius, position.top + cappedBorderTopWidth + yRadius);
+			CGPathAddArc(clipPath, innerTopLeftTransform, 0, 0, maxRadius, Math.PI, (Math.PI * 3) / 2, false);
+		}
 	} else {
 		CGPathAddLineToPoint(clipPath, null, position.left, position.top);
 	}
