@@ -249,17 +249,83 @@ declare var exports: any;
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
 declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
 
-declare interface NativeClassOptions {
-	nativeClassName?: string; // for @JavaProxy and
+declare interface NativeClassIOSMethodSignature {
+	/**
+	 * Return type, as an `interop.types` value or a native class.
+	 */
+	returns?: any;
+	/**
+	 * Parameter types, as `interop.types` values or native classes.
+	 */
+	params?: any[];
+}
+
+declare interface NativeClassIOSOptions {
+	/**
+	 * Objective-C class name to register under. Setting it registers the class
+	 * immediately; without it the ES class name is used and registration stays
+	 * lazy until the class first crosses into native code.
+	 */
+	name?: string;
+	/**
+	 * Objective-C protocols the class adopts. Merged into `static ObjCProtocols`.
+	 */
 	protocols?: any[];
+	/**
+	 * JS methods to expose to Objective-C, keyed by selector
+	 * (e.g. `'selectorWithX:andY:'`). Merged into `static ObjCExposedMethods`.
+	 */
+	methods?: { [selector: string]: NativeClassIOSMethodSignature };
+}
+
+declare interface NativeClassAndroidOptions {
+	/**
+	 * Fully qualified Java class name to register under (e.g. `'org.example.MyView'`);
+	 * an unqualified name throws. Setting it registers the class immediately; without
+	 * it registration stays lazy until the class first crosses into native code.
+	 */
+	name?: string;
+	/**
+	 * Java interfaces the class implements. Merged into `static interfaces`.
+	 */
 	interfaces?: any[];
 }
 
+declare interface NativeClassOptions {
+	/**
+	 * iOS-only options; ignored by the Android runtime.
+	 */
+	ios?: NativeClassIOSOptions;
+	/**
+	 * Android-only options; ignored by the iOS runtime.
+	 */
+	android?: NativeClassAndroidOptions;
+	/**
+	 * @deprecated Use `ios.protocols`.
+	 */
+	protocols?: any[];
+	/**
+	 * @deprecated Use `android.interfaces`.
+	 */
+	interfaces?: any[];
+	/**
+	 * @deprecated Never read by the runtimes. Use `ios.name` / `android.name`.
+	 */
+	nativeClassName?: string;
+}
+
 /**
- * Decorates class that extends a native class(iOS or Android)
+ * Decorates a class that extends a native class (iOS or Android).
+ *
+ * Runtime 9.1+ handles plain ES classes extending native types directly and
+ * applies these options itself; older runtimes rely on the bundler's NativeClass
+ * transformer, which strips the decorator and downlevels the class to ES5.
+ *
+ * `@NativeClass`, `@NativeClass()` and `@NativeClass({ ios: { ... }, android: { ... } })`
+ * are all valid. On worker isolates the decorator is a no-op.
  */
-declare function NativeClass<T extends { new (...args: any[]): {} }>(constructor: T);
-declare function NativeClass<T extends { new (...args: any[]): {} }>(options?: NativeClassOptions);
+declare function NativeClass<T extends { new (...args: any[]): {} }>(constructor: T): T;
+declare function NativeClass(options?: NativeClassOptions): <T extends { new (...args: any[]): {} }>(constructor: T) => T;
 
 /**
  * Decorates class that implements native Java interfaces.
