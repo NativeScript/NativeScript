@@ -183,7 +183,9 @@ export function reachability(program: ts.Program, resolved: (containing: string,
     const target = file && program.getSourceFile(file);
     if (!target || !pluginFiles.has(file!)) return sym;
     load(file!);
-    const exported = checker.getSymbolAtLocation(target)?.exports?.get(sym.escapedName);
+    // Through `export * from './WebGPU'` too, which the module symbol's own exports leave out.
+    const module = checker.getSymbolAtLocation(target);
+    const exported = module && checker.getExportsOfModule(module).find((x) => x.escapedName === sym.escapedName);
     return exported ? (exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported) : sym;
   };
 

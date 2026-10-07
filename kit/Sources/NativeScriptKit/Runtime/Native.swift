@@ -34,12 +34,33 @@ public func jsNativeInteger<T: FixedWidthInteger>(_ value: Double, _: T.Type) ->
     return T(truncated)
 }
 
+/// A number where native code takes an integer, from what script passes: a number, or a BigInt (a 64-bit handle).
+public func jsNativeIntegerArgument<T: FixedWidthInteger>(_ value: Any?, _: T.Type) -> T {
+    if let big = jsFlat(value) as? JSBigInt { return T.isSigned ? T(truncatingIfNeeded: big.int64) : T(truncatingIfNeeded: big.uint64) }
+    return jsNativeInteger(jsToNumber(value), T.self)
+}
+
+/// The plugins' native members untyped script reaches, by name: the app's `__NativeDispatch`, generated from the
+/// plugins' metadata. Each answers nil (or false) for an object or name it has nothing for.
+public enum JSNativeDispatch {
+    nonisolated(unsafe) public static var get: ((AnyObject, String) -> Any??)?
+    nonisolated(unsafe) public static var set: ((AnyObject, String, Any?) -> Bool)?
+    nonisolated(unsafe) public static var call: ((AnyObject, String, [Any?]) throws -> Any??)?
+}
+
+/// `Cls.alloc()` on a class script holds untyped: the class, until an initializer (`initWithFrame`) makes the object.
+public final class JSNativeAllocation {
+    public let cls: AnyClass
+    init(_ cls: AnyClass) { self.cls = cls }
+}
+
 /// A program's subclass of a native class: its own members by name, which Objective-C cannot see; nil for a name it does not declare.
 public protocol JSNativeMembers: AnyObject {
     func jsMember(_ key: String) -> Any??
 }
 
 func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
+    if let value = JSNativeDispatch.get?(object, key) { return value }
     if let own = object as? JSNativeMembers, let value = own.jsMember(key) { return value }
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
@@ -292,6 +313,7 @@ public func jsNativePropertySet(_ native: Any?, _ setter: String, _ value: Any?)
 public func jsOr(_ a: Any?, _ b: Any?) -> Any? { jsTruthy(a) ? a : b }
 
 func jsNativeSet(_ object: NSObject, _ key: String, _ value: Any?) {
+    if JSNativeDispatch.set?(object, key, value) == true { return }
     // Key-value coding raises where the setter is only forwarded; script's message send reaches it.
     guard let receiver = jsSetterReceiver(object, key) else {
         jsExpandos(object, create: true)?[key] = value

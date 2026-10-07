@@ -125,6 +125,15 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         return cls is JSStaticKeyed.Type ? "class \(name) { }" : "function \(name.replacingOccurrences(of: "JS", with: "", options: .anchored))() { [native code] }"
     }
     if let host = jsFlat(object) as? JSHostObject, let result = try host.jsInvoke(key, arguments) { return result }
+    if let native = jsFlat(object) as? NSObject {
+        if let result = try JSNativeDispatch.call?(native, key, arguments) { return result }
+        if key == "alloc", arguments.isEmpty, let cls = native as? NSObject.Type { return JSNativeAllocation(cls) }
+    }
+    if let allocation = jsFlat(object) as? JSNativeAllocation {
+        if let result = try JSNativeDispatch.call?(allocation, key, arguments) { return result }
+        if key == "init", arguments.isEmpty, let cls = allocation.cls as? NSObject.Type { return cls.init() }
+        throw JSException(JSTypeError("\(allocation.cls).alloc().\(key) is not a function"))
+    }
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
     if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }

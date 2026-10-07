@@ -2746,6 +2746,11 @@ export class Translator implements AsyncTranslator {
         lines.push(`    var jsToStringTag: String = ${this.coerce(m.initializer, 'String')}`);
         continue;
       }
+      // `static [native_];`: the class's own property under a symbol, undefined until set.
+      if (keyed?.key && isStatic(m) && !m.initializer) {
+        lines.push(`    static var ${keyed.member}: ${optionalType(this.typeOf(m.name))} = nil`);
+        continue;
+      }
       if (keyed) throw this.error(m.name, 'a field named by this symbol');
       const n = this.staticName(m) ?? m.name.getText();
       const t = this.typeOf(m.name);
@@ -3454,12 +3459,18 @@ export class Translator implements AsyncTranslator {
 
   /** An identifier naming one of the app's Swift classes through an untyped ambient declaration. */
   appNativeOf(e: ts.Node): string | null {
-    if (!ts.isIdentifier(e) || !this.appNativeClasses.has(e.text)) return null;
+    if (!ts.isIdentifier(e) || !(this.appNativeClasses.has(e.text) || this.pluginNativeClasses.has(e.text))) return null;
     const decl = this.resolve(e)?.valueDeclaration;
     if (!decl || !ts.isVariableDeclaration(decl) || !(this.checker.getTypeAtLocation(decl).flags & ts.TypeFlags.Any)) return null;
+    // A plugin's class (`declare var NSCCanvas`): the class object, whose members `__NativeDispatch` finds by name.
+    const plugin = this.pluginNativeClasses.get(e.text);
+    if (plugin) return `(${plugin}.self as AnyObject)`;
     this.usedAppNative.add(e.text);
     return `__AppNative_${e.text}.shared`;
   }
+
+  /** The plugins' native classes by their Objective-C names, each with its Swift name. */
+  pluginNativeClasses = new Map<string, string>();
 
   /** Classes whose translated `init` throws (a field initializer that can). */
   readonly throwingInits = new Set<string>();

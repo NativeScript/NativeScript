@@ -283,7 +283,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       const replacement = !m.startsWith('.') && !m.startsWith('/') ? replacements[packageOf(m)] : undefined;
       if (replacement) return { resolvedModule: { resolvedFileName: replacement, extension: ts.Extension.Ts } };
       // A plugin is compiled from its source: an import that reaches its code resolves to the file it was built from.
-      const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly;
+      // A type-only import still resolves to the source where the file also imports values from the package: TypeScript resolves a specifier once per file.
+      const valueImport = (st: ts.Statement) => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === m;
+      const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
       if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {

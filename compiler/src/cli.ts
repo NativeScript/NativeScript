@@ -35,6 +35,7 @@ import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
+import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
 import { coreNativeModules, coreNativeProject, installedCore } from './natives/core-ios.ts';
@@ -335,6 +336,7 @@ translator.plainFields = framework === 'angular';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
 const appNative = native.appSwift ? nativeTable(name).classes : {};
 translator.appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
+for (const m of native.modules) for (const [js, c] of Object.entries(nativeTable(m).classes)) if (c.kind === 'class' && !c.extension && c.module === m) translator.pluginNativeClasses.set(js, c.swift);
 translator.allowUnapplied = allowUnapplied;
 if (args.includes('--all-errors')) translator.errors = allowUnapplied ? [] : [...unapplied];
 
@@ -398,6 +400,8 @@ const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n   
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.cssAST = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
+const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget);
+if (dispatch) writeFileSync(join(out, 'Sources', '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
 if (translator.usedAppNative.size) writeFileSync(join(out, 'Sources', '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
 for (const f of readdirSync(join(out, 'Sources'))) {
@@ -413,7 +417,7 @@ const appSwift = readdirSync(join(out, 'Sources')).filter((f) => f.endsWith('.sw
 const closedWorld = coreClosedWorld(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
 say(`core in this app: ${closedWorld.initializers.length} module initializers run, ${closedWorld.excluded.length} files left out`);
 const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${closedWorld.initializers.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${native.bindings.map((b) => `        ${b.installer}.install()\n`).join('')}${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
+writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${dispatch ? '        __NativeDispatch.install()\n' : ''}${native.bindings.map((b) => `        ${b.installer}.install()\n`).join('')}${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project. The kit is a static library target rather than its
@@ -552,7 +556,13 @@ function coreClosedWorld(kitSources: string, appSwift: string): { initializers: 
   const words = (code: string) => new Set(code.match(/\b[A-Za-z_]\w*\b/g) ?? []);
   const declaring = new Map<string, string>();
   for (const [f, code] of text) for (const m of code.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final|indirect)\s+)*(?:class|struct|enum|protocol|func|typealias|let|var)\s+(\w+)/gm)) if (!declaring.has(m[1])) declaring.set(m[1], f);
-  const named = (code: string) => [...words(code)].flatMap((w) => declaring.get(w) ?? []);
+  // What an extension declares (core's index namespaces, `extension Utils { enum layout … }`) is reached by its own names.
+  const extending = new Map<string, string[]>();
+  for (const [f, code] of text) {
+    if (!/^extension \w+/m.test(code)) continue;
+    for (const m of code.matchAll(/^ {4}(?:(?:public|static|final)\s+)*(?:class|struct|enum|func|let|var)\s+(\w+)/gm)) extending.set(m[1], [...(extending.get(m[1]) ?? []), f]);
+  }
+  const named = (code: string) => [...words(code)].flatMap((w) => [...(declaring.has(w) ? [declaring.get(w)!] : []), ...(extending.get(w) ?? [])]);
   let roots = named(appSwift);
   for (const f of readdirSync(kitSources, { recursive: true }) as string[]) if (f.endsWith('.swift') && !f.startsWith('Core/')) roots.push(...named(readFileSync(join(kitSources, f), 'utf8')));
   const running = new Set<string>();
