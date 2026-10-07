@@ -71,6 +71,13 @@ public func jsArrayOrNil<T>(_ value: Any?, _ element: (Any?) -> T) -> JSArray<T>
     jsIsNullish(value) ? nil : jsArrayOf(value, element)
 }
 
+/// `jsArrayOf`, `jsArrayOrNil` and `jsRecordOf` with the element type named. Written to
+/// (`jsRecordOf(values) { $0 }[key] = value`), the element type would otherwise be inferred
+/// from the assignment, an optional of the right one, and the write would go to a converted copy.
+public func jsArrayOf<T>(_ value: Any?, of type: T.Type, _ element: (Any?) -> T) -> JSArray<T> { jsArrayOf(value, element) }
+public func jsArrayOrNil<T>(_ value: Any?, of type: T.Type, _ element: (Any?) -> T) -> JSArray<T>! { jsArrayOrNil(value, element) }
+public func jsRecordOf<T>(_ value: Any?, of type: T.Type, _ element: (Any?) -> T) -> JSRecord<T> { jsRecordOf(value, element) }
+
 /// A member of an untyped object, or undefined; reading a typed object from JSON never throws.
 public func jsField(_ object: Any?, _ key: String) -> Any? {
     (try? jsGet(object, key)) ?? nil

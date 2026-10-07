@@ -148,6 +148,14 @@ function outsideClosures(code: string): string {
   return out;
 }
 
+/**
+ * The element type passed to `jsArrayOf`, `jsArrayOrNil` or `jsRecordOf` where Swift could infer an optional of it
+ * from a write through the result (`jsRecordOf(values) { $0 }[key] = value`).
+ */
+function typedElement(element: string): string {
+  return /^(Any|String|Double|Bool)\?$/.test(element) ? `, of: (${element}).self` : '';
+}
+
 export class Translator implements AsyncTranslator {
   readonly syntax = SWIFT_SYNTAX;
   /** The component class being translated: its props read as `self.<prop>.value`. */
@@ -889,6 +897,17 @@ export class Translator implements AsyncTranslator {
     return getOk && setOk;
   }
 
+  /**
+   * A property descriptor's setter that only forwards its value (`set(value) { this.style.flexGrow = value; }`),
+   * as a method value passing on what script gave it: a string the style's converter parses goes on as it is.
+   */
+  private forwardingSetter(fn: ts.FunctionLikeDeclaration): string | null {
+    const forward = ts.isMethodDeclaration(fn) && fn.name.getText() !== 'set' ? null : this.forwardedTo(fn);
+    if (!forward || !ts.isObjectLiteralExpression(fn.parent) && !ts.isPropertyAssignment(fn.parent)) return null;
+    const target = this.withThis(fn, '__this', true, () => this.expr(forward.expression));
+    return `({ (__this: Any?, __a: [Any?]) throws -> Any? in try jsSet(${target}, ${swiftString(forward.name.text)}, jsArg(__a, 0)); return nil } as JSMethod)`;
+  }
+
   /** Library mode: a function declaration with a `this` parameter, named as a value rather than called. */
   private thisFunction(e: ts.Identifier): ts.FunctionDeclaration | null {
     if (!this.library || (ts.isCallExpression(e.parent) && e.parent.expression === e)) return null;
@@ -912,6 +931,8 @@ export class Translator implements AsyncTranslator {
 
   /** A function expression reading the `this` it is called with, as a method value (`JSMethod`) taking it. */
   private methodValue(fn: ts.FunctionExpression): string {
+    const forwarding = this.forwardingSetter(fn);
+    if (forwarding) return forwarding;
     const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this'));
     const ret = this.returnTypeOf(fn);
     // A function reading `arguments` binds its parameters from them itself.
@@ -1564,6 +1585,7 @@ export class Translator implements AsyncTranslator {
     const zero = this.zero(type);
     // An array of another element type (`[CssProperty, unknown][]` read as `[any, any][]`) is no Swift cast: its elements are read, undefined giving none.
     if (orZero && /^JSArray<.*>$/.test(type)) return this.fromAny(code, type);
+    if (orZero && this.lenient && ['String', 'Double', 'Bool'].includes(type)) return this.fromAny(code, type);
     if (orZero && zero && zero !== 'nil' && !type.endsWith('?')) return `((${code} as? ${type}) ?? ${zero})`;
     return this.fromAny(code, type);
   }
@@ -1580,7 +1602,7 @@ export class Translator implements AsyncTranslator {
     }
     const m = /^JSArray<(.*)>$/.exec(type);
     // Lenient code: undefined where an array is declared stays undefined (`let result: string[] = cache[key]; if (result) …`).
-    if (m) return `${this.lenient ? 'jsArrayOrNil' : 'jsArrayOf'}(${code}) { ${this.fromAny('$0', m[1])} }`;
+    if (m) return `${this.lenient ? 'jsArrayOrNil' : 'jsArrayOf'}(${code}${typedElement(m[1])}) { ${this.fromAny('$0', m[1])} }`;
     // A promise held untyped (core's `animate()` gives its AnimationPromise as `any`): itself, or one adopting it.
     const pm = /^JSPromise<(.*)>$/.exec(type);
     if (pm) return `jsPromiseOf(${code}) { ${pm[1] === 'Void' ? '_ in ()' : this.fromAny('$0', pm[1])} }`;
@@ -1590,7 +1612,7 @@ export class Translator implements AsyncTranslator {
     if (om) return `{ (__a: Any?) -> ${type} in jsIsNullish(__a) ? nil : jsArrayOf(__a) { ${this.fromAny('$0', om[1])} } }(${code})`;
     const r = /^JSRecord<(.*)>\??$/.exec(type);
     // A record's values are read as its type says where they have it (a gesture's extraData holds arrays beside its numbers).
-    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r) { ${this.fromAnyCode('$0', r[1], true)} } }(${code})` : `jsRecordOf(${code}) { ${this.fromAnyCode('$0', r[1], true)} }`;
+    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r${typedElement(r[1])}) { ${this.fromAnyCode('$0', r[1], true)} } }(${code})` : `jsRecordOf(${code}${typedElement(r[1])}) { ${this.fromAnyCode('$0', r[1], true)} }`;
     const parts = /^\((.*)\)$/.exec(type) && splitTopLevel(type.slice(1, -1));
     if (parts && parts.length > 1 && !type.includes('->')) {
       // A tuple type reads an untyped array's elements.
@@ -1615,6 +1637,7 @@ export class Translator implements AsyncTranslator {
     if (this.native.isEnumType(base)) return type.endsWith('?') ? `{ (__n: Any?) -> ${base}? in jsIsNullish(__n) ? nil : ${this.native.enumFromNumber('jsToNumber(__n)', base)} }(${code})` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStruct(${code}, ${base}.self)!`;
+    if (this.lenient && ['String?', 'Double?', 'Bool?'].includes(type)) return `{ (__v: Any?) -> ${type} in jsIsNullish(__v) ? nil : jsLenient${base === 'Double' ? 'Number' : base}(__v) }(${code})`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
     // Lenient code: an untyped value read as a string, number or boolean is converted as JavaScript would where it is used
     // (`textWrap = "true"` tests true); undefined is the type's zero.
@@ -1624,6 +1647,13 @@ export class Translator implements AsyncTranslator {
     // Module-qualified: inside an object of the program's that holds the class under its name (`{ Declaration }`), the bare name is that field.
     if (plain) return `jsImplicit(jsShaped(${code}) { try ${this.appModule ? `${this.appModule}.` : ''}${type}() })`;
     return this.lenientRef(type) !== type ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
+  }
+
+  /** Lenient code: a setter without a getter given undefined runs with it, as the type's zero for a primitive. */
+  private setterOnlyValue(p: ts.Identifier, optional: string): string {
+    const base = optional.replace(/\?$/, '');
+    const zero = ['String', 'Double', 'Bool'].includes(base) ? this.zero(base) : null;
+    return zero !== null ? `let ${ident(p.text)}: ${base} = newValue ?? ${zero}` : this.lenientRef(base) !== base ? `let ${ident(p.text)}: ${this.lenientRef(base)} = newValue` : `let ${ident(p.text)} = newValue!`;
   }
 
   /** A class the program declares that `new T()` makes, not a native subclass: whether making one throws; null for any other type. */
@@ -2706,7 +2736,7 @@ export class Translator implements AsyncTranslator {
         // A setter taking more than its getter gives (`set style(value: Style | string)`): its parameter as declared, from the property's value.
         const own = this.typeOf(p);
         const value = a.get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? `let ${ident(p.text)}: ${own} = ${this.convert('newValue', declared.replace(/!$/, '?'), own)}`
-          : declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
+          : declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : !a.get && this.lenient ? this.setterOnlyValue(p, t) : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
         parts.push(this.throwsInfo.fn(a.set)
           ? `        set {\n            ${value}\n            jsReport ${body.trimStart()}\n        }`
           : `        set {\n            ${value}${body.slice(1)}`);
@@ -3009,14 +3039,15 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A setter that only assigns its value to a member of `this`'s (`this.style.color = value`): that member. */
-  private forwardedTo(set: ts.SetAccessorDeclaration): ts.PropertyAccessExpression | null {
-    const p = set.parameters[0];
-    const only = set.body?.statements.length === 1 ? set.body.statements[0] : undefined;
+  private forwardedTo(set: ts.FunctionLikeDeclaration): ts.PropertyAccessExpression | null {
+    const params = set.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
+    const p = params.length === 1 ? params[0] : undefined;
+    const only = set.body && ts.isBlock(set.body) && set.body.statements.length === 1 ? set.body.statements[0] : undefined;
     if (!p || !ts.isIdentifier(p.name) || !only || !ts.isExpressionStatement(only)) return null;
     const e = only.expression;
     if (!ts.isBinaryExpression(e) || e.operatorToken.kind !== ts.SyntaxKind.EqualsToken || !ts.isIdentifier(e.right) || e.right.text !== p.name.text || !ts.isPropertyAccessExpression(e.left)) return null;
     let base: ts.Expression = e.left.expression;
-    while (ts.isPropertyAccessExpression(base)) base = base.expression;
+    while (ts.isPropertyAccessExpression(base) || ts.isParenthesizedExpression(base) || ts.isAsExpression(base)) base = base.expression;
     return base.kind === ts.SyntaxKind.ThisKeyword ? e.left : null;
   }
 
@@ -6921,6 +6952,8 @@ export class Translator implements AsyncTranslator {
     const own = p.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
     const type = `(${own.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${ret}`;
     if (!thisNodes(p).length) return this.boxFunction(`{ (${this.params(p, true)}) throws -> ${ret} in${this.functionBody(p, ret, this.indent).slice(1)}`, type, own.findIndex((q) => q.dotDotDotToken));
+    const forwarding = this.forwardingSetter(p);
+    if (forwarding) return forwarding;
     const fn = functionParts(type)!;
     const binds = fn.params.map((t, k) => `let ${ident((own[k].name as ts.Identifier).text)}: ${t} = ${own[k].dotDotDotToken ? `${t}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', t.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, t, true)}`);
     const body = this.withThis(p, '__this', true, () => this.functionBody(p, ret, this.indent + '    '));

@@ -184,28 +184,23 @@ public struct ListItem<T> {
 }
 
 private let listRowKey = JSSymbol("NativeScriptKit:listRow")
+private let listTemplateKey = JSSymbol("NativeScriptKit:listTemplate")
 
 extension ListView {
     /// A ListView's items and the templates that render them, as nativescript-vue
-    /// gives them to core: `itemTemplates` whose views it makes, the selector
-    /// choosing a row's template, and each row's item written as core prepares
-    /// the cell (`itemLoading`).
+    /// gives them to core: `itemTemplates` naming each template, the selector
+    /// choosing a row's template, and each row's view made on `itemLoading`, where
+    /// a reused cell's view is kept when its template is the row's. Core's own
+    /// `default` template comes before any template a list names, so a list's
+    /// templates make no views of their own.
     public func bind<Item>(items: @escaping () -> [Item], templates: [String] = ["default"], selector: ((Item, Double) -> String)? = nil,
                            render: ((String, ListRow<Item>) -> View)? = nil) {
         var current: [Item] = []
         let listOwner = Owner.current
-        if let render {
-            let made = templates.map { key in
-                JSObject([("key", key), ("createView", { (_: [Any?]) throws -> Any? in
-                    guard let first = current.first else { return nil }
-                    let row = ListRow(first, 0)
-                    // Each cell's bindings live as long as the list's.
-                    let view = Owner(parent: listOwner).run { render(key, row) }
-                    view[jsKey: listRowKey.key] = row
-                    return view
-                } as JSFunction)]) as Any?
-            }
-            kitSet("itemTemplates", JSArray<Any?>(made))
+        if render != nil {
+            kitSet("itemTemplates", JSArray<Any?>(templates.map { key in
+                JSObject([("key", key), ("createView", { (_: [Any?]) throws -> Any? in nil } as JSFunction)]) as Any?
+            }))
         }
         if let selector {
             kitSet("itemTemplateSelector", { (args: [Any?]) throws -> Any? in
@@ -215,11 +210,23 @@ extension ListView {
             } as JSFunction)
         }
         kitOn("itemLoading") { data in
-            guard let view = data[jsKey: "view"] as? ViewBase, let row = view[jsKey: listRowKey.key] as? ListRow<Item> else { return }
             let index = jsToNumber(data[jsKey: "index"])
             guard index >= 0, Int(index) < current.count else { return }
-            row.item.value = current[Int(index)]
-            row.index.value = index
+            let item = current[Int(index)]
+            let key = selector?(item, index) ?? templates.first ?? "default"
+            if let view = data[jsKey: "view"] as? ViewBase, let row = view[jsKey: listRowKey.key] as? ListRow<Item>,
+               view[jsKey: listTemplateKey.key] as? String == key {
+                row.item.value = item
+                row.index.value = index
+                return
+            }
+            guard let render else { return }
+            let row = ListRow(item, index)
+            // Each cell's bindings live as long as the list's.
+            let view = Owner(parent: listOwner).run { render(key, row) }
+            view[jsKey: listRowKey.key] = row
+            view[jsKey: listTemplateKey.key] = key
+            data[jsKey: "view"] = view
         }
         Effect { [weak self] in
             current = items()
